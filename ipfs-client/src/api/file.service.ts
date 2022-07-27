@@ -15,7 +15,9 @@ import {
 } from '@guardian/interfaces';
 import { MessageBrokerChannel, MessageError, MessageResponse, Logger } from '@guardian/common';
 
-
+/**
+ * Public gateway
+ */
 export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
 
 /**
@@ -24,7 +26,7 @@ export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
  * @param channel - channel
  * @param node - IPFS client
  */
-export const fileAPI = async function (
+export async function fileAPI(
     channel: MessageBrokerChannel,
     client: NFTStorage,
     settingsRepository: MongoRepository<Settings>
@@ -38,7 +40,13 @@ export const fileAPI = async function (
      */
     channel.response<IAddFileMessage, IFileResponse>(MessageAPI.IPFS_ADD_FILE, async (msg) => {
         try {
-            let blob = new Blob([Buffer.from(msg.content, 'base64')]);
+            let fileContent = Buffer.from(msg.content, 'base64');
+            const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT, msg);
+            if (data && data.body) {
+                // If get data back from external event
+                fileContent = Buffer.from(data.body, 'base64')
+            }
+            const blob = new Blob([fileContent]);
             const cid = await client.storeBlob(blob);
             const url = `${IPFS_PUBLIC_GATEWAY}/${cid}`;
             channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { cid, url });
@@ -70,17 +78,26 @@ export const fileAPI = async function (
             });
 
             if (!msg || !msg.cid || !msg.responseType) {
-                throw 'Invalid cid';
+                throw new Error('Invalid cid');
             }
 
             const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.cid}`, { responseType: 'arraybuffer', timeout: 20000 });
+            let fileContent = fileRes.data;
+            if (fileContent instanceof Buffer) {
+                const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, { content: fileContent.toString('base64') });
+                if (data && data.body) {
+                    // If get data back from external event
+                    fileContent = Buffer.from(data.body, 'base64')
+                }
+            }
+
             switch (msg.responseType) {
                 case 'str':
-                    return new MessageResponse(Buffer.from(fileRes.data, 'binary').toString());
+                    return new MessageResponse(Buffer.from(fileContent, 'binary').toString());
                 case 'json':
-                    return new MessageResponse(Buffer.from(fileRes.data, 'binary').toJSON());
+                    return new MessageResponse(Buffer.from(fileContent, 'binary').toJSON());
                 default:
-                    return new MessageResponse(fileRes.data)
+                    return new MessageResponse(fileContent)
             }
         }
         catch (error) {
@@ -130,7 +147,7 @@ export const fileAPI = async function (
      */
     channel.response<any, IIpfsSettingsResponse>(MessageAPI.GET_SETTINGS, async (_) => {
         const nftApiKey = await settingsRepository.findOne({
-            name: "NFT_API_KEY"
+            name: 'NFT_API_KEY'
         });
         return new MessageResponse({
             nftApiKey: nftApiKey?.value || process.env.NFT_API_KEY

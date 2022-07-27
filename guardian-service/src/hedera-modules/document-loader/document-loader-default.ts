@@ -9,6 +9,10 @@ import { DocumentLoader } from './document-loader';
  * Used for VC validation.
  */
 export class DefaultDocumentLoader extends DocumentLoader {
+    /**
+     * Has context
+     * @param iri
+     */
     public async has(iri: string): Promise<boolean> {
         if ((didContexts.contexts as Map<string, object>).has(iri)) {
             return true;
@@ -22,6 +26,10 @@ export class DefaultDocumentLoader extends DocumentLoader {
         return false;
     }
 
+    /**
+     * Get document
+     * @param iri
+     */
     public async get(iri: string): Promise<IDocumentFormat> {
         if ((didContexts.contexts as Map<string, object>).has(iri)) {
             return {

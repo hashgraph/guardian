@@ -1,23 +1,26 @@
 import { Inject } from '@helpers/decorators/inject';
 import { KeyType, Wallet } from '@helpers/wallet';
+import { DidDocumentStatus, GenerateUUIDv4, Schema } from '@guardian/interfaces';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
-import { PolicyComponentsUtils } from '../policy-components-utils';
-import { DidDocumentStatus, TopicType, Schema } from '@guardian/interfaces';
-import { IAuthUser } from '@auth/auth.interface';
-import { EventBlock } from '../helpers/decorators/event-block';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
-import { DIDDocument, DIDMessage, HederaUtils, MessageAction, MessageServer } from '@hedera-modules';
-import { VcHelper } from '@helpers/vcHelper';
+import { IPolicyRequestBlock, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
+import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-modules';
+import { VcHelper } from '@helpers/vc-helper';
+import { IAuthUser } from '@guardian/common';
 import { getMongoRepository } from 'typeorm';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
-import { IPolicyRequestBlock, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 
+/**
+ * Request VC document block
+ */
 @EventBlock({
     blockType: 'requestVcDocumentBlock',
     commonBlock: false,
@@ -40,21 +43,32 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
     }
 })
 export class RequestVcDocumentBlock {
+    /**
+     * Block state
+     */
     @StateField()
-    state: { [key: string]: any } = { active: true };
+    public readonly state: { [key: string]: any } = { active: true };
 
+    /**
+     * Wallet helper
+     * @private
+     */
     @Inject()
-    private wallet: Wallet;
+    private readonly wallet: Wallet;
 
+    /**
+     * Schema
+     * @private
+     */
     private schema: Schema | null;
 
-    constructor() {
-    }
-
+    /**
+     * Get Validators
+     */
     protected getValidators(): IPolicyValidatorBlock[] {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const validators: IPolicyValidatorBlock[] = [];
-        for (let child of ref.children) {
+        for (const child of ref.children) {
             if (child.blockClassName === 'ValidatorBlock') {
                 validators.push(child as IPolicyValidatorBlock);
             }
@@ -62,6 +76,11 @@ export class RequestVcDocumentBlock {
         return validators;
     }
 
+    /**
+     * Validate Documents
+     * @param user
+     * @param state
+     */
     protected async validateDocuments(user: IAuthUser, state: any): Promise<boolean> {
         const validators = this.getValidators();
         for (const validator of validators) {
@@ -74,7 +93,7 @@ export class RequestVcDocumentBlock {
                 sourceId: null,
                 target: null,
                 targetId: null,
-                user: user,
+                user,
                 data: state
             });
             if (!valid) {
@@ -84,6 +103,11 @@ export class RequestVcDocumentBlock {
         return true;
     }
 
+    /**
+     * Change active
+     * @param user
+     * @param active
+     */
     @ActionCallback({
         output: PolicyOutputEventType.RefreshEvent
     })
@@ -102,8 +126,12 @@ export class RequestVcDocumentBlock {
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
     }
 
+    /**
+     * Get active
+     * @param user
+     */
     getActive(user: IAuthUser) {
-        let blockState;
+        let blockState: any;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
             this.state[user.did] = blockState;
@@ -116,27 +144,39 @@ export class RequestVcDocumentBlock {
         return blockState.active;
     }
 
-    async getData(user: IAuthUser): Promise<any> {
-        const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-
+    /**
+     * Get Schema
+     */
+    async getSchema(): Promise<Schema> {
         if (!this.schema) {
+            const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
             const schema = await getMongoRepository(SchemaCollection).findOne({
                 iri: ref.options.schema,
                 topicId: ref.topicId
             });
             this.schema = schema ? new Schema(schema) : null;
+            if (!this.schema) {
+                throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
+            }
         }
-        if (!this.schema) {
-            throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
-        }
+        return this.schema;
+    }
 
+    /**
+     * Get block data
+     * @param user
+     */
+    async getData(user: IAuthUser): Promise<any> {
+        const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+
+        const schema = await this.getSchema();
         const sources = await ref.getSources(user);
 
         return {
             id: ref.uuid,
             blockType: ref.blockType,
-            schema: this.schema,
+            schema,
             presetSchema: options.presetSchema,
             presetFields: options.presetFields,
             uiMetaData: options.uiMetaData || {},
@@ -146,39 +186,57 @@ export class RequestVcDocumentBlock {
         };
     }
 
+    /**
+     * Get Relationships
+     * @param policyId
+     * @param refId
+     */
     async getRelationships(policyId: string, refId: any): Promise<VcDocumentCollection> {
-        if (refId) {
-            let id: string = null;
-            let documentRef: any = null;
-            if (typeof (refId) === 'string') {
-                documentRef = await getMongoRepository(VcDocumentCollection).findOne({
-                    where: {
-                        'policyId': { $eq: policyId },
-                        'document.credentialSubject.id': { $eq: id }
-                    }
-                });
-                id = refId;
-                return documentRef;
-            } else if (typeof (refId) === 'object') {
-                if (refId.id) {
-                    documentRef = await getMongoRepository(VcDocumentCollection).findOne(refId.id);
-                } else {
+        try {
+            if (refId) {
+                let documentRef: any = null;
+                if (typeof (refId) === 'string') {
                     documentRef = await getMongoRepository(VcDocumentCollection).findOne({
                         where: {
                             'policyId': { $eq: policyId },
-                            'document.credentialSubject.id': { $eq: id }
+                            'document.credentialSubject.id': { $eq: refId }
                         }
                     });
+                } else if (typeof (refId) === 'object') {
+                    if (refId.id) {
+                        documentRef = await getMongoRepository(VcDocumentCollection).findOne(refId.id);
+                        if (documentRef && documentRef.policyId !== policyId) {
+                            documentRef = null;
+                        }
+                    } else {
+                        const id = PolicyUtils.getSubjectId(documentRef);
+                        documentRef = await getMongoRepository(VcDocumentCollection).findOne({
+                            where: {
+                                'policyId': { $eq: policyId },
+                                'document.credentialSubject.id': { $eq: id }
+                            }
+                        });
+                    }
                 }
-                id = PolicyUtils.getSubjectId(documentRef);
+                if(!documentRef) {
+                    throw new Error('Invalid relationships');
+                }
                 return documentRef;
+            } else {
+                return null;
             }
-        } else {
-            return null;
+        } catch (error) {
+            const ref = PolicyComponentsUtils.GetBlockRef(this);
+            ref.error(error.message);
+            throw new BlockActionError('Invalid relationships', ref.blockType, ref.uuid);
         }
-        return null;
     }
 
+    /**
+     * Set block data
+     * @param user
+     * @param _data
+     */
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
@@ -205,8 +263,10 @@ export class RequestVcDocumentBlock {
             const documentRef = await this.getRelationships(ref.policyId, _data.ref);
 
             const credentialSubject = document;
-            const schema = ref.options.schema;
+            const schemaIRI = ref.options.schema;
             const idType = ref.options.idType;
+
+            const schema = await this.getSchema();
 
             const id = await this.generateId(idType, user, userHederaAccount, userHederaKey);
             const VCHelper = new VcHelper();
@@ -227,18 +287,20 @@ export class RequestVcDocumentBlock {
             }
 
             const vc = await VCHelper.createVC(user.did, userHederaKey, credentialSubject);
-            const item = {
-                hash: vc.toCredentialHash(),
-                owner: user.did,
-                document: vc.toJsonTree(),
-                schema: schema,
-                type: schema,
-                relationships: null
-            };
-
-            if (documentRef) {
-                item.relationships = [documentRef.messageId];
-            }
+            const accounts = PolicyUtils.getHederaAccounts(vc, userHederaAccount, schema);
+            const item = PolicyUtils.createVCRecord(
+                ref.policyId,
+                ref.tag,
+                null,
+                vc,
+                {
+                    type: schemaIRI,
+                    owner: user.did,
+                    schema: schemaIRI,
+                    accounts
+                },
+                documentRef
+            )
 
             const state = { data: item };
 
@@ -259,14 +321,20 @@ export class RequestVcDocumentBlock {
         return {};
     }
 
+    /**
+     * Generate id
+     * @param idType
+     * @param user
+     * @param userHederaAccount
+     * @param userHederaKey
+     */
     async generateId(idType: string, user: any, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
-            if (idType == 'UUID') {
-                return HederaUtils.randomUUID();
+            if (idType === 'UUID') {
+                return GenerateUUIDv4();
             }
-            if (idType == 'DID') {
-                const ref = PolicyComponentsUtils.GetBlockRef(this);
+            if (idType === 'DID') {
                 const topic = await PolicyUtils.getTopic('root', null, null, ref);
 
                 const didObject = DIDDocument.create(null, topic.topicId);
@@ -283,8 +351,8 @@ export class RequestVcDocumentBlock {
                     .sendMessage(message);
 
                 const doc = getMongoRepository(DidDocumentCollection).create({
-                    did: did,
-                    document: document,
+                    did,
+                    document,
                     status: DidDocumentStatus.CREATE,
                     messageId: messageResult.getId(),
                     topicId: messageResult.getTopicId()
@@ -295,7 +363,7 @@ export class RequestVcDocumentBlock {
                 await this.wallet.setKey(user.walletToken, KeyType.KEY, did, key);
                 return did;
             }
-            if (idType == 'OWNER') {
+            if (idType === 'OWNER') {
                 return user.did;
             }
             return undefined;
@@ -305,6 +373,10 @@ export class RequestVcDocumentBlock {
         }
     }
 
+    /**
+     * Validate block data
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {

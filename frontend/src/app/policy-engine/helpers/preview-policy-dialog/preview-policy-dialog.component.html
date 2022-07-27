@@ -25,6 +25,21 @@
 
                 <div class="delimiter"></div>
 
+                <div *ngIf="policies.length" class="field">
+                    <div class="field-name">Verison of</div>
+                    <div>
+                        <mat-form-field appearance="outline" style="width: 100%">
+                            <mat-label>Policy</mat-label>
+                            <mat-select [(value)]="versionOfTopicId">
+                                <mat-option>None</mat-option>
+                                <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                </div>
+
+                <div class="delimiter"></div>
+
                 <div class="version-container">
                     <div *ngIf="policy.version" class="field field-version">
                         <div class="field-name">Version</div>

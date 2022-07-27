@@ -233,22 +233,108 @@ cd message-broker
 npm run test
 ```
 
+### How to Configure Hedera Local Node:
+
+The following parameters needs to be added in .env / .env.docker file:
+
+1. OPERATOR\_ID: The ID of the operation
+2. OPERATOR\_Key: Private key of the operator\_
+3. LOCALNODE\_ADDRESS : The address of the localnode server. This can be its IP address or a domain name
+4. LOCALNODE\_PROTOCOL : Communication protocol for interactions with the local node, can be http or https.
+5. HEDERA\_NET : Type of the Hedera node to transact.
+
+Example:
+
+```
+OPERATOR_ID="0.0.2"
+OPERATOR_KEY="302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
+LOCALNODE_ADDRESS="11.11.11.11"
+LOCALNODE_PROTOCOL="http"
+HEDERA_NET="localnode"
+```
+
+{% hint style="info" %}
+Note:
+
+1. The above value of the LOCALNODE\_ADDRESS is just for example. User need to add their own IP ADDRESS of their LocalNode instance.
+2. Default value of HEDERA\_NET will be testnet. It should be set to localnode.
+3. The values of OPERATOR\_ID, OPERATOR\_KEY are the ones used in the default LocalNode configuration.
+4. Need to remove INITIALIZATION\_TOPIC\_ID as the topic will be created automatically.
+5. LOCALNODE\_PROTOCOL can be http or https depending on server configuration (http is default)
+{% endhint %}
+
+To setup Local Node instance, please check the link : [https://github.com/hashgraph/hedera-local-node#docker](https://github.com/hashgraph/hedera-local-node#docker)
+
+### Launching the Guardian
+
+Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialise Standard Registry by completing the Setup.
+
+![](<../../.gitbook/assets/image (14) (1).png>)
+
+**Note:** The above fields in UI are mandatory only for this default Schema.
+
+The Format of the Standard Registry Hello World Message is as follows:
+
+```
+{
+	'type': 'Standard Registry',
+	'id': '35c5d340-1a93-475d-9659-818bb77d45df',
+	'did': 'did:hedera:testnet:vzN41A2bMhvYGhg7oCMoo5UAzQ6PCTq4VTQaNPE1uPG;hedera:testnet:tid=0.0.3423402',
+	'action': 'Init',
+	'topicId': '0.0.34234020',
+	'lang': 'en-US',
+    'attributes' : {
+    	'ISIC': '051 062',
+    	'geography' : 'USA CAN EU AUS',
+    	'law': 'USA',
+    	'tags': 'VERRA iREC'
+  }
+}
+```
+
+Where the list of `attributes` is extendable, and all attributes in it are **optional**.&#x20;
+
+#### Standard Registry Message Parameters
+
+| Parameter | Purpose                            | Example                                                        |
+| --------- | ---------------------------------- | -------------------------------------------------------------- |
+| type      | Account Type                       | Standard Registry                                              |
+| id        | Message ID                         | 35c5d340-1a93-475d-9659-818bb77d45df                           |
+| did       | Hedera DID                         | did:hedera:testnet:vzN41A2bMhvYGhg7oCMoo5UAzQ6PCTq4VTQaNPE1uPG |
+| action    | Action Type                        | Init                                                           |
+| topicId   | Standard Registry Message Topic ID | 0.0.34234020                                                   |
+| lang      | Language                           | ENG                                                            |
+| ISIC      | ISIC code                          | 051                                                            |
+| geography | Location                           | USA                                                            |
+| law       | Country Law                        | USA                                                            |
+| tags      | Policy Tags                        | Verra, iREC                                                    |
+
 ### .env Parameters&#x20;
 
-| Parameter                   | Purpose                                                                                                  | Example                                                                                          |
-| --------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| MQ\_ADDRESS                 | Web Socket Address                                                                                       | localhost                                                                                        |
-| SERVICE\_CHANNEL            | Version of the Guardian                                                                                  | guardian.1                                                                                       |
-| DB\_HOST                    | Hostname of the Database                                                                                 | localhost                                                                                        |
-| DB\_DATABASE                | Database Name                                                                                            | guardian\_db                                                                                     |
-| MAX\__TRANSACTION\_FEE_     | Maximum Transaction Fees Value                                                                           | 10                                                                                               |
-| INITIAL\_BALANCE            | Initial Balance Value                                                                                    | 500                                                                                              |
-| OPERATOR\_ID                | Operator ID of Hedera Testnet                                                                            | 0.0.29676495                                                                                     |
-| OPERATOR\_KEY               | Operator Key of Hedera Testnet                                                                           | 302e020100300506032b657004220420dcb89b3fcb576879ee2df40ecd0404244c74d0e75fbad5d8f327805361c2c92e |
-| HEDERA\_NET                 | Hedera Network name                                                                                      | testnet                                                                                          |
-| INITIALIZATION\__TOPIC\_ID_ | ID of the topic where the Initialisation message is posted every time a new Standard Registry is created | 0.0.46022543                                                                                     |
-| MESSAGE\_LANG               | Language of the message text of all messages                                                             | en-US                                                                                            |
-| LOG\_LEVEL                  | level of the Logs                                                                                        | 2                                                                                                |
+| Parameter                              | Purpose                                                                            | Example                                                                                          |
+| -------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| MQ\_ADDRESS                            | Web Socket Address                                                                 | localhost                                                                                        |
+| SERVICE\_CHANNEL                       | Version of the Guardian                                                            | guardian.1                                                                                       |
+| DB\_HOST                               | Hostname of the Database                                                           | localhost                                                                                        |
+| DB\_DATABASE                           | Database Name                                                                      | guardian\_db                                                                                     |
+| MAX\__TRANSACTION\_FEE_                | Maximum Transaction Fees Value                                                     | 10                                                                                               |
+| INITIAL\_BALANCE                       | Initial Balance Value                                                              | 500                                                                                              |
+| INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                                                                                              |
+| OPERATOR\_ID                           | The ID of the operation                                                            | 0.0.29676495                                                                                     |
+| OPERATOR\_KEY                          | Private key of the operator                                                        | 302e020100300506032b657004220420dcb89b3fcb576879ee2df40ecd0404244c74d0e75fbad5d8f327805361c2c92e |
+| LOCANNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                                                                                          |
+| LOCANNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                                                                                       |
+| HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet                                                                      |
+| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialisation topic.                                                | 0.0.46022543                                                                                     |
+| MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                                                                                            |
+| LOG\_LEVEL                             | level of the Logs                                                                  | 2                                                                                                |
+
+{% hint style="info" %}
+**Note:**
+
+1. To configure LocalNode, please change the value of LOCALNODE\_ADDRESS
+2. If HEDERA\_\_NET option is set to localnode, INITIALIZATION\_\_TOPIC\_ID can be empty in which case the topic will be created automatically.
+{% endhint %}
 
 ### Summary of URLs and Ports
 
@@ -260,7 +346,7 @@ npm run test
 | API\_GATEWAY   | [http://localhost:3000/api/v1/](http://localhost:3000/api/v1/)             |
 | MRV\_SENDER    | [http://localhost:3000/mrv-sender/](http://localhost:3000/mrv-sender/)     |
 | TOPIC\_VIEWER  | [http://localhost:3000/topic-viewer/](http://localhost:3000/topic-viewer/) |
-| API\_DOCS      | [http://localhost:3000/api-docs/v1/](ttp://localhost:3000/api-docs/v1/)    |
+| API\_DOCS      | [http://localhost:3000/api-docs/v1/](http://localhost:3000/api-docs/v1/)   |
 
 #### Not in Docker:
 
@@ -271,4 +357,3 @@ npm run test
 | MRV\_SENDER    | [http://localhost:3005/](http://localhost:3005/) |
 | TOPIC\_VIEWER  | [http://localhost:3006/](http://localhost:3006/) |
 | API\_DOCS      | [http://localhost:3001/](http://localhost:3001/) |
-

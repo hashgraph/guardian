@@ -1,5 +1,5 @@
 import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
@@ -27,14 +27,17 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class SetRelationshipsBlock {
-    
+    /**
+     * Run block action
+     * @param event
+     */
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent]
     })
     async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-        let data: any[] = await ref.getSources(event.user);
-        let relationships = [];
+        const data: any[] = await ref.getSources(event.user);
+        const relationships = [];
         for (const doc of data) {
             if (doc.messageId && !relationships.includes(doc.messageId)) {
                 relationships.push(doc.messageId);

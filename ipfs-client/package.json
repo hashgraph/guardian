@@ -4,8 +4,8 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.2.1",
-    "@guardian/interfaces": "^2.2.1",
+    "@guardian/common": "^2.3.0",
+    "@guardian/interfaces": "^2.3.0",
     "@web-std/fetch": "3.0.0",
     "axios": "^0.26.1",
     "axios-retry": "^3.2.4",
@@ -37,14 +37,14 @@
   "main": "dist/index.js",
   "name": "ipfs-client",
   "scripts": {
-    "watch": "nodemon src/index.ts",
     "build": "tsc",
     "debug": "nodemon dist/index.js",
-    "dev:docker": "npm run build && nodemon .",
     "dev": "tsc -w",
-    "lint": "tslint --project .",
+    "dev:docker": "npm run build && nodemon .",
+    "lint": "tslint --config ../tslint.json --project .",
     "start": "node dist/index.js",
-    "test": "mocha tests/**/*.test.js  --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ipfs-client.xml"
+    "test": "mocha tests/**/*.test.js  --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ipfs-client.xml",
+    "watch": "nodemon src/index.ts"
   },
-  "version": "2.2.1"
+  "version": "2.3.0"
 }

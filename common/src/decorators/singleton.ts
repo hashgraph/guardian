@@ -1,12 +1,17 @@
 const SINGLETON_KEY = Symbol();
 
+/**
+ * Singleton class type
+ */
 type Singleton<T extends new (...args: any[]) => any> = T & {
+    /**
+     * Symbol property that keep class instance
+     */
     [SINGLETON_KEY]: T extends new (...args: any[]) => infer I ? I : never
 };
 
 /**
- * Sungleton class decorator
- * @param constructor
+ * Singleton class decorator
  */
 export const Singleton = <T extends new (...args: any[]) => any>(constructor: T) =>
     new Proxy(constructor, {

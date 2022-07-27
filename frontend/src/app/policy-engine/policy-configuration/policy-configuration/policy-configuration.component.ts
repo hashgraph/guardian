@@ -3,7 +3,7 @@ import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 import { SchemaService } from 'src/app/services/schema.service';
 import { Schema, SchemaHelper, SchemaStatus, Token } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { TokenService } from 'src/app/services/token.service';
@@ -17,6 +17,7 @@ import { EventsOverview } from '../../helpers/events-overview/events-overview';
 import { PolicyBlockModel, PolicyModel } from '../../policy-model';
 import { PolicyStorage } from '../../policy-storage';
 import { TreeFlatOverview } from '../../helpers/tree-flat-overview/tree-flat-overview';
+import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
 
 
 /**
@@ -97,6 +98,10 @@ export class PolicyConfigurationComponent implements OnInit {
         this.newBlockType = 'interfaceContainerBlock';
         this.policyModel = new PolicyModel();
         this.policyStorage = new PolicyStorage(localStorage);
+    }
+
+    private get hasChanges() {
+        return this.policyStorage.isUndo;
     }
 
     ngOnInit() {
@@ -390,19 +395,44 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public savePolicy() {
-        this.chanceView('blocks');
-        const root = this.policyModel.getJSON();
-        if (root) {
-            this.loading = true;
-            this.policyEngineService.update(this.policyId, root).subscribe((policy) => {
-                this.setPolicy(policy);
-                this.clearState();
-                this.loading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
+        this.doSavePolicy().subscribe();
+    }
+
+    public tryPublishPolicy() {
+        if (this.hasChanges) {
+            const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
+                width: '500px',
+                autoFocus: false,
             });
+            dialogRef.afterClosed().subscribe((result) => {
+                if (result) {
+                    this.doSavePolicy().subscribe(() => {
+                        this.setVersion();
+                    });
+                }
+            });
+        } else {
+            this.setVersion();
         }
+    }
+
+    private doSavePolicy(): Observable<void> {
+        return new Observable<void>(subscriber => {
+            this.chanceView('blocks');
+            const root = this.policyModel.getJSON();
+            if (root) {
+                this.loading = true;
+                this.policyEngineService.update(this.policyId, root).subscribe((policy) => {
+                    this.setPolicy(policy);
+                    this.clearState();
+                    this.loading = false;
+                    subscriber.next();
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
+        });
     }
 
     public setVersion() {

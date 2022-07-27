@@ -1,4 +1,6 @@
-
+/**
+ * Message type
+ */
 export enum MessageType {
     VCDocument = 'VC-Document',
     VPDocument = 'VP-Document',

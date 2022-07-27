@@ -1,12 +1,15 @@
 import { DataSourceAddon } from '@policy-engine/helpers/decorators/data-source-addon';
-import { IAuthUser } from '@auth/auth.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { BlockActionError } from '@policy-engine/errors';
 import { findOptions } from '@policy-engine/helpers/find-options';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { IAuthUser } from '@guardian/common';
 
+/**
+ * Filters addon
+ */
 @DataSourceAddon({
     blockType: 'filtersAddon',
     about: {
@@ -22,15 +25,23 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class FiltersAddonBlock {
-    private state: { [key: string]: any } = {
+    /**
+     * Block state
+     * @private
+     */
+    private readonly state: { [key: string]: any } = {
         lastData: null,
         lastValue: null
     };
 
+    /**
+     * Get filters
+     * @param user
+     */
     public getFilters(user: IAuthUser): { [key: string]: string } {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const filters = ref.filters[user.did] || {};
-        if (ref.options.type == 'dropdown') {
+        if (ref.options.type === 'dropdown') {
             if (!filters[ref.options.field] && !ref.options.canBeEmpty) {
                 filters[ref.options.field] = '';
             }
@@ -38,10 +49,14 @@ export class FiltersAddonBlock {
         return filters;
     }
 
+    /**
+     * Get block data
+     * @param user
+     */
     async getData(user: IAuthUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
-        let block: any = {
+        const block: any = {
             id: ref.uuid,
             blockType: 'filtersAddon',
             type: ref.options.type,
@@ -49,9 +64,9 @@ export class FiltersAddonBlock {
             canBeEmpty: ref.options.canBeEmpty
         };
 
-        let data: any[] = await ref.getSources(user, null);
+        const data: any[] = await ref.getSources(user, null);
 
-        if (ref.options.type == 'dropdown') {
+        if (ref.options.type === 'dropdown') {
             const blockState = this.state[user.did] || {};
             blockState.lastData = data.map((e) => {
                 return {
@@ -69,19 +84,24 @@ export class FiltersAddonBlock {
         return block;
     }
 
+    /**
+     * Set block data
+     * @param user
+     * @param data
+     */
     async setData(user: IAuthUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const filter: any = {};
         if (!data) {
             throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
         }
-        if (ref.options.type == 'dropdown') {
+        if (ref.options.type === 'dropdown') {
             const value = data.filterValue;
             const blockState = this.state[user.did] || {};
             if (!blockState.lastData) {
                 await this.getData(user);
             }
-            const selectItem = blockState.lastData.find((e: any) => e.value == value);
+            const selectItem = blockState.lastData.find((e: any) => e.value === value);
             if (selectItem) {
                 filter[ref.options.field] = selectItem.value;
             } else if (!ref.options.canBeEmpty) {
@@ -93,6 +113,10 @@ export class FiltersAddonBlock {
         ref.setFilters(filter, user);
     }
 
+    /**
+     * Validate block options
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {

@@ -6,6 +6,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { global } from '@angular/compiler/src/util';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 /**
  * Component for display block of 'requestVcDocument' types.
@@ -46,6 +47,7 @@ export class RequestDocumentBlockComponent implements OnInit {
 
     constructor(
         private policyEngineService: PolicyEngineService,
+        private wsService: WebSocketService,
         private profile: ProfileService,
         private policyHelper: PolicyHelper,
         private fb: FormBuilder,
@@ -57,7 +59,7 @@ export class RequestDocumentBlockComponent implements OnInit {
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.policyEngineService.subscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
         this.profile.getProfile()
             .subscribe((user: IUser) => {

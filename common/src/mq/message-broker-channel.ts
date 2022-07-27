@@ -5,9 +5,20 @@ import * as zlib from 'zlib';
 
 const MQ_TIMEOUT = +process.env.MQ_TIMEOUT || 300000;
 
+/**
+ * Message broker channel
+ */
 export class MessageBrokerChannel {
-    constructor(private channel: NatsConnection, public channelName: string) { }
+    constructor(
+        private readonly channel: NatsConnection,
+        public channelName: string
+    ) { }
 
+    /**
+     * Get target
+     * @param eventType
+     * @private
+     */
     private getTarget(eventType: string) {
         if (eventType.includes(this.channelName) || eventType.includes('*')) {
             return eventType;
@@ -23,8 +34,8 @@ export class MessageBrokerChannel {
         const target = this.getTarget(eventType);
         console.log('MQ subscribed: %s', target);
         const sub = this.channel.subscribe(target, { queue: process.env.SERVICE_CHANNEL });
-        const fn = async (sub: Subscription) => {
-            for await (const m of sub) {
+        const fn = async (_sub: Subscription) => {
+            for await (const m of _sub) {
                 let responseMessage: IMessageResponse<TResponse>;
                 try {
                     responseMessage = await handleFunc(JSON.parse(StringCodec().decode(m.data)));
@@ -84,9 +95,9 @@ export class MessageBrokerChannel {
 
     /**
      * Publish message to all Nats client subscribers
-     * @param eventType 
-     * @param data 
-     * @param allowError 
+     * @param eventType
+     * @param data
+     * @param allowError
      */
     public publish<T>(eventType: string, data: T, allowError = true) {
         try {
@@ -101,6 +112,7 @@ export class MessageBrokerChannel {
             }
         }
     }
+
     /**
      * Create the Nats MQ connection
      * @param connectionName

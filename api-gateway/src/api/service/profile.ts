@@ -1,10 +1,15 @@
-import { AuthenticatedRequest } from '@auth/auth.interface';
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Request, Response, Router } from 'express';
-import { DidDocumentStatus, IUser, SchemaEntity, TopicType, UserRole } from '@guardian/interfaces';
-import { Logger } from '@guardian/common';
+import {
+    DidDocumentStatus,
+    IUser,
+    SchemaEntity,
+    TopicType,
+    UserRole
+} from '@guardian/interfaces';
+import { AuthenticatedRequest, Logger } from '@guardian/common';
 
 /**
  * User profile route
@@ -65,13 +70,13 @@ profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) =
             did: user.did,
             parent: user.parent,
             hederaAccountId: user.hederaAccountId,
-            confirmed: !!(didDocument && didDocument.status == DidDocumentStatus.CREATE),
-            failed: !!(didDocument && didDocument.status == DidDocumentStatus.FAILED),
+            confirmed: !!(didDocument && didDocument.status === DidDocumentStatus.CREATE),
+            failed: !!(didDocument && didDocument.status === DidDocumentStatus.FAILED),
             hederaAccountKey: null,
             topicId: topic?.topicId,
             parentTopicId: topic?.parent,
-            didDocument: didDocument,
-            vcDocument: vcDocument
+            didDocument,
+            vcDocument
         };
         res.json(result);
     } catch (error) {
@@ -108,7 +113,7 @@ profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) =
         }
 
         await users.updateCurrentUser(req, {
-            did: did,
+            did,
             parent: profile.parent,
             hederaAccountId: profile.hederaAccountId
         });

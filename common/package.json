@@ -1,14 +1,18 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/interfaces": "^2.2.1",
+    "@guardian/interfaces": "^2.3.0",
+    "express": "^4.17.1",
     "nats": "^2.6.1",
     "reflect-metadata": "^0.1.13",
+    "winston": "^3.8.1",
+    "ws": "^8.2.1",
     "zlib": "^1.0.5"
   },
   "description": "Common package share cross all services",
   "devDependencies": {
     "@types/node": "^17.0.13",
+    "@types/winston": "^2.4.4",
     "mocha-junit-reporter": "^2.0.2",
     "tslint": "^6.1.3",
     "typescript": "^4.5.5"
@@ -23,9 +27,9 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
-    "lint": "tslint --project .",
+    "lint": "tslint --config ../tslint.json --project .",
     "prepare": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "2.2.1"
+  "version": "2.3.0"
 }

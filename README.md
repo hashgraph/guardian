@@ -25,7 +25,7 @@ To get a local copy up and running, follow these simple example steps. When buil
 * [Hedera Testnet Account](https://portal.hedera.com)
 * [NFT.Storage Account](https://nft.storage/#getting-started)
 
-#### Installation
+#### Docker Installation
 
 1. Clone the repo
 
@@ -71,10 +71,28 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
    docker-compose up -d --build
    ```
+### To Configure Hedera LocalNode
+Need to add following parameters in `.env/.env.docker`:
+ ```
+  OPERATOR_ID="0.0.2"
+  OPERATOR_KEY="302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
+  LOCALNODE_ADDRESS="11.11.11.11"
+  LOCALNODE_PROTOCOL="http"
+  HEDERA_NET="localnode"
+  ``` 
+   Note: 
+   1. LOCALNODE_ADDRESS to be changed to your own instance IP Address.The above given value is just shown for an example.
+   2. Default value of HEDERA_NET will be testnet. It should be set to localnode.
+   3. The values of OPERATOR_ID, OPERATOR_KEY are the ones used in the default LocalNode configuration.
+   4. Need to remove INITIALIZATION_TOPIC_ID as the topic will be created automatically. 
+   5. LOCALNODE_PROTOCOL can be http or https depending on server configuration (http is default)
    
-5. If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
+To setup Local Node instance, please check the link : https://github.com/hashgraph/hedera-local-node#docker   
+#### Manual Installation   
+   
+If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
-   **From the interfaces folder**
+  1. **From the interfaces folder**
 
    Build package
    ```sh
@@ -83,7 +101,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    ```
 
 
-  **From the common folder**
+  2. **From the common folder**
 
   Build package
   ```sh
@@ -91,9 +109,7 @@ To get a local copy up and running, follow these simple example steps. When buil
   npm run build
   ```
 
-   ```
-
-   **From the Logger service folder**
+   3. **From the Logger service folder**
 
    To build the service:
 
@@ -108,7 +124,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm start
    ```
 
-   **From the Auth service folder**
+   4. **From the Auth service folder**
 
    To build the service:
 
@@ -123,7 +139,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm start
    ```
 
-   **From the IPFS Client folder**
+   5. **From the IPFS Client folder**
 
    To build the service:
 
@@ -138,7 +154,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm start
    ```
  
-   **From the Guardian Service folder**
+   6. **From the Guardian Service folder**
 
    To build the service:
 
@@ -153,7 +169,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm start
    ```
 
-   **From the API Gateway Service folder**
+   7. **From the API Gateway Service folder**
 
    To build the service:
 
@@ -168,7 +184,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm start
    ```
 
-   **From the MRV Sender Service folder**
+   8. **From the MRV Sender Service folder**
 
    To build the service:
 
@@ -183,7 +199,7 @@ To get a local copy up and running, follow these simple example steps. When buil
    npm start
    ```
 
-   **From the Frontend folder**
+   9. **From the Frontend folder**
 
    To build the service:
 
@@ -201,14 +217,14 @@ To get a local copy up and running, follow these simple example steps. When buil
   
   ### Local development using docker
   1. create .env file at the root level and update all variable requires for docker
-  ```sh
-      cp .env.example .env
-  ```
+     ```sh
+        cp .env.example .env
+     ```
   2. Start local development using docker compose
-  ```
-   docker-compose -f docker-compose-dev.yml up --build
+     ```
+      docker-compose -f docker-compose-dev.yml up --build
 
-  ```
+     ```
   3. Access local development using http://localhost:3000 or http://localhost:4200
 
   ### Troubleshoot 

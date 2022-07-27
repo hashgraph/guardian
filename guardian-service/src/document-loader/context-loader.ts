@@ -1,5 +1,5 @@
 import { Schema } from '@entity/schema';
-import { getMongoRepository, MongoRepository } from 'typeorm';
+import { getMongoRepository } from 'typeorm';
 import { ISchema } from '@guardian/interfaces';
 import { DocumentLoader, IDocumentFormat } from '@hedera-modules';
 
@@ -8,6 +8,10 @@ import { DocumentLoader, IDocumentFormat } from '@hedera-modules';
  * Used for schema validation.
  */
 export class ContextDocumentLoader extends DocumentLoader {
+    /**
+     * Context
+     * @private
+     */
     private readonly context: string;
 
     constructor(
@@ -17,10 +21,18 @@ export class ContextDocumentLoader extends DocumentLoader {
         this.context = context;
     }
 
+    /**
+     * Hs context
+     * @param iri
+     */
     public async has(iri: string): Promise<boolean> {
         return iri && iri.startsWith(this.context);
     }
 
+    /**
+     * Get document format
+     * @param iri
+     */
     public async get(iri: string): Promise<IDocumentFormat> {
         if (iri && iri.startsWith(this.context)) {
             return {
@@ -31,6 +43,10 @@ export class ContextDocumentLoader extends DocumentLoader {
         throw new Error('IRI not found');
     }
 
+    /**
+     * Get document
+     * @param iri
+     */
     public async getDocument(iri: string): Promise<any> {
         const schema = await this.loadSchemaContext(iri);
         if (!schema) {
@@ -43,6 +59,11 @@ export class ContextDocumentLoader extends DocumentLoader {
         return document;
     }
 
+    /**
+     * Load schema context
+     * @param context
+     * @private
+     */
     private async loadSchemaContext(context: string): Promise<ISchema> {
         try {
             if (!context) {

@@ -8,12 +8,16 @@ import {
 } from '@guardian/interfaces';
 import { MongoRepository } from 'typeorm';
 import {
-    VcDocument as HVcDocument,
     VpDocument as HVpDocument
 } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 
+/**
+ * Get field
+ * @param vcDocument
+ * @param name
+ */
 function getField(vcDocument: VcDocument | VpDocument, name: string): any {
     if (
         vcDocument &&
@@ -26,6 +30,10 @@ function getField(vcDocument: VcDocument | VpDocument, name: string): any {
     return null;
 }
 
+/**
+ * Get issuer
+ * @param vcDocument
+ */
 function getIssuer(vcDocument: VcDocument | VpDocument): string {
     if (vcDocument && vcDocument.document) {
         return vcDocument.document.issuer;
@@ -33,9 +41,14 @@ function getIssuer(vcDocument: VcDocument | VpDocument): string {
     return null;
 }
 
+/**
+ * Check policy
+ * @param vcDocument
+ * @param policyId
+ */
 function checkPolicy(vcDocument: VcDocument, policyId: string) {
     if (vcDocument) {
-        if (!vcDocument.policyId || vcDocument.policyId == policyId) {
+        if (!vcDocument.policyId || vcDocument.policyId === policyId) {
             return true;
         }
     }
@@ -50,7 +63,7 @@ function checkPolicy(vcDocument: VcDocument, policyId: string) {
  * @param vcDocumentRepository - table with VC Documents
  * @param vpDocumentRepository - table with VP Documents
  */
-export const trustChainAPI = async function (
+export async function trustChainAPI(
     channel: MessageBrokerChannel,
     didDocumentRepository: MongoRepository<DidDocument>,
     vcDocumentRepository: MongoRepository<VcDocument>,
@@ -64,7 +77,7 @@ export const trustChainAPI = async function (
      * @param {Object} map - ids map
      * @param {string} policyId - policy Id
      */
-    async function getParents(chain: IChainItem[], vc: VcDocument | VpDocument, map: any, policyId: any) {
+    const getParents = async (chain: IChainItem[], vc: VcDocument | VpDocument, map: any, policyId: any): Promise<void> => {
         if (!vc) {
             return;
         }
@@ -84,7 +97,7 @@ export const trustChainAPI = async function (
             document: vc.document,
             entity: vc.type,
             owner: vc.owner,
-            schema: schema,
+            schema,
             tag: vc.tag,
             label: 'HASH'
         });
@@ -109,7 +122,7 @@ export const trustChainAPI = async function (
         });
 
         if (policyId) {
-            parents = parents.filter(vc => checkPolicy(vc, policyId));
+            parents = parents.filter(_vc => checkPolicy(_vc, policyId));
         }
 
         const parent = parents[0];
@@ -124,7 +137,7 @@ export const trustChainAPI = async function (
      * @param {IChainItem[]} chain - current trust chain
      * @param {string} policyId - policy Id
      */
-    async function getPolicyInfo(chain: IChainItem[], policyId: any) {
+    const getPolicyInfo = async (chain: IChainItem[], policyId: any): Promise<void> => {
         if (policyId) {
             let issuer: string;
 
@@ -152,7 +165,7 @@ export const trustChainAPI = async function (
                     schema: getField(policyCreated, 'type'),
                     label: 'HASH',
                     entity: 'Policy',
-                    tag: "Policy Created"
+                    tag: 'Policy Created'
                 });
             } else if (policyImported) {
                 issuer = getIssuer(policyImported);
@@ -164,7 +177,7 @@ export const trustChainAPI = async function (
                     schema: getField(policyImported, 'type'),
                     label: 'HASH',
                     entity: 'Policy',
-                    tag: "Policy Imported"
+                    tag: 'Policy Imported'
                 });
             }
 
@@ -188,7 +201,7 @@ export const trustChainAPI = async function (
                         tag: null
                     });
                 }
-                for (let standardRegistry of standardRegistries) {
+                for (const standardRegistry of standardRegistries) {
                     chain.push({
                         type: 'VC',
                         id: standardRegistry.hash,
@@ -197,7 +210,7 @@ export const trustChainAPI = async function (
                         schema: getField(standardRegistry, 'type'),
                         label: 'HASH',
                         entity: 'StandardRegistry',
-                        tag: "Account Creation"
+                        tag: 'Account Creation'
                     });
                 }
             }
@@ -217,7 +230,7 @@ export const trustChainAPI = async function (
             const chain: IChainItem[] = [];
             let root: VcDocument | VpDocument;
 
-            root = await vcDocumentRepository.findOne({ hash: hash });
+            root = await vcDocumentRepository.findOne({ hash });
             if (root) {
                 const policyId = root.policyId;
                 await getParents(chain, root, {}, policyId);
@@ -225,7 +238,7 @@ export const trustChainAPI = async function (
                 return new MessageResponse(chain);
             }
 
-            root = await vpDocumentRepository.findOne({ hash: hash });
+            root = await vpDocumentRepository.findOne({ hash });
             if (root) {
                 const policyId = root.policyId;
                 chain.push({

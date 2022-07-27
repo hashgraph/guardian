@@ -1,13 +1,28 @@
-import { Singleton } from "../decorators/singleton";
-import { MessageBrokerChannel } from "../mq";
-import { ApplicationStates, MessageAPI } from "@guardian/interfaces";
-import { MessageResponse, MessageError } from "../models/message-response";
+import { Singleton } from '../decorators/singleton';
+import { MessageBrokerChannel } from '../mq';
+import { ApplicationStates, MessageAPI } from '@guardian/interfaces';
+import { MessageResponse, MessageError } from '../models/message-response';
 
+/**
+ * Application state container
+ */
 @Singleton
 export class ApplicationState {
+    /**
+     * Message broker channel
+     * @private
+     */
     private channel: MessageBrokerChannel;
+    /**
+     * Current state
+     * @private
+     */
     private state: ApplicationStates;
-    private serviceName: string;
+    /**
+     * Service name
+     * @private
+     */
+    private readonly serviceName: string;
 
     /**
      * Register channel
@@ -36,10 +51,17 @@ export class ApplicationState {
         this.serviceName = serviceName;
     }
 
+    /**
+     * Get current state
+     */
     public getState(): ApplicationStates {
         return this.state;
     }
 
+    /**
+     * Update current state
+     * @param state
+     */
     public async updateState(state: ApplicationStates): Promise<void> {
         this.state = state;
         if (this.serviceName) {

@@ -1,13 +1,11 @@
 import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus, TopicType } from '@guardian/interfaces';
+import { DocumentStatus } from '@guardian/interfaces';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { PolicyComponentsUtils } from '../policy-components-utils';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
-import { IAuthUser } from '@auth/auth.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';
@@ -15,7 +13,11 @@ import { ApprovalDocument } from '@entity/approval-document';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { IAuthUser } from '@guardian/common';
 
+/**
+ * Send to guardian
+ */
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
     commonBlock: true,
@@ -38,13 +40,15 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class SendToGuardianBlock {
+    /**
+     * Users helper
+     * @private
+     */
     @Inject()
-    private wallet: Wallet;
-
-    @Inject()
-    private users: Users;
+    private readonly users: Users;
 
     /**
+     * Send by type
      * @deprecated 2022-08-04
      */
     async sendByType(document: any, currentUser: IAuthUser, ref: AnyBlockType) {
@@ -52,19 +56,13 @@ export class SendToGuardianBlock {
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                const doc: any = {
-                    hash: vc.toCredentialHash(),
-                    owner: document.owner,
-                    assign: document.assign,
-                    option: document.option,
-                    schema: document.schema,
-                    hederaStatus: document.hederaStatus || DocumentStatus.NEW,
-                    signature: document.signature || DocumentSignature.NEW,
-                    type: ref.options.entityType,
-                    policyId: ref.policyId,
-                    tag: ref.tag,
-                    document: vc.toJsonTree()
-                };
+                const doc: any = PolicyUtils.createVCRecord(
+                    ref.policyId,
+                    ref.tag,
+                    ref.options.entityType,
+                    vc,
+                    document
+                );
                 result = await PolicyUtils.updateVCRecord(doc);
                 break;
             }
@@ -101,6 +99,12 @@ export class SendToGuardianBlock {
         return result;
     }
 
+    /**
+     * Send document
+     * @param document
+     * @param currentUser
+     * @param ref
+     */
     async send(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
         const { dataSource } = ref.options;
 
@@ -121,9 +125,15 @@ export class SendToGuardianBlock {
         return result;
     }
 
+    /**
+     * Send to database
+     * @param document
+     * @param currentUser
+     * @param ref
+     */
     async sendToDatabase(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
         let { documentType } = ref.options;
-        if (documentType === 'document')  {
+        if (documentType === 'document') {
             const doc = document?.document;
             if (doc && doc.verificationMethod) {
                 documentType = 'did';
@@ -137,23 +147,13 @@ export class SendToGuardianBlock {
         switch (documentType) {
             case 'vc': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                const doc: any = {
-                    policyId: ref.policyId,
-                    tag: ref.tag,
-                    type: ref.options.entityType || document.type,
-                    hash: vc.toCredentialHash(),
-                    document: vc.toJsonTree(),
-                    owner: document.owner,
-                    assign: document.assign,
-                    option: document.option,
-                    schema: document.schema,
-                    hederaStatus: document.hederaStatus || DocumentStatus.NEW,
-                    signature: document.signature || DocumentSignature.NEW,
-                    messageId: document.messageId || null,
-                    topicId: document.topicId || null,
-                    relationships: document.relationships || [],
-                    comment: document.comment
-                };
+                const doc: any = PolicyUtils.createVCRecord(
+                    ref.policyId,
+                    ref.tag,
+                    ref.options.entityType,
+                    vc,
+                    document
+                );
                 return await PolicyUtils.updateVCRecord(doc);
             }
             case 'did': {
@@ -167,21 +167,27 @@ export class SendToGuardianBlock {
         }
     }
 
+    /**
+     * Send to hedera
+     * @param document
+     * @param currentUser
+     * @param ref
+     */
     async sendToHedera(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
         try {
             const root = await this.users.getHederaAccount(ref.policyOwner);
             const user = await this.users.getHederaAccount(document.owner);
 
             let topicOwner = user;
-            if (ref.options.topicOwner == 'user') {
+            if (ref.options.topicOwner === 'user') {
                 topicOwner = await this.users.getHederaAccount(currentUser.did);
-            } else if (ref.options.topicOwner == 'issuer') {
+            } else if (ref.options.topicOwner === 'issuer') {
                 topicOwner = await this.users.getHederaAccount(document.document.issuer);
             } else {
                 topicOwner = user;
             }
             if (!topicOwner) {
-                throw `Topic owner not found`;
+                throw new Error(`Topic owner not found`);
             }
 
             const topic = await PolicyUtils.getTopic(ref.options.topic, root, topicOwner, ref);
@@ -203,6 +209,11 @@ export class SendToGuardianBlock {
         }
     }
 
+    /**
+     * Document sender
+     * @param document
+     * @param user
+     */
     async documentSender(document: any, user: IAuthUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
@@ -216,8 +227,7 @@ export class SendToGuardianBlock {
         }
         if (ref.options.options) {
             document.option = document.option || {};
-            for (let index = 0; index < ref.options.options.length; index++) {
-                const option = ref.options.options[index];
+            for (const option of ref.options.options) {
                 document.option[option.name] = option.value;
             }
         }
@@ -234,6 +244,7 @@ export class SendToGuardianBlock {
     }
 
     /**
+     * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
@@ -248,7 +259,7 @@ export class SendToGuardianBlock {
         const docs: any | any[] = event.data.data;
         if (Array.isArray(docs)) {
             const newDocs = [];
-            for (let doc of docs) {
+            for (const doc of docs) {
                 const newDoc = await this.documentSender(doc, event.user);
                 newDocs.push(newDoc);
             }
@@ -261,6 +272,10 @@ export class SendToGuardianBlock {
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
     }
 
+    /**
+     * Validate block data
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
@@ -270,15 +285,15 @@ export class SendToGuardianBlock {
                 }
             }
 
-            if (ref.options.dataSource == 'database') {
+            if (ref.options.dataSource === 'database') {
                 if (!['vc', 'did', 'vp', 'document'].find(item => item === ref.options.documentType)) {
                     resultsContainer.addBlockError(ref.uuid, 'Option "documentType" must be one of vc, did, vp');
                 }
             }
-            if (ref.options.dataSource == 'hedera') {
+            if (ref.options.dataSource === 'hedera') {
                 if (ref.options.topic && ref.options.topic !== 'root') {
                     const policyTopics = ref.policyInstance.policyTopics || [];
-                    const config = policyTopics.find(e => e.name == ref.options.topic);
+                    const config = policyTopics.find(e => e.name === ref.options.topic);
                     if (!config) {
                         resultsContainer.addBlockError(ref.uuid, `Topic "${ref.options.topic}" does not exist`);
                     }

@@ -53,23 +53,23 @@ Promise.all([
     // Check configuration
     if (!process.env.OPERATOR_ID || process.env.OPERATOR_ID.length < 5) {
         await new Logger().error('You need to fill OPERATOR_ID field in .env file', ['GUARDIAN_SERVICE']);
-        throw ('You need to fill OPERATOR_ID field in .env file');
+        throw new Error('You need to fill OPERATOR_ID field in .env file');
     }
     if (!process.env.OPERATOR_KEY || process.env.OPERATOR_KEY.length < 5) {
         await new Logger().error('You need to fill OPERATOR_KEY field in .env file', ['GUARDIAN_SERVICE']);
-        throw ('You need to fill OPERATOR_KEY field in .env file');
+        throw new Error('You need to fill OPERATOR_KEY field in .env file');
     }
     try {
         AccountId.fromString(process.env.OPERATOR_ID);
     } catch (error) {
         await new Logger().error('OPERATOR_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        throw ('OPERATOR_ID field in .env file: ' + error.message);
+        throw new Error('OPERATOR_ID field in .env file: ' + error.message);
     }
     try {
         PrivateKey.fromString(process.env.OPERATOR_KEY);
     } catch (error) {
         await new Logger().error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        throw ('OPERATOR_KEY field in .env file: ' + error.message);
+        throw new Error('OPERATOR_KEY field in .env file: ' + error.message);
     }
     try {
         if (process.env.INITIALIZATION_TOPIC_ID) {
@@ -77,7 +77,7 @@ Promise.all([
         }
     } catch (error) {
         await new Logger().error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        throw ('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message);
+        throw new Error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message);
     }
     try {
         if (process.env.INITIALIZATION_TOPIC_KEY) {
@@ -85,11 +85,14 @@ Promise.all([
         }
     } catch (error) {
         await new Logger().error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        throw ('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message);
+        throw new Error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message);
     }
+
     /////////////
     await state.updateState(ApplicationStates.STARTED);
 
+    Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
+    Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
     TransactionLogger.setLogLevel(process.env.LOG_LEVEL as TransactionLogLvl);
@@ -102,13 +105,21 @@ Promise.all([
             name,
             ...attr
         ]
-        if (types[1] == 'ERROR') {
+        if (types[1] === 'ERROR') {
             log.error(name, attributes, 4);
         } else {
             log.info(name, attributes, 4);
         }
     });
     HederaSDKHelper.setTransactionResponseCallback(updateUserBalance(channel));
+
+    if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
+        const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);
+        const topicId = await client.newTopic(process.env.OPERATOR_KEY);
+
+        console.log(topicId);
+        process.env.INITIALIZATION_TOPIC_ID = topicId;
+    }
 
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);

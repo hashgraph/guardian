@@ -1,29 +1,78 @@
 import { Message } from './message';
-import { IURL, UrlType } from './url.interface';
+import { IURL } from './url.interface';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
-import { MessageBody, TopicMessageBody } from './message-body.interface';
+import { TopicMessageBody } from './message-body.interface';
 
+/**
+ * Topic message
+ */
 export class TopicMessage extends Message {
+    /**
+     * Name
+     */
     public name: string;
+    /**
+     * Description
+     */
     public description: string;
+    /**
+     * Owner
+     */
     public owner: string;
+    /**
+     * Message type
+     */
     public messageType: string;
+    /**
+     * Child ID
+     */
     public childId: string;
+    /**
+     * Parent ID
+     */
     public parentId: string;
+    /**
+     * Rationale
+     */
     public rationale: string;
 
     constructor(action: MessageAction) {
         super(action, MessageType.Topic);
     }
 
+    /**
+     * Set document
+     * @param topic
+     */
     public setDocument(topic: {
+        /**
+         * Name
+         */
         name: string,
+        /**
+         * Description
+         */
         description: string,
+        /**
+         * Owner
+         */
         owner: string,
+        /**
+         * Message type
+         */
         messageType: string,
+        /**
+         * Child ID
+         */
         childId: string,
+        /**
+         * Parent ID
+         */
         parentId: string,
+        /**
+         * Rationale
+         */
         rationale: string
     }): void {
         this.name = topic.name;
@@ -35,6 +84,9 @@ export class TopicMessage extends Message {
         this.rationale = topic.rationale;
     }
 
+    /**
+     * To message object
+     */
     public override toMessageObject(): TopicMessageBody {
         return {
             id: null,
@@ -52,30 +104,45 @@ export class TopicMessage extends Message {
         };
     }
 
+    /**
+     * To documents
+     */
     public async toDocuments(): Promise<ArrayBuffer[]> {
         return [];
     }
 
+    /**
+     * Load documents
+     * @param documents
+     */
     public loadDocuments(documents: string[]): TopicMessage {
         return this;
     }
 
+    /**
+     * From message
+     * @param message
+     */
     public static fromMessage(message: string): TopicMessage {
         if (!message) {
             throw new Error('Message Object is empty');
         }
 
         const json = JSON.parse(message);
-        return this.fromMessageObject(json);
+        return TopicMessage.fromMessageObject(json);
     }
 
+    /**
+     * From message object
+     * @param json
+     */
     public static fromMessageObject(json: TopicMessageBody): TopicMessage {
         if (!json) {
             throw new Error('JSON Object is empty');
         }
 
-        if (json.type != MessageType.Topic) {
-            throw 'Invalid message type'
+        if (json.type !== MessageType.Topic) {
+            throw new Error('Invalid message type');
         }
 
         const message = new TopicMessage(json.action);
@@ -94,10 +161,16 @@ export class TopicMessage extends Message {
         return message;
     }
 
+    /**
+     * Validate
+     */
     public override validate(): boolean {
         return true;
     }
 
+    /**
+     * Get URLs
+     */
     public getUrls(): IURL[] {
         return [];
     }

@@ -91,15 +91,6 @@ class MockMessageServer {
     }
 }
 
-class MockTopicHelper {
-    async create() {
-        return {
-            topicId: ''
-        }
-    }
-    async link() { }
-}
-
 function getMongoRepositoryMock(entity) {
     const instance = new entity;
 
@@ -179,9 +170,6 @@ profileAPIModule.__set__('_hedera_modules_1', {
 });
 profileAPIModule.__set__('common_1', {
     Logger: MockLogger
-});
-profileAPIModule.__set__('topicHelper_1', {
-    TopicHelper: MockTopicHelper
 });
 profileAPIModule.__set__('typeorm_1', {
     getMongoRepository: getMongoRepositoryMock

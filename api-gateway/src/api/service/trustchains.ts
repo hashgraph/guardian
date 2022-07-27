@@ -1,10 +1,9 @@
 import { Guardians } from '@helpers/guardians';
 import { Response, Router } from 'express';
 import { UserRole } from '@guardian/interfaces';
-import { AuthenticatedRequest, IAuthUser } from '@auth/auth.interface';
-import { permissionHelper } from '@auth/authorizationHelper';
+import { permissionHelper } from '@auth/authorization-helper';
 import { Users } from '@helpers/users';
-import { Logger } from '@guardian/common';
+import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
 
 /**
  * Audit route

@@ -8,8 +8,7 @@ export function findOptions(document: any, field: any) {
     if (document && field) {
         const keys = field.split('.');
         value = document;
-        for (let i = 0; i < keys.length; i++) {
-            const key = keys[i];
+        for (const key of keys) {
             value = value[key];
         }
     }

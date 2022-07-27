@@ -1,9 +1,24 @@
-
+/**
+ * Issuer class
+ */
 export class Issuer {
+    /**
+     * ID
+     */
     public static readonly ID = 'id';
+    /**
+     * NAME
+     */
     public static readonly NAME = 'name';
-
+    /**
+     * ID
+     * @protected
+     */
     protected id: string;
+    /**
+     * Name
+     * @protected
+     */
     protected name: string;
 
     constructor(id: string, name?: string) {
@@ -11,14 +26,23 @@ export class Issuer {
         this.name = name || null;
     }
 
+    /**
+     * Get ID
+     */
     public getId(): string {
         return this.id;
     }
 
+    /**
+     * Get name
+     */
     public getName(): string {
         return this.name;
     }
 
+    /**
+     * To JSON tree
+     */
     public toJsonTree(): any {
         if (this.name) {
             const rootObject = {};
@@ -29,13 +53,18 @@ export class Issuer {
         return this.id;
     }
 
+    /**
+     * From JSON tree
+     * @param root
+     */
     public static fromJsonTree(root: any): Issuer {
         if (!root) {
             throw new Error('JSON Object is empty');
         }
 
-        let id: string, name: string;
-        if (typeof root == 'string') {
+        let id: string;
+        let name: string;
+        if (typeof root === 'string') {
             id = root;
         } else {
             id = root[Issuer.ID];
@@ -44,14 +73,21 @@ export class Issuer {
         return new Issuer(id, name);
     }
 
+    /**
+     * To JSON
+     */
     public toJSON(): string {
         return JSON.stringify(this.toJsonTree());
     }
 
+    /**
+     * From JSON
+     * @param json
+     */
     public static fromJson(json: string): Issuer {
         try {
             const root = JSON.parse(json);
-            return this.fromJsonTree(root);
+            return Issuer.fromJsonTree(root);
         } catch (error) {
             throw new Error('Given JSON string is not a valid Issuer ' + error.message);
         }

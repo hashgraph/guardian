@@ -1,3 +1,6 @@
+/**
+ * Topic type
+ */
 export enum TopicType {
     UserTopic = 'USER_TOPIC',
     PolicyTopic = 'POLICY_TOPIC',

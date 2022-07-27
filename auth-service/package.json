@@ -1,5 +1,4 @@
 {
-  "packageManager": "yarn@3.2.1",
   "_moduleAliases": {
     "@api": "dist/api",
     "@entity": "dist/entity",
@@ -7,8 +6,8 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.2.1",
-    "@guardian/interfaces": "^2.2.1",
+    "@guardian/common": "^2.3.0",
+    "@guardian/interfaces": "^2.3.0",
     "dotenv": "^16.0.0",
     "jsonwebtoken": "^8.5.1",
     "module-alias": "^2.2.2",
@@ -35,14 +34,15 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "name": "auth-service",
+  "packageManager": "yarn@3.2.1",
   "scripts": {
-    "dev:docker": "nodemon .",
     "build": "tsc",
     "debug": "nodemon dist/index.js",
     "dev": "tsc -w",
-    "lint": "tslint --project .",
+    "dev:docker": "nodemon .",
+    "lint": "tslint --config ../tslint.json --project .",
     "start": "node dist/index.js",
     "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
   },
-  "version": "2.2.1"
+  "version": "2.3.0"
 }

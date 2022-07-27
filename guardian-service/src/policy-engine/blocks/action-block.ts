@@ -1,7 +1,5 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
-import { IAuthUser } from '@auth/auth.interface';
 import { Inject } from '@helpers/decorators/inject';
-import { PolicyComponentsUtils } from '../policy-components-utils';
 import { getMongoRepository } from 'typeorm';
 import { Policy } from '@entity/policy';
 import { Users } from '@helpers/users';
@@ -15,6 +13,8 @@ import { DidDocumentBase } from '@hedera-modules';
 import { PrivateKey } from '@hashgraph/sdk';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { IAuthUser } from '@guardian/common';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 
 /**
  * Document action clock with UI
@@ -38,12 +38,24 @@ import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/inte
     }
 })
 export class InterfaceDocumentActionBlock {
+    /**
+     * Users helper
+     * @private
+     */
     @Inject()
-    private users: Users;
+    private readonly users: Users;
 
+    /**
+     * Wallet helper
+     * @private
+     */
     @Inject()
-    private wallet: Wallet;
+    private readonly wallet: Wallet;
 
+    /**
+     * Get block data
+     * @param user
+     */
     async getData(user: IAuthUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
@@ -55,12 +67,12 @@ export class InterfaceDocumentActionBlock {
             user: ref.options.user
         }
 
-        if (ref.options.type == 'selector') {
+        if (ref.options.type === 'selector') {
             data.field = ref.options.field;
         }
 
-        if (ref.options.type == 'dropdown') {
-            let documents: any[] = await ref.getSources(user, null);
+        if (ref.options.type === 'dropdown') {
+            const documents: any[] = await ref.getSources(user, null);
             data.name = ref.options.name;
             data.value = ref.options.value;
             data.field = ref.options.field;
@@ -74,12 +86,17 @@ export class InterfaceDocumentActionBlock {
         return data;
     }
 
+    /**
+     * Set block data
+     * @param user
+     * @param document
+     */
     async setData(user: IAuthUser, document: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
-        let state: any = { data: document };
+        const state: any = { data: document };
 
-        if (ref.options.type == 'selector') {
+        if (ref.options.type === 'selector') {
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
             if (option) {
                 const ownerDid = option.user === UserType.CURRENT
@@ -92,14 +109,14 @@ export class InterfaceDocumentActionBlock {
             return;
         }
 
-        if (ref.options.type == 'dropdown') {
+        if (ref.options.type === 'dropdown') {
             const owner = await this.users.getUserById(document.owner);
             ref.triggerEvents(PolicyOutputEventType.DropdownEvent, owner, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, state);
             return;
         }
 
-        if (ref.options.type == 'download') {
+        if (ref.options.type === 'download') {
             const sensorDid = document.document.credentialSubject[0].id;
             const policy = await getMongoRepository(Policy).findOne(ref.policyId);
             const userFull = await this.users.getUserById(document.owner);
@@ -134,6 +151,10 @@ export class InterfaceDocumentActionBlock {
         }
     }
 
+    /**
+     * Validate block options
+     * @param resultsContainer
+     */
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
@@ -153,7 +174,7 @@ export class InterfaceDocumentActionBlock {
                             }
                             if (Array.isArray(ref.options.uiMetaData.options)) {
                                 const tagMap = {};
-                                for (let option of ref.options.uiMetaData.options) {
+                                for (const option of ref.options.uiMetaData.options) {
                                     if (!option.tag) {
                                         resultsContainer.addBlockError(ref.uuid, `Option "tag" does not set`);
                                     }
@@ -171,10 +192,6 @@ export class InterfaceDocumentActionBlock {
                         break;
 
                     case 'download':
-                        // if (!ref.options.filename) {
-                        //     resultsContainer.addBlockError(ref.uuid, 'Option "filename" does not set');
-                        // }
-
                         if (!ref.options.targetUrl) {
                             resultsContainer.addBlockError(ref.uuid, 'Option "targetUrl" does not set');
                         }
@@ -215,16 +232,22 @@ export class InterfaceDocumentActionBlock {
         }
     }
 
+    /**
+     * Find options
+     * @param document
+     * @param field
+     * @param options
+     * @private
+     */
     private findOptions(document: any, field: any, options: any[]) {
         let value: any = null;
         if (document && field) {
             const keys = field.split('.');
             value = document;
-            for (let i = 0; i < keys.length; i++) {
-                const key = keys[i];
+            for (const key of keys) {
                 value = value[key];
             }
         }
-        return options.find(e => e.value == value);
+        return options.find(e => e.value === value);
     }
 }

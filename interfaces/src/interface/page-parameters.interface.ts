@@ -1,4 +1,13 @@
+/**
+ * Page parameters
+ */
 export interface IPageParameters {
-    skip?: number,
-    take?: number
+    /**
+     * Number of items to skip
+     */
+    skip?: number;
+    /**
+     * Number of items to take
+     */
+    take?: number;
 }

@@ -47,7 +47,7 @@
                             <ng-container matColumnDef="name">
                                 <th mat-header-cell *matHeaderCellDef> TOKEN </th>
                                 <td mat-cell *matCellDef="let element">
-                                    {{element.tokenName}} (<a [href]="element.tokenUrl">{{element.tokenId}}</a>)
+                                    {{element.tokenName}} (<dragonglass type="tokens" [params]="element.tokenId">{{element.tokenId}}</dragonglass>)
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="associated">

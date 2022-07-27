@@ -34,7 +34,10 @@ import { RevokeConfigComponent } from "./policy-configuration/blocks/documents/r
 import { ButtonConfigComponent } from "./policy-configuration/blocks/main/button-config/button-config.component";
 import { ButtonBlockComponent } from "./policy-viewer/blocks/button-block/button-block.component";
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { TokenActionConfigComponent } from "./policy-configuration/blocks/tokens/token-action-config/token-action-config.component";
 import { DocumentValidatorConfigComponent } from "./policy-configuration/blocks/documents/document-validator-config/document-validator-config.component";
+import { TokenConfirmationConfigComponent } from "./policy-configuration/blocks/tokens/token-confirmation-config/token-confirmation-config.component";
+import { TokenConfirmationBlockComponent } from "./policy-viewer/blocks/token-confirmation-block/token-confirmation-block.component";
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -63,7 +66,9 @@ export enum BlockType {
     RevokeBlock = 'revokeBlock',
     SetRelationshipsBlock = 'setRelationshipsBlock',
     ButtonBlock = 'buttonBlock',
-    DocumentValidatorBlock = 'documentValidatorBlock'
+    TokenActionBlock = 'tokenActionBlock',
+    DocumentValidatorBlock = 'documentValidatorBlock',
+    TokenConfirmationBlock = 'tokenConfirmationBlock'
 }
 
 export enum BlockGroup {
@@ -277,6 +282,8 @@ export class RegisteredBlocks {
             { type: BlockType.RevokeBlock },
             { type: BlockType.SetRelationshipsBlock },
             { type: BlockType.ButtonBlock },
+            { type: BlockType.TokenActionBlock },
+            { type: BlockType.TokenConfirmationBlock },
             { type: BlockType.DocumentValidatorBlock }
         ];
 
@@ -553,7 +560,23 @@ export class RegisteredBlocks {
             factory: null,
             property: MintConfigComponent,
         });
-
+        this.registerBlock({
+            type: BlockType.TokenActionBlock,
+            icon: 'generating_tokens',
+            group: BlockGroup.Tokens,
+            header: BlockHeaders.ServerBlocks,
+            factory: null,
+            property: TokenActionConfigComponent,
+        });
+        this.registerBlock({
+            type: BlockType.TokenConfirmationBlock,
+            icon: 'key',
+            group: BlockGroup.Tokens,
+            header: BlockHeaders.UIComponents,
+            factory: TokenConfirmationBlockComponent,
+            property: TokenConfirmationConfigComponent,
+        });
+        
         // Calculate, Server Blocks
         this.registerBlock({
             type: BlockType.Calculate,
