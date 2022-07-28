@@ -5,6 +5,7 @@ import { ITokenInfo, UserRole } from '@guardian/interfaces';
 import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { findAllEntities } from '@helpers/utils';
+import { TaskManager } from '@helpers/task-manager';
 
 /**
  * Token route
@@ -69,6 +70,29 @@ tokenAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Aut
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: error.code || 500, message: error.message });
     }
+});
+
+tokenAPI.post('/push/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Create token');
+    const user = req.user;
+    if (!user.did) {
+        res.status(500).json({ code: 500, message: 'User not registered' });
+        return;
+    }
+
+    const token = req.body;
+    setImmediate(async () => {
+        try {
+            const guardians = new Guardians();
+            await guardians.setTokenAsync(token, user.did, taskId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
+        }
+    });
+
+    res.status(201).send({ taskId, expectation });
 });
 
 tokenAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY, UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {

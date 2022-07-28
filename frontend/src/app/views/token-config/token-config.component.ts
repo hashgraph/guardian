@@ -6,6 +6,7 @@ import { TokenService } from '../../services/token.service';
 import { TokenDialog } from '../../components/token-dialog/token-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Token } from '@guardian/interfaces';
+import { InformService } from 'src/app/services/inform.service';
 
 /**
  * Page for creating tokens.
@@ -37,10 +38,14 @@ export class TokenConfigComponent implements OnInit {
         'refresh',
     ];
 
+    taskId: string | undefined = undefined;
+    expectedTaskMessages: number = 0;
+
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
         private tokenService: TokenService,
+        private informService: InformService,
         private route: ActivatedRoute,
         private router: Router,
         public dialog: MatDialog) {
@@ -52,6 +57,21 @@ export class TokenConfigComponent implements OnInit {
         this.loading = true;
         this.route.queryParams.subscribe(queryParams => {
             this.loadProfile();
+        });
+    }
+
+    loadTokens() {
+        this.tokenService.getTokens().subscribe((data: any) => {
+            this.tokens = data.map((e: any) => {
+                return {
+                    ...new Token(e),
+                    policies: e.policies
+                }
+            });
+            this.loading = false;
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
         });
     }
 
@@ -74,18 +94,7 @@ export class TokenConfigComponent implements OnInit {
                 this.loading = false;
             });
         } else {
-            this.tokenService.getTokens().subscribe((data: any) => {
-                this.tokens = data.map((e: any) => {
-                    return {
-                        ...new Token(e),
-                        policies: e.policies
-                    }
-                });
-                this.loading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.loadTokens();
         }
     }
 
@@ -113,20 +122,27 @@ export class TokenConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.tokenService.create(result).subscribe((data) => {
-                    this.tokens = data.map((e: any) => {
-                        return {
-                            ...new Token(e),
-                            policies: e.policies
-                        }
-                    });
-                    this.loading = false;
+                this.tokenService.pushCreate(result).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;
                 });
             }
         });
+    }
+
+    onAsyncError(error: any) {
+        this.informService.processAsyncError(error);
+        this.loading = false;
+        this.taskId = undefined;
+    }
+
+    onAsyncCompleted() {
+        this.taskId = undefined;
+        this.loadTokens();
     }
 
     refreshUser(user: any, res: any) {

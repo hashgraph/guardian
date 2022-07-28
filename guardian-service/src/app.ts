@@ -147,7 +147,7 @@ Promise.all([
 
     await configAPI(channel, settingsRepository, topicRepository);
     await schemaAPI(channel, apiGatewayChannel, schemaRepository);
-    await tokenAPI(channel, tokenRepository);
+    await tokenAPI(channel, apiGatewayChannel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
     await profileAPI(channel, apiGatewayChannel);
     await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);

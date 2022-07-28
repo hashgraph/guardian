@@ -9,6 +9,7 @@ export enum MessageAPI {
     GET_SCHEMAS = 'get-schemas',
     GET_TOKENS = 'get-tokens',
     SET_TOKEN = 'set-token',
+    SET_TOKEN_ASYNC = 'set-token-async',
     IMPORT_TOKENS = 'import-tokens',
     LOAD_DID_DOCUMENT = 'load-did-document',
     LOAD_SCHEMA_DOCUMENT = 'load-schema-document',

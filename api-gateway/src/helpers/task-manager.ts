@@ -37,6 +37,7 @@ export class TaskManager {
         'Create random key': 4,
         'Connect user': 16,
         'Preview policy message': 6,
+        'Create token': 6,
     };
 
     /**

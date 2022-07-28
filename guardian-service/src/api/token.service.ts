@@ -6,6 +6,7 @@ import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI, IToken } from '@guardian/interfaces';
+import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 
 /**
  * Get token info
@@ -48,6 +49,87 @@ function getTokenInfo(info: any, token: any) {
 }
 
 /**
+ * Create token
+ * @param token
+ * @param owner
+ * @param tokenRepository
+ * @param notifier
+ */
+async function createToken(token: any, owner: any, tokenRepository: MongoRepository<Token>, notifier: INotifier): Promise<Token> {
+    const {
+        changeSupply,
+        decimals,
+        enableAdmin,
+        enableFreeze,
+        enableKYC,
+        enableWipe,
+        initialSupply,
+        tokenName,
+        tokenSymbol,
+        tokenType
+    } = token;
+
+    if (!tokenName) {
+        throw new Error('Invalid Token Name');
+    }
+
+    if (!tokenSymbol) {
+        throw new Error('Invalid Token Symbol');
+    }
+
+    notifier.start('Resolve Hedera account');
+    const users = new Users();
+    const root = await users.getHederaAccount(owner);
+
+    notifier.completedAndStart('Create token');
+    const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+    const treasury = client.newTreasury(root.hederaAccountId, root.hederaAccountKey);
+    const treasuryId = treasury.id;
+    const treasuryKey = treasury.key;
+    const adminKey = enableAdmin ? treasuryKey : null;
+    const kycKey = enableKYC ? treasuryKey : null;
+    const freezeKey = enableFreeze ? treasuryKey : null;
+    const wipeKey = enableWipe ? treasuryKey : null;
+    const supplyKey = changeSupply ? treasuryKey : null;
+    const nft = tokenType === 'non-fungible';
+    const _decimals = nft ? 0 : decimals;
+    const _initialSupply = nft ? 0 : initialSupply;
+    const tokenId = await client.newToken(
+        tokenName,
+        tokenSymbol,
+        nft,
+        _decimals,
+        _initialSupply,
+        '',
+        treasury,
+        adminKey,
+        kycKey,
+        freezeKey,
+        wipeKey,
+        supplyKey,
+    );
+    notifier.completedAndStart('Save token in DB');
+    const tokenObject = tokenRepository.create({
+        tokenId,
+        tokenName,
+        tokenSymbol,
+        tokenType,
+        decimals: _decimals,
+        initialSupply: _initialSupply,
+        adminId: treasuryId ? treasuryId.toString() : null,
+        adminKey: adminKey ? adminKey.toString() : null,
+        kycKey: kycKey ? kycKey.toString() : null,
+        freezeKey: freezeKey ? freezeKey.toString() : null,
+        wipeKey: wipeKey ? wipeKey.toString() : null,
+        supplyKey: supplyKey ? supplyKey.toString() : null,
+        owner: root.did
+    });
+    const result = await tokenRepository.save(tokenObject);
+    notifier.completed();
+    return result;
+}
+
+/**
  * Connect to the message broker methods of working with tokens.
  *
  * @param channel - channel
@@ -55,6 +137,7 @@ function getTokenInfo(info: any, token: any) {
  */
 export async function tokenAPI(
     channel: MessageBrokerChannel,
+    apiGatewayChannel: MessageBrokerChannel,
     tokenRepository: MongoRepository<Token>
 ): Promise<void> {
     /**
@@ -70,80 +153,38 @@ export async function tokenAPI(
                 throw new Error('Invalid Params');
             }
 
-            const {
-                changeSupply,
-                decimals,
-                enableAdmin,
-                enableFreeze,
-                enableKYC,
-                enableWipe,
-                initialSupply,
-                tokenName,
-                tokenSymbol,
-                tokenType
-            } = msg.token;
-            const owner = msg.owner;
+            const { token, owner } = msg;
 
-            if (!tokenName) {
-                throw new Error('Invalid Token Name');
-            }
+            await createToken(token, owner, tokenRepository, emptyNotifier());
 
-            if (!tokenSymbol) {
-                throw new Error('Invalid Token Symbol');
-            }
-
-            const users = new Users();
-            const root = await users.getHederaAccount(owner);
-
-            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-            const treasury = client.newTreasury(root.hederaAccountId, root.hederaAccountKey);
-            const treasuryId = treasury.id;
-            const treasuryKey = treasury.key;
-            const adminKey = enableAdmin ? treasuryKey : null;
-            const kycKey = enableKYC ? treasuryKey : null;
-            const freezeKey = enableFreeze ? treasuryKey : null;
-            const wipeKey = enableWipe ? treasuryKey : null;
-            const supplyKey = changeSupply ? treasuryKey : null;
-            const nft = tokenType === 'non-fungible';
-            const _decimals = nft ? 0 : decimals;
-            const _initialSupply = nft ? 0 : initialSupply;
-            const tokenId = await client.newToken(
-                tokenName,
-                tokenSymbol,
-                nft,
-                _decimals,
-                _initialSupply,
-                '',
-                treasury,
-                adminKey,
-                kycKey,
-                freezeKey,
-                wipeKey,
-                supplyKey,
-            );
-            const tokenObject = tokenRepository.create({
-                tokenId,
-                tokenName,
-                tokenSymbol,
-                tokenType,
-                decimals: _decimals,
-                initialSupply: _initialSupply,
-                adminId: treasuryId ? treasuryId.toString() : null,
-                adminKey: adminKey ? adminKey.toString() : null,
-                kycKey: kycKey ? kycKey.toString() : null,
-                freezeKey: freezeKey ? freezeKey.toString() : null,
-                wipeKey: wipeKey ? wipeKey.toString() : null,
-                supplyKey: supplyKey ? supplyKey.toString() : null,
-                owner: root.did
-            });
-            await tokenRepository.save(tokenObject);
             const tokens = await tokenRepository.find();
             return new MessageResponse(tokens);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             return new MessageError(error.message);
         }
-    })
+    });
+
+    ApiResponse(channel, MessageAPI.SET_TOKEN_ASYNC, async (msg) => {
+        const { token, owner, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+
+        setImmediate(async () => {
+            try {
+                if (!msg) {
+                    throw new Error('Invalid Params');
+                }
+
+                const result = await createToken(token, owner, tokenRepository, notifier);
+                notifier.result(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
+    });
 
     ApiResponse(channel, MessageAPI.FREEZE_TOKEN, async (msg) => {
         try {

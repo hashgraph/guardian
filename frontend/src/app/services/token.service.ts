@@ -20,6 +20,10 @@ export class TokenService {
         return this.http.post<IToken[]>(`${this.url}`, data);
     }
 
+    public pushCreate(data: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/`, data);
+    }
+
     public getTokens(): Observable<ITokenInfo[]> {
         return this.http.get<ITokenInfo[]>(`${this.url}`);
     }

@@ -128,6 +128,15 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Async create new token
+     * @param item
+     * @param taskId
+     */
+    public async setTokenAsync(token: IToken | any, owner: any, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.SET_TOKEN_ASYNC, { token, owner, taskId});
+    }
+
+    /**
      * Freeze token
      * @param tokenId
      * @param username
