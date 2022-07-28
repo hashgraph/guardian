@@ -73,6 +73,9 @@ export class MessageBrokerChannel {
                     stringPayload = '{}';
             }
 
+            // NOTE: If get NATS TIMEOUT error to quckly resolve just uncomment next line. 
+            // And then, implement async processing of operation.
+            // const msg = await this.channel.request(eventType, StringCodec().encode(stringPayload), { timeout: 300000 });
             const msg = await this.channel.request(eventType, StringCodec().encode(stringPayload));
 
             const unpackedString = zlib.inflateSync(new Buffer(StringCodec().decode(msg.data), 'binary')).toString();

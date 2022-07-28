@@ -863,6 +863,65 @@ export class PolicyEngineService {
             }
         });
 
+        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, async (msg) => {
+            const { messageId, user, taskId } = msg;
+            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+
+            setImmediate(async () => {
+                try {
+                    notifier.start('Resolve Hedera account');
+                    const userFull = await this.users.getUser(user.username);
+                    if (!messageId) {
+                        throw new Error('Policy ID in body is empty');
+                    }
+
+                    new Logger().info(`Import policy by message`, ['GUARDIAN_SERVICE']);
+
+                    const root = await this.users.getHederaAccount(userFull.did);
+
+                    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+                    const message = await messageServer.getMessage<PolicyMessage>(messageId);
+                    if (message.type !== MessageType.InstancePolicy) {
+                        throw new Error('Invalid Message Type');
+                    }
+
+                    if (!message.document) {
+                        throw new Error('file in body is empty');
+                    }
+
+                    notifier.completedAndStart('Load policy files');
+                    const newVersions: any = [];
+                    if (message.version) {
+                        const anotherVersions = await messageServer.getMessages<PolicyMessage>(
+                            message.getTopicId(), MessageType.InstancePolicy, MessageAction.PublishPolicy
+                        );
+                        for (const element of anotherVersions) {
+                            if (element.version && ModelHelper.versionCompare(element.version, message.version) === 1) {
+                                newVersions.push({
+                                    messageId: element.getId(),
+                                    version: element.version
+                                });
+                            }
+                        };
+                    }
+
+                    notifier.completedAndStart('Parse policy files');
+                    const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
+                    if (newVersions.length !== 0) {
+                        policyToImport.newVersions = newVersions.reverse();
+                    }
+
+                    notifier.completed();
+                    notifier.result(policyToImport);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    notifier.error(error);
+                }
+            });
+
+            return new MessageResponse({ taskId });
+        });
+
         this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg) => {
             try {
                 const { messageId, user, versionOfTopicId } = msg;
@@ -903,8 +962,8 @@ export class PolicyEngineService {
                         throw new Error('Policy ID in body is empty');
                     }
 
-                    const userFull = await this.users.getUser(user.username);
                     notifier.start('Resolve Hedera account');
+                    const userFull = await this.users.getUser(user.username);
                     const root = await this.users.getHederaAccount(userFull.did);
                     notifier.completedAndStart('Load from IPFS');
                     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);

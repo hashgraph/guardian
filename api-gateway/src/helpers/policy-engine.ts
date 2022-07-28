@@ -225,6 +225,16 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Async get policy info from message
+     * @param user
+     * @param messageId
+     * @param taskId
+     */
+    public async importMessagePreviewAsync(user, messageId, taskId: string) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, { messageId, user, taskId });
+    }
+
+    /**
      * Receive external data
      * @param data
      */

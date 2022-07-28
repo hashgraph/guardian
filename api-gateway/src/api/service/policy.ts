@@ -306,6 +306,25 @@ policyAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res:
     }
 });
 
+policyAPI.post('/push/import/message/preview', async (req: AuthenticatedRequest, res: Response) => {
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Preview policy message');
+
+    const user = req.user;
+    const messageId = req.body.messageId;
+    setImmediate(async () => {
+        try {
+            const engineService = new PolicyEngine();
+            await engineService.importMessagePreviewAsync(user, messageId, taskId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
+        }
+    });
+
+    res.status(201).send({ taskId, expectation });
+});
+
 policyAPI.post('/import/file/preview', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {

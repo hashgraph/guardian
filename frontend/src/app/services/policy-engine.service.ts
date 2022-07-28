@@ -119,6 +119,10 @@ export class PolicyEngineService {
         return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
     }
 
+    public pushPreviewByMessage(messageId: string): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/message/preview`, { messageId });
+    }
+
     public previewByFile(policyFile: any): Observable<any> {
         return this.http.post<any[]>(`${this.url}/import/file/preview`, policyFile, {
             headers: {

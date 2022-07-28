@@ -36,6 +36,7 @@ export class TaskManager {
         'Preview schema message': 6,
         'Create random key': 4,
         'Connect user': 16,
+        'Preview policy message': 6,
     };
 
     /**

@@ -21,7 +21,6 @@ export class ImportSchemaDialog {
   });
   loading: boolean = false;
 
-  messageId: any;
   taskId: string | undefined = undefined;
   expectedTaskMessages: number = 0;
 
@@ -59,9 +58,9 @@ export class ImportSchemaDialog {
     }
 
     this.loading = true;
-    this.messageId = this.dataForm.get('timestamp')?.value;
+    const messageId = this.dataForm.get('timestamp')?.value;
 
-    this.schemaService.pushPreviewByMessage(this.messageId).subscribe((result) => {
+    this.schemaService.pushPreviewByMessage(messageId).subscribe((result) => {
       const { taskId, expectation } = result;
       this.taskId = taskId;
       this.expectedTaskMessages = expectation;
@@ -86,10 +85,10 @@ export class ImportSchemaDialog {
         const { result } = task;
         this.dialogRef.close({
                 type: 'message',
-                data: this.messageId,
+                data: this.dataForm.get('timestamp')?.value,
                 schemas: result
               });
-      }, error => {
+      }, (e) => {
         this.loading = false;
       });
     }

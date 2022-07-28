@@ -4,6 +4,7 @@
 export enum PolicyEngineEvents {
     RECEIVE_EXTERNAL_DATA = 'receive-external-data',
     POLICY_IMPORT_MESSAGE_PREVIEW = 'policy-import-message-preview',
+    POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC = 'policy-import-message-preview-async',
     POLICY_IMPORT_FILE_PREVIEW = 'policy-import-file-preview',
     CREATE_POLICIES = 'create-policies',
     CREATE_POLICIES_ASYNC = 'create-policies-async',
