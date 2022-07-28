@@ -102,7 +102,7 @@ profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) =
     }
 });
 
-profileAPI.put('/:username/push', async (req: AuthenticatedRequest, res: Response) => {
+profileAPI.put('/push/:username', async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Connect user');
 

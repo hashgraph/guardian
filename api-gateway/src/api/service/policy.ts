@@ -130,7 +130,7 @@ policyAPI.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Respo
     }
 });
 
-policyAPI.put('/:policyId/push/publish',async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.put('/push/:policyId/publish',async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Publish policy');
 

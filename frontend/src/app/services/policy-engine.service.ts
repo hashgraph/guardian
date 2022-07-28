@@ -48,7 +48,7 @@ export class PolicyEngineService {
     }
 
     public pushPublish(policyId: string, policyVersion: string): Observable<{ taskId: string, expectation: number }> {
-        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/${policyId}/push/publish`, { policyVersion });
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/publish`, { policyVersion });
     }
 
     public validate(policy: any): Observable<any> {

@@ -26,7 +26,7 @@ export class ProfileService {
     }
 
     public pushSetProfile(profile: IUser): Observable<{ taskId: string, expectation: number }> {
-        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}/push`, profile);
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${encodeURIComponent(this.auth.getUsername())}`, profile);
     }
 
     public getBalance(): Observable<string | null> {
