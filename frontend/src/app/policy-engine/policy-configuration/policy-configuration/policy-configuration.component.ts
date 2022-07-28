@@ -21,6 +21,11 @@ import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 
+enum OperationMode {
+    none,
+    create,
+    publish,
+}
 
 /**
  * The page for editing the policy and blocks.
@@ -88,6 +93,7 @@ export class PolicyConfigurationComponent implements OnInit {
     treeFlatOverview!: TreeFlatOverview;
     policyStorage: PolicyStorage;
 
+    operationMode: OperationMode = OperationMode.none;
     taskId: string | undefined = undefined;
     expectedTaskMessages: number = 0;
 
@@ -457,22 +463,11 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private publishPolicy(version: string) {
         this.loading = true;
-        this.policyEngineService.publish(this.policyId, version).subscribe((data: any) => {
-            const { policies, isValid, errors } = data;
-            if (isValid) {
-                this.loadPolicy();
-            } else {
-                const blocks = errors.blocks;
-                const invalidBlocks = blocks.filter((block: any) => !block.isValid);
-                this.errors = invalidBlocks;
-                this.errorsCount = invalidBlocks.length;
-                this.errorsMap = {};
-                for (let i = 0; i < invalidBlocks.length; i++) {
-                    const element = invalidBlocks[i];
-                    this.errorsMap[element.id] = element.errors;
-                }
-                this.loading = false;
-            }
+        this.policyEngineService.pushPublish(this.policyId, version).subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.operationMode = OperationMode.publish;
         }, (e) => {
             console.error(e.error);
             this.loading = false;
@@ -543,6 +538,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     const { taskId, expectation } = result;
                     this.taskId = taskId;
                     this.expectedTaskMessages = expectation;
+                    this.operationMode = OperationMode.create;
                 }, (e) => {
                     this.loading = false;
                     this.taskId = undefined;
@@ -561,9 +557,36 @@ export class PolicyConfigurationComponent implements OnInit {
     onAsyncCompleted() {
         if (this.taskId) {
             const taskId: string = this.taskId;
+            const operationMode = this.operationMode;
             this.taskId = undefined;
+            this.operationMode = OperationMode.none;
             this.taskService.get(taskId).subscribe((task: any) => {
-                this.router.navigate(['/policy-configuration'], { queryParams: { policyId: task.result } });
+                switch (operationMode) {
+                    case OperationMode.create:
+                        this.router.navigate(['/policy-configuration'], { queryParams: { policyId: task.result } });
+                        break;
+                    case OperationMode.publish:
+                        const { result } = task;
+                        const { isValid, errors } = result;
+                        if (isValid) {
+                            this.loadPolicy();
+                        } else {
+                            const blocks = errors.blocks;
+                            const invalidBlocks = blocks.filter((block: any) => !block.isValid);
+                            this.errors = invalidBlocks;
+                            this.errorsCount = invalidBlocks.length;
+                            this.errorsMap = {};
+                            for (let i = 0; i < invalidBlocks.length; i++) {
+                                const element = invalidBlocks[i];
+                                this.errorsMap[element.id] = element.errors;
+                            }
+                            this.loading = false;
+                        }
+                        break;
+                    default:
+                        console.log('Unknown operation mode');
+                        break;
+                }
             });
         }
     }
