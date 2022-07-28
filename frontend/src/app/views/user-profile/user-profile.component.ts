@@ -10,6 +10,12 @@ import { DemoService } from 'src/app/services/demo.service';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { SchemaService } from 'src/app/services/schema.service';
 import { HeaderPropsService } from 'src/app/services/header-props.service';
+import { InformService } from 'src/app/services/inform.service';
+import { TasksService } from 'src/app/services/tasks.service';
+
+enum OperationMode {
+    None, Generate, SetProfile
+}
 
 interface IHederaForm {
     id: string,
@@ -60,12 +66,19 @@ export class UserProfileComponent implements OnInit {
     schema!: Schema | null;
     vcForm!: FormGroup;
 
+    value: any;
+    operationMode: OperationMode = OperationMode.None;
+    taskId: string | undefined = undefined;
+    expectedTaskMessages: number = 0;
+
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
         private tokenService: TokenService,
         private otherService: DemoService,
         private schemaService: SchemaService,
+        private informService: InformService,
+        private taskService: TasksService,
         private fb: FormBuilder,
         public dialog: MatDialog,
         private headerProps: HeaderPropsService) {
@@ -164,8 +177,12 @@ export class UserProfileComponent implements OnInit {
         if (vcDocument) {
             profile.vcDocument = vcDocument;
         }
-        this.profileService.setProfile(profile).subscribe(() => {
-            this.loadDate();
+
+        this.profileService.pushSetProfile(profile).subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.operationMode = OperationMode.SetProfile;
         }, (error) => {
             this.loading = false;
             this.headerProps.setLoading(false);
@@ -181,12 +198,14 @@ export class UserProfileComponent implements OnInit {
         if (this.hederaForm.value.vc) {
             value.vc = this.hederaForm.value.vc;
         }
-        this.otherService.getRandomKey().subscribe((treasury) => {
-            this.loading = false;
-            value.id = treasury.id;
-            value.key = treasury.key;
-            this.hederaForm.setValue(value);
-        }, (error) => {
+
+        this.otherService.pushGetRandomKey().subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.operationMode = OperationMode.Generate;
+            this.value = value;
+        }, (e) => {
             this.loading = false;
             value.id = '';
             value.key = '';
@@ -255,5 +274,39 @@ export class UserProfileComponent implements OnInit {
 
     onChangeForm() {
         this.vcForm.updateValueAndValidity();
+    }
+
+    onAsyncError(error: any) {
+        this.informService.processAsyncError(error);
+        this.loading = false;
+        this.taskId = undefined;
+        this.value = null;
+    }
+
+    onAsyncCompleted() {
+        if (this.taskId) {
+            const taskId = this.taskId;
+            const value = this.value;
+            const operationMode = this.operationMode;
+            this.taskId = undefined;
+            this.operationMode = OperationMode.None;
+            switch (operationMode) {
+                case OperationMode.Generate: 
+                    this.taskService.get(taskId).subscribe((task) => { 
+                        const { id, key} = task.result;
+                        value.id = id;
+                        value.key = key;
+                        this.hederaForm.setValue(value);
+                        this.loading = false;
+                    });
+                    break;
+                case OperationMode.SetProfile:
+                    this.loadDate();
+                    break;
+                default:
+                    console.log('Not supported mode');
+                    break;
+            }
+        }
     }
 }

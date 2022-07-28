@@ -17,10 +17,10 @@ import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 
 enum OperationMode {
-    none,
-    create,
-    import,
-    publish,
+    None,
+    Create,
+    Import,
+    Publish,
 }
 
 /**
@@ -46,7 +46,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     pageSize: number;
     policyCount: any;
 
-    mode: OperationMode = OperationMode.none;
+    mode: OperationMode = OperationMode.None;
     taskId: string | undefined = undefined;
     expectedTaskMessages: number = 0;
 
@@ -188,19 +188,19 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     onAsyncError(error: any) {
         this.informService.processAsyncError(error);
         this.taskId = undefined;
-        this.mode = OperationMode.none;
+        this.mode = OperationMode.None;
         this.loadAllPolicy();
     }
 
     onAsyncCompleted() {
         switch (this.mode) {
-            case OperationMode.create:
-            case OperationMode.import:
+            case OperationMode.Create:
+            case OperationMode.Import:
                 this.taskId = undefined;
-                this.mode = OperationMode.none;
+                this.mode = OperationMode.None;
                 this.loadAllPolicy();
                 break;
-            case OperationMode.publish:
+            case OperationMode.Publish:
                 if (this.taskId) {
                     const taskId = this.taskId;
                     this.taskId = undefined;
@@ -212,7 +212,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 break;
         }
 
-        this.mode = OperationMode.none;
+        this.mode = OperationMode.None;
     }
 
     newPolicy() {
@@ -228,11 +228,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     const { taskId, expectation } = result;
                     this.taskId = taskId;
                     this.expectedTaskMessages = expectation;
-                    this.mode = OperationMode.create;
+                    this.mode = OperationMode.Create;
                 }, (e) => {
                     this.loading = false;
-                    this.taskId = undefined;
-                    this.mode = OperationMode.none;
                 });
             }
         });
@@ -256,7 +254,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             const { taskId, expectation } = result;
             this.taskId = taskId;
             this.expectedTaskMessages = expectation;
-            this.mode = OperationMode.publish;
+            this.mode = OperationMode.Publish;
+        }, (e) => {
+            this.loading = false;
         });
     }
 
@@ -313,12 +313,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                             const { taskId, expectation } = result;
                             this.taskId = taskId;
                             this.expectedTaskMessages = expectation;
-                            this.mode = OperationMode.import;
-                        },
-                        (e) => {
+                            this.mode = OperationMode.Import;
+                        }, (e) => {
                             this.loading = false;
-                            this.taskId = undefined;
-                            this.mode = OperationMode.none;
                         });
                 } else if (type == 'file') {
                     this.policyEngineService.pushImportByFile(data, versionOfTopicId).subscribe(
@@ -326,12 +323,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                             const { taskId, expectation } = result;
                             this.taskId = taskId;
                             this.expectedTaskMessages = expectation;
-                            this.mode = OperationMode.import;
-                        },
-                        (e) => {
+                            this.mode = OperationMode.Import;
+                        }, (e) => {
                             this.loading = false;
-                            this.taskId = undefined;
-                            this.mode = OperationMode.none;
                         });
                 }
             }

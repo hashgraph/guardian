@@ -13,7 +13,7 @@ import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 
 enum OperationMode {
-    None, Generate, Connect
+    None, Generate, SetProfile
 }
 
 /**
@@ -147,7 +147,7 @@ export class RootConfigComponent implements OnInit {
                 const { taskId, expectation } = result;
                 this.taskId = taskId;
                 this.expectedTaskMessages = expectation;
-                this.operationMode = OperationMode.Connect;
+                this.operationMode = OperationMode.SetProfile;
             }, (error) => {
                 this.loading = false;
                 this.headerProps.setLoading(false);
@@ -201,7 +201,6 @@ export class RootConfigComponent implements OnInit {
 
     randomKey() {
         this.loading = true;
-        const value = this.hederaForm.value;
         this.otherService.pushGetRandomKey().subscribe((result) => {
             const { taskId, expectation } = result;
             this.taskId = taskId;
@@ -264,9 +263,11 @@ export class RootConfigComponent implements OnInit {
     onAsyncCompleted() {
         if (this.taskId) {
             const taskId = this.taskId;
+            const operationMode = this.operationMode;
             this.taskId = undefined;
+            this.operationMode = OperationMode.None;
             this.taskService.get(taskId).subscribe((task) => {
-                switch (this.operationMode) {
+                switch (operationMode) {
                     case OperationMode.Generate: {
                         const { id, key} = task.result;
                         const value = this.hederaForm.value;
@@ -275,15 +276,14 @@ export class RootConfigComponent implements OnInit {
                                 hederaAccountKey: key,
                                 vc: value.vc
                             });
+                        this.loading = false;
                         break;
                     }
-                    case OperationMode.Connect: {
+                    case OperationMode.SetProfile: {
                         this.loadProfile();
                         break;
                     }
                 }
-                this.operationMode = OperationMode.None;
-                this.loading = false;
             }, (e) => {
                 this.loading = false;
             });
