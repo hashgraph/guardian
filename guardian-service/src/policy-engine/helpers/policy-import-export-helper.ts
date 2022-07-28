@@ -135,7 +135,7 @@ export class PolicyImportExportHelper {
      *
      * @returns Policies by owner
      */
-    static async importPolicy(policyToImport: any, policyOwner: string, notifier: INotifier, versionOfTopicId?: any): Promise<Policy> {
+    static async importPolicy(policyToImport: any, policyOwner: string, versionOfTopicId: string, notifier: INotifier): Promise<Policy> {
         const { policy, tokens, schemas } = policyToImport;
 
         delete policy.id;

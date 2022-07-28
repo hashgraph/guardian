@@ -40,6 +40,25 @@ import { TopicHelper } from '@helpers/topic-helper';
 import { PolicyConverterUtils } from './policy-converter-utils';
 import { PolicyUtils } from './helpers/utils';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
+import { ISerializedErrors } from './policy-validation-results-container';
+
+/**
+ * Result of publishing
+ */
+interface IPublishResult {
+    /**
+     * Policy Id
+     */
+    policyId: string;
+    /**
+     * Is policy valid
+     */
+    isValid: boolean;
+    /**
+     * Errors of validation
+     */
+    errors: ISerializedErrors;
+}
 
 /**
  * Policy engine service
@@ -412,6 +431,138 @@ export class PolicyEngineService {
     }
 
     /**
+     * Validate and publish policy
+     * @param model
+     * @param policyId
+     * @param userFull
+     * @param notifier
+     */
+    private async validateAndPublishPolicy(model: any, policyId: any, userFull: IAuthUser, notifier: INotifier): Promise<IPublishResult> {
+        const version = model.policyVersion;
+        const owner = userFull.did;
+
+        notifier.start('Find and validate policy');
+        const policy = await getMongoRepository(Policy).findOne(policyId);
+        if (!policy) {
+            throw new Error('Unknown policy');
+        }
+        if (!policy.config) {
+            throw new Error('The policy is empty');
+        }
+        if (!ModelHelper.checkVersionFormat(version)) {
+            throw new Error('Invalid version format');
+        }
+        if (ModelHelper.versionCompare(version, policy.previousVersion) <= 0) {
+            throw new Error('Version must be greater than ' + policy.previousVersion);
+        }
+        const countModels = await getMongoRepository(Policy).count({
+            version,
+            uuid: policy.uuid
+        });
+        if (countModels > 0) {
+            throw new Error('Policy with current version already was published');
+        }
+
+        const errors = await this.policyGenerator.validate(policyId);
+        const isValid = !errors.blocks.some(block => !block.isValid);
+        notifier.completed();
+        if (isValid) {
+            const newPolicy = await this.publishPolicy(policy, owner, version, notifier);
+            await this.policyGenerator.generate(newPolicy.id.toString());
+            return {
+                policyId: newPolicy.id,
+                isValid,
+                errors
+            };
+        } else {
+            return {
+                policyId: policy.id,
+                isValid,
+                errors
+            };
+        }
+    }
+
+    /**
+     * Prepare policy for preview by message
+     * @param messageId
+     * @param user
+     * @param notifier
+     */
+    private async preparePolicyPreviewMessage(messageId, user, notifier: INotifier): Promise<any> {
+        notifier.start('Resolve Hedera account');
+        const userFull = await this.users.getUser(user.username);
+        if (!messageId) {
+            throw new Error('Policy ID in body is empty');
+        }
+
+        new Logger().info(`Import policy by message`, ['GUARDIAN_SERVICE']);
+
+        const root = await this.users.getHederaAccount(userFull.did);
+
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        const message = await messageServer.getMessage<PolicyMessage>(messageId);
+        if (message.type !== MessageType.InstancePolicy) {
+            throw new Error('Invalid Message Type');
+        }
+
+        if (!message.document) {
+            throw new Error('file in body is empty');
+        }
+
+        notifier.completedAndStart('Load policy files');
+        const newVersions: any = [];
+        if (message.version) {
+            const anotherVersions = await messageServer.getMessages<PolicyMessage>(
+                message.getTopicId(), MessageType.InstancePolicy, MessageAction.PublishPolicy
+            );
+            for (const element of anotherVersions) {
+                if (element.version && ModelHelper.versionCompare(element.version, message.version) === 1) {
+                    newVersions.push({
+                        messageId: element.getId(),
+                        version: element.version
+                    });
+                }
+            };
+        }
+
+        notifier.completedAndStart('Parse policy files');
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
+        if (newVersions.length !== 0) {
+            policyToImport.newVersions = newVersions.reverse();
+        }
+
+        notifier.completed();
+        return policyToImport;
+    }
+
+    /**
+     * Import policy by message
+     * @param messageId
+     * @param userFull
+     * @param hederaAccount
+     * @param versionOfTopicId
+     * @param notifier
+     */
+    private async importPolicyMessage(messageId, userFull: IAuthUser, hederaAccount, versionOfTopicId: string, notifier: INotifier): Promise<Policy> {
+        notifier.start('Load from IPFS');
+        const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey);
+        const message = await messageServer.getMessage<PolicyMessage>(messageId);
+        if (message.type !== MessageType.InstancePolicy) {
+            throw new Error('Invalid Message Type');
+        }
+        if (!message.document) {
+            throw new Error('File in body is empty');
+        }
+
+        notifier.completedAndStart('File parsing');
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
+        notifier.completed();
+        const policy = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId, notifier);
+        return policy;
+    }
+
+    /**
      * Register endpoints for policy engine
      * @private
      */
@@ -507,41 +658,12 @@ export class PolicyEngineService {
                     throw new Error('Policy version in body is empty');
                 }
 
-                const policyId = msg.policyId;
-                const version = msg.model.policyVersion;
-                const user = msg.user;
+                const { model, policyId, user } = msg;
                 const userFull = await this.users.getUser(user.username);
+
+                const result = await this.validateAndPublishPolicy(model, policyId, userFull, emptyNotifier());
+
                 const owner = userFull.did;
-
-                const model = await getMongoRepository(Policy).findOne(policyId);
-                if (!model) {
-                    throw new Error('Unknown policy');
-                }
-                if (!model.config) {
-                    throw new Error('The policy is empty');
-                }
-                if (!ModelHelper.checkVersionFormat(version)) {
-                    throw new Error('Invalid version format');
-                }
-                if (ModelHelper.versionCompare(version, model.previousVersion) <= 0) {
-                    throw new Error('Version must be greater than ' + model.previousVersion);
-                }
-                const countModels = await getMongoRepository(Policy).count({
-                    version,
-                    uuid: model.uuid
-                });
-                if (countModels > 0) {
-                    throw new Error('Policy with current version already was published');
-                }
-
-                const errors = await this.policyGenerator.validate(policyId);
-                const isValid = !errors.blocks.some(block => !block.isValid);
-
-                if (isValid) {
-                    const newPolicy = await this.publishPolicy(model, owner, version, emptyNotifier());
-                    await this.policyGenerator.generate(newPolicy.id.toString());
-                }
-
                 const policies = (await getMongoRepository(Policy).find({ owner })).map(item => {
                     delete item.registeredUsers;
                     return item;
@@ -549,8 +671,8 @@ export class PolicyEngineService {
 
                 return new MessageResponse({
                     policies,
-                    isValid,
-                    errors
+                    isValid: result.isValid,
+                    errors: result.errors,
                 });
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -568,50 +690,11 @@ export class PolicyEngineService {
                         throw new Error('Policy version in body is empty');
                     }
 
-                    const version = model.policyVersion;
+                    notifier.start('Resolve Hedera account');
                     const userFull = await this.users.getUser(user.username);
-                    const owner = userFull.did;
-
-                    notifier.start('Find and validate policy');
-                    const policy = await getMongoRepository(Policy).findOne(policyId);
-                    if (!policy) {
-                        throw new Error('Unknown policy');
-                    }
-                    if (!policy.config) {
-                        throw new Error('The policy is empty');
-                    }
-                    if (!ModelHelper.checkVersionFormat(version)) {
-                        throw new Error('Invalid version format');
-                    }
-                    if (ModelHelper.versionCompare(version, policy.previousVersion) <= 0) {
-                        throw new Error('Version must be greater than ' + policy.previousVersion);
-                    }
-                    const countModels = await getMongoRepository(Policy).count({
-                        version,
-                        uuid: policy.uuid
-                    });
-                    if (countModels > 0) {
-                        throw new Error('Policy with current version already was published');
-                    }
-
-                    const errors = await this.policyGenerator.validate(policyId);
-                    const isValid = !errors.blocks.some(block => !block.isValid);
                     notifier.completed();
-                    if (isValid) {
-                        const newPolicy = await this.publishPolicy(policy, owner, version, notifier);
-                        await this.policyGenerator.generate(newPolicy.id.toString());
-                        notifier.result({
-                            policyId: newPolicy.id,
-                            isValid,
-                            errors
-                        });
-                    } else {
-                        notifier.result({
-                            policyId: policy.id,
-                            isValid,
-                            errors
-                        });
-                    }
+                    const result = await this.validateAndPublishPolicy(model, policyId, userFull, notifier);
+                    notifier.result(result);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     notifier.error(error);
@@ -780,7 +863,7 @@ export class PolicyEngineService {
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const userFull = await this.users.getUser(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
-                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId);
+                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId, emptyNotifier());
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 return new MessageResponse(policies);
             } catch (error) {
@@ -803,7 +886,7 @@ export class PolicyEngineService {
                     notifier.start('File parsing');
                     const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
                     notifier.completed();
-                    const policy = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, notifier, versionOfTopicId);
+                    const policy = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId, notifier);
                     notifier.result(policy.id);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -817,45 +900,7 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, async (msg) => {
             try {
                 const { messageId, user } = msg;
-                const userFull = await this.users.getUser(user.username);
-                if (!messageId) {
-                    throw new Error('Policy ID in body is empty');
-                }
-
-                new Logger().info(`Import policy by message`, ['GUARDIAN_SERVICE']);
-
-                const root = await this.users.getHederaAccount(userFull.did);
-                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-                const message = await messageServer.getMessage<PolicyMessage>(messageId);
-
-                if (message.type !== MessageType.InstancePolicy) {
-                    throw new Error('Invalid Message Type');
-                }
-
-                if (!message.document) {
-                    throw new Error('file in body is empty');
-                }
-
-                const newVersions: any = [];
-                if (message.version) {
-                    const anotherVersions = await messageServer.getMessages<PolicyMessage>(
-                        message.getTopicId(), MessageType.InstancePolicy, MessageAction.PublishPolicy
-                    );
-                    for (const element of anotherVersions) {
-                        if (element.version && ModelHelper.versionCompare(element.version, message.version) === 1) {
-                            newVersions.push({
-                                messageId: element.getId(),
-                                version: element.version
-                            });
-                        }
-                    };
-                }
-
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
-                if (newVersions.length !== 0) {
-                    policyToImport.newVersions = newVersions.reverse();
-                }
-
+                const policyToImport  = await this.preparePolicyPreviewMessage(messageId, user, emptyNotifier());
                 return new MessageResponse(policyToImport);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -869,49 +914,7 @@ export class PolicyEngineService {
 
             setImmediate(async () => {
                 try {
-                    notifier.start('Resolve Hedera account');
-                    const userFull = await this.users.getUser(user.username);
-                    if (!messageId) {
-                        throw new Error('Policy ID in body is empty');
-                    }
-
-                    new Logger().info(`Import policy by message`, ['GUARDIAN_SERVICE']);
-
-                    const root = await this.users.getHederaAccount(userFull.did);
-
-                    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-                    const message = await messageServer.getMessage<PolicyMessage>(messageId);
-                    if (message.type !== MessageType.InstancePolicy) {
-                        throw new Error('Invalid Message Type');
-                    }
-
-                    if (!message.document) {
-                        throw new Error('file in body is empty');
-                    }
-
-                    notifier.completedAndStart('Load policy files');
-                    const newVersions: any = [];
-                    if (message.version) {
-                        const anotherVersions = await messageServer.getMessages<PolicyMessage>(
-                            message.getTopicId(), MessageType.InstancePolicy, MessageAction.PublishPolicy
-                        );
-                        for (const element of anotherVersions) {
-                            if (element.version && ModelHelper.versionCompare(element.version, message.version) === 1) {
-                                newVersions.push({
-                                    messageId: element.getId(),
-                                    version: element.version
-                                });
-                            }
-                        };
-                    }
-
-                    notifier.completedAndStart('Parse policy files');
-                    const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
-                    if (newVersions.length !== 0) {
-                        policyToImport.newVersions = newVersions.reverse();
-                    }
-
-                    notifier.completed();
+                    const policyToImport  = await this.preparePolicyPreviewMessage(messageId, user, notifier);
                     notifier.result(policyToImport);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -926,24 +929,9 @@ export class PolicyEngineService {
             try {
                 const { messageId, user, versionOfTopicId } = msg;
                 const userFull = await this.users.getUser(user.username);
-                if (!messageId) {
-                    throw new Error('Policy ID in body is empty');
-                }
-
                 const root = await this.users.getHederaAccount(userFull.did);
-                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-                const message = await messageServer.getMessage<PolicyMessage>(messageId);
 
-                if (message.type !== MessageType.InstancePolicy) {
-                    throw new Error('Invalid Message Type');
-                }
-
-                if (!message.document) {
-                    throw new Error('File in body is empty');
-                }
-
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
-                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId);
+                await this.importPolicyMessage(messageId, userFull, root, versionOfTopicId, emptyNotifier());
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 return new MessageResponse(policies);
             } catch (error) {
@@ -961,24 +949,11 @@ export class PolicyEngineService {
                     if (!messageId) {
                         throw new Error('Policy ID in body is empty');
                     }
-
                     notifier.start('Resolve Hedera account');
                     const userFull = await this.users.getUser(user.username);
                     const root = await this.users.getHederaAccount(userFull.did);
-                    notifier.completedAndStart('Load from IPFS');
-                    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-                    const message = await messageServer.getMessage<PolicyMessage>(messageId);
-                    if (message.type !== MessageType.InstancePolicy) {
-                        throw new Error('Invalid Message Type');
-                    }
-                    if (!message.document) {
-                        throw new Error('File in body is empty');
-                    }
-
-                    notifier.completedAndStart('File parsing');
-                    const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
                     notifier.completed();
-                    const policy = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, notifier, versionOfTopicId);
+                    const policy = await this.importPolicyMessage(messageId, userFull, root, versionOfTopicId, notifier);
                     notifier.result(policy.id);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
