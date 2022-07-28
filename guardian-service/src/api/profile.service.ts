@@ -80,6 +80,43 @@ export function updateUserBalance(channel: MessageBrokerChannel) {
 }
 
 /**
+ * Set up user profile
+ * @param username
+ * @param profile
+ * @param notifier
+ */
+async function setupUserProfile(username: string, profile: any, notifier: INotifier): Promise<string> {
+    const users = new Users();
+    const wallet = new Wallet();
+
+    notifier.start('Get user');
+    const user = await users.getUser(username);
+    notifier.completed();
+    let did: string;
+    if (user.role === UserRole.STANDARD_REGISTRY) {
+        profile.entity = SchemaEntity.STANDARD_REGISTRY;
+        did = await createUserProfile(profile, notifier);
+    } else if (user.role === UserRole.USER) {
+        profile.entity = SchemaEntity.USER;
+        did = await createUserProfile(profile, notifier);
+    } else {
+        throw new Error('Unknow user role');
+    }
+
+    notifier.start('Update user');
+    await users.updateCurrentUser(username, {
+        did,
+        parent: profile.parent,
+        hederaAccountId: profile.hederaAccountId
+    });
+    notifier.completedAndStart('Set up wallet');
+    await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
+    notifier.completed();
+
+    return did;
+}
+
+/**
  * Create user profile
  * @param profile
  * @param notifier
@@ -382,9 +419,6 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
         try {
             const { username, profile } = msg;
 
-            const users = new Users();
-            const wallet = new Wallet();
-
             if (!profile.hederaAccountId) {
                 return new MessageError('Invalid Hedera Account Id', 403);
             }
@@ -392,25 +426,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
                 return new MessageError('Invalid Hedera Account Key', 403);
             }
 
-            const user = await users.getUser(username);
-
-            let did: string;
-            if (user.role === UserRole.STANDARD_REGISTRY) {
-                profile.entity = SchemaEntity.STANDARD_REGISTRY;
-                did = await createUserProfile(profile, emptyNotifier());
-            } else if (user.role === UserRole.USER) {
-                profile.entity = SchemaEntity.USER;
-                did = await createUserProfile(profile, emptyNotifier());
-            }
-
-            await users.updateCurrentUser(username, {
-                did,
-                parent: profile.parent,
-                hederaAccountId: profile.hederaAccountId
-            });
-
-            await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
-
+            await setupUserProfile(username, profile, emptyNotifier());
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
@@ -424,9 +440,6 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
 
         setImmediate(async () => {
             try {
-                const users = new Users();
-                const wallet = new Wallet();
-
                 if (!profile.hederaAccountId) {
                     notifier.error('Invalid Hedera Account Id');
                     return;
@@ -436,27 +449,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
                     return;
                 }
 
-                notifier.start('Get user');
-                const user = await users.getUser(username);
-                notifier.completed();
-                let did: string;
-                if (user.role === UserRole.STANDARD_REGISTRY) {
-                    profile.entity = SchemaEntity.STANDARD_REGISTRY;
-                    did = await createUserProfile(profile, notifier);
-                } else if (user.role === UserRole.USER) {
-                    profile.entity = SchemaEntity.USER;
-                    did = await createUserProfile(profile, notifier);
-                }
-
-                notifier.start('Update user');
-                await users.updateCurrentUser(username, {
-                    did,
-                    parent: profile.parent,
-                    hederaAccountId: profile.hederaAccountId
-                });
-                notifier.completedAndStart('Set up wallet');
-                await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
-                notifier.completed();
+                const did = await setupUserProfile(username, profile, notifier);
                 notifier.result(did);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);

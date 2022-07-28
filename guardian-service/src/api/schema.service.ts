@@ -417,6 +417,75 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
 }
 
 /**
+ * Import shemas by messages
+ * @param owner
+ * @param messageIds
+ * @param topicId
+ * @param notifier
+ */
+async function importSchemasByMessages(owner, messageIds, topicId, notifier: INotifier): Promise<any[]> {
+    notifier.start('Load schema files');
+    const files: ISchema[] = [];
+    for (const messageId of messageIds) {
+        const newSchema = await loadSchema(messageId, null);
+        files.push(newSchema);
+    }
+    notifier.completed();
+    const schemasMap = await importSchemaByFiles(owner, files, topicId, notifier);
+    return schemasMap;
+}
+
+/**
+ * Prepare schema for preview
+ * @param messageIds
+ * @param notifier
+ */
+async function prepareSchemaPreview(messageIds: string[], notifier: INotifier): Promise<any[]> {
+    notifier.start('Load schema file');
+    const result = [];
+    for (const messageId of messageIds) {
+        const schema = await loadSchema(messageId, null);
+        result.push(schema);
+    }
+
+    notifier.completedAndStart('Parse schema');
+    const messageServer = new MessageServer();
+    const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
+    const anotherSchemas: SchemaMessage[] = [];
+    for (const topicId of uniqueTopics) {
+        const anotherVersions = await messageServer.getMessages<SchemaMessage>(
+            topicId, MessageType.Schema, MessageAction.PublishSchema
+        );
+        for (const ver of anotherVersions) {
+            anotherSchemas.push(ver);
+        }
+    }
+
+    notifier.completedAndStart('Verifying');
+    for (const schema of result) {
+        if (!schema.version) {
+            continue;
+        }
+        const newVersions = [];
+        const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
+        for (const topicMessage of topicMessages) {
+            if (topicMessage.version &&
+                ModelHelper.versionCompare(topicMessage.version, schema.version) === 1) {
+                newVersions.push({
+                    messageId: topicMessage.getId(),
+                    version: topicMessage.version
+                });
+            }
+        }
+        if (newVersions && newVersions.length !== 0) {
+            schema.newVersions = newVersions.reverse();
+        }
+    }
+    notifier.completed();
+    return result;
+}
+
+/**
  * Connect to the message broker methods of working with schemas.
  *
  * @param channel - channel
@@ -590,15 +659,13 @@ export async function schemaAPI(
      */
     ApiResponse(channel, MessageAPI.PUBLISH_SCHEMA, async (msg) => {
         try {
-            if (msg) {
-                const id = msg.id as string;
-                const version = msg.version as string;
-                const owner = msg.owner as string;
-                const item = await findAndPublishSchema(id, version, owner, emptyNotifier());
-                return new MessageResponse(item);
-            } else {
+            if (!msg) {
                 return new MessageError('Invalid id');
             }
+
+            const { id, version, owner } = msg;
+            const item = await findAndPublishSchema(id, version, owner, emptyNotifier());
+            return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
@@ -611,12 +678,12 @@ export async function schemaAPI(
         const notifier = initNotifier(apiGatewayChannel, taskId);
         setImmediate(async () => {
             try {
-                if (id) {
-                    const item = await findAndPublishSchema(id, version, owner, notifier);
-                    notifier.result(item.id);
-                } else {
+                if (!msg) {
                     notifier.error('Invalid id');
                 }
+
+                const item = await findAndPublishSchema(id, version, owner, notifier);
+                notifier.result(item.id);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
@@ -677,13 +744,7 @@ export async function schemaAPI(
                 return new MessageError('Invalid import schema parameter');
             }
 
-            const files: ISchema[] = [];
-            for (const messageId of messageIds) {
-                const newSchema = await loadSchema(messageId, null);
-                files.push(newSchema);
-            }
-
-            const schemasMap = await importSchemaByFiles(owner, files, topicId, emptyNotifier());
+            const schemasMap = await importSchemasByMessages(owner, messageIds, topicId, emptyNotifier());
             return new MessageResponse(schemasMap);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -697,18 +758,14 @@ export async function schemaAPI(
         const notifier = initNotifier(apiGatewayChannel, taskId);
         setImmediate(async () => {
             try {
+                if (!msg) {
+                    notifier.error('Invalid import schema parameter');
+                }
                 if (!owner || !messageIds) {
                     notifier.error('Invalid import schema parameter');
                 }
 
-                notifier.start('Load schema files');
-                const files: ISchema[] = [];
-                for (const messageId of messageIds) {
-                    const newSchema = await loadSchema(messageId, null);
-                    files.push(newSchema);
-                }
-                notifier.completed();
-                const schemasMap = await importSchemaByFiles(owner, files, topicId, notifier);
+                const schemasMap = await importSchemasByMessages(owner, messageIds, topicId, notifier);
                 notifier.result(schemasMap);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -749,6 +806,9 @@ export async function schemaAPI(
         const notifier = initNotifier(apiGatewayChannel, taskId);
         setImmediate(async () => {
             try {
+                if (!msg) {
+                    notifier.error('Invalid import schema parameter');
+                }
                 if (!owner || !files) {
                     notifier.error('Invalid import schema parameter');
                 }
@@ -784,43 +844,8 @@ export async function schemaAPI(
             if (!messageIds) {
                 return new MessageError('Invalid preview schema parameters');
             }
-            const result = [];
-            for (const messageId of messageIds) {
-                const schema = await loadSchema(messageId, null);
-                result.push(schema);
-            }
 
-            const messageServer = new MessageServer();
-            const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
-            const anotherSchemas: SchemaMessage[] = [];
-            for (const topicId of uniqueTopics) {
-                const anotherVersions = await messageServer.getMessages<SchemaMessage>(
-                    topicId, MessageType.Schema, MessageAction.PublishSchema
-                );
-                for (const ver of anotherVersions) {
-                    anotherSchemas.push(ver);
-                }
-            }
-            for (const schema of result) {
-                if (!schema.version) {
-                    continue;
-                }
-
-                const newVersions = [];
-                const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
-                for (const topicMessage of topicMessages) {
-                    if (topicMessage.version &&
-                        ModelHelper.versionCompare(topicMessage.version, schema.version) === 1) {
-                        newVersions.push({
-                            messageId: topicMessage.getId(),
-                            version: topicMessage.version
-                        });
-                    }
-                }
-                if (newVersions && newVersions.length !== 0) {
-                    schema.newVersions = newVersions.reverse();
-                }
-            }
+            const result = await prepareSchemaPreview(messageIds, emptyNotifier());
             return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -850,50 +875,16 @@ export async function schemaAPI(
         const notifier = initNotifier(apiGatewayChannel, taskId);
         setImmediate(async () => {
             try {
-                notifier.start('Load schema file');
+                if (!msg) {
+                    notifier.error('Invalid preview schema parameters');
+                    return;
+                }
                 if (!messageIds) {
-                    return new MessageError('Invalid preview schema parameters');
-                }
-                const result = [];
-                for (const messageId of messageIds) {
-                    const schema = await loadSchema(messageId, null);
-                    result.push(schema);
+                    notifier.error('Invalid preview schema parameters');
+                    return;
                 }
 
-                notifier.completedAndStart('Parse schema');
-                const messageServer = new MessageServer();
-                const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
-                const anotherSchemas: SchemaMessage[] = [];
-                for (const topicId of uniqueTopics) {
-                    const anotherVersions = await messageServer.getMessages<SchemaMessage>(
-                        topicId, MessageType.Schema, MessageAction.PublishSchema
-                    );
-                    for (const ver of anotherVersions) {
-                        anotherSchemas.push(ver);
-                    }
-                }
-
-                notifier.completedAndStart('Verifying');
-                for (const schema of result) {
-                    if (!schema.version) {
-                        continue;
-                    }
-                    const newVersions = [];
-                    const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
-                    for (const topicMessage of topicMessages) {
-                        if (topicMessage.version &&
-                            ModelHelper.versionCompare(topicMessage.version, schema.version) === 1) {
-                            newVersions.push({
-                                messageId: topicMessage.getId(),
-                                version: topicMessage.version
-                            });
-                        }
-                    }
-                    if (newVersions && newVersions.length !== 0) {
-                        schema.newVersions = newVersions.reverse();
-                    }
-                }
-                notifier.completed();
+                const result = await prepareSchemaPreview(messageIds, notifier);
                 notifier.result(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);

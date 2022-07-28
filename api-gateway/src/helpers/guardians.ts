@@ -268,7 +268,6 @@ export class Guardians extends ServiceRequestsBase {
      * @param taskId
      */
     public async createUserProfileCommonAsync(username: string, profile: IUser, taskId: string): Promise<any> {
-        console.log(JSON.stringify({ username, profile, taskId }));
         return await this.request<any>(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, { username, profile, taskId });
     }
 
