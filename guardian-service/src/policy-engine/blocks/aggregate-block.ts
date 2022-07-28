@@ -4,8 +4,6 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { Users } from '@helpers/users';
-import { Inject } from '@helpers/decorators/inject';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
@@ -37,13 +35,6 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class AggregateBlock {
-    /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
     /**
      * Tick cron
      * @event PolicyEventType.TimerEvent
@@ -83,7 +74,7 @@ export class AggregateBlock {
         }
 
         for (const did of users) {
-            const user = await this.users.getUserById(did);
+            const user = await PolicyUtils.getPolicyUser(ref, did);
             const documents = map.get(did);
             if (documents.length) {
                 await ref.databaseServer.removeAggregateDocuments(documents);
@@ -161,7 +152,7 @@ export class AggregateBlock {
         ref.log(`tick aggregate: ${owner}, ${result}, ${JSON.stringify(scope)}`);
 
         if (result === true) {
-            const user = await this.users.getUserById(owner);
+            const user = await PolicyUtils.getPolicyUser(ref, owner);
             await ref.databaseServer.removeAggregateDocuments(rawEntities);
             const state = { data: rawEntities };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);

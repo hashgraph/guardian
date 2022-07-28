@@ -5,11 +5,12 @@ import { ExternalMessageEvents, PolicyRole } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import deepEqual from 'deep-equal';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
-import { IAuthUser, ExternalEventChannel, Logger } from '@guardian/common';
+import { ExternalEventChannel, Logger } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
+import deepEqual from 'deep-equal';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Basic block decorator
@@ -277,7 +278,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param data
              */
-            public triggerEvents(output: PolicyOutputEventType, user?: IAuthUser, data?: any): void {
+            public triggerEvents(output: PolicyOutputEventType, user?: IPolicyUser, data?: any): void {
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
                         link.run(user, data);
@@ -291,7 +292,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param data
              */
-            public triggerEvent(event: any, user?: IAuthUser, data?: any): void {
+            public triggerEvent(event: any, user?: IPolicyUser, data?: any): void {
                 console.error('triggerEvent');
             }
 
@@ -342,15 +343,15 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param tag
              */
-            public async updateBlock(state: any, user: IAuthUser, tag: string) {
+            public async updateBlock(state: any, user: IPolicyUser, tag: string) {
                 await this.saveState();
                 if (!this.options.followUser) {
-                    const allUsers = await PolicyComponentsUtils.GetAllRegisteredUsers(this.policyId)
-                    for (const [did, role] of allUsers) {
-                        if (this.permissions.includes(role)) {
-                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, { did } as any, tag);
+                    const allUsers = await this.databaseServer.getAllPolicyUsers(this.policyId);
+                    for (const user of allUsers) {
+                        if (this.permissions.includes(user.role)) {
+                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user as any, tag);
                         } else if (this.permissions.includes('ANY_ROLE')) {
-                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, { did } as any, tag);
+                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user as any, tag);
                         }
                     }
                     if (this.permissions.includes('OWNER') || this.permissions.includes('ANY_ROLE')) {
@@ -366,7 +367,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param state
              * @return {boolean} - true if state was changed
              */
-            public updateDataState(user: IAuthUser, state: any): boolean {
+            public updateDataState(user: IPolicyUser, state: any): boolean {
                 this.oldDataState[user.did] = this.currentDataState[user.did];
                 this.currentDataState[user.did] = { state };
                 return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
@@ -452,7 +453,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param child
              * @param user
              */
-            public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {
+            public isChildActive(child: AnyBlockType, user: IPolicyUser): boolean {
                 if (typeof super.isChildActive === 'function') {
                     return super.isChildActive(child, user);
                 }
@@ -463,7 +464,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Is block active
              * @param user
              */
-            isActive(user: IAuthUser): boolean {
+            isActive(user: IPolicyUser): boolean {
                 if (!this.parent) {
                     return true;
                 }
@@ -508,7 +509,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param role
              * @param user
              */
-            public hasPermission(role: PolicyRole | null, user: IAuthUser | null): boolean {
+            public hasPermission(role: PolicyRole | null, user: IPolicyUser | null): boolean {
                 let hasAccess = false;
                 if (this.permissions.includes('NO_ROLE')) {
                     if (!role && user.did !== this.policyOwner) {
@@ -528,6 +529,32 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     hasAccess = true;
                 }
                 return hasAccess;
+            }
+
+            /**
+             * Check Permission and Active
+             * @param user
+             */
+            public async isAvailable(user: IPolicyUser): Promise<boolean> {
+                const role = await this.databaseServer.getUserRole(this.policyId, user?.did);
+                return this.isAvailableByRole(user, role);
+            }
+
+            /**
+             * Check Permission and Active
+             * @param user
+             * @param role
+             */
+            public isAvailableByRole(user: IPolicyUser | null, role: PolicyRole | null): boolean {
+                if (this.isActive(user) && this.hasPermission(role, user)) {
+                    if (this.parent) {
+                        return this.parent.isAvailableByRole(user, role);
+                    } else {
+                        return true;
+                    }
+                } else {
+                    return false;
+                }
             }
 
             /**
@@ -561,6 +588,15 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Block destructor
              */
             public destroy() {
+                for (const link of this.sourceLinks) {
+                    link.destroy();
+                }
+                for (const link of this.targetLinks) {
+                    link.destroy();
+                }
+                this.sourceLinks.length = 0;
+                this.targetLinks.length = 0;
+
                 if (typeof super.destroy === 'function') {
                     super.destroy();
                 }

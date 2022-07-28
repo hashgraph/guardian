@@ -36,6 +36,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     pageIndex: number;
     pageSize: number;
     policyCount: any;
+    virtualUsers: any[] = []
 
     private subscription = new Subscription();
 
@@ -139,9 +140,21 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         ]).subscribe((value) => {
             this.policy = value[0];
             this.policyInfo = value[1];
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
+            this.virtualUsers = [];
+            if (this.policyInfo?.status === 'DRY-RUN') {
+                this.policyEngineService.getVirtualUsers(this.policyInfo.id).subscribe((users) => {
+                    this.virtualUsers = users;
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                }, (e) => {
+                    this.loading = false;
+                });
+            } else {
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }
         }, (e) => {
             this.loading = false;
         });
@@ -349,5 +362,29 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
         return Object.values(policyByTopic)
             .sort((a: any, b: any) => a.createDate > b.createDate ? -1 : (b.createDate > a.createDate ? 1 : 0));
+    }
+
+    createVirtualUser() {
+        this.loading = true;
+        this.policyEngineService.createVirtualUser(this.policyInfo.id).subscribe((users) => {
+            this.virtualUsers = users;
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    setVirtualUser(item: any) {
+        this.loading = true;
+        this.policyEngineService.loginVirtualUser(this.policyInfo.id, item.did).subscribe((users) => {
+            this.virtualUsers = users;
+            this.policy = null;
+            this.policyInfo = null;
+            this.loadPolicyById(this.policyId);
+        }, (e) => {
+            this.loading = false;
+        });
     }
 }

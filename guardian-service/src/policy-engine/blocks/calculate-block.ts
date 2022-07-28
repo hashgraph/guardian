@@ -8,10 +8,9 @@ import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Calculate block
@@ -37,13 +36,6 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class CalculateContainerBlock {
-    /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
     /**
      * Calculate data
      * @param documents
@@ -136,9 +128,9 @@ export class CalculateContainerBlock {
             vcSubject.ref = vcReference;
         }
 
-        const root = await this.users.getHederaAccount(ref.policyOwner);
+        const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
         const VCHelper = new VcHelper();
-        const newVC = await VCHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+        const newVC = await VCHelper.createVC(ref.policyOwner, root.hederaAccountKey, vcSubject);
         const item = ref.databaseServer.createVCRecord(
             ref.policyId,
             ref.tag,

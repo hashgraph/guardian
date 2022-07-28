@@ -23,7 +23,6 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class CalculateMathAddon {
-
     /**
      * Run logic
      * @param scope

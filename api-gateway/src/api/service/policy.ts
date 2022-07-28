@@ -268,3 +268,34 @@ policyAPI.get('/blocks/about', async (req: AuthenticatedRequest, res: Response) 
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
 });
+
+
+policyAPI.get('/:policyId/dry-run/users', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.send(await engineService.getVirtualUsers(req.params.policyId));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+policyAPI.post('/:policyId/dry-run/user', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.send(await engineService.createVirtualUser(req.params.policyId, req.user.did));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+policyAPI.post('/:policyId/dry-run/login', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.send(await engineService.loginVirtualUser(req.params.policyId, req.body.did));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});

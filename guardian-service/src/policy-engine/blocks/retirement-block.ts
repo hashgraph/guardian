@@ -1,6 +1,4 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
@@ -13,7 +11,7 @@ import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Retirement block
@@ -40,13 +38,6 @@ import { IAuthUser } from '@guardian/common';
     }
 })
 export class RetirementBlock {
-    /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
     /**
      * Create wipe VC
      * @param root
@@ -107,7 +98,7 @@ export class RetirementBlock {
         relationships: string[],
         topicId: string,
         root: any,
-        user: IAuthUser,
+        user: IPolicyUser,
         targetAccountId: string
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -194,7 +185,7 @@ export class RetirementBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = await this.users.getUserById(docs[0].owner);
+        const docOwner = await PolicyUtils.getPolicyUser(ref, docs[0].owner);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
@@ -226,10 +217,14 @@ export class RetirementBlock {
         }
         const topicId = topicIds[0];
 
-        const targetAccountId: string = ref.options.accountId ?
-            accounts[0] :
-            docOwner.hederaAccountId;
-        const root = await this.users.getHederaAccount(ref.policyOwner);
+        let targetAccountId: string;
+        if (ref.options.accountId) {
+            targetAccountId = accounts[0];
+        } else {
+            targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner);
+        }
+
+        const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
 
         await this.retirementProcessing(token, vcs, vsMessages, topicId, root, docOwner, targetAccountId);
         ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);

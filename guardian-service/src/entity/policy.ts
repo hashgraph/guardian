@@ -52,7 +52,7 @@ export class Policy {
      * Policy config
      */
     @Column()
-    config: Object;
+    config: any;
 
     /**
      * Policy status
@@ -83,12 +83,6 @@ export class Policy {
      */
     @Column()
     policyTopics: any[];
-
-    /**
-     * Policy registered users
-     */
-    @Column()
-    registeredUsers: Object;
 
     /**
      * Policy topic id
@@ -134,7 +128,6 @@ export class Policy {
     @BeforeInsert()
     setDefaults() {
         this.status = this.status || 'DRAFT';
-        this.registeredUsers = {};
         this.uuid = this.uuid || GenerateUUIDv4();
         this.codeVersion = this.codeVersion || '1.0.0';
     }

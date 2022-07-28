@@ -1,14 +1,13 @@
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { IAuthUser } from '@guardian/common';
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Information block
@@ -35,17 +34,10 @@ import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 })
 export class TokenActionBlock {
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
      * Get block data
      * @param user
      */
-    async getData(user: IAuthUser): Promise<any> {
+    async getData(user: IPolicyUser): Promise<any> {
         const { options } = PolicyComponentsUtils.GetBlockRef(this);
         return { uiMetaData: options.uiMetaData };
     }
@@ -77,7 +69,7 @@ export class TokenActionBlock {
                     }
                 }
             } else {
-                account = await this.users.getHederaAccount(doc.owner);
+                account = await PolicyUtils.getHederaAccount(ref, doc.owner);
             }
         }
 
@@ -93,22 +85,22 @@ export class TokenActionBlock {
                 break;
             }
             case 'freeze': {
-                const root = await this.users.getHederaAccount(ref.policyOwner);
+                const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
                 await PolicyUtils.freeze(ref, token, account, root);
                 break;
             }
             case 'unfreeze': {
-                const root = await this.users.getHederaAccount(ref.policyOwner);
+                const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
                 await PolicyUtils.unfreeze(ref, token, account, root);
                 break;
             }
             case 'grantKyc': {
-                const root = await this.users.getHederaAccount(ref.policyOwner);
+                const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
                 await PolicyUtils.grantKyc(ref, token, account, root);
                 break;
             }
             case 'revokeKyc': {
-                const root = await this.users.getHederaAccount(ref.policyOwner);
+                const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
                 await PolicyUtils.revokeKyc(ref, token, account, root);
                 break;
             }

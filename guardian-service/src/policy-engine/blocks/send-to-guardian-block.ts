@@ -1,8 +1,6 @@
 import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { DocumentStatus } from '@guardian/interfaces';
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
@@ -11,7 +9,7 @@ import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } fr
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Send to guardian
@@ -39,17 +37,10 @@ import { IAuthUser } from '@guardian/common';
 })
 export class SendToGuardianBlock {
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
      * Send by type
      * @deprecated 2022-08-04
      */
-    async sendByType(document: any, currentUser: IAuthUser, ref: AnyBlockType) {
+    async sendByType(document: any, currentUser: IPolicyUser, ref: AnyBlockType) {
         let result: any;
         switch (ref.options.dataType) {
             case 'vc-documents': {
@@ -89,7 +80,7 @@ export class SendToGuardianBlock {
      * @param currentUser
      * @param ref
      */
-    async send(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
+    async send(document: any, currentUser: IPolicyUser, ref: IPolicyBlock) {
         const { dataSource } = ref.options;
 
         let result: any;
@@ -115,7 +106,7 @@ export class SendToGuardianBlock {
      * @param currentUser
      * @param ref
      */
-    async sendToDatabase(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
+    async sendToDatabase(document: any, currentUser: IPolicyUser, ref: IPolicyBlock) {
         let { documentType } = ref.options;
         if (documentType === 'document') {
             const doc = document?.document;
@@ -157,16 +148,16 @@ export class SendToGuardianBlock {
      * @param currentUser
      * @param ref
      */
-    async sendToHedera(document: any, currentUser: IAuthUser, ref: IPolicyBlock) {
+    async sendToHedera(document: any, currentUser: IPolicyUser, ref: IPolicyBlock) {
         try {
-            const root = await this.users.getHederaAccount(ref.policyOwner);
-            const user = await this.users.getHederaAccount(document.owner);
+            const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+            const user = await PolicyUtils.getHederaAccount(ref, document.owner);
 
             let topicOwner = user;
             if (ref.options.topicOwner === 'user') {
-                topicOwner = await this.users.getHederaAccount(currentUser.did);
+                topicOwner = await PolicyUtils.getHederaAccount(ref, currentUser.did);
             } else if (ref.options.topicOwner === 'issuer') {
-                topicOwner = await this.users.getHederaAccount(document.document.issuer);
+                topicOwner = await PolicyUtils.getHederaAccount(ref, document.document.issuer);
             } else {
                 topicOwner = user;
             }
@@ -198,7 +189,7 @@ export class SendToGuardianBlock {
      * @param document
      * @param user
      */
-    async documentSender(document: any, user: IAuthUser): Promise<any> {
+    async documentSender(document: any, user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         document.policyId = ref.policyId;

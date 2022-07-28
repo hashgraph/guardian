@@ -2,7 +2,7 @@ import { ContainerBlock } from '@policy-engine/helpers/decorators/container-bloc
 import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Container block with UI
@@ -30,7 +30,7 @@ export class InterfaceContainerBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IAuthUser): Promise<any> {
+    async getData(user: IPolicyUser): Promise<any> {
         const { options } = PolicyComponentsUtils.GetBlockRef(this);
         return { uiMetaData: options.uiMetaData };
     }

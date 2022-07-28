@@ -5,6 +5,7 @@ import { ApiResponse } from '@api/api-response';
 import { Policy } from '@entity/policy';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
+import { DatabaseServer } from '@database-modules';
 
 /**
  * Demo API
@@ -53,16 +54,16 @@ export async function demoAPI(
             const did = msg.did;
             const policies = await getMongoRepository(Policy).find();
             const result = [];
-            policies.forEach(p => {
-                if (p.registeredUsers[did]) {
+            for (const p of policies) {
+                const role = await DatabaseServer.getUserRole(p.id, did);
+                if (role) {
                     result.push({
                         name: p.name,
                         version: p.version,
-                        role: p.registeredUsers[did]
+                        role: role
                     })
                 }
-
-            });
+            };
             return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);

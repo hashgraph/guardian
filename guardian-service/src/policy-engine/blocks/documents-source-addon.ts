@@ -1,12 +1,11 @@
 import { SourceAddon } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
-import { Inject } from '@helpers/decorators/inject';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { Users } from '@helpers/users';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Documents source addon
@@ -27,18 +26,11 @@ import { IAuthUser } from '@guardian/common';
 })
 export class DocumentsSourceAddon {
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
      * Get data from source
      * @param user
      * @param globalFilters
      */
-    async getFromSource(user: IAuthUser, globalFilters: any) {
+    async getFromSource(user: IPolicyUser, globalFilters: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const filters: any = {};
@@ -119,7 +111,7 @@ export class DocumentsSourceAddon {
                 data = await ref.databaseServer.getVpDocuments(filtersWithOrder);
                 break;
             case 'standard-registries':
-                data = await this.users.getAllStandardRegistryAccounts() as IAuthUser[];
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref);
                 break;
             case 'approve':
                 filters.policyId = ref.policyId;
@@ -130,7 +122,7 @@ export class DocumentsSourceAddon {
                 break;
             // @deprecated 2022-10-01
             case 'root-authorities':
-                data = await this.users.getAllStandardRegistryAccounts() as IAuthUser[];
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref);
                 break;
             default:
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)

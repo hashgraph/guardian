@@ -1,5 +1,4 @@
-import { Inject } from '@helpers/decorators/inject';
-import { KeyType, Wallet } from '@helpers/wallet';
+import { KeyType } from '@helpers/wallet';
 import { DidDocumentStatus, GenerateUUIDv4, Schema } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
@@ -11,11 +10,9 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
 import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
-import { IAuthUser } from '@guardian/common';
-import { Schema as SchemaCollection } from '@entity/schema';
-import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Request VC document block
@@ -49,13 +46,6 @@ export class RequestVcDocumentBlock {
     public readonly state: { [key: string]: any } = { active: true };
 
     /**
-     * Wallet helper
-     * @private
-     */
-    @Inject()
-    private readonly wallet: Wallet;
-
-    /**
      * Schema
      * @private
      */
@@ -80,7 +70,7 @@ export class RequestVcDocumentBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IAuthUser, state: any): Promise<boolean> {
+    protected async validateDocuments(user: IPolicyUser, state: any): Promise<boolean> {
         const validators = this.getValidators();
         for (const validator of validators) {
             const valid = await validator.run({
@@ -110,7 +100,7 @@ export class RequestVcDocumentBlock {
     @ActionCallback({
         output: PolicyOutputEventType.RefreshEvent
     })
-    async changeActive(user: IAuthUser, active: boolean) {
+    async changeActive(user: IPolicyUser, active: boolean) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
         if (!this.state.hasOwnProperty(user.did)) {
@@ -129,7 +119,7 @@ export class RequestVcDocumentBlock {
      * Get active
      * @param user
      */
-    getActive(user: IAuthUser) {
+    getActive(user: IPolicyUser) {
         let blockState: any;
         if (!this.state.hasOwnProperty(user.did)) {
             blockState = {};
@@ -162,7 +152,7 @@ export class RequestVcDocumentBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IAuthUser): Promise<any> {
+    async getData(user: IPolicyUser): Promise<any> {
         const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
@@ -237,7 +227,7 @@ export class RequestVcDocumentBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async setData(user: IAuthUser, _data: any): Promise<any> {
+    async setData(user: IPolicyUser, _data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         ref.log(`setData`);
 
@@ -253,8 +243,7 @@ export class RequestVcDocumentBlock {
         try {
             await this.changeActive(user, false);
 
-            const userHederaAccount = user.hederaAccountId;
-            const userHederaKey = await this.wallet.getKey(user.walletToken, KeyType.KEY, user.did);
+            const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
 
             const document = _data.document;
             const documentRef = await this.getRelationships(ref.policyId, _data.ref);
@@ -265,7 +254,9 @@ export class RequestVcDocumentBlock {
 
             const schema = await this.getSchema();
 
-            const id = await this.generateId(idType, user, userHederaAccount, userHederaKey);
+            const id = await this.generateId(
+                idType, user, hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey
+            );
             const VCHelper = new VcHelper();
 
             if (id) {
@@ -283,8 +274,8 @@ export class RequestVcDocumentBlock {
                 throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
             }
 
-            const vc = await VCHelper.createVC(user.did, userHederaKey, credentialSubject);
-            const accounts = PolicyUtils.getHederaAccounts(vc, userHederaAccount, schema);
+            const vc = await VCHelper.createVC(user.did, hederaAccount.hederaAccountKey, credentialSubject);
+            const accounts = PolicyUtils.getHederaAccounts(vc, hederaAccount.hederaAccountId, schema);
             const item = ref.databaseServer.createVCRecord(
                 ref.policyId,
                 ref.tag,
@@ -325,7 +316,7 @@ export class RequestVcDocumentBlock {
      * @param userHederaAccount
      * @param userHederaKey
      */
-    async generateId(idType: string, user: any, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
+    async generateId(idType: string, user:IPolicyUser, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (idType === 'UUID') {
@@ -355,7 +346,7 @@ export class RequestVcDocumentBlock {
                     topicId: messageResult.getTopicId()
                 } as any);
 
-                await this.wallet.setKey(user.walletToken, KeyType.KEY, did, key);
+                await PolicyUtils.setAccountKey(ref, user.did, KeyType.KEY, did, key);
                 return did;
             }
             if (idType === 'OWNER') {

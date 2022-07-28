@@ -4,12 +4,11 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
 import { VcHelper } from '@helpers/vc-helper';
 import { SchemaHelper } from '@guardian/interfaces';
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import * as mathjs from 'mathjs';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Custom logic block
@@ -35,13 +34,6 @@ import { IAuthUser } from '@guardian/common';
     }
 })
 export class CustomLogicBlock {
-    /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
     /**
      * After init callback
      */
@@ -75,7 +67,7 @@ export class CustomLogicBlock {
      * @param state
      * @param user
      */
-    execute(state: any, user: IAuthUser): Promise<any> {
+    execute(state: any, user: IPolicyUser): Promise<any> {
         return new Promise((resolve, reject) => {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
             let documents = null;
@@ -87,7 +79,7 @@ export class CustomLogicBlock {
 
             const done = async (result) => {
                 try {
-                    const root = await this.users.getHederaAccount(ref.policyOwner);
+                    const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
                     const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
                     const context = SchemaHelper.getContext(outputSchema);
                     const owner = documents[0].owner;
@@ -97,7 +89,7 @@ export class CustomLogicBlock {
                     const processing = async (document) => {
 
                         const newVC = await VCHelper.createVC(
-                            root.did,
+                            ref.policyOwner,
                             root.hederaAccountKey,
                             {
                                 ...context,

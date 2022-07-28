@@ -22,5 +22,8 @@ export enum PolicyEngineEvents {
     GET_POLICIES = 'get-policies',
     GET_POLICY = 'get-policy',
     GET_BLOCK_PARENTS = 'get-block-parents',
-    BLOCK_ABOUT = 'block-about'
+    BLOCK_ABOUT = 'block-about',
+    GET_VIRTUAL_USERS = 'get-virtual-users',
+    CREATE_VIRTUAL_USER = 'create-virtual-user',
+    SET_VIRTUAL_USER = 'login-virtual-user',
 }

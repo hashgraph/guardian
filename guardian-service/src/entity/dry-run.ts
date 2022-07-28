@@ -365,12 +365,6 @@ export class DryRun {
     policyTopics: any;
 
     /**
-     * Policy registered users
-     */
-    @Column()
-    registeredUsers: any;
-
-    /**
      * Policy instance topic id
      */
     @Column()
@@ -425,6 +419,30 @@ export class DryRun {
     approver: any;
 
     /**
+     * User Role
+     */
+    @Column()
+    role: string;
+
+    /**
+     * User username
+     */
+    @Column()
+    username: string;
+
+    /**
+     * hederaAccountId
+     */
+    @Column()
+    hederaAccountId: string;
+
+    /**
+     * hederaAccountKey
+     */
+    @Column()
+    hederaAccountKey: string;
+
+    /**
      * Default document values
      */
     @BeforeInsert()
@@ -433,7 +451,6 @@ export class DryRun {
         this.option.status = this.option.status || ApproveStatus.NEW;
         this.status = this.status || DocumentStatus.NEW;
         this.uuid = this.uuid || GenerateUUIDv4();
-        this.registeredUsers = {};
         this.codeVersion = this.codeVersion || '1.0.0';
         this.entity = this.entity || SchemaEntity.NONE;
         this.readonly = !!this.readonly;

@@ -8,8 +8,8 @@ import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
-import { IAuthUser } from '@guardian/common';
 import { BlockActionError } from '@policy-engine/errors';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * External data block
@@ -52,7 +52,7 @@ export class ExternalDataBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IAuthUser, state: any): Promise<boolean> {
+    protected async validateDocuments(user: IPolicyUser, state: any): Promise<boolean> {
         const validators = this.getValidators();
         for (const validator of validators) {
             const valid = await validator.run({

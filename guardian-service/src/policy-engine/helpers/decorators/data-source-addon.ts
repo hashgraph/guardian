@@ -2,7 +2,7 @@ import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces';
 import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { BlockActionError } from '@policy-engine/errors';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Data source addon decorator
@@ -89,7 +89,7 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param globalFilters
              * @protected
              */
-            protected async getSources(user: IAuthUser, globalFilters: any): Promise<any[]> {
+            protected async getSources(user: IPolicyUser, globalFilters: any): Promise<any[]> {
                 const data = [];
                 for (const child of this.children) {
                     if (child.blockClassName === 'SourceAddon') {

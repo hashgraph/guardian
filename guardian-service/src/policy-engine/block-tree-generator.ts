@@ -1,5 +1,4 @@
 import { Policy } from '@entity/policy';
-import { getConnection, getMongoRepository } from 'typeorm';
 import {
     IPolicyBlock,
     IPolicyInterfaceBlock
@@ -12,6 +11,7 @@ import {
 } from '@policy-engine/policy-validation-results-container';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
+import { DatabaseServer } from '@database-modules';
 
 /**
  * Block tree generator
@@ -25,20 +25,10 @@ export class BlockTreeGenerator {
     private readonly models: Map<string, IPolicyBlock> = new Map();
 
     /**
-     * Return policy config from db
-     * @param id
-     */
-    public static async getPolicyFromDb(id: string): Promise<Policy> {
-        const connection = getConnection();
-        const policyRepository = connection.getMongoRepository(Policy);
-        return await policyRepository.findOne(id);
-    }
-
-    /**
      * Initialization
      */
     public async init(): Promise<void> {
-        const policies = await getMongoRepository(Policy).find({
+        const policies = await DatabaseServer.getPolicies({
             where: {
                 status: { $in: ['PUBLISH', 'DRY-RUN'] }
             }
@@ -61,10 +51,10 @@ export class BlockTreeGenerator {
     public async generate(policy: Policy | string, skipRegistration?: boolean): Promise<IPolicyBlock>;
 
     public async generate(arg: any, skipRegistration?: boolean): Promise<IPolicyBlock> {
-        let policy;
-        let policyId;
+        let policy: Policy;
+        let policyId: string;
         if (typeof arg === 'string') {
-            policy = await BlockTreeGenerator.getPolicyFromDb(arg);
+            policy = await DatabaseServer.getPolicyById(arg);
             policyId = arg;
         } else {
             policy = arg;
@@ -76,6 +66,7 @@ export class BlockTreeGenerator {
         try {
             const instancesArray: IPolicyBlock[] = [];
             const model = PolicyComponentsUtils.BuildBlockTree(policy, policyId, instancesArray);
+
             if (!skipRegistration) {
                 await PolicyComponentsUtils.RegisterBlockTree(instancesArray)
                 this.models.set(policy.id.toString(), model as any);
@@ -100,7 +91,7 @@ export class BlockTreeGenerator {
         let policy: Policy;
         let policyConfig: any;
         if (typeof arg === 'string') {
-            policy = (await getMongoRepository(Policy).findOne(arg));
+            policy = await DatabaseServer.getPolicyById(arg);
             policyConfig = policy.config;
         } else {
             policy = arg;
@@ -112,6 +103,25 @@ export class BlockTreeGenerator {
         resultsContainer.addPermissions(policy.policyRoles);
         await policyInstance.validate(resultsContainer);
         return resultsContainer.getSerializedErrors();
+    }
+
+    /**
+     * Generate policy instance from config
+     * @param policy
+     */
+    public async destroy(policy: Policy | string): Promise<void>;
+
+    public async destroy(arg: any): Promise<void> {
+        let policy: Policy;
+        if (typeof arg === 'string') {
+            policy = await DatabaseServer.getPolicyById(arg);
+        } else {
+            policy = arg;
+        }
+        if (policy) {
+            this.models.delete(policy.id.toString());
+            await PolicyComponentsUtils.UnregisterBlocks(policy.id.toString());
+        }
     }
 
     /**

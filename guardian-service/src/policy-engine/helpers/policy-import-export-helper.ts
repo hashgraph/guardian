@@ -39,7 +39,6 @@ export class PolicyImportExportHelper {
 
         delete policyObject.id;
         delete policyObject.messageId;
-        delete policyObject.registeredUsers;
         delete policyObject.status;
         delete policyObject.topicId;
 
@@ -140,7 +139,6 @@ export class PolicyImportExportHelper {
         delete policy.messageId;
         delete policy.version;
         delete policy.previousVersion;
-        delete policy.registeredUsers;
         policy.policyTag = 'Tag_' + Date.now();
         policy.uuid = GenerateUUIDv4();
         policy.creator = policyOwner;

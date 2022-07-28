@@ -1,16 +1,15 @@
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { IAuthUser } from '@guardian/common';
 import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { Token as TokenCollection } from '@entity/token';
 import { BlockActionError } from '@policy-engine/errors';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Information block
@@ -44,13 +43,6 @@ export class TokenConfirmationBlock {
     private readonly state: { [key: string]: any } = {};
 
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
      * Token
      * @private
      */
@@ -71,7 +63,7 @@ export class TokenConfirmationBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IAuthUser) {
+    async getData(user: IPolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         const blockState = this.state[user?.did] || {};
         const token = await this.getToken();
@@ -92,7 +84,7 @@ export class TokenConfirmationBlock {
      * @param user
      * @param data
      */
-    async setData(user: IAuthUser, data: any) {
+    async setData(user: IPolicyUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`setData`);
 
@@ -186,10 +178,7 @@ export class TokenConfirmationBlock {
                         hederaAccountId = doc.accounts[field];
                     }
                 } else {
-                    const account = await this.users.getHederaAccount(doc.owner);
-                    if (account) {
-                        hederaAccountId = account.hederaAccountId;
-                    }
+                    hederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner);
                 }
             }
             this.state[did] = {

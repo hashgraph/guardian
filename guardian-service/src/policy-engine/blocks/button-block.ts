@@ -4,7 +4,7 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Document Buttons with UI
@@ -31,7 +31,7 @@ export class ButtonBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IAuthUser): Promise<any> {
+    async getData(user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const data: any = {
             id: ref.uuid,
@@ -48,7 +48,7 @@ export class ButtonBlock {
      * @param user
      * @param blockData
      */
-    async setData(user: IAuthUser, blockData: {
+    async setData(user: IPolicyUser, blockData: {
         /**
          * Document
          */

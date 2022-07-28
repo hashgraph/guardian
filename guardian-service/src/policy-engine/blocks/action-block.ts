@@ -1,7 +1,5 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
-import { KeyType, Wallet } from '@helpers/wallet';
+import { KeyType } from '@helpers/wallet';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { UserType, Schema } from '@guardian/interfaces';
 import { findOptions } from '@policy-engine/helpers/find-options';
@@ -10,8 +8,9 @@ import { DidDocumentBase } from '@hedera-modules';
 import { PrivateKey } from '@hashgraph/sdk';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { IAuthUser } from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
+import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Document action clock with UI
@@ -36,24 +35,10 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 })
 export class InterfaceDocumentActionBlock {
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
-     * Wallet helper
-     * @private
-     */
-    @Inject()
-    private readonly wallet: Wallet;
-
-    /**
      * Get block data
      * @param user
      */
-    async getData(user: IAuthUser): Promise<any> {
+    async getData(user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const data: any = {
@@ -88,7 +73,7 @@ export class InterfaceDocumentActionBlock {
      * @param user
      * @param document
      */
-    async setData(user: IAuthUser, document: any): Promise<any> {
+    async setData(user: IPolicyUser, document: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
         const state: any = { data: document };
@@ -99,7 +84,7 @@ export class InterfaceDocumentActionBlock {
                 const ownerDid = option.user === UserType.CURRENT
                     ? user.did
                     : document.owner;
-                const owner = await this.users.getUserById(ownerDid);
+                const owner = await PolicyUtils.getPolicyUser(ref, ownerDid);
                 ref.triggerEvents(option.tag, owner, state);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, state);
             }
@@ -107,7 +92,7 @@ export class InterfaceDocumentActionBlock {
         }
 
         if (ref.options.type === 'dropdown') {
-            const owner = await this.users.getUserById(document.owner);
+            const owner = await PolicyUtils.getPolicyUser(ref, document.owner);
             ref.triggerEvents(PolicyOutputEventType.DropdownEvent, owner, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, state);
             return;
@@ -116,11 +101,12 @@ export class InterfaceDocumentActionBlock {
         if (ref.options.type === 'download') {
             const sensorDid = document.document.credentialSubject[0].id;
             const policy = await ref.databaseServer.getPolicy(ref.policyId);
-            const userFull = await this.users.getUserById(document.owner);
-            const hederaAccountId = userFull.hederaAccountId;
-            const userDID = userFull.did;
-            const hederaAccountKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-            const sensorKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, sensorDid);
+
+            const hederaAccount = await PolicyUtils.getHederaAccount(ref, document.owner);
+            const sensorKey = await PolicyUtils.getAccountKey(ref, document.owner, KeyType.KEY, sensorDid);
+            const userDID = document.owner;
+            const hederaAccountId = hederaAccount.hederaAccountId;
+            const hederaAccountKey = hederaAccount.hederaAccountKey;
             const schemaObject = await ref.databaseServer.getSchemaByIRI(ref.options.schema);
             const schema = new Schema(schemaObject);
             const didDocument = DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));

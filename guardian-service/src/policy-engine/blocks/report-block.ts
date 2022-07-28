@@ -13,10 +13,10 @@ import {
     SchemaEntity,
 } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
-import { Users } from '@helpers/users';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Report block
@@ -41,12 +41,6 @@ import { IAuthUser } from '@guardian/common';
 })
 export class ReportBlock {
     /**
-     * Users helper
-     */
-    @Inject()
-    public users: Users;
-
-    /**
      * Block state
      * @private
      */
@@ -66,7 +60,8 @@ export class ReportBlock {
         if (map[did]) {
             return map[did];
         } else {
-            const curUser = await this.users.getUserById(did);
+            const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
+            const curUser = await PolicyUtils.getUser(ref, did);
             if (curUser) {
                 map[did] = curUser.username;
                 return map[did];
@@ -120,7 +115,7 @@ export class ReportBlock {
      * @param user
      * @param uuid
      */
-    async getData(user: IAuthUser, uuid: string): Promise<any> {
+    async getData(user: IPolicyUser, uuid: string): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const blockState = this.state[user.did] || {};
@@ -267,7 +262,7 @@ export class ReportBlock {
      * @param user
      * @param data
      */
-    async setData(user: IAuthUser, data: any) {
+    async setData(user: IPolicyUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const value = data.filterValue;

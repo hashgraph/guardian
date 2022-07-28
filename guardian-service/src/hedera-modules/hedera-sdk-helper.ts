@@ -894,4 +894,25 @@ export class HederaSDKHelper {
         }
         return false;
     }
+
+    /**
+     * Create Virtual Account
+     */
+    public static async createVirtualAccount(): Promise<{
+        /**
+         * Account ID
+         */
+        id: AccountId;
+        /**
+         * Private key
+         */
+        key: PrivateKey;
+    }> {
+        const newPrivateKey = PrivateKey.generate();
+        const newAccountId = new AccountId(Date.now());
+        return {
+            id: newAccountId,
+            key: newPrivateKey
+        };
+    }
 }

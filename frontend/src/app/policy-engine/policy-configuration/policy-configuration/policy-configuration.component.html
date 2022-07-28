@@ -22,21 +22,26 @@
 
                     <div class="delimiter"></div>
 
-                    <div class="btn-new-block btn-status-edit" (click)="validationPolicy()" title="Validation Policy"
+                    <div *ngIf="policyModel.isDraft" class="btn-new-block btn-status-all" (click)="validationPolicy()" title="Validation Policy"
                         [attr.errors-count]="errorsCount" [attr.readonly]="currentView != 'blocks'">
                         <mat-icon>task_alt</mat-icon>
                         <span>Validation</span>
                         <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
                     </div>
 
-                    <div class="btn-new-block btn-status-edit" (click)="tryPublishPolicy()" title="Publish Policy">
+                    <div *ngIf="policyModel.isDraft" class="btn-new-block btn-status-all" (click)="tryPublishPolicy()" title="Publish Policy">
                         <mat-icon>public</mat-icon>
                         <span>Publish</span>
                     </div>
 
-                    <div class="btn-new-block btn-status-edit" (click)="tryRunPolicy()" title="Dry-run Policy">
-                        <mat-icon>public</mat-icon>
+                    <div *ngIf="policyModel.isDraft" class="btn-new-block btn-status-all" (click)="tryRunPolicy()" title="Dry-run Policy">
+                        <mat-icon>build</mat-icon>
                         <span>Dry-run</span>
+                    </div>
+
+                    <div *ngIf="policyModel.isDryRun" class="btn-new-block btn-status-all" (click)="draftPolicy()" title="Draft Policy">
+                        <mat-icon>edit</mat-icon>
+                        <span>Draft</span>
                     </div>
 
                     <div class="delimiter"></div>

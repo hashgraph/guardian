@@ -1,16 +1,10 @@
 import { ActionCallback, BasicBlock, EventBlock } from '@policy-engine/helpers/decorators';
-import { Inject } from '@helpers/decorators/inject';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { Users } from '@helpers/users';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { AnyBlockType, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { Message, MessageServer } from '@hedera-modules';
-import { VcDocument } from '@entity/vc-document';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { DocumentState } from '@entity/document-state';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { VpDocument } from '@entity/vp-document';
-import { DidDocument } from '@entity/did-document';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 
@@ -42,13 +36,6 @@ export const RevokedStatus = 'Revoked';
     commonBlock: false,
 })
 export class RevokeBlock {
-    /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
     /**
      * Send to hedera
      * @param message
@@ -142,7 +129,7 @@ export class RevokeBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const uiMetaData = ref.options.uiMetaData;
         const data = event.data.data;
-        const hederaAccount = await this.users.getHederaAccount(event.user.did);
+        const hederaAccount = await PolicyUtils.getHederaAccount(ref, event.user.did);
         const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey, ref.dryRun);
         const policyTopics = await ref.databaseServer.getTopics({ policyId: ref.policyId });
         const policyTopicsMessages = [];

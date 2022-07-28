@@ -433,6 +433,17 @@ export class PolicyConfigurationComponent implements OnInit {
             this.dryRunPolicy();
         }
     }
+
+    public draftPolicy() {
+        this.loading = true;
+        this.policyEngineService.draft(this.policyId).subscribe((data: any) => {
+            const { policies, isValid, errors } = data;
+            this.clearState();
+            this.loadPolicy();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
     
     private doSavePolicy(): Observable<void> {
         return new Observable<void>(subscriber => {
@@ -471,6 +482,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.policyEngineService.publish(this.policyId, version).subscribe((data: any) => {
             const { policies, isValid, errors } = data;
             if (isValid) {
+                this.clearState();
                 this.loadPolicy();
             } else {
                 const blocks = errors.blocks;
@@ -495,6 +507,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.policyEngineService.dryRun(this.policyId).subscribe((data: any) => {
             const { policies, isValid, errors } = data;
             if (isValid) {
+                this.clearState();
                 this.loadPolicy();
             } else {
                 const blocks = errors.blocks;

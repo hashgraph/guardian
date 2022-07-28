@@ -215,4 +215,16 @@ export class PolicyEngine extends ServiceRequestsBase {
     public async blockAbout() {
         return await this.request(PolicyEngineEvents.BLOCK_ABOUT, null);
     }
+
+    public async getVirtualUsers(policyId: string) {
+        return await this.request(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId });
+    }
+
+    public async createVirtualUser(policyId: string, did:string) {
+        return await this.request(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, did });
+    }
+
+    public async loginVirtualUser(policyId, did: string) {
+        return await this.request(PolicyEngineEvents.SET_VIRTUAL_USER, { policyId, did });
+    }
 }

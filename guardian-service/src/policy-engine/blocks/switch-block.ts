@@ -2,12 +2,10 @@ import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
-import { Users } from '@helpers/users';
-import { Inject } from '@helpers/decorators/inject';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Switch block
@@ -32,13 +30,6 @@ import { IAuthUser } from '@guardian/common';
     }
 })
 export class SwitchBlock {
-    /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
     /**
      * Get scope
      * @param docs
@@ -97,7 +88,7 @@ export class SwitchBlock {
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
-     @ActionCallback({
+    @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     async runAction(event: IPolicyEvent<any>) {
@@ -144,11 +135,11 @@ export class SwitchBlock {
                 result = true;
             }
 
-            let curUser: IAuthUser = event.user;
+            let curUser: IPolicyUser = event.user;
             if (actor === 'owner' && owner) {
-                curUser = await this.users.getUserById(owner);
+                curUser = await PolicyUtils.getPolicyUser(ref, owner);
             } else if (actor === 'issuer' && issuer) {
-                curUser = await this.users.getUserById(issuer);
+                curUser = await PolicyUtils.getPolicyUser(ref, issuer);
             }
 
             ref.log(`check condition: ${curUser?.did}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);

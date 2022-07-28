@@ -1,5 +1,3 @@
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import { findOptions, getVCIssuer } from '@helpers/utils';
 import { ReportItem } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
@@ -27,12 +25,6 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class ReportItemBlock {
-    /**
-     * Users helper
-     */
-    @Inject()
-    public users: Users;
-
     /**
      * Run logic
      * @param resultFields

@@ -50,7 +50,7 @@ export class PolicyEngineService {
     public draft(policyId: string): Observable<any> {
         return this.http.put<any>(`${this.url}/${policyId}/draft`, null);
     }
-    
+
     public validate(policy: any): Observable<any> {
         return this.http.post<any>(`${this.url}/validate`, policy);
     }
@@ -127,5 +127,18 @@ export class PolicyEngineService {
 
     private getUrl(accessToken: string | null) {
         return `${this.getBaseUrl()}/ws/?token=${accessToken}`;
+    }
+
+
+    public getVirtualUsers(policyId: string): Observable<any[]> {
+        return this.http.get<any>(`${this.url}/${policyId}/dry-run/users`);
+    }
+
+    public createVirtualUser(policyId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/user`, null);
+    }
+
+    public loginVirtualUser(policyId: string, did: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/login`, { did });
     }
 }

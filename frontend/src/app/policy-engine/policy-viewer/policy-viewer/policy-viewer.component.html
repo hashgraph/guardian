@@ -23,8 +23,25 @@
                 <span *ngIf="policyInfo && policyInfo.description">: {{policyInfo.description}}</span>
                 <span *ngIf="policyInfo && policyInfo.version">({{policyInfo.version}})</span>
             </a>
-            <span *ngIf="policyInfo && policyInfo.userRoles" class="current-user-role">Roles:
-                {{policyInfo.userRoles.join(', ')}}</span>
+            <span *ngIf="policyInfo && policyInfo.userRoles" class="current-user-role">
+                Roles: {{policyInfo.userRoles.join(', ')}}
+            </span>
+            <span *ngIf="policyInfo.status === 'DRY-RUN'" class="current-user-role">
+                <div class="dry-run-panel" [matMenuTriggerFor]="menu">
+                    <span>Dry-run Panel</span>
+                    <mat-icon style="position: absolute;right: 0px;top: -2px">expand_more</mat-icon>
+                </div>
+                <mat-menu #menu="matMenu">
+                    <div *ngFor="let item of virtualUsers" class="debug-user" (click)="setVirtualUser(item)"
+                        [attr.active]="item.active">
+                        <div class="debug-user-name">{{item.username}}</div>
+                        <div class="debug-user-did">{{item.did}}</div>
+                    </div>
+                    <div class="new-debug-user" (click)="createVirtualUser()">
+                        Create virtual user
+                    </div>
+                </mat-menu>
+            </span>
         </div>
         <div class="policy-container">
             <render-block [block]="policy" [policyId]="policyId"></render-block>

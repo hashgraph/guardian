@@ -591,6 +591,11 @@ export class PolicyModel {
 
     private _changed: boolean;
 
+    public readonly isDraft: boolean = false;
+    public readonly isPublished: boolean = false;
+    public readonly isDryRun: boolean = false;
+    public readonly readonly: boolean = false;
+
     constructor(policy?: any) {
         this._changed = false;
 
@@ -615,6 +620,11 @@ export class PolicyModel {
 
         this.buildPolicy(policy);
         this.buildBlock(policy.config);
+
+        this.isDraft = this.status === 'DRAFT';
+        this.isPublished = this.status === 'PUBLISH';
+        this.isDryRun = this.status === 'DRY-RUN';
+        this.readonly = this.isPublished || this.isDryRun;
     }
 
     public get policyTag(): string {
@@ -667,10 +677,6 @@ export class PolicyModel {
 
     public get dataSource(): PolicyBlockModel[] {
         return this._dataSource;
-    }
-
-    public get readonly(): boolean {
-        return this.status == 'PUBLISH' || this.status == 'DRY-RUN';
     }
 
     public get policyRoles(): PolicyRoleModel[] {

@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyAddonBlock, IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Document source block with UI
@@ -34,7 +34,7 @@ export class InterfaceDocumentsSource {
      * @param uuid
      * @param queryParams
      */
-    async getData(user: IAuthUser, uuid: string, queryParams: any): Promise<any> {
+    async getData(user: IPolicyUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
 
         const filters = ref.getFiltersAddons().map(addon => {

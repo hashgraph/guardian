@@ -4,10 +4,10 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcHelper } from '@helpers/vc-helper';
-import { Users } from '@helpers/users';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Reassigning block
@@ -34,13 +34,6 @@ import { IAuthUser } from '@guardian/common';
 })
 export class ReassigningBlock {
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
      * VC helper
      * @private
      */
@@ -52,7 +45,7 @@ export class ReassigningBlock {
      * @param state
      * @param user
      */
-    async documentReassigning(state, user: IAuthUser): Promise<any> {
+    async documentReassigning(state, user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
         const document = state.data;
@@ -60,18 +53,18 @@ export class ReassigningBlock {
 
         let root: any;
         if (ref.options.issuer === 'owner') {
-            root = await this.users.getHederaAccount(document.owner);
+            root = await PolicyUtils.getHederaAccount(ref, document.owner);
         } else if (ref.options.issuer === 'policyOwner') {
-            root = await this.users.getHederaAccount(ref.policyOwner);
+            root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
         } else {
-            root = await this.users.getHederaAccount(user.did);
+            root = await PolicyUtils.getHederaAccount(ref, user.did);
         }
 
-        let owner: IAuthUser;
+        let owner: IPolicyUser;
         if (ref.options.actor === 'owner') {
-            owner = await this.users.getUserById(document.owner);
+            owner = await PolicyUtils.getPolicyUser(ref, document.owner);
         } else if (ref.options.actor === 'issuer') {
-            owner = await this.users.getUserById(root.did);
+            owner = await PolicyUtils.getPolicyUser(ref, root.did);
         } else {
             owner = user;
         }
