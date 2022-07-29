@@ -409,7 +409,7 @@ schemaAPI.put('/push/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGI
         }
     });
 
-    res.status(201).send({ taskId, expectation });
+    res.status(200).send({ taskId, expectation });
 });
 
 /**
@@ -531,9 +531,6 @@ schemaAPI.post('/push/:topicId/import/message', permissionHelper(UserRole.STANDA
         try {
             const guardians = new Guardians();
             await guardians.importSchemasByMessagesAsync([messageId], user.did, topicId, taskId);
-            // const { schemas, count } = await guardians.getSchemasByOwner(user.did);
-            // SchemaHelper.updatePermission(schemas, user.did);
-            // taskManager.addResult(taskId, { count, schemas: toOld(schemas) })
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(taskId, { code: 500, message: error.message });

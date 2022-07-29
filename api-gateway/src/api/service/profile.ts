@@ -1,13 +1,11 @@
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
-//import { KeyType, Wallet } from '@helpers/wallet';
 import { Request, Response, Router } from 'express';
 import {
     DidDocumentStatus,
     IUser,
     SchemaEntity,
-    TopicType,
-    //UserRole
+    TopicType
 } from '@guardian/interfaces';
 import { AuthenticatedRequest, Logger } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
@@ -118,7 +116,7 @@ profileAPI.put('/push/:username', async (req: AuthenticatedRequest, res: Respons
         }
     });
 
-    res.status(201).send({ taskId, expectation });
+    res.status(200).send({ taskId, expectation });
 });
 
 profileAPI.get('/:username/balance', async (req: Request, res: Response) => {

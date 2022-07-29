@@ -458,7 +458,7 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {any[]} - Schema Document
      */
-    public async importSchemasByMessages(messageIds: string[], owner: string, topicId: string ): Promise<any[]> {
+    public async importSchemasByMessages(messageIds: string[], owner: string, topicId: string): Promise<any[]> {
         return await this.request<any[]>(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, { messageIds, owner, topicId });
     }
 
