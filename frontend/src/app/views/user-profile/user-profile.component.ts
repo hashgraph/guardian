@@ -14,7 +14,7 @@ import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 
 enum OperationMode {
-    None, Generate, SetProfile
+    None, Generate, SetProfile, Associate
 }
 
 interface IHederaForm {
@@ -221,8 +221,11 @@ export class UserProfileComponent implements OnInit {
 
     associate(token: Token) {
         this.loading = true;
-        this.tokenService.associate(token.tokenId, token.associated != "Yes").subscribe((treasury) => {
-            this.loadDate()
+        this.tokenService.pushAssociate(token.tokenId, token.associated != "Yes").subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.operationMode = OperationMode.Associate;
         }, (error) => {
             this.loading = false;
         });
@@ -291,8 +294,8 @@ export class UserProfileComponent implements OnInit {
             this.taskId = undefined;
             this.operationMode = OperationMode.None;
             switch (operationMode) {
-                case OperationMode.Generate: 
-                    this.taskService.get(taskId).subscribe((task) => { 
+                case OperationMode.Generate:
+                    this.taskService.get(taskId).subscribe((task) => {
                         const { id, key} = task.result;
                         value.id = id;
                         value.key = key;
@@ -301,6 +304,7 @@ export class UserProfileComponent implements OnInit {
                     });
                     break;
                 case OperationMode.SetProfile:
+                case OperationMode.Associate:
                     this.loadDate();
                     break;
                 default:

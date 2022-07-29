@@ -183,6 +183,23 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Async grant KYC
+     * @param tokenId
+     * @param username
+     * @param owner
+     * @param taskId
+     */
+    public async grantKycTokenAsync(tokenId: string, username: string, owner: string, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.KYC_TOKEN_ASYNC, {
+            tokenId,
+            username,
+            owner,
+            grant: true,
+            taskId,
+        });
+    }
+
+    /**
      * Revoke KYC
      * @param tokenId
      * @param username
@@ -194,6 +211,23 @@ export class Guardians extends ServiceRequestsBase {
             username,
             owner,
             grant: false,
+        });
+    }
+
+    /**
+     * Async revoke KYC
+     * @param tokenId
+     * @param username
+     * @param owner
+     * @param taskId
+     */
+    public async revokeKycTokenAsync(tokenId: string, username: string, owner: string, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.KYC_TOKEN_ASYNC, {
+            tokenId,
+            username,
+            owner,
+            grant: false,
+            taskId,
         });
     }
 
@@ -211,6 +245,21 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Async associate token
+     * @param tokenId
+     * @param did
+     * @param taskId
+     */
+    public async associateTokenAsync(tokenId: string, did: string, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.ASSOCIATE_TOKEN_ASYNC, {
+            tokenId,
+            did,
+            associate: true,
+            taskId
+        });
+    }
+
+    /**
      * Dissociate token
      * @param tokenId
      * @param did
@@ -220,6 +269,21 @@ export class Guardians extends ServiceRequestsBase {
             tokenId,
             did,
             associate: false,
+        });
+    }
+
+    /**
+     * Async dissociate token
+     * @param tokenId
+     * @param did
+     * @param taskId
+     */
+    public async dissociateTokenAsync(tokenId: string, did: string, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.ASSOCIATE_TOKEN_ASYNC, {
+            tokenId,
+            did,
+            associate: false,
+            taskId
         });
     }
 

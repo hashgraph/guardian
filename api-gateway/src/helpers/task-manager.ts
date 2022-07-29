@@ -38,6 +38,8 @@ export class TaskManager {
         'Connect user': 16,
         'Preview policy message': 6,
         'Create token': 6,
+        'Associate/dissociate token': 6,
+        'Grant/revoke KYC': 6,
     };
 
     /**

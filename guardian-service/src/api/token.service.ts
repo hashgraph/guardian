@@ -130,6 +130,91 @@ async function createToken(token: any, owner: any, tokenRepository: MongoReposit
 }
 
 /**
+ * Associate/dissociate token
+ * @param tokenId
+ * @param did
+ * @param associate
+ * @param tokenRepository
+ * @param notifier
+ */
+async function associateToken(tokenId: any, did: any, associate: any, tokenRepository: MongoRepository<Token>, notifier: INotifier): Promise<boolean> {
+    notifier.start('Find token data');
+    const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+    if (!token) {
+        throw new Error('Token not found');
+    }
+
+    const wallet = new Wallet();
+    const users = new Users();
+    notifier.completedAndStart('Resolve Hedera account');
+    const user = await users.getUserById(did);
+    const userID = user.hederaAccountId;
+    const userDID = user.did;
+    const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    if (!user.hederaAccountId) {
+        throw new Error('User is not linked to an Hedera Account');
+    }
+
+    notifier.completedAndStart(associate ? 'Associate' : 'Dissociate');
+    const client = new HederaSDKHelper(userID, userKey);
+    let status: boolean;
+    if (associate) {
+        status = await client.associate(tokenId, userID, userKey);
+    } else {
+        status = await client.dissociate(tokenId, userID, userKey);
+    }
+
+    notifier.completed();
+    return status;
+}
+
+/**
+ * Grant/revoke KYC
+ * @param tokenId
+ * @param username
+ * @param owner
+ * @param grant
+ * @param tokenRepository
+ * @param notifier
+ */
+async function grantKycToken(tokenId, username, owner, grant, tokenRepository: MongoRepository<Token>, notifier: INotifier): Promise<any> {
+    notifier.start('Find token data');
+    const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+    if (!token) {
+        throw new Error('Token not found');
+    }
+
+    notifier.completedAndStart('Resolve Hedera account');
+    const users = new Users();
+    const user = await users.getUser(username);
+    if (!user) {
+        throw new Error('User not found');
+    }
+    if (!user.hederaAccountId) {
+        throw new Error('User is not linked to an Hedera Account');
+    }
+
+    const root = await users.getHederaAccount(owner);
+    const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+    const kycKey = token.kycKey;
+    notifier.completedAndStart(grant ? 'Grant KYC' : 'Revoke KYC');
+    if (grant) {
+        await client.grantKyc(tokenId, user.hederaAccountId, kycKey);
+    } else {
+        await client.revokeKyc(tokenId, user.hederaAccountId, kycKey);
+    }
+
+    const info = await client.accountInfo(user.hederaAccountId);
+    const result = getTokenInfo(info, { tokenId });
+    notifier.completed();
+    return result;
+}
+
+/**
  * Connect to the message broker methods of working with tokens.
  *
  * @param channel - channel
@@ -220,80 +305,62 @@ export async function tokenAPI(
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             return new MessageError(error.message, 400);
         }
-    })
+    });
 
     ApiResponse(channel, MessageAPI.KYC_TOKEN, async (msg) => {
         try {
             const { tokenId, username, owner, grant } = msg;
-
-            const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
-            if (!token) {
-                throw new Error('Token not found');
-            }
-
-            const users = new Users();
-            const user = await users.getUser(username);
-            if (!user) {
-                throw new Error('User not found');
-            }
-            if (!user.hederaAccountId) {
-                throw new Error('User is not linked to an Hedera Account');
-            }
-
-            const root = await users.getHederaAccount(owner);
-            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-            const kycKey = token.kycKey;
-            if (grant) {
-                await client.grantKyc(tokenId, user.hederaAccountId, kycKey);
-            } else {
-                await client.revokeKyc(tokenId, user.hederaAccountId, kycKey);
-            }
-
-            const info = await client.accountInfo(user.hederaAccountId);
-            const result = getTokenInfo(info, { tokenId });
+            const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, emptyNotifier());
             return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             return new MessageError(error.message, 400);
         }
-    })
+    });
+
+    ApiResponse(channel, MessageAPI.KYC_TOKEN_ASYNC, async (msg) => {
+        const { tokenId, username, owner, grant, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+
+        setImmediate(async () => {
+            try {
+                const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, notifier);
+                notifier.result(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
+    });
 
     ApiResponse(channel, MessageAPI.ASSOCIATE_TOKEN, async (msg) => {
         try {
             const { tokenId, did, associate } = msg;
-
-            const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
-            if (!token) {
-                throw new Error('Token not found');
-            }
-
-            const wallet = new Wallet();
-            const users = new Users();
-            const user = await users.getUserById(did);
-            const userID = user.hederaAccountId;
-            const userDID = user.did;
-            const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
-            if (!user) {
-                throw new Error('User not found');
-            }
-
-            if (!user.hederaAccountId) {
-                throw new Error('User is not linked to an Hedera Account');
-            }
-
-            const client = new HederaSDKHelper(userID, userKey);
-            let status: boolean;
-            if (associate) {
-                status = await client.associate(tokenId, userID, userKey);
-            } else {
-                status = await client.dissociate(tokenId, userID, userKey);
-            }
-
+            const status = await associateToken(tokenId, did, associate, tokenRepository, emptyNotifier());
             return new MessageResponse(status);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             return new MessageError(error.message, 400);
         }
+    })
+
+    ApiResponse(channel, MessageAPI.ASSOCIATE_TOKEN_ASYNC, async (msg) => {
+        const { tokenId, did, associate, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+
+        setImmediate(async () => {
+            try {
+                const status = await associateToken(tokenId, did, associate, tokenRepository, notifier);
+                notifier.result(status);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
     })
 
     ApiResponse(channel, MessageAPI.GET_INFO_TOKEN, async (msg) => {
