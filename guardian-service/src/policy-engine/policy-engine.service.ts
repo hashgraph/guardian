@@ -164,7 +164,7 @@ export class PolicyEngineService {
                     userFull = await this.users.getUser(user.username);
                 }
             } else {
-                throw new Error(``);
+                throw new Error(`Forbidden`);
             }
         } else {
             userFull = await this.users.getUser(user.username);
@@ -438,7 +438,11 @@ export class PolicyEngineService {
         });
 
         await DatabaseServer.createVirtualUser(
-            model.id.toString(), root.did, root.hederaAccountId, root.hederaAccountKey
+            model.id.toString(), 
+            root.did, 
+            root.hederaAccountId, 
+            root.hederaAccountKey,
+            true
         );
 
         logger.info('Published Policy', ['GUARDIAN_SERVICE']);
@@ -461,10 +465,12 @@ export class PolicyEngineService {
             const policy = await DatabaseServer.getPolicy(filters);
 
             const result: any = policy;
-            const userRoles: string[] = await PolicyComponentsUtils.GetUserRoleList(policy, userDid);
-
             if (policy) {
-                result.userRoles = userRoles;
+                if(policy.status === 'DRY-RUN') {
+                    result.userRoles = await PolicyComponentsUtils.GetVirtualUserRoleList(policy, userDid);
+                } else {
+                    result.userRoles = await PolicyComponentsUtils.GetUserRoleList(policy, userDid);
+                }
             }
 
             return new MessageResponse(result);
@@ -670,7 +676,7 @@ export class PolicyEngineService {
                 const block = this.policyGenerator.getRoot(policyId);
                 const userFull = await this.getUser(user, policyId, block.dryRun);
 
-                if (block && (await block.isAvailable(user))) {
+                if (block && (await block.isAvailable(userFull))) {
                     const data = await block.getData(userFull, block.uuid);
                     return new MessageResponse(data);
                 } else {
@@ -689,8 +695,7 @@ export class PolicyEngineService {
                 const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
                 const userFull = await this.getUser(user, policyId, block.dryRun);
 
-
-                if (block && (await block.isAvailable(user))) {
+                if (block && (await block.isAvailable(userFull))) {
                     const data = await block.getData(userFull, blockId, null);
                     return new MessageResponse(data);
                 } else {
@@ -709,7 +714,7 @@ export class PolicyEngineService {
                 const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
                 const userFull = await this.getUser(user, policyId, block.dryRun);
 
-                if (block && (await block.isAvailable(user))) {
+                if (block && (await block.isAvailable(userFull))) {
                     const result = await block.setData(userFull, data);
                     return new MessageResponse(result);
                 } else {

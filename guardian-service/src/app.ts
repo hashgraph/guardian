@@ -25,7 +25,6 @@ import { MessageBrokerChannel, ApplicationState, Logger, ExternalEventChannel } 
 import { ApplicationStates } from '@guardian/interfaces';
 import { Environment, HederaSDKHelper, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
-import { DryRun } from '@entity/dry-run';
 
 Promise.all([
     createConnection({

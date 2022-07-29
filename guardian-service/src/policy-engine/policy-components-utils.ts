@@ -468,9 +468,43 @@ export class PolicyComponentsUtils {
      * @param policy
      * @param did
      */
+    public static async GetVirtualUserRoleList(policy: Policy, did: string): Promise<string[]> {
+        const userRoles: string[] = [];
+        if (policy) {
+            const policyId = policy.id.toString();
+            const activeUser = await DatabaseServer.getVirtualUser(policyId);
+            if (activeUser) {
+                did = activeUser.did;
+            }
+            if (policy.owner === did) {
+                userRoles.push('Administrator');
+            }
+            const db = new DatabaseServer(true, policyId);
+            const role = await db.getUserRole(policyId, did);
+            if (role) {
+                userRoles.push(role);
+            }
+        }
+        if (!userRoles.length) {
+            userRoles.push('The user does not have a role');
+        }
+        return userRoles;
+    }
+
+    /**
+     * Get User Role List
+     * @param policy
+     * @param did
+     */
     public static async GetUserRoleList(policy: Policy, did: string): Promise<string[]> {
         const userRoles: string[] = [];
         if (policy && did) {
+            if (policy.status === 'DRU-RUN') {
+                const activeUser = await DatabaseServer.getVirtualUser(policy.id);
+                if (activeUser) {
+                    did = activeUser.did;
+                }
+            }
             if (policy.owner === did) {
                 userRoles.push('Administrator');
             }

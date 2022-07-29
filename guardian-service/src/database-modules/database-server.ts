@@ -913,15 +913,16 @@ export class DatabaseServer {
         policyId: string,
         did: string,
         hederaAccountId: string,
-        hederaAccountKey: string
+        hederaAccountKey: string,
+        active: boolean = false
     ): Promise<void> {
         const user = getMongoRepository(DryRun).create({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
-            did: did,
+            did,
             username: did,
             hederaAccountId: hederaAccountId,
-            active: true
+            active
         });
 
         await getMongoRepository(DryRun).save(user);
@@ -938,11 +939,11 @@ export class DatabaseServer {
     }
 
     public static async getVirtualUser(policyId: string): Promise<any> {
-        return (await getMongoRepository(DryRun).findOne({
+        return await getMongoRepository(DryRun).findOne({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
             active: true
-        })) as any;
+        });
     }
 
     public static async getVirtualUsers(policyId: string): Promise<any[]> {

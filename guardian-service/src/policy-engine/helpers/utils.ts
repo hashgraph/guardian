@@ -34,6 +34,10 @@ export interface IHederaAccount {
      * Account key
      */
     hederaAccountKey: string;
+    /**
+     * Account did
+     */
+    did: string;
 }
 
 /**
@@ -636,6 +640,7 @@ export class PolicyUtils {
             }
             const userKey = await ref.databaseServer.getVirtualKey(did, did);
             return {
+                did: did,
                 hederaAccountId: userID,
                 hederaAccountKey: userKey
             }
@@ -651,6 +656,7 @@ export class PolicyUtils {
             }
             const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
             return {
+                did: did,
                 hederaAccountId: userID,
                 hederaAccountKey: userKey
             }

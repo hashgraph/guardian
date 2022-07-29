@@ -524,7 +524,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                         return user.did === this.policyOwner;
                     }
                 }
-
                 if (this.permissions.indexOf(role) > -1) {
                     hasAccess = true;
                 }
