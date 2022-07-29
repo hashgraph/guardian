@@ -19,6 +19,10 @@ export class DemoService {
         return this.http.get<any>(`${this.url}/randomKey`);
     }
 
+    public pushGetRandomKey(): Observable<{ taskId: string, expectation: number }> {
+        return this.http.get<{ taskId: string, expectation: number }>(`${this.url}/push/randomKey`);
+    }
+
     public getAllUsers(): Observable<ISession[]> {
         return this.http.get<any>(`${this.url}/registeredUsers`);
     }

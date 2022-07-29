@@ -18,6 +18,7 @@ import { TopicHelper } from '@helpers/topic-helper';
 import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { PolicyUtils } from './utils';
+import { INotifier } from '@helpers/notifier';
 
 /**
  * Policy import export helper
@@ -134,7 +135,7 @@ export class PolicyImportExportHelper {
      *
      * @returns Policies by owner
      */
-    static async importPolicy(policyToImport: any, policyOwner: string, versionOfTopicId?: any): Promise<Policy> {
+    static async importPolicy(policyToImport: any, policyOwner: string, versionOfTopicId: string, notifier: INotifier): Promise<Policy> {
         const { policy, tokens, schemas } = policyToImport;
 
         delete policy.id;
@@ -149,8 +150,9 @@ export class PolicyImportExportHelper {
         policy.status = 'DRAFT';
 
         const users = new Users();
+        notifier.start('Resolve Hedera account');
         const root = await users.getHederaAccount(policyOwner);
-
+        notifier.completedAndStart('Resolve topic');
         const parent = await getMongoRepository(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         const topicRow = versionOfTopicId
@@ -163,33 +165,41 @@ export class PolicyImportExportHelper {
                 policyId: null,
                 policyUUID: null
             });
-
+        notifier.completed();
         policy.topicId = topicRow.topicId;
-
+        notifier.start('Publish Policy in Hedera');
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
         const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
         message.setDocument(policy);
         const messageStatus = await messageServer
             .setTopicObject(parent)
             .sendMessage(message);
-
+        notifier.completedAndStart('Link topic and policy');
         await topicHelper.twoWayLink(topicRow, parent, messageStatus.getId());
-
+        notifier.completedAndStart('Publishing schemas');
         const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
-
+        notifier.info(`Found ${systemSchemas.length} schemas`);
+        let num: number = 0;
         for (const schema of systemSchemas) {
             messageServer.setTopicObject(topicRow);
+            let name: string;
             if(schema) {
                 schema.creator = policyOwner;
                 schema.owner = policyOwner;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
                 const newItem = getMongoRepository(Schema).create(item);
                 await getMongoRepository(Schema).save(newItem);
+                name = newItem.name;
             }
+            num++;
+            notifier.info(`Schema ${num} (${name || '-'}) published`);
         }
+
+        notifier.completed();
 
         // Import Tokens
         if (tokens) {
+            notifier.start('Import tokens');
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
             const tokenRepository = getMongoRepository(Token);
@@ -240,11 +250,13 @@ export class PolicyImportExportHelper {
                 await tokenRepository.save(tokenObject);
                 replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenId);
             }
+            notifier.completed();
         }
 
         // Import Schemas
-        const schemasMap = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId);
+        const schemasMap = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId, notifier);
 
+        notifier.start('Saving in DB');
         // Replace id
         await PolicyImportExportHelper.replaceConfig(policy, schemasMap);
 
@@ -256,6 +268,7 @@ export class PolicyImportExportHelper {
         topicRow.policyUUID = result.uuid;
         await getMongoRepository(Topic).update(topicRow.id, topicRow);
 
+        notifier.completed();
         return result;
     }
 

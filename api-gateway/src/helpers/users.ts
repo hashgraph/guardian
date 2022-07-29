@@ -93,11 +93,11 @@ export class Users extends ServiceRequestsBase {
 
     /**
      * Update current user entity
-     * @param req
+     * @param username
      * @param item
      */
-    public async updateCurrentUser(req: AuthenticatedRequest, item: any) {
-        return await this.request(AuthEvents.UPDATE_USER, {username: req.user.username, item});
+    public async updateCurrentUser(username: string, item: any) {
+        return await this.request(AuthEvents.UPDATE_USER, { username, item });
     }
 
     /**

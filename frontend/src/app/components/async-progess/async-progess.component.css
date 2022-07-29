@@ -1,0 +1,10 @@
+.status-grid {
+    display: grid;
+    grid-template-columns: 70% 30%;
+}
+.status {
+    text-align: right;
+}
+.info {
+    padding-left: 30px;
+}

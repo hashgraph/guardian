@@ -123,12 +123,13 @@ export class MessageServer {
     private async sendIPFS<T extends Message>(message: T): Promise<T> {
         const time = await this.messageStartLog('IPFS');
         const buffers = await message.toDocuments();
-        const urls = [];
-        for (const buffer of buffers) {
-            const result = await IPFS.addFile(buffer);
-            urls.push(result);
-        }
+
+        const promises = buffers.map(buffer => {
+            return IPFS.addFileAsync(buffer);
+        });
+        const urls = await Promise.all(promises);
         await this.messageEndLog(time, 'IPFS');
+
         message.setUrls(urls);
         return message;
     }
@@ -140,11 +141,10 @@ export class MessageServer {
      */
     private async loadIPFS<T extends Message>(message: T): Promise<T> {
         const urls = message.getUrls();
-        const documents = [];
-        for (const url of urls) {
-            const document = await IPFS.getFile(url.cid, message.responseType);
-            documents.push(document);
-        }
+        const promises = urls.map(url => {
+            return IPFS.getFileAsync(url.cid, message.responseType);
+        });
+        const documents = await Promise.all(promises);
         message = message.loadDocuments(documents) as T;
         return message;
     }

@@ -6,6 +6,7 @@ import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI, IToken } from '@guardian/interfaces';
+import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 
 /**
  * Get token info
@@ -48,6 +49,172 @@ function getTokenInfo(info: any, token: any) {
 }
 
 /**
+ * Create token
+ * @param token
+ * @param owner
+ * @param tokenRepository
+ * @param notifier
+ */
+async function createToken(token: any, owner: any, tokenRepository: MongoRepository<Token>, notifier: INotifier): Promise<Token> {
+    const {
+        changeSupply,
+        decimals,
+        enableAdmin,
+        enableFreeze,
+        enableKYC,
+        enableWipe,
+        initialSupply,
+        tokenName,
+        tokenSymbol,
+        tokenType
+    } = token;
+
+    if (!tokenName) {
+        throw new Error('Invalid Token Name');
+    }
+
+    if (!tokenSymbol) {
+        throw new Error('Invalid Token Symbol');
+    }
+
+    notifier.start('Resolve Hedera account');
+    const users = new Users();
+    const root = await users.getHederaAccount(owner);
+
+    notifier.completedAndStart('Create token');
+    const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+    const treasury = client.newTreasury(root.hederaAccountId, root.hederaAccountKey);
+    const treasuryId = treasury.id;
+    const treasuryKey = treasury.key;
+    const adminKey = enableAdmin ? treasuryKey : null;
+    const kycKey = enableKYC ? treasuryKey : null;
+    const freezeKey = enableFreeze ? treasuryKey : null;
+    const wipeKey = enableWipe ? treasuryKey : null;
+    const supplyKey = changeSupply ? treasuryKey : null;
+    const nft = tokenType === 'non-fungible';
+    const _decimals = nft ? 0 : decimals;
+    const _initialSupply = nft ? 0 : initialSupply;
+    const tokenId = await client.newToken(
+        tokenName,
+        tokenSymbol,
+        nft,
+        _decimals,
+        _initialSupply,
+        '',
+        treasury,
+        adminKey,
+        kycKey,
+        freezeKey,
+        wipeKey,
+        supplyKey,
+    );
+    notifier.completedAndStart('Save token in DB');
+    const tokenObject = tokenRepository.create({
+        tokenId,
+        tokenName,
+        tokenSymbol,
+        tokenType,
+        decimals: _decimals,
+        initialSupply: _initialSupply,
+        adminId: treasuryId ? treasuryId.toString() : null,
+        adminKey: adminKey ? adminKey.toString() : null,
+        kycKey: kycKey ? kycKey.toString() : null,
+        freezeKey: freezeKey ? freezeKey.toString() : null,
+        wipeKey: wipeKey ? wipeKey.toString() : null,
+        supplyKey: supplyKey ? supplyKey.toString() : null,
+        owner: root.did
+    });
+    const result = await tokenRepository.save(tokenObject);
+    notifier.completed();
+    return result;
+}
+
+/**
+ * Associate/dissociate token
+ * @param tokenId
+ * @param did
+ * @param associate
+ * @param tokenRepository
+ * @param notifier
+ */
+async function associateToken(tokenId: any, did: any, associate: any, tokenRepository: MongoRepository<Token>, notifier: INotifier): Promise<boolean> {
+    notifier.start('Find token data');
+    const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+    if (!token) {
+        throw new Error('Token not found');
+    }
+
+    const wallet = new Wallet();
+    const users = new Users();
+    notifier.completedAndStart('Resolve Hedera account');
+    const user = await users.getUserById(did);
+    const userID = user.hederaAccountId;
+    const userDID = user.did;
+    const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    if (!user.hederaAccountId) {
+        throw new Error('User is not linked to an Hedera Account');
+    }
+
+    notifier.completedAndStart(associate ? 'Associate' : 'Dissociate');
+    const client = new HederaSDKHelper(userID, userKey);
+    let status: boolean;
+    if (associate) {
+        status = await client.associate(tokenId, userID, userKey);
+    } else {
+        status = await client.dissociate(tokenId, userID, userKey);
+    }
+
+    notifier.completed();
+    return status;
+}
+
+/**
+ * Grant/revoke KYC
+ * @param tokenId
+ * @param username
+ * @param owner
+ * @param grant
+ * @param tokenRepository
+ * @param notifier
+ */
+async function grantKycToken(tokenId, username, owner, grant, tokenRepository: MongoRepository<Token>, notifier: INotifier): Promise<any> {
+    notifier.start('Find token data');
+    const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+    if (!token) {
+        throw new Error('Token not found');
+    }
+
+    notifier.completedAndStart('Resolve Hedera account');
+    const users = new Users();
+    const user = await users.getUser(username);
+    if (!user) {
+        throw new Error('User not found');
+    }
+    if (!user.hederaAccountId) {
+        throw new Error('User is not linked to an Hedera Account');
+    }
+
+    const root = await users.getHederaAccount(owner);
+    const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+    const kycKey = token.kycKey;
+    notifier.completedAndStart(grant ? 'Grant KYC' : 'Revoke KYC');
+    if (grant) {
+        await client.grantKyc(tokenId, user.hederaAccountId, kycKey);
+    } else {
+        await client.revokeKyc(tokenId, user.hederaAccountId, kycKey);
+    }
+
+    const info = await client.accountInfo(user.hederaAccountId);
+    const result = getTokenInfo(info, { tokenId });
+    notifier.completed();
+    return result;
+}
+
+/**
  * Connect to the message broker methods of working with tokens.
  *
  * @param channel - channel
@@ -55,6 +222,7 @@ function getTokenInfo(info: any, token: any) {
  */
 export async function tokenAPI(
     channel: MessageBrokerChannel,
+    apiGatewayChannel: MessageBrokerChannel,
     tokenRepository: MongoRepository<Token>
 ): Promise<void> {
     /**
@@ -70,80 +238,38 @@ export async function tokenAPI(
                 throw new Error('Invalid Params');
             }
 
-            const {
-                changeSupply,
-                decimals,
-                enableAdmin,
-                enableFreeze,
-                enableKYC,
-                enableWipe,
-                initialSupply,
-                tokenName,
-                tokenSymbol,
-                tokenType
-            } = msg.token;
-            const owner = msg.owner;
+            const { token, owner } = msg;
 
-            if (!tokenName) {
-                throw new Error('Invalid Token Name');
-            }
+            await createToken(token, owner, tokenRepository, emptyNotifier());
 
-            if (!tokenSymbol) {
-                throw new Error('Invalid Token Symbol');
-            }
-
-            const users = new Users();
-            const root = await users.getHederaAccount(owner);
-
-            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-            const treasury = client.newTreasury(root.hederaAccountId, root.hederaAccountKey);
-            const treasuryId = treasury.id;
-            const treasuryKey = treasury.key;
-            const adminKey = enableAdmin ? treasuryKey : null;
-            const kycKey = enableKYC ? treasuryKey : null;
-            const freezeKey = enableFreeze ? treasuryKey : null;
-            const wipeKey = enableWipe ? treasuryKey : null;
-            const supplyKey = changeSupply ? treasuryKey : null;
-            const nft = tokenType === 'non-fungible';
-            const _decimals = nft ? 0 : decimals;
-            const _initialSupply = nft ? 0 : initialSupply;
-            const tokenId = await client.newToken(
-                tokenName,
-                tokenSymbol,
-                nft,
-                _decimals,
-                _initialSupply,
-                '',
-                treasury,
-                adminKey,
-                kycKey,
-                freezeKey,
-                wipeKey,
-                supplyKey,
-            );
-            const tokenObject = tokenRepository.create({
-                tokenId,
-                tokenName,
-                tokenSymbol,
-                tokenType,
-                decimals: _decimals,
-                initialSupply: _initialSupply,
-                adminId: treasuryId ? treasuryId.toString() : null,
-                adminKey: adminKey ? adminKey.toString() : null,
-                kycKey: kycKey ? kycKey.toString() : null,
-                freezeKey: freezeKey ? freezeKey.toString() : null,
-                wipeKey: wipeKey ? wipeKey.toString() : null,
-                supplyKey: supplyKey ? supplyKey.toString() : null,
-                owner: root.did
-            });
-            await tokenRepository.save(tokenObject);
             const tokens = await tokenRepository.find();
             return new MessageResponse(tokens);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             return new MessageError(error.message);
         }
-    })
+    });
+
+    ApiResponse(channel, MessageAPI.SET_TOKEN_ASYNC, async (msg) => {
+        const { token, owner, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+
+        setImmediate(async () => {
+            try {
+                if (!msg) {
+                    throw new Error('Invalid Params');
+                }
+
+                const result = await createToken(token, owner, tokenRepository, notifier);
+                notifier.result(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
+    });
 
     ApiResponse(channel, MessageAPI.FREEZE_TOKEN, async (msg) => {
         try {
@@ -179,80 +305,62 @@ export async function tokenAPI(
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             return new MessageError(error.message, 400);
         }
-    })
+    });
 
     ApiResponse(channel, MessageAPI.KYC_TOKEN, async (msg) => {
         try {
             const { tokenId, username, owner, grant } = msg;
-
-            const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
-            if (!token) {
-                throw new Error('Token not found');
-            }
-
-            const users = new Users();
-            const user = await users.getUser(username);
-            if (!user) {
-                throw new Error('User not found');
-            }
-            if (!user.hederaAccountId) {
-                throw new Error('User is not linked to an Hedera Account');
-            }
-
-            const root = await users.getHederaAccount(owner);
-            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-            const kycKey = token.kycKey;
-            if (grant) {
-                await client.grantKyc(tokenId, user.hederaAccountId, kycKey);
-            } else {
-                await client.revokeKyc(tokenId, user.hederaAccountId, kycKey);
-            }
-
-            const info = await client.accountInfo(user.hederaAccountId);
-            const result = getTokenInfo(info, { tokenId });
+            const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, emptyNotifier());
             return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             return new MessageError(error.message, 400);
         }
-    })
+    });
+
+    ApiResponse(channel, MessageAPI.KYC_TOKEN_ASYNC, async (msg) => {
+        const { tokenId, username, owner, grant, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+
+        setImmediate(async () => {
+            try {
+                const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, notifier);
+                notifier.result(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
+    });
 
     ApiResponse(channel, MessageAPI.ASSOCIATE_TOKEN, async (msg) => {
         try {
             const { tokenId, did, associate } = msg;
-
-            const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
-            if (!token) {
-                throw new Error('Token not found');
-            }
-
-            const wallet = new Wallet();
-            const users = new Users();
-            const user = await users.getUserById(did);
-            const userID = user.hederaAccountId;
-            const userDID = user.did;
-            const userKey = await wallet.getKey(user.walletToken, KeyType.KEY, userDID);
-            if (!user) {
-                throw new Error('User not found');
-            }
-
-            if (!user.hederaAccountId) {
-                throw new Error('User is not linked to an Hedera Account');
-            }
-
-            const client = new HederaSDKHelper(userID, userKey);
-            let status: boolean;
-            if (associate) {
-                status = await client.associate(tokenId, userID, userKey);
-            } else {
-                status = await client.dissociate(tokenId, userID, userKey);
-            }
-
+            const status = await associateToken(tokenId, did, associate, tokenRepository, emptyNotifier());
             return new MessageResponse(status);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             return new MessageError(error.message, 400);
         }
+    })
+
+    ApiResponse(channel, MessageAPI.ASSOCIATE_TOKEN_ASYNC, async (msg) => {
+        const { tokenId, did, associate, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+
+        setImmediate(async () => {
+            try {
+                const status = await associateToken(tokenId, did, associate, tokenRepository, notifier);
+                notifier.result(status);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
     })
 
     ApiResponse(channel, MessageAPI.GET_INFO_TOKEN, async (msg) => {

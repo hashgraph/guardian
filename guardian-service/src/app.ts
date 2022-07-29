@@ -25,6 +25,7 @@ import { MessageBrokerChannel, ApplicationState, Logger, ExternalEventChannel } 
 import { ApplicationStates } from '@guardian/interfaces';
 import { Environment, HederaSDKHelper, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
+import { ipfsAPI } from '@api/ipfs.service';
 
 Promise.all([
     createConnection({
@@ -45,6 +46,7 @@ Promise.all([
 ]).then(async values => {
     const [db, cn] = values;
     const channel = new MessageBrokerChannel(cn, 'guardians');
+    const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
 
     new Logger().setChannel(channel);
     const state = new ApplicationState('GUARDIAN_SERVICE');
@@ -128,7 +130,7 @@ Promise.all([
     new Users().setChannel(channel);
 
     const policyGenerator = new BlockTreeGenerator();
-    const policyService = new PolicyEngineService(channel);
+    const policyService = new PolicyEngineService(channel, apiGatewayChannel);
     await policyGenerator.init();
     policyService.registerListeners();
 
@@ -144,15 +146,17 @@ Promise.all([
     state.updateState(ApplicationStates.INITIALIZING);
 
     await configAPI(channel, settingsRepository, topicRepository);
-    await schemaAPI(channel, schemaRepository);
-    await tokenAPI(channel, tokenRepository);
+    await schemaAPI(channel, apiGatewayChannel, schemaRepository);
+    await tokenAPI(channel, apiGatewayChannel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
-    await profileAPI(channel);
+    await profileAPI(channel, apiGatewayChannel);
     await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
-    await demoAPI(channel, settingsRepository);
+    await demoAPI(channel, apiGatewayChannel, settingsRepository);
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await setDefaultSchema();
+
+    await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'));
 
     await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
 

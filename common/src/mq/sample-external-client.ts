@@ -72,6 +72,15 @@ const decrypt = (encrypted: Buffer) => {
         })();
     };
 
+    const responseNone = (type: string) => {
+        const sub = nc.subscribe(type);
+        (async () => {
+            for await (const m of sub) {
+                m.respond();
+            }
+        })();
+    }
+
     subscribeEvent(ExternalMessageEvents.IPFS_ADDED_FILE, async (msg) => {
         console.log('IPFS file uploaded: ', msg);
         const data = await nc.request('ipfs-client.ipfs-get-file',
@@ -87,5 +96,8 @@ const decrypt = (encrypted: Buffer) => {
     if (ENABLE_IPFS_ENCRYPTION) {
         responseToIpfsEvent(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT, encrypt)
         responseToIpfsEvent(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, decrypt)
+    } else {
+        responseNone(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT);
+        responseNone(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT);
     }
 })()

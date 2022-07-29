@@ -21,6 +21,8 @@ import { Wallet } from '@helpers/wallet';
 import { settingsAPI } from '@api/service/settings';
 import { loggerAPI } from '@api/service/logger';
 import { MessageBrokerChannel, Logger } from '@guardian/common';
+import { taskAPI } from '@api/service/task';
+import { TaskManager } from '@helpers/task-manager';
 
 const PORT = process.env.PORT || 3002;
 
@@ -34,7 +36,8 @@ Promise.all([
         limit: '4096kb',
         type: 'binary/octet-stream'
     }));
-    const channel = new MessageBrokerChannel(cn, 'guardian')
+    const channel = new MessageBrokerChannel(cn, 'guardian');
+    const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
     new Logger().setChannel(channel);
     new Guardians().setChannel(channel);
     new IPFS().setChannel(channel);
@@ -43,8 +46,10 @@ Promise.all([
     new Wallet().setChannel(channel);
 
     const server = createServer(app);
-    const wsService = new WebSocketsService(server, new MessageBrokerChannel(cn, 'api-gateway'));
+    const wsService = new WebSocketsService(server, apiGatewayChannel);
     wsService.init();
+
+    new TaskManager().setDependecies(wsService, apiGatewayChannel);
 
     ////////////////////////////////////////
 
@@ -60,6 +65,7 @@ Promise.all([
     app.use('/demo/', demoAPI);
     app.use('/ipfs', authorizationHelper, ipfsAPI);
     app.use('/logs', authorizationHelper, loggerAPI);
+    app.use('/tasks/', taskAPI);
     /////////////////////////////////////////
 
     server.listen(PORT, () => {

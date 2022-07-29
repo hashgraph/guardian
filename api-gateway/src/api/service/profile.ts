@@ -1,15 +1,14 @@
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
-import { KeyType, Wallet } from '@helpers/wallet';
 import { Request, Response, Router } from 'express';
 import {
     DidDocumentStatus,
     IUser,
     SchemaEntity,
-    TopicType,
-    UserRole
+    TopicType
 } from '@guardian/interfaces';
 import { AuthenticatedRequest, Logger } from '@guardian/common';
+import { TaskManager } from '@helpers/task-manager';
 
 /**
  * User profile route
@@ -87,44 +86,37 @@ profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) =
 
 profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const users = new Users();
-        const wallet = new Wallet();
         const guardians = new Guardians();
 
         const profile: any = req.body;
-        const user = await users.getUser(req.user.username);
+        const username: string = req.user.username;
 
-        if (!profile.hederaAccountId) {
-            res.status(403).json({ code: 403, message: 'Invalid Hedera Account Id' });
-            return;
-        }
-        if (!profile.hederaAccountKey) {
-            res.status(403).json({ code: 403, message: 'Invalid Hedera Account Key' });
-            return;
-        }
-
-        let did: string;
-        if (user.role === UserRole.STANDARD_REGISTRY) {
-            profile.entity = SchemaEntity.STANDARD_REGISTRY;
-            did = await guardians.createStandardRegistryProfile(profile);
-        } else if (user.role === UserRole.USER) {
-            profile.entity = SchemaEntity.USER;
-            did = await guardians.createUserProfile(profile);
-        }
-
-        await users.updateCurrentUser(req, {
-            did,
-            parent: profile.parent,
-            hederaAccountId: profile.hederaAccountId
-        });
-
-        await wallet.setKey(user.walletToken, KeyType.KEY, did, profile.hederaAccountKey);
+        await guardians.createUserProfileCommon(username, profile);
 
         res.status(200).json(null);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code || 500, message: error.message });
     }
+});
+
+profileAPI.put('/push/:username', async (req: AuthenticatedRequest, res: Response) => {
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Connect user');
+
+    const profile: any = req.body;
+    const username: string = req.user.username;
+    setImmediate(async () => {
+        try {
+            const guardians = new Guardians();
+            await guardians.createUserProfileCommonAsync(username, profile, taskId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
+        }
+    });
+
+    res.status(200).send({ taskId, expectation });
 });
 
 profileAPI.get('/:username/balance', async (req: Request, res: Response) => {

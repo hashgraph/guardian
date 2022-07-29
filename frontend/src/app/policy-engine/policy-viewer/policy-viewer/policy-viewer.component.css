@@ -22,6 +22,11 @@
     align-content: center;
 }
 
+.loading-progress {
+    width: 80%;
+    height: 80%;
+}
+
 .table {
     width: 100%;
 }

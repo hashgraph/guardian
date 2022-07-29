@@ -70,6 +70,25 @@ export class IPFS {
     }
 
     /**
+     * Async returns file by IPFS CID
+     * @param cid IPFS CID
+     * @param responseType Response type
+     * @returns File
+     */
+    public async getFileAsync(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
+        const res = await this.channel.request<IGetFileMessage, any>([this.target, MessageAPI.IPFS_GET_FILE_ASYNC].join('.'), { cid, responseType });
+        if (!res) {
+            throw new Error('Invalid IPFS response');
+        }
+        if (res.error) {
+            throw new Error(res.error);
+        }
+        return responseType === 'raw'
+            ? res.body.data
+            : res.body;
+    }
+
+    /**
      * Update settings
      * @param settings Settings to update
      */

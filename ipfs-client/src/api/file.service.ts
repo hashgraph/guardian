@@ -11,7 +11,8 @@ import {
     IGetFileMessage,
     IIpfsSettingsResponse,
     IAddFileMessage,
-    IFileResponse
+    IFileResponse,
+    GenerateUUIDv4
 } from '@guardian/interfaces';
 import { MessageBrokerChannel, MessageError, MessageResponse, Logger } from '@guardian/common';
 
@@ -60,6 +61,36 @@ export async function fileAPI(
     })
 
     /**
+     * Async add file and return hash
+     *
+     * @param {ArrayBuffer} [payload] - file to add
+     *
+     * @returns {string} - task id of adding file
+     */
+    channel.response<IAddFileMessage, any>(MessageAPI.IPFS_ADD_FILE_ASYNC, (msg) => {
+        const taskId = GenerateUUIDv4();
+        setImmediate(async () => {
+            try {
+                let fileContent = Buffer.from(msg.content, 'base64');
+                const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT, msg);
+                if (data && data.body) {
+                    // If get data back from external event
+                    fileContent = Buffer.from(data.body, 'base64')
+                }
+                const blob = new Blob([fileContent]);
+                const cid = await client.storeBlob(blob);
+                const url = `${IPFS_PUBLIC_GATEWAY}/${cid}`;
+                channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { cid, url, taskId });
+            }
+            catch (error) {
+                new Logger().error(error, ['IPFS_CLIENT']);
+                channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { taskId, error });
+            }
+        });
+        return Promise.resolve(new MessageResponse({ taskId }));
+    })
+
+    /**
      * Get file from IPFS.
      *
      * @param {string} [payload.cid] - File CID.
@@ -84,7 +115,10 @@ export async function fileAPI(
             const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.cid}`, { responseType: 'arraybuffer', timeout: 20000 });
             let fileContent = fileRes.data;
             if (fileContent instanceof Buffer) {
-                const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, { content: fileContent.toString('base64') });
+                const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, {
+                    responseType: msg.responseType,
+                    content: fileContent.toString('base64'),
+                });
                 if (data && data.body) {
                     // If get data back from external event
                     fileContent = Buffer.from(data.body, 'base64')
@@ -105,6 +139,53 @@ export async function fileAPI(
             return new MessageResponse({ error: error.message });
         }
     })
+
+    channel.response<IGetFileMessage, any>(MessageAPI.IPFS_GET_FILE_ASYNC, async (msg) => {
+        const taskId = GenerateUUIDv4();
+        setImmediate(async () => {
+            try {
+                axiosRetry(axios, {
+                    retries: 3,
+                    shouldResetTimeout: true,
+                    retryCondition: (error) => axiosRetry.isNetworkOrIdempotentRequestError(error)
+                        || error.code === 'ECONNABORTED',
+                    retryDelay: (retryCount) => 10000
+                });
+
+                if (!msg || !msg.cid || !msg.responseType) {
+                    throw new Error('Invalid cid');
+                }
+
+                const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.cid}`, { responseType: 'arraybuffer', timeout: 20000 });
+                let fileContent = fileRes.data;
+                if (fileContent instanceof Buffer) {
+                    const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, { content: fileContent.toString('base64') });
+                    if (data && data.body) {
+                        // If get data back from external event
+                        fileContent = Buffer.from(data.body, 'base64')
+                    }
+                }
+
+                switch (msg.responseType) {
+                    case 'str':
+                        fileContent = Buffer.from(fileContent, 'binary').toString();
+                        break;
+                    case 'json':
+                        fileContent = Buffer.from(fileContent, 'binary').toJSON();
+                        break;
+                    default:
+                        break;
+                }
+
+                channel.publish(ExternalMessageEvents.IPFS_LOADED_FILE, { taskId, fileContent });
+            }
+            catch (error) {
+                new Logger().error(error, ['IPFS_CLIENT']);
+                channel.publish(ExternalMessageEvents.IPFS_LOADED_FILE, { taskId, error });
+            }
+        });
+        return Promise.resolve(new MessageResponse({ taskId }));
+    });
 
     /**
      * Update settings.

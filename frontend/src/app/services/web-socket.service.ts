@@ -23,6 +23,7 @@ export class WebSocketService {
     private profileSubject: Subject<{ type: string, data: any }>;
     private blockUpdateSubject: Subject<any>;
     private userInfoUpdateSubject: Subject<any>;
+    private taskStatusSubject: Subject<any>;
     private serviesStates: any = [];
 
     constructor(private auth: AuthService, private toastr: ToastrService) {
@@ -30,6 +31,7 @@ export class WebSocketService {
         this.userInfoUpdateSubject = new Subject();
         this.servicesReady = new Subject();
         this.profileSubject = new Subject();
+        this.taskStatusSubject = new Subject();
 
         this.socketSubscription = null;
         this.wsSubjectConfig = {
@@ -174,6 +176,10 @@ export class WebSocketService {
                     this.userInfoUpdateSubject.next(event.data);
                     break;
                 }
+                case MessageAPI.UPDATE_TASK_STATUS: {
+                    this.taskStatusSubject.next(event.data);
+                    break;
+                }
                 default:
                     break;
             }
@@ -230,6 +236,14 @@ export class WebSocketService {
         complete?: (() => void)
     ): Subscription {
         return this.profileSubject.subscribe(next, error, complete);
+    }
+
+    public taskSubscribe(
+        next?: ((event: any/*{ taskId: string, statuses?: string[], completed?: boolean }*/) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.taskStatusSubject.subscribe(next, error, complete);
     }
 
     public login() {
