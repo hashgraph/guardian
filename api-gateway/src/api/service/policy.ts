@@ -299,3 +299,13 @@ policyAPI.post('/:policyId/dry-run/login', async (req: AuthenticatedRequest, res
         res.status(500).send({ code: 500, message: error.message || error });
     }
 });
+
+policyAPI.post('/:policyId/dry-run/restart', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.json(await engineService.restartDryRun(req.body, req.user, req.params.policyId));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});

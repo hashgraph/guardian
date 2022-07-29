@@ -387,4 +387,15 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             this.loading = false;
         });
     }
+
+    restartDryRun() {
+        this.loading = true;
+        this.policyEngineService.restartDryRun(this.policyInfo.id).subscribe((users) => {
+            this.policy = null;
+            this.policyInfo = null;
+            this.loadPolicyById(this.policyId);
+        }, (e) => {
+            this.loading = false;
+        });
+    }
 }

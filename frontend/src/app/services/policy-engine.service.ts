@@ -141,4 +141,8 @@ export class PolicyEngineService {
     public loginVirtualUser(policyId: string, did: string): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/dry-run/login`, { did });
     }
+
+    public restartDryRun(policyId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/restart`, null);
+    }
 }

@@ -438,9 +438,9 @@ export class PolicyEngineService {
         });
 
         await DatabaseServer.createVirtualUser(
-            model.id.toString(), 
-            root.did, 
-            root.hederaAccountId, 
+            model.id.toString(),
+            root.did,
+            root.hederaAccountId,
             root.hederaAccountKey,
             true
         );
@@ -466,7 +466,7 @@ export class PolicyEngineService {
 
             const result: any = policy;
             if (policy) {
-                if(policy.status === 'DRY-RUN') {
+                if (policy.status === 'DRY-RUN') {
                     result.userRoles = await PolicyComponentsUtils.GetVirtualUserRoleList(policy, userDid);
                 } else {
                     result.userRoles = await PolicyComponentsUtils.GetUserRoleList(policy, userDid);
@@ -971,6 +971,42 @@ export class PolicyEngineService {
                 const users = await DatabaseServer.getVirtualUsers(policyId);
                 return new MessageResponse(users);
             } catch (error) {
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.RESTART_DRY_RUN, async (msg) => {
+            try {
+                if (!msg.model) {
+                    throw new Error('Policy is empty');
+                }
+
+                const policyId = msg.policyId;
+                const user = msg.user;
+                const userFull = await this.users.getUser(user.username);
+                const owner = userFull.did;
+
+                const model = await DatabaseServer.getPolicyById(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (!model.config) {
+                    throw new Error('The policy is empty');
+                }
+
+                await this.policyGenerator.destroy(model.id.toString());
+                const databaseServer = new DatabaseServer(true, model.id.toString());
+                await databaseServer.clearDryRun();
+
+                const newPolicy = await this.dryRunPolicy(model, owner, '0.0.0');
+                await this.policyGenerator.generate(newPolicy.id.toString());
+
+                const policies = (await DatabaseServer.getPolicies({ owner }));
+                return new MessageResponse({
+                    policies
+                });
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

@@ -73,7 +73,7 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param user
      * @param policyId
      */
-    public async dryRunPolicy(model, user, policyId) {
+    public async dryRunPolicy(model: any, user: any, policyId: string) {
         return await this.request(PolicyEngineEvents.DRY_RUN_POLICIES, { model, user, policyId });
     }
 
@@ -220,11 +220,21 @@ export class PolicyEngine extends ServiceRequestsBase {
         return await this.request(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId });
     }
 
-    public async createVirtualUser(policyId: string, did:string) {
+    public async createVirtualUser(policyId: string, did: string) {
         return await this.request(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, did });
     }
 
-    public async loginVirtualUser(policyId, did: string) {
+    public async loginVirtualUser(policyId: string, did: string) {
         return await this.request(PolicyEngineEvents.SET_VIRTUAL_USER, { policyId, did });
+    }
+
+    /**
+     * Restart Dry-run policy
+     * @param model
+     * @param user
+     * @param policyId
+     */
+    public async restartDryRun(model: any, user: any, policyId: string) {
+        return await this.request(PolicyEngineEvents.RESTART_DRY_RUN, { model, user, policyId });
     }
 }
