@@ -11,6 +11,7 @@ export enum PolicyEngineEvents {
     VALIDATE_POLICIES = 'validate-policies',
     POLICY_BLOCKS = 'get-policy-blocks',
     GET_BLOCK_DATA = 'get-block-data',
+    GET_BLOCK_DATA_BY_TAG = 'get-block-data-by-tag',
     SET_BLOCK_DATA = 'set-block-data',
     BLOCK_BY_TAG = 'get-block-by-tag',
     POLICY_EXPORT_FILE = 'policy-export-file',
