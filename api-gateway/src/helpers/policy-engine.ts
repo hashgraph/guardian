@@ -97,6 +97,16 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Get block data by tag name
+     * @param user
+     * @param policyId
+     * @param tag
+     */
+    public async getBlockDataByTag(user, policyId, tag: string) {
+        return await this.request(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, { user, tag, policyId });
+    }
+
+    /**
      * Set block data
      * @param user
      * @param policyId

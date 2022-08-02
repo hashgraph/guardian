@@ -53,8 +53,13 @@ export class PolicyEngineService {
 
     public getBlockData(blockId: string, policyId: string, filters?: any): Observable<any> {
         return this.http.get<any>(`${this.url}/${policyId}/blocks/${blockId}`, {
+            // TODO: Is it used?
             params: filters
         });
+    }
+
+    public getBlockDataByName(blockName: string, policyId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/tag/${blockName}/blocks`);
     }
 
     public setBlockData(blockId: string, policyId: string, data: any): Observable<any> {

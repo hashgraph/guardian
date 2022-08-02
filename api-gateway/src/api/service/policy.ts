@@ -161,6 +161,16 @@ policyAPI.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: 
     }
 });
 
+policyAPI.get('/:policyId/tag/:tagName/blocks', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.send(await engineService.getBlockDataByTag(req.user, req.params.policyId, req.params.tagName));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
 policyAPI.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {

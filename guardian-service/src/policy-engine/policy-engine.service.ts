@@ -571,10 +571,30 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.BLOCK_BY_TAG, async (msg) => {
             try {
                 const { tag, policyId } = msg;
-                const block = PolicyComponentsUtils.GetBlockByTag(policyId, tag);
+                const block = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(policyId, tag);
                 return new MessageResponse({ id: block.uuid });
             } catch (error) {
                 return new MessageError('The policy does not exist, or is not published, or tag was not registered in policy', 404);
+            }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, async (msg) => {
+            try {
+                const { user, tag, policyId } = msg;
+                const userFull = await this.users.getUser(user.username);
+                const currentRole = await PolicyComponentsUtils.GetUserRole(policyId, user);
+
+                const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
+
+                if (PolicyComponentsUtils.CheckPermissionTree(block, user, currentRole)) {
+                    const data = await block.getData(userFull, block.uuid, null);
+                    return new MessageResponse(data);
+                } else {
+                    return new MessageResponse(null);
+                }
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
         });
 
