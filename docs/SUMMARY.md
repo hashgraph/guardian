@@ -18,8 +18,8 @@
 
 ## Guardian Architecture
 
-* [Reference Architecture](guardian-architecture/reference-architecture.md)
-* [Architecture 2](guardian-architecture/architecture-2.md)
+* [Deep Dive Architecture](guardian-architecture/reference-architecture.md)
+* [High Level Architecture](guardian-architecture/architecture-2.md)
 * [Policies,Projects and Topics Mapping Architecture](guardian-architecture/schema-architecture.md)
 
 ## Schema Flow
