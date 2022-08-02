@@ -80,7 +80,6 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             'topic',
             'schemas',
             'version',
-            'status',
             'operation',
             'export',
             'edit',

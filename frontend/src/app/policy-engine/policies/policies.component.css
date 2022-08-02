@@ -26,10 +26,23 @@
     width: 100%;
 }
 
-.btn-draft::ng-deep>* {
-    background: #2196f3 !important;
+.btn-draft::ng-deep > * {
+    background: #9c27b0 !important;
     color: #fff !important;
-    min-width: 68px;
+    min-width: 93px;
+}
+
+.btn-dry-run::ng-deep > * {
+    background: #3f51b5 !important;
+    color: #fff !important;
+    min-width: 93px;
+}
+
+.btn-publish::ng-deep > * {
+    background: #4caf50 !important;
+    color: #fff !important;
+    min-width: 121px;
+    cursor: default !important;
 }
 
 .status-draft {

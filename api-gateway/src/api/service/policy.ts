@@ -383,7 +383,7 @@ policyAPI.get('/:policyId/dry-run/transactions', permissionHelper(UserRole.STAND
     }
 });
 
-policyAPI.get('/:policyId/dry-run/documents', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.get('/:policyId/dry-run/artifacts', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
         const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
@@ -402,7 +402,7 @@ policyAPI.get('/:policyId/dry-run/documents', permissionHelper(UserRole.STANDARD
             pageIndex = req.query.pageIndex;
             pageSize = req.query.pageSize;
         }
-        const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'documents', pageIndex, pageSize);
+        const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'artifacts', pageIndex, pageSize);
         res.status(200).setHeader('X-Total-Count', count).json(data);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);

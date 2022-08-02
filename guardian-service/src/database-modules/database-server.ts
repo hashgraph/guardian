@@ -978,7 +978,7 @@ export class DatabaseServer {
             filters.take = _pageSize;
             filters.skip = _pageIndex * _pageSize;
         }
-        if (type === 'documents') {
+        if (type === 'artifacts') {
             filters.where.dryRunClass = {
                 $in: [
                     'VcDocumentCollection',
