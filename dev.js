@@ -14,7 +14,7 @@ const fs = require('fs');
         }
 
         if (!fs.existsSync(folder + '/dist/')) {
-            await execSync(`yarn build --cwd ${folder}`, { stdio: 'inherit', shell: true });
+            await execSync(`yarn --cwd ${folder} build`, { stdio: 'inherit', shell: true });
         }
 
         await new Promise((resolve) => {

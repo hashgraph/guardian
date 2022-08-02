@@ -47,7 +47,7 @@
         "typescript": "~4.3.2"
     },
     "license": "Apache-2.0",
-    "name": "guardian",
+    "name": "frontend",
     "private": true,
     "scripts": {
         "dev:docker": "ng serve --host 0.0.0.0 --disable-host-check --proxy-config ./proxy.docker.json",

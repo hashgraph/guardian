@@ -225,6 +225,9 @@ If you want to manually build every component with debug information, then build
       docker-compose -f docker-compose-dev.yml up --build
 
      ```
+
+     Note: The first run will take a few minutes to install dependencies and compile code for each service.
+
   3. Access local development using http://localhost:3000 or http://localhost:4200
 
   ### Troubleshoot 

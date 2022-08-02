@@ -2,16 +2,23 @@
   "name": "guardian",
   "private": true,
   "packageManager": "yarn@3.2.1",
-  "workspaces": [
-    "interfaces",
-    "common",
-    "api-docs",
-    "api-gateway",
-    "auth-service",
-    "guardian-service",
-    "ipfs-client",
-    "logger-service",
-    "mrv-sender"
-  ],
+  "workspaces": {
+    "packages": [
+      "interfaces",
+      "common",
+      "api-docs",
+      "api-gateway",
+      "auth-service",
+      "guardian-service",
+      "ipfs-client",
+      "logger-service",
+      "mrv-sender",
+      "topic-viewer",
+      "frontend"
+    ],
+    "nohoist": [
+      "**/frontend/**"
+    ]
+  },
   "version": "2.3.0"
 }
