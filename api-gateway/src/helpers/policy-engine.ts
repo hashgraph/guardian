@@ -237,4 +237,20 @@ export class PolicyEngine extends ServiceRequestsBase {
     public async restartDryRun(model: any, user: any, policyId: string) {
         return await this.request(PolicyEngineEvents.RESTART_DRY_RUN, { model, user, policyId });
     }
+
+    public async getVirtualDocuments(
+        policyId: string,
+        type: string,
+        pageIndex?: string,
+        pageSize?: string
+    ): Promise<[any[], number]> {
+        return await this.request(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS, {
+            policyId,
+            type,
+            pageIndex,
+            pageSize
+        });
+    }
+
+
 }

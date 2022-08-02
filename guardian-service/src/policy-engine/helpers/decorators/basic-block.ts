@@ -1,7 +1,7 @@
 import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-default-options';
 import { EventConfig } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
-import { ExternalMessageEvents, PolicyRole } from '@guardian/interfaces';
+import { ExternalMessageEvents, PolicyRole, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
@@ -134,7 +134,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             /**
              * Dry-run
              */
-            public readonly dryRun: boolean;
+            private _dryRun: string;
             /**
              * Block class name
              */
@@ -157,9 +157,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     defaultOptions.blockType, defaultOptions.commonBlock,
                     tag, active, permissions, _uuid, parent, _options
                 );
-                this.dryRun = true;
+                this._dryRun = null;
                 this.logger = new Logger();
-                this.databaseServer = new DatabaseServer(this.dryRun, this.policyId);
+                this.databaseServer = new DatabaseServer(this.dryRun);
 
                 if (this.parent) {
                     this.parent.registerChild(this as any as IPolicyBlock);
@@ -173,6 +173,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
                 this.actions.push([PolicyInputEventType.RunEvent, this.runAction]);
                 this.actions.push([PolicyInputEventType.RefreshEvent, this.refreshAction]);
+            }
+
+            /**
+             * Dry Run id
+             */
+            public get dryRun(): string {
+                return this._dryRun;
             }
 
             /**
@@ -392,15 +399,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
-             * Set policy id
-             * @param id
-             */
-            public setPolicyId(id: string): void {
-                this.policyId = id;
-                this.databaseServer.setPolicyId(this.policyId);
-            }
-
-            /**
              * Set policy owner
              * @param did
              */
@@ -410,10 +408,18 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             /**
              * Set policy instance
+             * @param policyId
              * @param policy
              */
-            public setPolicyInstance(policy: any) {
+            public setPolicyInstance(policyId: string, policy: any) {
                 this.policyInstance = policy;
+                this.policyId = policyId;
+                if (this.policyInstance && this.policyInstance.status === PolicyType.DRY_RUN) {
+                    this._dryRun = this.policyId;
+                } else {
+                    this._dryRun = null;
+                }
+                this.databaseServer.setDryRun(this._dryRun);
             }
 
             /**

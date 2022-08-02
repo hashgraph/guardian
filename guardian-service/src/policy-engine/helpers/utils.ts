@@ -598,7 +598,7 @@ export class PolicyUtils {
     public static async getPolicyUser(ref: AnyBlockType, did: string): Promise<IPolicyUser> {
         return {
             did: did,
-            virtual: ref.dryRun
+            virtual: !!ref.dryRun
         }
     }
 
@@ -631,7 +631,7 @@ export class PolicyUtils {
         if (ref.dryRun) {
             const userFull = await ref.databaseServer.getVirtualUser(did);
             if (!userFull) {
-                throw new Error('User not found');
+                throw new Error('Virtual User not found');
             }
             const userID = userFull.hederaAccountId;
             const userDID = userFull.did;

@@ -48,14 +48,14 @@ export class MessageServer {
      * Dry-run
      * @private
      */
-    private readonly dryRun: boolean = false;
+    private readonly dryRun: string = null;
 
     constructor(
         operatorId: string | AccountId | null,
         operatorKey: string | PrivateKey | null,
-        dryRun: boolean = false
+        dryRun: string = null
     ) {
-        this.dryRun = dryRun || false;
+        this.dryRun = dryRun || null;
         this.client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
     }
 
@@ -72,7 +72,7 @@ export class MessageServer {
 
     private async getFile(cid: string, responseType: "json" | "raw" | "str") {
         if(this.dryRun) {
-            throw new Error('<-getFile->')
+            throw new Error('Unable to get virtual file');
         }
         return await IPFS.getFile(cid, responseType);
     }

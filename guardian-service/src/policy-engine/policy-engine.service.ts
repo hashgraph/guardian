@@ -7,7 +7,8 @@ import {
     SchemaHelper,
     Schema,
     UserRole,
-    IUser
+    IUser,
+    PolicyType
 } from '@guardian/interfaces';
 import {
     IAuthUser,
@@ -155,7 +156,7 @@ export class PolicyEngineService {
         });
     }
 
-    private async getUser(user: IUser, policyId: string, dryRun: boolean): Promise<IPolicyUser> {
+    private async getUser(user: IUser, policyId: string, dryRun: string): Promise<IPolicyUser> {
         let userFull: any;
         if (dryRun) {
             if (user.role === UserRole.STANDARD_REGISTRY) {
@@ -294,7 +295,7 @@ export class PolicyEngineService {
             .setTopicObject(topic);
 
         model = await this.publishSchemas(model, owner);
-        model.status = 'PUBLISH';
+        model.status = PolicyType.PUBLISH;
         model.version = version;
 
         this.policyGenerator.regenerateIds(model.config);
@@ -372,13 +373,14 @@ export class PolicyEngineService {
         const root = await this.users.getHederaAccount(owner);
         const topic = await DatabaseServer.getTopicById(model.topicId);
 
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, true)
+        const dryRunId = model.id.toString();
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, dryRunId)
             .setTopicObject(topic);
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, true);
-        const databaseServer = new DatabaseServer(true, model.id.toString());
+        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, dryRunId);
+        const databaseServer = new DatabaseServer(dryRunId);
 
         // model = await this.publishSchemas(model, owner);
-        model.status = 'DRY-RUN';
+        model.status = PolicyType.DRY_RUN;
         model.version = version;
 
         this.policyGenerator.regenerateIds(model.config);
@@ -439,6 +441,7 @@ export class PolicyEngineService {
 
         await DatabaseServer.createVirtualUser(
             model.id.toString(),
+            'Administrator',
             root.did,
             root.hederaAccountId,
             root.hederaAccountKey,
@@ -466,7 +469,7 @@ export class PolicyEngineService {
 
             const result: any = policy;
             if (policy) {
-                if (policy.status === 'DRY-RUN') {
+                if (policy.status === PolicyType.DRY_RUN) {
                     result.userRoles = await PolicyComponentsUtils.GetVirtualUserRoleList(policy, userDid);
                 } else {
                     result.userRoles = await PolicyComponentsUtils.GetUserRoleList(policy, userDid);
@@ -598,7 +601,7 @@ export class PolicyEngineService {
                 const isValid = !errors.blocks.some(block => !block.isValid);
 
                 if (isValid) {
-                    const newPolicy = await this.dryRunPolicy(model, owner, '0.0.0');
+                    const newPolicy = await this.dryRunPolicy(model, owner, 'Dry Run');
                     await this.policyGenerator.generate(newPolicy.id.toString());
                 }
 
@@ -634,14 +637,14 @@ export class PolicyEngineService {
                     throw new Error('The policy is empty');
                 }
 
-                model.status = 'DRAFT';
+                model.status = PolicyType.DRAFT;
                 model.version = '';
 
                 await DatabaseServer.updatePolicy(model);
 
                 await this.policyGenerator.destroy(model.id.toString());
 
-                const databaseServer = new DatabaseServer(true, model.id.toString());
+                const databaseServer = new DatabaseServer(model.id.toString());
                 await databaseServer.clearDryRun();
 
                 const policies = (await DatabaseServer.getPolicies({ owner }));
@@ -944,14 +947,16 @@ export class PolicyEngineService {
                 const didObject = DIDDocument.create(treasury.key, topic.topicId);
                 const userDID = didObject.getDid();
 
+                const u = await DatabaseServer.getVirtualUsers(policyId);
                 await DatabaseServer.createVirtualUser(
                     policyId,
+                    `Virtual User ${u.length}`,
                     userDID,
                     treasury.id.toString(),
                     treasury.key.toString()
                 );
 
-                const db = new DatabaseServer(true, policyId);
+                const db = new DatabaseServer(policyId);
                 await db.saveDid({
                     did: didObject.getDid(),
                     document: didObject.getDocument()
@@ -995,10 +1000,10 @@ export class PolicyEngineService {
                 }
 
                 await this.policyGenerator.destroy(model.id.toString());
-                const databaseServer = new DatabaseServer(true, model.id.toString());
+                const databaseServer = new DatabaseServer(model.id.toString());
                 await databaseServer.clearDryRun();
 
-                const newPolicy = await this.dryRunPolicy(model, owner, '0.0.0');
+                const newPolicy = await this.dryRunPolicy(model, owner, 'Dry Run');
                 await this.policyGenerator.generate(newPolicy.id.toString());
 
                 const policies = (await DatabaseServer.getPolicies({ owner }));
@@ -1007,6 +1012,16 @@ export class PolicyEngineService {
                 });
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS, async (msg) => {
+            try {
+                const { policyId, type, pageIndex, pageSize } = msg;
+                const documents = await DatabaseServer.getVirtualDocuments(policyId, type, pageIndex, pageSize);
+                return new MessageResponse(documents);
+            } catch (error) {
                 return new MessageError(error);
             }
         });

@@ -1,4 +1,4 @@
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
 import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn } from 'typeorm';
 
 /**
@@ -58,7 +58,7 @@ export class Policy {
      * Policy status
      */
     @Column()
-    status: string;
+    status: PolicyType;
 
     /**
      * Policy creator
@@ -127,7 +127,7 @@ export class Policy {
      */
     @BeforeInsert()
     setDefaults() {
-        this.status = this.status || 'DRAFT';
+        this.status = this.status || PolicyType.DRAFT;
         this.uuid = this.uuid || GenerateUUIDv4();
         this.codeVersion = this.codeVersion || '1.0.0';
     }

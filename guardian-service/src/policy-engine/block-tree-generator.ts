@@ -9,7 +9,7 @@ import {
     ISerializedErrors,
     PolicyValidationResultsContainer
 } from '@policy-engine/policy-validation-results-container';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 
@@ -30,7 +30,7 @@ export class BlockTreeGenerator {
     public async init(): Promise<void> {
         const policies = await DatabaseServer.getPolicies({
             where: {
-                status: { $in: ['PUBLISH', 'DRY-RUN'] }
+                status: { $in: [PolicyType.PUBLISH, PolicyType.DRY_RUN] }
             }
         });
         console.log(policies.length)

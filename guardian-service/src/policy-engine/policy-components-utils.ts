@@ -8,7 +8,7 @@ import {
     EventCallback,
     PolicyOutputEventType
 } from '@policy-engine/interfaces';
-import { PolicyRole, GenerateUUIDv4 } from '@guardian/interfaces';
+import { PolicyRole, GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
 import { IAuthUser } from '@guardian/common';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { Policy } from '@entity/policy';
@@ -258,9 +258,8 @@ export class PolicyComponentsUtils {
             options._parent,
             GetOtherOptions(options as PolicyBlockFullArgumentList)
         );
-        blockInstance.setPolicyId(policyId);
+        blockInstance.setPolicyInstance(policyId, policy);
         blockInstance.setPolicyOwner(policy.owner);
-        blockInstance.setPolicyInstance(policy);
         blockInstance.setTopicId(policy.topicId);
 
         allInstances.push(blockInstance);
@@ -479,7 +478,7 @@ export class PolicyComponentsUtils {
             if (policy.owner === did) {
                 userRoles.push('Administrator');
             }
-            const db = new DatabaseServer(true, policyId);
+            const db = new DatabaseServer(policyId);
             const role = await db.getUserRole(policyId, did);
             if (role) {
                 userRoles.push(role);
@@ -499,7 +498,7 @@ export class PolicyComponentsUtils {
     public static async GetUserRoleList(policy: Policy, did: string): Promise<string[]> {
         const userRoles: string[] = [];
         if (policy && did) {
-            if (policy.status === 'DRU-RUN') {
+            if (policy.status === PolicyType.DRY_RUN) {
                 const activeUser = await DatabaseServer.getVirtualUser(policy.id);
                 if (activeUser) {
                     did = activeUser.did;

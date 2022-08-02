@@ -146,8 +146,15 @@ export class PolicyEngineService {
         return this.http.post<any>(`${this.url}/${policyId}/dry-run/restart`, null);
     }
 
-    public loadTransactions(policyId: string): Observable<any[]> {
-        return this.http.get<any>(`${this.url}/${policyId}/dry-run/transactions`);
+    public loadDocuments(
+        policyId: string,
+        documentType: string,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            return this.http.get<any>(`${this.url}/${policyId}/dry-run/${documentType}?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response' });
+        }
+        return this.http.get<any>(`${this.url}/${policyId}/dry-run/${documentType}`, { observe: 'response' });
     }
-    
 }

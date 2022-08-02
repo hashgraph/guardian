@@ -139,13 +139,7 @@ export interface IPolicyBlock {
     /**
      * Dry-run
      */
-    readonly dryRun: boolean;
-
-    /**
-     * Set policy id
-     * @param id
-     */
-    setPolicyId(id: string): void;
+    readonly dryRun: string;
 
     /**
      * Set policy owner
@@ -155,9 +149,10 @@ export interface IPolicyBlock {
 
     /**
      * Set policy instance
+     * @param policyId
      * @param policy
      */
-    setPolicyInstance(policy: any): void;
+    setPolicyInstance(policyId: string, policy: any): void;
 
     /**
      * Set topic id

@@ -25,6 +25,7 @@ import { MessageBrokerChannel, ApplicationState, Logger, ExternalEventChannel } 
 import { ApplicationStates } from '@guardian/interfaces';
 import { Environment, HederaSDKHelper, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
+import { DatabaseServer } from '@database-modules';
 
 Promise.all([
     createConnection({
@@ -112,6 +113,9 @@ Promise.all([
         }
     });
     HederaSDKHelper.setTransactionResponseCallback(updateUserBalance(channel));
+    HederaSDKHelper.setVirtualTransactionResponseCallback(async (id: string, type: string, operatorId?: string) => {
+        await DatabaseServer.setVirtualTransaction(id, type, operatorId);
+    });
 
     if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
         const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);

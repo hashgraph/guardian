@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IToken, IUser, UserRole } from '@guardian/interfaces';
+import { IToken, IUser, PolicyType, UserRole } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin, Subscription } from 'rxjs';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
@@ -13,6 +13,8 @@ import { NewPolicyDialog } from '../../helpers/new-policy-dialog/new-policy-dial
 import { ImportPolicyDialog } from '../../helpers/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from '../../helpers/preview-policy-dialog/preview-policy-dialog.component';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { HttpResponse } from '@angular/common/http';
+import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 
 /**
  * Component for choosing a policy and
@@ -32,6 +34,16 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     isConfirmed: boolean = false;
     virtualUsers: any[] = []
     view: string = 'policy';
+    documents: any[] = [];
+    columns: string[] = [
+        'createDate',
+        'type',
+        'owner',
+        'document'
+    ];
+    pageIndex: number;
+    pageSize: number;
+    documentCount: any;
 
     private subscription = new Subscription();
 
@@ -46,6 +58,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private toastr: ToastrService
     ) {
         this.policy = null;
+        this.pageIndex = 0;
+        this.pageSize = 100;
+        this.documentCount = 0;
     }
 
     ngOnInit() {
@@ -108,7 +123,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             this.policy = value[0];
             this.policyInfo = value[1];
             this.virtualUsers = [];
-            if (this.policyInfo?.status === 'DRY-RUN') {
+            if (this.policyInfo?.status === PolicyType.DRY_RUN) {
                 this.policyEngineService.getVirtualUsers(this.policyInfo.id).subscribe((users) => {
                     this.virtualUsers = users;
                     setTimeout(() => {
@@ -164,9 +179,19 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     onView(view: string) {
         this.view = view;
-        if (this.view) {
+        if (this.view !== 'policy') {
             this.loading = true;
-            this.policyEngineService.loadTransactions(this.policyInfo.id).subscribe((transactions) => {
+            this.pageIndex = 0;
+            this.pageSize = 100;
+            this.policyEngineService.loadDocuments(
+                this.policyInfo.id,
+                this.view,
+                this.pageIndex,
+                this.pageSize
+            ).subscribe((documents: HttpResponse<any[]>) => {
+                this.documents = documents.body || [];
+                this.documents = this.documents.map(d => this.setType(d));
+                this.documentCount = documents.headers.get('X-Total-Count') || this.documents.length;
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -174,5 +199,67 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.loading = false;
             });
         }
+    }
+
+    openDocument(element: any) {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
+            width: '900px',
+            data: {
+                document: element,
+                title: 'Document',
+                type: 'JSON',
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => { });
+    }
+
+    onPage(event: any) {
+        if (this.pageSize != event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
+        } else {
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
+        }
+
+        this.loading = true;
+        this.pageIndex = 0;
+        this.pageSize = 100;
+        this.policyEngineService.loadDocuments(
+            this.policyInfo.id,
+            this.view,
+            this.pageIndex,
+            this.pageSize
+        ).subscribe((documents: HttpResponse<any[]>) => {
+            this.documents = documents.body || [];
+            this.documents = this.documents.map(d => this.setType(d));
+            this.documentCount = documents.headers.get('X-Total-Count') || this.documents.length;
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    private setType(document: any) {
+        if (this.view === 'documents') {
+            if (document.dryRunClass === 'VcDocumentCollection') {
+                document.__type = 'VC';
+            } else if (document.dryRunClass === 'VpDocumentCollection') {
+                document.__type = 'VP';
+            } else if (document.dryRunClass === 'DidDocumentCollection') {
+                document.__type = 'DID';
+                document.owner = document.did;
+            } else if (document.dryRunClass === 'ApprovalDocumentCollection') {
+                document.__type = 'VC';
+            }
+        } else if (this.view === 'transactions') {
+            document.__type = document.type;
+            document.owner = document.hederaAccountId;
+        } else if (this.view === 'ipfs') {
+            document.__type = '';
+        }
+        return document;
     }
 }

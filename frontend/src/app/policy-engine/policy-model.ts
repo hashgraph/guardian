@@ -1,4 +1,4 @@
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
 
 export class PolicyRoleModel {
     private readonly policy: PolicyModel;
@@ -621,9 +621,9 @@ export class PolicyModel {
         this.buildPolicy(policy);
         this.buildBlock(policy.config);
 
-        this.isDraft = this.status === 'DRAFT';
-        this.isPublished = this.status === 'PUBLISH';
-        this.isDryRun = this.status === 'DRY-RUN';
+        this.isDraft = this.status === PolicyType.DRAFT;
+        this.isPublished = this.status === PolicyType.PUBLISH;
+        this.isDryRun = this.status === PolicyType.DRY_RUN;
         this.readonly = this.isPublished || this.isDryRun;
     }
 

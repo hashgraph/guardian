@@ -27,4 +27,5 @@ export enum PolicyEngineEvents {
     CREATE_VIRTUAL_USER = 'create-virtual-user',
     SET_VIRTUAL_USER = 'login-virtual-user',
     RESTART_DRY_RUN= 'restart-dry-run',
+    GET_VIRTUAL_DOCUMENTS = 'get-virtual-documents'
 }

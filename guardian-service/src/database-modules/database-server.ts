@@ -25,7 +25,7 @@ export class DatabaseServer {
      * Dry-run
      * @private
      */
-    private readonly dryRun: boolean = false;
+    private dryRun: string = null;
 
     /**
      * Dry-run
@@ -33,14 +33,8 @@ export class DatabaseServer {
      */
     private readonly classMap: Map<any, string> = new Map();
 
-    /**
-     * Policy id
-     */
-    public policyId: string;
-
-    constructor(dryRun: boolean = false, policyId: string = null) {
-        this.dryRun = dryRun || false;
-        this.policyId = policyId || null;
+    constructor(dryRun: string = null) {
+        this.dryRun = dryRun || null;
 
         this.classMap.set(BlockState, 'BlockState');
         this.classMap.set(VcDocumentCollection, 'VcDocumentCollection');
@@ -57,15 +51,15 @@ export class DatabaseServer {
     }
 
     /**
-     * Set policy id
+     * Set Dry Run id
      * @param id
      */
-    public setPolicyId(id: string): void {
-        this.policyId = id;
+    public setDryRun(id: string): void {
+        this.dryRun = id;
     }
 
     public async clearDryRun(): Promise<void> {
-        const item = await getMongoRepository(DryRun).find({ dryRunId: this.policyId });
+        const item = await getMongoRepository(DryRun).find({ dryRunId: this.dryRun });
         await getMongoRepository(DryRun).remove(item);
     }
 
@@ -76,10 +70,10 @@ export class DatabaseServer {
             }
             const _filters: any = { ...filters };
             if (_filters.where) {
-                _filters.where.dryRunId = this.policyId;
+                _filters.where.dryRunId = this.dryRun;
                 _filters.where.dryRunClass = this.classMap.get(entityClass);
             } else {
-                _filters.dryRunId = this.policyId;
+                _filters.dryRunId = this.dryRun;
                 _filters.dryRunClass = this.classMap.get(entityClass);
             }
             return (await getMongoRepository(DryRun).findOne(filters)) as any;
@@ -92,10 +86,10 @@ export class DatabaseServer {
         if (this.dryRun) {
             const _filters: any = { ...filters };
             if (_filters.where) {
-                _filters.where.dryRunId = this.policyId;
+                _filters.where.dryRunId = this.dryRun;
                 _filters.where.dryRunClass = this.classMap.get(entityClass);
             } else {
-                _filters.dryRunId = this.policyId;
+                _filters.dryRunId = this.dryRun;
                 _filters.dryRunClass = this.classMap.get(entityClass);
             }
             return (await getMongoRepository(DryRun).find(filters)) as any;
@@ -115,7 +109,7 @@ export class DatabaseServer {
     private async save<T>(entityClass: EntityTarget<T>, item: DeepPartial<T>): Promise<T> {
         if (this.dryRun) {
             const _item: any = { ...item };
-            _item.dryRunId = this.policyId;
+            _item.dryRunId = this.dryRun;
             _item.dryRunClass = this.classMap.get(entityClass);
             return await getMongoRepository(DryRun).save(_item);
         } else {
@@ -147,7 +141,7 @@ export class DatabaseServer {
      */
     public async getVirtualUser(did: string): Promise<any> {
         return (await getMongoRepository(DryRun).findOne({
-            dryRunId: this.policyId,
+            dryRunId: this.dryRun,
             dryRunClass: 'VirtualUsers',
             did: did
         })) as any;
@@ -161,7 +155,7 @@ export class DatabaseServer {
     */
     public async getVirtualKey(did: string, keyName: string): Promise<string> {
         const item = (await getMongoRepository(DryRun).findOne({
-            dryRunId: this.policyId,
+            dryRunId: this.dryRun,
             dryRunClass: 'VirtualKey',
             did: did,
             type: keyName
@@ -177,7 +171,7 @@ export class DatabaseServer {
     */
     public async setVirtualKey(did: string, keyName: string, key: string): Promise<void> {
         const item = getMongoRepository(DryRun).create({
-            dryRunId: this.policyId,
+            dryRunId: this.dryRun,
             dryRunClass: 'VirtualKey',
             did: did,
             type: keyName,
@@ -911,6 +905,7 @@ export class DatabaseServer {
 
     public static async createVirtualUser(
         policyId: string,
+        username: string,
         did: string,
         hederaAccountId: string,
         hederaAccountKey: string,
@@ -920,7 +915,7 @@ export class DatabaseServer {
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
             did,
-            username: did,
+            username: username,
             hederaAccountId: hederaAccountId,
             active
         });
@@ -962,5 +957,53 @@ export class DatabaseServer {
             item.active = item.did === did;
         }
         await getMongoRepository(DryRun).save(items);
+    }
+
+    public static async getVirtualDocuments(
+        policyId: string,
+        type: string,
+        pageIndex?: string,
+        pageSize?: string
+    ): Promise<[any[], number]> {
+        const filters: any = {
+            where: {
+                dryRunId: policyId,
+                dryRunClass: null
+            }
+        }
+        const _pageSize = parseInt(pageSize, 10);
+        const _pageIndex = parseInt(pageIndex, 10);
+        if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+            filters.order = { createDate: 'DESC' };
+            filters.take = _pageSize;
+            filters.skip = _pageIndex * _pageSize;
+        }
+        if (type === 'documents') {
+            filters.where.dryRunClass = {
+                $in: [
+                    'VcDocumentCollection',
+                    'VpDocumentCollection',
+                    'DidDocumentCollection',
+                    'ApprovalDocumentCollection'
+                ]
+            };
+        } else if (type === 'transactions') {
+            filters.where.dryRunClass = { $eq: 'Transactions' };
+        } else if (type === 'ipfs') {
+            filters.where.dryRunClass = { $eq: 'Files' };
+        }
+        return await getMongoRepository(DryRun).findAndCount(filters);
+    }
+
+    public static async setVirtualTransaction(
+        policyId: string, type: string, operatorId?: string
+    ): Promise<any> {
+        const user = getMongoRepository(DryRun).create({
+            dryRunId: policyId,
+            dryRunClass: 'Transactions',
+            type,
+            hederaAccountId: operatorId
+        });
+        await getMongoRepository(DryRun).save(user);
     }
 }

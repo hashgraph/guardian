@@ -21,14 +21,14 @@ export class TopicHelper {
      * Dry-run
      * @private
      */
-    private dryRun: boolean = false;
+    private dryRun: string = null;
 
     constructor(
         operatorId: string,
         operatorKey: string,
-        dryRun: boolean = false
+        dryRun: string = null
     ) {
-        this.dryRun = dryRun || false;
+        this.dryRun = dryRun || null;
         this.hederaAccountId = operatorId;
         this.hederaAccountKey = operatorKey;
     }

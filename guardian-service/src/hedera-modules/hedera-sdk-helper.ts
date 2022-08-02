@@ -58,17 +58,23 @@ export class HederaSDKHelper {
     private static fn: Function = null;
 
     /**
+     * Callback
+     * @private
+     */
+    private static virtualResponseCallback: Function = null;
+
+    /**
      * Dry-run
      * @private
      */
-    private readonly dryRun: boolean = false;
+    private readonly dryRun: string = null;
 
     constructor(
         operatorId: string | AccountId | null,
         operatorKey: string | PrivateKey | null,
-        dryRun: boolean = false
+        dryRun: string = null
     ) {
-        this.dryRun = dryRun || false;
+        this.dryRun = dryRun || null;
         this.client = Environment.createClient();
         if (operatorId && operatorKey) {
             this.client.setOperator(operatorId, operatorKey);
@@ -775,6 +781,7 @@ export class HederaSDKHelper {
         client: Client, transaction: Transaction, type: string, metadata?: any
     ): Promise<TransactionReceipt> {
         if (this.dryRun) {
+            await HederaSDKHelper.virtualTransactionResponse(this.dryRun, type, client);
             return {
                 status: Status.Success,
                 topicId: new TokenId(Date.now()),
@@ -810,6 +817,7 @@ export class HederaSDKHelper {
         client: Client, transaction: Transaction, type: string, metadata?: any
     ): Promise<TransactionRecord> {
         if (this.dryRun) {
+            await HederaSDKHelper.virtualTransactionResponse(this.dryRun, type, client);
             return {
                 consensusTimestamp: Timestamp.fromDate(Date.now())
             } as any
@@ -830,11 +838,19 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Set transaction respocse callback
+     * Set transaction response callback
      * @param fn
      */
     public static setTransactionResponseCallback(fn: Function) {
         HederaSDKHelper.fn = fn;
+    }
+
+    /**
+     * Set virtual transaction response callback
+     * @param fn
+     */
+    public static setVirtualTransactionResponseCallback(fn: Function) {
+        HederaSDKHelper.virtualResponseCallback = fn;
     }
 
     /**
@@ -845,6 +861,20 @@ export class HederaSDKHelper {
     private static transactionResponse(client: Client) {
         if (HederaSDKHelper.fn) {
             HederaSDKHelper.fn(client);
+        }
+    }
+
+    /**
+     * Transaction response
+     * @param id
+     * @param type
+     * @private
+     */
+    private static async virtualTransactionResponse(id: string, type: string, client: Client) {
+        if (HederaSDKHelper.virtualResponseCallback) {
+            await HederaSDKHelper.virtualResponseCallback(
+                id, type, client.operatorAccountId?.toString()
+            );
         }
     }
 

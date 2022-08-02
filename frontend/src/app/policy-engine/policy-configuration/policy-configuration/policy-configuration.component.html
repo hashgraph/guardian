@@ -30,8 +30,7 @@
                         <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
                     </div>
 
-                    <div class="btn-group btn-status-all" *ngIf="policyModel.isDraft"
-                        [matMenuTriggerFor]="publishMenu">
+                    <div class="btn-group btn-status-all" *ngIf="policyModel.isDraft" [matMenuTriggerFor]="publishMenu">
                         <mat-icon>public</mat-icon>
                         <span>Publish</span>
                         <div class="expand-group">
@@ -39,8 +38,7 @@
                         </div>
                     </div>
 
-                    <div class="btn-group btn-status-all" *ngIf="policyModel.isDryRun"
-                        [matMenuTriggerFor]="dryRunMenu">
+                    <div class="btn-group btn-status-all" *ngIf="policyModel.isDryRun" [matMenuTriggerFor]="dryRunMenu">
                         <mat-icon>public</mat-icon>
                         <span>Publish</span>
                         <div class="expand-group">
@@ -50,8 +48,8 @@
 
                     <div class="delimiter"></div>
 
-                    <div *ngIf="readonly" class="btn-new-block btn-status-all" [routerLink]="['/policy-viewer']"
-                        [queryParams]="{ policyId: policyId }">
+                    <div *ngIf="readonly" class="btn-new-block btn-status-all"
+                        [routerLink]="['/policy-viewer', policyId]">
                         <mat-icon>login</mat-icon>
                         <span>Open</span>
                     </div>
@@ -351,18 +349,21 @@
 </mat-menu>
 
 <mat-menu #publishMenu="matMenu">
-    <div class="btn-new-block-menu btn-status-all" (click)="tryPublishPolicy()" title="Release version into public domain.">
+    <div class="btn-new-block-menu btn-status-all" (click)="tryPublishPolicy()"
+        title="Release version into public domain.">
         <mat-icon>public</mat-icon>
         <span>Publish</span>
     </div>
-    <div class="btn-new-block-menu btn-status-all" (click)="tryRunPolicy()" title="Run without making any persistent changes or executing transaction.">
+    <div class="btn-new-block-menu btn-status-all" (click)="tryRunPolicy()"
+        title="Run without making any persistent changes or executing transaction.">
         <mat-icon>build</mat-icon>
         <span>Dry Run</span>
     </div>
 </mat-menu>
 
 <mat-menu #dryRunMenu="matMenu">
-    <div class="btn-new-block-menu btn-status-all" (click)="tryPublishPolicy()" title="Release version into public domain.">
+    <div class="btn-new-block-menu btn-status-all" (click)="tryPublishPolicy()"
+        title="Release version into public domain.">
         <mat-icon>public</mat-icon>
         <span>Publish</span>
     </div>
