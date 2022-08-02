@@ -6,7 +6,7 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { Inject } from '@helpers/decorators/inject';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { Token as TokenCollection } from '@entity/token';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser } from '@policy-engine/policy-user';
@@ -121,6 +121,7 @@ export class TokenConfirmationBlock {
         }
 
         const account = {
+            did: null,
             hederaAccountId: state.accountId,
             hederaAccountKey: data.hederaAccountKey
         }

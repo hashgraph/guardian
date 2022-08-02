@@ -64,6 +64,7 @@ export class TokenActionBlock {
             if (field) {
                 if (doc.accounts) {
                     account = {
+                        did: null,
                         hederaAccountId: doc.accounts[field],
                         hederaAccountKey: null
                     }

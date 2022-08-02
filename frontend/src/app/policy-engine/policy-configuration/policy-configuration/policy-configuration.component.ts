@@ -434,17 +434,6 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    public draftPolicy() {
-        this.loading = true;
-        this.policyEngineService.draft(this.policyId).subscribe((data: any) => {
-            const { policies, isValid, errors } = data;
-            this.clearState();
-            this.loadPolicy();
-        }, (e) => {
-            this.loading = false;
-        });
-    }
-    
     private doSavePolicy(): Observable<void> {
         return new Observable<void>(subscriber => {
             this.chanceView('blocks');
@@ -523,6 +512,17 @@ export class PolicyConfigurationComponent implements OnInit {
             }
         }, (e) => {
             console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    public draftPolicy() {
+        this.loading = true;
+        this.policyEngineService.draft(this.policyId).subscribe((data: any) => {
+            const { policies, isValid, errors } = data;
+            this.clearState();
+            this.loadPolicy();
+        }, (e) => {
             this.loading = false;
         });
     }
@@ -616,11 +616,11 @@ export class PolicyConfigurationComponent implements OnInit {
                 if (result) {
                     this.loadState(this.policyStorage.current);
                 } else {
-                    this.clearState();
+                    this.rewriteState();
                 }
             })
         } else {
-            this.clearState();
+            this.rewriteState();
         }
     }
 
@@ -639,6 +639,12 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private clearState() {
+        const json = this.policyModel.getJSON();
+        const value = this.objectToJson(json);
+        this.policyStorage.set('blocks', null);
+    }
+
+    private rewriteState() {
         const json = this.policyModel.getJSON();
         const value = this.objectToJson(json);
         this.policyStorage.set('blocks', value);

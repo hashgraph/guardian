@@ -21,6 +21,7 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { InfoComponent } from './components/info/info/info.component';
 import { WebSocketService } from './services/web-socket.service';
+import { PoliciesComponent } from './policy-engine/policies/policies.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -160,7 +161,8 @@ const routes: Routes = [
     { path: 'audit', component: AuditComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
     { path: 'trust-chain', component: TrustChainComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
 
-    { path: 'policy-viewer', component: PolicyViewerComponent, canActivate: [ServicesStatusGuard] },
+    { path: 'policy-viewer', component: PoliciesComponent, canActivate: [ServicesStatusGuard] },
+    { path: 'policy-viewer/:id', component: PolicyViewerComponent, canActivate: [ServicesStatusGuard] },
     { path: 'policy-configuration', component: PolicyConfigurationComponent, canActivate: [ServicesStatusGuard] },
 
     { path: '', component: HomeComponent },

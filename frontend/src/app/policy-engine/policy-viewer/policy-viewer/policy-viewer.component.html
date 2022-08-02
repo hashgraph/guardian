@@ -1,4 +1,4 @@
-<div class="content">
+<div class="content" [attr.status]='policyInfo?.status'>
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
@@ -9,14 +9,40 @@
         </div>
     </ng-container>
 
-    <ng-container *ngIf="isConfirmed && policyId && !policy">
-        <div class="not-exist" *ngIf="!policy">
+    <ng-container *ngIf="isConfirmed && (!policyId || !policy)">
+        <div class="not-exist">
             Policy doesn't exist
         </div>
     </ng-container>
 
     <ng-container *ngIf="isConfirmed && policyId && policy">
-        <div class="policy-header">
+        <div *ngIf="policyInfo.status === 'DRY-RUN'" class="dry-run-content">
+            <div class="dry-run-action-btn" (click)="restartDryRun()" title="Save Policy">
+                <mat-icon>restart_alt</mat-icon>
+                <span>Restart</span>
+            </div>
+
+            <div class="dry-run-group-btn" [matMenuTriggerFor]="menu">
+                <mat-icon>group</mat-icon>
+                <span>Users</span>
+                <div class="expand-group">
+                    <mat-icon>arrow_drop_down</mat-icon>
+                </div>
+            </div>
+
+            <div class="delimiter"></div>
+
+            <div class="dry-run-btn" (click)="onView('policy')" [attr.action]="view === 'policy'">
+                Policy View
+            </div>
+            <div class="dry-run-btn" (click)="onView('transactions')" [attr.action]="view === 'transactions'">
+                Transactions View
+            </div>
+
+            <div class="delimiter"></div>
+        </div>
+
+        <div class="policy-header" [attr.policy-status]="policyInfo.status">
             <a routerLink="/policy-viewer" class="go-back-link">
                 <mat-icon>chevron_left</mat-icon>
                 <span *ngIf="policyInfo && policyInfo.name">{{policyInfo.name}}</span>
@@ -26,154 +52,26 @@
             <span *ngIf="policyInfo && policyInfo.userRoles" class="current-user-role">
                 Roles: {{policyInfo.userRoles.join(', ')}}
             </span>
-            <span *ngIf="policyInfo.status === 'DRY-RUN'" class="current-user-role">
-                <div class="dry-run-panel" [matMenuTriggerFor]="menu">
-                    <span>Dry-run Panel</span>
-                    <mat-icon style="position: absolute;right: 0px;top: -2px">expand_more</mat-icon>
-                </div>
-                <mat-menu #menu="matMenu">
-                    <div *ngFor="let item of virtualUsers" class="debug-user" (click)="setVirtualUser(item)"
-                        [attr.active]="item.active">
-                        <div class="debug-user-name">{{item.username}}</div>
-                        <div class="debug-user-did">{{item.did}}</div>
-                    </div>
-                    <div class="new-debug-user" (click)="createVirtualUser()">
-                        Create virtual user
-                    </div>
-                    <div class="new-debug-user" (click)="restartDryRun()">
-                        Restart Dry-run
-                    </div>
-                </mat-menu>
-            </span>
         </div>
-        <div class="policy-container">
+
+        <div class="policy-container" [attr.policy-status]="policyInfo.status" [attr.hidden-container]="view !== 'policy'">
             <render-block [block]="policy" [policyId]="policyId"></render-block>
         </div>
-    </ng-container>
 
-    <ng-container *ngIf="isConfirmed && !policyId && policies">
-        <div class="actions-container" [attr.role]="role">
-            <button mat-raised-button color="primary" (click)="newPolicy()" style="margin: 15px;min-width: 100px">Create
-                Policy</button>
-            <button mat-raised-button color="primary" (click)="importPolicy()"
-                style="margin: 15px;min-width: 100px">Import</button>
+        <div class="policy-container" [attr.policy-status]="policyInfo.status" [attr.hidden-container]="view !== 'transactions'">
+            transactions
         </div>
-        <div class="table-container" [attr.role]="role">
-            <table mat-table [dataSource]="policies" class="table">
-                <ng-container matColumnDef="topic">
-                    <th mat-header-cell *matHeaderCellDef> Hedera Topic Id </th>
-                    <td mat-cell *matCellDef="let element">
-                        <dragonglass type="topics" [params]="element.topicId">{{element.topicId}}</dragonglass>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="schemas">
-                    <th mat-header-cell *matHeaderCellDef> Schemas </th>
-                    <td mat-cell *matCellDef="let element">
-                        <a [routerLink]="['/schemas']" [queryParams]="{ topic: element.topicId }"> Schemas
-                        </a>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="name">
-                    <th mat-header-cell *matHeaderCellDef> Policy Name </th>
-                    <td mat-cell *matCellDef="let element">
-                        {{ element.name }}
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="roles">
-                    <th mat-header-cell *matHeaderCellDef> Roles </th>
-                    <td mat-cell *matCellDef="let element">
-                        {{ element.userRoles?.join(', ') }}
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="version">
-                    <th mat-header-cell *matHeaderCellDef> Version </th>
-                    <td mat-cell *matCellDef="let element">
-                        {{ element.version }}
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="description">
-                    <th mat-header-cell *matHeaderCellDef> Description </th>
-                    <td mat-cell *matCellDef="let element">
-                        {{ element.description }}
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef> Status </th>
-                    <td mat-cell *matCellDef="let element">
-                        <span *ngIf="element.status =='DRAFT'" class="status-draft">Draft</span>
-                        <span *ngIf="element.status =='PUBLISH'" class="status-publish">Published</span>
-                        <span *ngIf="element.status =='INVALID'" class="status-invalid">Invalid</span>
-                        <span *ngIf="element.status =='DRY-RUN'" class="status-draft">Dry-run</span>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="export">
-                    <th mat-header-cell *matHeaderCellDef> Export </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div class="btn-settings" (click)="exportPolicy(element)">
-                            <mat-icon>import_export</mat-icon>
-                            <span>Export</span>
-                        </div>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="edit">
-                    <th mat-header-cell *matHeaderCellDef> Edit </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div *ngIf="element.status =='DRAFT'" class="btn-settings"
-                            [routerLink]="['/policy-configuration']" [queryParams]="{ policyId: element.id }">
-                            <mat-icon>settings</mat-icon>
-                            <span>Edit</span>
-                        </div>
-                        <div *ngIf="element.status =='PUBLISH'" class="btn-settings"
-                            [routerLink]="['/policy-configuration']" [queryParams]="{ policyId: element.id }">
-                            <mat-icon>settings</mat-icon>
-                            <span>View</span>
-                        </div>
-                        <div *ngIf="element.status =='DRY-RUN'" class="btn-settings"
-                            [routerLink]="['/policy-configuration']" [queryParams]="{ policyId: element.id }">
-                            <mat-icon>settings</mat-icon>
-                            <span>View</span>
-                        </div>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="open">
-                    <th mat-header-cell *matHeaderCellDef> Open </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div *ngIf="element.status =='PUBLISH'" class="btn-settings" [routerLink]="['/policy-viewer']"
-                            [queryParams]="{ policyId: element.id }">
-                            <mat-icon>login</mat-icon>
-                            <span>Open</span>
-                        </div>
-                        <div *ngIf="element.status =='DRY-RUN'" class="btn-settings" [routerLink]="['/policy-viewer']"
-                            [queryParams]="{ policyId: element.id }">
-                            <mat-icon>login</mat-icon>
-                            <span>Open</span>
-                        </div>
-                    </td>
-                </ng-container>
 
-                <ng-container matColumnDef="operation">
-                    <th mat-header-cell *matHeaderCellDef> Operation </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div *ngIf="element.status =='DRAFT'" class="btn-approve" (click)="setVersion(element)">
-                            Publish
-                        </div>
-                        <div *ngIf="element.status =='DRAFT'" class="btn-draft" (click)="dryRun(element)">
-                            Dry-run
-                        </div>
-                        <div *ngIf="element.status =='DRY-RUN'" class="btn-draft" (click)="draft(element)">
-                            Draft
-                        </div>
-                    </td>
-                </ng-container>
-
-                <tr mat-header-row *matHeaderRowDef="columns; sticky: true"></tr>
-                <tr mat-row *matRowDef="let row; columns: columns;"></tr>
-            </table>
-        </div>
-        <div class="table-paginator">
-            <mat-paginator [length]="policyCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
-                [pageSizeOptions]="[5, 10, 25, 100]" (page)="onPage($event)" aria-label="Select page">
-            </mat-paginator>
-        </div>
     </ng-container>
 </div>
+
+<mat-menu #menu="matMenu">
+    <div *ngFor="let item of virtualUsers" class="debug-user" (click)="setVirtualUser(item)"
+        [attr.active]="item.active">
+        <div class="debug-user-name">{{item.username}}</div>
+        <div class="debug-user-did">{{item.did}}</div>
+    </div>
+    <div class="new-debug-user" (click)="createVirtualUser()">
+        Create virtual user
+    </div>
+</mat-menu>

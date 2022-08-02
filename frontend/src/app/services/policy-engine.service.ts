@@ -145,4 +145,9 @@ export class PolicyEngineService {
     public restartDryRun(policyId: string): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/dry-run/restart`, null);
     }
+
+    public loadTransactions(policyId: string): Observable<any[]> {
+        return this.http.get<any>(`${this.url}/${policyId}/dry-run/transactions`);
+    }
+    
 }
