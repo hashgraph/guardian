@@ -112,7 +112,7 @@ Promise.all([
             log.info(name, attributes, 4);
         }
     });
-    TransactionLogger.setVirtualFileFunction(async (date: string, id: string, file: any, url:any) => {
+    TransactionLogger.setVirtualFileFunction(async (date: string, id: string, file: ArrayBuffer, url:any) => {
         await DatabaseServer.setVirtualFile(id, file, url);
     });
     TransactionLogger.setVirtualTransactionFunction(async (date: string, id: string, type: string, operatorId?: string) => {
@@ -124,8 +124,6 @@ Promise.all([
     if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
         const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);
         const topicId = await client.newTopic(process.env.OPERATOR_KEY);
-
-        console.log(topicId);
         process.env.INITIALIZATION_TOPIC_ID = topicId;
     }
 
@@ -152,7 +150,7 @@ Promise.all([
     state.updateState(ApplicationStates.INITIALIZING);
 
     await configAPI(channel, settingsRepository, topicRepository);
-    await schemaAPI(channel, schemaRepository);
+    await schemaAPI(channel);
     await tokenAPI(channel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
     await profileAPI(channel);

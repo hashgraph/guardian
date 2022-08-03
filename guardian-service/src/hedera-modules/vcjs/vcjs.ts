@@ -367,8 +367,44 @@ export class VCJS {
         this.prepareSchema(schema);
 
         const validate = ajv.compile(schema);
+
         const valid = validate(subject);
 
         return new CheckResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
+    }
+
+    /**
+     * Add Context
+     *
+     * @param {any} subject - subject
+     * @param {any} context - new context
+     * 
+     * @returns {any} - subject
+     */
+    public addContextInSubject(subject: any, context: string): any {
+        if (subject['@context']) {
+            if (Array.isArray(subject['@context'])) {
+                subject['@context'].push(context);
+            } else {
+                subject['@context'] = [subject['@context'], context];
+            }
+        } else {
+            subject['@context'] = [context];
+        }
+        return subject
+    }
+
+    /**
+     * Add Context
+     *
+     * @param {any} subject - subject
+     * 
+     * @returns {any} - subject
+     */
+    public addDryRunContext(subject: any): any {
+        if (subject.type) {
+            subject['@context'] = [`schema#${subject.type}`];
+        }
+        return subject;
     }
 }

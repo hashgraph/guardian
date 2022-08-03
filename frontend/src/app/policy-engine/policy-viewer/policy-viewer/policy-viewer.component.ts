@@ -46,7 +46,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         ],
         ipfs: [
             'createDate',
-            'file',
+            'size',
             'url',
             'document'
         ]

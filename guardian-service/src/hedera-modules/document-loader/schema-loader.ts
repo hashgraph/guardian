@@ -36,7 +36,7 @@ export abstract class SchemaLoader {
                     return await documentLoader.get(context, iri, type);
                 }
             }
-            throw new Error('IRI not found: ' + iri);
+            throw new Error('(SchemaLoader) IRI not found: ' + iri);
         };
     }
 }

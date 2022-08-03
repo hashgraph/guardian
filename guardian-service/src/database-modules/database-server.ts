@@ -726,19 +726,92 @@ export class DatabaseServer {
      * Get schemas
      * @param filters
      */
-    public static async getSchemas(filters: any): Promise<SchemaCollection[]> {
+    public static async getSchemas(filters?: any): Promise<SchemaCollection[]> {
         return await getMongoRepository(SchemaCollection).find(filters);
+    }
+
+    /**
+     * Delete schemas
+     * @param id
+     */
+    public static async deleteSchemas(id: any): Promise<void> {
+        await getMongoRepository(SchemaCollection).delete(id);
+    }
+
+    /**
+     * Update schema
+     * @param id
+     * @param item
+     */
+    public static async updateSchema(id: any, item: SchemaCollection): Promise<void> {
+        await getMongoRepository(SchemaCollection).update(id, item);
+    }
+
+
+    /**
+     * Get schemas
+     * @param filters
+     */
+    public static async getSchema(filters?: any): Promise<SchemaCollection> {
+        return await getMongoRepository(SchemaCollection).findOne(filters);
     }
 
     /**
      * Get schema
      * @param item
      */
-    public static async saveSchema(item: DeepPartial<SchemaCollection>): Promise<SchemaCollection> {
+    public static createSchema(item: DeepPartial<SchemaCollection>): SchemaCollection {
+        return getMongoRepository(SchemaCollection).create(item);
+    }
+
+    /**
+     * Get schema
+     * @param item
+     */
+    public static async saveSchema(item: SchemaCollection): Promise<SchemaCollection> {
+        return await getMongoRepository(SchemaCollection).save(item);
+    }
+
+    /**
+     * Get schema
+     * @param item
+     */
+    public static async saveSchemas(item: SchemaCollection[]): Promise<SchemaCollection[]> {
+        return await getMongoRepository(SchemaCollection).save(item);
+    }
+
+    /**
+     * Get schema
+     * @param item
+     */
+    public static async createAndSaveSchema(item: DeepPartial<SchemaCollection>): Promise<SchemaCollection> {
         const newItem = getMongoRepository(SchemaCollection).create(item);
         return await getMongoRepository(SchemaCollection).save(newItem);
     }
 
+    /**
+     * Get schema
+     * @param filters
+     */
+    public static async getSchemasAndCount(filters?: any): Promise<[SchemaCollection[], number]> {
+        return await getMongoRepository(SchemaCollection).findAndCount(filters);
+    }
+
+    /**
+     * Get schema
+     * @param ids
+     */
+    public static async getSchemasByIds(ids: string[]): Promise<SchemaCollection[]> {
+        return await getMongoRepository(SchemaCollection).findByIds(ids);
+    }
+
+    /**
+     * Get schema
+     * @param filters
+     */
+    public static async getSchemasCount(filters?: any): Promise<number> {
+        return await getMongoRepository(SchemaCollection).count(filters);
+    }
 
     /**
      * Get user role in policy
@@ -1011,14 +1084,15 @@ export class DatabaseServer {
 
     public static async setVirtualFile(
         policyId: string,
-        file: any,
+        file: ArrayBuffer,
         url: any
     ): Promise<any> {
-        console.log(file, url);
         const user = getMongoRepository(DryRun).create({
             dryRunId: policyId,
             dryRunClass: 'Files',
-            document: file,
+            document: {
+                size: file?.byteLength
+            },
             documentURL: url?.url
         });
         await getMongoRepository(DryRun).save(user);

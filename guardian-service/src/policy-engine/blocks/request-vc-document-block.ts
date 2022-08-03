@@ -257,7 +257,7 @@ export class RequestVcDocumentBlock {
             const id = await this.generateId(
                 idType, user, hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey
             );
-            const VCHelper = new VcHelper();
+            const _vcHelper = new VcHelper();
 
             if (id) {
                 credentialSubject.id = id;
@@ -269,12 +269,17 @@ export class RequestVcDocumentBlock {
 
             credentialSubject.policyId = ref.policyId;
 
-            const res = await VCHelper.verifySubject(credentialSubject);
+            if (ref.dryRun) {
+                _vcHelper.addDryRunContext(credentialSubject);
+            }
+
+            const res = await _vcHelper.verifySubject(credentialSubject);
+
             if (!res.ok) {
                 throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
             }
 
-            const vc = await VCHelper.createVC(user.did, hederaAccount.hederaAccountKey, credentialSubject);
+            const vc = await _vcHelper.createVC(user.did, hederaAccount.hederaAccountKey, credentialSubject);
             const accounts = PolicyUtils.getHederaAccounts(vc, hederaAccount.hederaAccountId, schema);
             const item = ref.databaseServer.createVCRecord(
                 ref.policyId,
@@ -316,7 +321,7 @@ export class RequestVcDocumentBlock {
      * @param userHederaAccount
      * @param userHederaKey
      */
-    async generateId(idType: string, user:IPolicyUser, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
+    async generateId(idType: string, user: IPolicyUser, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (idType === 'UUID') {

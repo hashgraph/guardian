@@ -240,7 +240,7 @@ export class PolicyEngineService {
                 schema.creator = owner;
                 schema.owner = owner;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
-                await DatabaseServer.saveSchema(item);
+                await DatabaseServer.createAndSaveSchema(item);
             }
 
             newTopic = topic;

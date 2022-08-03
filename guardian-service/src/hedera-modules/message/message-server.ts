@@ -66,7 +66,7 @@ export class MessageServer {
                 cid: id,
                 url: id
             }
-            await TransactionLogger.virtualFileLog(this.dryRun, 'ArrayBuffer', result);
+            await TransactionLogger.virtualFileLog(this.dryRun, file, result);
             return result
         }
         return await IPFS.addFile(file);

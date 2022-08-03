@@ -221,7 +221,6 @@ a.go-back-link mat-icon {
     cursor: pointer;
     padding-top: 4px;
     position: relative;
-    -webkit-user-select: none;
     user-select: none;
     border-radius: 6px;
     background: rgb(252 252 252);

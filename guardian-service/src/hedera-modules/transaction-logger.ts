@@ -345,7 +345,7 @@ export class TransactionLogger {
      * @param id
      * @param file
      */
-    public static async virtualFileLog(id:string, file: any, url:any): Promise<void> {
+    public static async virtualFileLog(id:string, file: ArrayBuffer, url:any): Promise<void> {
         const date = (new Date()).toISOString();
         if (TransactionLogger.virtualFileCallback) {
             TransactionLogger.virtualFileCallback(date, id, file, url);
