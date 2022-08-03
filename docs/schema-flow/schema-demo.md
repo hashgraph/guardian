@@ -44,12 +44,20 @@ There are different types of Field Types:
 * URL
 * Email
 * Image
+* Account
 *   Units of Measure
 
     * Prefix
     * Postfix
 
     Each of the above field types can be marked as either Marked or optional by checking the Required Field checkbox.
+
+{% hint style="info" %}
+**Note:**
+
+1. Account field type need to be referred in ‘tokenConfirmationBlock’ and ‘tokenActionBlock’. They can be present both in the parent and child documents.
+2. If there are multiple fields of the ‘Account’ with the same name, then the value from the most immediate scope, i.e. from the current (‘child’) document is used.
+{% endhint %}
 
 Once the above details are added, click on the Create button.
 
