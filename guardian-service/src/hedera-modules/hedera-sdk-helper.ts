@@ -58,12 +58,6 @@ export class HederaSDKHelper {
     private static fn: Function = null;
 
     /**
-     * Callback
-     * @private
-     */
-    private static virtualResponseCallback: Function = null;
-
-    /**
      * Dry-run
      * @private
      */
@@ -113,6 +107,17 @@ export class HederaSDKHelper {
      */
     private async transactionErrorLog(id: string, transactionName: string, transaction: Transaction, error: Error): Promise<void> {
         await TransactionLogger.transactionErrorLog(id, this.client.operatorAccountId, transactionName, transaction, error.message);
+    }
+
+
+    /**
+     * Transaction starting
+     * @param id
+     * @param transactionName
+     * @private
+     */
+    private async virtualTransactionLog(id: string, type: string, client: Client): Promise<void> {
+        await TransactionLogger.virtualTransactionLog(id, type, client.operatorAccountId?.toString());
     }
 
     /**
@@ -781,7 +786,7 @@ export class HederaSDKHelper {
         client: Client, transaction: Transaction, type: string, metadata?: any
     ): Promise<TransactionReceipt> {
         if (this.dryRun) {
-            await HederaSDKHelper.virtualTransactionResponse(this.dryRun, type, client);
+            await this.virtualTransactionLog(this.dryRun, type, client);
             return {
                 status: Status.Success,
                 topicId: new TokenId(Date.now()),
@@ -817,7 +822,7 @@ export class HederaSDKHelper {
         client: Client, transaction: Transaction, type: string, metadata?: any
     ): Promise<TransactionRecord> {
         if (this.dryRun) {
-            await HederaSDKHelper.virtualTransactionResponse(this.dryRun, type, client);
+            await this.virtualTransactionLog(this.dryRun, type, client);
             return {
                 consensusTimestamp: Timestamp.fromDate(Date.now())
             } as any
@@ -846,14 +851,6 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Set virtual transaction response callback
-     * @param fn
-     */
-    public static setVirtualTransactionResponseCallback(fn: Function) {
-        HederaSDKHelper.virtualResponseCallback = fn;
-    }
-
-    /**
      * Transaction response
      * @param client
      * @private
@@ -861,20 +858,6 @@ export class HederaSDKHelper {
     private static transactionResponse(client: Client) {
         if (HederaSDKHelper.fn) {
             HederaSDKHelper.fn(client);
-        }
-    }
-
-    /**
-     * Transaction response
-     * @param id
-     * @param type
-     * @private
-     */
-    private static async virtualTransactionResponse(id: string, type: string, client: Client) {
-        if (HederaSDKHelper.virtualResponseCallback) {
-            await HederaSDKHelper.virtualResponseCallback(
-                id, type, client.operatorAccountId?.toString()
-            );
         }
     }
 

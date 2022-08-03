@@ -112,10 +112,14 @@ Promise.all([
             log.info(name, attributes, 4);
         }
     });
-    HederaSDKHelper.setTransactionResponseCallback(updateUserBalance(channel));
-    HederaSDKHelper.setVirtualTransactionResponseCallback(async (id: string, type: string, operatorId?: string) => {
+    TransactionLogger.setVirtualFileFunction(async (date: string, id: string, file: any, url:any) => {
+        await DatabaseServer.setVirtualFile(id, file, url);
+    });
+    TransactionLogger.setVirtualTransactionFunction(async (date: string, id: string, type: string, operatorId?: string) => {
         await DatabaseServer.setVirtualTransaction(id, type, operatorId);
     });
+
+    HederaSDKHelper.setTransactionResponseCallback(updateUserBalance(channel));
 
     if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
         const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);

@@ -60,18 +60,20 @@ export class MessageServer {
     }
 
     private async addFile(file: ArrayBuffer) {
-        if(this.dryRun) {
+        if (this.dryRun) {
             const id = GenerateUUIDv4();
-            return {
+            const result = {
                 cid: id,
                 url: id
             }
+            await TransactionLogger.virtualFileLog(this.dryRun, 'ArrayBuffer', result);
+            return result
         }
         return await IPFS.addFile(file);
     }
 
     private async getFile(cid: string, responseType: "json" | "raw" | "str") {
-        if(this.dryRun) {
+        if (this.dryRun) {
             throw new Error('Unable to get virtual file');
         }
         return await IPFS.getFile(cid, responseType);

@@ -55,66 +55,13 @@
                         {{ element.description }}
                     </td>
                 </ng-container>
-                <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef> Status </th>
-                    <td mat-cell *matCellDef="let element">
-                        <span *ngIf="element.status =='DRAFT'" class="status-draft">Draft</span>
-                        <span *ngIf="element.status =='PUBLISH'" class="status-publish">Published</span>
-                        <span *ngIf="element.status =='INVALID'" class="status-invalid">Invalid</span>
-                        <span *ngIf="element.status =='DRY-RUN'" class="status-draft">Dry Run</span>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="export">
-                    <th mat-header-cell *matHeaderCellDef> Export </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div class="btn-settings" (click)="exportPolicy(element)">
-                            <mat-icon>import_export</mat-icon>
-                            <span>Export</span>
-                        </div>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="edit">
-                    <th mat-header-cell *matHeaderCellDef> Edit </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div *ngIf="element.status =='DRAFT'" class="btn-settings"
-                            [routerLink]="['/policy-configuration']" [queryParams]="{ policyId: element.id }">
-                            <mat-icon>settings</mat-icon>
-                            <span>Edit</span>
-                        </div>
-                        <div *ngIf="element.status =='PUBLISH'" class="btn-settings"
-                            [routerLink]="['/policy-configuration']" [queryParams]="{ policyId: element.id }">
-                            <mat-icon>settings</mat-icon>
-                            <span>View</span>
-                        </div>
-                        <div *ngIf="element.status =='DRY-RUN'" class="btn-settings"
-                            [routerLink]="['/policy-configuration']" [queryParams]="{ policyId: element.id }">
-                            <mat-icon>settings</mat-icon>
-                            <span>View</span>
-                        </div>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="open">
-                    <th mat-header-cell *matHeaderCellDef> Open </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div *ngIf="element.status =='PUBLISH'" class="btn-settings"
-                            [routerLink]="['/policy-viewer', element.id]">
-                            <mat-icon>login</mat-icon>
-                            <span>Open</span>
-                        </div>
-                        <div *ngIf="element.status =='DRY-RUN'" class="btn-settings"
-                            [routerLink]="['/policy-viewer', element.id]">
-                            <mat-icon>login</mat-icon>
-                            <span>Open</span>
-                        </div>
-                    </td>
-                </ng-container>
 
                 <ng-container matColumnDef="operation">
-                    <th mat-header-cell *matHeaderCellDef> Operation </th>
+                    <th mat-header-cell *matHeaderCellDef> Status/Actions </th>
                     <td mat-cell *matCellDef="let element">
                         <select-menu-button class="btn-draft" *ngIf="element.status == 'DRAFT'"
                             (action)="onPublishAction($event, element)" [options]="publishMenuOption">
-                            Editing
+                            Draft
                         </select-menu-button>
                         <select-menu-button class="btn-dry-run" *ngIf="element.status == 'DRY-RUN'"
                             (action)="draft($event, element)" [options]="draftMenuOption">
@@ -123,6 +70,41 @@
                         <select-menu-button class="btn-publish" *ngIf="element.status == 'PUBLISH'">
                             Published
                         </select-menu-button>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="open">
+                    <th mat-header-cell *matHeaderCellDef> Operations </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div *ngIf="element.status =='PUBLISH'" class="btn-icon-go go-published"
+                            [routerLink]="['/policy-viewer', element.id]">
+                            <mat-icon>double_arrow</mat-icon>
+                            <span>Go</span>
+                        </div>
+                        <div *ngIf="element.status =='DRY-RUN'" class="btn-icon-go go-dry-run"
+                            [routerLink]="['/policy-viewer', element.id]">
+                            <mat-icon>double_arrow</mat-icon>
+                            <span>Go</span>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="export">
+                    <th mat-header-cell *matHeaderCellDef></th>
+                    <td mat-cell *matCellDef="let element">
+                        <div class="btn-icon-import" (click)="exportPolicy(element)" title="Export Policy">
+                            <mat-icon>import_export</mat-icon>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="edit">
+                    <th mat-header-cell *matHeaderCellDef></th>
+                    <td mat-cell *matCellDef="let element">
+                        <div class="btn-icon-edit" [routerLink]="['/policy-configuration']"
+                            [queryParams]="{ policyId: element.id }" title="Policies configuration">
+                            <mat-icon>edit</mat-icon>
+                        </div>
                     </td>
                 </ng-container>
 

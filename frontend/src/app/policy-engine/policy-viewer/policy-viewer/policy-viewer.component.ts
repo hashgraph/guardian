@@ -4,14 +4,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IToken, IUser, PolicyType, UserRole } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin, Subscription } from 'rxjs';
-import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
-import { ExportPolicyDialog } from '../../helpers/export-policy-dialog/export-policy-dialog.component';
-import { NewPolicyDialog } from '../../helpers/new-policy-dialog/new-policy-dialog.component';
-import { ImportPolicyDialog } from '../../helpers/import-policy-dialog/import-policy-dialog.component';
-import { PreviewPolicyDialog } from '../../helpers/preview-policy-dialog/preview-policy-dialog.component';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { HttpResponse } from '@angular/common/http';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
@@ -35,12 +30,27 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     virtualUsers: any[] = []
     view: string = 'policy';
     documents: any[] = [];
-    columns: string[] = [
-        'createDate',
-        'type',
-        'owner',
-        'document'
-    ];
+    columns: string[] = [];
+    columnsMap: any = {
+        transactions: [
+            'createDate',
+            'type',
+            'owner',
+            'document'
+        ],
+        artifacts: [
+            'createDate',
+            'type',
+            'owner',
+            'document'
+        ],
+        ipfs: [
+            'createDate',
+            'file',
+            'url',
+            'document'
+        ]
+    };
     pageIndex: number;
     pageSize: number;
     documentCount: any;
@@ -179,6 +189,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     onView(view: string) {
         this.view = view;
+        this.columns = this.columnsMap[this.view];
         if (this.view !== 'policy') {
             this.loading = true;
             this.pageIndex = 0;
@@ -243,7 +254,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     private setType(document: any) {
-        if (this.view === 'documents') {
+        if (this.view === 'artifacts') {
             if (document.dryRunClass === 'VcDocumentCollection') {
                 document.__type = 'VC';
             } else if (document.dryRunClass === 'VpDocumentCollection') {

@@ -40,6 +40,19 @@ export class TransactionLogger {
      * @private
      */
     private static fn: Function = null;
+
+    /**
+     * Callback
+     * @private
+     */
+    private static virtualFileCallback: Function = null;
+
+    /**
+     * Callback
+     * @private
+     */
+    private static virtualTransactionCallback: Function = null;
+
     /**
      * Time map
      * @private
@@ -60,6 +73,22 @@ export class TransactionLogger {
      */
     public static setLogFunction(fn: Function): void {
         TransactionLogger.fn = fn;
+    }
+
+    /**
+     * Set virtual file function
+     * @param fn
+     */
+    public static setVirtualFileFunction(fn: Function): void {
+        TransactionLogger.virtualFileCallback = fn;
+    }
+
+    /**
+    * Set virtual transaction function
+    * @param fn
+    */
+    public static setVirtualTransactionFunction(fn: Function): void {
+        TransactionLogger.virtualTransactionCallback = fn;
     }
 
     /**
@@ -311,4 +340,28 @@ export class TransactionLogger {
         }
     }
 
+    /**
+     * Save virtual file log
+     * @param id
+     * @param file
+     */
+    public static async virtualFileLog(id:string, file: any, url:any): Promise<void> {
+        const date = (new Date()).toISOString();
+        if (TransactionLogger.virtualFileCallback) {
+            TransactionLogger.virtualFileCallback(date, id, file, url);
+        }
+    }
+
+    /**
+     * Save virtual transaction log
+     * @param id
+     * @param type
+     * @param operatorId
+     */
+    public static async virtualTransactionLog(id: string, type: string, operatorId?: string): Promise<void> {
+        const date = (new Date()).toISOString();
+        if (TransactionLogger.virtualTransactionCallback) {
+            TransactionLogger.virtualTransactionCallback(date, id, type, operatorId);
+        }
+    }
 }

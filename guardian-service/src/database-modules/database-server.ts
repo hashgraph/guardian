@@ -996,13 +996,30 @@ export class DatabaseServer {
     }
 
     public static async setVirtualTransaction(
-        policyId: string, type: string, operatorId?: string
+        policyId: string,
+        type: string,
+        operatorId?: string
     ): Promise<any> {
         const user = getMongoRepository(DryRun).create({
             dryRunId: policyId,
             dryRunClass: 'Transactions',
             type,
             hederaAccountId: operatorId
+        });
+        await getMongoRepository(DryRun).save(user);
+    }
+
+    public static async setVirtualFile(
+        policyId: string,
+        file: any,
+        url: any
+    ): Promise<any> {
+        console.log(file, url);
+        const user = getMongoRepository(DryRun).create({
+            dryRunId: policyId,
+            dryRunClass: 'Files',
+            document: file,
+            documentURL: url?.url
         });
         await getMongoRepository(DryRun).save(user);
     }

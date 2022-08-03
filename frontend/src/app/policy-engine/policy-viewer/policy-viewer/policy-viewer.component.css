@@ -103,10 +103,22 @@ a.go-back-link mat-icon {
 .debug-user {
     padding: 10px;
     cursor: pointer;
+    margin: 0 1px;
+    opacity: 0.9;
+}
+
+.debug-user:hover {
+    background: #3f51b50d;
 }
 
 .debug-user[active='true'] {
-    background: #f2f9ff;
+    background: #3f51b5;
+    color: #fff;
+    font-weight: 500;
+}
+.debug-user[active='true'] .debug-user-did {
+    color: #fff;
+    font-weight: normal;
 }
 
 .new-debug-user {
@@ -324,4 +336,20 @@ a.go-back-link mat-icon {
     left: 0px;
     top: 2px;
     font-size: 22px;
+}
+
+.document-table .mat-column-createDate  {
+    width: 260px;
+}
+
+.document-table .mat-column-document {
+    width: 60px;
+    max-width: 60px;
+}
+
+.document-table .mat-column-owner {
+    width: 200px;
+    max-width: 600px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

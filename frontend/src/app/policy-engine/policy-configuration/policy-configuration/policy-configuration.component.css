@@ -643,3 +643,9 @@ input[readonly] {
     filter: grayscale(1);
     opacity: 0.6;
 }
+
+.btn-label {
+    background: rgb(252 252 252) !important;
+    border: 1px solid rgb(252 252 252) !important;
+    cursor: default !important;
+}

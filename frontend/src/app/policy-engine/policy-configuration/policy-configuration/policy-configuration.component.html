@@ -22,6 +22,32 @@
 
                     <div class="delimiter"></div>
 
+                    <div *ngIf="policyModel.isDraft" class="btn-group btn-status-all" [matMenuTriggerFor]="publishMenu">
+                        <mat-icon style="color: #9c27b0">edit</mat-icon>
+                        <span style="color: #9c27b0">Draft</span>
+                        <div class="expand-group">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
+                    </div>
+
+                    <div *ngIf="policyModel.isDryRun" class="btn-group btn-status-all" style="width: 60px"
+                        [matMenuTriggerFor]="dryRunMenu">
+                        <mat-icon style="color: #3f51b5">build</mat-icon>
+                        <span style="color: #3f51b5">
+                            In Dry Run
+                        </span>
+                        <div class="expand-group">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
+                    </div>
+
+                    <div *ngIf="policyModel.isPublished" class="btn-new-block btn-label">
+                        <mat-icon style="color: #4caf50">public</mat-icon>
+                        <span style="color: #4caf50">Published</span>
+                    </div>
+
+                    <div class="delimiter"></div>
+
                     <div *ngIf="policyModel.isDraft" class="btn-new-block btn-status-all" (click)="validationPolicy()"
                         title="Validation Policy" [attr.errors-count]="errorsCount"
                         [attr.readonly]="currentView != 'blocks'">
@@ -30,29 +56,13 @@
                         <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
                     </div>
 
-                    <div class="btn-group btn-status-all" *ngIf="policyModel.isDraft" [matMenuTriggerFor]="publishMenu">
-                        <mat-icon>public</mat-icon>
-                        <span>Publish</span>
-                        <div class="expand-group">
-                            <mat-icon>arrow_drop_down</mat-icon>
-                        </div>
-                    </div>
-
-                    <div class="btn-group btn-status-all" *ngIf="policyModel.isDryRun" [matMenuTriggerFor]="dryRunMenu">
-                        <mat-icon>public</mat-icon>
-                        <span>Publish</span>
-                        <div class="expand-group">
-                            <mat-icon>arrow_drop_down</mat-icon>
-                        </div>
+                    <div *ngIf="policyModel.isDryRun || policyModel.isPublished" class="btn-new-block btn-status-all"
+                        [routerLink]="['/policy-viewer', policyId]">
+                        <mat-icon>double_arrow</mat-icon>
+                        <span>Go</span>
                     </div>
 
                     <div class="delimiter"></div>
-
-                    <div *ngIf="readonly" class="btn-new-block btn-status-all"
-                        [routerLink]="['/policy-viewer', policyId]">
-                        <mat-icon>login</mat-icon>
-                        <span>Open</span>
-                    </div>
 
                     <div *ngIf="!readonly" [attr.storage-active]="policyStorage.isUndo"
                         class="btn-new-block btn-status-edit" (click)="undoPolicy()" title="Undo">
@@ -73,7 +83,7 @@
                         <span>Copy Blocks</span>
                     </div>
 
-                    <div class="delimiter"></div>
+                    <div *ngIf="!readonly" class="delimiter"></div>
 
                     <div class="btn-group btn-status-edit" [matMenuTriggerFor]="mainMenu"
                         *ngIf="groupBlocks.Main.length">
@@ -350,12 +360,12 @@
 
 <mat-menu #publishMenu="matMenu">
     <div class="btn-new-block-menu btn-status-all" (click)="tryPublishPolicy()"
-        title="Release version into public domain.">
+        title="Release version into public domain." style="color: #4caf50">
         <mat-icon>public</mat-icon>
         <span>Publish</span>
     </div>
     <div class="btn-new-block-menu btn-status-all" (click)="tryRunPolicy()"
-        title="Run without making any persistent changes or executing transaction.">
+        title="Run without making any persistent changes or executing transaction." style="color: #3f51b5">
         <mat-icon>build</mat-icon>
         <span>Dry Run</span>
     </div>
@@ -363,12 +373,13 @@
 
 <mat-menu #dryRunMenu="matMenu">
     <div class="btn-new-block-menu btn-status-all" (click)="tryPublishPolicy()"
-        title="Release version into public domain.">
+        title="Release version into public domain." style="color: #4caf50">
         <mat-icon>public</mat-icon>
         <span>Publish</span>
     </div>
-    <div class="btn-new-block-menu btn-status-all" (click)="draftPolicy()" title="Return to editing.">
+    <div class="btn-new-block-menu btn-status-all" (click)="draftPolicy()" title="Return to editing."
+        style="color: #9c27b0">
         <mat-icon>edit</mat-icon>
-        <span>Draft</span>
+        <span>Stop</span>
     </div>
 </mat-menu>

@@ -43,14 +43,14 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         id: 'Dry-run',
         title: 'Dry Run',
         description: 'Run without making any persistent changes or executing transaction.',
-        color: '#2196f3'
+        color: '#3f51b5'
     }]
 
     draftMenuOption = [{
         id: 'Draft',
-        title: 'Draft',
+        title: 'Stop',
         description: 'Return to editing.',
-        color: '#2196f3'
+        color: '#9c27b0'
     }, {
         id: 'Publish',
         title: 'Publish',
@@ -78,12 +78,12 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             'description',
             'roles',
             'topic',
-            'schemas',
             'version',
+            'schemas',
             'operation',
+            'open',
             'export',
-            'edit',
-            'open'
+            'edit'
         ]
         this.columnsRole[UserRole.USER] = [
             'name',
