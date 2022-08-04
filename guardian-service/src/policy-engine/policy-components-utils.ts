@@ -358,11 +358,16 @@ export class PolicyComponentsUtils {
      * @param data
      */
     public static async ReceiveExternalData(data: any): Promise<void> {
-        for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
-            const policy = await getMongoRepository(Policy).findOne({ policyTag: data.policyTag });
-            if (policy.id.toString() === (block as any).policyId) {
-                await (block as any).receiveData(data);
+        const policy = await getMongoRepository(Policy).findOne({ policyTag: data?.policyTag });
+        if (policy) {
+            const policyId = policy.id.toString();
+            for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
+                if (block.policyId === policyId) {
+                    await (block as any).receiveData(data);
+                }
             }
+        } else {
+            console.log(`ExternalData: policy not found (${data?.policyTag})`);
         }
     }
 
