@@ -440,13 +440,14 @@ export class SchemaConfigurationComponent implements OnInit {
             ) {
                 return key;
             }
-            if (
-                option.type === field.type &&
-                option.format === field.format &&
-                option.pattern === field.pattern &&
-                option.isRef === field.isRef
-            ) {
-                return key;
+            if (option.type === field.type) {
+                if (
+                    ((!option.format && !field.format) || (option.format === field.format)) &&
+                    ((!option.pattern && !field.pattern) || (option.pattern === field.pattern)) &&
+                    ((!option.isRef && !field.isRef) || (option.isRef === field.isRef))
+                ) {
+                    return key;
+                }
             }
         }
         return '';

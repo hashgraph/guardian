@@ -15,6 +15,7 @@ import { BlockActionError } from '@policy-engine/errors';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { Inject } from '@helpers/decorators/inject';
 import { Users } from '@helpers/users';
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 
 /**
  * External data block
@@ -93,6 +94,21 @@ export class ExternalDataBlock {
     }
 
     /**
+     * Get Relationships
+     * @param policyId
+     * @param refId
+     */
+    async getRelationships(policyId: string, refId: any): Promise<VcDocumentCollection> {
+        try {
+            return await PolicyUtils.getRelationships(policyId, refId);
+        } catch (error) {
+            const ref = PolicyComponentsUtils.GetBlockRef(this);
+            ref.error(error.message);
+            throw new BlockActionError('Invalid relationships', ref.blockType, ref.uuid);
+        }
+    }
+
+    /**
      * Get Schema
      */
     async getSchema(): Promise<Schema> {
@@ -137,6 +153,8 @@ export class ExternalDataBlock {
         }
         const docOwner = await this.users.getUserById(data.owner);
 
+        const documentRef = await this.getRelationships(ref.policyId, data.ref);
+
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);
         const accounts = PolicyUtils.getHederaAccounts(vc, docOwner.hederaAccountId, schema);
@@ -154,7 +172,8 @@ export class ExternalDataBlock {
                     DocumentSignature.INVALID),
                 schema: ref.options.schema,
                 accounts
-            }
+            },
+            documentRef
         );
 
         const state = { data: doc };

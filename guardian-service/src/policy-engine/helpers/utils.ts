@@ -312,16 +312,25 @@ export class PolicyUtils {
 
     /**
      * Mint
+     * @param ref
      * @param token
      * @param tokenValue
      * @param root
      * @param targetAccount
      * @param uuid
      */
-    public static async mint(token: Token, tokenValue: number, root: any, targetAccount: string, uuid: string): Promise<void> {
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
+    public static async mint(
+        ref: AnyBlockType,
+        token: Token,
+        tokenValue: number,
+        root: any,
+        targetAccount: string,
+        uuid: string
+    ): Promise<void> {
+        const mintId = Date.now();
+        ref.log(`Mint(${mintId}): Start (Count: ${tokenValue})`);
 
-        console.log(`Mint: Start (${tokenValue})`);
+        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
         const tokenId = token.tokenId;
         const supplyKey = token.supplyKey;
         const adminId = token.adminId;
@@ -331,35 +340,36 @@ export class PolicyUtils {
             const metaData = HederaUtils.decode(uuid);
             const data = new Array<Uint8Array>(Math.floor(tokenValue));
             data.fill(metaData);
-            console.log(`Mint: Count (${data.length})`);
             const serials: number[] = [];
             const dataChunk = PolicyUtils.splitChunk(data, 10);
             for (let i = 0; i < dataChunk.length; i++) {
                 const element = dataChunk[i];
-                console.log(`Mint: Chunk Size (${element.length})`);
+                if (i % 100 === 0) {
+                    ref.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
+                }
                 try {
                     const newSerials = await client.mintNFT(tokenId, supplyKey, element, uuid);
                     for (const serial of newSerials) {
                         serials.push(serial)
                     }
                 } catch (error) {
-                    console.log(`Mint: Mint Error (${error.message})`);
-                }
-                if (i % 100 === 0) {
-                    console.log(`Mint: Minting (${i}/${dataChunk.length})`);
+                    ref.error(`Mint(${mintId}): Mint Error (${error.message})`);
                 }
             }
-            console.log(`Mint: Minted (${serials.length})`);
+
+            ref.log(`Mint(${mintId}): Minted (Count: ${serials.length})`);
+            ref.log(`Mint(${mintId}): Transfer ${adminId} -> ${targetAccount} `);
+
             const serialsChunk = PolicyUtils.splitChunk(serials, 10);
             for (let i = 0; i < serialsChunk.length; i++) {
                 const element = serialsChunk[i];
+                if (i % 100 === 0) {
+                    ref.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`);
+                }
                 try {
                     await client.transferNFT(tokenId, targetAccount, adminId, adminKey, element, uuid);
                 } catch (error) {
-                    console.log(`Mint: Transfer Error (${error.message})`);
-                }
-                if (i % 100 === 0) {
-                    console.log(`Mint: Transfer (${i}/${serialsChunk.length})`);
+                    ref.error(`Mint(${mintId}): Transfer Error (${error.message})`);
                 }
             }
         } else {
@@ -367,8 +377,9 @@ export class PolicyUtils {
             await client.transfer(tokenId, targetAccount, adminId, adminKey, tokenValue, uuid);
         }
 
-        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: uuid })
-        console.log('Mint: End');
+        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: uuid });
+
+        ref.log(`Mint(${mintId}): End`);
     }
 
     /**
@@ -379,7 +390,13 @@ export class PolicyUtils {
      * @param targetAccount
      * @param uuid
      */
-    public static async wipe(token: Token, tokenValue: number, root: any, targetAccount: string, uuid: string): Promise<void> {
+    public static async wipe(
+        token: Token,
+        tokenValue: number,
+        root: any,
+        targetAccount: string,
+        uuid: string
+    ): Promise<void> {
         const tokenId = token.tokenId;
         const wipeKey = token.wipeKey;
 
@@ -636,7 +653,7 @@ export class PolicyUtils {
     }
 
     /**
-     * associate
+     * Associate
      * @param token
      * @param user
      */
@@ -649,7 +666,7 @@ export class PolicyUtils {
     }
 
     /**
-     * dissociate
+     * Dissociate
      * @param token
      * @param user
      */
@@ -662,7 +679,7 @@ export class PolicyUtils {
     }
 
     /**
-     * freeze
+     * Freeze
      * @param token
      * @param user
      * @param root
@@ -673,7 +690,7 @@ export class PolicyUtils {
     }
 
     /**
-     * unfreeze
+     * Unfreeze
      * @param token
      * @param user
      * @param root
@@ -684,7 +701,7 @@ export class PolicyUtils {
     }
 
     /**
-     * grantKyc
+     * Grant Kyc
      * @param token
      * @param user
      * @param root
@@ -695,7 +712,7 @@ export class PolicyUtils {
     }
 
     /**
-     * revokeKyc
+     * Revoke Kyc
      * @param token
      * @param user
      * @param root
@@ -706,12 +723,52 @@ export class PolicyUtils {
     }
 
     /**
-     * revokeKyc
-     * @param accountId
+     * Check AccountId
+     * @param account
      */
     public static checkAccountId(account: IHederaAccount): void {
         if (!account || !HederaSDKHelper.checkAccount(account.hederaAccountId)) {
             throw new Error('Invalid Account');
+        }
+    }
+
+    /**
+     * Get Relationships
+     * @param policyId
+     * @param refId
+     */
+    public static async getRelationships(policyId: string, refId: any): Promise<VcDocumentCollection> {
+        if (refId) {
+            let documentRef: any = null;
+            if (typeof (refId) === 'string') {
+                documentRef = await getMongoRepository(VcDocumentCollection).findOne({
+                    where: {
+                        'policyId': { $eq: policyId },
+                        'document.credentialSubject.id': { $eq: refId }
+                    }
+                });
+            } else if (typeof (refId) === 'object') {
+                if (refId.id) {
+                    documentRef = await getMongoRepository(VcDocumentCollection).findOne(refId.id);
+                    if (documentRef && documentRef.policyId !== policyId) {
+                        documentRef = null;
+                    }
+                } else {
+                    const id = PolicyUtils.getSubjectId(documentRef);
+                    documentRef = await getMongoRepository(VcDocumentCollection).findOne({
+                        where: {
+                            'policyId': { $eq: policyId },
+                            'document.credentialSubject.id': { $eq: id }
+                        }
+                    });
+                }
+            }
+            if (!documentRef) {
+                throw new Error('Invalid relationships');
+            }
+            return documentRef;
+        } else {
+            return null;
         }
     }
 }
