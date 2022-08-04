@@ -101,9 +101,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
-
     async setData(data: any) {
-        if (data) {
+        if (data.data.length > 0) {
             const fields: any[] = data.fields || [];
             this.fieldMap = {};
             this.fields = [];
