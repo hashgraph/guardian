@@ -1,5 +1,5 @@
 import { ActionCallback, ExternalData } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus } from '@guardian/interfaces';
+import { DocumentSignature, DocumentStatus, Schema } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
@@ -9,10 +9,12 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { IAuthUser } from '@guardian/common';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { Inject } from '@helpers/decorators/inject';
+import { Users } from '@helpers/users';
 
 /**
  * External data block
@@ -36,6 +38,19 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
     }
 })
 export class ExternalDataBlock {
+    /**
+     * Users helper
+     * @private
+     */
+    @Inject()
+    private readonly users: Users;
+
+    /**
+     * Schema
+     * @private
+     */
+    private schema: Schema | null;
+
     /**
      * Get Validators
      */
@@ -78,6 +93,27 @@ export class ExternalDataBlock {
     }
 
     /**
+     * Get Schema
+     */
+    async getSchema(): Promise<Schema> {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        if (!ref.options.schema) {
+            return null;
+        }
+        if (!this.schema) {
+            const schema = await getMongoRepository(SchemaCollection).findOne({
+                iri: ref.options.schema,
+                topicId: ref.topicId
+            });
+            this.schema = schema ? new Schema(schema) : null;
+            if (!this.schema) {
+                throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
+            }
+        }
+        return this.schema;
+    }
+
+    /**
      * Receive external data callback
      * @param data
      */
@@ -86,7 +122,7 @@ export class ExternalDataBlock {
     })
     @CatchErrors()
     async receiveData(data: any) {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         let verify: boolean;
         try {
             const VCHelper = new VcHelper();
@@ -99,8 +135,12 @@ export class ExternalDataBlock {
             ref.error(`Verify VC: ${error.message}`)
             verify = false;
         }
+        const docOwner = await this.users.getUserById(data.owner);
 
+        const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);
+        const accounts = PolicyUtils.getHederaAccounts(vc, docOwner.hederaAccountId, schema);
+
         const doc = PolicyUtils.createVCRecord(
             ref.policyId,
             ref.tag,
@@ -112,7 +152,8 @@ export class ExternalDataBlock {
                 signature: (verify ?
                     DocumentSignature.VERIFIED :
                     DocumentSignature.INVALID),
-                schema: ref.options.schema
+                schema: ref.options.schema,
+                accounts
             }
         );
 

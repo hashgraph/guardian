@@ -166,9 +166,11 @@ export class PolicyUtils {
      */
     public static getHederaAccounts(vc: HVcDocument, defaultAccount: string, schema: Schema): any {
         const result: any = {};
-        const fields = schema.searchFields((f) => f.customType === 'hederaAccount');
-        for (const field of fields) {
-            result[field.path] = vc.getField(field.path);
+        if (schema) {
+            const fields = schema.searchFields((f) => f.customType === 'hederaAccount');
+            for (const field of fields) {
+                result[field.path] = vc.getField(field.path);
+            }
         }
         result.default = defaultAccount;
         return result;
