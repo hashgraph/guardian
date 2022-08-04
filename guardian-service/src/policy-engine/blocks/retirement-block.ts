@@ -115,6 +115,11 @@ export class RetirementBlock {
 
         const uuid = GenerateUUIDv4();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
+
+        if (Number.isNaN(amount) || !Number.isFinite(amount)) {
+            throw new BlockActionError(`Invalid token value: ${amount}`, ref.blockType, ref.uuid);
+        }
+
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         const wipeVC = await this.createWipeVC(root, token, tokenAmount, ref);
         const vcs = [].concat(documents, wipeVC);
@@ -226,16 +231,18 @@ export class RetirementBlock {
                 topicIds.push(doc.topicId);
             }
             if (doc.accounts) {
-                accounts.push(doc.accounts[field]);
+                const accountId: string = doc.accounts[field];
+                accounts.push(accountId);
             }
         }
-        if (accounts.find(a => a !== accounts[0])) {
-            ref.error(`More than one account found! Transfer made on the first (${accounts[0]})`);
+        const firstAccounts = accounts[0];
+        if (accounts.find(a => a !== firstAccounts)) {
+            ref.error(`More than one account found! Transfer made on the first (${firstAccounts})`);
         }
         const topicId = topicIds[0];
 
         const targetAccountId: string = ref.options.accountId ?
-            accounts[0] :
+            firstAccounts :
             docOwner.hederaAccountId;
         const root = await this.users.getHederaAccount(ref.policyOwner);
 

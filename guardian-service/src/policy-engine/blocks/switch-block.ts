@@ -97,7 +97,7 @@ export class SwitchBlock {
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
      */
-     @ActionCallback({
+    @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     async runAction(event: IPolicyEvent<any>) {
@@ -130,13 +130,25 @@ export class SwitchBlock {
             let result = false;
             if (type === 'equal') {
                 if (scope) {
-                    result = PolicyUtils.evaluateFormula(value, scope);
+                    const formulaResult = PolicyUtils.evaluateFormula(value, scope);
+                    if (formulaResult === 'Incorrect formula') {
+                        ref.error(`expression: ${result}, ${JSON.stringify(scope)}`);
+                        result = false;
+                    } else {
+                        result = !!formulaResult;
+                    }
                 } else {
                     result = false;
                 }
             } else if (type === 'not_equal') {
                 if (scope) {
-                    result = !PolicyUtils.evaluateFormula(value, scope);
+                    const formulaResult = PolicyUtils.evaluateFormula(value, scope);
+                    if (formulaResult === 'Incorrect formula') {
+                        ref.error(`expression: ${result}, ${JSON.stringify(scope)}`);
+                        result = false;
+                    } else {
+                        result = !formulaResult;
+                    }
                 } else {
                     result = false;
                 }

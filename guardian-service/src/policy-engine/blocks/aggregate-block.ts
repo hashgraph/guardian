@@ -107,7 +107,7 @@ export class AggregateBlock {
      * @param doc
      * @private
      */
-    private expressions(expressions: any[], doc: AggregateVC): any {
+    private expressions(ref: AnyBlockType, expressions: any[], doc: AggregateVC): any {
         const result: any = {};
         if (!expressions || !expressions.length) {
             return result;
@@ -115,7 +115,11 @@ export class AggregateBlock {
         const element = VcDocument.fromJsonTree(doc.document);
         const scope = PolicyUtils.getVCScope(element);
         for (const expression of expressions) {
-            result[expression.name] = parseFloat(PolicyUtils.evaluateFormula(expression.value, scope));
+            const formulaResult = PolicyUtils.evaluateFormula(expression.value, scope);
+            if (formulaResult === 'Incorrect formula') {
+                ref.error(`expression: ${expression.value}, ${formulaResult}, ${JSON.stringify(scope)}`);
+            }
+            result[expression.name] = parseFloat(formulaResult);
         }
         return result;
     }
@@ -163,12 +167,16 @@ export class AggregateBlock {
 
         const scopes: any[] = [];
         for (const doc of rawEntities) {
-            scopes.push(this.expressions(expressions, doc));
+            scopes.push(this.expressions(ref, expressions, doc));
         }
         const scope = this.aggregateScope(scopes);
         const result = PolicyUtils.evaluateFormula(condition, scope);
 
-        ref.log(`tick aggregate: ${owner}, ${result}, ${JSON.stringify(scope)}`);
+        if (result === 'Incorrect formula') {
+            ref.error(`tick aggregate: ${owner}, '${condition}' (${JSON.stringify(scope)}) = ${result}`);
+        } else {
+            ref.log(`tick aggregate: ${owner}, '${condition}' (${JSON.stringify(scope)}) = ${result}`);
+        }
 
         if (result === true) {
             const user = await this.users.getUserById(owner);
@@ -188,13 +196,17 @@ export class AggregateBlock {
         const vc = VcDocument.fromJsonTree(doc.document);
         const repository = getMongoRepository(AggregateVC);
 
-        const item = PolicyUtils.createVCRecord(
-            ref.policyId,
-            null,
-            null,
-            vc,
-            doc
-        );
+        const item: AggregateVC = {
+            ...PolicyUtils.createVCRecord(
+                ref.policyId,
+                null,
+                null,
+                vc,
+                doc
+            ),
+            blockId: ref.uuid
+        };
+
         const newVC = repository.create(item);
         await repository.save(newVC);
     }

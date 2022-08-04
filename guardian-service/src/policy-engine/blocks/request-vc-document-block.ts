@@ -193,38 +193,7 @@ export class RequestVcDocumentBlock {
      */
     async getRelationships(policyId: string, refId: any): Promise<VcDocumentCollection> {
         try {
-            if (refId) {
-                let documentRef: any = null;
-                if (typeof (refId) === 'string') {
-                    documentRef = await getMongoRepository(VcDocumentCollection).findOne({
-                        where: {
-                            'policyId': { $eq: policyId },
-                            'document.credentialSubject.id': { $eq: refId }
-                        }
-                    });
-                } else if (typeof (refId) === 'object') {
-                    if (refId.id) {
-                        documentRef = await getMongoRepository(VcDocumentCollection).findOne(refId.id);
-                        if (documentRef && documentRef.policyId !== policyId) {
-                            documentRef = null;
-                        }
-                    } else {
-                        const id = PolicyUtils.getSubjectId(documentRef);
-                        documentRef = await getMongoRepository(VcDocumentCollection).findOne({
-                            where: {
-                                'policyId': { $eq: policyId },
-                                'document.credentialSubject.id': { $eq: id }
-                            }
-                        });
-                    }
-                }
-                if(!documentRef) {
-                    throw new Error('Invalid relationships');
-                }
-                return documentRef;
-            } else {
-                return null;
-            }
+            return await PolicyUtils.getRelationships(policyId, refId);
         } catch (error) {
             const ref = PolicyComponentsUtils.GetBlockRef(this);
             ref.error(error.message);
