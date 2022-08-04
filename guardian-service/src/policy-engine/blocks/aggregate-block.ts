@@ -188,13 +188,17 @@ export class AggregateBlock {
         const vc = VcDocument.fromJsonTree(doc.document);
         const repository = getMongoRepository(AggregateVC);
 
-        const item = PolicyUtils.createVCRecord(
-            ref.policyId,
-            null,
-            null,
-            vc,
-            doc
-        );
+        const item: AggregateVC = {
+            ...PolicyUtils.createVCRecord(
+                ref.policyId,
+                null,
+                null,
+                vc,
+                doc
+            ),
+            blockId: ref.uuid
+        };
+
         const newVC = repository.create(item);
         await repository.save(newVC);
     }
