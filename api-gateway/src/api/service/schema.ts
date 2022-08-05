@@ -120,7 +120,7 @@ export async function updateSchema(newSchema: ISchema, owner: string): Promise<I
     if (schema.creator !== owner) {
         throw new Error('Invalid creator.');
     }
-    
+
     SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
     const schemas = (await guardians.updateSchema(newSchema));

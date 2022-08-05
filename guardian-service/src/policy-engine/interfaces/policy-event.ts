@@ -186,6 +186,7 @@ export class PolicyLink<T> {
     /**
      * Destructor
      */
-    public destroy() {
+    public destroy(): void {
+        return;
     }
 }

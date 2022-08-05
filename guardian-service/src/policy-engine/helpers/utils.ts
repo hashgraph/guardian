@@ -3,7 +3,7 @@ import { Topic } from '@entity/topic';
 import { HederaSDKHelper, HederaUtils, VcDocument, VcDocument as HVcDocument, TopicHelper } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { ExternalMessageEvents, IUser, Schema, TopicType, UserRole } from '@guardian/interfaces';
+import { ExternalMessageEvents, Schema, TopicType, UserRole } from '@guardian/interfaces';
 import { ExternalEventChannel, IAuthUser } from '@guardian/common';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { TopicId } from '@hashgraph/sdk';
@@ -44,7 +44,13 @@ export interface IHederaAccount {
  * Policy engine utils
  */
 export class PolicyUtils {
+    /**
+     * User service
+     */
     private static readonly users = new Users();
+    /**
+     * Wallet service
+     */
     private static readonly wallet = new Wallet();
 
     /**
@@ -299,7 +305,6 @@ export class PolicyUtils {
         }
         return null;
     }
-
 
     /**
      * Get Document Type
@@ -601,31 +606,46 @@ export class PolicyUtils {
         return topic;
     }
 
+    /**
+     * Get Policy User
+     * @param ref
+     * @param did
+     */
     public static async getPolicyUser(ref: AnyBlockType, did: string): Promise<IPolicyUser> {
         return {
-            did: did,
+            did,
             virtual: !!ref.dryRun
         }
     }
 
+    /**
+     * Get User
+     * @param ref
+     * @param did
+     */
     public static async getUser(ref: AnyBlockType, did: string): Promise<IAuthUser> {
         if (ref.dryRun) {
             return {
-                did: did,
+                did,
                 username: did,
                 role: UserRole.STANDARD_REGISTRY
             }
         } else {
-            return await this.users.getUserById(did);
+            return await PolicyUtils.users.getUserById(did);
         }
     }
 
+    /**
+     * Get Hedera Account Id
+     * @param ref
+     * @param did
+     */
     public static async getHederaAccountId(ref: AnyBlockType, did: string): Promise<string> {
         if (ref.dryRun) {
             const userFull = await ref.databaseServer.getVirtualUser(did);
             return userFull.hederaAccountId;
         } else {
-            const userFull = await this.users.getUserById(did);
+            const userFull = await PolicyUtils.users.getUserById(did);
             if (!userFull) {
                 throw new Error('User not found');
             }
@@ -633,6 +653,11 @@ export class PolicyUtils {
         }
     }
 
+    /**
+     * Get Hedera Account and Private Key
+     * @param ref
+     * @param did
+     */
     public static async getHederaAccount(ref: AnyBlockType, did: string): Promise<IHederaAccount> {
         if (ref.dryRun) {
             const userFull = await ref.databaseServer.getVirtualUser(did);
@@ -646,12 +671,12 @@ export class PolicyUtils {
             }
             const userKey = await ref.databaseServer.getVirtualKey(did, did);
             return {
-                did: did,
+                did,
                 hederaAccountId: userID,
                 hederaAccountKey: userKey
             }
         } else {
-            const userFull = await this.users.getUserById(did);
+            const userFull = await PolicyUtils.users.getUserById(did);
             if (!userFull) {
                 throw new Error('User not found');
             }
@@ -660,15 +685,22 @@ export class PolicyUtils {
             if (!userDID || !userID) {
                 throw new Error('Hedera Account not found');
             }
-            const userKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
+            const userKey = await PolicyUtils.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
             return {
-                did: did,
+                did,
                 hederaAccountId: userID,
                 hederaAccountKey: userKey
             }
         }
     }
 
+    /**
+     * Get Private Key
+     * @param ref
+     * @param userDid
+     * @param type
+     * @param keyName
+     */
     public static async getAccountKey(ref: AnyBlockType, userDid: string, type: KeyType, keyName: string): Promise<string> {
         if (ref.dryRun) {
             const userFull = await ref.databaseServer.getVirtualUser(userDid);
@@ -677,23 +709,30 @@ export class PolicyUtils {
             }
             return await ref.databaseServer.getVirtualKey(userDid, keyName);
         } else {
-            const userFull = await this.users.getUserById(userDid);
+            const userFull = await PolicyUtils.users.getUserById(userDid);
             if (!userFull) {
                 throw new Error('User not found');
             }
-            return await this.wallet.getKey(userFull.walletToken, type, keyName);
+            return await PolicyUtils.wallet.getKey(userFull.walletToken, type, keyName);
         }
     }
 
+    /**
+     * Save Private Key
+     * @param ref
+     * @param userDid
+     * @param type
+     * @param keyName
+     */
     public static async setAccountKey(ref: AnyBlockType, userDid: string, type: KeyType, keyName: string, key: string): Promise<void> {
         if (ref.dryRun) {
             await ref.databaseServer.setVirtualKey(userDid, keyName, key);
         } else {
-            const userFull = await this.users.getUserById(userDid);
+            const userFull = await PolicyUtils.users.getUserById(userDid);
             if (!userFull) {
                 throw new Error('User not found');
             }
-            await this.wallet.setKey(userFull.walletToken, type, keyName, key);
+            await PolicyUtils.wallet.setKey(userFull.walletToken, type, keyName, key);
         }
     }
 
@@ -704,7 +743,7 @@ export class PolicyUtils {
         if (ref.dryRun) {
             return [];
         } else {
-            return await this.users.getAllStandardRegistryAccounts() as any[];
+            return await PolicyUtils.users.getAllStandardRegistryAccounts() as any[];
         }
     }
 

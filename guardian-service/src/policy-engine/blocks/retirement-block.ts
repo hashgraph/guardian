@@ -1,6 +1,6 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
-import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
+import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
@@ -228,7 +228,7 @@ export class RetirementBlock {
         if (!targetAccountId) {
             throw new BlockActionError('Token recipient not set', ref.blockType, ref.uuid);
         }
-	
+
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
 
         await this.retirementProcessing(token, vcs, vsMessages, topicId, root, docOwner, targetAccountId);

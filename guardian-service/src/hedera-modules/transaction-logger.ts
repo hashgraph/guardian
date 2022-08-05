@@ -84,9 +84,9 @@ export class TransactionLogger {
     }
 
     /**
-    * Set virtual transaction function
-    * @param fn
-    */
+     * Set virtual transaction function
+     * @param fn
+     */
     public static setVirtualTransactionFunction(fn: Function): void {
         TransactionLogger.virtualTransactionCallback = fn;
     }

@@ -58,11 +58,19 @@ export class DatabaseServer {
         this.dryRun = id;
     }
 
+    /**
+     * Clear Dry Run table
+     */
     public async clearDryRun(): Promise<void> {
         const item = await getMongoRepository(DryRun).find({ dryRunId: this.dryRun });
         await getMongoRepository(DryRun).remove(item);
     }
 
+    /**
+     * Overriding the findOne method
+     * @param entityClass
+     * @param filters
+     */
     private async findOne<T>(entityClass: EntityTarget<T>, filters: any): Promise<T> {
         if (this.dryRun) {
             if (typeof filters === 'string') {
@@ -82,6 +90,11 @@ export class DatabaseServer {
         }
     }
 
+    /**
+     * Overriding the find method
+     * @param entityClass
+     * @param filters
+     */
     private async find<T>(entityClass: EntityTarget<T>, filters: any): Promise<T[]> {
         if (this.dryRun) {
             const _filters: any = { ...filters };
@@ -98,6 +111,11 @@ export class DatabaseServer {
         }
     }
 
+    /**
+     * Overriding the create method
+     * @param entityClass
+     * @param item
+     */
     private create<T>(entityClass: EntityTarget<T>, item: DeepPartial<T>): T {
         if (this.dryRun) {
             return (getMongoRepository(DryRun).create(item)) as any;
@@ -106,6 +124,11 @@ export class DatabaseServer {
         }
     }
 
+    /**
+     * Overriding the save method
+     * @param entityClass
+     * @param item
+     */
     private async save<T>(entityClass: EntityTarget<T>, item: DeepPartial<T>): Promise<T> {
         if (this.dryRun) {
             const _item: any = { ...item };
@@ -117,6 +140,12 @@ export class DatabaseServer {
         }
     }
 
+    /**
+     * Overriding the update method
+     * @param entityClass
+     * @param criteria
+     * @param row
+     */
     private async update<T>(entityClass: EntityTarget<T>, criteria: any, row: T): Promise<void> {
         if (this.dryRun) {
             await getMongoRepository(DryRun).update(criteria, row);
@@ -125,6 +154,11 @@ export class DatabaseServer {
         }
     }
 
+    /**
+     * Overriding the remove method
+     * @param entityClass
+     * @param entities
+     */
     private async remove<T>(entityClass: EntityTarget<T>, entities: T[]): Promise<void> {
         if (this.dryRun) {
             await getMongoRepository(DryRun).remove(entities as any);
@@ -134,46 +168,49 @@ export class DatabaseServer {
     }
 
     /**
-     * 
+     * Get Virtual User
      * @param did
-     * 
+     *
      * @virtual
      */
     public async getVirtualUser(did: string): Promise<any> {
         return (await getMongoRepository(DryRun).findOne({
             dryRunId: this.dryRun,
             dryRunClass: 'VirtualUsers',
-            did: did
+            did
         })) as any;
     }
 
     /**
-    * 
-    * @param did
-    * 
-    * @virtual
-    */
+     * Get Key from Virtual User
+     * @param did
+     * @param keyName
+     *
+     * @virtual
+     */
     public async getVirtualKey(did: string, keyName: string): Promise<string> {
         const item = (await getMongoRepository(DryRun).findOne({
             dryRunId: this.dryRun,
             dryRunClass: 'VirtualKey',
-            did: did,
+            did,
             type: keyName
         })) as any;
         return item?.hederaAccountKey;
     }
 
     /**
-    * 
-    * @param did
-    * 
-    * @virtual
-    */
+     * Set Key from Virtual User
+     * @param did
+     * @param keyName
+     * @param key
+     *
+     * @virtual
+     */
     public async setVirtualKey(did: string, keyName: string, key: string): Promise<void> {
         const item = getMongoRepository(DryRun).create({
             dryRunId: this.dryRun,
             dryRunClass: 'VirtualKey',
-            did: did,
+            did,
             type: keyName,
             hederaAccountKey: key
         });
@@ -181,19 +218,21 @@ export class DatabaseServer {
     }
 
     /**
-     * 
-     * @param filters
-     * 
+     * Save Block State
+     * @param policyId
+     * @param uuid
+     * @param state
+     *
      * @virtual
      */
     public async saveBlockState(policyId: string, uuid: string, state: any): Promise<void> {
         let stateEntity = await this.findOne(BlockState, {
-            policyId: policyId,
+            policyId,
             blockId: uuid
         });
         if (!stateEntity) {
             stateEntity = this.create(BlockState, {
-                policyId: policyId,
+                policyId,
                 blockId: uuid,
             })
         }
@@ -202,22 +241,24 @@ export class DatabaseServer {
     }
 
     /**
-     * 
-     * @param filters
-     * 
+     * Get Block State
+     * @param policyId
+     * @param uuid
+     *
      * @virtual
      */
     public async getBlockState(policyId: string, uuid: string): Promise<BlockState> {
         return await this.findOne(BlockState, {
-            policyId: policyId,
+            policyId,
             blockId: uuid
         });
     }
 
     /**
-     * 
-     * @param filters
-     * 
+     * Save Document State
+     * @param documentId
+     * @param status
+     *
      * @virtual
      */
     public async saveDocumentState(documentId: string, status: any): Promise<DocumentState> {
@@ -282,7 +323,7 @@ export class DatabaseServer {
     /**
      * Update VC record
      * @param row
-     * 
+     *
      * @virtual
      */
     public async updateVCRecord(row: VcDocumentCollection): Promise<VcDocumentCollection> {
@@ -329,7 +370,7 @@ export class DatabaseServer {
     /**
      * Update VC record
      * @param row
-     * 
+     *
      * @virtual
      */
     public async updateVCRecordById(row: VcDocumentCollection): Promise<VcDocumentCollection> {
@@ -340,7 +381,7 @@ export class DatabaseServer {
     /**
      * Update did record
      * @param row
-     * 
+     *
      * @virtual
      */
     public async updateDIDRecord(row: DidDocumentCollection): Promise<DidDocumentCollection> {
@@ -359,7 +400,7 @@ export class DatabaseServer {
     /**
      * Update VP record
      * @param row
-     * 
+     *
      * @virtual
      */
     public async updateVPRecord(row: VpDocumentCollection): Promise<VpDocumentCollection> {
@@ -370,7 +411,7 @@ export class DatabaseServer {
     /**
      * Update Approval record
      * @param row
-     * 
+     *
      * @virtual
      */
     public async updateApprovalRecord(row: ApprovalDocumentCollection): Promise<ApprovalDocumentCollection> {
@@ -394,7 +435,7 @@ export class DatabaseServer {
     /**
      * Save VC
      * @param row
-     * 
+     *
      * @virtual
      */
     public async saveVC(row: DeepPartial<VcDocumentCollection>): Promise<VcDocumentCollection> {
@@ -405,7 +446,7 @@ export class DatabaseServer {
     /**
      * Save VP
      * @param row
-     * 
+     *
      * @virtual
      */
     public async saveVP(row: DeepPartial<VpDocumentCollection>): Promise<VpDocumentCollection> {
@@ -414,9 +455,9 @@ export class DatabaseServer {
     }
 
     /**
-     * 
-     * @param filters
-     * 
+     * Save Did
+     * @param row
+     *
      * @virtual
      */
     public async saveDid(row: DeepPartial<DidDocumentCollection>): Promise<DidDocumentCollection> {
@@ -425,9 +466,9 @@ export class DatabaseServer {
     }
 
     /**
-     * 
-     * @param filters
-     * 
+     * Get Policy
+     * @param policyId
+     *
      * @virtual
      */
     public async getPolicy(policyId: string): Promise<Policy> {
@@ -435,9 +476,11 @@ export class DatabaseServer {
     }
 
     /**
-     * 
-     * @param filters
-     * 
+     * Get Aggregate Documents
+     * @param policyId
+     * @param blockId
+     * @param owner
+     *
      * @virtual
      */
     public async getAggregateDocuments(policyId: string, blockId: string, owner?: string): Promise<AggregateVC[]> {
@@ -449,9 +492,9 @@ export class DatabaseServer {
     }
 
     /**
-     * 
-     * @param filters
-     * 
+     * Remove Aggregate Documents
+     * @param removeMsp
+     *
      * @virtual
      */
     public async removeAggregateDocuments(removeMsp: AggregateVC[]): Promise<void> {
@@ -459,9 +502,10 @@ export class DatabaseServer {
     }
 
     /**
-     * 
-     * @param filters
-     * 
+     * Create Aggregate Documents
+     * @param item
+     * @param blockId
+     *
      * @virtual
      */
     public async createAggregateDocuments(item: VcDocumentCollection, blockId: string): Promise<void> {
@@ -471,9 +515,9 @@ export class DatabaseServer {
     }
 
     /**
-     * 
+     * Get Vc Document
      * @param filters
-     * 
+     *
      * @virtual
      */
     public async getVcDocument(filters: any): Promise<VcDocumentCollection> {
@@ -481,9 +525,9 @@ export class DatabaseServer {
     }
 
     /**
-     * 
+     * Get Vp Document
      * @param filters
-     * 
+     *
      * @virtual
      */
     public async getVpDocument(filters: any): Promise<VpDocumentCollection> {
@@ -491,9 +535,9 @@ export class DatabaseServer {
     }
 
     /**
-     * 
+     * Get Approval Document
      * @param filters
-     * 
+     *
      * @virtual
      */
     public async getApprovalDocument(filters: any): Promise<ApprovalDocumentCollection> {
@@ -501,9 +545,9 @@ export class DatabaseServer {
     }
 
     /**
-     * 
+     * Get Vc Documents
      * @param filters
-     * 
+     *
      * @virtual
      */
     public async getVcDocuments(filters: any): Promise<VcDocumentCollection[]> {
@@ -511,9 +555,9 @@ export class DatabaseServer {
     }
 
     /**
-     * 
+     * Get Vp Documents
      * @param filters
-     * 
+     *
      * @virtual
      */
     public async getVpDocuments(filters: any): Promise<VpDocumentCollection[]> {
@@ -521,9 +565,9 @@ export class DatabaseServer {
     }
 
     /**
-     * 
+     * Get Did Documents
      * @param filters
-     * 
+     *
      * @virtual
      */
     public async getDidDocuments(filters: any): Promise<DidDocumentCollection[]> {
@@ -531,9 +575,9 @@ export class DatabaseServer {
     }
 
     /**
-     * 
+     * Get Approval Documents
      * @param filters
-     * 
+     *
      * @virtual
      */
     public async getApprovalDocuments(filters: any): Promise<ApprovalDocumentCollection[]> {
@@ -541,9 +585,9 @@ export class DatabaseServer {
     }
 
     /**
-     * 
+     * Get Document States
      * @param filters
-     * 
+     *
      * @virtual
      */
     public async getDocumentStates(filters: any): Promise<DocumentState[]> {
@@ -553,7 +597,7 @@ export class DatabaseServer {
     /**
      * Get Topic
      * @param filters
-     * 
+     *
      * @virtual
      */
     public async getTopic(
@@ -586,7 +630,7 @@ export class DatabaseServer {
     /**
      * Get Topics
      * @param filters
-     * 
+     *
      * @virtual
      */
     public async getTopics(
@@ -616,14 +660,20 @@ export class DatabaseServer {
         return await this.find(TopicCollection, filters);
     }
 
+    /**
+     * Get Token
+     * @param tokenId
+     *
+     * @virtual
+     */
     public async getTokenById(tokenId: string): Promise<TokenCollection> {
         return await getMongoRepository(TokenCollection).findOne({ tokenId });
     }
 
     /**
-     * Get Topics
+     * Save Topic
      * @param topic
-     * 
+     *
      * @virtual
      */
     public async saveTopic(topic: TopicCollection): Promise<TopicCollection> {
@@ -631,6 +681,11 @@ export class DatabaseServer {
         return await this.save(TopicCollection, topicObject);
     }
 
+    /**
+     * Get schema
+     * @param iri
+     * @param topicId
+     */
     public async getSchemaByIRI(iri: string, topicId?: string): Promise<SchemaCollection> {
         if (topicId) {
             return await getMongoRepository(SchemaCollection).findOne({ iri, topicId });
@@ -656,7 +711,7 @@ export class DatabaseServer {
      * Get user role in policy
      * @param policyId
      * @param did
-     * 
+     *
      * @virtual
      */
     public async getUserRole(policyId: string, did: string): Promise<string> {
@@ -671,10 +726,10 @@ export class DatabaseServer {
     }
 
     /**
-     * Get user role in policy
+     * Set user role in policy
      * @param policyId
      * @param did
-     * 
+     *
      * @virtual
      */
     public async setUserRole(policyId: string, did: string, role: string): Promise<void> {
@@ -688,7 +743,7 @@ export class DatabaseServer {
     /**
      * Get all policy users
      * @param policyId
-     * 
+     *
      * @virtual
      */
     public async getAllPolicyUsers(policyId: string): Promise<PolicyRolesCollection[]> {
@@ -746,7 +801,6 @@ export class DatabaseServer {
     public static async updateSchema(id: any, item: SchemaCollection): Promise<void> {
         await getMongoRepository(SchemaCollection).update(id, item);
     }
-
 
     /**
      * Get schemas
@@ -817,7 +871,7 @@ export class DatabaseServer {
      * Get user role in policy
      * @param policyId
      * @param did
-     * 
+     *
      * @virtual
      */
     public static async getUserRole(policyId: string, did: string): Promise<string> {
@@ -872,7 +926,6 @@ export class DatabaseServer {
     public static async getPolicyByTag(policyTag: string): Promise<Policy> {
         return await getMongoRepository(Policy).findOne({ policyTag });
     }
-
 
     /**
      * Get policy
@@ -952,7 +1005,7 @@ export class DatabaseServer {
     /**
      * Save VC
      * @param row
-     * 
+     *
      * @virtual
      */
     public static async saveVC(row: DeepPartial<VcDocumentCollection>): Promise<VcDocumentCollection> {
@@ -964,7 +1017,6 @@ export class DatabaseServer {
      * Update policy
      * @param policyId
      * @param data
-     * @private
      */
     public static async updatePolicyConfig(policyId: any, data: Policy): Promise<Policy> {
         const model = await getMongoRepository(Policy).findOne(policyId);
@@ -978,6 +1030,17 @@ export class DatabaseServer {
         return await getMongoRepository(Policy).save(model);
     }
 
+    /**
+     * Create Virtual User
+     * @param policyId
+     * @param username
+     * @param did
+     * @param hederaAccountId
+     * @param hederaAccountKey
+     * @param active
+     *
+     * @virtual
+     */
     public static async createVirtualUser(
         policyId: string,
         username: string,
@@ -990,8 +1053,8 @@ export class DatabaseServer {
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
             did,
-            username: username,
-            hederaAccountId: hederaAccountId,
+            username,
+            hederaAccountId,
             active
         });
 
@@ -1000,14 +1063,20 @@ export class DatabaseServer {
         const key = getMongoRepository(DryRun).create({
             dryRunId: policyId,
             dryRunClass: 'VirtualKey',
-            did: did,
+            did,
             type: did,
-            hederaAccountKey: hederaAccountKey
+            hederaAccountKey
         });
 
         await getMongoRepository(DryRun).save(key);
     }
 
+    /**
+     * Get Current Virtual User
+     * @param policyId
+     *
+     * @virtual
+     */
     public static async getVirtualUser(policyId: string): Promise<any> {
         return await getMongoRepository(DryRun).findOne({
             dryRunId: policyId,
@@ -1016,6 +1085,12 @@ export class DatabaseServer {
         });
     }
 
+    /**
+     * Get All Virtual Users
+     * @param policyId
+     *
+     * @virtual
+     */
     public static async getVirtualUsers(policyId: string): Promise<any[]> {
         return (await getMongoRepository(DryRun).find({
             dryRunId: policyId,
@@ -1023,6 +1098,13 @@ export class DatabaseServer {
         })) as any;
     }
 
+    /**
+     * Set Current Virtual User
+     * @param policyId
+     * @param did
+     *
+     * @virtual
+     */
     public static async setVirtualUser(policyId: string, did: string): Promise<any> {
         const items = (await getMongoRepository(DryRun).find({
             dryRunId: policyId,
@@ -1034,6 +1116,15 @@ export class DatabaseServer {
         await getMongoRepository(DryRun).save(items);
     }
 
+    /**
+     * Get Virtual Documents
+     * @param policyId
+     * @param type
+     * @param pageIndex
+     * @param pageSize
+     *
+     * @virtual
+     */
     public static async getVirtualDocuments(
         policyId: string,
         type: string,
@@ -1070,6 +1161,14 @@ export class DatabaseServer {
         return await getMongoRepository(DryRun).findAndCount(filters);
     }
 
+    /**
+     * Save Virtual Transaction
+     * @param policyId
+     * @param type
+     * @param operatorId
+     *
+     * @virtual
+     */
     public static async setVirtualTransaction(
         policyId: string,
         type: string,
@@ -1084,6 +1183,14 @@ export class DatabaseServer {
         await getMongoRepository(DryRun).save(user);
     }
 
+    /**
+     * Save Virtual Fil
+     * @param policyId
+     * @param file
+     * @param url
+     *
+     * @virtual
+     */
     public static async setVirtualFile(
         policyId: string,
         file: ArrayBuffer,

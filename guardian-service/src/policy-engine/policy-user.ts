@@ -1,3 +1,6 @@
+/**
+ * User in policy
+ */
 export interface IPolicyUser {
     /**
      * User DID

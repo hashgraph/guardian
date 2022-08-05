@@ -378,7 +378,6 @@ export class VCJS {
      *
      * @param {any} subject - subject
      * @param {any} context - new context
-     * 
      * @returns {any} - subject
      */
     public addContextInSubject(subject: any, context: string): any {
@@ -398,7 +397,6 @@ export class VCJS {
      * Add Context
      *
      * @param {any} subject - subject
-     * 
      * @returns {any} - subject
      */
     public addDryRunContext(subject: any): any {

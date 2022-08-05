@@ -1,5 +1,5 @@
-import { TopicType } from "@guardian/interfaces";
-import { HederaSDKHelper, MessageAction, MessageServer, TopicMessage } from "@hedera-modules";
+import { TopicType } from '@guardian/interfaces';
+import { HederaSDKHelper, MessageAction, MessageServer, TopicMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 
 /**
@@ -21,7 +21,7 @@ export class TopicHelper {
      * Dry-run
      * @private
      */
-    private dryRun: string = null;
+    private readonly dryRun: string = null;
 
     constructor(
         operatorId: string,

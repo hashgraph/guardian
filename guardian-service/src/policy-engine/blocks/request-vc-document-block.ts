@@ -175,14 +175,12 @@ export class RequestVcDocumentBlock {
     /**
      * Get Relationships
      * @param ref
-     * @param policyId
      * @param refId
      */
     private async getRelationships(ref: AnyBlockType, refId: any): Promise<VcDocumentCollection> {
         try {
             return await PolicyUtils.getRelationships(ref, ref.policyId, refId);
         } catch (error) {
-            const ref = PolicyComponentsUtils.GetBlockRef(this);
             ref.error(error.message);
             throw new BlockActionError('Invalid relationships', ref.blockType, ref.uuid);
         }
@@ -312,7 +310,7 @@ export class RequestVcDocumentBlock {
                     .setTopicObject(topic)
                     .sendMessage(message);
 
-                const doc = ref.databaseServer.saveDid({
+                await ref.databaseServer.saveDid({
                     did,
                     document,
                     status: DidDocumentStatus.CREATE,

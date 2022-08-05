@@ -59,6 +59,12 @@ export class MessageServer {
         this.client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
     }
 
+    /**
+     * Save File
+     * @param file
+     * @virtual
+     * @private
+     */
     private async addFile(file: ArrayBuffer) {
         if (this.dryRun) {
             const id = GenerateUUIDv4();
@@ -72,7 +78,14 @@ export class MessageServer {
         return IPFS.addFileAsync(file);
     }
 
-    private async getFile(cid: string, responseType: "json" | "raw" | "str") {
+    /**
+     * Get File
+     * @param cid
+     * @param responseType
+     * @virtual
+     * @private
+     */
+    private async getFile(cid: string, responseType: 'json' | 'raw' | 'str') {
         if (this.dryRun) {
             throw new Error('Unable to get virtual file');
         }

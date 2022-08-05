@@ -354,11 +354,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 await this.saveState();
                 if (!this.options.followUser) {
                     const allUsers = await this.databaseServer.getAllPolicyUsers(this.policyId);
-                    for (const user of allUsers) {
-                        if (this.permissions.includes(user.role)) {
-                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user as any, tag);
+                    for (const userRole of allUsers) {
+                        if (this.permissions.includes(userRole.role)) {
+                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
                         } else if (this.permissions.includes('ANY_ROLE')) {
-                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user as any, tag);
+                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
                         }
                     }
                     if (this.permissions.includes('OWNER') || this.permissions.includes('ANY_ROLE')) {

@@ -386,11 +386,6 @@ policyAPI.get('/blocks/about', async (req: AuthenticatedRequest, res: Response) 
     }
 });
 
-
-
-
-
-
 policyAPI.get('/:policyId/dry-run/users', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
@@ -403,7 +398,6 @@ policyAPI.get('/:policyId/dry-run/users', permissionHelper(UserRole.STANDARD_REG
             res.status(500).json({ code: 500, message: 'Invalid owner.' });
             return;
         }
-
 
         res.send(await engineService.getVirtualUsers(req.params.policyId));
     } catch (error) {

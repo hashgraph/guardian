@@ -181,6 +181,13 @@ export class PolicyEngineService {
         });
     }
 
+    /**
+     * Get user
+     * @param user
+     * @param policyId
+     * @param dryRun
+     * @private
+     */
     private async getUser(user: IUser, policyId: string, dryRun: string): Promise<IPolicyUser> {
         let userFull: any;
         if (dryRun) {
@@ -342,7 +349,7 @@ export class PolicyEngineService {
         notifier.start('Resolve Hedera account');
         const root = await this.users.getHederaAccount(owner);
         notifier.completedAndStart('Find topic');
-	
+
         const topic = await DatabaseServer.getTopicById(model.topicId);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
             .setTopicObject(topic);
@@ -368,7 +375,7 @@ export class PolicyEngineService {
             policyUUID: model.uuid
         });
         rootTopic = await DatabaseServer.saveTopic(rootTopic);
-	
+
         notifier.completedAndStart('Publish policy');
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
@@ -422,7 +429,7 @@ export class PolicyEngineService {
     }
 
     /**
-     * Publish policy
+     * Dry Run policy
      * @param model
      * @param owner
      * @param version
@@ -449,7 +456,7 @@ export class PolicyEngineService {
         const zip = await PolicyImportExportHelper.generateZipFile(model);
         const buffer = await zip.generateAsync({ type: 'arraybuffer' });
 
-        let rootTopic = await topicHelper.create({
+        const rootTopic = await topicHelper.create({
             type: TopicType.InstancePolicyTopic,
             name: model.name || TopicType.InstancePolicyTopic,
             description: model.topicDescription || TopicType.InstancePolicyTopic,
@@ -493,7 +500,7 @@ export class PolicyEngineService {
 
         const vc = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
 
-        const doc = await databaseServer.saveVC({
+        await databaseServer.saveVC({
             hash: vc.toCredentialHash(),
             owner,
             document: vc.toJsonTree(),
@@ -757,7 +764,7 @@ export class PolicyEngineService {
                 return new MessageError(error);
             }
         });
-	
+
         this.channel.response<any, any>(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, async (msg) => {
             const { model, policyId, user, taskId } = msg;
             const notifier = initNotifier(this.apiGatewayChannel, taskId);

@@ -93,7 +93,6 @@ export class ExternalDataBlock {
         try {
             return await PolicyUtils.getRelationships(ref, ref.policyId, refId);
         } catch (error) {
-            const ref = PolicyComponentsUtils.GetBlockRef(this);
             ref.error(error.message);
             throw new BlockActionError('Invalid relationships', ref.blockType, ref.uuid);
         }

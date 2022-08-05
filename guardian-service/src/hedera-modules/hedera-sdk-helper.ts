@@ -109,11 +109,11 @@ export class HederaSDKHelper {
         await TransactionLogger.transactionErrorLog(id, this.client.operatorAccountId, transactionName, transaction, error.message);
     }
 
-
     /**
-     * Transaction starting
+     * Save Virtual Transaction log
      * @param id
-     * @param transactionName
+     * @param type
+     * @param client
      * @private
      */
     private async virtualTransactionLog(id: string, type: string, client: Client): Promise<void> {

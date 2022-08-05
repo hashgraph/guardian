@@ -8,7 +8,7 @@ import {
     EventCallback,
     PolicyOutputEventType
 } from '@policy-engine/interfaces';
-import { PolicyRole, GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
 import { IAuthUser } from '@guardian/common';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { Policy } from '@entity/policy';

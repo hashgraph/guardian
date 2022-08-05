@@ -80,7 +80,7 @@ export async function demoAPI(
             return new MessageError(error);
         }
     });
-    
+
     ApiResponse(channel, MessageAPI.GENERATE_DEMO_KEY_ASYNC, async (msg) => {
         const { role, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
@@ -97,7 +97,7 @@ export async function demoAPI(
 
         return new MessageResponse({ taskId });
     });
-    
+
     ApiResponse(channel, MessageAPI.GET_USER_ROLES, async (msg) => {
         try {
             const did = msg.did;
@@ -109,7 +109,7 @@ export async function demoAPI(
                     result.push({
                         name: p.name,
                         version: p.version,
-                        role: role
+                        role
                     })
                 }
             };

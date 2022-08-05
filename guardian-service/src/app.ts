@@ -55,7 +55,7 @@ Promise.all([
 
     //
     await DatabaseMigrations.runMigrations();
-    
+
     // Check configuration
     if (!process.env.OPERATOR_ID || process.env.OPERATOR_ID.length < 5) {
         await new Logger().error('You need to fill OPERATOR_ID field in .env file', ['GUARDIAN_SERVICE']);
@@ -120,7 +120,7 @@ Promise.all([
     TransactionLogger.setVirtualFileFunction(async (date: string, id: string, file: ArrayBuffer, url:any) => {
         await DatabaseServer.setVirtualFile(id, file, url);
     });
-    
+
     TransactionLogger.setVirtualTransactionFunction(async (date: string, id: string, type: string, operatorId?: string) => {
         await DatabaseServer.setVirtualTransaction(id, type, operatorId);
     });

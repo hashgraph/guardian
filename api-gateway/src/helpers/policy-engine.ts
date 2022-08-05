@@ -290,14 +290,28 @@ export class PolicyEngine extends ServiceRequestsBase {
         return await this.request(PolicyEngineEvents.BLOCK_ABOUT, null);
     }
 
+    /**
+     * Get Virtual Users by policy id
+     * @param policyId
+     */
     public async getVirtualUsers(policyId: string) {
         return await this.request(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId });
     }
 
+    /**
+     * Create new Virtual User
+     * @param policyId
+     * @param did
+     */
     public async createVirtualUser(policyId: string, did: string) {
         return await this.request(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, did });
     }
 
+    /**
+     * Select Virtual User
+     * @param policyId
+     * @param did
+     */
     public async loginVirtualUser(policyId: string, did: string) {
         return await this.request(PolicyEngineEvents.SET_VIRTUAL_USER, { policyId, did });
     }
@@ -312,6 +326,13 @@ export class PolicyEngine extends ServiceRequestsBase {
         return await this.request(PolicyEngineEvents.RESTART_DRY_RUN, { model, user, policyId });
     }
 
+    /**
+     * Get Virtual Documents
+     * @param policyId
+     * @param type
+     * @param pageIndex
+     * @param pageSize
+     */
     public async getVirtualDocuments(
         policyId: string,
         type: string,
@@ -325,6 +346,4 @@ export class PolicyEngine extends ServiceRequestsBase {
             pageSize
         });
     }
-
-
 }
