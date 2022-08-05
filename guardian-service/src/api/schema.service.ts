@@ -518,7 +518,6 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
         setImmediate(async () => {
             try {
                 const schemaObject = item as ISchema;
-                console.log('c', schemaObject)
                 SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
                 const schema = await createSchema(schemaObject, schemaObject.owner, notifier);
                 notifier.result(schema.id);
@@ -996,7 +995,6 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 filter.take = _pageSize;
                 filter.skip = _pageIndex * _pageSize;
             }
-            console.log(filter);
             const [schemas, count] = await DatabaseServer.getSchemasAndCount(filter);
             return new MessageResponse({
                 schemas,

@@ -81,6 +81,7 @@ a.go-back-link mat-icon {
     top: 90px;
     right: 0;
     bottom: 0;
+    overflow: auto;
 }
 
 .policy-container[hidden-container='true'] {
