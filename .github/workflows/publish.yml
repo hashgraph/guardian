@@ -10,8 +10,16 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - uses: haya14busa/action-cond@v1
+        id: latestTag
+        with:
+          cond: ${{ github.event.release.target_commitish == 'main' }}
+          if_true: "latest"
+          if_false: "hotfix"
+
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: get-npm-version
 
         id: package-version
@@ -36,15 +44,26 @@ jobs:
           username: 'oauth2accesstoken'
           password: '${{ steps.auth.outputs.access_token }}'
 
-      - name: logger-service
+      - name: logger-service-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./logger-service/Dockerfile
           push: true
-          tags: 'gcr.io/hedera-registry/logger-service:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/logger-service:latest'
+          tags: 'gcr.io/hedera-registry/logger-service:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/logger-service:latest'
 
-      - name: auth-service
+      - name: logger-service
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./logger-service/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/logger-service:${{ steps.package-version.outputs.current-version}}'
+
+      - name: auth-service-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -52,50 +71,119 @@ jobs:
           push: true
           tags: 'gcr.io/hedera-registry/auth-service:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/auth-service:latest'
 
-      - name: api-gateway
+      - name: auth-service
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./auth-service/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/auth-service:${{ steps.package-version.outputs.current-version}}'
+
+      - name: api-gateway-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./api-gateway/Dockerfile
           push: true
-          tags: 'gcr.io/hedera-registry/api-gateway:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/api-gateway:latest'
+          tags: 'gcr.io/hedera-registry/api-gateway:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/api-gateway:latest'
 
-      - name: guardian-service
+      - name: api-gateway
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./api-gateway/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/api-gateway:${{ steps.package-version.outputs.current-version}}'
+
+      - name: guardian-service-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./guardian-service/Dockerfile
           push: true
-          tags: 'gcr.io/hedera-registry/guardian-service:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/guardian-service:latest'
+          tags: 'gcr.io/hedera-registry/guardian-service:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/guardian-service:latest'
 
-      - name: ipfs-client
+      - name: guardian-service
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./guardian-service/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/guardian-service:${{ steps.package-version.outputs.current-version}}'
+
+      - name: ipfs-client-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./ipfs-client/Dockerfile
           push: true
-          tags: 'gcr.io/hedera-registry/ipfs-client:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/ipfs-client:latest'
+          tags: 'gcr.io/hedera-registry/ipfs-client:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/ipfs-client:latest'
 
-      - name: topic-viewer
+      - name: ipfs-client
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./ipfs-client/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/ipfs-client:${{ steps.package-version.outputs.current-version}}'
+
+      - name: topic-viewer-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./topic-viewer/Dockerfile
           push: true
-          tags: 'gcr.io/hedera-registry/topic-viewer:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/topic-viewer:latest'
+          tags: 'gcr.io/hedera-registry/topic-viewer:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/topic-viewer:latest'
 
-      - name: api-docs
+      - name: topic-viewer
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./topic-viewer/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/topic-viewer:${{ steps.package-version.outputs.current-version}}'
+
+      - name: api-docs-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./api-docs/Dockerfile
           push: true
-          tags: 'gcr.io/hedera-registry/api-docs:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/api-docs:latest'
+          tags: 'gcr.io/hedera-registry/api-docs:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/api-docs:latest'
 
-      - name: web-proxy
+      - name: api-docs
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./api-docs/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/api-docs:${{ steps.package-version.outputs.current-version}}'
+
+      - name: web-proxy-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./web-proxy/Dockerfile.ci
           push: true
-          tags: 'gcr.io/hedera-registry/frontend:${{ steps.package-version.outputs.current-version}} , gcr.io/hedera-registry/frontend:latest'
+          tags: 'gcr.io/hedera-registry/frontend:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/frontend:latest'
+
+      - name: web-proxy
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./web-proxy/Dockerfile.ci
+          push: true
+          tags: 'gcr.io/hedera-registry/frontend:${{ steps.package-version.outputs.current-version}}'

@@ -33,7 +33,8 @@ const PORT = process.env.PORT || 3005;
             context,
             schema,
             policyTag,
-            didDocument
+            didDocument,
+            ref
         } = config;
 
         vcDocumentLoader.setDocument(schema);
@@ -72,13 +73,15 @@ const PORT = process.env.PORT || 3005;
 
         const body = {
             document: document,
+            ref: ref,
             owner: installer,
             policyTag: policyTag
         }
+
         try {
             console.log('start post');
             const resp = await axios.post(url, body);
-            console.log('end post', resp);
+            console.log('end post', resp.status);
         } catch (error) {
             console.error(error);
             res.status(500).json(error);

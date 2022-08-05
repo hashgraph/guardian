@@ -103,14 +103,13 @@ export async function demoAPI(
             const policies = await getMongoRepository(Policy).find();
             const result = [];
             policies.forEach(p => {
-                if (p.registeredUsers[did]) {
+                if (p.registeredUsers && p.registeredUsers[did]) {
                     result.push({
                         name: p.name,
                         version: p.version,
                         role: p.registeredUsers[did]
                     })
                 }
-
             });
             return new MessageResponse(result);
         } catch (error) {
