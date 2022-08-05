@@ -824,7 +824,9 @@ export class DatabaseServer {
         if (!did) {
             return null;
         }
+        console.log({ policyId, did });
         const role = await getMongoRepository(PolicyRolesCollection).findOne({ policyId, did });
+        console.log(role);
         if (role) {
             return role.role;
         }
@@ -843,7 +845,7 @@ export class DatabaseServer {
      * Get policies
      * @param filters
      */
-    public static async getPolicies(filters: any): Promise<Policy[]> {
+    public static async getPolicies(filters?: any): Promise<Policy[]> {
         return await getMongoRepository(Policy).find(filters);
     }
 

@@ -18,8 +18,8 @@
 
 ## Guardian Architecture
 
-* [Reference Architecture](guardian-architecture/reference-architecture.md)
-* [Architecture 2](guardian-architecture/architecture-2.md)
+* [Deep Dive Architecture](guardian-architecture/reference-architecture.md)
+* [High Level Architecture](guardian-architecture/architecture-2.md)
 * [Policies,Projects and Topics Mapping Architecture](guardian-architecture/schema-architecture.md)
 
 ## Schema Flow
@@ -137,6 +137,7 @@
 * [Exporting Message ID](policy-creation-using-the-guardian-apis/exporting-message-id.md)
 * [Export to zip file](policy-creation-using-the-guardian-apis/export-to-zip-file.md)
 * [Import from zip file](policy-creation-using-the-guardian-apis/import-from-zip-file.md)
+* [Retrieves Block Data by Tag](policy-creation-using-the-guardian-apis/retrieves-block-data-by-tag.md)
 
 ## SCHEMA CREATION USING THE GUARDIAN APIS
 

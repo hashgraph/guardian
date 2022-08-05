@@ -18,7 +18,14 @@ import { PolicyBlockModel, PolicyModel } from '../../policy-model';
 import { PolicyStorage } from '../../policy-storage';
 import { TreeFlatOverview } from '../../helpers/tree-flat-overview/tree-flat-overview';
 import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
+import { TasksService } from 'src/app/services/tasks.service';
+import { InformService } from 'src/app/services/inform.service';
 
+enum OperationMode {
+    none,
+    create,
+    publish,
+}
 
 /**
  * The page for editing the policy and blocks.
@@ -86,6 +93,10 @@ export class PolicyConfigurationComponent implements OnInit {
     treeFlatOverview!: TreeFlatOverview;
     policyStorage: PolicyStorage;
 
+    operationMode: OperationMode = OperationMode.none;
+    taskId: string | undefined = undefined;
+    expectedTaskMessages: number = 0;
+
     constructor(
         public registeredBlocks: RegisteredBlocks,
         private schemaService: SchemaService,
@@ -93,7 +104,9 @@ export class PolicyConfigurationComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private route: ActivatedRoute,
         private router: Router,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private taskService: TasksService,
+        private informService: InformService
     ) {
         this.newBlockType = 'interfaceContainerBlock';
         this.policyModel = new PolicyModel();
@@ -468,23 +481,11 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private publishPolicy(version: string) {
         this.loading = true;
-        this.policyEngineService.publish(this.policyId, version).subscribe((data: any) => {
-            const { policies, isValid, errors } = data;
-            if (isValid) {
-                this.clearState();
-                this.loadPolicy();
-            } else {
-                const blocks = errors.blocks;
-                const invalidBlocks = blocks.filter((block: any) => !block.isValid);
-                this.errors = invalidBlocks;
-                this.errorsCount = invalidBlocks.length;
-                this.errorsMap = {};
-                for (let i = 0; i < invalidBlocks.length; i++) {
-                    const element = invalidBlocks[i];
-                    this.errorsMap[element.id] = element.errors;
-                }
-                this.loading = false;
-            }
+        this.policyEngineService.pushPublish(this.policyId, version).subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.operationMode = OperationMode.publish;
         }, (e) => {
             console.error(e.error);
             this.loading = false;
@@ -587,15 +588,61 @@ export class PolicyConfigurationComponent implements OnInit {
                     policy.previousVersion = json.version;
                 }
 
-                this.policyEngineService.create(policy).subscribe((policies: any) => {
-                    const last = policies[policies.length - 1];
-                    this.router.navigate(['/policy-configuration'], { queryParams: { policyId: last.id } });
+                this.policyEngineService.pushCreate(policy).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
+                    this.operationMode = OperationMode.create;
                 }, (e) => {
-                    console.error(e.error);
                     this.loading = false;
+                    this.taskId = undefined;
                 });
             }
         });
+    }
+
+    onAsyncError(error: any) {
+        this.informService.processAsyncError(error);
+        console.error(error.error);
+        this.loading = false;
+        this.taskId = undefined;
+    }
+
+    onAsyncCompleted() {
+        if (this.taskId) {
+            const taskId: string = this.taskId;
+            const operationMode = this.operationMode;
+            this.taskId = undefined;
+            this.operationMode = OperationMode.none;
+            this.taskService.get(taskId).subscribe((task: any) => {
+                switch (operationMode) {
+                    case OperationMode.create:
+                        this.router.navigate(['/policy-configuration'], { queryParams: { policyId: task.result } });
+                        break;
+                    case OperationMode.publish:
+                        const { result } = task;
+                        const { isValid, errors } = result;
+                        if (isValid) {
+                            this.loadPolicy();
+                        } else {
+                            const blocks = errors.blocks;
+                            const invalidBlocks = blocks.filter((block: any) => !block.isValid);
+                            this.errors = invalidBlocks;
+                            this.errorsCount = invalidBlocks.length;
+                            this.errorsMap = {};
+                            for (let i = 0; i < invalidBlocks.length; i++) {
+                                const element = invalidBlocks[i];
+                                this.errorsMap[element.id] = element.errors;
+                            }
+                            this.loading = false;
+                        }
+                        break;
+                    default:
+                        console.log('Unknown operation mode');
+                        break;
+                }
+            });
+        }
     }
 
     private checkState() {

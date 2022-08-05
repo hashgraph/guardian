@@ -69,14 +69,14 @@ export class MessageServer {
             await TransactionLogger.virtualFileLog(this.dryRun, file, result);
             return result
         }
-        return await IPFS.addFile(file);
+        return IPFS.addFileAsync(file);
     }
 
     private async getFile(cid: string, responseType: "json" | "raw" | "str") {
         if (this.dryRun) {
             throw new Error('Unable to get virtual file');
         }
-        return await IPFS.getFile(cid, responseType);
+        return IPFS.getFileAsync(cid, responseType);
     }
 
     /**
@@ -154,11 +154,11 @@ export class MessageServer {
     private async sendIPFS<T extends Message>(message: T): Promise<T> {
         const time = await this.messageStartLog('IPFS');
         const buffers = await message.toDocuments();
-        const urls = [];
-        for (const buffer of buffers) {
-            const result = await this.addFile(buffer);
-            urls.push(result);
-        }
+
+        const promises = buffers.map(buffer => {
+            return this.addFile(buffer);
+        });
+        const urls = await Promise.all(promises);
         await this.messageEndLog(time, 'IPFS');
         message.setUrls(urls);
         return message;
@@ -171,11 +171,10 @@ export class MessageServer {
      */
     private async loadIPFS<T extends Message>(message: T): Promise<T> {
         const urls = message.getUrls();
-        const documents = [];
-        for (const url of urls) {
-            const document = await this.getFile(url.cid, message.responseType);
-            documents.push(document);
-        }
+        const promises = urls.map(url => {
+            return this.getFile(url.cid, message.responseType);
+        });
+        const documents = await Promise.all(promises);
         message = message.loadDocuments(documents) as T;
         return message;
     }

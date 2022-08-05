@@ -1,4 +1,5 @@
 import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
+import { ObjectId } from 'mongodb';
 import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn } from 'typeorm';
 
 /**
@@ -10,7 +11,7 @@ export class Policy {
      * Entity id
      */
     @ObjectIdColumn()
-    id: string;
+    id: ObjectId;
 
     /**
      * Policy UUID
@@ -123,6 +124,13 @@ export class Policy {
     createDate: Date;
 
     /**
+     * User roles
+     * @deprecated
+     */
+    @Column()
+    registeredUsers: any
+
+    /**
      * Set policy defaults
      */
     @BeforeInsert()
@@ -130,5 +138,6 @@ export class Policy {
         this.status = this.status || PolicyType.DRAFT;
         this.uuid = this.uuid || GenerateUUIDv4();
         this.codeVersion = this.codeVersion || '1.0.0';
+        delete this.registeredUsers;
     }
 }

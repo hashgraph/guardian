@@ -1,5 +1,3 @@
-import { UserRole } from "@guardian/interfaces";
-
 export interface IPolicyUser {
     /**
      * User DID

@@ -48,6 +48,16 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Async create policy
+     * @param model
+     * @param user
+     * @param taskId
+     */
+    public async createPolicyAsync(model, user, taskId) {
+        return await this.request(PolicyEngineEvents.CREATE_POLICIES_ASYNC, { model, user, taskId });
+    }
+
+    /**
      * Save policy
      * @param model
      * @param user
@@ -65,6 +75,17 @@ export class PolicyEngine extends ServiceRequestsBase {
      */
     public async publishPolicy(model, user, policyId) {
         return await this.request(PolicyEngineEvents.PUBLISH_POLICIES, { model, user, policyId });
+    }
+
+    /**
+     * Async publish policy
+     * @param model
+     * @param user
+     * @param policyId
+     * @param taskId
+     */
+    public async publishPolicyAsync(model, user, policyId, taskId) {
+        return await this.request(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, { model, user, policyId, taskId });
     }
 
     /**
@@ -117,6 +138,16 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Get block data by tag name
+     * @param user
+     * @param policyId
+     * @param tag
+     */
+    public async getBlockDataByTag(user, policyId, tag: string) {
+        return await this.request(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, { user, tag, policyId });
+    }
+
+    /**
      * Set block data
      * @param user
      * @param policyId
@@ -125,6 +156,17 @@ export class PolicyEngine extends ServiceRequestsBase {
      */
     public async setBlockData(user, policyId, blockId: string, data: any) {
         return await this.request(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data });
+    }
+
+    /**
+     * Set block data
+     * @param user
+     * @param policyId
+     * @param blockId
+     * @param data
+     */
+    public async setBlockDataByTag(user, policyId, tag: string, data: any) {
+        return await this.request(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, { user, tag, policyId, data });
     }
 
     /**
@@ -175,12 +217,34 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Async load policy file for import
+     * @param user
+     * @param zip
+     * @param versionOfTopicId
+     * @param taskId
+     */
+    public async importFileAsync(user, zip, versionOfTopicId, taskId) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC, { zip, user, versionOfTopicId, taskId });
+    }
+
+    /**
      * Import policy from message
      * @param user
      * @param messageId
      */
-    public async importMessage(user, messageId, versionOfTopicId?) {
+    public async importMessage(user, messageId, versionOfTopicId) {
         return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, { messageId, user, versionOfTopicId });
+    }
+
+    /**
+     * Async import policy from message
+     * @param user
+     * @param messageId
+     * @param versionOfTopicId
+     * @param taskId
+     */
+    public async importMessageAsync(user, messageId, versionOfTopicId, taskId) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC, { messageId, user, versionOfTopicId, taskId });
     }
 
     /**
@@ -199,6 +263,16 @@ export class PolicyEngine extends ServiceRequestsBase {
      */
     public async importMessagePreview(user, messageId) {
         return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, { messageId, user });
+    }
+
+    /**
+     * Async get policy info from message
+     * @param user
+     * @param messageId
+     * @param taskId
+     */
+    public async importMessagePreviewAsync(user, messageId, taskId: string) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, { messageId, user, taskId });
     }
 
     /**

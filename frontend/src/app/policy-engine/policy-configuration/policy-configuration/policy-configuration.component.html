@@ -2,6 +2,9 @@
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
+    <div *ngIf="loading && taskId" class="loading">
+        <async-progess class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages" (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progess>
+    </div>
     <div class="not-exist" *ngIf="!policyModel.valid">
         Policy doesn't exist
     </div>

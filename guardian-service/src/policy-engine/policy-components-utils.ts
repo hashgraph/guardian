@@ -18,7 +18,6 @@ import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
 import { GetBlockAbout } from '@policy-engine/blocks';
 import { DatabaseServer } from '@database-modules';
 import { IPolicyUser } from './policy-user';
-import { IHederaAccount } from './helpers/utils';
 
 /**
  * Policy action map type
@@ -379,14 +378,14 @@ export class PolicyComponentsUtils {
         for (const event of instance.events) {
             if (!event.disabled) {
                 if (event.source === instance.tag) {
-                    const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
+                    const target = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.target);
                     PolicyComponentsUtils.RegisterLink(instance, event.output, target, event.input, event.actor);
                 } else if (event.target === instance.tag) {
-                    const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.source);
+                    const source = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.source);
                     PolicyComponentsUtils.RegisterLink(source, event.output, instance, event.input, event.actor);
                 } else {
-                    const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
-                    const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.source);
+                    const target = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.target);
+                    const source = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.source);
                     PolicyComponentsUtils.RegisterLink(source, event.output, target, event.input, event.actor);
                 }
             }
@@ -427,8 +426,9 @@ export class PolicyComponentsUtils {
      * @param policyId
      * @param tag
      */
-    public static GetBlockByTag(policyId: string, tag: string): IPolicyBlock {
-        return PolicyComponentsUtils.BlockByBlockId.get(PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(tag));
+    public static GetBlockByTag<T extends (IPolicyInterfaceBlock | IPolicyBlock)>(policyId: string, tag: string): T {
+    	const uuid = PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(tag);
+        return PolicyComponentsUtils.BlockByBlockId.get(uuid) as T;
     }
 
     /**
@@ -499,7 +499,7 @@ export class PolicyComponentsUtils {
         const userRoles: string[] = [];
         if (policy && did) {
             if (policy.status === PolicyType.DRY_RUN) {
-                const activeUser = await DatabaseServer.getVirtualUser(policy.id);
+                const activeUser = await DatabaseServer.getVirtualUser(policy.id.toString());
                 if (activeUser) {
                     did = activeUser.did;
                 }
@@ -507,7 +507,7 @@ export class PolicyComponentsUtils {
             if (policy.owner === did) {
                 userRoles.push('Administrator');
             }
-            const role = await DatabaseServer.getUserRole(policy.id, did);
+            const role = await DatabaseServer.getUserRole(policy.id.toString(), did);
             if (role) {
                 userRoles.push(role);
             }
@@ -525,7 +525,7 @@ export class PolicyComponentsUtils {
      */
     public static async GetUserRole(policy: Policy, user: IAuthUser): Promise<string> {
         if (policy && user && user.did) {
-            return await DatabaseServer.getUserRole(policy.id, user.did);
+            return await DatabaseServer.getUserRole(policy.id.toString(), user.did);
         }
         return null;
     }

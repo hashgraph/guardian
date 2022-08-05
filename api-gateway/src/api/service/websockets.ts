@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import { IUpdateUserInfoMessage, IUpdateUserBalanceMessage, MessageAPI, IUpdateBlockMessage, IErrorBlockMessage } from '@guardian/interfaces';
+import { IUpdateUserInfoMessage, IUpdateUserBalanceMessage, MessageAPI, IUpdateBlockMessage, IErrorBlockMessage, IStatus } from '@guardian/interfaces';
 import { IPFS } from '@helpers/ipfs';
 import { Guardians } from '@helpers/guardians';
 import { MessageBrokerChannel, MessageResponse, Logger } from '@guardian/common';
@@ -29,6 +29,22 @@ export class WebSocketsService {
     public init(): void {
         this.registerConnection();
         this.registerMessageHandler();
+    }
+
+    /**
+     * Notify about task changes
+     * @param taskId
+     * @param statuses
+     * @param completed
+     * @param error
+     */
+    public notifyTaskProgress(taskId: string, statuses?: IStatus[], completed?: boolean, error?: any): void {
+        this.wss.clients.forEach((client: any) => {
+            this.send(client, {
+                type: MessageAPI.UPDATE_TASK_STATUS,
+                data: { taskId, statuses, completed, error }
+            });
+        });
     }
 
     /**

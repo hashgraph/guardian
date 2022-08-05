@@ -5,12 +5,14 @@ import { DatetimePicker } from './components/datetime-picker/datetime-picker.com
 import { Dragonglass } from './components/dragonglass/dragonglass.component';
 import { NgxMatDateFormats, NgxMatDatetimePickerModule, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
 import { SelectMenuButton } from './components/select-menu/select-menu.component';
+import { AsyncProgessComponent } from './components/async-progess/async-progess.component';
 
 @NgModule({
     declarations: [
         DatetimePicker,
         Dragonglass,
-        SelectMenuButton
+        SelectMenuButton,
+	AsyncProgessComponent
     ],
     imports: [
         CommonModule,
@@ -20,7 +22,8 @@ import { SelectMenuButton } from './components/select-menu/select-menu.component
     exports: [
         DatetimePicker,
         Dragonglass,
-        SelectMenuButton
+        SelectMenuButton,
+	AsyncProgessComponent
     ]
 })
 export class CommonComponentsModule { }

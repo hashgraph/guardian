@@ -3,7 +3,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IToken, IUser, UserRole } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
-import { forkJoin, Subscription } from 'rxjs';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -13,6 +12,15 @@ import { NewPolicyDialog } from '../helpers/new-policy-dialog/new-policy-dialog.
 import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { TasksService } from 'src/app/services/tasks.service';
+import { InformService } from 'src/app/services/inform.service';
+
+enum OperationMode {
+    None,
+    Create,
+    Import,
+    Publish,
+}
 
 /**
  * Component for choosing a policy and
@@ -34,6 +42,10 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     pageSize: number;
     policyCount: any;
 
+    mode: OperationMode = OperationMode.None;
+    taskId: string | undefined = undefined;
+    expectedTaskMessages: number = 0;
+
     publishMenuOption = [{
         id: 'Publish',
         title: 'Publish',
@@ -44,7 +56,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         title: 'Dry Run',
         description: 'Run without making any persistent changes or executing transaction.',
         color: '#3f51b5'
-    }]
+    }];
 
     draftMenuOption = [{
         id: 'Draft',
@@ -56,7 +68,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         title: 'Publish',
         description: 'Release version into public domain.',
         color: '#4caf50'
-    }]
+    }];
 
     constructor(
         private profileService: ProfileService,
@@ -66,7 +78,9 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private dialog: MatDialog,
-        private toastr: ToastrService
+        private toastr: ToastrService,
+        private taskService: TasksService,
+        private informService: InformService
     ) {
         this.policies = null;
         this.pageIndex = 0;
@@ -151,6 +165,36 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         this.loadAllPolicy();
     }
 
+    onAsyncError(error: any) {
+        this.informService.processAsyncError(error);
+        this.taskId = undefined;
+        this.mode = OperationMode.None;
+        this.loadAllPolicy();
+    }
+
+    onAsyncCompleted() {
+        switch (this.mode) {
+            case OperationMode.Create:
+            case OperationMode.Import:
+                this.taskId = undefined;
+                this.mode = OperationMode.None;
+                this.loadAllPolicy();
+                break;
+            case OperationMode.Publish:
+                if (this.taskId) {
+                    const taskId = this.taskId;
+                    this.taskId = undefined;
+                    this.processPublishResult(taskId);
+                }
+                break;
+            default:
+                console.log(`Not allowed mode ${this.mode}`);
+                break;
+        }
+
+        this.mode = OperationMode.None;
+    }
+
     newPolicy() {
         const dialogRef = this.dialog.open(NewPolicyDialog, {
             width: '500px',
@@ -160,8 +204,11 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.policyEngineService.create(result).subscribe((policies: any) => {
-                    this.loadAllPolicy();
+                this.policyEngineService.pushCreate(result).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
+                    this.mode = OperationMode.Create;
                 }, (e) => {
                     this.loading = false;
                 });
@@ -221,27 +268,11 @@ export class PoliciesComponent implements OnInit, OnDestroy {
 
     private publish(element: any, version: string) {
         this.loading = true;
-        this.policyEngineService.publish(element.id, version).subscribe((data: any) => {
-            const { policies, isValid, errors } = data;
-            if (!isValid) {
-                let text = [];
-                const blocks = errors.blocks;
-                const invalidBlocks = blocks.filter((block: any) => !block.isValid);
-                for (let i = 0; i < invalidBlocks.length; i++) {
-                    const block = invalidBlocks[i];
-                    for (let j = 0; j < block.errors.length; j++) {
-                        const error = block.errors[j];
-                        text.push(`<div>${block.id}: ${error}</div>`);
-                    }
-                }
-                this.toastr.error(text.join(''), 'The policy is invalid', {
-                    timeOut: 30000,
-                    closeButton: true,
-                    positionClass: 'toast-bottom-right',
-                    enableHtml: true
-                });
-            }
-            this.loadAllPolicy();
+        this.policyEngineService.pushPublish(element.id, version).subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.mode = OperationMode.Publish;
         }, (e) => {
             this.loading = false;
         });
@@ -295,17 +326,25 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                 let versionOfTopicId = result.versionOfTopicId || null;
                 this.loading = true;
                 if (type == 'message') {
-                    this.policyEngineService.importByMessage(data, versionOfTopicId).subscribe((policies) => {
-                        this.loadAllPolicy();
-                    }, (e) => {
-                        this.loading = false;
-                    });
+                    this.policyEngineService.pushImportByMessage(data, versionOfTopicId).subscribe(
+                        (result) => {
+                            const { taskId, expectation } = result;
+                            this.taskId = taskId;
+                            this.expectedTaskMessages = expectation;
+                            this.mode = OperationMode.Import;
+                        }, (e) => {
+                            this.loading = false;
+                        });
                 } else if (type == 'file') {
-                    this.policyEngineService.importByFile(data, versionOfTopicId).subscribe((policies) => {
-                        this.loadAllPolicy();
-                    }, (e) => {
-                        this.loading = false;
-                    });
+                    this.policyEngineService.pushImportByFile(data, versionOfTopicId).subscribe(
+                        (result) => {
+                            const { taskId, expectation } = result;
+                            this.taskId = taskId;
+                            this.expectedTaskMessages = expectation;
+                            this.mode = OperationMode.Import;
+                        }, (e) => {
+                            this.loading = false;
+                        });
                 }
             }
         });
@@ -335,5 +374,45 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         } else if (event.id === 'Dry-run') {
             this.dryRun(element)
         }
+    }
+
+    private processPublishResult(taskId: string): void {
+        this.taskService.get(taskId).subscribe((task: any) => {
+            const { result } = task;
+            if (result) {
+                const { isValid, errors } = result;
+                if (!isValid) {
+                    let text = [];
+                    const blocks = errors.blocks;
+                    const invalidBlocks = blocks.filter(
+                        (block: any) => !block.isValid
+                    );
+                    for (let i = 0; i < invalidBlocks.length; i++) {
+                        const block = invalidBlocks[i];
+                        for (
+                            let j = 0;
+                            j < block.errors.length;
+                            j++
+                        ) {
+                            const error = block.errors[j];
+                            text.push(
+                                `<div>${block.id}: ${error}</div>`
+                            );
+                        }
+                    }
+                    this.toastr.error(
+                        text.join(''),
+                        'The policy is invalid',
+                        {
+                            timeOut: 30000,
+                            closeButton: true,
+                            positionClass: 'toast-bottom-right',
+                            enableHtml: true,
+                        }
+                    );
+                }
+                this.loadAllPolicy();
+            }
+        });
     }
 }
