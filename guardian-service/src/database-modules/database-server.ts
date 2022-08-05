@@ -878,9 +878,7 @@ export class DatabaseServer {
         if (!did) {
             return null;
         }
-        console.log({ policyId, did });
         const role = await getMongoRepository(PolicyRolesCollection).findOne({ policyId, did });
-        console.log(role);
         if (role) {
             return role.role;
         }

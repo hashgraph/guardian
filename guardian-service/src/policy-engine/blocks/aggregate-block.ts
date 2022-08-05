@@ -247,7 +247,7 @@ export class AggregateBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "aggregateType" must be one of period, cumulative');
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

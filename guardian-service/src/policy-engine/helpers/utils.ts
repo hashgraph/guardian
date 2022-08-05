@@ -790,4 +790,22 @@ export class PolicyUtils {
             return null;
         }
     }
+
+    /**
+     * Get error message
+     */
+     public static getErrorMessage(error: string | Error | any): string {
+        if(typeof error === 'string') {
+            return error;
+        } else if(error.message) {
+            return error.message;
+        } else if(error.error) {
+            return error.error;
+        } else if(error.name) {
+            return error.name;
+        } else {
+            console.log(error);
+            return 'Unidentified error';
+        }
+    }
 }

@@ -13,11 +13,15 @@ export class InformService {
     const translatedMessage = this.messageTranslator.translateMessage(
         this.messageToText(error.message)
     );
-    const header = `${error.code} ${
-        translatedMessage.wasTranslated
-            ? 'Hedera transaction failed'
-            : 'Other Error'
-    }`;
+    let header = '';
+    if(error.code) {
+        header += `${error.code} `;
+    }
+    if(translatedMessage.wasTranslated) {
+        header += 'Hedera transaction failed';
+    } else {
+        header += 'Other Error';
+    }
     let text;
     if (error.message) {
         text = `<div>${

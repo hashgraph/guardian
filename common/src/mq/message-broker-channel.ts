@@ -3,6 +3,8 @@ import { Subscription, NatsConnection, StringCodec, connect, JSONCodec } from 'n
 import { IMessageResponse, MessageError } from '../models/message-response';
 import * as zlib from 'zlib';
 
+const MQ_TIMEOUT = 300000;
+
 /**
  * Message broker channel
  */
@@ -76,7 +78,9 @@ export class MessageBrokerChannel {
             // NOTE: If get NATS TIMEOUT error to quckly resolve just uncomment next line.
             // And then, implement async processing of operation.
             // const msg = await this.channel.request(eventType, StringCodec().encode(stringPayload), { timeout: 300000 });
-            const msg = await this.channel.request(eventType, StringCodec().encode(stringPayload));
+            const msg = await this.channel.request(eventType, StringCodec().encode(stringPayload), {
+                timeout: timeout || MQ_TIMEOUT,
+            });
 
             const unpackedString = zlib.inflateSync(new Buffer(StringCodec().decode(msg.data), 'binary')).toString();
             return JSON.parse(unpackedString);

@@ -180,7 +180,7 @@ export class SendToGuardianBlock {
             document.topicId = vcMessageResult.getTopicId();
             return document;
         } catch (error) {
-            throw new BlockActionError(error.message, ref.blockType, ref.uuid)
+            throw new BlockActionError(PolicyUtils.getErrorMessage(error), ref.blockType, ref.uuid)
         }
     }
 
@@ -278,7 +278,7 @@ export class SendToGuardianBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "dataSource" must be one of database, hedera');
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

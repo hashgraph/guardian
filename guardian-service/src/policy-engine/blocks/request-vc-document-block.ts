@@ -181,7 +181,7 @@ export class RequestVcDocumentBlock {
         try {
             return await PolicyUtils.getRelationships(ref, ref.policyId, refId);
         } catch (error) {
-            ref.error(error.message);
+            ref.error(PolicyUtils.getErrorMessage(error));
             throw new BlockActionError('Invalid relationships', ref.blockType, ref.uuid);
         }
     }
@@ -273,7 +273,7 @@ export class RequestVcDocumentBlock {
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
         } catch (error) {
-            ref.error(`setData: ${error.message}`);
+            ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             await this.changeActive(user, true);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
@@ -326,7 +326,7 @@ export class RequestVcDocumentBlock {
             }
             return undefined;
         } catch (error) {
-            ref.error(`generateId: ${idType} : ${error.message}`);
+            ref.error(`generateId: ${idType} : ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
     }
@@ -360,7 +360,7 @@ export class RequestVcDocumentBlock {
                 }
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

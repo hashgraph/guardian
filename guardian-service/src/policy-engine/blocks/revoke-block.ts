@@ -205,7 +205,7 @@ export class RevokeBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "Status Value" does not set');
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

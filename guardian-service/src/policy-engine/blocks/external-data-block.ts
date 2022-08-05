@@ -93,7 +93,7 @@ export class ExternalDataBlock {
         try {
             return await PolicyUtils.getRelationships(ref, ref.policyId, refId);
         } catch (error) {
-            ref.error(error.message);
+            ref.error(PolicyUtils.getErrorMessage(error));
             throw new BlockActionError('Invalid relationships', ref.blockType, ref.uuid);
         }
     }
@@ -135,7 +135,7 @@ export class ExternalDataBlock {
                 verify = await VCHelper.verifyVC(data.document);
             }
         } catch (error) {
-            ref.error(`Verify VC: ${error.message}`)
+            ref.error(`Verify VC: ${PolicyUtils.getErrorMessage(error)}`)
             verify = false;
         }
 
@@ -194,7 +194,7 @@ export class ExternalDataBlock {
                 }
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

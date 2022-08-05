@@ -182,7 +182,7 @@ export class DocumentValidatorBlock {
                 resultsContainer.addBlockError(ref.uuid, `conditions option must be an array`);
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

@@ -58,7 +58,7 @@ export class CustomLogicBlock {
             ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
         } catch (error) {
-            ref.error(error.message);
+            ref.error(PolicyUtils.getErrorMessage(error));
         }
     }
 
