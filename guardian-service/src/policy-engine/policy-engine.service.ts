@@ -946,7 +946,7 @@ export class PolicyEngineService {
 
                 const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
                 const userFull = await this.getUser(user, policyId, block.dryRun);
-                
+
                 if (block && (await block.isAvailable(userFull))) {
                     const result = await block.setData(userFull, data);
                     return new MessageResponse(result);
