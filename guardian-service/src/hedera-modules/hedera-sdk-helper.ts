@@ -8,6 +8,7 @@ import {
     HbarUnit,
     PrivateKey,
     Status,
+    Timestamp,
     TokenAssociateTransaction,
     TokenCreateTransaction,
     TokenDissociateTransaction,
@@ -32,6 +33,7 @@ import axios from 'axios';
 import { Environment } from './environment';
 import { TransactionLogger } from './transaction-logger';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import Long from 'long';
 
 export const MAX_FEE = 10;
 export const INITIAL_BALANCE = 30;
@@ -55,7 +57,18 @@ export class HederaSDKHelper {
      */
     private static fn: Function = null;
 
-    constructor(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
+    /**
+     * Dry-run
+     * @private
+     */
+    private readonly dryRun: string = null;
+
+    constructor(
+        operatorId: string | AccountId | null,
+        operatorKey: string | PrivateKey | null,
+        dryRun: string = null
+    ) {
+        this.dryRun = dryRun || null;
         this.client = Environment.createClient();
         if (operatorId && operatorKey) {
             this.client.setOperator(operatorId, operatorKey);
@@ -68,7 +81,7 @@ export class HederaSDKHelper {
      * @param transactionName
      * @private
      */
-    private async transactionStartLog(id, transactionName: string): Promise<void> {
+    private async transactionStartLog(id: string, transactionName: string): Promise<void> {
         await TransactionLogger.transactionLog(id, this.client.operatorAccountId, transactionName);
     }
 
@@ -94,6 +107,17 @@ export class HederaSDKHelper {
      */
     private async transactionErrorLog(id: string, transactionName: string, transaction: Transaction, error: Error): Promise<void> {
         await TransactionLogger.transactionErrorLog(id, this.client.operatorAccountId, transactionName, transaction, error.message);
+    }
+
+    /**
+     * Save Virtual Transaction log
+     * @param id
+     * @param type
+     * @param client
+     * @private
+     */
+    private async virtualTransactionLog(id: string, type: string, client: Client): Promise<void> {
+        await TransactionLogger.virtualTransactionLog(id, type, client.operatorAccountId?.toString());
     }
 
     /**
@@ -761,17 +785,28 @@ export class HederaSDKHelper {
     private async executeAndReceipt(
         client: Client, transaction: Transaction, type: string, metadata?: any
     ): Promise<TransactionReceipt> {
-        const id = GenerateUUIDv4();
-        try {
-            await this.transactionStartLog(id, type);
-            const result = await transaction.execute(client);
-            const receipt = await result.getReceipt(client);
-            await this.transactionEndLog(id, type, transaction, metadata);
-            HederaSDKHelper.transactionResponse(client);
-            return receipt;
-        } catch (error) {
-            await this.transactionErrorLog(id, type, transaction, error);
-            throw error;
+        if (this.dryRun) {
+            await this.virtualTransactionLog(this.dryRun, type, client);
+            return {
+                status: Status.Success,
+                topicId: new TokenId(Date.now()),
+                tokenId: new TokenId(Date.now()),
+                accountId: new AccountId(Date.now()),
+                serials: [Long.fromInt(1)]
+            } as any
+        } else {
+            const id = GenerateUUIDv4();
+            try {
+                await this.transactionStartLog(id, type);
+                const result = await transaction.execute(client);
+                const receipt = await result.getReceipt(client);
+                await this.transactionEndLog(id, type, transaction, metadata);
+                HederaSDKHelper.transactionResponse(client);
+                return receipt;
+            } catch (error) {
+                await this.transactionErrorLog(id, type, transaction, error);
+                throw error;
+            }
         }
     }
 
@@ -786,22 +821,29 @@ export class HederaSDKHelper {
     private async executeAndRecord(
         client: Client, transaction: Transaction, type: string, metadata?: any
     ): Promise<TransactionRecord> {
-        const id = GenerateUUIDv4();
-        try {
-            await this.transactionStartLog(id, type);
-            const result = await transaction.execute(client);
-            const record = await result.getRecord(client);
-            await this.transactionEndLog(id, type, transaction, metadata);
-            HederaSDKHelper.transactionResponse(client);
-            return record;
-        } catch (error) {
-            await this.transactionErrorLog(id, type, transaction, error);
-            throw error;
+        if (this.dryRun) {
+            await this.virtualTransactionLog(this.dryRun, type, client);
+            return {
+                consensusTimestamp: Timestamp.fromDate(Date.now())
+            } as any
+        } else {
+            const id = GenerateUUIDv4();
+            try {
+                await this.transactionStartLog(id, type);
+                const result = await transaction.execute(client);
+                const record = await result.getRecord(client);
+                await this.transactionEndLog(id, type, transaction, metadata);
+                HederaSDKHelper.transactionResponse(client);
+                return record;
+            } catch (error) {
+                await this.transactionErrorLog(id, type, transaction, error);
+                throw error;
+            }
         }
     }
 
     /**
-     * Set transaction respocse callback
+     * Set transaction response callback
      * @param fn
      */
     public static setTransactionResponseCallback(fn: Function) {
@@ -864,5 +906,26 @@ export class HederaSDKHelper {
             }
         }
         return false;
+    }
+
+    /**
+     * Create Virtual Account
+     */
+    public static async createVirtualAccount(): Promise<{
+        /**
+         * Account ID
+         */
+        id: AccountId;
+        /**
+         * Private key
+         */
+        key: PrivateKey;
+    }> {
+        const newPrivateKey = PrivateKey.generate();
+        const newAccountId = new AccountId(Date.now());
+        return {
+            id: newAccountId,
+            key: newPrivateKey
+        };
     }
 }

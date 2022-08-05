@@ -1,4 +1,5 @@
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
+import { ObjectId } from 'mongodb';
 import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn } from 'typeorm';
 
 /**
@@ -10,7 +11,7 @@ export class Policy {
      * Entity id
      */
     @ObjectIdColumn()
-    id: string;
+    id: ObjectId;
 
     /**
      * Policy UUID
@@ -52,13 +53,13 @@ export class Policy {
      * Policy config
      */
     @Column()
-    config: Object;
+    config: any;
 
     /**
      * Policy status
      */
     @Column()
-    status: string;
+    status: PolicyType;
 
     /**
      * Policy creator
@@ -83,12 +84,6 @@ export class Policy {
      */
     @Column()
     policyTopics: any[];
-
-    /**
-     * Policy registered users
-     */
-    @Column()
-    registeredUsers: Object;
 
     /**
      * Policy topic id
@@ -129,13 +124,20 @@ export class Policy {
     createDate: Date;
 
     /**
+     * User roles
+     * @deprecated
+     */
+    @Column()
+    registeredUsers: any
+
+    /**
      * Set policy defaults
      */
     @BeforeInsert()
     setDefaults() {
-        this.status = this.status || 'DRAFT';
-        this.registeredUsers = {};
+        this.status = this.status || PolicyType.DRAFT;
         this.uuid = this.uuid || GenerateUUIDv4();
         this.codeVersion = this.codeVersion || '1.0.0';
+        delete this.registeredUsers;
     }
 }

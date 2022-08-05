@@ -1,4 +1,4 @@
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
 
 export class PolicyRoleModel {
     private readonly policy: PolicyModel;
@@ -591,6 +591,11 @@ export class PolicyModel {
 
     private _changed: boolean;
 
+    public readonly isDraft: boolean = false;
+    public readonly isPublished: boolean = false;
+    public readonly isDryRun: boolean = false;
+    public readonly readonly: boolean = false;
+
     constructor(policy?: any) {
         this._changed = false;
 
@@ -615,6 +620,11 @@ export class PolicyModel {
 
         this.buildPolicy(policy);
         this.buildBlock(policy.config);
+
+        this.isDraft = this.status === PolicyType.DRAFT;
+        this.isPublished = this.status === PolicyType.PUBLISH;
+        this.isDryRun = this.status === PolicyType.DRY_RUN;
+        this.readonly = this.isPublished || this.isDryRun;
     }
 
     public get policyTag(): string {
@@ -667,10 +677,6 @@ export class PolicyModel {
 
     public get dataSource(): PolicyBlockModel[] {
         return this._dataSource;
-    }
-
-    public get readonly(): boolean {
-        return this.status == 'PUBLISH';
     }
 
     public get policyRoles(): PolicyRoleModel[] {

@@ -11,22 +11,19 @@ import {
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
-import { getMongoRepository, MongoRepository } from 'typeorm';
 import { schemasToContext } from '@transmute/jsonld-schema';
-import { MessageAction, MessageServer, MessageType, SchemaMessage, UrlType } from '@hedera-modules';
+import { MessageAction, MessageServer, MessageType, SchemaMessage, TopicHelper, UrlType } from '@hedera-modules';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
-import { TopicHelper } from '@helpers/topic-helper';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 
 export const schemaCache = {};
 
 /**
  * Creation of default schemas.
- *
- * @param schemaRepository - table with schemas
  */
 export async function setDefaultSchema() {
     const fileConfig = path.join(process.cwd(), 'system-schemas', 'system-schemas.json');
@@ -63,7 +60,7 @@ export async function setDefaultSchema() {
     }
 
     const fn = async (schema: any) => {
-        const existingSchemas = await getMongoRepository(SchemaCollection).findOne({ uuid: schema.uuid });
+        const existingSchemas = await DatabaseServer.getSchema({ uuid: schema.uuid });
         if (existingSchemas) {
             console.log(`Skip schema: ${schema.uuid}`);
             return;
@@ -73,8 +70,7 @@ export async function setDefaultSchema() {
         schema.readonly = true;
         schema.system = true;
         schema.active = true;
-        const item: any = getMongoRepository(SchemaCollection).create(schema);
-        await getMongoRepository(SchemaCollection).save(item);
+        await DatabaseServer.createAndSaveSchema(schema);
         console.log(`Created schema: ${schema.uuid}`);
     }
 
@@ -96,7 +92,7 @@ async function loadSchema(messageId: string, owner: string) {
         if (schemaCache[messageId]) {
             return schemaCache[messageId];
         }
-        const messageServer = new MessageServer();
+        const messageServer = new MessageServer(null, null);
         log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
         const message = await messageServer.getMessage<SchemaMessage>(messageId, MessageType.Schema);
         log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
@@ -170,7 +166,7 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
         throw new Error(`Invalid increment schema version parameter`);
     }
 
-    const schema = await getMongoRepository(SchemaCollection).findOne({ iri, owner });
+    const schema = await DatabaseServer.getSchema({ iri, owner });
 
     if (!schema) {
         throw new Error(`Schema not found: ${iri} for owner ${owner}`);
@@ -183,7 +179,7 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
     const { previousVersion } = SchemaHelper.getVersion(schema);
     let newVersion = '1.0.0';
     if (previousVersion) {
-        const schemas = await getMongoRepository(SchemaCollection).find({ uuid: schema.uuid });
+        const schemas = await DatabaseServer.getSchemas({ uuid: schema.uuid });
         const versions = [];
         for (const element of schemas) {
             const elementVersions = SchemaHelper.getVersion(element);
@@ -206,13 +202,11 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
     notifier.start('Resolve Hedera account');
     const root = await users.getHederaAccount(owner);
     notifier.completedAndStart('Save in DB');
-    const schemaObject = getMongoRepository(SchemaCollection)
-        .create(newSchema) as SchemaCollection;
-
+    const schemaObject = DatabaseServer.createSchema(newSchema);
     notifier.completedAndStart('Resolve Topic');
     let topic: Topic;
     if (newSchema.topicId) {
-        topic = await getMongoRepository(Topic).findOne({ topicId: newSchema.topicId });
+        topic = await DatabaseServer.getTopicById(newSchema.topicId);
     }
 
     if (!topic) {
@@ -225,6 +219,8 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
             policyId: null,
             policyUUID: null
         });
+        topic = await DatabaseServer.saveTopic(topic);
+
         await topicHelper.twoWayLink(topic, null, null);
     }
 
@@ -233,7 +229,7 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
     schemaObject.topicId = topic.topicId;
     schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
 
-    const errorsCount = await getMongoRepository(SchemaCollection).count({
+    const errorsCount = await DatabaseServer.getSchemasCount({
         where: {
             iri: {
                 $eq: schemaObject.iri
@@ -263,7 +259,7 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
     await messageServer.setTopicObject(topic).sendMessage(message);
 
     notifier.completedAndStart('Update schema in DB');
-    const savedSchema = await getMongoRepository(SchemaCollection).save(schemaObject);
+    const savedSchema =  await DatabaseServer.saveSchema(schemaObject);
     notifier.completed();
     return savedSchema;
 }
@@ -285,16 +281,18 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
         }
         file.uuid = newUUID;
         file.iri = '#' + newUUID;
-    }
-
-    for (const file of files) {
-        file.document = replaceValueRecursive(file.document, uuidMap);
-        file.context = replaceValueRecursive(file.context, uuidMap);
+        file.documentURL = null;
+        file.contextURL = null;
         file.messageId = null;
         file.creator = owner;
         file.owner = owner;
         file.topicId = topicId;
         file.status = SchemaStatus.DRAFT;
+    }
+
+    for (const file of files) {
+        file.document = replaceValueRecursive(file.document, uuidMap);
+        file.context = replaceValueRecursive(file.context, uuidMap);
         SchemaHelper.setVersion(file, '', '');
         await createSchema(file, owner, emptyNotifier());
     }
@@ -339,8 +337,8 @@ export async function publishSchema(
 
     const messageId = result.getId();
     const topicId = result.getTopicId();
-    const contextUrl = result.getDocumentUrl(UrlType.url);
-    const documentUrl = result.getContextUrl(UrlType.url);
+    const contextUrl = result.getContextUrl(UrlType.url);
+    const documentUrl = result.getDocumentUrl(UrlType.url);
 
     item.status = SchemaStatus.PUBLISHED;
     item.documentURL = documentUrl;
@@ -382,7 +380,8 @@ export async function publishSystemSchema(
  */
 export async function findAndPublishSchema(id: string, version: string, owner: string, notifier: INotifier): Promise<SchemaCollection> {
     notifier.start('Load schema');
-    let item = await getMongoRepository(SchemaCollection).findOne(id);
+
+    let item = await DatabaseServer.getSchema(id);
 
     if (!item) {
         throw new Error(`Schema not found: ${id}`);
@@ -404,14 +403,14 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
     const users = new Users();
     const root = await users.getHederaAccount(owner);
     notifier.completedAndStart('Resolve topic');
-    const topic = await getMongoRepository(Topic).findOne({ topicId: item.topicId });
+    const topic = await DatabaseServer.getTopicById(item.topicId);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
         .setTopicObject(topic);
     notifier.completedAndStart('Publish schema');
     item = await publishSchema(item, version, messageServer, MessageAction.PublishSchema);
 
     notifier.completedAndStart('Update in DB');
-    await getMongoRepository(SchemaCollection).update(item.id, item);
+    await DatabaseServer.updateSchema(item.id, item);
     notifier.completed();
     return item;
 }
@@ -449,7 +448,7 @@ async function prepareSchemaPreview(messageIds: string[], notifier: INotifier): 
     }
 
     notifier.completedAndStart('Parse schema');
-    const messageServer = new MessageServer();
+    const messageServer = new MessageServer(null, null);
     const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
     const anotherSchemas: SchemaMessage[] = [];
     for (const topicId of uniqueTopics) {
@@ -489,13 +488,9 @@ async function prepareSchemaPreview(messageIds: string[], notifier: INotifier): 
  * Connect to the message broker methods of working with schemas.
  *
  * @param channel - channel
- * @param schemaRepository - table with schemas
+ * @param apiGatewayChannel
  */
-export async function schemaAPI(
-    channel: MessageBrokerChannel,
-    apiGatewayChannel: MessageBrokerChannel,
-    schemaRepository: MongoRepository<SchemaCollection>
-): Promise<void> {
+export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel: MessageBrokerChannel): Promise<void> {
 
     /**
      * Create schema
@@ -507,10 +502,9 @@ export async function schemaAPI(
     ApiResponse(channel, MessageAPI.CREATE_SCHEMA, async (msg) => {
         try {
             const schemaObject = msg as ISchema;
-            console.log('c', schemaObject)
             SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
             await createSchema(schemaObject, schemaObject.owner, emptyNotifier());
-            const schemas = await schemaRepository.find();
+            const schemas = await DatabaseServer.getSchemas();
             return new MessageResponse(schemas);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -546,7 +540,7 @@ export async function schemaAPI(
     ApiResponse(channel, MessageAPI.UPDATE_SCHEMA, async (msg) => {
         try {
             const id = msg.id as string;
-            const item = await schemaRepository.findOne(id);
+            const item = await DatabaseServer.getSchema(id);
             if (item) {
                 item.name = msg.name;
                 item.description = msg.description;
@@ -555,9 +549,9 @@ export async function schemaAPI(
                 item.status = SchemaStatus.DRAFT;
                 SchemaHelper.setVersion(item, null, item.version);
                 SchemaHelper.updateIRI(item);
-                await schemaRepository.update(item.id, item);
+                await DatabaseServer.updateSchema(item.id, item);
             }
-            const schemas = await schemaRepository.find();
+            const schemas = await DatabaseServer.getSchemas();
             return new MessageResponse(schemas);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -578,14 +572,13 @@ export async function schemaAPI(
                 return new MessageError('Invalid load schema parameter');
             }
             if (msg.id) {
-                const schema = await schemaRepository.findOne(msg.id);
+                const schema = await DatabaseServer.getSchema(msg.id);
                 return new MessageResponse(schema);
             }
             if (msg.type) {
                 const iri = `#${msg.type}`;
-                const schema = await schemaRepository.findOne({
-                    iri,
-                    status: SchemaStatus.PUBLISHED
+                const schema = await DatabaseServer.getSchema({
+                    iri
                 });
                 return new MessageResponse(schema);
             }
@@ -637,7 +630,7 @@ export async function schemaAPI(
                 filter.skip = _pageIndex * _pageSize;
             }
 
-            const [schemas, count] = await schemaRepository.findAndCount(filter);
+            const [schemas, count] = await DatabaseServer.getSchemasAndCount(filter);
 
             return new MessageResponse({
                 schemas,
@@ -703,10 +696,10 @@ export async function schemaAPI(
     ApiResponse(channel, MessageAPI.DELETE_SCHEMA, async (msg) => {
         try {
             if (msg && msg.id) {
-                const item = await schemaRepository.findOne(msg.id);
+                const item = await DatabaseServer.getSchema(msg.id);
                 if (item) {
                     if (item.topicId) {
-                        const topic = await getMongoRepository(Topic).findOne({ topicId: item.topicId });
+                        const topic = await DatabaseServer.getTopicById(item.topicId);
                         if (topic) {
                             const users = new Users();
                             const root = await users.getHederaAccount(item.owner);
@@ -717,10 +710,10 @@ export async function schemaAPI(
                                 .sendMessage(message);
                         }
                     }
-                    await schemaRepository.delete(item.id);
+                    await DatabaseServer.deleteSchemas(item.id);
                 }
             }
-            const schemas = await schemaRepository.find();
+            const schemas = await DatabaseServer.getSchemas();
             return new MessageResponse(schemas);
         } catch (error) {
             return new MessageError(error);
@@ -906,7 +899,7 @@ export async function schemaAPI(
     ApiResponse(channel, MessageAPI.EXPORT_SCHEMAS, async (msg) => {
         try {
             const ids = msg as string[];
-            const schemas = await schemaRepository.findByIds(ids);
+            const schemas = await DatabaseServer.getSchemasByIds(ids);
             const map: any = {};
             const relationships: ISchema[] = [];
             for (const schema of schemas) {
@@ -914,7 +907,7 @@ export async function schemaAPI(
                     map[schema.iri] = schema;
                     relationships.push(schema);
                     const keys = getDefs(schema);
-                    const defs = await schemaRepository.find({
+                    const defs = await DatabaseServer.getSchemas({
                         where: { iri: { $in: keys } }
                     });
                     for (const element of defs) {
@@ -969,7 +962,7 @@ export async function schemaAPI(
             schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
             schemaObject.system = true;
             schemaObject.active = false;
-            const item = await getMongoRepository(SchemaCollection).save(schemaObject);
+            const item = await DatabaseServer.createAndSaveSchema(schemaObject);
             return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -1004,7 +997,7 @@ export async function schemaAPI(
                 filter.skip = _pageIndex * _pageSize;
             }
             console.log(filter);
-            const [schemas, count] = await schemaRepository.findAndCount(filter);
+            const [schemas, count] = await DatabaseServer.getSchemasAndCount(filter);
             return new MessageResponse({
                 schemas,
                 count
@@ -1026,15 +1019,15 @@ export async function schemaAPI(
     ApiResponse(channel, MessageAPI.ACTIVE_SCHEMA, async (msg) => {
         try {
             if (msg && msg.id) {
-                const item = await schemaRepository.findOne(msg.id);
+                const item = await DatabaseServer.getSchema(msg.id);
                 if (item) {
-                    const schemas = await schemaRepository.find({
+                    const schemas = await DatabaseServer.getSchemas({
                         entity: item.entity
                     });
                     for (const schema of schemas) {
                         schema.active = schema.id.toString() === item.id.toString();
                     }
-                    await schemaRepository.save(schemas);
+                    await DatabaseServer.saveSchemas(schemas);
                 }
             }
             return new MessageResponse(null);
@@ -1055,7 +1048,7 @@ export async function schemaAPI(
             if (!msg || !msg.entity) {
                 return new MessageError('Invalid load schema parameter');
             }
-            const schema = await schemaRepository.findOne({
+            const schema = await DatabaseServer.getSchema({
                 entity: msg.entity,
                 system: true,
                 active: true

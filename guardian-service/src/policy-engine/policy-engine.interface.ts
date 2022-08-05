@@ -1,8 +1,9 @@
 import { PolicyRole } from '@guardian/interfaces';
-import { IAuthUser } from '@guardian/common';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { EventConfig, IPolicyEvent } from './interfaces';
+import { DatabaseServer } from '@database-modules';
+import { IPolicyUser } from './policy-user';
 
 /**
  * Policy roles interface
@@ -131,10 +132,14 @@ export interface IPolicyBlock {
     readonly next: IPolicyBlock;
 
     /**
-     * Set policy id
-     * @param id
+     * Database Server
      */
-    setPolicyId(id: string): void;
+    readonly databaseServer: DatabaseServer;
+
+    /**
+     * Dry-run
+     */
+    readonly dryRun: string;
 
     /**
      * Set policy owner
@@ -144,9 +149,10 @@ export interface IPolicyBlock {
 
     /**
      * Set policy instance
+     * @param policyId
      * @param policy
      */
-    setPolicyInstance(policy: any): void;
+    setPolicyInstance(policyId: string, policy: any): void;
 
     /**
      * Set topic id
@@ -176,7 +182,7 @@ export interface IPolicyBlock {
      * Get data state diff
      * @param user
      */
-    checkDataStateDiffer?: (user: IAuthUser) => boolean
+    checkDataStateDiffer?: (user: IPolicyUser) => boolean
 
     /**
      * Serialize block options
@@ -189,14 +195,26 @@ export interface IPolicyBlock {
      * @param user
      * @param tag
      */
-    updateBlock(state: any, user: IAuthUser, tag?: string): any;
+    updateBlock(state: any, user: IPolicyUser, tag?: string): any;
 
     /**
      * Check permissions
      * @param role
      * @param user
      */
-    hasPermission(role: PolicyRole | null, user: IAuthUser | null): any;
+    hasPermission(role: PolicyRole | null, user: IPolicyUser | null): any;
+
+    /**
+     * Check Permission and Active
+     * @param user
+     */
+    isAvailable(user: IPolicyUser): Promise<boolean>;
+
+    /**
+     * Check Permission and Active
+     * @param user
+     */
+    isAvailableByRole(user: IPolicyUser | null, role: PolicyRole | null): boolean;
 
     /**
      * Register child
@@ -213,20 +231,20 @@ export interface IPolicyBlock {
      * Validate block options
      * @param resultsContainer
      */
-    validate(resultsContainer: PolicyValidationResultsContainer): void;
+    validate(resultsContainer: PolicyValidationResultsContainer): Promise<void>;
 
     /**
      * Is child active
      * @param child
      * @param user
      */
-    isChildActive(child: AnyBlockType, user: IAuthUser): boolean;
+    isChildActive(child: AnyBlockType, user: IPolicyUser): boolean;
 
     /**
      * Is block active
      * @param user
      */
-    isActive(user: IAuthUser): boolean;
+    isActive(user: IPolicyUser): boolean;
 
     /**
      * Write message to log
@@ -252,7 +270,7 @@ export interface IPolicyBlock {
      * @param user
      * @param data
      */
-    triggerEvents(eventType: PolicyOutputEventType, user?: IAuthUser, data?: any): void;
+    triggerEvents(eventType: PolicyOutputEventType, user?: IPolicyUser, data?: any): void;
 
     /**
      * Trigger event
@@ -260,7 +278,7 @@ export interface IPolicyBlock {
      * @param user
      * @param data
      */
-    triggerEvent(event: any, user?: IAuthUser, data?: any): void;
+    triggerEvent(event: any, user?: IPolicyUser, data?: any): void;
 
     /**
      * Save block state
@@ -300,7 +318,7 @@ export interface IPolicyBlock {
      * @param user
      * @param state
      */
-    updateDataState(user: IAuthUser, state: any): boolean;
+    updateDataState(user: IPolicyUser, state: any): boolean;
 }
 
 /**
@@ -318,7 +336,7 @@ export interface IPolicyInterfaceBlock extends IPolicyBlock {
      * @param user
      * @param data
      */
-    setData(user: IAuthUser | null, data: any): Promise<any>;
+    setData(user: IPolicyUser | null, data: any): Promise<any>;
 
     /**
      * Get block data
@@ -326,14 +344,14 @@ export interface IPolicyInterfaceBlock extends IPolicyBlock {
      * @param uuid
      * @param queryParams
      */
-    getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
+    getData(user: IPolicyUser | null, uuid: string, queryParams?: any): Promise<any>;
 
     /**
      * Update data state
      * @param user
      * @param data
      */
-    updateDataState(user: IAuthUser, data: any): boolean;
+    updateDataState(user: IPolicyUser, data: any): boolean;
 }
 
 /**
@@ -346,7 +364,7 @@ export interface IPolicyContainerBlock extends IPolicyBlock {
      * @param uuid
      * @param queryParams
      */
-    getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
+    getData(user: IPolicyUser | null, uuid: string, queryParams?: any): Promise<any>;
 
     /**
      * Change step
@@ -354,7 +372,7 @@ export interface IPolicyContainerBlock extends IPolicyBlock {
      * @param data
      * @param target
      */
-    changeStep(user: IAuthUser, data: any, target: IPolicyBlock): Promise<void>;
+    changeStep(user: IPolicyUser, data: any, target: IPolicyBlock): Promise<void>;
 
     /**
      * Is last block active
@@ -388,7 +406,7 @@ export interface IPolicySourceBlock extends IPolicyBlock {
      * @param uuid
      * @param queryParams
      */
-    getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
+    getData(user: IPolicyUser | null, uuid: string, queryParams?: any): Promise<any>;
 
     /**
      * Get child filter addons
@@ -406,14 +424,14 @@ export interface IPolicySourceBlock extends IPolicyBlock {
      * @param globalFilters
      * @param paginationData
      */
-    getSources(user: IAuthUser, globalFilters: any, paginationData: any): Promise<any[]>;
+    getSources(user: IPolicyUser, globalFilters: any, paginationData: any): Promise<any[]>;
 
     /**
      * Get global sources
      * @param user
      * @param paginationData
      */
-    getGlobalSources(user: IAuthUser, paginationData: any): Promise<any[]>;
+    getGlobalSources(user: IPolicyUser, paginationData: any): Promise<any[]>;
 
     /**
      * Get common addons
@@ -435,7 +453,7 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * @param user
      * @param data
      */
-    setData(user: IAuthUser | null, data: any): Promise<any>;
+    setData(user: IPolicyUser | null, data: any): Promise<any>;
 
     /**
      * Get block data
@@ -443,40 +461,40 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * @param uuid
      * @param queryParams
      */
-    getData(user: IAuthUser | null, uuid: string, queryParams?: any): Promise<any>;
+    getData(user: IPolicyUser | null, uuid: string, queryParams?: any): Promise<any>;
 
     /**
      * Get sources
      * @param user
      * @param globalFilters
      */
-    getSources(user: IAuthUser, globalFilters: any): any;
+    getSources(user: IPolicyUser, globalFilters: any): any;
 
     /**
      * Get from source
      * @param user
      * @param globalFilters
      */
-    getFromSource(user: IAuthUser, globalFilters: any): any;
+    getFromSource(user: IPolicyUser, globalFilters: any): any;
 
     /**
      * Get filters
      * @param user
      */
-    getFilters(user: IAuthUser): { [key: string]: string };
+    getFilters(user: IPolicyUser): { [key: string]: string };
 
     /**
      * Set filters
      * @param filters
      * @param user
      */
-    setFilters(filters: { [key: string]: string }, user: IAuthUser): void
+    setFilters(filters: { [key: string]: string }, user: IPolicyUser): void
 
     /**
      * Get block state
      * @param user
      */
-    getState(user: IAuthUser): any;
+    getState(user: IPolicyUser): any;
 }
 
 /**
@@ -554,20 +572,20 @@ export interface IPolicyRequestBlock extends IPolicyBlock {
      * Get block data
      * @param user
      */
-    getData(user: IAuthUser): Promise<any>;
+    getData(user: IPolicyUser): Promise<any>;
 
     /**
      * Ste block data
      * @param user
      * @param _data
      */
-    setData(user: IAuthUser, _data: any): Promise<any>;
+    setData(user: IPolicyUser, _data: any): Promise<any>;
 
     /**
      * Get sources
      * @param user
      */
-    getSources(user: IAuthUser): Promise<any[]>
+    getSources(user: IPolicyUser): Promise<any[]>
 }
 
 /**

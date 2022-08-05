@@ -1,6 +1,4 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
@@ -8,13 +6,12 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcDocument, MessageServer, VCMessage, MessageAction, VPMessage } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
-import { getMongoRepository } from 'typeorm';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Retirement block
@@ -42,13 +39,6 @@ import { IAuthUser } from '@guardian/common';
 })
 export class RetirementBlock {
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
      * Create wipe VC
      * @param root
      * @param token
@@ -58,7 +48,7 @@ export class RetirementBlock {
      */
     private async createWipeVC(root: any, token: any, data: any, ref: AnyBlockType): Promise<VcDocument> {
         const vcHelper = new VcHelper();
-        const policySchema = await PolicyUtils.getSchema(ref.topicId, SchemaEntity.WIPE_TOKEN);
+        const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.WIPE_TOKEN);
         const amount = data as string;
         const vcSubject = {
             ...SchemaHelper.getContext(policySchema),
@@ -108,31 +98,21 @@ export class RetirementBlock {
         relationships: string[],
         topicId: string,
         root: any,
-        user: IAuthUser,
+        user: IPolicyUser,
         targetAccountId: string
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         const uuid = GenerateUUIDv4();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
-
-        if (Number.isNaN(amount) || !Number.isFinite(amount)) {
-            throw new BlockActionError(`Invalid token value: ${amount}`, ref.blockType, ref.uuid);
-        }
-
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         const wipeVC = await this.createWipeVC(root, token, tokenAmount, ref);
         const vcs = [].concat(documents, wipeVC);
         const vp = await this.createVP(root, uuid, vcs);
 
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
         ref.log(`Topic Id: ${topicId}`);
-        let topic: any;
-        if (topicId) {
-            topic = await PolicyUtils.getTopicById(topicId, ref);
-        } else {
-            topic = await PolicyUtils.getTopic('root', root, user, ref);
-        }
+        const topic = await PolicyUtils.getTopicById(ref, topicId);
         ref.log(`Topic Id: ${topic?.id}`);
 
         const vcMessage = new VCMessage(MessageAction.CreateVC);
@@ -142,8 +122,8 @@ export class RetirementBlock {
             .setTopicObject(topic)
             .sendMessage(vcMessage);
 
-        await PolicyUtils.updateVCRecord(
-            PolicyUtils.createVCRecord(
+        await ref.databaseServer.updateVCRecord(
+            ref.databaseServer.createVCRecord(
                 ref.policyId,
                 ref.tag,
                 DataTypes.RETIREMENT,
@@ -167,7 +147,7 @@ export class RetirementBlock {
             .setTopicObject(topic)
             .sendMessage(vpMessage);
 
-        await PolicyUtils.saveVP({
+        await ref.databaseServer.saveVP({
             hash: vp.toCredentialHash(),
             document: vp.toJsonTree(),
             owner: user.did,
@@ -178,7 +158,7 @@ export class RetirementBlock {
             topicId: vpMessageResult.getTopicId(),
         } as any);
 
-        await PolicyUtils.wipe(token, tokenValue, root, targetAccountId, vpMessageResult.getId());
+        await PolicyUtils.wipe(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());
 
         return vp;
     }
@@ -195,9 +175,7 @@ export class RetirementBlock {
     async runAction(event: IPolicyEvent<any>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        const token = await getMongoRepository(TokenCollection).findOne({
-            tokenId: ref.options.tokenId
-        });
+        const token = await ref.databaseServer.getTokenById(ref.options.tokenI);
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
@@ -207,7 +185,7 @@ export class RetirementBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = await this.users.getUserById(docs[0].owner);
+        const docOwner = await PolicyUtils.getPolicyUser(ref, docs[0].owner);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
@@ -241,10 +219,17 @@ export class RetirementBlock {
         }
         const topicId = topicIds[0];
 
-        const targetAccountId: string = ref.options.accountId ?
-            firstAccounts :
-            docOwner.hederaAccountId;
-        const root = await this.users.getHederaAccount(ref.policyOwner);
+        let targetAccountId: string;
+        if (ref.options.accountId) {
+            targetAccountId = firstAccounts;
+        } else {
+            targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner);
+        }
+        if (!targetAccountId) {
+            throw new BlockActionError('Token recipient not set', ref.blockType, ref.uuid);
+        }
+
+        const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
 
         await this.retirementProcessing(token, vcs, vsMessages, topicId, root, docOwner, targetAccountId);
         ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);
@@ -262,7 +247,7 @@ export class RetirementBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
             } else if (typeof ref.options.tokenId !== 'string') {
                 resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-            } else if (!(await getMongoRepository(TokenCollection).findOne({ tokenId: ref.options.tokenId }))) {
+            } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
                 resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
             }
 
@@ -280,7 +265,7 @@ export class RetirementBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "accountId" does not set');
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

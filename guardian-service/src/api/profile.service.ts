@@ -18,6 +18,7 @@ import {
     MessageAction,
     MessageServer,
     RegistrationMessage,
+    TopicHelper,
     VCMessage
 } from '@hedera-modules';
 import { getMongoRepository } from 'typeorm';
@@ -26,7 +27,6 @@ import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { ApiResponse } from '@api/api-response';
-import { TopicHelper } from '@helpers/topic-helper';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { publishSystemSchema } from './schema.service';
 import { Settings } from '@entity/settings';
@@ -159,6 +159,9 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
             policyId: null,
             policyUUID: null
         });
+        topic = await getMongoRepository(Topic).save(
+            getMongoRepository(Topic).create(topic)
+        );
         await topicHelper.oneWayLink(topic, globalTopic, null);
         newTopic = true;
     }

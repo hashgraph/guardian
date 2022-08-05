@@ -10,7 +10,6 @@ export class MessageTranslationService {
 
     constructor() {
         this.generateRegExpMap();
-        console.log(this);
     }
 
     private generateRegExpMap(): void {

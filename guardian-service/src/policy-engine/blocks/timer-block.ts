@@ -7,6 +7,7 @@ import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { PolicyInputEventType as PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { IPolicyEvent } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Timer block
@@ -168,8 +169,8 @@ export class TimerBlock {
             }
             this.job.start();
         } catch (error) {
-            ref.log(`start scheduler fail ${error.message}`);
-            throw new Error(`start scheduler fail ${error.message}`);
+            ref.log(`start scheduler fail ${PolicyUtils.getErrorMessage(error)}`);
+            throw new Error(`start scheduler fail ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 
@@ -270,7 +271,7 @@ export class TimerBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "period" must be a string');
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

@@ -47,6 +47,14 @@ export class PolicyEngineService {
         return this.http.put<any>(`${this.url}/${policyId}/publish`, { policyVersion });
     }
 
+    public dryRun(policyId: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/dry-run`, null);
+    }
+
+    public draft(policyId: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/draft`, null);
+    }
+    
     public pushPublish(policyId: string, policyVersion: string): Observable<{ taskId: string, expectation: number }> {
         return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/publish`, { policyVersion });
     }
@@ -150,5 +158,34 @@ export class PolicyEngineService {
 
     private getUrl(accessToken: string | null) {
         return `${this.getBaseUrl()}/ws/?token=${accessToken}`;
+    }
+
+
+    public getVirtualUsers(policyId: string): Observable<any[]> {
+        return this.http.get<any>(`${this.url}/${policyId}/dry-run/users`);
+    }
+
+    public createVirtualUser(policyId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/user`, null);
+    }
+
+    public loginVirtualUser(policyId: string, did: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/login`, { did });
+    }
+
+    public restartDryRun(policyId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/dry-run/restart`, null);
+    }
+
+    public loadDocuments(
+        policyId: string,
+        documentType: string,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            return this.http.get<any>(`${this.url}/${policyId}/dry-run/${documentType}?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response' });
+        }
+        return this.http.get<any>(`${this.url}/${policyId}/dry-run/${documentType}`, { observe: 'response' });
     }
 }

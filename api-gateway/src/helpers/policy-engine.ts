@@ -89,6 +89,26 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Dry-run policy
+     * @param model
+     * @param user
+     * @param policyId
+     */
+    public async dryRunPolicy(model: any, user: any, policyId: string) {
+        return await this.request(PolicyEngineEvents.DRY_RUN_POLICIES, { model, user, policyId });
+    }
+
+    /**
+     * Dry-run policy
+     * @param model
+     * @param user
+     * @param policyId
+     */
+    public async draft(model, user, policyId) {
+        return await this.request(PolicyEngineEvents.DRAFT_POLICIES, { model, user, policyId });
+    }
+
+    /**
      * Validate policy
      * @param model
      * @param user
@@ -136,6 +156,17 @@ export class PolicyEngine extends ServiceRequestsBase {
      */
     public async setBlockData(user, policyId, blockId: string, data: any) {
         return await this.request(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data });
+    }
+
+    /**
+     * Set block data
+     * @param user
+     * @param policyId
+     * @param blockId
+     * @param data
+     */
+    public async setBlockDataByTag(user, policyId, tag: string, data: any) {
+        return await this.request(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, { user, tag, policyId, data });
     }
 
     /**
@@ -257,5 +288,62 @@ export class PolicyEngine extends ServiceRequestsBase {
      */
     public async blockAbout() {
         return await this.request(PolicyEngineEvents.BLOCK_ABOUT, null);
+    }
+
+    /**
+     * Get Virtual Users by policy id
+     * @param policyId
+     */
+    public async getVirtualUsers(policyId: string) {
+        return await this.request(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId });
+    }
+
+    /**
+     * Create new Virtual User
+     * @param policyId
+     * @param did
+     */
+    public async createVirtualUser(policyId: string, did: string) {
+        return await this.request(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, did });
+    }
+
+    /**
+     * Select Virtual User
+     * @param policyId
+     * @param did
+     */
+    public async loginVirtualUser(policyId: string, did: string) {
+        return await this.request(PolicyEngineEvents.SET_VIRTUAL_USER, { policyId, did });
+    }
+
+    /**
+     * Restart Dry-run policy
+     * @param model
+     * @param user
+     * @param policyId
+     */
+    public async restartDryRun(model: any, user: any, policyId: string) {
+        return await this.request(PolicyEngineEvents.RESTART_DRY_RUN, { model, user, policyId });
+    }
+
+    /**
+     * Get Virtual Documents
+     * @param policyId
+     * @param type
+     * @param pageIndex
+     * @param pageSize
+     */
+    public async getVirtualDocuments(
+        policyId: string,
+        type: string,
+        pageIndex?: string,
+        pageSize?: string
+    ): Promise<[any[], number]> {
+        return await this.request(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS, {
+            policyId,
+            type,
+            pageIndex,
+            pageSize
+        });
     }
 }

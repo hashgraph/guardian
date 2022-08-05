@@ -1,8 +1,9 @@
 import { Response, Router } from 'express';
-import { UserRole } from '@guardian/interfaces';
+import { PolicyType, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { Users } from '@helpers/users';
 import { AuthenticatedRequest, Logger } from '@guardian/common';
+import { permissionHelper } from '@auth/authorization-helper';
 import { TaskManager } from '@helpers/task-manager';
 
 export const policyAPI = Router();
@@ -34,7 +35,7 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
             });
         } else {
             const filters: any = {
-                status: 'PUBLISH',
+                status: PolicyType.PUBLISH,
             }
             if (user.parent) {
                 filters.owner = user.parent;
@@ -150,6 +151,26 @@ policyAPI.put('/push/:policyId/publish',async (req: AuthenticatedRequest, res: R
     res.status(201).send({ taskId, expectation });
 });
 
+policyAPI.put('/:policyId/dry-run', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.json(await engineService.dryRunPolicy(req.body, req.user, req.params.policyId));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+policyAPI.put('/:policyId/draft', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.json(await engineService.draft(req.body, req.user, req.params.policyId));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
 policyAPI.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
@@ -184,6 +205,16 @@ policyAPI.post('/:policyId/blocks/:uuid', async (req: AuthenticatedRequest, res:
     const engineService = new PolicyEngine();
     try {
         res.send(await engineService.setBlockData(req.user, req.params.policyId, req.params.uuid, req.body));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
+policyAPI.post('/:policyId/tag/:tagName/blocks', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.send(await engineService.setBlockDataByTag(req.user, req.params.policyId, req.params.tagName, req.body));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
@@ -352,5 +383,166 @@ policyAPI.get('/blocks/about', async (req: AuthenticatedRequest, res: Response) 
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
+policyAPI.get('/:policyId/dry-run/users', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+        if (!policy) {
+            res.status(500).json({ code: 500, message: 'Policy does not exist.' });
+            return;
+        }
+        if (policy.owner !== req.user.did) {
+            res.status(500).json({ code: 500, message: 'Invalid owner.' });
+            return;
+        }
+
+        res.send(await engineService.getVirtualUsers(req.params.policyId));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+policyAPI.post('/:policyId/dry-run/user', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+        if (!policy) {
+            res.status(500).json({ code: 500, message: 'Policy does not exist.' });
+            return;
+        }
+        if (policy.owner !== req.user.did) {
+            res.status(500).json({ code: 500, message: 'Invalid owner.' });
+            return;
+        }
+
+        res.send(await engineService.createVirtualUser(req.params.policyId, req.user.did));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+policyAPI.post('/:policyId/dry-run/login', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+        if (!policy) {
+            res.status(500).json({ code: 500, message: 'Policy does not exist.' });
+            return;
+        }
+        if (policy.owner !== req.user.did) {
+            res.status(500).json({ code: 500, message: 'Invalid owner.' });
+            return;
+        }
+
+        res.send(await engineService.loginVirtualUser(req.params.policyId, req.body.did));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+policyAPI.post('/:policyId/dry-run/restart', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+        if (!policy) {
+            res.status(500).json({ code: 500, message: 'Policy does not exist.' });
+            return;
+        }
+        if (policy.owner !== req.user.did) {
+            res.status(500).json({ code: 500, message: 'Invalid owner.' });
+            return;
+        }
+
+        res.json(await engineService.restartDryRun(req.body, req.user, req.params.policyId));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+policyAPI.get('/:policyId/dry-run/transactions', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+        if (!policy) {
+            res.status(500).json({ code: 500, message: 'Policy does not exist.' });
+            return;
+        }
+        if (policy.owner !== req.user.did) {
+            res.status(500).json({ code: 500, message: 'Invalid owner.' });
+            return;
+        }
+
+        let pageIndex: any;
+        let pageSize: any;
+        if (req.query && req.query.pageIndex && req.query.pageSize) {
+            pageIndex = req.query.pageIndex;
+            pageSize = req.query.pageSize;
+        }
+        const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'transactions', pageIndex, pageSize)
+        res.status(200).setHeader('X-Total-Count', count).json(data);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+policyAPI.get('/:policyId/dry-run/artifacts', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+        if (!policy) {
+            res.status(500).json({ code: 500, message: 'Policy does not exist.' });
+            return;
+        }
+        if (policy.owner !== req.user.did) {
+            res.status(500).json({ code: 500, message: 'Invalid owner.' });
+            return;
+        }
+
+        let pageIndex: any;
+        let pageSize: any;
+        if (req.query && req.query.pageIndex && req.query.pageSize) {
+            pageIndex = req.query.pageIndex;
+            pageSize = req.query.pageSize;
+        }
+        const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'artifacts', pageIndex, pageSize);
+        res.status(200).setHeader('X-Total-Count', count).json(data);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+policyAPI.get('/:policyId/dry-run/ipfs', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        const policy = await engineService.getPolicy({ filters: req.params.policyId }) as any;
+        if (!policy) {
+            res.status(500).json({ code: 500, message: 'Policy does not exist.' });
+            return;
+        }
+        if (policy.owner !== req.user.did) {
+            res.status(500).json({ code: 500, message: 'Invalid owner.' });
+            return;
+        }
+
+        let pageIndex: any;
+        let pageSize: any;
+        if (req.query && req.query.pageIndex && req.query.pageSize) {
+            pageIndex = req.query.pageIndex;
+            pageSize = req.query.pageSize;
+        }
+        const [data, count] = await engineService.getVirtualDocuments(req.params.policyId, 'ipfs', pageIndex, pageSize)
+        res.status(200).setHeader('X-Total-Count', count).json(data);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
     }
 });

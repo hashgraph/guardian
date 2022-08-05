@@ -23,6 +23,7 @@ export class SchemaDialog {
     policies: any[];
     system: boolean = false;
     valid: boolean = true;
+    extended: boolean = false;
 
     constructor(
         public dialogRef: MatDialogRef<SchemaDialog>,

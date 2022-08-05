@@ -72,7 +72,7 @@
 }
 
 .schema-form {
-    max-height: 50vh;
+    max-height: calc(100vh - 580px);
     overflow: auto;
     margin-bottom: 24px;
     padding: 40px 40px 0px 40px;

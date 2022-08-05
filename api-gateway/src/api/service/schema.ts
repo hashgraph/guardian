@@ -63,6 +63,7 @@ export async function createSchema(newSchema: ISchema, owner: string, topicId?: 
         newSchema.topicId = topicId;
     }
 
+    SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
     const schemas = (await guardians.createSchema(newSchema));
     SchemaHelper.updatePermission(schemas, owner);
@@ -99,6 +100,7 @@ export async function createSchemaAsync(newSchema: ISchema, owner: string, topic
 
     newSchema.topicId = topicId;
 
+    SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
     await guardians.createSchemaAsync(newSchema, taskId);
 }
@@ -118,6 +120,8 @@ export async function updateSchema(newSchema: ISchema, owner: string): Promise<I
     if (schema.creator !== owner) {
         throw new Error('Invalid creator.');
     }
+
+    SchemaHelper.checkSchemaKey(newSchema);
     SchemaHelper.updateOwner(newSchema, owner);
     const schemas = (await guardians.updateSchema(newSchema));
     SchemaHelper.updatePermission(schemas, owner);

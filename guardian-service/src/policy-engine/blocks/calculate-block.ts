@@ -7,11 +7,7 @@ import { BlockActionError } from '@policy-engine/errors';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
-import { getMongoRepository } from 'typeorm';
-import { Schema as SchemaCollection } from '@entity/schema';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -40,13 +36,6 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
     }
 })
 export class CalculateContainerBlock {
-    /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
     /**
      * Calculate data
      * @param documents
@@ -128,10 +117,7 @@ export class CalculateContainerBlock {
         const newJson = await this.calculate(json, ref);
 
         // <-- new vc
-        const outputSchema = await getMongoRepository(SchemaCollection).findOne({
-            iri: ref.options.outputSchema,
-            topicId: ref.topicId
-        });
+        const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
             ...newJson
@@ -142,10 +128,10 @@ export class CalculateContainerBlock {
             vcSubject.ref = vcReference;
         }
 
-        const root = await this.users.getHederaAccount(ref.policyOwner);
+        const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
         const VCHelper = new VcHelper();
-        const newVC = await VCHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
-        const item = PolicyUtils.createVCRecord(
+        const newVC = await VCHelper.createVC(ref.policyOwner, root.hederaAccountKey, vcSubject);
+        const item = ref.databaseServer.createVCRecord(
             ref.policyId,
             ref.tag,
             null,
@@ -211,10 +197,7 @@ export class CalculateContainerBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "inputSchema" must be a string');
                 return;
             }
-            const inputSchema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.inputSchema,
-                topicId: ref.topicId
-            });
+            const inputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.inputSchema, ref.topicId);
             if (!inputSchema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.inputSchema}" does not exist`);
                 return;
@@ -229,10 +212,7 @@ export class CalculateContainerBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "outputSchema" must be a string');
                 return;
             }
-            const outputSchema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.outputSchema,
-                topicId: ref.topicId
-            })
+            const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
             if (!outputSchema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.outputSchema}" does not exist`);
                 return;
@@ -272,7 +252,7 @@ export class CalculateContainerBlock {
                 }
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

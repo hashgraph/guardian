@@ -6,11 +6,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { Schema as SchemaCollection } from '@entity/schema';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { getMongoRepository } from 'typeorm';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 
 /**
  * Document Validator
@@ -53,7 +49,7 @@ export class DocumentValidatorBlock {
 
         if (ref.options.documentType === 'related-vc-document') {
             if (documentRef) {
-                document = await getMongoRepository(VcDocumentCollection).findOne({
+                document = await ref.databaseServer.getVcDocument({
                     where: {
                         'policyId': { $eq: ref.policyId },
                         'document.credentialSubject.id': { $eq: documentRef }
@@ -66,7 +62,7 @@ export class DocumentValidatorBlock {
 
         if (ref.options.documentType === 'related-vp-document') {
             if (documentRef) {
-                document = await getMongoRepository(VpDocumentCollection).findOne({
+                document = await ref.databaseServer.getVpDocument({
                     where: {
                         'policyId': ref.policyId,
                         'document.verifiableCredential.credentialSubject.id': { $eq: documentRef }
@@ -114,10 +110,7 @@ export class DocumentValidatorBlock {
         }
 
         if (ref.options.schema) {
-            const schema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.schema,
-                topicId: ref.topicId
-            });
+            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
             if (!PolicyUtils.checkDocumentSchema(document, schema)) {
                 return false;
             }
@@ -178,10 +171,7 @@ export class DocumentValidatorBlock {
                     resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                     return;
                 }
-                const schema = await getMongoRepository(SchemaCollection).findOne({
-                    iri: ref.options.schema,
-                    topicId: ref.topicId
-                });
+                const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
                 if (!schema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                     return;
@@ -192,7 +182,7 @@ export class DocumentValidatorBlock {
                 resultsContainer.addBlockError(ref.uuid, `conditions option must be an array`);
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

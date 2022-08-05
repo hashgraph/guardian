@@ -1,7 +1,7 @@
 import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces';
 import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Source addon
@@ -24,7 +24,7 @@ export function SourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param globalFilters
              */
-            public getFromSource(user: IAuthUser, globalFilters: any): any[] {
+            public getFromSource(user: IPolicyUser, globalFilters: any): any[] {
                 if (typeof super.getFromSource === 'function') {
                     return super.getFromSource(user, globalFilters);
                 }

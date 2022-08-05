@@ -25,6 +25,7 @@ import { MessageBrokerChannel, ApplicationState, Logger, ExternalEventChannel } 
 import { ApplicationStates } from '@guardian/interfaces';
 import { Environment, HederaSDKHelper, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
+import { DatabaseMigrations, DatabaseServer } from '@database-modules';
 import { ipfsAPI } from '@api/ipfs.service';
 
 Promise.all([
@@ -51,6 +52,9 @@ Promise.all([
     new Logger().setChannel(channel);
     const state = new ApplicationState('GUARDIAN_SERVICE');
     state.setChannel(channel);
+
+    //
+    await DatabaseMigrations.runMigrations();
 
     // Check configuration
     if (!process.env.OPERATOR_ID || process.env.OPERATOR_ID.length < 5) {
@@ -113,13 +117,19 @@ Promise.all([
             log.info(name, attributes, 4);
         }
     });
+    TransactionLogger.setVirtualFileFunction(async (date: string, id: string, file: ArrayBuffer, url:any) => {
+        await DatabaseServer.setVirtualFile(id, file, url);
+    });
+
+    TransactionLogger.setVirtualTransactionFunction(async (date: string, id: string, type: string, operatorId?: string) => {
+        await DatabaseServer.setVirtualTransaction(id, type, operatorId);
+    });
+
     HederaSDKHelper.setTransactionResponseCallback(updateUserBalance(channel));
 
     if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
         const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);
         const topicId = await client.newTopic(process.env.OPERATOR_KEY);
-
-        console.log(topicId);
         process.env.INITIALIZATION_TOPIC_ID = topicId;
     }
 
@@ -146,7 +156,7 @@ Promise.all([
     state.updateState(ApplicationStates.INITIALIZING);
 
     await configAPI(channel, settingsRepository, topicRepository);
-    await schemaAPI(channel, apiGatewayChannel, schemaRepository);
+    await schemaAPI(channel, apiGatewayChannel);
     await tokenAPI(channel, apiGatewayChannel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
     await profileAPI(channel, apiGatewayChannel);

@@ -11,14 +11,13 @@ import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
 import { SchemaEntity, TopicType, GenerateUUIDv4 } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
-import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage } from '@hedera-modules';
+import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage, TopicHelper } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 import { importSchemaByFiles, publishSystemSchema } from '@api/schema.service';
-import { TopicHelper } from '@helpers/topic-helper';
 import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
-import { PolicyUtils } from './utils';
 import { INotifier } from '@helpers/notifier';
+import { DatabaseServer } from '@database-modules';
 
 /**
  * Policy import export helper
@@ -41,7 +40,6 @@ export class PolicyImportExportHelper {
 
         delete policyObject.id;
         delete policyObject.messageId;
-        delete policyObject.registeredUsers;
         delete policyObject.status;
         delete policyObject.topicId;
 
@@ -112,18 +110,18 @@ export class PolicyImportExportHelper {
      * @returns Array of schemas
      */
     static async getSystemSchemas(): Promise<Schema[]> {
-         const schemas = await Promise.all([
-            PolicyUtils.getSystemSchema(SchemaEntity.POLICY),
-            PolicyUtils.getSystemSchema(SchemaEntity.MINT_TOKEN),
-            PolicyUtils.getSystemSchema(SchemaEntity.MINT_NFTOKEN),
-            PolicyUtils.getSystemSchema(SchemaEntity.WIPE_TOKEN)
+        const schemas = await Promise.all([
+            DatabaseServer.getSystemSchema(SchemaEntity.POLICY),
+            DatabaseServer.getSystemSchema(SchemaEntity.MINT_TOKEN),
+            DatabaseServer.getSystemSchema(SchemaEntity.MINT_NFTOKEN),
+            DatabaseServer.getSystemSchema(SchemaEntity.WIPE_TOKEN)
         ]);
 
-         for (const schema of schemas) {
-             if (!schema) {
-                 throw new Error('One of system schemas is not exist');
-             }
-         }
+        for (const schema of schemas) {
+            if (!schema) {
+                throw new Error('One of system schemas is not exist');
+            }
+        }
 
         return schemas;
     }
@@ -142,12 +140,12 @@ export class PolicyImportExportHelper {
         delete policy.messageId;
         delete policy.version;
         delete policy.previousVersion;
-        delete policy.registeredUsers;
         policy.policyTag = 'Tag_' + Date.now();
         policy.uuid = GenerateUUIDv4();
         policy.creator = policyOwner;
         policy.owner = policyOwner;
         policy.status = 'DRAFT';
+        policy.instanceTopicId = null;
 
         const users = new Users();
         notifier.start('Resolve Hedera account');
@@ -155,9 +153,12 @@ export class PolicyImportExportHelper {
         notifier.completedAndStart('Resolve topic');
         const parent = await getMongoRepository(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
-        const topicRow = versionOfTopicId
-            ? await getMongoRepository(Topic).findOne({ topicId: versionOfTopicId })
-            : await topicHelper.create({
+
+        let topicRow: Topic;
+        if (versionOfTopicId) {
+            topicRow = await getMongoRepository(Topic).findOne({ topicId: versionOfTopicId })
+        } else {
+            topicRow = await topicHelper.create({
                 type: TopicType.PolicyTopic,
                 name: policy.name || TopicType.PolicyTopic,
                 description: policy.topicDescription || TopicType.PolicyTopic,
@@ -165,6 +166,11 @@ export class PolicyImportExportHelper {
                 policyId: null,
                 policyUUID: null
             });
+            topicRow = await getMongoRepository(Topic).save(
+                getMongoRepository(Topic).create(topicRow)
+            );
+        }
+
         notifier.completed();
         policy.topicId = topicRow.topicId;
         notifier.start('Publish Policy in Hedera');

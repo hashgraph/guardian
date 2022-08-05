@@ -44,8 +44,52 @@ export class MessageServer {
      */
     private static lang: string;
 
-    constructor(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
-        this.client = new HederaSDKHelper(operatorId, operatorKey);
+    /**
+     * Dry-run
+     * @private
+     */
+    private readonly dryRun: string = null;
+
+    constructor(
+        operatorId: string | AccountId | null,
+        operatorKey: string | PrivateKey | null,
+        dryRun: string = null
+    ) {
+        this.dryRun = dryRun || null;
+        this.client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
+    }
+
+    /**
+     * Save File
+     * @param file
+     * @virtual
+     * @private
+     */
+    private async addFile(file: ArrayBuffer) {
+        if (this.dryRun) {
+            const id = GenerateUUIDv4();
+            const result = {
+                cid: id,
+                url: id
+            }
+            await TransactionLogger.virtualFileLog(this.dryRun, file, result);
+            return result
+        }
+        return IPFS.addFileAsync(file);
+    }
+
+    /**
+     * Get File
+     * @param cid
+     * @param responseType
+     * @virtual
+     * @private
+     */
+    private async getFile(cid: string, responseType: 'json' | 'raw' | 'str') {
+        if (this.dryRun) {
+            throw new Error('Unable to get virtual file');
+        }
+        return IPFS.getFileAsync(cid, responseType);
     }
 
     /**
@@ -125,11 +169,10 @@ export class MessageServer {
         const buffers = await message.toDocuments();
 
         const promises = buffers.map(buffer => {
-            return IPFS.addFileAsync(buffer);
+            return this.addFile(buffer);
         });
         const urls = await Promise.all(promises);
         await this.messageEndLog(time, 'IPFS');
-
         message.setUrls(urls);
         return message;
     }
@@ -142,7 +185,7 @@ export class MessageServer {
     private async loadIPFS<T extends Message>(message: T): Promise<T> {
         const urls = message.getUrls();
         const promises = urls.map(url => {
-            return IPFS.getFileAsync(url.cid, message.responseType);
+            return this.getFile(url.cid, message.responseType);
         });
         const documents = await Promise.all(promises);
         message = message.loadDocuments(documents) as T;
