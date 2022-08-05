@@ -267,7 +267,7 @@ To setup Local Node instance, please check the link : [https://github.com/hashgr
 
 ### Launching the Guardian
 
-Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialise Standard Registry by completing the Setup.
+Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialize Standard Registry by completing the Setup.
 
 ![](<../../.gitbook/assets/image (14) (1).png>)
 
@@ -292,7 +292,7 @@ The Format of the Standard Registry Hello World Message is as follows:
 }
 ```
 
-Where the list of `attributes` is extendable, and all attributes in it are **optional**.&#x20;
+Where the list of `attributes` is extendable, and all attributes in it are **optional**.
 
 #### Standard Registry Message Parameters
 
@@ -309,7 +309,7 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | law       | Country Law                        | USA                                                            |
 | tags      | Policy Tags                        | Verra, iREC                                                    |
 
-### .env Parameters&#x20;
+### .env Parameters
 
 | Parameter                              | Purpose                                                                            | Example                                                                                          |
 | -------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
@@ -322,8 +322,8 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                                                                                              |
 | OPERATOR\_ID                           | The ID of the operation                                                            | 0.0.29676495                                                                                     |
 | OPERATOR\_KEY                          | Private key of the operator                                                        | 302e020100300506032b657004220420dcb89b3fcb576879ee2df40ecd0404244c74d0e75fbad5d8f327805361c2c92e |
-| LOCANNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                                                                                          |
-| LOCANNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                                                                                       |
+| LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                                                                                          |
+| LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                                                                                       |
 | HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet                                                                      |
 | INITIALIZATION\__TOPIC\_ID_            | The ID of the initialisation topic.                                                | 0.0.46022543                                                                                     |
 | MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                                                                                            |

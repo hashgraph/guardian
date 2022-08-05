@@ -3,6 +3,7 @@ import { UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { Users } from '@helpers/users';
 import { AuthenticatedRequest, Logger } from '@guardian/common';
+import { TaskManager } from '@helpers/task-manager';
 
 export const policyAPI = Router();
 
@@ -64,6 +65,24 @@ policyAPI.post('/', async (req: AuthenticatedRequest, res: Response) => {
     }
 });
 
+policyAPI.post('/push', async (req: AuthenticatedRequest, res: Response) => {
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Create policy');
+
+    const model = req.body;
+    const user = req.user;
+    setImmediate(async () => {
+        const engineService = new PolicyEngine();
+        try {
+            await engineService.createPolicyAsync(model, user, taskId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: 500, message: error.message });
+        }
+    });
+    res.status(201).send({ taskId, expectation });
+});
+
 policyAPI.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
     const users = new Users();
     const engineService = new PolicyEngine();
@@ -109,6 +128,26 @@ policyAPI.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Respo
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: error.message || error });
     }
+});
+
+policyAPI.put('/push/:policyId/publish',async (req: AuthenticatedRequest, res: Response) => {
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Publish policy');
+
+    const model = req.body;
+    const user = req.user;
+    const policyId = req.params.policyId;
+    setImmediate(async () => {
+        const engineService = new PolicyEngine();
+        try {
+            await engineService.publishPolicyAsync(model, user, policyId, taskId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: 500, message: error.message || error });
+        }
+    });
+
+    res.status(201).send({ taskId, expectation });
 });
 
 policyAPI.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
@@ -161,6 +200,16 @@ policyAPI.get('/:policyId/tag/:tagName', async (req: AuthenticatedRequest, res: 
     }
 });
 
+policyAPI.get('/:policyId/tag/:tagName/blocks', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.send(await engineService.getBlockDataByTag(req.user, req.params.policyId, req.params.tagName));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
 policyAPI.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
@@ -207,6 +256,25 @@ policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Respons
     }
 });
 
+policyAPI.post('/push/import/message', async (req: AuthenticatedRequest, res: Response) => {
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Import policy message');
+
+    const user = req.user;
+    const messageId = req.body.messageId;
+    const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
+    setImmediate(async () => {
+        try {
+            const engineService = new PolicyEngine();
+            await engineService.importMessageAsync(user, messageId, versionOfTopicId, taskId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
+        }
+    });
+    res.status(201).send({ taskId, expectation });
+});
+
 policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
@@ -219,6 +287,25 @@ policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) 
     }
 });
 
+policyAPI.post('/push/import/file', async (req: AuthenticatedRequest, res: Response) => {
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Import policy file');
+
+    const user = req.user;
+    const zip = req.body;
+    const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
+    setImmediate(async () => {
+        try {
+            const engineService = new PolicyEngine();
+            await engineService.importFileAsync(user, zip, versionOfTopicId, taskId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
+        }
+    });
+    res.status(201).send({ taskId, expectation });
+});
+
 policyAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
@@ -227,6 +314,25 @@ policyAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res:
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
+});
+
+policyAPI.post('/push/import/message/preview', async (req: AuthenticatedRequest, res: Response) => {
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Preview policy message');
+
+    const user = req.user;
+    const messageId = req.body.messageId;
+    setImmediate(async () => {
+        try {
+            const engineService = new PolicyEngine();
+            await engineService.importMessagePreviewAsync(user, messageId, taskId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
+        }
+    });
+
+    res.status(201).send({ taskId, expectation });
 });
 
 policyAPI.post('/import/file/preview', async (req: AuthenticatedRequest, res: Response) => {

@@ -39,6 +39,26 @@ import { Topic } from '@entity/topic';
 import { TopicHelper } from '@helpers/topic-helper';
 import { PolicyConverterUtils } from './policy-converter-utils';
 import { PolicyUtils } from './helpers/utils';
+import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
+import { ISerializedErrors } from './policy-validation-results-container';
+
+/**
+ * Result of publishing
+ */
+interface IPublishResult {
+    /**
+     * Policy Id
+     */
+    policyId: string;
+    /**
+     * Is policy valid
+     */
+    isValid: boolean;
+    /**
+     * Errors of validation
+     */
+    errors: ISerializedErrors;
+}
 
 /**
  * Policy engine service
@@ -62,8 +82,14 @@ export class PolicyEngineService {
      */
     private readonly policyGenerator: BlockTreeGenerator;
 
-    constructor(channel: MessageBrokerChannel) {
+    /**
+     * API-gateway message broker service
+     */
+    private readonly apiGatewayChannel: MessageBrokerChannel;
+
+    constructor(channel: MessageBrokerChannel, apiGatewayChannel: MessageBrokerChannel) {
         this.channel = channel;
+        this.apiGatewayChannel = apiGatewayChannel;
         this.policyGenerator = new BlockTreeGenerator();
 
         PolicyComponentsUtils.BlockUpdateFn = async (...args: any[]) => {
@@ -160,9 +186,10 @@ export class PolicyEngineService {
      * @param owner
      * @private
      */
-    private async createPolicy(data: Policy, owner: string): Promise<Policy> {
+    private async createPolicy(data: Policy, owner: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
         logger.info('Create Policy', ['GUARDIAN_SERVICE']);
+        notifier.start('Save in DB');
         const model = getMongoRepository(Policy).create(data as DeepPartial<Policy>);
         if (!model.config) {
             model.config = {
@@ -195,8 +222,11 @@ export class PolicyEngineService {
         }
 
         let newTopic: Topic;
+        notifier.completedAndStart('Resolve Hedera account');
         const root = await this.users.getHederaAccount(owner);
+        notifier.completed();
         if (!model.topicId) {
+            notifier.start('Create topic');
             logger.info('Create Policy: Create New Topic', ['GUARDIAN_SERVICE']);
             const parent = await getMongoRepository(Topic).findOne({ owner, type: TopicType.UserTopic });
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
@@ -211,6 +241,7 @@ export class PolicyEngineService {
             });
             model.topicId = topic.topicId;
 
+            notifier.completedAndStart('Create policy in Hedera');
             const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
             const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
             message.setDocument(model);
@@ -218,10 +249,14 @@ export class PolicyEngineService {
                 .setTopicObject(parent)
                 .sendMessage(message);
 
+            notifier.completedAndStart('Link topic and policy');
             await topicHelper.twoWayLink(topic, parent, messageStatus.getId());
 
+            notifier.completedAndStart('Publish schemas');
             const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
 
+            notifier.info(`Found ${systemSchemas.length} schemas`);
+            let num: number = 0;
             for (const schema of systemSchemas) {
                 logger.info('Create Policy: Publish System Schema', ['GUARDIAN_SERVICE']);
                 messageServer.setTopicObject(topic);
@@ -230,11 +265,16 @@ export class PolicyEngineService {
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
                 const newItem = getMongoRepository(SchemaCollection).create(item);
                 await getMongoRepository(SchemaCollection).save(newItem);
+                const name = newItem.name;
+                num++;
+                notifier.info(`Schema ${num} (${name || '-'}) published`);
             }
 
             newTopic = topic;
+            notifier.completed();
         }
 
+        notifier.start('Saving in DB');
         model.codeVersion = PolicyConverterUtils.VERSION;
         const policy = await getMongoRepository(Policy).save(model);
 
@@ -244,6 +284,7 @@ export class PolicyEngineService {
             await getMongoRepository(Topic).update(newTopic.id, newTopic);
         }
 
+        notifier.completed();
         return policy;
     }
 
@@ -272,16 +313,28 @@ export class PolicyEngineService {
      * @param owner
      * @private
      */
-    private async publishSchemas(model: Policy, owner: string): Promise<Policy> {
+    private async publishSchemas(model: Policy, owner: string, notifier: INotifier): Promise<Policy> {
         const schemas = await getMongoRepository(SchemaCollection).find({ topicId: model.topicId });
+        notifier.info(`Found ${schemas.length} schemas`);
         const schemaIRIs = schemas.map(s => s.iri);
+        let num: number = 0;
+        let skipped: number = 0;
         for (const schemaIRI of schemaIRIs) {
             const schema = await incrementSchemaVersion(schemaIRI, owner);
             if (schema.status === SchemaStatus.PUBLISHED) {
+                skipped++;
                 continue;
             }
-            const newSchema = await findAndPublishSchema(schema.id, schema.version, owner);
+            const newSchema = await findAndPublishSchema(schema.id, schema.version, owner, emptyNotifier());
             replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
+
+            const name = newSchema.name;
+            num++;
+            notifier.info(`Schema ${num} (${name || '-'}) published`);
+        }
+
+        if (skipped) {
+            notifier.info(`Skip published ${skipped}`);
         }
         return model;
     }
@@ -293,23 +346,27 @@ export class PolicyEngineService {
      * @param version
      * @private
      */
-    private async publishPolicy(model: Policy, owner: string, version: string): Promise<Policy> {
+    private async publishPolicy(model: Policy, owner: string, version: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
         logger.info('Publish Policy', ['GUARDIAN_SERVICE']);
-
+        notifier.start('Resolve Hedera account');
         const root = await this.users.getHederaAccount(owner);
+        notifier.completedAndStart('Find topic');
         const topic = await getMongoRepository(Topic).findOne({ topicId: model.topicId });
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
             .setTopicObject(topic);
 
-        model = await this.publishSchemas(model, owner);
+        notifier.completedAndStart('Publish schemas');
+        model = await this.publishSchemas(model, owner, notifier);
         model.status = 'PUBLISH';
         model.version = version;
 
+        notifier.completedAndStart('Generate file');
         this.policyGenerator.regenerateIds(model.config);
         const zip = await PolicyImportExportHelper.generateZipFile(model);
         const buffer = await zip.generateAsync({ type: 'arraybuffer' });
 
+        notifier.completedAndStart('Create topic');
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         const rootTopic = await topicHelper.create({
             type: TopicType.InstancePolicyTopic,
@@ -320,14 +377,17 @@ export class PolicyEngineService {
             policyUUID: model.uuid
         });
 
+        notifier.completedAndStart('Publish policy');
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
-        const result = await messageServer.sendMessage(message);
+        const result = await messageServer
+            .sendMessage(message);
         model.messageId = result.getId();
         model.instanceTopicId = rootTopic.topicId;
-
+        notifier.completedAndStart('Link topic and policy');
         await topicHelper.twoWayLink(rootTopic, topic, result.getId());
 
+        notifier.completedAndStart('Update policy schema');
         const messageId = result.getId();
         const url = result.getUrl();
 
@@ -352,6 +412,7 @@ export class PolicyEngineService {
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
 
+        notifier.completedAndStart('Create VC');
         const vc = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
         const doc = getMongoRepository(VcDocumentCollection).create({
             hash: vc.toCredentialHash(),
@@ -363,8 +424,142 @@ export class PolicyEngineService {
         await getMongoRepository(VcDocumentCollection).save(doc);
 
         logger.info('Published Policy', ['GUARDIAN_SERVICE']);
+        notifier.completedAndStart('Saving in DB');
+        const retVal = await getMongoRepository(Policy).save(model);
+        notifier.completed();
+        return retVal
+    }
 
-        return await getMongoRepository(Policy).save(model);
+    /**
+     * Validate and publish policy
+     * @param model
+     * @param policyId
+     * @param userFull
+     * @param notifier
+     */
+    private async validateAndPublishPolicy(model: any, policyId: any, userFull: IAuthUser, notifier: INotifier): Promise<IPublishResult> {
+        const version = model.policyVersion;
+        const owner = userFull.did;
+
+        notifier.start('Find and validate policy');
+        const policy = await getMongoRepository(Policy).findOne(policyId);
+        if (!policy) {
+            throw new Error('Unknown policy');
+        }
+        if (!policy.config) {
+            throw new Error('The policy is empty');
+        }
+        if (!ModelHelper.checkVersionFormat(version)) {
+            throw new Error('Invalid version format');
+        }
+        if (ModelHelper.versionCompare(version, policy.previousVersion) <= 0) {
+            throw new Error('Version must be greater than ' + policy.previousVersion);
+        }
+        const countModels = await getMongoRepository(Policy).count({
+            version,
+            uuid: policy.uuid
+        });
+        if (countModels > 0) {
+            throw new Error('Policy with current version already was published');
+        }
+
+        const errors = await this.policyGenerator.validate(policyId);
+        const isValid = !errors.blocks.some(block => !block.isValid);
+        notifier.completed();
+        if (isValid) {
+            const newPolicy = await this.publishPolicy(policy, owner, version, notifier);
+            await this.policyGenerator.generate(newPolicy.id.toString());
+            return {
+                policyId: newPolicy.id,
+                isValid,
+                errors
+            };
+        } else {
+            return {
+                policyId: policy.id,
+                isValid,
+                errors
+            };
+        }
+    }
+
+    /**
+     * Prepare policy for preview by message
+     * @param messageId
+     * @param user
+     * @param notifier
+     */
+    private async preparePolicyPreviewMessage(messageId, user, notifier: INotifier): Promise<any> {
+        notifier.start('Resolve Hedera account');
+        const userFull = await this.users.getUser(user.username);
+        if (!messageId) {
+            throw new Error('Policy ID in body is empty');
+        }
+
+        new Logger().info(`Import policy by message`, ['GUARDIAN_SERVICE']);
+
+        const root = await this.users.getHederaAccount(userFull.did);
+
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        const message = await messageServer.getMessage<PolicyMessage>(messageId);
+        if (message.type !== MessageType.InstancePolicy) {
+            throw new Error('Invalid Message Type');
+        }
+
+        if (!message.document) {
+            throw new Error('file in body is empty');
+        }
+
+        notifier.completedAndStart('Load policy files');
+        const newVersions: any = [];
+        if (message.version) {
+            const anotherVersions = await messageServer.getMessages<PolicyMessage>(
+                message.getTopicId(), MessageType.InstancePolicy, MessageAction.PublishPolicy
+            );
+            for (const element of anotherVersions) {
+                if (element.version && ModelHelper.versionCompare(element.version, message.version) === 1) {
+                    newVersions.push({
+                        messageId: element.getId(),
+                        version: element.version
+                    });
+                }
+            };
+        }
+
+        notifier.completedAndStart('Parse policy files');
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
+        if (newVersions.length !== 0) {
+            policyToImport.newVersions = newVersions.reverse();
+        }
+
+        notifier.completed();
+        return policyToImport;
+    }
+
+    /**
+     * Import policy by message
+     * @param messageId
+     * @param userFull
+     * @param hederaAccount
+     * @param versionOfTopicId
+     * @param notifier
+     */
+    private async importPolicyMessage(messageId, userFull: IAuthUser, hederaAccount, versionOfTopicId: string, notifier: INotifier): Promise<Policy> {
+        notifier.start('Load from IPFS');
+        const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey);
+        const message = await messageServer.getMessage<PolicyMessage>(messageId);
+        if (message.type !== MessageType.InstancePolicy) {
+            throw new Error('Invalid Message Type');
+        }
+        if (!message.document) {
+            throw new Error('File in body is empty');
+        }
+
+        notifier.completedAndStart('File parsing');
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
+        notifier.completed();
+        const policy = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId, notifier);
+        return policy;
     }
 
     /**
@@ -420,7 +615,7 @@ export class PolicyEngineService {
             try {
                 const user = msg.user;
                 const userFull = await this.users.getUser(user.username);
-                await this.createPolicy(msg.model, userFull.did);
+                await this.createPolicy(msg.model, userFull.did, emptyNotifier());
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 policies.forEach(p => {
                     delete p.registeredUsers;
@@ -429,6 +624,21 @@ export class PolicyEngineService {
             } catch (error) {
                 return new MessageError(error);
             }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.CREATE_POLICIES_ASYNC, async (msg) => {
+            const { model, user, taskId } = msg;
+            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+            setImmediate(async () => {
+                try {
+                    const userFull = await this.users.getUser(user.username);
+                    const policy = await this.createPolicy(model, userFull.did, notifier);
+                    notifier.result(policy.id);
+                } catch (error) {
+                    notifier.error(error);
+                }
+            });
+            return new MessageResponse({ taskId });
         });
 
         this.channel.response<any, any>(PolicyEngineEvents.SAVE_POLICIES, async (msg) => {
@@ -448,41 +658,12 @@ export class PolicyEngineService {
                     throw new Error('Policy version in body is empty');
                 }
 
-                const policyId = msg.policyId;
-                const version = msg.model.policyVersion;
-                const user = msg.user;
+                const { model, policyId, user } = msg;
                 const userFull = await this.users.getUser(user.username);
+
+                const result = await this.validateAndPublishPolicy(model, policyId, userFull, emptyNotifier());
+
                 const owner = userFull.did;
-
-                const model = await getMongoRepository(Policy).findOne(policyId);
-                if (!model) {
-                    throw new Error('Unknown policy');
-                }
-                if (!model.config) {
-                    throw new Error('The policy is empty');
-                }
-                if (!ModelHelper.checkVersionFormat(version)) {
-                    throw new Error('Invalid version format');
-                }
-                if (ModelHelper.versionCompare(version, model.previousVersion) <= 0) {
-                    throw new Error('Version must be greater than ' + model.previousVersion);
-                }
-                const countModels = await getMongoRepository(Policy).count({
-                    version,
-                    uuid: model.uuid
-                });
-                if (countModels > 0) {
-                    throw new Error('Policy with current version already was published');
-                }
-
-                const errors = await this.policyGenerator.validate(policyId);
-                const isValid = !errors.blocks.some(block => !block.isValid);
-
-                if (isValid) {
-                    const newPolicy = await this.publishPolicy(model, owner, version);
-                    await this.policyGenerator.generate(newPolicy.id.toString());
-                }
-
                 const policies = (await getMongoRepository(Policy).find({ owner })).map(item => {
                     delete item.registeredUsers;
                     return item;
@@ -490,13 +671,37 @@ export class PolicyEngineService {
 
                 return new MessageResponse({
                     policies,
-                    isValid,
-                    errors
+                    isValid: result.isValid,
+                    errors: result.errors,
                 });
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, async (msg) => {
+            const { model, policyId, user, taskId } = msg;
+            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+
+            setImmediate(async () => {
+                try {
+                    if (!model || !model.policyVersion) {
+                        throw new Error('Policy version in body is empty');
+                    }
+
+                    notifier.start('Resolve Hedera account');
+                    const userFull = await this.users.getUser(user.username);
+                    notifier.completed();
+                    const result = await this.validateAndPublishPolicy(model, policyId, userFull, notifier);
+                    notifier.result(result);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    notifier.error(error);
+                }
+            });
+
+            return new MessageResponse({ taskId });
         });
 
         this.channel.response<any, any>(PolicyEngineEvents.VALIDATE_POLICIES, async (msg) => {
@@ -571,10 +776,30 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.BLOCK_BY_TAG, async (msg) => {
             try {
                 const { tag, policyId } = msg;
-                const block = PolicyComponentsUtils.GetBlockByTag(policyId, tag);
+                const block = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(policyId, tag);
                 return new MessageResponse({ id: block.uuid });
             } catch (error) {
                 return new MessageError('The policy does not exist, or is not published, or tag was not registered in policy', 404);
+            }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, async (msg) => {
+            try {
+                const { user, tag, policyId } = msg;
+                const userFull = await this.users.getUser(user.username);
+                const currentRole = await PolicyComponentsUtils.GetUserRole(policyId, user);
+
+                const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
+
+                if (PolicyComponentsUtils.CheckPermissionTree(block, user, currentRole)) {
+                    const data = await block.getData(userFull, block.uuid, null);
+                    return new MessageResponse(data);
+                } else {
+                    return new MessageResponse(null);
+                }
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
         });
 
@@ -658,7 +883,7 @@ export class PolicyEngineService {
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const userFull = await this.users.getUser(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
-                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId);
+                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId, emptyNotifier());
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 return new MessageResponse(policies);
             } catch (error) {
@@ -667,48 +892,35 @@ export class PolicyEngineService {
             }
         });
 
+        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC, async (msg) => {
+            const { zip, user, versionOfTopicId, taskId } = msg;
+            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+
+            setImmediate(async () => {
+                try {
+                    if (!zip) {
+                        throw new Error('file in body is empty');
+                    }
+                    new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
+                    const userFull = await this.users.getUser(user.username);
+                    notifier.start('File parsing');
+                    const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
+                    notifier.completed();
+                    const policy = await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId, notifier);
+                    notifier.result(policy.id);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    notifier.error(error);
+                }
+            });
+
+            return new MessageResponse({ taskId });
+        });
+
         this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, async (msg) => {
             try {
                 const { messageId, user } = msg;
-                const userFull = await this.users.getUser(user.username);
-                if (!messageId) {
-                    throw new Error('Policy ID in body is empty');
-                }
-
-                new Logger().info(`Import policy by message`, ['GUARDIAN_SERVICE']);
-
-                const root = await this.users.getHederaAccount(userFull.did);
-                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-                const message = await messageServer.getMessage<PolicyMessage>(messageId);
-
-                if (message.type !== MessageType.InstancePolicy) {
-                    throw new Error('Invalid Message Type');
-                }
-
-                if (!message.document) {
-                    throw new Error('file in body is empty');
-                }
-
-                const newVersions: any = [];
-                if (message.version) {
-                    const anotherVersions = await messageServer.getMessages<PolicyMessage>(
-                        message.getTopicId(), MessageType.InstancePolicy, MessageAction.PublishPolicy
-                    );
-                    for (const element of anotherVersions) {
-                        if (element.version && ModelHelper.versionCompare(element.version, message.version) === 1) {
-                            newVersions.push({
-                                messageId: element.getId(),
-                                version: element.version
-                            });
-                        }
-                    };
-                }
-
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
-                if (newVersions.length !== 0) {
-                    policyToImport.newVersions = newVersions.reverse();
-                }
-
+                const policyToImport  = await this.preparePolicyPreviewMessage(messageId, user, emptyNotifier());
                 return new MessageResponse(policyToImport);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -716,34 +928,60 @@ export class PolicyEngineService {
             }
         });
 
+        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, async (msg) => {
+            const { messageId, user, taskId } = msg;
+            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+
+            setImmediate(async () => {
+                try {
+                    const policyToImport  = await this.preparePolicyPreviewMessage(messageId, user, notifier);
+                    notifier.result(policyToImport);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    notifier.error(error);
+                }
+            });
+
+            return new MessageResponse({ taskId });
+        });
+
         this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg) => {
             try {
                 const { messageId, user, versionOfTopicId } = msg;
                 const userFull = await this.users.getUser(user.username);
-                if (!messageId) {
-                    throw new Error('Policy ID in body is empty');
-                }
-
                 const root = await this.users.getHederaAccount(userFull.did);
-                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-                const message = await messageServer.getMessage<PolicyMessage>(messageId);
 
-                if (message.type !== MessageType.InstancePolicy) {
-                    throw new Error('Invalid Message Type');
-                }
-
-                if (!message.document) {
-                    throw new Error('File in body is empty');
-                }
-
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
-                await PolicyImportExportHelper.importPolicy(policyToImport, userFull.did, versionOfTopicId);
+                await this.importPolicyMessage(messageId, userFull, root, versionOfTopicId, emptyNotifier());
                 const policies = await getMongoRepository(Policy).find({ owner: userFull.did });
                 return new MessageResponse(policies);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC, async (msg) => {
+            const { messageId, user, versionOfTopicId, taskId } = msg;
+            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+
+            setImmediate(async () => {
+                try {
+                    if (!messageId) {
+                        throw new Error('Policy ID in body is empty');
+                    }
+                    notifier.start('Resolve Hedera account');
+                    const userFull = await this.users.getUser(user.username);
+                    const root = await this.users.getHederaAccount(userFull.did);
+                    notifier.completed();
+                    const policy = await this.importPolicyMessage(messageId, userFull, root, versionOfTopicId, notifier);
+                    notifier.result(policy.id);
+                } catch (error) {
+                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    notifier.error(error);
+                }
+            });
+
+            return new MessageResponse({ taskId });
         });
 
         this.channel.response<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, async (msg) => {

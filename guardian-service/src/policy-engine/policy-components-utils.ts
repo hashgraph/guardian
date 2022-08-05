@@ -339,14 +339,14 @@ export class PolicyComponentsUtils {
         for (const event of instance.events) {
             if (!event.disabled) {
                 if (event.source === instance.tag) {
-                    const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
+                    const target = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.target);
                     PolicyComponentsUtils.RegisterLink(instance, event.output, target, event.input, event.actor);
                 } else if (event.target === instance.tag) {
-                    const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.source);
+                    const source = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.source);
                     PolicyComponentsUtils.RegisterLink(source, event.output, instance, event.input, event.actor);
                 } else {
-                    const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
-                    const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.source);
+                    const target = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.target);
+                    const source = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.source);
                     PolicyComponentsUtils.RegisterLink(source, event.output, target, event.input, event.actor);
                 }
             }
@@ -403,8 +403,9 @@ export class PolicyComponentsUtils {
      * @param policyId
      * @param tag
      */
-    public static GetBlockByTag(policyId: string, tag: string): IPolicyBlock {
-        return PolicyComponentsUtils.BlockByUUIDMap.get(PolicyComponentsUtils.BlockUUIDByTagMap.get(policyId).get(tag));
+    public static GetBlockByTag<T extends (IPolicyInterfaceBlock | IPolicyBlock)>(policyId: string, tag: string): T {
+        const uuid = PolicyComponentsUtils.BlockUUIDByTagMap.get(policyId).get(tag);
+        return PolicyComponentsUtils.BlockByUUIDMap.get(uuid) as T;
     }
 
     /**
