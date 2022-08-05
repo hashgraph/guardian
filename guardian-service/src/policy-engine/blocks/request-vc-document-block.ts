@@ -4,7 +4,7 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
-import { IPolicyRequestBlock, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyRequestBlock, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
@@ -174,44 +174,13 @@ export class RequestVcDocumentBlock {
 
     /**
      * Get Relationships
+     * @param ref
      * @param policyId
      * @param refId
      */
-    async getRelationships(policyId: string, refId: any): Promise<VcDocumentCollection> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+    private async getRelationships(ref: AnyBlockType, refId: any): Promise<VcDocumentCollection> {
         try {
-            if (refId) {
-                let documentRef: any = null;
-                if (typeof (refId) === 'string') {
-                    documentRef = await ref.databaseServer.getVcDocument({
-                        where: {
-                            'policyId': { $eq: policyId },
-                            'document.credentialSubject.id': { $eq: refId }
-                        }
-                    });
-                } else if (typeof (refId) === 'object') {
-                    if (refId.id) {
-                        documentRef = await ref.databaseServer.getVcDocument(refId.id);
-                        if (documentRef && documentRef.policyId !== policyId) {
-                            documentRef = null;
-                        }
-                    } else {
-                        const id = PolicyUtils.getSubjectId(documentRef);
-                        documentRef = await ref.databaseServer.getVcDocument({
-                            where: {
-                                'policyId': { $eq: policyId },
-                                'document.credentialSubject.id': { $eq: id }
-                            }
-                        });
-                    }
-                }
-                if (!documentRef) {
-                    throw new Error('Invalid relationships');
-                }
-                return documentRef;
-            } else {
-                return null;
-            }
+            return await PolicyUtils.getRelationships(ref, ref.policyId, refId);
         } catch (error) {
             const ref = PolicyComponentsUtils.GetBlockRef(this);
             ref.error(error.message);
@@ -246,7 +215,7 @@ export class RequestVcDocumentBlock {
             const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
 
             const document = _data.document;
-            const documentRef = await this.getRelationships(ref.policyId, _data.ref);
+            const documentRef = await this.getRelationships(ref, _data.ref);
 
             const credentialSubject = document;
             const schemaIRI = ref.options.schema;

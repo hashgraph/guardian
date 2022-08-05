@@ -10,7 +10,7 @@ import { TopicId } from '@hashgraph/sdk';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
-import { DatabaseServer } from '@database-modules';
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 
 /**
  * Data types
@@ -172,9 +172,11 @@ export class PolicyUtils {
      */
     public static getHederaAccounts(vc: HVcDocument, defaultAccount: string, schema: Schema): any {
         const result: any = {};
-        const fields = schema.searchFields((f) => f.customType === 'hederaAccount');
-        for (const field of fields) {
-            result[field.path] = vc.getField(field.path);
+        if (schema) {
+            const fields = schema.searchFields((f) => f.customType === 'hederaAccount');
+            for (const field of fields) {
+                result[field.path] = vc.getField(field.path);
+            }
         }
         result.default = defaultAccount;
         return result;
@@ -182,6 +184,7 @@ export class PolicyUtils {
 
     /**
      * Mint
+     * @param ref
      * @param token
      * @param tokenValue
      * @param root
@@ -196,9 +199,10 @@ export class PolicyUtils {
         targetAccount: string,
         uuid: string
     ): Promise<void> {
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
+        const mintId = Date.now();
+        ref.log(`Mint(${mintId}): Start (Count: ${tokenValue})`);
 
-        console.log(`Mint: Start (${tokenValue})`);
+        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
         const tokenId = token.tokenId;
         const supplyKey = token.supplyKey;
         const adminId = token.adminId;
@@ -208,35 +212,36 @@ export class PolicyUtils {
             const metaData = HederaUtils.decode(uuid);
             const data = new Array<Uint8Array>(Math.floor(tokenValue));
             data.fill(metaData);
-            console.log(`Mint: Count (${data.length})`);
             const serials: number[] = [];
             const dataChunk = PolicyUtils.splitChunk(data, 10);
             for (let i = 0; i < dataChunk.length; i++) {
                 const element = dataChunk[i];
-                console.log(`Mint: Chunk Size (${element.length})`);
+                if (i % 100 === 0) {
+                    ref.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
+                }
                 try {
                     const newSerials = await client.mintNFT(tokenId, supplyKey, element, uuid);
                     for (const serial of newSerials) {
                         serials.push(serial)
                     }
                 } catch (error) {
-                    console.log(`Mint: Mint Error (${error.message})`);
-                }
-                if (i % 100 === 0) {
-                    console.log(`Mint: Minting (${i}/${dataChunk.length})`);
+                    ref.error(`Mint(${mintId}): Mint Error (${error.message})`);
                 }
             }
-            console.log(`Mint: Minted (${serials.length})`);
+
+            ref.log(`Mint(${mintId}): Minted (Count: ${serials.length})`);
+            ref.log(`Mint(${mintId}): Transfer ${adminId} -> ${targetAccount} `);
+
             const serialsChunk = PolicyUtils.splitChunk(serials, 10);
             for (let i = 0; i < serialsChunk.length; i++) {
                 const element = serialsChunk[i];
+                if (i % 100 === 0) {
+                    ref.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`);
+                }
                 try {
                     await client.transferNFT(tokenId, targetAccount, adminId, adminKey, element, uuid);
                 } catch (error) {
-                    console.log(`Mint: Transfer Error (${error.message})`);
-                }
-                if (i % 100 === 0) {
-                    console.log(`Mint: Transfer (${i}/${serialsChunk.length})`);
+                    ref.error(`Mint(${mintId}): Transfer Error (${error.message})`);
                 }
             }
         } else {
@@ -244,8 +249,9 @@ export class PolicyUtils {
             await client.transfer(tokenId, targetAccount, adminId, adminKey, tokenValue, uuid);
         }
 
-        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: uuid })
-        console.log('Mint: End');
+        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: uuid });
+
+        ref.log(`Mint(${mintId}): End`);
     }
 
     /**
@@ -699,6 +705,50 @@ export class PolicyUtils {
             return [];
         } else {
             return await this.users.getAllStandardRegistryAccounts() as any[];
+        }
+    }
+
+    /**
+     * Get Relationships
+     * @param policyId
+     * @param refId
+     */
+    public static async getRelationships(
+        ref: AnyBlockType,
+        policyId: string,
+        refId: any
+    ): Promise<VcDocumentCollection> {
+        if (refId) {
+            let documentRef: any = null;
+            if (typeof (refId) === 'string') {
+                documentRef = await ref.databaseServer.getVcDocument({
+                    where: {
+                        'policyId': { $eq: policyId },
+                        'document.credentialSubject.id': { $eq: refId }
+                    }
+                });
+            } else if (typeof (refId) === 'object') {
+                if (refId.id) {
+                    documentRef = await ref.databaseServer.getVcDocument(refId.id);
+                    if (documentRef && documentRef.policyId !== policyId) {
+                        documentRef = null;
+                    }
+                } else {
+                    const id = PolicyUtils.getSubjectId(documentRef);
+                    documentRef = await ref.databaseServer.getVcDocument({
+                        where: {
+                            'policyId': { $eq: policyId },
+                            'document.credentialSubject.id': { $eq: id }
+                        }
+                    });
+                }
+            }
+            if (!documentRef) {
+                throw new Error('Invalid relationships');
+            }
+            return documentRef;
+        } else {
+            return null;
         }
     }
 }

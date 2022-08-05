@@ -209,21 +209,26 @@ export class RetirementBlock {
                 topicIds.push(doc.topicId);
             }
             if (doc.accounts) {
-                accounts.push(doc.accounts[field]);
+                const accountId: string = doc.accounts[field];
+                accounts.push(accountId);
             }
         }
-        if (accounts.find(a => a !== accounts[0])) {
-            ref.error(`More than one account found! Transfer made on the first (${accounts[0]})`);
+        const firstAccounts = accounts[0];
+        if (accounts.find(a => a !== firstAccounts)) {
+            ref.error(`More than one account found! Transfer made on the first (${firstAccounts})`);
         }
         const topicId = topicIds[0];
 
         let targetAccountId: string;
         if (ref.options.accountId) {
-            targetAccountId = accounts[0];
+            targetAccountId = firstAccounts;
         } else {
             targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner);
         }
-
+        if (!targetAccountId) {
+            throw new BlockActionError('Token recipient not set', ref.blockType, ref.uuid);
+        }
+	
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
 
         await this.retirementProcessing(token, vcs, vsMessages, topicId, root, docOwner, targetAccountId);

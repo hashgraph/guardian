@@ -121,13 +121,25 @@ export class SwitchBlock {
             let result = false;
             if (type === 'equal') {
                 if (scope) {
-                    result = PolicyUtils.evaluateFormula(value, scope);
+                    const formulaResult = PolicyUtils.evaluateFormula(value, scope);
+                    if (formulaResult === 'Incorrect formula') {
+                        ref.error(`expression: ${result}, ${JSON.stringify(scope)}`);
+                        result = false;
+                    } else {
+                        result = !!formulaResult;
+                    }
                 } else {
                     result = false;
                 }
             } else if (type === 'not_equal') {
                 if (scope) {
-                    result = !PolicyUtils.evaluateFormula(value, scope);
+                    const formulaResult = PolicyUtils.evaluateFormula(value, scope);
+                    if (formulaResult === 'Incorrect formula') {
+                        ref.error(`expression: ${result}, ${JSON.stringify(scope)}`);
+                        result = false;
+                    } else {
+                        result = !formulaResult;
+                    }
                 } else {
                     result = false;
                 }
