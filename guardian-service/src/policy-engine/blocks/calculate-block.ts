@@ -117,6 +117,8 @@ export class CalculateContainerBlock {
         const newJson = await this.calculate(json, ref);
 
         // <-- new vc
+        const VCHelper = new VcHelper();
+
         const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
@@ -127,9 +129,11 @@ export class CalculateContainerBlock {
         if (vcReference) {
             vcSubject.ref = vcReference;
         }
+        if (ref.dryRun) {
+            VCHelper.addDryRunContext(vcSubject);
+        }
 
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-        const VCHelper = new VcHelper();
         const newVC = await VCHelper.createVC(ref.policyOwner, root.hederaAccountKey, vcSubject);
         const item = ref.databaseServer.createVCRecord(
             ref.policyId,

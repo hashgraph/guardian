@@ -36,7 +36,6 @@ export class SchemaDocumentLoader extends DocumentLoader {
             iri: _iri
         });
         if (schema) {
-            console.log(schema.context);
             return schema.context;
         }
         throw new Error(`Schema not found: ${iri}`);
