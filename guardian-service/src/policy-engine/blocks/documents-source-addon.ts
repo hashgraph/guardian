@@ -43,7 +43,7 @@ export class DocumentsSourceAddon {
         }
 
         if (ref.options.onlyAssignDocuments) {
-            filters.assign = user.did;
+            filters.assignee = user.did;
         }
 
         if (ref.options.schema) {
@@ -86,13 +86,13 @@ export class DocumentsSourceAddon {
             Object.assign(filters, globalFilters);
         }
 
-        const filtersWithOrder: any = { where: filters };
+        const otherOptions: any = {};
         if (ref.options.orderDirection) {
-            filtersWithOrder.order = {};
+            otherOptions.orderBy = {};
             if (ref.options.orderField) {
-                filtersWithOrder.order[ref.options.orderField] = ref.options.createdOrderDirection;
+                otherOptions.orderBy[ref.options.orderField] = ref.options.createdOrderDirection;
             } else {
-                filtersWithOrder.order.createDate = ref.options.createdOrderDirection;
+                otherOptions.orderBy.createDate = ref.options.createdOrderDirection;
             }
 
         }
@@ -101,21 +101,21 @@ export class DocumentsSourceAddon {
         switch (ref.options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
-                data = await ref.databaseServer.getVcDocuments(filtersWithOrder);
+                data = await ref.databaseServer.getVcDocuments(filters, otherOptions);
                 break;
             case 'did-documents':
-                data = await ref.databaseServer.getDidDocuments(filtersWithOrder);
+                data = await ref.databaseServer.getDidDocuments(filters, otherOptions);
                 break;
             case 'vp-documents':
                 filters.policyId = ref.policyId;
-                data = await ref.databaseServer.getVpDocuments(filtersWithOrder);
+                data = await ref.databaseServer.getVpDocuments(filters, otherOptions);
                 break;
             case 'standard-registries':
                 data = await PolicyUtils.getAllStandardRegistryAccounts(ref);
                 break;
             case 'approve':
                 filters.policyId = ref.policyId;
-                data = await ref.databaseServer.getApprovalDocuments(filtersWithOrder);
+                data = await ref.databaseServer.getApprovalDocuments(filters, otherOptions);
                 break;
             case 'source':
                 data = [];
@@ -132,12 +132,9 @@ export class DocumentsSourceAddon {
             if (ref.options.viewHistory) {
 
                 dataItem.history = (await ref.databaseServer.getDocumentStates({
-                    where: {
-                        documentId: dataItem.id
-                    },
-                    order: {
-                        'created': 'DESC'
-                    }
+                    documentId: dataItem.id 
+                }, { 
+                    orderBy: { 'created': 'DESC' }
                 })).map(item => {
                     return {
                         status: item.status,

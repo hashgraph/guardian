@@ -1,333 +1,329 @@
 import { ApproveStatus, DocumentSignature, DocumentStatus, GenerateUUIDv4, SchemaEntity } from '@guardian/interfaces';
-import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Property, BeforeCreate } from '@mikro-orm/core';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * DryRun document
  */
 @Entity()
-export class DryRun {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
-
+export class DryRun extends BaseEntity {
     /**
      * id
      */
-    @Column()
-    dryRunId: string;
+    @Property({ nullable: true })
+    dryRunId?: string;
 
     /**
      * Class
      */
-    @Column()
-    dryRunClass: string;
+    @Property({ nullable: true })
+    dryRunClass?: string;
 
     /**
      * Document owner
      */
-    @Column()
-    owner: any;
+    @Property({ nullable: true })
+    owner?: any;
 
     /**
      * Document hash
      */
-    @Column()
-    hash: any;
+    @Property({ nullable: true })
+    hash?: any;
 
     /**
      * Document instance
      */
-    @Column()
-    document: any;
+    @Property({ nullable: true })
+    document?: any;
 
     /**
      * Created at
      */
-    @CreateDateColumn()
-    createDate: any;
+    @Property()
+    createDate: any = new Date();
 
     /**
      * Updated at
      */
-    @UpdateDateColumn()
-    updateDate: any;
+    @Property({ onUpdate: () => new Date() })
+    updateDate: any = new Date();
 
     /**
      * Created at
      */
-    @CreateDateColumn()
-    created: any;
+    @Property()
+    created: any =  new Date();
 
     /**
      * Updated at
      */
-    @UpdateDateColumn()
-    updated: any;
+    @Property({ onUpdate: () => new Date() })
+    updated: any= new Date();
 
     /**
      * Document status
      */
-    @Column()
-    status: any;
+    @Property({ nullable: true })
+    status?: any;
 
     /**
      * Document signature
      */
-    @Column()
-    signature: any;
+    @Property({ nullable: true })
+    signature?: any;
 
     /**
      * Document type
      */
-    @Column()
-    type: any;
+    @Property({ nullable: true })
+    type?: any;
 
     /**
      * Policy id
      */
-    @Column()
-    policyId: any;
+    @Property({ nullable: true })
+    policyId?: any;
 
     /**
      * Tag
      */
-    @Column()
-    tag: any;
+    @Property({ nullable: true })
+    tag?: any;
 
     /**
      * Message id
      */
-    @Column()
-    messageId: any;
+    @Property({ nullable: true })
+    messageId?: any;
 
     /**
      * Topic id
      */
-    @Column()
-    topicId: any;
+    @Property({ nullable: true })
+    topicId?: any;
 
     /**
      * Relationships
      */
-    @Column()
-    relationships: any;
+    @Property({ nullable: true })
+    relationships?: any;
 
     /**
      * Option
      */
-    @Column()
-    option: any;
+    @Property({ nullable: true })
+    option?: any;
 
     /**
      * Comment
      */
-    @Column()
-    comment: any;
+    @Property({ nullable: true })
+    comment?: any;
 
     /**
      * Assign
      */
-    @Column()
-    assign: any;
+    @Property({ nullable: true })
+    assignee?: any;
 
     /**
      * Document hedera status
      */
-    @Column()
-    hederaStatus: any;
+    @Property({ nullable: true })
+    hederaStatus?: any;
+
     /**
      * Document processing status
      */
-    @Column()
-    processingStatus: any;
+    @Property({ nullable: true })
+    processingStatus?: any;
 
     /**
      * Document schema
      */
-    @Column()
-    schema: any;
+    @Property({ nullable: true })
+    schema?: any;
 
     /**
      * Hedera Accounts
      */
-    @Column()
-    accounts: any
+    @Property({ nullable: true })
+    accounts?: any
 
     /**
      * Topic name
      */
-    @Column()
-    name: any;
+    @Property({ nullable: true })
+    name?: any;
 
     /**
      * Topic description
      */
-    @Column()
-    description: any;
+    @Property({ nullable: true })
+    description?: any;
 
     /**
      * Topic key
      */
-    @Column()
-    key: any;
+    @Property({ nullable: true })
+    key?: any;
 
     /**
      * Parent
      */
-    @Column()
-    parent: any;
+    @Property({ nullable: true })
+    parent?: any;
 
     /**
      * Policy UUID
      */
-    @Column()
-    policyUUID: any;
+    @Property({ nullable: true })
+    policyUUID?: any;
 
     /**
      * Token id
      */
-    @Column()
-    tokenId: any;
+    @Property({ nullable: true })
+    tokenId?: any;
 
     /**
      * Token name
      */
-    @Column()
-    tokenName: any;
+    @Property({ nullable: true })
+    tokenName?: any;
 
     /**
      * Token symbol
      */
-    @Column()
-    tokenSymbol: any;
+    @Property({ nullable: true })
+    tokenSymbol?: any;
 
     /**
      * Token type
      */
-    @Column()
-    tokenType: any;
+    @Property({ nullable: true })
+    tokenType?: any;
 
     /**
      * Token decimals
      */
-    @Column()
-    decimals: any;
+    @Property({ nullable: true })
+    decimals?: any;
 
     /**
      * Initial supply
      */
-    @Column()
-    initialSupply: any;
+    @Property({ nullable: true })
+    initialSupply?: any;
 
     /**
      * Admin id
      */
-    @Column()
-    adminId: any;
+    @Property({ nullable: true })
+    adminId?: any;
 
     /**
      * Admin key
      */
-    @Column()
-    adminKey: any;
+    @Property({ nullable: true })
+    adminKey?: any;
 
     /**
      * KYC key
      */
-    @Column()
-    kycKey: any;
+    @Property({ nullable: true })
+    kycKey?: any;
 
     /**
      * Freeze key
      */
-    @Column()
-    freezeKey: any;
+    @Property({ nullable: true })
+    freezeKey?: any;
 
     /**
      * Wipe key
      */
-    @Column()
-    wipeKey: any;
+    @Property({ nullable: true })
+    wipeKey?: any;
 
     /**
      * Supply key
      */
-    @Column()
-    supplyKey: any;
+    @Property({ nullable: true })
+    supplyKey?: any;
 
     /**
      * Setting value
      */
-    @Column()
-    value: any;
+    @Property({ nullable: true })
+    value?: any;
 
     /**
      * Schema uuid
      */
-    @Column()
-    uuid: any;
+    @Property({ nullable: true })
+    uuid?: any;
 
     /**
      * Schema entity
      */
-    @Column()
-    entity: any;
+    @Property({ nullable: true })
+    entity?: any;
 
     /**
      * Context
      */
-    @Column()
-    context: any;
+    @Property({ nullable: true })
+    context?: any;
 
     /**
      * Version
      */
-    @Column()
-    version: any;
+    @Property({ nullable: true })
+    version?: any;
 
     /**
      * Creator
      */
-    @Column()
-    creator: any;
+    @Property({ nullable: true })
+    creator?: any;
 
     /**
      * Document URL
      */
-    @Column()
-    documentURL: any;
+    @Property({ nullable: true })
+    documentURL?: any;
 
     /**
      * Context URL
      */
-    @Column()
-    contextURL: any;
+    @Property({ nullable: true })
+    contextURL?: any;
 
     /**
      * IRI
      */
-    @Column()
-    iri: any;
+    @Property({ nullable: true })
+    iri?: any;
 
     /**
      * Readonly flag
      */
-    @Column()
-    readonly: any;
+    @Property({ nullable: true })
+    readonly?: any;
 
     /**
      * Is system schema
      */
-    @Column()
-    system: any;
+    @Property({ nullable: true })
+    system?: any;
 
     /**
      * Is active
      */
-    @Column()
-    active: any;
+    @Property({ nullable: true })
+    active?: any;
 
     /**
      * Virtual column.
@@ -337,115 +333,115 @@ export class DryRun {
     /**
      * Policy previous version
      */
-    @Column()
-    previousVersion: any;
+    @Property({ nullable: true })
+    previousVersion?: any;
 
     /**
      * Policy topic description
      */
-    @Column()
-    topicDescription: any;
+    @Property({ nullable: true })
+    topicDescription?: any;
 
     /**
      * Policy config
      */
-    @Column()
-    config: any;
+    @Property({ nullable: true })
+    config?: any;
 
     /**
      * Policy roles
      */
-    @Column()
-    policyRoles: any;
+    @Property({ nullable: true })
+    policyRoles?: any;
 
     /**
      * Policy topics
      */
-    @Column()
-    policyTopics: any;
+    @Property({ nullable: true })
+    policyTopics?: any;
 
     /**
      * Policy instance topic id
      */
-    @Column()
-    instanceTopicId: any;
+    @Property({ nullable: true })
+    instanceTopicId?: any;
 
     /**
      * Policy tag
      */
-    @Column()
-    policyTag: any;
+    @Property({ nullable: true })
+    policyTag?: any;
 
     /**
      * Policy code version
      */
-    @Column()
-    codeVersion: any;
+    @Property({ nullable: true })
+    codeVersion?: any;
 
     /**
      * Document id
      */
-    @Column()
-    documentId: any;
+    @Property({ nullable: true })
+    documentId?: any;
 
     /**
      * State reason
      */
-    @Column()
-    reason: any;
+    @Property({ nullable: true })
+    reason?: any;
 
     /**
      * DID
      */
-    @Column()
-    did: any;
+    @Property({ nullable: true })
+    did?: any;
 
     /**
      * Block id
      */
-    @Column()
-    blockId: any;
+    @Property({ nullable: true })
+    blockId?: any;
 
     /**
      * block state
      */
-    @Column()
-    blockState: any;
+    @Property({ nullable: true })
+    blockState?: any;
 
     /**
      * Document approver
      */
-    @Column()
-    approver: any;
+    @Property({ nullable: true })
+    approver?: any;
 
     /**
      * User Role
      */
-    @Column()
-    role: string;
+    @Property({ nullable: true })
+    role?: string;
 
     /**
      * User username
      */
-    @Column()
-    username: string;
+    @Property({ nullable: true })
+    username?: string;
 
     /**
      * hederaAccountId
      */
-    @Column()
-    hederaAccountId: string;
+    @Property({ nullable: true })
+    hederaAccountId?: string;
 
     /**
      * hederaAccountKey
      */
-    @Column()
-    hederaAccountKey: string;
+    @Property({ nullable: true })
+    hederaAccountKey?: string;
 
     /**
      * Default document values
      */
-    @BeforeInsert()
+    @BeforeCreate()
     setDefaults() {
         this.option = this.option || {};
         this.option.status = this.option.status || ApproveStatus.NEW;
@@ -459,5 +455,9 @@ export class DryRun {
         this.active = this.active || false;
         this.hederaStatus = this.hederaStatus || DocumentStatus.NEW;
         this.signature = this.signature || DocumentSignature.NEW;
+    }
+
+    toJSON(): { [p: string]: any } {
+        return Object.assign({}, { ...this, id: this.id });
     }
 }

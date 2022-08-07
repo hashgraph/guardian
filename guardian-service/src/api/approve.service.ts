@@ -1,7 +1,6 @@
 import { ApprovalDocument } from '@entity/approval-document';
-import { MongoRepository } from 'typeorm';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse } from '@guardian/common';
+import { DataBaseHelper, MessageBrokerChannel, MessageResponse } from '@guardian/common';
 import { MessageAPI, IApprovalDocument } from '@guardian/interfaces';
 
 /**
@@ -12,7 +11,7 @@ import { MessageAPI, IApprovalDocument } from '@guardian/interfaces';
  */
 export async function approveAPI(
     channel: MessageBrokerChannel,
-    approvalDocumentRepository: MongoRepository<ApprovalDocument>
+    approvalDocumentRepository: DataBaseHelper<ApprovalDocument>
 ): Promise<void> {
     /**
      * Return approve documents
@@ -73,10 +72,7 @@ export async function approveAPI(
         const id = msg.id;
         let result;
         if (id) {
-            const documentObject = msg;
-            const _id = documentObject.id;
-            delete documentObject.id;
-            result = await approvalDocumentRepository.update(_id, documentObject);
+            result = await approvalDocumentRepository.update(msg);
         } else {
             const documentObject = approvalDocumentRepository.create(msg);
             result = await approvalDocumentRepository.save(documentObject)
@@ -92,10 +88,7 @@ export async function approveAPI(
      * @returns {IApprovalDocument} - new approve document
      */
     ApiResponse(channel, MessageAPI.UPDATE_APPROVE_DOCUMENTS, async (msg) => {
-        const documentObject = msg;
-        const id = documentObject.id;
-        delete documentObject.id;
-        const result = await approvalDocumentRepository.update(id, documentObject);
+        const result = await approvalDocumentRepository.update(msg);
         return new MessageResponse(result);
     });
 }

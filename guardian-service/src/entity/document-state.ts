@@ -1,37 +1,36 @@
-import { Column, CreateDateColumn, Entity, ObjectIdColumn } from 'typeorm';
+import { Entity, Property } from '@mikro-orm/core';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * Document state
  */
 @Entity()
-export class DocumentState {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
-
+export class DocumentState extends BaseEntity {
     /**
      * Created at
      */
-    @CreateDateColumn()
-    created: Date;
+    @Property()
+    created: Date = new Date();
 
     /**
      * Document id
      */
-    @Column()
-    documentId: string;
+    @Property({ nullable: true })
+    documentId?: string;
 
     /**
      * State status
      */
-    @Column()
-    status: string;
+    @Property({ nullable: true })
+    status?: string;
 
     /**
      * State reason
      */
-    @Column()
-    reason: string;
+    @Property({ nullable: true })
+    reason?: string;
+
+    toJSON(): { [p: string]: any } {
+        return Object.assign({}, { ...this, id: this.id });
+    }
 }

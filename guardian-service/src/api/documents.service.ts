@@ -11,9 +11,13 @@ import {
     IVPDocument,
     MessageAPI,
 } from '@guardian/interfaces';
-import { MongoRepository } from 'typeorm';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import {
+    MessageBrokerChannel, 
+    MessageResponse, 
+    MessageError, 
+    DataBaseHelper 
+} from '@guardian/common';
 
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
@@ -26,9 +30,9 @@ import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/c
  */
 export async function documentsAPI(
     channel: MessageBrokerChannel,
-    didDocumentRepository: MongoRepository<DidDocument>,
-    vcDocumentRepository: MongoRepository<VcDocument>,
-    vpDocumentRepository: MongoRepository<VpDocument>,
+    didDocumentRepository: DataBaseHelper<DidDocument>,
+    vcDocumentRepository: DataBaseHelper<VcDocument>,
+    vpDocumentRepository: DataBaseHelper<VpDocument>,
 ): Promise<void> {
     const getDIDOperation = (operation: DidDocumentStatus) => {
         switch (operation) {
@@ -92,37 +96,34 @@ export async function documentsAPI(
     ApiResponse(channel, MessageAPI.GET_VC_DOCUMENTS, async (msg) => {
         try {
             if (msg) {
-                const reqObj: any = { where: {} as unknown };
-                const { owner, assign, issuer, id, hash, policyId, schema, ...otherArgs } = msg;
+                const reqObj: any = {};
+                const { owner, assignee, issuer, id, hash, policyId, schema, ...otherArgs } = msg;
                 if (owner) {
-                    reqObj.where.owner = { $eq: owner }
+                    reqObj.owner = { $eq: owner }
                 }
-                if (assign) {
-                    reqObj.where.assign = { $eq: assign }
+                if (assignee) {
+                    reqObj.assignee = { $eq: assignee }
                 }
                 if (issuer) {
-                    reqObj.where['document.issuer'] = { $eq: issuer }
+                    reqObj['document.issuer'] = { $eq: issuer }
                 }
                 if (id) {
-                    reqObj.where['document.id'] = { $eq: id }
+                    reqObj['document.id'] = { $eq: id }
                 }
                 if (hash) {
-                    reqObj.where.hash = { $eq: hash }
+                    reqObj.hash = { $eq: hash }
                 }
                 if (policyId) {
-                    reqObj.where.policyId = { $eq: policyId }
+                    reqObj.policyId = { $eq: policyId }
                 }
                 if (schema) {
-                    reqObj.where.schema = { $eq: schema }
+                    reqObj.schema = { $eq: schema }
                 }
-                if (typeof reqObj.where !== 'object') {
-                    reqObj.where = {};
-                }
-                Object.assign(reqObj.where, otherArgs);
+                Object.assign(reqObj, otherArgs);
                 const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);
                 return new MessageResponse(vcDocuments);
             } else {
-                const vcDocuments: IVCDocument[] = await vcDocumentRepository.find();
+                const vcDocuments: IVCDocument[] = await vcDocumentRepository.findAll();
                 return new MessageResponse(vcDocuments);
             }
         }
@@ -152,11 +153,17 @@ export async function documentsAPI(
             } else {
                 return new MessageError('Document not found');
             }
-        } else {
-            const didDocumentObject = didDocumentRepository.create(msg);
-            const result: IDidObject[] = await didDocumentRepository.save(didDocumentObject);
+        } else if (Array.isArray(msg)) {   
+            const result = []
+            for (const documentObject of msg) {
+                result.push(await didDocumentRepository.save(documentObject));
+            }
             return new MessageResponse(result);
         }
+        else {
+            const result: IDidObject = await didDocumentRepository.save(msg);
+            return new MessageResponse(result);
+        } 
     });
 
     /**
@@ -182,9 +189,9 @@ export async function documentsAPI(
                 result.hederaStatus = getVCOperation(operation);
             }
 
-            const assign = msg.assign;
-            if (assign) {
-                result.assign = assign;
+            const assignee = msg.assignee;
+            if (assignee) {
+                result.assignee = assignee;
             }
 
             const type = msg.type;
@@ -231,8 +238,7 @@ export async function documentsAPI(
      * @returns {IVPDocument} - new VP Document
      */
     ApiResponse(channel, MessageAPI.SET_VP_DOCUMENT, async (msg) => {
-        const vpDocumentObject = vpDocumentRepository.create(msg);
-        const result: any = await vpDocumentRepository.save(vpDocumentObject);
+        const result: any = await vpDocumentRepository.save(msg);
         return new MessageResponse(result);
     });
 
@@ -248,7 +254,7 @@ export async function documentsAPI(
             const document: IVPDocument[] = await vpDocumentRepository.find(msg);
             return new MessageResponse(document);
         } else {
-            const documents: IVPDocument[] = await vpDocumentRepository.find();
+            const documents: IVPDocument[] = await vpDocumentRepository.findAll();
             return new MessageResponse(documents);
         }
     });

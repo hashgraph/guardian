@@ -1,6 +1,6 @@
 import { Schema } from '@entity/schema';
+import { DataBaseHelper } from '@guardian/common';
 import { DocumentLoader, IDocumentFormat } from '@hedera-modules';
-import { getMongoRepository } from 'typeorm';
 
 /**
  * Schema Documents Loader
@@ -32,7 +32,7 @@ export class SchemaDocumentLoader extends DocumentLoader {
      */
     public async getDocument(iri: string): Promise<any> {
         const _iri = iri.substring(6);
-        const schema = await getMongoRepository(Schema).findOne({
+        const schema = await new DataBaseHelper(Schema).findOne({
             iri: _iri
         });
         if (schema) {

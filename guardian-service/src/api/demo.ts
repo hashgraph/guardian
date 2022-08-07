@@ -1,9 +1,14 @@
-import { getMongoRepository, MongoRepository } from 'typeorm';
 import { Settings } from '@entity/settings';
 import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import { Policy } from '@entity/policy';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { 
+    MessageBrokerChannel, 
+    MessageResponse, 
+    MessageError, 
+    Logger, 
+    DataBaseHelper 
+} from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
@@ -28,7 +33,7 @@ interface DemoKey {
  * @param settingsRepository
  * @param notifier
  */
-async function generateDemoKey(role: any, settingsRepository: MongoRepository<Settings>, notifier: INotifier): Promise<DemoKey> {
+async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier): Promise<DemoKey> {
     notifier.start('Resolve settings');
     const operatorId = await settingsRepository.findOne({
         name: 'OPERATOR_ID'
@@ -68,7 +73,7 @@ async function generateDemoKey(role: any, settingsRepository: MongoRepository<Se
 export async function demoAPI(
     channel: MessageBrokerChannel,
     apiGatewayChannel: MessageBrokerChannel,
-    settingsRepository: MongoRepository<Settings>
+    settingsRepository: DataBaseHelper<Settings>
 ): Promise<void> {
     ApiResponse(channel, MessageAPI.GENERATE_DEMO_KEY, async (msg) => {
         try {
@@ -101,7 +106,7 @@ export async function demoAPI(
     ApiResponse(channel, MessageAPI.GET_USER_ROLES, async (msg) => {
         try {
             const did = msg.did;
-            const policies = await getMongoRepository(Policy).find();
+            const policies = await new DataBaseHelper(Policy).findAll();
             const result = [];
             for (const p of policies) {
                 const role = await DatabaseServer.getUserRole(p.id.toString(), did);

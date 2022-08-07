@@ -21,13 +21,18 @@ import {
     TopicHelper,
     VCMessage
 } from '@hedera-modules';
-import { getMongoRepository } from 'typeorm';
 import { Topic } from '@entity/topic';
 import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { 
+    MessageBrokerChannel, 
+    MessageResponse, 
+    MessageError, 
+    Logger, 
+    DataBaseHelper 
+} from '@guardian/common';
 import { publishSystemSchema } from './schema.service';
 import { Settings } from '@entity/settings';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
@@ -37,10 +42,10 @@ import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
  */
 async function getGlobalTopic(): Promise<Topic | null> {
     try {
-        const topicId = await getMongoRepository(Settings).findOne({
+        const topicId = await new DataBaseHelper(Settings).findOne({
             name: 'INITIALIZATION_TOPIC_ID'
         });
-        const topicKey = await getMongoRepository(Settings).findOne({
+        const topicKey = await new DataBaseHelper(Settings).findOne({
             name: 'INITIALIZATION_TOPIC_KEY'
         });
         const INITIALIZATION_TOPIC_ID = topicId?.value || process.env.INITIALIZATION_TOPIC_ID;
@@ -141,7 +146,7 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
 
     if (parent) {
-        topic = await getMongoRepository(Topic).findOne({
+        topic = await new DataBaseHelper(Topic).findOne({
             owner: parent,
             type: TopicType.UserTopic
         });
@@ -159,9 +164,7 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
             policyId: null,
             policyUUID: null
         });
-        topic = await getMongoRepository(Topic).save(
-            getMongoRepository(Topic).create(topic)
-        );
+        topic = await new DataBaseHelper(Topic).save(topic);
         await topicHelper.oneWayLink(topic, globalTopic, null);
         newTopic = true;
     }
@@ -177,12 +180,10 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
     const userDID = didObject.getDid();
     const didMessage = new DIDMessage(MessageAction.CreateDID);
     didMessage.setDocument(didObject);
-    let didDoc = getMongoRepository(DidDocumentCollection).create({
+    let didDoc = await new DataBaseHelper(DidDocumentCollection).save({
         did: didMessage.did,
         document: didMessage.document
     });
-    didDoc = await getMongoRepository(DidDocumentCollection).save(didDoc);
-
     try {
         const didMessageResult = await messageServer
             .setTopicObject(topic)
@@ -190,11 +191,11 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
         didDoc.status = DidDocumentStatus.CREATE;
         didDoc.messageId = didMessageResult.getId();
         didDoc.topicId = didMessageResult.getTopicId();
-        getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
+        await new DataBaseHelper(DidDocumentCollection).update(didDoc);
     } catch (error) {
         logger.error(error, ['GUARDIAN_SERVICE']);
         didDoc.status = DidDocumentStatus.FAILED;
-        await getMongoRepository(DidDocumentCollection).update(didDoc.id, didDoc);
+        await new DataBaseHelper(DidDocumentCollection).update(didDoc);
     }
     // ------------------------
     // Publish DID Document -->
@@ -208,13 +209,13 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
     try {
         let schema: SchemaCollection = null;
 
-        schema = await getMongoRepository(SchemaCollection).findOne({
+        schema = await new DataBaseHelper(SchemaCollection).findOne({
             entity: SchemaEntity.STANDARD_REGISTRY,
             readonly: true,
             topicId: topic.topicId
         });
         if (!schema) {
-            schema = await getMongoRepository(SchemaCollection).findOne({
+            schema = await new DataBaseHelper(SchemaCollection).findOne({
                 entity: SchemaEntity.STANDARD_REGISTRY,
                 system: true,
                 active: true
@@ -225,18 +226,17 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
                 schema.creator = didMessage.did;
                 schema.owner = didMessage.did;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
-                const newItem = getMongoRepository(SchemaCollection).create(item);
-                await getMongoRepository(SchemaCollection).save(newItem);
+                await new DataBaseHelper(SchemaCollection).save(item);
             }
         }
 
-        schema = await getMongoRepository(SchemaCollection).findOne({
+        schema = await new DataBaseHelper(SchemaCollection).findOne({
             entity: SchemaEntity.USER,
             readonly: true,
             topicId: topic.topicId
         });
         if (!schema) {
-            schema = await getMongoRepository(SchemaCollection).findOne({
+            schema = await new DataBaseHelper(SchemaCollection).findOne({
                 entity: SchemaEntity.USER,
                 system: true,
                 active: true
@@ -247,13 +247,12 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
                 schema.creator = didMessage.did;
                 schema.owner = didMessage.did;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
-                const newItem = getMongoRepository(SchemaCollection).create(item);
-                await getMongoRepository(SchemaCollection).save(newItem);
+                await new DataBaseHelper(SchemaCollection).save(item);
             }
         }
 
         if (entity) {
-            schema = await getMongoRepository(SchemaCollection).findOne({
+            schema = await new DataBaseHelper(SchemaCollection).findOne({
                 entity,
                 readonly: true,
                 topicId: topic.topicId
@@ -287,13 +286,12 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
         const vcObject = await vcHelper.createVC(userDID, hederaAccountKey, credentialSubject);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(vcObject);
-        let vcDoc = getMongoRepository(VcDocumentCollection).create({
+        let vcDoc = await new DataBaseHelper(VcDocumentCollection).save({
             hash: vcMessage.hash,
             owner: didMessage.did,
             document: vcMessage.document,
             type: schemaObject?.entity
         });
-        vcDoc = await getMongoRepository(VcDocumentCollection).save(vcDoc);
 
         try {
             const vcMessageResult = await messageServer
@@ -302,11 +300,11 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
             vcDoc.hederaStatus = DocumentStatus.ISSUE;
             vcDoc.messageId = vcMessageResult.getId();
             vcDoc.topicId = vcMessageResult.getTopicId();
-            getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
+            await new DataBaseHelper(VcDocumentCollection).update(vcDoc);
         } catch (error) {
             logger.error(error, ['GUARDIAN_SERVICE']);
             vcDoc.hederaStatus = DocumentStatus.FAILED;
-            await getMongoRepository(VcDocumentCollection).update(vcDoc.id, vcDoc);
+            await new DataBaseHelper(VcDocumentCollection).update(vcDoc);
         }
     }
     // -----------------------
@@ -317,7 +315,7 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
     if (newTopic) {
         topic.owner = didMessage.did;
         topic.parent = globalTopic?.topicId;
-        await getMongoRepository(Topic).update(topic.id, topic);
+        await new DataBaseHelper(Topic).update(topic);
     }
 
     if (globalTopic && newTopic) {

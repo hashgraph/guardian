@@ -6,7 +6,6 @@ import {
     SchemaFields
 } from '@helpers/utils';
 import JSZip from 'jszip';
-import { getMongoRepository } from 'typeorm';
 import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
 import { SchemaEntity, TopicType, GenerateUUIDv4 } from '@guardian/interfaces';
@@ -18,6 +17,7 @@ import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
 import { DatabaseServer } from '@database-modules';
+import { DataBaseHelper } from '@guardian/common';
 
 /**
  * Policy import export helper
@@ -45,8 +45,8 @@ export class PolicyImportExportHelper {
 
         const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
 
-        const tokens = await getMongoRepository(Token).find({ where: { tokenId: { $in: tokenIds } } });
-        const schemas = await getMongoRepository(Schema).find({
+        const tokens = await new DataBaseHelper(Token).find({ where: { tokenId: { $in: tokenIds } } });
+        const schemas = await new DataBaseHelper(Schema).find({
             topicId,
             readonly: false
         });
@@ -151,12 +151,12 @@ export class PolicyImportExportHelper {
         notifier.start('Resolve Hedera account');
         const root = await users.getHederaAccount(policyOwner);
         notifier.completedAndStart('Resolve topic');
-        const parent = await getMongoRepository(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
+        const parent = await new DataBaseHelper(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
 
         let topicRow: Topic;
         if (versionOfTopicId) {
-            topicRow = await getMongoRepository(Topic).findOne({ topicId: versionOfTopicId })
+            topicRow = await new DataBaseHelper(Topic).findOne({ topicId: versionOfTopicId })
         } else {
             topicRow = await topicHelper.create({
                 type: TopicType.PolicyTopic,
@@ -166,9 +166,7 @@ export class PolicyImportExportHelper {
                 policyId: null,
                 policyUUID: null
             });
-            topicRow = await getMongoRepository(Topic).save(
-                getMongoRepository(Topic).create(topicRow)
-            );
+            topicRow = await new DataBaseHelper(Topic).save(topicRow);
         }
 
         notifier.completed();
@@ -193,8 +191,8 @@ export class PolicyImportExportHelper {
                 schema.creator = policyOwner;
                 schema.owner = policyOwner;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
-                const newItem = getMongoRepository(Schema).create(item);
-                await getMongoRepository(Schema).save(newItem);
+                const newItem = new DataBaseHelper(Schema).create(item);
+                await new DataBaseHelper(Schema).save(item);
                 name = newItem.name;
             }
             num++;
@@ -208,7 +206,7 @@ export class PolicyImportExportHelper {
             notifier.start('Import tokens');
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
-            const tokenRepository = getMongoRepository(Token);
+            const tokenRepository = new DataBaseHelper(Token);
             for (const token of tokens) {
                 const tokenName = token.tokenName;
                 const tokenSymbol = token.tokenSymbol;
@@ -267,12 +265,12 @@ export class PolicyImportExportHelper {
         await PolicyImportExportHelper.replaceConfig(policy, schemasMap);
 
         // Save
-        const model = getMongoRepository(Policy).create(policy as Policy);
-        const result = await getMongoRepository(Policy).save(model);
+        const model = new DataBaseHelper(Policy).create(policy as Policy);
+        const result = await new DataBaseHelper(Policy).save(model);
 
         topicRow.policyId = result.id.toString();
         topicRow.policyUUID = result.uuid;
-        await getMongoRepository(Topic).update(topicRow.id, topicRow);
+        await new DataBaseHelper(Topic).update(topicRow);
 
         notifier.completed();
         return result;
@@ -284,7 +282,7 @@ export class PolicyImportExportHelper {
      * @param schemasMap
      */
     static async replaceConfig(policy: Policy, schemasMap: any) {
-        if (await getMongoRepository(Policy).findOne({ name: policy.name })) {
+        if (await new DataBaseHelper(Policy).findOne({ name: policy.name })) {
             policy.name = policy.name + '_' + Date.now();
         }
 

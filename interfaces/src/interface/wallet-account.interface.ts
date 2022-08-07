@@ -9,13 +9,13 @@ export interface IWalletAccount {
     /**
      * Token
      */
-    token: string;
+    token?: string;
     /**
      * Type
      */
-    type: string;
+    type?: string;
     /**
      * Key
      */
-    key: string;
+    key?: string;
 }

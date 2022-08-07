@@ -1,43 +1,42 @@
-import {Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn} from 'typeorm';
+import { Entity, Property } from '@mikro-orm/core';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * Block state
  */
 @Entity()
-export class BlockState {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
-
+export class BlockState extends BaseEntity {
     /**
      * Created at
      */
-    @CreateDateColumn()
-    created: Date;
+    @Property()
+    created: Date = new Date();
 
     /**
      * Updated at
      */
-    @UpdateDateColumn()
-    updated: Date;
+    @Property({ onUpdate: () => new Date() })
+    updated: Date = new Date();
 
     /**
      * Policy id
      */
-    @Column()
-    policyId: string;
+    @Property({ nullable: true })
+    policyId?: string;
 
     /**
      * Block id
      */
-    @Column()
-    blockId: string;
+    @Property({ nullable: true })
+    blockId?: string;
 
     /**
      * block state
      */
-    @Column()
-    blockState: string;
+    @Property({ nullable: true })
+    blockState?: string;
+
+    toJSON(): { [p: string]: any } {
+        return Object.assign({}, { ...this, id: this.id });
+    }
 }

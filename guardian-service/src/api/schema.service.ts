@@ -362,7 +362,8 @@ export async function publishSystemSchema(
     messageServer: MessageServer,
     type?: MessageAction
 ): Promise<SchemaCollection> {
-    item.id = undefined;
+    delete item.id;
+    delete item._id;
     item.readonly = true;
     item.system = false;
     item.active = false;
@@ -621,15 +622,16 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 filter.where.uuid = uuid;
             }
 
+            const otherOptions: any = {};
             const _pageSize = parseInt(pageSize, 10);
             const _pageIndex = parseInt(pageIndex, 10);
             if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                filter.order = { createDate: 'DESC' };
-                filter.take = _pageSize;
-                filter.skip = _pageIndex * _pageSize;
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = _pageSize;
+                otherOptions.offset = _pageIndex * _pageSize;
             }
 
-            const [schemas, count] = await DatabaseServer.getSchemasAndCount(filter);
+            const [schemas, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
 
             return new MessageResponse({
                 schemas,
@@ -988,14 +990,15 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                     system: true
                 }
             }
+            const otherOptions: any = {};
             const _pageSize = parseInt(pageSize, 10);
             const _pageIndex = parseInt(pageIndex, 10);
             if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                filter.order = { createDate: 'DESC' };
-                filter.take = _pageSize;
-                filter.skip = _pageIndex * _pageSize;
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = _pageSize;
+                otherOptions.offset = _pageIndex * _pageSize;
             }
-            const [schemas, count] = await DatabaseServer.getSchemasAndCount(filter);
+            const [schemas, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
             return new MessageResponse({
                 schemas,
                 count

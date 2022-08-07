@@ -1,83 +1,82 @@
 import { ApproveStatus, IApprovalDocument, SchemaEntity } from '@guardian/interfaces';
-import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Property, BeforeCreate, Enum } from '@mikro-orm/core';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * Document for approve
  */
 @Entity()
-export class ApprovalDocument implements IApprovalDocument {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
-
+export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
     /**
      * Document owner
      */
-    @Column()
-    owner: string;
+    @Property({ nullable: true })
+    owner?: string;
 
     /**
      * Document approver
      */
-    @Column()
-    approver: string;
+    @Property({ nullable: true })
+    approver?: string;
 
     /**
      * Document instance
      */
-    @Column()
-    document: any;
+    @Property({ nullable: true })
+    document?: any;
 
     /**
      * Document policy id
      */
-    @Column()
-    policyId: string;
+    @Property({ nullable: true })
+    policyId?: string;
 
     /**
      * Document type
      */
-    @Column()
-    type: SchemaEntity;
+    @Enum({ nullable: true })
+    type?: SchemaEntity;
 
     /**
      * Created at
      */
-    @CreateDateColumn()
-    createDate: Date;
+    @Property()
+    createDate: Date = new Date();
 
     /**
      * Updated at
      */
-    @UpdateDateColumn()
-    updateDate: Date;
+    @Property({ onUpdate: () => new Date() })
+    updateDate: Date = new Date();
 
     /**
      * Document tag
      */
-    @Column()
-    tag: string;
+    @Property({ nullable: true })
+    tag?: string;
 
     /**
      * Document option
      */
-    @Column()
-    option: any;
+    @Property({ nullable: true })
+    option?: any;
 
     /**
      * Document schema
      */
-    @Column()
-    schema: string;
+    @Property({ nullable: true })
+    schema?: string;
 
     /**
      * Default document values
      */
-    @BeforeInsert()
+    @BeforeCreate()
     setDefaults() {
         this.option = this.option || {};
         this.option.status = this.option.status || ApproveStatus.NEW;
+    }
+
+    toJSON(): { [p: string]: any } {
+        return Object.assign({}, { ...this, id: this.id });
     }
 }

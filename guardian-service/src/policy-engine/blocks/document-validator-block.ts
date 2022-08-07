@@ -104,7 +104,7 @@ export class DocumentValidatorBlock {
         }
 
         if (ref.options.checkAssignDocument) {
-            if (document.assign !== event?.user?.did) {
+            if (document.assignee !== event?.user?.did) {
                 return false;
             }
         }

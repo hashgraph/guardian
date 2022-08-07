@@ -6,12 +6,11 @@ import {
     MessageAPI,
     SchemaEntity
 } from '@guardian/interfaces';
-import { MongoRepository } from 'typeorm';
 import {
     VpDocument as HVpDocument
 } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger, DataBaseHelper } from '@guardian/common';
 
 /**
  * Get field
@@ -65,9 +64,9 @@ function checkPolicy(vcDocument: VcDocument, policyId: string) {
  */
 export async function trustChainAPI(
     channel: MessageBrokerChannel,
-    didDocumentRepository: MongoRepository<DidDocument>,
-    vcDocumentRepository: MongoRepository<VcDocument>,
-    vpDocumentRepository: MongoRepository<VpDocument>
+    didDocumentRepository: DataBaseHelper<DidDocument>,
+    vcDocumentRepository: DataBaseHelper<VcDocument>,
+    vpDocumentRepository: DataBaseHelper<VpDocument>
 ): Promise<void> {
     /**
      * Search parent by VC or VP Document

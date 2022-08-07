@@ -1,5 +1,5 @@
 import { Schema } from '@entity/schema';
-import { getMongoRepository } from 'typeorm';
+import { DataBaseHelper } from '@guardian/common';
 import { ISchema } from '@guardian/interfaces';
 import { SchemaLoader } from '@hedera-modules';
 
@@ -69,10 +69,10 @@ export class SubjectSchemaLoader extends SchemaLoader {
             if (context && context.length) {
                 for (const c of context) {
                     if (c.startsWith('schema#')) {
-                        return await getMongoRepository(Schema).find({ iri });
+                        return await new DataBaseHelper(Schema).find({ iri });
                     }
                 }
-                return await getMongoRepository(Schema).find({
+                return await new DataBaseHelper(Schema).find({
                     where: {
                         contextURL: { $in: context },
                         iri: { $eq: iri },

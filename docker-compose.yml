@@ -2,6 +2,8 @@ version: "3.8"
 services:
   mongo:
     image: mongo
+    volumes:
+      - mongo:/data/db
     restart: always
     expose:
       - 27017
