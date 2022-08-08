@@ -259,7 +259,7 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
     await messageServer.setTopicObject(topic).sendMessage(message);
 
     notifier.completedAndStart('Update schema in DB');
-    const savedSchema =  await DatabaseServer.saveSchema(schemaObject);
+    const savedSchema = await DatabaseServer.saveSchema(schemaObject);
     notifier.completed();
     return savedSchema;
 }
@@ -377,6 +377,7 @@ export async function publishSystemSchema(
  * @param id
  * @param version
  * @param owner
+ * @param notifier
  */
 export async function findAndPublishSchema(id: string, version: string, owner: string, notifier: INotifier): Promise<SchemaCollection> {
     notifier.start('Load schema');
@@ -416,7 +417,36 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
 }
 
 /**
- * Import shemas by messages
+ * Find and publish schema
+ * @param item
+ * @param version
+ * @param owner
+ */
+export async function findAndDryRunSchema(item: SchemaCollection, version: string, owner: string): Promise<SchemaCollection> {
+    if (item.creator !== owner) {
+        throw new Error('Invalid owner');
+    }
+
+    if (!item.topicId) {
+        throw new Error('Invalid topicId');
+    }
+
+    if (item.status === SchemaStatus.PUBLISHED) {
+        throw new Error('Invalid status');
+    }
+
+    const itemDocument = item.document;
+    const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
+    item.context = schemasToContext([...defsArray, itemDocument]);
+    // item.status = SchemaStatus.PUBLISHED;
+
+    SchemaHelper.updateIRI(item);
+    await DatabaseServer.updateSchema(item.id, item);
+    return item;
+}
+
+/**
+ * Import schemas by messages
  * @param owner
  * @param messageIds
  * @param topicId

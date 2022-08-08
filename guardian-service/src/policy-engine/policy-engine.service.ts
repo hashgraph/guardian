@@ -29,7 +29,7 @@ import {
 } from '@hedera-modules'
 import { replaceAllEntities, SchemaFields } from '@helpers/utils';
 import { IPolicyBlock, IPolicyInterfaceBlock } from './policy-engine.interface';
-import { incrementSchemaVersion, findAndPublishSchema, publishSystemSchema } from '@api/schema.service';
+import { incrementSchemaVersion, findAndPublishSchema, publishSystemSchema, findAndDryRunSchema } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { VcHelper } from '@helpers/vc-helper';
 import { Users } from '@helpers/users';
@@ -337,6 +337,23 @@ export class PolicyEngineService {
     }
 
     /**
+     * Dry run Policy schemas
+     * @param model
+     * @param owner
+     * @private
+     */
+    private async dryRunSchemas(model: Policy, owner: string): Promise<Policy> {
+        const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
+        for (const schema of schemas) {
+            if (schema.status === SchemaStatus.PUBLISHED) {
+                continue;
+            }
+            await findAndDryRunSchema(schema, schema.version, owner);
+        }
+        return model;
+    }
+
+    /**
      * Publish policy
      * @param model
      * @param owner
@@ -423,7 +440,7 @@ export class PolicyEngineService {
 
         logger.info('Published Policy', ['GUARDIAN_SERVICE']);
         notifier.completedAndStart('Saving in DB');
-        const retVal =  await DatabaseServer.updatePolicy(model);
+        const retVal = await DatabaseServer.updatePolicy(model);
         notifier.completed();
         return retVal
     }
@@ -448,7 +465,7 @@ export class PolicyEngineService {
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, dryRunId);
         const databaseServer = new DatabaseServer(dryRunId);
 
-        // model = await this.publishSchemas(model, owner);
+        model = await this.dryRunSchemas(model, owner);
         model.status = PolicyType.DRY_RUN;
         model.version = version;
 
@@ -1106,7 +1123,7 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, async (msg) => {
             try {
                 const { messageId, user } = msg;
-                const policyToImport  = await this.preparePolicyPreviewMessage(messageId, user, emptyNotifier());
+                const policyToImport = await this.preparePolicyPreviewMessage(messageId, user, emptyNotifier());
                 return new MessageResponse(policyToImport);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -1120,7 +1137,7 @@ export class PolicyEngineService {
 
             setImmediate(async () => {
                 try {
-                    const policyToImport  = await this.preparePolicyPreviewMessage(messageId, user, notifier);
+                    const policyToImport = await this.preparePolicyPreviewMessage(messageId, user, notifier);
                     notifier.result(policyToImport);
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
