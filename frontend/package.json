@@ -15,7 +15,7 @@
         "@angular/router": "~12.1.1",
         "@ctrl/ngx-codemirror": "^5.1.1",
         "@enonic/global-polyfill": "^1.0.0",
-        "codemirror": "^5.65.0",
+        "codemirror": "^6.0.1",
         "cronstrue": "^2.4.0",
         "crypto-browserify": "^3.12.0",
         "file-saver": "^2.0.5",
