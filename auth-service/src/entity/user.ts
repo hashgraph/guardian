@@ -64,8 +64,4 @@ export class User extends BaseEntity implements IUser {
     setInitState() {
         this.role = this.role || UserRole.USER;
     }
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
-    }
 }

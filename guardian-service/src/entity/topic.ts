@@ -61,8 +61,4 @@ export class Topic extends BaseEntity {
      */
     @Property({ nullable: true })
     policyUUID?: string;
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
-    }
 }

@@ -106,8 +106,4 @@ export class VpDocument extends BaseEntity implements IVPDocument {
         this.status = this.status || DocumentStatus.NEW;
         this.signature = this.signature || DocumentSignature.NEW;
     }
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
-    }
 }

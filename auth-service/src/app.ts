@@ -1,7 +1,7 @@
 import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/account-service';
 import { WalletService } from '@api/wallet-service';
-import { ApplicationState, MessageBrokerChannel, Logger, DataBaseHelper, DB_DI } from '@guardian/common';
+import { ApplicationState, MessageBrokerChannel, Logger, DB_DI } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';

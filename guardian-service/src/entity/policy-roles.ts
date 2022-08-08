@@ -23,8 +23,4 @@ export class PolicyRoles extends BaseEntity {
      */
     @Property({ nullable: true })
     role?: string;
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
-    }
 }

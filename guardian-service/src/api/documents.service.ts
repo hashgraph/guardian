@@ -8,15 +8,14 @@ import {
     DocumentStatus,
     IDidObject,
     IVCDocument,
-    IVPDocument,
     MessageAPI,
 } from '@guardian/interfaces';
 import { ApiResponse } from '@api/api-response';
 import {
-    MessageBrokerChannel, 
-    MessageResponse, 
-    MessageError, 
-    DataBaseHelper 
+    MessageBrokerChannel,
+    MessageResponse,
+    MessageError,
+    DataBaseHelper
 } from '@guardian/common';
 
 /**
@@ -153,7 +152,7 @@ export async function documentsAPI(
             } else {
                 return new MessageError('Document not found');
             }
-        } else if (Array.isArray(msg)) {   
+        } else if (Array.isArray(msg)) {
             const result = []
             for (const documentObject of msg) {
                 result.push(await didDocumentRepository.save(documentObject));
@@ -163,7 +162,7 @@ export async function documentsAPI(
         else {
             const result: IDidObject = await didDocumentRepository.save(msg);
             return new MessageResponse(result);
-        } 
+        }
     });
 
     /**
@@ -251,10 +250,10 @@ export async function documentsAPI(
      */
     ApiResponse(channel, MessageAPI.GET_VP_DOCUMENTS, async (msg) => {
         if (msg) {
-            const document: IVPDocument[] = await vpDocumentRepository.find(msg);
+            const document = await vpDocumentRepository.find(msg);
             return new MessageResponse(document);
         } else {
-            const documents: IVPDocument[] = await vpDocumentRepository.findAll();
+            const documents = await vpDocumentRepository.findAll();
             return new MessageResponse(documents);
         }
     });

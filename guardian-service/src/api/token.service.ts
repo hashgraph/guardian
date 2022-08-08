@@ -1,5 +1,4 @@
 import { Token } from '@entity/token';
-import { MongoEntityRepository } from '@mikro-orm/mongodb';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { HederaSDKHelper } from '@hedera-modules';
@@ -452,14 +451,14 @@ export async function tokenAPI(
             if (msg.tokenId) {
                 const reqObj: any = { where: {} as unknown };
                 reqObj.where.tokenId = { $eq: msg.tokenId }
-                const tokens: IToken[] = await tokenRepository.find(reqObj);
+                const tokens = await tokenRepository.find(reqObj);
                 return new MessageResponse(tokens);
 
             }
             if (msg.ids) {
                 const reqObj: any = { where: {} as unknown };
                 reqObj.where.tokenId = { $in: msg.ids }
-                const tokens: IToken[] = await tokenRepository.find(reqObj);
+                const tokens = await tokenRepository.find(reqObj);
                 return new MessageResponse(tokens);
 
             }

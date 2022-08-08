@@ -6,12 +6,12 @@ import {
     SchemaStatus,
     GenerateUUIDv4
 } from '@guardian/interfaces';
-import { 
-    Entity, 
-    Property, 
-    Enum, 
-    BeforeCreate, 
-    OnLoad 
+import {
+    Entity,
+    Property,
+    Enum,
+    BeforeCreate,
+    OnLoad
 } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
@@ -170,9 +170,5 @@ export class Schema extends BaseEntity implements ISchema {
         this.category = this.readonly
             ? SchemaCategory.SYSTEM
             : SchemaCategory.USER;
-    }
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
     }
 }

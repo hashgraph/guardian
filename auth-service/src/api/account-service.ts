@@ -3,12 +3,12 @@ import { sign, verify } from 'jsonwebtoken';
 import { User } from '@entity/user';
 import * as util from 'util';
 import crypto from 'crypto';
-import { 
-    MessageBrokerChannel, 
-    MessageResponse, 
-    MessageError, 
-    Logger, 
-    DataBaseHelper 
+import {
+    MessageBrokerChannel,
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper
 } from '@guardian/common';
 import {
     AuthEvents, UserRole,

@@ -26,12 +26,12 @@ import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { ApiResponse } from '@api/api-response';
-import { 
-    MessageBrokerChannel, 
-    MessageResponse, 
-    MessageError, 
-    Logger, 
-    DataBaseHelper 
+import {
+    MessageBrokerChannel,
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper
 } from '@guardian/common';
 import { publishSystemSchema } from './schema.service';
 import { Settings } from '@entity/settings';
@@ -180,7 +180,7 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
     const userDID = didObject.getDid();
     const didMessage = new DIDMessage(MessageAction.CreateDID);
     didMessage.setDocument(didObject);
-    let didDoc = await new DataBaseHelper(DidDocumentCollection).save({
+    const didDoc = await new DataBaseHelper(DidDocumentCollection).save({
         did: didMessage.did,
         document: didMessage.document
     });
@@ -286,7 +286,7 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
         const vcObject = await vcHelper.createVC(userDID, hederaAccountKey, credentialSubject);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(vcObject);
-        let vcDoc = await new DataBaseHelper(VcDocumentCollection).save({
+        const vcDoc = await new DataBaseHelper(VcDocumentCollection).save({
             hash: vcMessage.hash,
             owner: didMessage.did,
             document: vcMessage.document,

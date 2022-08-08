@@ -35,8 +35,4 @@ export class BlockState extends BaseEntity {
      */
     @Property({ nullable: true })
     blockState?: string;
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
-    }
 }

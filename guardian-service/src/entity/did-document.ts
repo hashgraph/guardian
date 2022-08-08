@@ -1,10 +1,10 @@
 import { DidDocumentStatus, IDidObject } from '@guardian/interfaces';
-import { 
-    Entity, 
-    Unique, 
-    Property, 
-    Enum, 
-    BeforeCreate 
+import {
+    Entity,
+    Unique,
+    Property,
+    Enum,
+    BeforeCreate
 } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
@@ -62,9 +62,5 @@ export class DidDocument extends BaseEntity implements IDidObject {
     @BeforeCreate()
     setDefaults() {
         this.status = this.status || DidDocumentStatus.NEW;
-    }
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
     }
 }

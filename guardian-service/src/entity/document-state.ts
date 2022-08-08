@@ -29,8 +29,4 @@ export class DocumentState extends BaseEntity {
      */
     @Property({ nullable: true })
     reason?: string;
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
-    }
 }

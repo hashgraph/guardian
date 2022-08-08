@@ -136,8 +136,4 @@ export class Policy extends BaseEntity {
         this.codeVersion = this.codeVersion || '1.0.0';
         delete this.registeredUsers;
     }
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
-    }
 }

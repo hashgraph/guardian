@@ -132,8 +132,8 @@ export class DocumentsSourceAddon {
             if (ref.options.viewHistory) {
 
                 dataItem.history = (await ref.databaseServer.getDocumentStates({
-                    documentId: dataItem.id 
-                }, { 
+                    documentId: dataItem.id
+                }, {
                     orderBy: { 'created': 'DESC' }
                 })).map(item => {
                     return {

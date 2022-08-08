@@ -127,11 +127,11 @@ export class MessageServer {
         /**
          * Topic ID
          */
-        topicId: string,
+        topicId?: string,
         /**
          * Key
          */
-        key: string
+        key?: string
     }): MessageServer {
         this.submitKey = topic.key;
         this.topicId = topic.topicId;

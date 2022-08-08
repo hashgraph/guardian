@@ -1,7 +1,7 @@
 import { loggerAPI } from '@api/logger.service';
 import { Log } from '@entity/log';
 import { ApplicationState, DataBaseHelper, DB_DI, MessageBrokerChannel } from '@guardian/common';
-import { ApplicationStates, LogType } from '@guardian/interfaces';
+import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 

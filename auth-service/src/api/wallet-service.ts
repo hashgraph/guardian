@@ -1,10 +1,10 @@
 import { WalletAccount } from '@entity/wallet-account';
-import { 
-    MessageBrokerChannel, 
-    MessageResponse, 
-    MessageError, 
-    Logger, 
-    DataBaseHelper 
+import {
+    MessageBrokerChannel,
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper
 } from '@guardian/common';
 import { WalletEvents, IGetKeyMessage, ISetKeyMessage } from '@guardian/interfaces';
 

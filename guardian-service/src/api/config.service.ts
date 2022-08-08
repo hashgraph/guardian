@@ -1,12 +1,12 @@
 import { Settings } from '@entity/settings';
 import { Topic } from '@entity/topic';
 import { ApiResponse } from '@api/api-response';
-import { 
-    MessageBrokerChannel, 
-    MessageResponse, 
-    MessageError, 
-    Logger, 
-    DataBaseHelper 
+import {
+    MessageBrokerChannel,
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper
 } from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
 import { Environment } from '@hedera-modules';

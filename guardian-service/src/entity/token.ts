@@ -85,8 +85,4 @@ export class Token extends BaseEntity implements IToken {
      */
     @Property({ nullable: true })
     owner?: string;
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
-    }
 }

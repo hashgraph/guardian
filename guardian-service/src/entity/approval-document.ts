@@ -75,8 +75,4 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
         this.option = this.option || {};
         this.option.status = this.option.status || ApproveStatus.NEW;
     }
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
-    }
 }

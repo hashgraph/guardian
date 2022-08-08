@@ -131,8 +131,4 @@ export class VcDocument extends BaseEntity implements IVCDocument {
         this.signature = this.signature || DocumentSignature.NEW;
         this.option = this.option || {};
     }
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
-    }
 }

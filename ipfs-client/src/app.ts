@@ -3,7 +3,7 @@ import { NFTStorage } from 'nft.storage';
 import { MessageBrokerChannel, ApplicationState, Logger, DB_DI, DataBaseHelper } from '@guardian/common';
 import { fileAPI } from './api/file.service';
 import { Settings } from './entity/settings';
-import { EntityManager, RequestContext, MikroORM } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 
 Promise.all([

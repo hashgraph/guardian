@@ -114,8 +114,4 @@ export class AggregateVC extends BaseEntity {
      */
     @Property({ nullable: true })
     accounts?: any
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
-    }
 }

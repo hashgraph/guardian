@@ -30,8 +30,4 @@ export class Log extends BaseEntity implements ILog {
      */
     @Property({ nullable: true })
     attributes?: string[];
-
-    toJSON(): { [p: string]: any } {
-        return Object.assign({}, { ...this, id: this.id });
-    }
 }
