@@ -3,7 +3,7 @@ import { Topic } from '@entity/topic';
 import { HederaSDKHelper, HederaUtils, VcDocument, VcDocument as HVcDocument, TopicHelper } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { ExternalMessageEvents, Schema, TopicType, UserRole } from '@guardian/interfaces';
+import { ExternalMessageEvents, Schema, TopicType } from '@guardian/interfaces';
 import { ExternalEventChannel, IAuthUser } from '@guardian/common';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { TopicId } from '@hashgraph/sdk';
@@ -625,11 +625,7 @@ export class PolicyUtils {
      */
     public static async getUser(ref: AnyBlockType, did: string): Promise<IAuthUser> {
         if (ref.dryRun) {
-            return {
-                did,
-                username: did,
-                role: UserRole.STANDARD_REGISTRY
-            }
+            return await ref.databaseServer.getVirtualUser(did);
         } else {
             return await PolicyUtils.users.getUserById(did);
         }
