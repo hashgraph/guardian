@@ -26,7 +26,8 @@ import {
     Logger,
     ExternalEventChannel,
     DataBaseHelper,
-    DB_DI
+    DB_DI,
+    Migration
 } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { Environment, HederaSDKHelper, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
@@ -36,21 +37,32 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { DatabaseMigrations, DatabaseServer } from '@database-modules';
 import { ipfsAPI } from '@api/ipfs.service';
 
+const connectionConfig: any = {
+    type: 'mongo',
+    dbName: process.env.DB_DATABASE,
+    clientUrl:`mongodb://${process.env.DB_HOST}`,
+    entities: [
+        'dist/entity/*.js'
+    ]
+};
+
 Promise.all([
+    Migration({
+        ...connectionConfig,
+        migrations: {
+            path: 'dist/migrations'
+        }
+    }),
     MikroORM.init<MongoDriver>({
-        type: 'mongo',
-        dbName: process.env.DB_DATABASE,
-        clientUrl:`mongodb://${process.env.DB_HOST}`,
-        entities: [
-            'dist/entity/*.js'
-        ],
+        ...connectionConfig,
         driverOptions: {
             useUnifiedTopology: true
-        }
+        },
+        ensureIndexes: true
     }),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE')
 ]).then(async values => {
-    const [db, cn] = values;
+    const [_, db, cn] = values;
     DB_DI.orm = db;
     const channel = new MessageBrokerChannel(cn, 'guardians');
     const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');

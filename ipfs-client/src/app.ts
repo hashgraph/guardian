@@ -1,27 +1,37 @@
 import { ApplicationStates } from '@guardian/interfaces';
 import { NFTStorage } from 'nft.storage';
-import { MessageBrokerChannel, ApplicationState, Logger, DB_DI, DataBaseHelper } from '@guardian/common';
+import { MessageBrokerChannel, ApplicationState, Logger, DB_DI, DataBaseHelper, Migration } from '@guardian/common';
 import { fileAPI } from './api/file.service';
 import { Settings } from './entity/settings';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 
+const connectionConfig: any = {
+    type: 'mongo',
+    dbName: process.env.DB_DATABASE,
+    clientUrl:`mongodb://${process.env.DB_HOST}`,
+    entities: [
+        'dist/entity/*.js'
+    ]
+};
+
 Promise.all([
+    Migration({
+        ...connectionConfig,
+        migrations: {
+            path: 'dist/migrations'
+        }
+    }),
     MikroORM.init<MongoDriver>({
-        type: 'mongo',
-        dbName: process.env.DB_DATABASE,
-        clientUrl:`mongodb://${process.env.DB_HOST}`,
-        entities: [
-            'dist/entity/*.js'
-        ],
+        ...connectionConfig,
         driverOptions: {
             useUnifiedTopology: true
         },
-        validate: true
+        ensureIndexes: true
     }),
     MessageBrokerChannel.connect('IPFS_CLIENT')
 ]).then(async values => {
-    const [db, cn] = values;
+    const [_, db, cn] = values;
     DB_DI.orm = db;
     const state = new ApplicationState('IPFS_CLIENT');
     const channel = new MessageBrokerChannel(cn, 'ipfs-client');
