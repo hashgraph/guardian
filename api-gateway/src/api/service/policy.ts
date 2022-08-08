@@ -55,7 +55,7 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
     }
 });
 
-policyAPI.post('/', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
         const policies = await engineService.createPolicy(req.body, req.user)
@@ -66,7 +66,7 @@ policyAPI.post('/', async (req: AuthenticatedRequest, res: Response) => {
     }
 });
 
-policyAPI.post('/push', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.post('/push', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Create policy');
 
@@ -121,7 +121,7 @@ policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
     }
 });
 //
-policyAPI.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.put('/:policyId/publish', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
         res.json(await engineService.publishPolicy(req.body, req.user, req.params.policyId));
@@ -131,7 +131,7 @@ policyAPI.put('/:policyId/publish', async (req: AuthenticatedRequest, res: Respo
     }
 });
 
-policyAPI.put('/push/:policyId/publish',async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.put('/push/:policyId/publish', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Publish policy');
 
@@ -151,7 +151,7 @@ policyAPI.put('/push/:policyId/publish',async (req: AuthenticatedRequest, res: R
     res.status(201).send({ taskId, expectation });
 });
 
-policyAPI.put('/:policyId/dry-run', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.put('/:policyId/dry-run', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
         res.json(await engineService.dryRunPolicy(req.body, req.user, req.params.policyId));
@@ -161,7 +161,7 @@ policyAPI.put('/:policyId/dry-run', async (req: AuthenticatedRequest, res: Respo
     }
 });
 
-policyAPI.put('/:policyId/draft', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.put('/:policyId/draft', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
         res.json(await engineService.draft(req.body, req.user, req.params.policyId));
@@ -251,7 +251,7 @@ policyAPI.get('/:policyId/blocks/:uuid/parents', async (req: AuthenticatedReques
     }
 });
 
-policyAPI.get('/:policyId/export/file', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.get('/:policyId/export/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
         const policyFile: any = await engineService.exportFile(req.user, req.params.policyId);
@@ -265,7 +265,7 @@ policyAPI.get('/:policyId/export/file', async (req: AuthenticatedRequest, res: R
     }
 });
 
-policyAPI.get('/:policyId/export/message', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.get('/:policyId/export/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
         res.send(await engineService.exportMessage(req.user, req.params.policyId));
@@ -275,7 +275,7 @@ policyAPI.get('/:policyId/export/message', async (req: AuthenticatedRequest, res
     }
 });
 
-policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.post('/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
     try {
@@ -287,7 +287,7 @@ policyAPI.post('/import/message', async (req: AuthenticatedRequest, res: Respons
     }
 });
 
-policyAPI.post('/push/import/message', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.post('/push/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Import policy message');
 
@@ -306,7 +306,7 @@ policyAPI.post('/push/import/message', async (req: AuthenticatedRequest, res: Re
     res.status(201).send({ taskId, expectation });
 });
 
-policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.post('/import/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
     try {
@@ -318,7 +318,7 @@ policyAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response) 
     }
 });
 
-policyAPI.post('/push/import/file', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.post('/push/import/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Import policy file');
 
@@ -337,7 +337,7 @@ policyAPI.post('/push/import/file', async (req: AuthenticatedRequest, res: Respo
     res.status(201).send({ taskId, expectation });
 });
 
-policyAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.post('/import/message/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
         res.send(await engineService.importMessagePreview(req.user, req.body.messageId));
@@ -347,7 +347,7 @@ policyAPI.post('/import/message/preview', async (req: AuthenticatedRequest, res:
     }
 });
 
-policyAPI.post('/push/import/message/preview', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.post('/push/import/message/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Preview policy message');
 
@@ -366,7 +366,7 @@ policyAPI.post('/push/import/message/preview', async (req: AuthenticatedRequest,
     res.status(201).send({ taskId, expectation });
 });
 
-policyAPI.post('/import/file/preview', async (req: AuthenticatedRequest, res: Response) => {
+policyAPI.post('/import/file/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
         res.send(await engineService.importFilePreview(req.user, req.body));
