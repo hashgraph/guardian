@@ -1,4 +1,4 @@
-import { NFTStorage } from 'nft.storage';
+import { Web3Storage } from 'web3.storage';
 import Blob from 'cross-blob';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
@@ -28,7 +28,7 @@ export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
  */
 export async function fileAPI(
     channel: MessageBrokerChannel,
-    client: NFTStorage,
+    client: Web3Storage,
     settingsRepository: DataBaseHelper<Settings>
 ): Promise<void> {
     /**
@@ -46,8 +46,8 @@ export async function fileAPI(
                 // If get data back from external event
                 fileContent = Buffer.from(data.body, 'base64')
             }
-            const blob = new Blob([fileContent]);
-            const cid = await client.storeBlob(blob);
+            const blob: any = new Blob([fileContent]);
+            const cid = await client.put([blob], { wrapWithDirectory: false });
             const url = `${IPFS_PUBLIC_GATEWAY}/${cid}`;
             channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { cid, url });
 
@@ -76,8 +76,8 @@ export async function fileAPI(
                     // If get data back from external event
                     fileContent = Buffer.from(data.body, 'base64')
                 }
-                const blob = new Blob([fileContent]);
-                const cid = await client.storeBlob(blob);
+                const blob: any = new Blob([fileContent]);
+                const cid = await client.put([blob], { wrapWithDirectory: false });
                 const url = `${IPFS_PUBLIC_GATEWAY}/${cid}`;
                 channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { cid, url, taskId });
             }
@@ -201,7 +201,7 @@ export async function fileAPI(
             await settingsRepository.save(nftApiKey, {
                 name: 'NFT_API_KEY'
             });
-            client = new NFTStorage({ token: settings.nftApiKey });
+            client = new Web3Storage({ token: settings.nftApiKey } as any);
             return new MessageResponse({});
         }
         catch (error) {

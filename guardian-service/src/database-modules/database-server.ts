@@ -69,8 +69,8 @@ export class DatabaseServer {
      * Clear Dry Run table
      */
     public static async clearDryRun(dryRunId: string): Promise<void> {
-        const item = await getMongoRepository(DryRun).find({ dryRunId });
-        await getMongoRepository(DryRun).remove(item);
+        const item = await new DataBaseHelper(DryRun).find({ dryRunId });
+        await new DataBaseHelper(DryRun).remove(item);
     }
 
     /**

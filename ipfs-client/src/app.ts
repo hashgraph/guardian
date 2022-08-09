@@ -1,5 +1,5 @@
 import { ApplicationStates } from '@guardian/interfaces';
-import { NFTStorage } from 'nft.storage';
+import { Web3Storage } from 'web3.storage';
 import { MessageBrokerChannel, ApplicationState, Logger, DB_DI, DataBaseHelper, Migration } from '@guardian/common';
 import { fileAPI } from './api/file.service';
 import { Settings } from './entity/settings';
@@ -54,7 +54,7 @@ Promise.all([
     });
 
     state.updateState(ApplicationStates.INITIALIZING);
-    await fileAPI(channel, new NFTStorage({ token: nftApiKey?.value || process.env.NFT_API_KEY }), settingsRepository);
+    await fileAPI(channel, new Web3Storage({ token: nftApiKey?.value || process.env.NFT_API_KEY } as any), settingsRepository);
 
     state.updateState(ApplicationStates.READY);
     new Logger().info('ipfs-client service started', ['IPFS_CLIENT']);

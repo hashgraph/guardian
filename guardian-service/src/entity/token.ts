@@ -6,7 +6,7 @@ import { BaseEntity } from '@guardian/common';
  * Tokens collection
  */
 @Entity()
-@Unique({ properties: ['tokenId'], options: { partialFilterExpression: { tokenId: { $exists: true }}}})
+@Unique({ properties: ['tokenId'], options: { partialFilterExpression: { tokenId: { $exists: true, $ne: null }}}})
 export class Token extends BaseEntity implements IToken {
     /**
      * Token id
