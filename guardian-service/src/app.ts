@@ -50,7 +50,8 @@ Promise.all([
     Migration({
         ...connectionConfig,
         migrations: {
-            path: 'dist/migrations'
+            path: 'dist/migrations',
+            transactional: false
         }
     }),
     MikroORM.init<MongoDriver>({

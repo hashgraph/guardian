@@ -171,7 +171,7 @@ export class PolicyEngineService {
             return;
         }
 
-        const userRole = PolicyComponentsUtils.GetUserRole(policy, user);
+        const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
 
         await this.channel.request(['api-gateway', 'update-user-info'].join('.'), {
             policyId: policy.id.toString(),

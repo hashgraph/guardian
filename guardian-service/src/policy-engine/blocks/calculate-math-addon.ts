@@ -60,7 +60,7 @@ export class CalculateMathAddon {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
         try {
             if (ref.options.equations) {
-                for (const equation of ref.options.equations.length) {
+                for (const equation of ref.options.equations) {
                     if (!ref.parse(equation.formula)) {
                         resultsContainer.addBlockError(ref.uuid, `Incorrect formula: ${equation.formula}`);
                         return;
