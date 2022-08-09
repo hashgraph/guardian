@@ -7,7 +7,7 @@ There are two types of Schemas:
 
 To display System / Policy Schemas in the GUI, we have added a toggle in the Schemas tab.
 
-![](<../.gitbook/assets/image (3) (1).png>)
+![](<../.gitbook/assets/image (3) (2).png>)
 
 ### System Schemas
 
@@ -25,7 +25,7 @@ To create a new System Schemas, click on the **New** button at the top right cor
 
 After clicking on the New button, you will be asked to enter Schema details such as Schema Name, Policy Dropdown, Entity : VC/MRV/NONE, Schema Description and any other required fields.
 
-![](<../.gitbook/assets/image (1).png>)
+![](<../.gitbook/assets/image (1) (1).png>)
 
 In addition to the basic Schema details we also have an option to add Field and Condition to each field.
 
@@ -33,7 +33,7 @@ In addition to the basic Schema details we also have an option to add Field and 
 
 We can also customize the Field keys and Field Title by clicking on Advanced Tab.
 
-![](<../.gitbook/assets/image (3).png>)
+![](<../.gitbook/assets/image (3) (1).png>)
 
 There are different types of Field Types:
 
@@ -65,11 +65,11 @@ There are different types of Field Types:
 
 Once the above details are added, click on the Create button.
 
-![](<../.gitbook/assets/image (2).png>)
+![](<../.gitbook/assets/image (2) (1).png>)
 
 Once the System Schema is created, we have options for activating, deleting, editing and viewing JSON documents.
 
-![](<../.gitbook/assets/image (9) (2).png>)
+![](<../.gitbook/assets/image (9) (1).png>)
 
 ### 2. Policy Schemas
 
@@ -106,7 +106,7 @@ To import the Schema, click on the Import button.
 
 Once the Import button is clicked, we get two options: Import from file and Import from IPFS
 
-![](<../.gitbook/assets/image (1) (1).png>)
+![](<../.gitbook/assets/image (1) (2).png>)
 
 Import from file: You can select the required Schema .zip file from your local machine. Sample iREC Schema (iREC Schema.zip) is provided in the link: [https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
 

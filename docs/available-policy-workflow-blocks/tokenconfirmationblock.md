@@ -30,7 +30,7 @@ This block enables the owner of the private key for the account to manually perf
 
 ![JSON View of the Block](<../.gitbook/assets/image (7).png>)
 
-![Configuring tokenConfirmationBlock](../.gitbook/assets/image.png)
+![Configuring tokenConfirmationBlock](<../.gitbook/assets/image (1).png>)
 
 ![Creating Event to move to next step](<../.gitbook/assets/image (16).png>)
 
