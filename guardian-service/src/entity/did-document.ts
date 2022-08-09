@@ -12,7 +12,7 @@ import { BaseEntity } from '@guardian/common';
  * DID document
  */
 @Entity()
-@Unique({ properties: ['did'], options: { partialFilterExpression: { did: { $exists: true }}}})
+@Unique({ properties: ['did'], options: { partialFilterExpression: { did: { $exists: true, $ne: null }}}})
 export class DidDocument extends BaseEntity implements IDidObject {
     /**
      * DID

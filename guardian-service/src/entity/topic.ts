@@ -6,7 +6,7 @@ import { BaseEntity } from '@guardian/common';
  * Topics collection
  */
 @Entity()
-@Unique({ properties: ['topicId'], options: { partialFilterExpression: { topicId: { $exists: true }}}})
+@Unique({ properties: ['topicId'], options: { partialFilterExpression: { topicId: { $exists: true, $ne: null }}}})
 export class Topic extends BaseEntity {
     /**
      * Topic id

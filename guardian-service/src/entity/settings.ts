@@ -5,7 +5,7 @@ import { BaseEntity } from '@guardian/common';
  * Settings collection
  */
 @Entity()
-@Unique({ properties: ['name'], options: { partialFilterExpression: { name: { $exists: true }}}})
+@Unique({ properties: ['name'], options: { partialFilterExpression: { name: { $exists: true, $ne: null }}}})
 export class Settings extends BaseEntity {
     /**
      * Setting name

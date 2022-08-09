@@ -5,7 +5,7 @@ import { Entity, Property, Unique } from '@mikro-orm/core';
  * Service settings
  */
 @Entity()
-@Unique({ properties: ['name'], options: { partialFilterExpression: { name: { $exists: true }}}})
+@Unique({ properties: ['name'], options: { partialFilterExpression: { name: { $exists: true, $ne: null }}}})
 export class Settings extends BaseEntity {
 
     /**
