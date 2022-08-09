@@ -291,7 +291,7 @@ export class DatabaseServer {
             hash: newVc.toCredentialHash(),
             document: newVc.toJsonTree(),
             owner: oldDoc.owner || null,
-            assignee: oldDoc.assignee || null,
+            assignedTo: oldDoc.assignedTo || null,
             option: oldDoc.option || null,
             schema: oldDoc.schema || null,
             hederaStatus: oldDoc.hederaStatus || DocumentStatus.NEW,
@@ -337,7 +337,7 @@ export class DatabaseServer {
                 updateStatus = item.option?.status !== row.option.status
             }
             item.owner = row.owner;
-            item.assignee = row.assignee;
+            item.assignedTo = row.assignedTo;
             item.option = row.option;
             item.schema = row.schema;
             item.hederaStatus = row.hederaStatus;

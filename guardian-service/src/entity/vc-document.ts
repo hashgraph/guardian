@@ -18,7 +18,7 @@ export class VcDocument extends BaseEntity implements IVCDocument {
      * Assign
      */
     @Property({ nullable: true })
-    assignee?: string;
+    assignedTo?: string;
 
     /**
      * Document hash

@@ -43,7 +43,7 @@ export class DocumentsSourceAddon {
         }
 
         if (ref.options.onlyAssignDocuments) {
-            filters.assignee = user.did;
+            filters.assignedTo = user.did;
         }
 
         if (ref.options.schema) {

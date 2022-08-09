@@ -16,7 +16,7 @@ export interface IVCDocument {
     /**
      * Assign
      */
-    assignee?: string;
+    assignedTo?: string;
     /**
      * Hash
      */

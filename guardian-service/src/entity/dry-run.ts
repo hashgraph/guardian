@@ -125,7 +125,7 @@ export class DryRun extends BaseEntity {
      * Assign
      */
     @Property({ nullable: true })
-    assignee?: any;
+    assignedTo?: any;
 
     /**
      * Document hedera status

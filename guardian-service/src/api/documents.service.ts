@@ -96,12 +96,12 @@ export async function documentsAPI(
         try {
             if (msg) {
                 const reqObj: any = {};
-                const { owner, assignee, issuer, id, hash, policyId, schema, ...otherArgs } = msg;
+                const { owner, assignedTo, issuer, id, hash, policyId, schema, ...otherArgs } = msg;
                 if (owner) {
                     reqObj.owner = { $eq: owner }
                 }
-                if (assignee) {
-                    reqObj.assignee = { $eq: assignee }
+                if (assignedTo) {
+                    reqObj.assignedTo = { $eq: assignedTo }
                 }
                 if (issuer) {
                     reqObj['document.issuer'] = { $eq: issuer }
@@ -188,9 +188,9 @@ export async function documentsAPI(
                 result.hederaStatus = getVCOperation(operation);
             }
 
-            const assignee = msg.assignee;
-            if (assignee) {
-                result.assignee = assignee;
+            const assignedTo = msg.assignedTo;
+            if (assignedTo) {
+                result.assignedTo = assignedTo;
             }
 
             const type = msg.type;
