@@ -7,7 +7,7 @@ There are two types of Schemas:
 
 To display System / Policy Schemas in the GUI, we have added a toggle in the Schemas tab.
 
-![](<../.gitbook/assets/image (3).png>)
+![](<../.gitbook/assets/image (3) (1).png>)
 
 ### System Schemas
 
@@ -23,13 +23,17 @@ To create a new System Schemas, click on the **New** button at the top right cor
 
 ![](<../.gitbook/assets/image (16) (1).png>)
 
-After clicking on the New button, you will be asked to enter Schema details such as Schema Name, Entity : Standard\_Registry / User, Schema Description and any other required fields.
+After clicking on the New button, you will be asked to enter Schema details such as Schema Name, Policy Dropdown, Entity : VC/MRV/NONE, Schema Description and any other required fields.
 
-![](<../.gitbook/assets/image (4) (1).png>)
+![](<../.gitbook/assets/image (1).png>)
 
 In addition to the basic Schema details we also have an option to add Field and Condition to each field.
 
-![](<../.gitbook/assets/image (14) (1) (1).png>)
+![](<../.gitbook/assets/image (9).png>)
+
+We can also customize the Field keys and Field Title by clicking on Advanced Tab.
+
+![](<../.gitbook/assets/image (3).png>)
 
 There are different types of Field Types:
 
@@ -61,15 +65,15 @@ There are different types of Field Types:
 
 Once the above details are added, click on the Create button.
 
-![](<../.gitbook/assets/image (15) (1).png>)
+![](<../.gitbook/assets/image (2).png>)
 
 Once the System Schema is created, we have options for activating, deleting, editing and viewing JSON documents.
 
-![](<../.gitbook/assets/image (9).png>)
+![](<../.gitbook/assets/image (9) (2).png>)
 
 ### 2. Policy Schemas
 
-This is the second option in the Schemas tab. This option displays all the Policy Schemas related to all the created / imported Policies in the Policies tab.&#x20;
+This is the second option in the Schemas tab. This option displays all the Policy Schemas related to all the created / imported Policies in the Policies tab.
 
 The below screenshot shows the Policy Schemas of an imported Policy (iRec).
 
@@ -102,14 +106,13 @@ To import the Schema, click on the Import button.
 
 Once the Import button is clicked, we get two options: Import from file and Import from IPFS
 
-![](<../.gitbook/assets/image (1).png>)
+![](<../.gitbook/assets/image (1) (1).png>)
 
 Import from file: You can select the required Schema .zip file from your local machine. Sample iREC Schema (iREC Schema.zip) is provided in the link: [https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
 
 ![](<../.gitbook/assets/image (17) (1).png>)
 
-Import from IPFS: You can also import Schema from IPFS by entering the correct Schema timestamp. Sample iREC Schema timestamp is below:\
-
+Import from IPFS: You can also import Schema from IPFS by entering the correct Schema timestamp. Sample iREC Schema timestamp is below:\\
 
 ```
 1644847084.945541771 (iREC 3 Policy)
@@ -117,9 +120,9 @@ Import from IPFS: You can also import Schema from IPFS by entering the correct S
 
 ![](<../.gitbook/assets/image (14) (1) (1) (1).png>)
 
-Once the Schema is imported, we need to select the Policy from the Policy dropdown to connect the Schema and the Policy.&#x20;
+Once the Schema is imported, we need to select the Policy from the Policy dropdown to connect the Schema and the Policy.
 
-![](<../.gitbook/assets/image (2).png>)
+![](<../.gitbook/assets/image (2) (2).png>)
 
 ![](<../.gitbook/assets/image (11).png>)
 

@@ -13,7 +13,7 @@ We have two options to create Policy :&#x20;
 
 1.1 To create Policy from scratch, we need to click on "Create Policy" button.
 
-![](<../.gitbook/assets/image (1) (1).png>)
+![](<../.gitbook/assets/image (1) (1) (2).png>)
 
 1.2 Once you click on Create Policy , you get a dialog box to fill out basic Policy details.
 
@@ -47,7 +47,7 @@ Instead of creating Policy from scratch, there is an option of importing the Pol
 
 2.2 The Policy can also be imported by importing it from IPFS.
 
-![](<../.gitbook/assets/image (3) (1).png>)
+![](<../.gitbook/assets/image (3) (1) (1).png>)
 
 2.3 To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
 
