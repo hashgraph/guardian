@@ -1,94 +1,88 @@
 import { IToken } from '@guardian/interfaces';
-import { Column, Entity, ObjectIdColumn } from 'typeorm';
+import { Entity, Property, Unique } from '@mikro-orm/core';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * Tokens collection
  */
 @Entity()
-export class Token implements IToken {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
-
+@Unique({ properties: ['tokenId'], options: { partialFilterExpression: { tokenId: { $exists: true }}}})
+export class Token extends BaseEntity implements IToken {
     /**
      * Token id
      */
-    @Column({
-        unique: true
-    })
-    tokenId: string;
+    @Property({ nullable: true })
+    tokenId?: string;
 
     /**
      * Token name
      */
-    @Column()
-    tokenName: string;
+    @Property({ nullable: true })
+    tokenName?: string;
 
     /**
      * Token symbol
      */
-    @Column()
-    tokenSymbol: string;
+    @Property({ nullable: true })
+    tokenSymbol?: string;
 
     /**
      * Token type
      */
-    @Column()
-    tokenType: string;
+    @Property({ nullable: true })
+    tokenType?: string;
 
     /**
      * Token decimals
      */
-    @Column()
+    @Property({ nullable: true })
     decimals: string;
 
     /**
      * Initial supply
      */
-    @Column()
-    initialSupply: string;
+    @Property({ nullable: true })
+    initialSupply?: string;
 
     /**
      * Admin id
      */
-    @Column()
-    adminId: string;
+    @Property({ nullable: true })
+    adminId?: string;
 
     /**
      * Admin key
      */
-    @Column()
-    adminKey: string;
+    @Property({ nullable: true })
+    adminKey?: string;
 
     /**
      * KYC key
      */
-    @Column()
-    kycKey: string;
+    @Property({ nullable: true })
+    kycKey?: string;
 
     /**
      * Freeze key
      */
-    @Column()
-    freezeKey: string;
+    @Property({ nullable: true })
+    freezeKey?: string;
 
     /**
      * Wipe key
      */
-    @Column()
-    wipeKey: string;
+    @Property({ nullable: true })
+    wipeKey?: string;
 
     /**
      * Supply key
      */
-    @Column()
-    supplyKey: string;
+    @Property({ nullable: true })
+    supplyKey?: string;
 
     /**
      * Owner
      */
-    @Column()
-    owner: string;
+    @Property({ nullable: true })
+    owner?: string;
 }

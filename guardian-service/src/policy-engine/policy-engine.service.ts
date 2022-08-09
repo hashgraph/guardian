@@ -35,7 +35,6 @@ import { VcHelper } from '@helpers/vc-helper';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
 import { Policy } from '@entity/policy';
-import { DeepPartial } from 'typeorm/common/DeepPartial';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { BlockTreeGenerator } from './block-tree-generator';
 import { Topic } from '@entity/topic';
@@ -220,7 +219,7 @@ export class PolicyEngineService {
         const logger = new Logger();
         logger.info('Create Policy', ['GUARDIAN_SERVICE']);
         notifier.start('Save in DB');
-        const model = DatabaseServer.createPolicy(data as DeepPartial<Policy>);
+        const model = DatabaseServer.createPolicy(data);
         if (model.uuid) {
             const old = await DatabaseServer.getPolicyByUUID(model.uuid);
             if (model.creator !== owner) {
@@ -710,15 +709,17 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.GET_POLICIES, async (msg) => {
             try {
                 const { filters, pageIndex, pageSize, userDid } = msg;
-                const filter: any = { where: filters }
+                const filter: any = { ...filters };
+
+                const otherOptions: any = {};
                 const _pageSize = parseInt(pageSize, 10);
                 const _pageIndex = parseInt(pageIndex, 10);
                 if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                    filter.order = { createDate: 'DESC' };
-                    filter.take = _pageSize;
-                    filter.skip = _pageIndex * _pageSize;
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
                 }
-                const [policies, count] = await DatabaseServer.getPoliciesAndCount(filter);
+                const [policies, count] = await DatabaseServer.getPoliciesAndCount(filter, otherOptions);
 
                 for (const policy of policies) {
                     (policy as any).userRoles = await PolicyComponentsUtils.GetUserRoleList(policy, userDid);

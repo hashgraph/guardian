@@ -1,9 +1,8 @@
 import { Schema } from '@entity/schema';
-import { MongoRepository } from 'typeorm';
 import { DidDocument } from '@entity/did-document';
 import { DidRootKey } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger, DataBaseHelper } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
 /**
@@ -15,8 +14,8 @@ import { MessageAPI } from '@guardian/interfaces';
  */
 export async function loaderAPI(
     channel: MessageBrokerChannel,
-    didDocumentRepository: MongoRepository<DidDocument>,
-    schemaRepository: MongoRepository<Schema>
+    didDocumentRepository: DataBaseHelper<DidDocument>,
+    schemaRepository: DataBaseHelper<Schema>
 ): Promise<void> {
     /**
      * Return DID Document

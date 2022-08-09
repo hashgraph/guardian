@@ -1,32 +1,27 @@
-import {Column, Entity, ObjectIdColumn} from 'typeorm';
-import {IWalletAccount} from '@guardian/interfaces';
+import { Entity, Property } from '@mikro-orm/core';
+import { IWalletAccount } from '@guardian/interfaces';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * Wallet collection
  */
 @Entity()
-export class WalletAccount implements IWalletAccount {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
-
+export class WalletAccount extends BaseEntity implements IWalletAccount {
     /**
      * Token
      */
-    @Column()
-    token: string;
+    @Property({ nullable: true })
+    token?: string;
 
     /**
      * Type
      */
-    @Column()
-    type: string; // type|did
+    @Property({ nullable: true })
+    type?: string; // type|did
 
     /**
      * Key
      */
-    @Column()
-    key: string;
+    @Property({ nullable: true })
+    key?: string;
 }

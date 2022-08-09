@@ -48,8 +48,8 @@ loggerAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Re
             }
         }
         if (req.body.pageSize) {
-            pageParameters.skip = (req.body.pageIndex || 0) * req.body.pageSize;
-            pageParameters.take = req.body.pageSize;
+            pageParameters.offset = (req.body.pageIndex || 0) * req.body.pageSize;
+            pageParameters.limit = req.body.pageSize;
         }
         const logger = new Logger();
         const logsObj = await logger.getLogs(filters, pageParameters, req.body.sortDirection);

@@ -1,65 +1,65 @@
 import { DidDocumentStatus, IDidObject } from '@guardian/interfaces';
-import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
+import {
+    Entity,
+    Unique,
+    Property,
+    Enum,
+    BeforeCreate
+} from '@mikro-orm/core';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * DID document
  */
 @Entity()
-export class DidDocument implements IDidObject {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
-
+@Unique({ properties: ['did'], options: { partialFilterExpression: { did: { $exists: true }}}})
+export class DidDocument extends BaseEntity implements IDidObject {
     /**
      * DID
      */
-    @Column({
-        unique: true
-    })
-    did: string;
+    @Property({ nullable: true })
+    did?: string;
 
     /**
      * Document instance
      */
-    @Column()
-    document: any;
+    @Property({ nullable: true })
+    document?: any;
 
     /**
      * Created at
      */
-    @CreateDateColumn()
-    createDate: Date;
+    @Property()
+    createDate: Date = new Date();
 
     /**
      * Updated at
      */
-    @UpdateDateColumn()
-    updateDate: Date;
+    @Property({ onUpdate: () => new Date() })
+    updateDate: Date = new Date();
 
     /**
      * Document status
      */
-    @Column()
-    status: DidDocumentStatus;
+    @Enum({ nullable: true })
+    status?: DidDocumentStatus;
 
     /**
      * Message id
      */
-    @Column()
-    messageId: string;
+    @Property({ nullable: true })
+    messageId?: string;
 
     /**
      * Topic id
      */
-    @Column()
-    topicId: string;
+    @Property({ nullable: true })
+    topicId?: string;
 
     /**
      * Default document values
      */
-    @BeforeInsert()
+    @BeforeCreate()
     setDefaults() {
         this.status = this.status || DidDocumentStatus.NEW;
     }

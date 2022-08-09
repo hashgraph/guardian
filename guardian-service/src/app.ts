@@ -1,4 +1,3 @@
-import { createConnection } from 'typeorm';
 import { approveAPI } from '@api/approve.service';
 import { configAPI } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
@@ -21,31 +20,51 @@ import { Users } from '@helpers/users';
 import { Settings } from '@entity/settings';
 import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
-import { MessageBrokerChannel, ApplicationState, Logger, ExternalEventChannel } from '@guardian/common';
+import {
+    MessageBrokerChannel,
+    ApplicationState,
+    Logger,
+    ExternalEventChannel,
+    DataBaseHelper,
+    DB_DI,
+    Migration
+} from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { Environment, HederaSDKHelper, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
+import { MikroORM } from '@mikro-orm/core';
+import { MongoDriver } from '@mikro-orm/mongodb';
 import { DatabaseMigrations, DatabaseServer } from '@database-modules';
 import { ipfsAPI } from '@api/ipfs.service';
 
+const connectionConfig: any = {
+    type: 'mongo',
+    dbName: process.env.DB_DATABASE,
+    clientUrl:`mongodb://${process.env.DB_HOST}`,
+    entities: [
+        'dist/entity/*.js'
+    ]
+};
+
 Promise.all([
-    createConnection({
-        type: 'mongodb',
-        host: process.env.DB_HOST,
-        database: process.env.DB_DATABASE,
-        synchronize: true,
-        logging: true,
-        useUnifiedTopology: true,
-        entities: [
-            'dist/entity/*.js'
-        ],
-        cli: {
-            entitiesDir: 'dist/entity'
+    Migration({
+        ...connectionConfig,
+        migrations: {
+            path: 'dist/migrations',
+            transactional: false
         }
+    }),
+    MikroORM.init<MongoDriver>({
+        ...connectionConfig,
+        driverOptions: {
+            useUnifiedTopology: true
+        },
+        ensureIndexes: true
     }),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE')
 ]).then(async values => {
-    const [db, cn] = values;
+    const [_, db, cn] = values;
+    DB_DI.orm = db;
     const channel = new MessageBrokerChannel(cn, 'guardians');
     const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
 
@@ -144,14 +163,14 @@ Promise.all([
     await policyGenerator.init();
     policyService.registerListeners();
 
-    const didDocumentRepository = db.getMongoRepository(DidDocument);
-    const vcDocumentRepository = db.getMongoRepository(VcDocument);
-    const vpDocumentRepository = db.getMongoRepository(VpDocument);
-    const approvalDocumentRepository = db.getMongoRepository(ApprovalDocument);
-    const tokenRepository = db.getMongoRepository(Token);
-    const schemaRepository = db.getMongoRepository(Schema);
-    const settingsRepository = db.getMongoRepository(Settings);
-    const topicRepository = db.getMongoRepository(Topic);
+    const didDocumentRepository = new DataBaseHelper(DidDocument);
+    const vcDocumentRepository = new DataBaseHelper(VcDocument);
+    const vpDocumentRepository = new DataBaseHelper(VpDocument);
+    const approvalDocumentRepository = new DataBaseHelper(ApprovalDocument);
+    const tokenRepository = new DataBaseHelper(Token);
+    const schemaRepository = new DataBaseHelper(Schema);
+    const settingsRepository = new DataBaseHelper(Settings);
+    const topicRepository = new DataBaseHelper(Topic);
 
     state.updateState(ApplicationStates.INITIALIZING);
 

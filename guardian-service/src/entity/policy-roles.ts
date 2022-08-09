@@ -1,31 +1,26 @@
-import { Column, Entity, ObjectIdColumn } from 'typeorm';
+import { Entity, Property } from '@mikro-orm/core';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * PolicyRoles collection
  */
 @Entity()
-export class PolicyRoles {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
-
+export class PolicyRoles extends BaseEntity {
     /**
      * Policy Id name
      */
-    @Column()
-    policyId: string;
+    @Property({ nullable: true })
+    policyId?: string;
 
     /**
      * User DID value
      */
-    @Column()
-    did: string;
+    @Property({ nullable: true })
+    did?: string;
 
     /**
      * User Role
      */
-    @Column()
-    role: string;
+    @Property({ nullable: true })
+    role?: string;
 }

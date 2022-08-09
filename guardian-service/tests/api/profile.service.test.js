@@ -172,9 +172,6 @@ profileAPIModule.__set__('_hedera_modules_1', {
 profileAPIModule.__set__('common_1', {
     Logger: MockLogger
 });
-profileAPIModule.__set__('typeorm_1', {
-    getMongoRepository: getMongoRepositoryMock
-});
 
 describe('Profile Service API', function () {
     it('Get User Balance', async function () {

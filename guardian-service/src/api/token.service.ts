@@ -1,10 +1,9 @@
 import { Token } from '@entity/token';
-import { MongoRepository } from 'typeorm';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger, DataBaseHelper } from '@guardian/common';
 import { MessageAPI, IToken } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 
@@ -55,7 +54,7 @@ function getTokenInfo(info: any, token: any) {
  * @param tokenRepository
  * @param notifier
  */
-async function createToken(token: any, owner: any, tokenRepository: MongoRepository<Token>, notifier: INotifier): Promise<Token> {
+async function createToken(token: any, owner: any, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<Token> {
     const {
         changeSupply,
         decimals,
@@ -137,7 +136,7 @@ async function createToken(token: any, owner: any, tokenRepository: MongoReposit
  * @param tokenRepository
  * @param notifier
  */
-async function associateToken(tokenId: any, did: any, associate: any, tokenRepository: MongoRepository<Token>, notifier: INotifier): Promise<boolean> {
+async function associateToken(tokenId: any, did: any, associate: any, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<boolean> {
     notifier.start('Find token data');
     const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
     if (!token) {
@@ -181,7 +180,7 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
  * @param tokenRepository
  * @param notifier
  */
-async function grantKycToken(tokenId, username, owner, grant, tokenRepository: MongoRepository<Token>, notifier: INotifier): Promise<any> {
+async function grantKycToken(tokenId, username, owner, grant, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<any> {
     notifier.start('Find token data');
     const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
     if (!token) {
@@ -223,7 +222,7 @@ async function grantKycToken(tokenId, username, owner, grant, tokenRepository: M
 export async function tokenAPI(
     channel: MessageBrokerChannel,
     apiGatewayChannel: MessageBrokerChannel,
-    tokenRepository: MongoRepository<Token>
+    tokenRepository: DataBaseHelper<Token>
 ): Promise<void> {
     /**
      * Create new token
@@ -242,7 +241,7 @@ export async function tokenAPI(
 
             await createToken(token, owner, tokenRepository, emptyNotifier());
 
-            const tokens = await tokenRepository.find();
+            const tokens = await tokenRepository.findAll();
             return new MessageResponse(tokens);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);
@@ -452,14 +451,14 @@ export async function tokenAPI(
             if (msg.tokenId) {
                 const reqObj: any = { where: {} as unknown };
                 reqObj.where.tokenId = { $eq: msg.tokenId }
-                const tokens: IToken[] = await tokenRepository.find(reqObj);
+                const tokens = await tokenRepository.find(reqObj);
                 return new MessageResponse(tokens);
 
             }
             if (msg.ids) {
                 const reqObj: any = { where: {} as unknown };
                 reqObj.where.tokenId = { $in: msg.ids }
-                const tokens: IToken[] = await tokenRepository.find(reqObj);
+                const tokens = await tokenRepository.find(reqObj);
                 return new MessageResponse(tokens);
 
             }
@@ -487,7 +486,7 @@ export async function tokenAPI(
             if (!Array.isArray(items)) {
                 items = [items];
             }
-            const existingTokens = await tokenRepository.find();
+            const existingTokens = await tokenRepository.findAll();
             const existingTokensMap = {};
             for (const existingToken of existingTokens) {
                 existingTokensMap[existingToken.tokenId] = true;
@@ -495,7 +494,7 @@ export async function tokenAPI(
             items = items.filter((token: any) => !existingTokensMap[token.tokenId]);
             const tokenObject = tokenRepository.create(items);
             await tokenRepository.save(tokenObject);
-            const tokens = await tokenRepository.find();
+            const tokens = await tokenRepository.findAll();
             return new MessageResponse(tokens);
         } catch (error) {
             new Logger().error(error.message, ['GUARDIAN_SERVICE']);

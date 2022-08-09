@@ -1,27 +1,38 @@
-import { createConnection } from 'typeorm';
 import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/account-service';
 import { WalletService } from '@api/wallet-service';
-import { ApplicationState, MessageBrokerChannel, Logger } from '@guardian/common';
+import { ApplicationState, MessageBrokerChannel, Logger, DB_DI, Migration } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
+import { MikroORM } from '@mikro-orm/core';
+import { MongoDriver } from '@mikro-orm/mongodb';
+
+const connectionConfig: any = {
+    type: 'mongo',
+    dbName: process.env.DB_DATABASE,
+    clientUrl:`mongodb://${process.env.DB_HOST}`,
+    entities: [
+        'dist/entity/*.js'
+    ]
+};
 
 Promise.all([
-    createConnection({
-        type: 'mongodb',
-        host: process.env.DB_HOST,
-        database: process.env.DB_DATABASE,
-        synchronize: true,
-        logging: process.env.ENVIRONMENT !== 'production',
-        useUnifiedTopology: true,
-        entities: [
-            'dist/entity/*.js'
-        ],
-        cli: {
-            entitiesDir: 'dist/entity'
+    Migration({
+        ...connectionConfig,
+        migrations: {
+            path: 'dist/migrations',
+            transactional: false
         }
     }),
+    MikroORM.init<MongoDriver>({
+        ...connectionConfig,
+        driverOptions: {
+            useUnifiedTopology: true
+        },
+        ensureIndexes: true
+    }),
     MessageBrokerChannel.connect('LOGGER_SERVICE'),
-]).then(async ([_, cn]) => {
+]).then(async ([_, db, cn]) => {
+    DB_DI.orm = db;
     const state = new ApplicationState('AUTH_SERVICE');
     const channel = new MessageBrokerChannel(cn, 'auth-service');
     state.setChannel(channel);

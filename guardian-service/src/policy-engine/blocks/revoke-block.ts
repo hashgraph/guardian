@@ -104,16 +104,16 @@ export class RevokeBlock {
     async findDocumentByMessageIds(messageIds: string[]): Promise<any[]> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const filters: any = {
-            where: {
-                messageId: { $in: messageIds }
-            },
-            order: {
+            messageId: { $in: messageIds }
+        };
+        const otherOptions = {
+            orderBy: {
                 messageId: 'ASC'
             }
-        };
-        const vcDocuments: any[] = await ref.databaseServer.getVcDocuments(filters);
-        const vpDocuments: any[] = await ref.databaseServer.getVpDocuments(filters);
-        const didDocuments: any[] = await ref.databaseServer.getDidDocuments(filters);
+        }
+        const vcDocuments: any[] = await ref.databaseServer.getVcDocuments(filters, otherOptions);
+        const vpDocuments: any[] = await ref.databaseServer.getVpDocuments(filters, otherOptions);
+        const didDocuments: any[] = await ref.databaseServer.getDidDocuments(filters, otherOptions);
         return vcDocuments.concat(vpDocuments).concat(didDocuments);
     }
 

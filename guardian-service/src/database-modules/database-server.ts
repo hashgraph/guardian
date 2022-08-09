@@ -1,5 +1,3 @@
-import { DeepPartial, EntityTarget, getMongoRepository } from 'typeorm';
-
 import { BlockState } from '@entity/block-state';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
@@ -16,6 +14,7 @@ import { PolicyRoles as PolicyRolesCollection } from '@entity/policy-roles';
 
 import { DocumentSignature, DocumentStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { VcDocument as HVcDocument } from '@hedera-modules';
+import { BaseEntity, DataBaseHelper } from '@guardian/common';
 
 /**
  * Database server
@@ -62,8 +61,8 @@ export class DatabaseServer {
      * Clear Dry Run table
      */
     public async clearDryRun(): Promise<void> {
-        const item = await getMongoRepository(DryRun).find({ dryRunId: this.dryRun });
-        await getMongoRepository(DryRun).remove(item);
+        const item = await new DataBaseHelper(DryRun).find({ dryRunId: this.dryRun });
+        await new DataBaseHelper(DryRun).remove(item);
     }
 
     /**
@@ -79,10 +78,10 @@ export class DatabaseServer {
      * @param entityClass
      * @param filters
      */
-    private async findOne<T>(entityClass: EntityTarget<T>, filters: any): Promise<T> {
+    private async findOne<T extends BaseEntity>(entityClass: new() => T, filters: any): Promise<T> {
         if (this.dryRun) {
             if (typeof filters === 'string') {
-                return (await getMongoRepository(DryRun).findOne(filters)) as any;
+                return (await new DataBaseHelper(DryRun).findOne(filters)) as any;
             }
             const _filters: any = { ...filters };
             if (_filters.where) {
@@ -92,9 +91,9 @@ export class DatabaseServer {
                 _filters.dryRunId = this.dryRun;
                 _filters.dryRunClass = this.classMap.get(entityClass);
             }
-            return (await getMongoRepository(DryRun).findOne(filters)) as any;
+            return (await new DataBaseHelper(DryRun).findOne(filters)) as any;
         } else {
-            return await getMongoRepository(entityClass).findOne(filters);
+            return await new DataBaseHelper(entityClass).findOne(filters);
         }
     }
 
@@ -103,7 +102,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param filters
      */
-    private async find<T>(entityClass: EntityTarget<T>, filters: any): Promise<T[]> {
+    private async find<T extends BaseEntity>(entityClass: new() => T, filters: any, options?: any): Promise<T[]> {
         if (this.dryRun) {
             const _filters: any = { ...filters };
             if (_filters.where) {
@@ -113,9 +112,9 @@ export class DatabaseServer {
                 _filters.dryRunId = this.dryRun;
                 _filters.dryRunClass = this.classMap.get(entityClass);
             }
-            return (await getMongoRepository(DryRun).find(filters)) as any;
+            return (await new DataBaseHelper(DryRun).find(filters, options)) as any;
         } else {
-            return await getMongoRepository(entityClass).find(filters);
+            return await new DataBaseHelper(entityClass).find(filters, options);
         }
     }
 
@@ -124,11 +123,11 @@ export class DatabaseServer {
      * @param entityClass
      * @param item
      */
-    private create<T>(entityClass: EntityTarget<T>, item: DeepPartial<T>): T {
+    private create<T extends BaseEntity>(entityClass: new() => T, item: any): T {
         if (this.dryRun) {
-            return (getMongoRepository(DryRun).create(item)) as any;
+            return (new DataBaseHelper(DryRun).create(item)) as any;
         } else {
-            return getMongoRepository(entityClass).create(item);
+            return new DataBaseHelper(entityClass).create(item);
         }
     }
 
@@ -137,14 +136,14 @@ export class DatabaseServer {
      * @param entityClass
      * @param item
      */
-    private async save<T>(entityClass: EntityTarget<T>, item: DeepPartial<T>): Promise<T> {
+    private async save<T extends BaseEntity>(entityClass: new() => T, item: any): Promise<T> {
         if (this.dryRun) {
             const _item: any = { ...item };
             _item.dryRunId = this.dryRun;
             _item.dryRunClass = this.classMap.get(entityClass);
-            return await getMongoRepository(DryRun).save(_item);
+            return await new DataBaseHelper(DryRun).save(_item) as any;
         } else {
-            return await getMongoRepository(entityClass).save(item);
+            return await new DataBaseHelper(entityClass).save(item);
         }
     }
 
@@ -154,11 +153,11 @@ export class DatabaseServer {
      * @param criteria
      * @param row
      */
-    private async update<T>(entityClass: EntityTarget<T>, criteria: any, row: T): Promise<void> {
+    private async update<T extends BaseEntity>(entityClass: new() => T, criteria: any, row: T): Promise<void> {
         if (this.dryRun) {
-            await getMongoRepository(DryRun).update(criteria, row);
+            await new DataBaseHelper(DryRun).update(row, criteria);
         } else {
-            await getMongoRepository(entityClass).update(criteria, row);
+            await new DataBaseHelper(entityClass).update(row, criteria);
         }
     }
 
@@ -167,11 +166,11 @@ export class DatabaseServer {
      * @param entityClass
      * @param entities
      */
-    private async remove<T>(entityClass: EntityTarget<T>, entities: T[]): Promise<void> {
+    private async remove<T extends BaseEntity>(entityClass: new() => T, entities: T[]): Promise<void> {
         if (this.dryRun) {
-            await getMongoRepository(DryRun).remove(entities as any);
+            await new DataBaseHelper(DryRun).remove(entities as any);
         } else {
-            await getMongoRepository(entityClass).remove(entities);
+            await new DataBaseHelper(entityClass).remove(entities);
         }
     }
 
@@ -182,7 +181,7 @@ export class DatabaseServer {
      * @virtual
      */
     public async getVirtualUser(did: string): Promise<any> {
-        return (await getMongoRepository(DryRun).findOne({
+        return (await new DataBaseHelper(DryRun).findOne({
             dryRunId: this.dryRun,
             dryRunClass: 'VirtualUsers',
             did
@@ -197,7 +196,7 @@ export class DatabaseServer {
      * @virtual
      */
     public async getVirtualKey(did: string, keyName: string): Promise<string> {
-        const item = (await getMongoRepository(DryRun).findOne({
+        const item = (await new DataBaseHelper(DryRun).findOne({
             dryRunId: this.dryRun,
             dryRunClass: 'VirtualKey',
             did,
@@ -215,14 +214,13 @@ export class DatabaseServer {
      * @virtual
      */
     public async setVirtualKey(did: string, keyName: string, key: string): Promise<void> {
-        const item = getMongoRepository(DryRun).create({
+        await new DataBaseHelper(DryRun).save({
             dryRunId: this.dryRun,
             dryRunClass: 'VirtualKey',
             did,
             type: keyName,
             hederaAccountKey: key
         });
-        await getMongoRepository(DryRun).save(item);
     }
 
     /**
@@ -301,7 +299,7 @@ export class DatabaseServer {
             hash: newVc.toCredentialHash(),
             document: newVc.toJsonTree(),
             owner: oldDoc.owner || null,
-            assign: oldDoc.assign || null,
+            assignedTo: oldDoc.assignedTo || null,
             option: oldDoc.option || null,
             schema: oldDoc.schema || null,
             hederaStatus: oldDoc.hederaStatus || DocumentStatus.NEW,
@@ -347,7 +345,7 @@ export class DatabaseServer {
                 updateStatus = item.option?.status !== row.option.status
             }
             item.owner = row.owner;
-            item.assign = row.assign;
+            item.assignedTo = row.assignedTo;
             item.option = row.option;
             item.schema = row.schema;
             item.hederaStatus = row.hederaStatus;
@@ -446,7 +444,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async saveVC(row: DeepPartial<VcDocumentCollection>): Promise<VcDocumentCollection> {
+    public async saveVC(row: Partial<VcDocumentCollection>): Promise<VcDocumentCollection> {
         const doc = this.create(VcDocumentCollection, row);
         return await this.save(VcDocumentCollection, doc);
     }
@@ -457,7 +455,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async saveVP(row: DeepPartial<VpDocumentCollection>): Promise<VpDocumentCollection> {
+    public async saveVP(row: Partial<VpDocumentCollection>): Promise<VpDocumentCollection> {
         const doc = this.create(VpDocumentCollection, row);
         return await this.save(VpDocumentCollection, doc);
     }
@@ -468,7 +466,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async saveDid(row: DeepPartial<DidDocumentCollection>): Promise<DidDocumentCollection> {
+    public async saveDid(row: Partial<DidDocumentCollection>): Promise<DidDocumentCollection> {
         const doc = this.create(DidDocumentCollection, row);
         return await this.save(DidDocumentCollection, doc);
     }
@@ -558,8 +556,8 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getVcDocuments(filters: any): Promise<VcDocumentCollection[]> {
-        return await this.find(VcDocumentCollection, filters);
+    public async getVcDocuments(filters: any, options?: any): Promise<VcDocumentCollection[]> {
+        return await this.find(VcDocumentCollection, filters, options);
     }
 
     /**
@@ -568,8 +566,8 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getVpDocuments(filters: any): Promise<VpDocumentCollection[]> {
-        return await this.find(VpDocumentCollection, filters);
+    public async getVpDocuments(filters: any, options?: any): Promise<VpDocumentCollection[]> {
+        return await this.find(VpDocumentCollection, filters, options);
     }
 
     /**
@@ -578,8 +576,8 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getDidDocuments(filters: any): Promise<DidDocumentCollection[]> {
-        return await this.find(DidDocumentCollection, filters);
+    public async getDidDocuments(filters: any, options?: any): Promise<DidDocumentCollection[]> {
+        return await this.find(DidDocumentCollection, filters, options);
     }
 
     /**
@@ -588,8 +586,8 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getApprovalDocuments(filters: any): Promise<ApprovalDocumentCollection[]> {
-        return await this.find(ApprovalDocumentCollection, filters);
+    public async getApprovalDocuments(filters: any, options?: any): Promise<ApprovalDocumentCollection[]> {
+        return await this.find(ApprovalDocumentCollection, filters, options);
     }
 
     /**
@@ -598,8 +596,8 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getDocumentStates(filters: any): Promise<DocumentState[]> {
-        return await this.find(DocumentState, filters);
+    public async getDocumentStates(filters: any, options?: any): Promise<DocumentState[]> {
+        return await this.find(DocumentState, filters, options);
     }
 
     /**
@@ -675,7 +673,7 @@ export class DatabaseServer {
      * @virtual
      */
     public async getTokenById(tokenId: string): Promise<TokenCollection> {
-        return await getMongoRepository(TokenCollection).findOne({ tokenId });
+        return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
     }
 
     /**
@@ -696,9 +694,9 @@ export class DatabaseServer {
      */
     public async getSchemaByIRI(iri: string, topicId?: string): Promise<SchemaCollection> {
         if (topicId) {
-            return await getMongoRepository(SchemaCollection).findOne({ iri, topicId });
+            return await new DataBaseHelper(SchemaCollection).findOne({ iri, topicId });
         } else {
-            return await getMongoRepository(SchemaCollection).findOne({ iri });
+            return await new DataBaseHelper(SchemaCollection).findOne({ iri });
         }
     }
 
@@ -708,7 +706,7 @@ export class DatabaseServer {
      * @param entity
      */
     public async getSchemaByType(topicId: string, entity: SchemaEntity): Promise<SchemaCollection> {
-        return await getMongoRepository(SchemaCollection).findOne({
+        return await new DataBaseHelper(SchemaCollection).findOne({
             entity,
             readonly: true,
             topicId
@@ -766,7 +764,7 @@ export class DatabaseServer {
      * @param entity
      */
     public static async getSchemaByType(topicId: string, entity: SchemaEntity): Promise<SchemaCollection> {
-        return await getMongoRepository(SchemaCollection).findOne({
+        return await new DataBaseHelper(SchemaCollection).findOne({
             entity,
             readonly: true,
             topicId
@@ -778,7 +776,7 @@ export class DatabaseServer {
      * @param entity
      */
     public static async getSystemSchema(entity: SchemaEntity): Promise<SchemaCollection> {
-        return await getMongoRepository(SchemaCollection).findOne({
+        return await new DataBaseHelper(SchemaCollection).findOne({
             entity,
             system: true,
             active: true
@@ -790,7 +788,7 @@ export class DatabaseServer {
      * @param filters
      */
     public static async getSchemas(filters?: any): Promise<SchemaCollection[]> {
-        return await getMongoRepository(SchemaCollection).find(filters);
+        return await new DataBaseHelper(SchemaCollection).find(filters);
     }
 
     /**
@@ -798,7 +796,7 @@ export class DatabaseServer {
      * @param id
      */
     public static async deleteSchemas(id: any): Promise<void> {
-        await getMongoRepository(SchemaCollection).delete(id);
+        await new DataBaseHelper(SchemaCollection).delete({ id });
     }
 
     /**
@@ -807,7 +805,7 @@ export class DatabaseServer {
      * @param item
      */
     public static async updateSchema(id: any, item: SchemaCollection): Promise<void> {
-        await getMongoRepository(SchemaCollection).update(id, item);
+        await new DataBaseHelper(SchemaCollection).update(item, { id });
     }
 
     /**
@@ -815,15 +813,15 @@ export class DatabaseServer {
      * @param filters
      */
     public static async getSchema(filters?: any): Promise<SchemaCollection> {
-        return await getMongoRepository(SchemaCollection).findOne(filters);
+        return await new DataBaseHelper(SchemaCollection).findOne(filters);
     }
 
     /**
      * Get schema
      * @param item
      */
-    public static createSchema(item: DeepPartial<SchemaCollection>): SchemaCollection {
-        return getMongoRepository(SchemaCollection).create(item);
+    public static createSchema(item: Partial<SchemaCollection>): SchemaCollection {
+        return new DataBaseHelper(SchemaCollection).create(item);
     }
 
     /**
@@ -831,7 +829,7 @@ export class DatabaseServer {
      * @param item
      */
     public static async saveSchema(item: SchemaCollection): Promise<SchemaCollection> {
-        return await getMongoRepository(SchemaCollection).save(item);
+        return await new DataBaseHelper(SchemaCollection).save(item);
     }
 
     /**
@@ -839,24 +837,27 @@ export class DatabaseServer {
      * @param item
      */
     public static async saveSchemas(item: SchemaCollection[]): Promise<SchemaCollection[]> {
-        return await getMongoRepository(SchemaCollection).save(item);
+        const result = [];
+        for await (const schema of item) {
+            result.push(await new DataBaseHelper(SchemaCollection).save(schema));
+        }
+        return result;
     }
 
     /**
      * Get schema
      * @param item
      */
-    public static async createAndSaveSchema(item: DeepPartial<SchemaCollection>): Promise<SchemaCollection> {
-        const newItem = getMongoRepository(SchemaCollection).create(item);
-        return await getMongoRepository(SchemaCollection).save(newItem);
+    public static async createAndSaveSchema(item: Partial<SchemaCollection>): Promise<SchemaCollection> {
+        return await new DataBaseHelper(SchemaCollection).save(item);
     }
 
     /**
      * Get schema
      * @param filters
      */
-    public static async getSchemasAndCount(filters?: any): Promise<[SchemaCollection[], number]> {
-        return await getMongoRepository(SchemaCollection).findAndCount(filters);
+    public static async getSchemasAndCount(filters?: any, options?: any): Promise<[SchemaCollection[], number]> {
+        return await new DataBaseHelper(SchemaCollection).findAndCount(filters, options);
     }
 
     /**
@@ -864,7 +865,7 @@ export class DatabaseServer {
      * @param ids
      */
     public static async getSchemasByIds(ids: string[]): Promise<SchemaCollection[]> {
-        return await getMongoRepository(SchemaCollection).findByIds(ids);
+        return await new DataBaseHelper(SchemaCollection).find({ id: { $in: ids} });
     }
 
     /**
@@ -872,7 +873,7 @@ export class DatabaseServer {
      * @param filters
      */
     public static async getSchemasCount(filters?: any): Promise<number> {
-        return await getMongoRepository(SchemaCollection).count(filters);
+        return await new DataBaseHelper(SchemaCollection).count(filters);
     }
 
     /**
@@ -886,7 +887,7 @@ export class DatabaseServer {
         if (!did) {
             return null;
         }
-        const role = await getMongoRepository(PolicyRolesCollection).findOne({ policyId, did });
+        const role = await new DataBaseHelper(PolicyRolesCollection).findOne({ policyId, did });
         if (role) {
             return role.role;
         }
@@ -898,7 +899,7 @@ export class DatabaseServer {
      * @param filters
      */
     public static async getPolicy(filters: any): Promise<Policy> {
-        return await getMongoRepository(Policy).findOne(filters);
+        return await new DataBaseHelper(Policy).findOne(filters);
     }
 
     /**
@@ -906,7 +907,7 @@ export class DatabaseServer {
      * @param filters
      */
     public static async getPolicies(filters?: any): Promise<Policy[]> {
-        return await getMongoRepository(Policy).find(filters);
+        return await new DataBaseHelper(Policy).find(filters);
     }
 
     /**
@@ -914,7 +915,7 @@ export class DatabaseServer {
      * @param policyId
      */
     public static async getPolicyById(policyId: string): Promise<Policy> {
-        return await getMongoRepository(Policy).findOne(policyId);
+        return await new DataBaseHelper(Policy).findOne(policyId);
     }
 
     /**
@@ -922,7 +923,7 @@ export class DatabaseServer {
      * @param uuid
      */
     public static async getPolicyByUUID(uuid: string): Promise<Policy> {
-        return await getMongoRepository(Policy).findOne({ uuid });
+        return await new DataBaseHelper(Policy).findOne({ uuid });
     }
 
     /**
@@ -930,7 +931,7 @@ export class DatabaseServer {
      * @param policyTag
      */
     public static async getPolicyByTag(policyTag: string): Promise<Policy> {
-        return await getMongoRepository(Policy).findOne({ policyTag });
+        return await new DataBaseHelper(Policy).findOne({ policyTag });
     }
 
     /**
@@ -938,15 +939,15 @@ export class DatabaseServer {
      * @param model
      */
     public static async updatePolicy(model: Policy): Promise<Policy> {
-        return await getMongoRepository(Policy).save(model);
+        return await new DataBaseHelper(Policy).save(model);
     }
 
     /**
      * Get policies and count
      * @param filters
      */
-    public static async getPoliciesAndCount(filters: any): Promise<[Policy[], number]> {
-        return await getMongoRepository(Policy).findAndCount(filters);
+    public static async getPoliciesAndCount(filters: any, options?: any): Promise<[Policy[], number]> {
+        return await new DataBaseHelper(Policy).findAndCount(filters, options);
     }
 
     /**
@@ -954,14 +955,14 @@ export class DatabaseServer {
      * @param filters
      */
     public static async getPolicyCount(filters: any): Promise<number> {
-        return await getMongoRepository(Policy).count(filters);
+        return await new DataBaseHelper(Policy).count(filters);
     }
 
     /**
      * Create policy
      * @param data
      */
-    public static createPolicy(data: DeepPartial<Policy>): Policy {
+    public static createPolicy(data: Partial<Policy>): Policy {
         if (!data.config) {
             data.config = {
                 'blockType': 'interfaceContainerBlock',
@@ -970,7 +971,7 @@ export class DatabaseServer {
                 ]
             }
         }
-        const model = getMongoRepository(Policy).create(data);
+        const model = new DataBaseHelper(Policy).create(data);
         return model;
     }
 
@@ -979,7 +980,7 @@ export class DatabaseServer {
      * @param topicId
      */
     public static async getTopicById(topicId: string): Promise<TopicCollection> {
-        return await getMongoRepository(TopicCollection).findOne({ topicId });
+        return await new DataBaseHelper(TopicCollection).findOne({ topicId });
     }
 
     /**
@@ -988,16 +989,15 @@ export class DatabaseServer {
      * @param type
      */
     public static async getTopicByType(owner: string, type: TopicType): Promise<TopicCollection> {
-        return await getMongoRepository(TopicCollection).findOne({ owner, type });
+        return await new DataBaseHelper(TopicCollection).findOne({ owner, type });
     }
 
     /**
      * Save topic
      * @param row
      */
-    public static async saveTopic(row: DeepPartial<TopicCollection>): Promise<TopicCollection> {
-        const doc = getMongoRepository(TopicCollection).create(row);
-        return await getMongoRepository(TopicCollection).save(doc);
+    public static async saveTopic(row: Partial<TopicCollection>): Promise<TopicCollection> {
+        return await new DataBaseHelper(TopicCollection).save(row);
     }
 
     /**
@@ -1005,7 +1005,7 @@ export class DatabaseServer {
      * @param row
      */
     public static async updateTopic(row: TopicCollection): Promise<void> {
-        await getMongoRepository(TopicCollection).update(row.id, row);
+        await new DataBaseHelper(TopicCollection).update(row);
     }
 
     /**
@@ -1014,9 +1014,8 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public static async saveVC(row: DeepPartial<VcDocumentCollection>): Promise<VcDocumentCollection> {
-        const doc = getMongoRepository(VcDocumentCollection).create(row);
-        return await getMongoRepository(VcDocumentCollection).save(doc);
+    public static async saveVC(row: Partial<VcDocumentCollection>): Promise<VcDocumentCollection> {
+        return await new DataBaseHelper(VcDocumentCollection).save(row);
     }
 
     /**
@@ -1025,7 +1024,7 @@ export class DatabaseServer {
      * @param data
      */
     public static async updatePolicyConfig(policyId: any, data: Policy): Promise<Policy> {
-        const model = await getMongoRepository(Policy).findOne(policyId);
+        const model = await new DataBaseHelper(Policy).findOne(policyId);
         model.config = data.config;
         model.name = data.name;
         model.version = data.version;
@@ -1033,7 +1032,7 @@ export class DatabaseServer {
         model.topicDescription = data.topicDescription;
         model.policyRoles = data.policyRoles;
         model.policyTopics = data.policyTopics;
-        return await getMongoRepository(Policy).save(model);
+        return await new DataBaseHelper(Policy).save(model);
     }
 
     /**
@@ -1055,7 +1054,7 @@ export class DatabaseServer {
         hederaAccountKey: string,
         active: boolean = false
     ): Promise<void> {
-        const user = getMongoRepository(DryRun).create({
+        await new DataBaseHelper(DryRun).save({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
             did,
@@ -1064,17 +1063,13 @@ export class DatabaseServer {
             active
         });
 
-        await getMongoRepository(DryRun).save(user);
-
-        const key = getMongoRepository(DryRun).create({
+        await new DataBaseHelper(DryRun).save({
             dryRunId: policyId,
             dryRunClass: 'VirtualKey',
             did,
             type: did,
             hederaAccountKey
         });
-
-        await getMongoRepository(DryRun).save(key);
     }
 
     /**
@@ -1084,7 +1079,7 @@ export class DatabaseServer {
      * @virtual
      */
     public static async getVirtualUser(policyId: string): Promise<any> {
-        return await getMongoRepository(DryRun).findOne({
+        return await new DataBaseHelper(DryRun).findOne({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
             active: true
@@ -1098,7 +1093,7 @@ export class DatabaseServer {
      * @virtual
      */
     public static async getVirtualUsers(policyId: string): Promise<any[]> {
-        return (await getMongoRepository(DryRun).find({
+        return (await new DataBaseHelper(DryRun).find({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers'
         })) as any;
@@ -1112,14 +1107,14 @@ export class DatabaseServer {
      * @virtual
      */
     public static async setVirtualUser(policyId: string, did: string): Promise<any> {
-        const items = (await getMongoRepository(DryRun).find({
+        const items = (await new DataBaseHelper(DryRun).find({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
         }));
         for (const item of items) {
             item.active = item.did === did;
+            await new DataBaseHelper(DryRun).save(item);
         }
-        await getMongoRepository(DryRun).save(items);
     }
 
     /**
@@ -1143,12 +1138,13 @@ export class DatabaseServer {
                 dryRunClass: null
             }
         }
+        const otherOptions: any = {};
         const _pageSize = parseInt(pageSize, 10);
         const _pageIndex = parseInt(pageIndex, 10);
         if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-            filters.order = { createDate: 'DESC' };
-            filters.take = _pageSize;
-            filters.skip = _pageIndex * _pageSize;
+            otherOptions.orderBy = { createDate: 'DESC' };
+            otherOptions.limit = _pageSize;
+            otherOptions.offset = _pageIndex * _pageSize;
         }
         if (type === 'artifacts') {
             filters.where.dryRunClass = {
@@ -1164,7 +1160,7 @@ export class DatabaseServer {
         } else if (type === 'ipfs') {
             filters.where.dryRunClass = { $eq: 'Files' };
         }
-        return await getMongoRepository(DryRun).findAndCount(filters);
+        return await new DataBaseHelper(DryRun).findAndCount(filters, otherOptions);
     }
 
     /**
@@ -1180,13 +1176,12 @@ export class DatabaseServer {
         type: string,
         operatorId?: string
     ): Promise<any> {
-        const user = getMongoRepository(DryRun).create({
+        await new DataBaseHelper(DryRun).save({
             dryRunId: policyId,
             dryRunClass: 'Transactions',
             type,
             hederaAccountId: operatorId
         });
-        await getMongoRepository(DryRun).save(user);
     }
 
     /**
@@ -1202,7 +1197,7 @@ export class DatabaseServer {
         file: ArrayBuffer,
         url: any
     ): Promise<any> {
-        const user = getMongoRepository(DryRun).create({
+        await new DataBaseHelper(DryRun).save({
             dryRunId: policyId,
             dryRunClass: 'Files',
             document: {
@@ -1210,6 +1205,5 @@ export class DatabaseServer {
             },
             documentURL: url?.url
         });
-        await getMongoRepository(DryRun).save(user);
     }
 }

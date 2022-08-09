@@ -1,28 +1,39 @@
 import { ApplicationStates } from '@guardian/interfaces';
 import { NFTStorage } from 'nft.storage';
-import { createConnection } from 'typeorm';
-import { MessageBrokerChannel, ApplicationState, Logger } from '@guardian/common';
+import { MessageBrokerChannel, ApplicationState, Logger, DB_DI, DataBaseHelper, Migration } from '@guardian/common';
 import { fileAPI } from './api/file.service';
 import { Settings } from './entity/settings';
+import { MikroORM } from '@mikro-orm/core';
+import { MongoDriver } from '@mikro-orm/mongodb';
+
+const connectionConfig: any = {
+    type: 'mongo',
+    dbName: process.env.DB_DATABASE,
+    clientUrl:`mongodb://${process.env.DB_HOST}`,
+    entities: [
+        'dist/entity/*.js'
+    ]
+};
 
 Promise.all([
-    createConnection({
-        type: 'mongodb',
-        host: process.env.DB_HOST,
-        database: process.env.DB_DATABASE,
-        synchronize: true,
-        logging: true,
-        useUnifiedTopology: true,
-        entities: [
-            'dist/entity/*.js'
-        ],
-        cli: {
-            entitiesDir: 'dist/entity'
+    Migration({
+        ...connectionConfig,
+        migrations: {
+            path: 'dist/migrations',
+            transactional: false
         }
+    }),
+    MikroORM.init<MongoDriver>({
+        ...connectionConfig,
+        driverOptions: {
+            useUnifiedTopology: true
+        },
+        ensureIndexes: true
     }),
     MessageBrokerChannel.connect('IPFS_CLIENT')
 ]).then(async values => {
-    const [db, cn] = values;
+    const [_, db, cn] = values;
+    DB_DI.orm = db;
     const state = new ApplicationState('IPFS_CLIENT');
     const channel = new MessageBrokerChannel(cn, 'ipfs-client');
 
@@ -37,7 +48,7 @@ Promise.all([
     ///////////////
 
     state.updateState(ApplicationStates.STARTED);
-    const settingsRepository = db.getMongoRepository(Settings);
+    const settingsRepository = new DataBaseHelper(Settings);
     const nftApiKey = await settingsRepository.findOne({
         name: 'NFT_API_KEY'
     });

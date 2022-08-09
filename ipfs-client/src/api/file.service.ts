@@ -2,7 +2,6 @@ import { NFTStorage } from 'nft.storage';
 import Blob from 'cross-blob';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
-import { MongoRepository } from 'typeorm';
 import { Settings } from '../entity/settings';
 import {
     MessageAPI,
@@ -14,7 +13,7 @@ import {
     IFileResponse,
     GenerateUUIDv4
 } from '@guardian/interfaces';
-import { MessageBrokerChannel, MessageError, MessageResponse, Logger } from '@guardian/common';
+import { MessageBrokerChannel, MessageError, MessageResponse, Logger, DataBaseHelper } from '@guardian/common';
 
 /**
  * Public gateway
@@ -30,7 +29,7 @@ export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
 export async function fileAPI(
     channel: MessageBrokerChannel,
     client: NFTStorage,
-    settingsRepository: MongoRepository<Settings>
+    settingsRepository: DataBaseHelper<Settings>
 ): Promise<void> {
     /**
      * Add file and return hash
@@ -195,23 +194,13 @@ export async function fileAPI(
      */
     channel.response<CommonSettings, any>(MessageAPI.UPDATE_SETTINGS, async (settings) => {
         try {
-            const oldNftApiKey = await settingsRepository.findOne({
+            const nftApiKey = {
+                name: 'NFT_API_KEY',
+                value: settings.nftApiKey
+            };
+            await settingsRepository.save(nftApiKey, {
                 name: 'NFT_API_KEY'
             });
-            if (oldNftApiKey) {
-                await settingsRepository.update({
-                    name: 'NFT_API_KEY'
-                }, {
-                    value: settings.nftApiKey
-                });
-            }
-            else {
-                await settingsRepository.save({
-                    name: 'NFT_API_KEY',
-                    value: settings.nftApiKey
-                });
-            }
-
             client = new NFTStorage({ token: settings.nftApiKey });
             return new MessageResponse({});
         }
