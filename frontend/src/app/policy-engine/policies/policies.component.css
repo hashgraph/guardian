@@ -178,6 +178,12 @@
     max-width: 200px;
 }
 
+.table-container[role='USER'] .mat-column-roles {
+    padding-left: 8px;
+    width: 350px;
+    max-width: 350px;
+}
+
 .table-container .mat-column-description {
     padding-left: 8px;
 }

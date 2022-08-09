@@ -172,11 +172,16 @@ export class PolicyEngineService {
             return;
         }
 
-        const userRole = PolicyComponentsUtils.GetUserRole(policy, user);
+        const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
 
         await this.channel.request(['api-gateway', 'update-user-info'].join('.'), {
             policyId: policy.id.toString(),
-            user,
+            user: {
+                did: user.did,
+                role: user.role,
+                username: user.username,
+                hederaAccountId: user.hederaAccountId
+            },
             userRole
         });
     }
@@ -564,6 +569,7 @@ export class PolicyEngineService {
         if (ModelHelper.versionCompare(version, policy.previousVersion) <= 0) {
             throw new Error('Version must be greater than ' + policy.previousVersion);
         }
+
         const countModels = await DatabaseServer.getPolicyCount({
             version,
             uuid: policy.uuid
@@ -576,6 +582,10 @@ export class PolicyEngineService {
         const isValid = !errors.blocks.some(block => !block.isValid);
         notifier.completed();
         if (isValid) {
+            if (policy.status === PolicyType.DRY_RUN) {
+                await this.policyGenerator.destroy(policy.id.toString());
+                await DatabaseServer.clearDryRun(policy.id.toString());
+            }
             const newPolicy = await this.publishPolicy(policy, owner, version, notifier);
             await this.policyGenerator.generate(newPolicy.id.toString());
             return {
@@ -808,10 +818,6 @@ export class PolicyEngineService {
 
         this.channel.response<any, any>(PolicyEngineEvents.DRY_RUN_POLICIES, async (msg) => {
             try {
-                if (!msg.model) {
-                    throw new Error('Policy is empty');
-                }
-
                 const policyId = msg.policyId;
                 const user = msg.user;
                 const userFull = await this.users.getUser(user.username);
@@ -848,10 +854,6 @@ export class PolicyEngineService {
 
         this.channel.response<any, any>(PolicyEngineEvents.DRAFT_POLICIES, async (msg) => {
             try {
-                if (!msg.model) {
-                    throw new Error('Policy is empty');
-                }
-
                 const policyId = msg.policyId;
                 const user = msg.user;
                 const userFull = await this.users.getUser(user.username);

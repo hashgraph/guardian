@@ -154,7 +154,7 @@ policyAPI.put('/push/:policyId/publish', permissionHelper(UserRole.STANDARD_REGI
 policyAPI.put('/:policyId/dry-run', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
-        res.json(await engineService.dryRunPolicy(req.body, req.user, req.params.policyId));
+        res.json(await engineService.dryRunPolicy(req.user, req.params.policyId));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: error.message || error });
@@ -164,7 +164,7 @@ policyAPI.put('/:policyId/dry-run', permissionHelper(UserRole.STANDARD_REGISTRY)
 policyAPI.put('/:policyId/draft', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
-        res.json(await engineService.draft(req.body, req.user, req.params.policyId));
+        res.json(await engineService.draft(req.user, req.params.policyId));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: error.message || error });

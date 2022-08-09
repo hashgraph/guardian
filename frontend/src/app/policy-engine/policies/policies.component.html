@@ -68,7 +68,7 @@
                             Draft
                         </select-menu-button>
                         <select-menu-button class="btn-dry-run" *ngIf="element.status == 'DRY-RUN'"
-                            (action)="draft($event, element)" [options]="draftMenuOption">
+                            (action)="onDryRunAction($event, element)" [options]="draftMenuOption">
                             In Dry Run
                         </select-menu-button>
                         <select-menu-button class="btn-publish" *ngIf="element.status == 'PUBLISH'">

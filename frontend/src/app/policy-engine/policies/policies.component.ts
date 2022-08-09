@@ -244,7 +244,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         });
     }
 
-    draft(event: any, element: any) {
+    draft(element: any) {
         this.loading = true;
         this.policyEngineService.draft(element.id).subscribe((data: any) => {
             const { policies, isValid, errors } = data;
@@ -370,9 +370,17 @@ export class PoliciesComponent implements OnInit, OnDestroy {
 
     onPublishAction(event: any, element: any) {
         if (event.id === 'Publish') {
-            this.setVersion(element)
+            this.setVersion(element);
         } else if (event.id === 'Dry-run') {
-            this.dryRun(element)
+            this.dryRun(element);
+        }
+    }
+
+    onDryRunAction(event: any, element: any) {
+        if (event.id === 'Publish') {
+            this.setVersion(element);
+        } else if (event.id === 'Draft') {
+            this.draft(element);
         }
     }
 

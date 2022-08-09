@@ -67,6 +67,14 @@ export class DatabaseServer {
     }
 
     /**
+     * Clear Dry Run table
+     */
+    public static async clearDryRun(dryRunId: string): Promise<void> {
+        const item = await getMongoRepository(DryRun).find({ dryRunId });
+        await getMongoRepository(DryRun).remove(item);
+    }
+
+    /**
      * Overriding the findOne method
      * @param entityClass
      * @param filters
