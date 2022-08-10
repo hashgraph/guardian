@@ -7,7 +7,7 @@ import { MongoDriver, MongoEntityManager, ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models/base-entity';
 
 /**
- * Dependency injection of data base
+ * Dependency injection of database
  */
 export const DB_DI: {
     /**
@@ -34,7 +34,7 @@ export class DataBaseHelper<T extends BaseEntity> {
     }
 
     /**
-     * Delete
+     * Delete entities by filters
      * @param filters filters
      * @returns Count
      */
@@ -44,8 +44,8 @@ export class DataBaseHelper<T extends BaseEntity> {
     }
 
     /**
-     * Remove
-     * @param entity Entity
+     * Remove entities or entity
+     * @param entity Entities or entity
      */
     @UseRequestContext(() => DB_DI.orm)
     public async remove(entity: T | T[]): Promise<void> {
@@ -59,12 +59,12 @@ export class DataBaseHelper<T extends BaseEntity> {
     }
 
     /**
-     * Create
-     * @param entity Entities
+     * Create entity
+     * @param entity Entity
      */
     public create(entity: any): T;
     /**
-     * Create
+     * Create entities
      * @param entities Entities
      */
     public create(entities: any[]): T[];
@@ -96,7 +96,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * Find and count
      * @param filters Filters
      * @param options Options
-     * @returns
+     * @returns Entities and count
      */
     @UseRequestContext(() => DB_DI.orm)
     public async findAndCount(filters: any | string | ObjectId, options?: any): Promise<[T[],number]> {
@@ -104,10 +104,10 @@ export class DataBaseHelper<T extends BaseEntity> {
     }
 
     /**
-     * Count
+     * Count entities
      * @param filters Filters
      * @param options Options
-     * @returns
+     * @returns Count
      */
     @UseRequestContext(() => DB_DI.orm)
     public async count(filters?: any | string | ObjectId, options?: any): Promise<number> {
@@ -115,31 +115,31 @@ export class DataBaseHelper<T extends BaseEntity> {
     }
 
     /**
-     * Find
+     * Find entities
      * @param filters Filters
      * @param options Options
-     * @returns
+     * @returns Entities
      */
     @UseRequestContext(() => DB_DI.orm)
-    public async find(filters: any | string | ObjectId, options?: any) {
+    public async find(filters: any | string | ObjectId, options?: any): Promise<T[]> {
         return await this._em.getRepository<T>(this.entityClass).find(filters?.where || filters, options);
     }
 
     /**
-     * Find all
+     * Find all entities
      * @param options Options
-     * @returns
+     * @returns Entities
      */
     @UseRequestContext(() => DB_DI.orm)
-    public async findAll(options?: any) {
+    public async findAll(options?: any): Promise<T[]> {
         return await this._em.getRepository<T>(this.entityClass).findAll(options);
     }
 
     /**
-     * Find one
+     * Find entity
      * @param filters Filters
      * @param options Options
-     * @returns
+     * @returns Entity
      */
     @UseRequestContext(() => DB_DI.orm)
     public async findOne(filter: any | string | ObjectId, options: any = {}): Promise<T> {
@@ -147,14 +147,16 @@ export class DataBaseHelper<T extends BaseEntity> {
     }
 
     /**
-     * Save
+     * Save entity by id field or filters.
      * @param entity Entity
      * @param filter Filter
+     * @returns Entity
      */
     public async save(entity: any, filter?: any): Promise<T>;
     /**
-     * Save
+     * Save entities by ids
      * @param entites Entities
+     * @returns Entities
      */
     public async save(entites: any[]): Promise<T[]>;
     @UseRequestContext(() => DB_DI.orm)
@@ -189,14 +191,14 @@ export class DataBaseHelper<T extends BaseEntity> {
     }
 
     /**
-     * Update
+     * Update entity by id field or filters
      * @param entity Entity
      * @param filter Filter
-     * @returns
+     * @returns Entity
      */
     public async update(entity: any, filter?: any): Promise<T>;
     /**
-     * Update
+     * Update entities by ids
      * @param entities Entities
      */
     public async update(entities: any[]): Promise<T[]>;
@@ -231,7 +233,5 @@ export class DataBaseHelper<T extends BaseEntity> {
             await repository.flush();
             return entityToUpdate;
         }
-
-        return null;
     }
 }

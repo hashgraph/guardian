@@ -6,7 +6,7 @@ import { BeforeCreate, Entity, Property, Unique } from '@mikro-orm/core';
  * Policy collection
  */
 @Entity()
-@Unique({ properties: ['policyTag'], options: { partialFilterExpression: { policyTag: { $exists: true, $ne: null }}}})
+@Unique({ properties: ['policyTag'], options: { partialFilterExpression: { policyTag: { $type: 'string' }}}})
 export class Policy extends BaseEntity {
 
     /**
