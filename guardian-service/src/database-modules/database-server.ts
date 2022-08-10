@@ -11,9 +11,7 @@ import { Token as TokenCollection } from '@entity/token';
 import { Topic as TopicCollection } from '@entity/topic';
 import { DryRun } from '@entity/dry-run';
 import { PolicyRoles as PolicyRolesCollection } from '@entity/policy-roles';
-
 import { DocumentSignature, DocumentStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
-import { VcDocument as HVcDocument } from '@hedera-modules';
 import { BaseEntity, DataBaseHelper } from '@guardian/common';
 
 /**
@@ -78,7 +76,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param filters
      */
-    private async findOne<T extends BaseEntity>(entityClass: new() => T, filters: any): Promise<T> {
+    private async findOne<T extends BaseEntity>(entityClass: new () => T, filters: any): Promise<T> {
         if (this.dryRun) {
             if (typeof filters === 'string') {
                 return (await new DataBaseHelper(DryRun).findOne(filters)) as any;
@@ -102,7 +100,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param filters
      */
-    private async find<T extends BaseEntity>(entityClass: new() => T, filters: any, options?: any): Promise<T[]> {
+    private async find<T extends BaseEntity>(entityClass: new () => T, filters: any, options?: any): Promise<T[]> {
         if (this.dryRun) {
             const _filters: any = { ...filters };
             if (_filters.where) {
@@ -123,7 +121,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param item
      */
-    private create<T extends BaseEntity>(entityClass: new() => T, item: any): T {
+    private create<T extends BaseEntity>(entityClass: new () => T, item: any): T {
         if (this.dryRun) {
             return (new DataBaseHelper(DryRun).create(item)) as any;
         } else {
@@ -136,7 +134,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param item
      */
-    private async save<T extends BaseEntity>(entityClass: new() => T, item: any): Promise<T> {
+    private async save<T extends BaseEntity>(entityClass: new () => T, item: any): Promise<T> {
         if (this.dryRun) {
             const _item: any = { ...item };
             _item.dryRunId = this.dryRun;
@@ -153,7 +151,7 @@ export class DatabaseServer {
      * @param criteria
      * @param row
      */
-    private async update<T extends BaseEntity>(entityClass: new() => T, criteria: any, row: T): Promise<void> {
+    private async update<T extends BaseEntity>(entityClass: new () => T, criteria: any, row: T): Promise<void> {
         if (this.dryRun) {
             await new DataBaseHelper(DryRun).update(row, criteria);
         } else {
@@ -166,7 +164,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param entities
      */
-    private async remove<T extends BaseEntity>(entityClass: new() => T, entities: T[]): Promise<void> {
+    private async remove<T extends BaseEntity>(entityClass: new () => T, entities: T[]): Promise<void> {
         if (this.dryRun) {
             await new DataBaseHelper(DryRun).remove(entities as any);
         } else {
@@ -284,7 +282,7 @@ export class DatabaseServer {
         policyId: string,
         tag: string,
         type: string,
-        newVc: HVcDocument,
+        newVc: any,
         oldDoc: any = null,
         refDoc: any = null
     ): VcDocumentCollection {
@@ -866,7 +864,7 @@ export class DatabaseServer {
      * @param ids
      */
     public static async getSchemasByIds(ids: string[]): Promise<SchemaCollection[]> {
-        return await new DataBaseHelper(SchemaCollection).find({ id: { $in: ids} });
+        return await new DataBaseHelper(SchemaCollection).find({ id: { $in: ids } });
     }
 
     /**
@@ -1084,6 +1082,8 @@ export class DatabaseServer {
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
             active: true
+        }, {
+            fields: ['did', 'username', 'hederaAccountId', 'active']
         });
     }
 
@@ -1097,6 +1097,8 @@ export class DatabaseServer {
         return (await new DataBaseHelper(DryRun).find({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers'
+        }, {
+            fields: ['did', 'username', 'hederaAccountId', 'active']
         })) as any;
     }
 
@@ -1107,7 +1109,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public static async setVirtualUser(policyId: string, did: string): Promise<any> {
+    public static async setVirtualUser(policyId: string, did: string): Promise<void> {
         const items = (await new DataBaseHelper(DryRun).find({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
@@ -1158,8 +1160,10 @@ export class DatabaseServer {
             };
         } else if (type === 'transactions') {
             filters.where.dryRunClass = { $eq: 'Transactions' };
+            otherOptions.fields = ['createDate', 'type', 'hederaAccountId'];
         } else if (type === 'ipfs') {
             filters.where.dryRunClass = { $eq: 'Files' };
+            otherOptions.fields = ['createDate', 'document', 'documentURL'];
         }
         return await new DataBaseHelper(DryRun).findAndCount(filters, otherOptions);
     }
@@ -1186,7 +1190,7 @@ export class DatabaseServer {
     }
 
     /**
-     * Save Virtual Fil
+     * Save Virtual File
      * @param policyId
      * @param file
      * @param url
@@ -1205,6 +1209,57 @@ export class DatabaseServer {
                 size: file?.byteLength
             },
             documentURL: url?.url
+        });
+    }
+
+    /**
+     * Get Virtual Messages
+     * @param dryRun
+     * @param topicId
+     *
+     * @virtual
+     */
+    public static async getVirtualMessages(dryRun: string, topicId: any): Promise<any> {
+        return (await new DataBaseHelper(DryRun).find({
+            dryRunId: dryRun,
+            dryRunClass: 'Message',
+            topicId
+        })) as any;
+    }
+
+    /**
+     * Get Virtual Message
+     * @param dryRun
+     * @param messageId
+     *
+     * @virtual
+     */
+    public static async getVirtualMessage(dryRun: string, messageId: string): Promise<any> {
+        return (await new DataBaseHelper(DryRun).findOne({
+            dryRunId: dryRun,
+            dryRunClass: 'Message',
+            messageId
+        })) as any;
+    }
+
+    /**
+     * Save Virtual Message
+     * @param dryRun
+     * @param message
+     *
+     * @virtual
+     */
+    public static async saveVirtualMessage<T>(dryRun: string, message: any): Promise<void> {
+        const document = message.toMessage();
+        const messageId = message.getId();
+        const topicId = message.getTopicId();
+
+        await new DataBaseHelper(DryRun).save({
+            dryRunId: dryRun,
+            dryRunClass: 'Message',
+            document,
+            topicId,
+            messageId
         });
     }
 }

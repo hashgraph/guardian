@@ -16,6 +16,7 @@ import { MessageAction } from './message-action';
 import { VPMessage } from './vp-message';
 import { TransactionLogger } from '../transaction-logger';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { DatabaseServer } from '@database-modules';
 
 /**
  * Message server
@@ -322,6 +323,9 @@ export class MessageServer {
             message = await this.sendIPFS(message);
         }
         message = await this.sendHedera(message);
+        if(this.dryRun) {
+            await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
+        }
         return message;
     }
 
@@ -331,9 +335,17 @@ export class MessageServer {
      * @param type
      */
     public async getMessage<T extends Message>(id: string, type?: MessageType): Promise<T> {
-        let message = await this.getTopicMessage<T>(id, type);
-        message = await this.loadIPFS(message);
-        return message as T;
+        if(this.dryRun) {
+            const message =  await DatabaseServer.getVirtualMessage(this.dryRun, id);
+            const result = MessageServer.fromMessage<T>(message.document, type);
+            result.setId(message.messageId);
+            result.setTopicId(message.topicId);
+            return result;
+        } else {
+            let message = await this.getTopicMessage<T>(id, type);
+            message = await this.loadIPFS(message);
+            return message as T;
+        }
     }
 
     /**
@@ -343,8 +355,33 @@ export class MessageServer {
      * @param action
      */
     public async getMessages<T extends Message>(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<T[]> {
-        const messages = await this.getTopicMessages(topicId, type, action);
-        return messages as T[];
+        if(this.dryRun) {
+            const messages = await DatabaseServer.getVirtualMessages(this.dryRun, topicId);
+            const result: T[] = [];
+            for (const message of messages) {
+                try {
+                    const item = MessageServer.fromMessage<T>(message.document);
+                    let filter = true;
+                    if (type) {
+                        filter = filter && item.type === type;
+                    }
+                    if (action) {
+                        filter = filter && item.action === action;
+                    }
+                    if (filter) {
+                        item.setId(message.messageId);
+                        item.setTopicId(message.topicId);
+                        result.push(item);
+                    }
+                } catch (error) {
+                    continue;
+                }
+            }
+            return result;
+        } else {
+            const messages = await this.getTopicMessages(topicId, type, action);
+            return messages as T[];
+        }
     }
 
     /**

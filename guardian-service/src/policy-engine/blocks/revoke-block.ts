@@ -129,20 +129,21 @@ export class RevokeBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const uiMetaData = ref.options.uiMetaData;
         const data = event.data.data;
+
         const hederaAccount = await PolicyUtils.getHederaAccount(ref, event.user.did);
         const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey, ref.dryRun);
         const policyTopics = await ref.databaseServer.getTopics({ policyId: ref.policyId });
+
         const policyTopicsMessages = [];
-        for (const topicId of policyTopics.map(topic => topic.topicId)) {
-            const topicMessages = await messageServer.getMessages(topicId);
+        for (const topic of policyTopics) {
+            const topicMessages = await messageServer.getMessages(topic.topicId);
             policyTopicsMessages.push(...topicMessages);
         }
-        const revokedMessagesIds = policyTopicsMessages
-            .filter(item => item.isRevoked())
-            .map(item => item.getMessageId());
         const messagesToFind = policyTopicsMessages
-            .filter(item => !revokedMessagesIds.includes(item.getMessageId()));
+            .filter(item => !item.isRevoked());
+
         const topicMessage = policyTopicsMessages.find(item => item.id === data.messageId);
+
         const relatedMessages = await this.findRelatedMessageIds(topicMessage, messagesToFind);
         for (const policyTopicMessage of policyTopicsMessages) {
             const relatedMessage = relatedMessages.find(item => item.id === policyTopicMessage.id);
@@ -156,12 +157,14 @@ export class RevokeBlock {
                 );
             }
         }
+
         const documents = await this.findDocumentByMessageIds(relatedMessages.map(item => item.id));
         for (const doc of documents) {
             doc.option = doc.option || {};
             doc.option.status = RevokedStatus;
             doc.comment = data.comment;
         }
+
         if (uiMetaData && uiMetaData.updatePrevDoc && data.relationships) {
             const prevDocs = await this.findDocumentByMessageIds(data.relationships);
             const prevDocument = prevDocs[prevDocs.length - 1];
@@ -171,6 +174,7 @@ export class RevokeBlock {
                 await ref.databaseServer.saveDocumentState(prevDocument.id, uiMetaData.prevDocStatus);
             }
         }
+
         const state = {
             data: documents
         };
