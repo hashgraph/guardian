@@ -191,6 +191,10 @@ npm start
 **Note**: Once you start the service, please wait for the Initialization Process to be completed.
 {% endhint %}
 
+{% hint style="info" %}
+<mark style="color:red;">Important Note:</mark> Please perform backup operation before upgrading the Guardian Version.
+{% endhint %}
+
 ### Troubleshoot
 
 To delete all the Docker Containers
