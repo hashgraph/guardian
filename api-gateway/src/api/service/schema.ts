@@ -56,6 +56,7 @@ export async function createSchema(newSchema: ISchema, owner: string, topicId?: 
     } else {
         newSchema.version = '';
     }
+    delete newSchema._id;
     delete newSchema.id;
     delete newSchema.status;
 
@@ -94,6 +95,7 @@ export async function createSchemaAsync(newSchema: ISchema, owner: string, topic
     } else {
         newSchema.version = '';
     }
+    delete newSchema._id;
     delete newSchema.id;
     delete newSchema.status;
     taskManager.addStatus(taskId, 'Check schema version', StatusType.COMPLETED);
@@ -685,6 +687,7 @@ schemaAPI.post('/system/:username', permissionHelper(UserRole.STANDARD_REGISTRY)
         fromOld(newSchema);
         delete newSchema.version;
         delete newSchema.id;
+        delete newSchema._id;
         delete newSchema.status;
         delete newSchema.topicId;
 
