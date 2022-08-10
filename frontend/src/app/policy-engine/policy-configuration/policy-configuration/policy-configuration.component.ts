@@ -577,6 +577,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 const json = this.policyModel.getJSON();
 
                 const policy = Object.assign({}, json, result.policy);
+                delete policy._id;
                 delete policy.id;
                 delete policy.status;
                 delete policy.owner;

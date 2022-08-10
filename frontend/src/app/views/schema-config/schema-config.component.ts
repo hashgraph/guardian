@@ -289,6 +289,7 @@ export class SchemaConfigComponent implements OnInit {
 
     cloneDocument(element: Schema) {
         const newDocument: any = { ...element };
+        delete newDocument._id;
         delete newDocument.id;
         delete newDocument.uuid;
         delete newDocument.creator;

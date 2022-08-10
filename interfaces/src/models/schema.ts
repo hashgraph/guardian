@@ -13,7 +13,12 @@ import { SchemaField } from '../interface/schema-field.interface';
  */
 export class Schema implements ISchema {
     /**
-     * ID
+     * Id
+     */
+    public _id: string;
+
+    /**
+     * Serialized Id
      */
     public id: string;
     /**
@@ -122,6 +127,7 @@ export class Schema implements ISchema {
     constructor(schema?: ISchema) {
         this.userDID = null;
         if (schema) {
+            this._id = schema._id || undefined;
             this.id = schema.id || undefined;
             this.uuid = schema.uuid || GenerateUUIDv4();
             this.hash = schema.hash || '';
@@ -165,6 +171,7 @@ export class Schema implements ISchema {
                 this.context = null;
             }
         } else {
+            this._id = undefined;
             this.id = undefined;
             this.uuid = GenerateUUIDv4();
             this.hash = '';
@@ -247,6 +254,7 @@ export class Schema implements ISchema {
      */
     public clone(): Schema {
         const clone = new Schema();
+        clone._id = this._id;
         clone.id = this.id;
         clone.uuid = this.uuid;
         clone.hash = this.hash;

@@ -6,8 +6,8 @@ import { BaseEntity } from '@guardian/common';
  * User collection
  */
 @Entity()
-@Unique({ properties: ['username'], options: { partialFilterExpression: { username: { $exists: true, $ne: null }}}})
-@Unique({ properties: ['did'], options: { partialFilterExpression: { did: { $exists: true, $ne: null }}}})
+@Unique({ properties: ['username'], options: { partialFilterExpression: { username: { $type: 'string' }}}})
+@Unique({ properties: ['did'], options: { partialFilterExpression: { did: { $type: 'string' }}}})
 export class User extends BaseEntity implements IUser {
     /**
      * Username

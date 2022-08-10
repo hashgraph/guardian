@@ -6,7 +6,7 @@ import { BaseEntity } from '@guardian/common';
  * VP documents collection
  */
 @Entity()
-@Unique({ properties: ['hash'], options: { partialFilterExpression: { hash: { $exists: true, $ne: null }}}})
+@Unique({ properties: ['hash'], options: { partialFilterExpression: { hash: { $type: 'string' }}}})
 export class VpDocument extends BaseEntity implements IVPDocument {
     /**
      * Document owner

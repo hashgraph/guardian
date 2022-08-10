@@ -38,6 +38,7 @@ export class PolicyImportExportHelper {
         const policyObject = { ...policy };
         const topicId = policyObject.topicId;
 
+        delete policyObject._id;
         delete policyObject.id;
         delete policyObject.messageId;
         delete policyObject.status;
@@ -66,6 +67,7 @@ export class PolicyImportExportHelper {
         zip.folder('schemas')
         for (const schema of schemas) {
             const item = { ...schema };
+            delete item._id;
             delete item.id;
             delete item.status;
             delete item.readonly;
@@ -136,6 +138,7 @@ export class PolicyImportExportHelper {
     static async importPolicy(policyToImport: any, policyOwner: string, versionOfTopicId: string, notifier: INotifier): Promise<Policy> {
         const { policy, tokens, schemas } = policyToImport;
 
+        delete policy._id;
         delete policy.id;
         delete policy.messageId;
         delete policy.version;
