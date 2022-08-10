@@ -23,7 +23,7 @@ in `guardian-service/.env.docker`:
  OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
 ```
 
-3\. Update the following files with your NFT.Storage API KEY. Please follow the steps from [https://nft.storage/#getting-started](https://nft.storage/#getting-started) to obtain it.
+3\. Update the following files with your Web3.Storage API KEY. Please follow the steps from [https://web3.storage/docs/#quickstart ](https://web3.storage/docs/#quickstart)to obtain it.
 
 For example:
 
