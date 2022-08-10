@@ -5,6 +5,20 @@ import {
 } from '@mikro-orm/core';
 import { MongoDriver, MongoEntityManager, ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models/base-entity';
+import { DataBaseNamingStrategy } from './db-naming-strategy';
+
+/**
+ * Common connection config
+ */
+export const COMMON_CONNECTION_CONFIG: any = {
+    type: 'mongo',
+    namingStrategy: DataBaseNamingStrategy,
+    dbName: process.env.DB_DATABASE,
+    clientUrl:`mongodb://${process.env.DB_HOST}`,
+    entities: [
+        'dist/entity/*.js'
+    ]
+};
 
 /**
  * Dependency injection of database

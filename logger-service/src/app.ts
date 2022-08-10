@@ -1,29 +1,20 @@
 import { loggerAPI } from '@api/logger.service';
 import { Log } from '@entity/log';
-import { ApplicationState, DataBaseHelper, DB_DI, MessageBrokerChannel, Migration } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, DB_DI, MessageBrokerChannel, Migration } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 
-const connectionConfig: any = {
-    type: 'mongo',
-    dbName: process.env.DB_DATABASE,
-    clientUrl:`mongodb://${process.env.DB_HOST}`,
-    entities: [
-        'dist/entity/*.js'
-    ]
-};
-
 Promise.all([
     Migration({
-        ...connectionConfig,
+        ...COMMON_CONNECTION_CONFIG,
         migrations: {
             path: 'dist/migrations',
             transactional: false
         }
     }),
     MikroORM.init<MongoDriver>({
-        ...connectionConfig,
+        ...COMMON_CONNECTION_CONFIG,
         driverOptions: {
             useUnifiedTopology: true
         },

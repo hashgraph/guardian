@@ -1,30 +1,21 @@
 import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/account-service';
 import { WalletService } from '@api/wallet-service';
-import { ApplicationState, MessageBrokerChannel, Logger, DB_DI, Migration } from '@guardian/common';
+import { ApplicationState, MessageBrokerChannel, Logger, DB_DI, Migration, COMMON_CONNECTION_CONFIG } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 
-const connectionConfig: any = {
-    type: 'mongo',
-    dbName: process.env.DB_DATABASE,
-    clientUrl:`mongodb://${process.env.DB_HOST}`,
-    entities: [
-        'dist/entity/*.js'
-    ]
-};
-
 Promise.all([
     Migration({
-        ...connectionConfig,
+        ...COMMON_CONNECTION_CONFIG,
         migrations: {
             path: 'dist/migrations',
             transactional: false
         }
     }),
     MikroORM.init<MongoDriver>({
-        ...connectionConfig,
+        ...COMMON_CONNECTION_CONFIG,
         driverOptions: {
             useUnifiedTopology: true
         },

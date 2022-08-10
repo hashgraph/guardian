@@ -27,7 +27,8 @@ import {
     ExternalEventChannel,
     DataBaseHelper,
     DB_DI,
-    Migration
+    Migration,
+    COMMON_CONNECTION_CONFIG
 } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { Environment, HederaSDKHelper, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
@@ -37,25 +38,16 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { DatabaseMigrations, DatabaseServer } from '@database-modules';
 import { ipfsAPI } from '@api/ipfs.service';
 
-const connectionConfig: any = {
-    type: 'mongo',
-    dbName: process.env.DB_DATABASE,
-    clientUrl:`mongodb://${process.env.DB_HOST}`,
-    entities: [
-        'dist/entity/*.js'
-    ]
-};
-
 Promise.all([
     Migration({
-        ...connectionConfig,
+        ...COMMON_CONNECTION_CONFIG,
         migrations: {
             path: 'dist/migrations',
             transactional: false
         }
     }),
     MikroORM.init<MongoDriver>({
-        ...connectionConfig,
+        ...COMMON_CONNECTION_CONFIG,
         driverOptions: {
             useUnifiedTopology: true
         },
