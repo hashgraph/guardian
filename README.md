@@ -25,6 +25,8 @@ To get a local copy up and running, follow these simple example steps. When buil
 * [Hedera Testnet Account](https://portal.hedera.com)
 * [web3.Storage Account](https://web3.storage/)
 
+### Note: Please perform Backup operation before upgrading Guardian Version.
+
 #### Docker Installation
 
 1. Clone the repo
