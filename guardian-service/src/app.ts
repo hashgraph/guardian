@@ -35,7 +35,7 @@ import { Environment, HederaSDKHelper, MessageServer, TransactionLogger, Transac
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { DatabaseMigrations, DatabaseServer } from '@database-modules';
+import { DatabaseServer } from '@database-modules';
 import { ipfsAPI } from '@api/ipfs.service';
 
 Promise.all([
@@ -63,9 +63,6 @@ Promise.all([
     new Logger().setChannel(channel);
     const state = new ApplicationState('GUARDIAN_SERVICE');
     state.setChannel(channel);
-
-    //
-    await DatabaseMigrations.runMigrations();
 
     // Check configuration
     if (!process.env.OPERATOR_ID || process.env.OPERATOR_ID.length < 5) {
