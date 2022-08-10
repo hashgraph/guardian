@@ -91,7 +91,7 @@ export class DatabaseServer {
                 _filters.dryRunId = this.dryRun;
                 _filters.dryRunClass = this.classMap.get(entityClass);
             }
-            return (await new DataBaseHelper(DryRun).findOne(filters)) as any;
+            return (await new DataBaseHelper(DryRun).findOne(_filters)) as any;
         } else {
             return await new DataBaseHelper(entityClass).findOne(filters);
         }
@@ -112,7 +112,7 @@ export class DatabaseServer {
                 _filters.dryRunId = this.dryRun;
                 _filters.dryRunClass = this.classMap.get(entityClass);
             }
-            return (await new DataBaseHelper(DryRun).find(filters, options)) as any;
+            return (await new DataBaseHelper(DryRun).find(_filters, options)) as any;
         } else {
             return await new DataBaseHelper(entityClass).find(filters, options);
         }
@@ -567,6 +567,7 @@ export class DatabaseServer {
      * @virtual
      */
     public async getVpDocuments(filters: any, options?: any): Promise<VpDocumentCollection[]> {
+        console.log('VpDocumentCollection', filters, options)
         return await this.find(VpDocumentCollection, filters, options);
     }
 
