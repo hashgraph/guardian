@@ -4,7 +4,7 @@
 
 * [Guardian Introduction](README.md)
 * [Discovering ESG assets on Hedera](getting-started/discovering-esg-assets-on-hedera.md)
-* [Getting Started](getting-started/getting-started/README.md)
+* [Getting started](getting-started/getting-started/README.md)
   * [Prerequisites](getting-started/getting-started/prerequisites.md)
   * [Installation](getting-started/getting-started/installation.md)
 * [Contributing](getting-started/contributing/README.md)
