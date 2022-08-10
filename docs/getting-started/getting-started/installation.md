@@ -34,13 +34,13 @@ For example:
 in `ipfs-client/.env`:
 
 ```
-NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+IPFS_STORAGE_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
 ```
 
 or in `ipfs-client/.env.docker`:
 
 ```
-NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+IPFS_STORAGE_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
 ```
 
 4\. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
@@ -71,7 +71,7 @@ Install, configure and start all the prerequisites, then build and start each co
 git clone https://github.com/hashgraph/guardian.git
 ```
 
-2\. From the interfaces folder
+2\. From the **interfaces** folder
 
 Build package
 
@@ -80,7 +80,7 @@ npm install
 npm run build
 ```
 
-3\. From the common folder
+3\. From the **common** folder
 
 Build package
 
@@ -89,7 +89,7 @@ npm install
 npm run build
 ```
 
-4\. From the Logger service folder
+4\. From the **logger-service** folder
 
 To build the service:
 
@@ -104,7 +104,7 @@ To start the service:
 npm start
 ```
 
-5\. From the auth-service folder
+5\. From the **auth-service** folder
 
 To build the service:
 
@@ -119,7 +119,7 @@ To start the service:
 npm start
 ```
 
-6\. From the ipfs-client folder
+6\. From the **ipfs-client** folder
 
 To build the service:
 
@@ -134,7 +134,7 @@ To start the service:
 npm start
 ```
 
-7\. From the guardian-service folder
+7\. From the **guardian-service** folder
 
 To build the service:
 
@@ -149,7 +149,7 @@ To start the service (found on [http://localhost:3004](http://localhost:3004)):
 npm start
 ```
 
-8\. From the api-gateway folder
+8\. From the **api-gateway** folder
 
 To build the service:
 
@@ -164,7 +164,7 @@ To start the service (found on [http://localhost:3002](https://localhost:3002)):
 npm start
 ```
 
-9\. From the mrv-sender folder
+9\. From the **mrv-sender** folder
 
 To build the service:
 
@@ -179,7 +179,7 @@ To start the service (found on [http://localhost:3005](http://localhost:3005)):
 npm start
 ```
 
-10.From the frontend folder
+10.From the **frontend** folder
 
 To build the service:
 
@@ -196,10 +196,6 @@ npm start
 
 {% hint style="info" %}
 **Note**: Once you start the service, please wait for the Initialization Process to be completed.
-{% endhint %}
-
-{% hint style="info" %}
-<mark style="color:red;">Important Note:</mark> Please perform backup operation before upgrading the Guardian Version.
 {% endhint %}
 
 ### How to Configure Hedera Local Node:
