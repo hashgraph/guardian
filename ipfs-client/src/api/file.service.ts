@@ -194,14 +194,14 @@ export async function fileAPI(
      */
     channel.response<CommonSettings, any>(MessageAPI.UPDATE_SETTINGS, async (settings) => {
         try {
-            const nftApiKey = {
-                name: 'NFT_API_KEY',
-                value: settings.nftApiKey
+            const ipfsStorageApiKey = {
+                name: 'IPFS_STORAGE_API_KEY',
+                value: settings.nftApiKey || settings.ipfsStorageApiKey
             };
-            await settingsRepository.save(nftApiKey, {
-                name: 'NFT_API_KEY'
+            await settingsRepository.save(ipfsStorageApiKey, {
+                name: 'IPFS_STORAGE_API_KEY'
             });
-            client = new Web3Storage({ token: settings.nftApiKey } as any);
+            client = new Web3Storage({ token: settings.nftApiKey || settings.ipfsStorageApiKey } as any);
             return new MessageResponse({});
         }
         catch (error) {
@@ -216,11 +216,12 @@ export async function fileAPI(
      * @return {any} - settings
      */
     channel.response<any, IIpfsSettingsResponse>(MessageAPI.GET_SETTINGS, async (_) => {
-        const nftApiKey = await settingsRepository.findOne({
-            name: 'NFT_API_KEY'
+        const ipfsStorageApiKey = await settingsRepository.findOne({
+            name: 'IPFS_STORAGE_API_KEY'
         });
         return new MessageResponse({
-            nftApiKey: nftApiKey?.value || process.env.NFT_API_KEY
+            nftApiKey: ipfsStorageApiKey?.value || process.env.IPFS_STORAGE_API_KEY,
+            ipfsStorageApiKey: ipfsStorageApiKey?.value || process.env.IPFS_STORAGE_API_KEY
         });
     })
 }
