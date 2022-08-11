@@ -821,8 +821,6 @@ export class PolicyEngineService {
             try {
                 const policyId = msg.policyId;
                 const user = msg.user;
-                const userFull = await this.users.getUser(user.username);
-                const owner = userFull.did;
 
                 const model = await DatabaseServer.getPolicyById(policyId);
                 if (!model) {
@@ -831,6 +829,12 @@ export class PolicyEngineService {
                 if (!model.config) {
                     throw new Error('The policy is empty');
                 }
+                if (model.status === PolicyType.PUBLISH) {
+                    throw new Error(`Policy published`);
+                }
+
+                const userFull = await this.users.getUser(user.username);
+                const owner = userFull.did;
 
                 const errors = await this.policyGenerator.validate(policyId);
                 const isValid = !errors.blocks.some(block => !block.isValid);
@@ -857,8 +861,6 @@ export class PolicyEngineService {
             try {
                 const policyId = msg.policyId;
                 const user = msg.user;
-                const userFull = await this.users.getUser(user.username);
-                const owner = userFull.did;
 
                 const model = await DatabaseServer.getPolicyById(policyId);
                 if (!model) {
@@ -867,6 +869,12 @@ export class PolicyEngineService {
                 if (!model.config) {
                     throw new Error('The policy is empty');
                 }
+                if (model.status === PolicyType.PUBLISH) {
+                    throw new Error(`Policy published`);
+                }
+
+                const userFull = await this.users.getUser(user.username);
+                const owner = userFull.did;
 
                 model.status = PolicyType.DRAFT;
                 model.version = '';
