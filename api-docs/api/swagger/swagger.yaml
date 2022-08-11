@@ -540,6 +540,33 @@ components:
           type: array
           items:
             type: string
+    Task:
+      type: object
+      properties:
+        taskId:
+          type: string
+        expectation:
+          type: number
+    TaskStatus:
+      type: object
+      properties:
+        date:
+          type: string
+        name:
+          type: string
+        statuses:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              message:
+                type: string
+        result:
+          type: object
+        error:
+          type: object
 tags:
   - name: "accounts"
     description: "Operations related to Guardian users"
