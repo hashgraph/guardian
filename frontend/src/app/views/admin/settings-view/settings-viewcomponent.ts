@@ -12,7 +12,7 @@ export class SettingsViewComponent implements OnInit {
   dataForm = this.fb.group({
       operatorId: [''],
       operatorKey: [''],
-      nftApiKey: ['']
+      ipfsStorageApiKey: ['']
   });
   isLoading: boolean = true;
 

@@ -504,6 +504,9 @@ components:
         operatorKey:
           type: string
         nftApiKey:
+          deprecated: true
+          type: string
+        ipfsStorageApiKey:
           type: string
     LogFilters:
       type: object
