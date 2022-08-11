@@ -3,45 +3,39 @@ import { ToastrService } from 'ngx-toastr';
 import { MessageTranslationService } from './message-translation-service/message-translation-service';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class InformService {
 
-  constructor(private toastr: ToastrService, private messageTranslator: MessageTranslationService) { }
+    constructor(private toastr: ToastrService, private messageTranslator: MessageTranslationService) { }
 
-  public processAsyncError(error: any) {
-    const translatedMessage = this.messageTranslator.translateMessage(
-        this.messageToText(error.message)
-    );
-    let header = '';
-    if(error.code) {
-        header += `${error.code} `;
-    }
-    if(translatedMessage.wasTranslated) {
-        header += 'Hedera transaction failed';
-    } else {
-        header += 'Other Error';
-    }
-    let text;
-    if (error.message) {
-        text = `<div>${
-            translatedMessage.text
-        }</div><div>${this.messageToText(error.error)}</div>`;
-    } else {
-        text = `${error.error}`;
-    }
-    this.toastr.error(text, header, {
-        timeOut: 30000,
-        closeButton: true,
-        positionClass: 'toast-bottom-right',
-        enableHtml: true,
-    });
-  }
+    public processAsyncError(error: any) {
+        const translatedMessage = this.messageTranslator.translateMessage(error.message);
 
-  private messageToText(message: any) {
-      if (typeof message === 'object') {
-          return JSON.stringify(message, null, 2);
-      }
-      return message;
-  }
+        let header = '';
+        if (error.code) {
+            header += `${error.code} `;
+        }
+        if (translatedMessage.wasTranslated) {
+            header += 'Hedera transaction failed';
+        } else {
+            header += 'Other Error';
+        }
+        let text;
+        if (error.message) {
+            text = `
+                <div>${translatedMessage.text}</div>
+            `;
+        } else {
+            text = `Unknown error`;
+        }
+
+        this.toastr.error(text, header, {
+            timeOut: 30000,
+            closeButton: true,
+            positionClass: 'toast-bottom-right',
+            enableHtml: true,
+        });
+    }
+
 }

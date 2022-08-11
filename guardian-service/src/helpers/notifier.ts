@@ -26,7 +26,7 @@ export interface INotifier {
     /**
      * Nofity about error
      */
-    error: (error: any) => void;
+    error: (error: string | Error, code?: string) => void;
 
     /**
      * Notify about result
@@ -39,8 +39,8 @@ const empty: INotifier = {
     start: (step: string) => { },
     completed: () => { },
     completedAndStart: (nextStep: string) => { },
-    info: (message: string) => {},
-    error: (error: any) => { },
+    info: (message: string) => { },
+    error: (error: string | Error, code?: string) => { },
     result: (result: any) => { }
     /* tslint:enable:no-empty */
 };
@@ -53,7 +53,7 @@ export function emptyNotifier(): INotifier {
     return empty;
 }
 
-const chanelEvent = [ 'api-gateway', MessageAPI.UPDATE_TASK_STATUS ].join('.');
+const chanelEvent = ['api-gateway', MessageAPI.UPDATE_TASK_STATUS].join('.');
 
 /**
  * Init task notifier
@@ -89,8 +89,23 @@ export function initNotifier(channel: MessageBrokerChannel, taskId: string): INo
             info: async (message: string) => {
                 await sendStatuses({ message, type: StatusType.INFO });
             },
-            error: async (error: any) => {
-                await channel.request(chanelEvent, { taskId, error });
+            error: async (error: string | Error, code?: string) => {
+                let result = {
+                    code: code || 500,
+                    message: null
+                }
+                if (typeof error === 'string') {
+                    result.message = error;
+                } else {
+                    if (error.message) {
+                        result.message = error.message;
+                    } else if (error.stack) {
+                        result.message = error.stack;
+                    } else {
+                        result.message = 'Unknown error';
+                    }
+                }
+                await channel.request(chanelEvent, { taskId, error: result });
             },
             result: async (result: any) => {
                 await channel.request(chanelEvent, { taskId, result });
