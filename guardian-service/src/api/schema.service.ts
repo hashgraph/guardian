@@ -271,7 +271,7 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
  * @param topicId
  */
 export async function importSchemaByFiles(owner: string, files: ISchema[], topicId: string, notifier: INotifier) {
-    notifier.start('Create schema');
+    notifier.start('Import schemas');
     const uuidMap: Map<string, string> = new Map();
     for (const file of files) {
         const newUUID = GenerateUUIDv4();
@@ -290,11 +290,15 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
         file.status = SchemaStatus.DRAFT;
     }
 
+    notifier.info(`Found ${files.length} schemas`);
+    let num: number = 0;
     for (const file of files) {
         file.document = replaceValueRecursive(file.document, uuidMap);
         file.context = replaceValueRecursive(file.context, uuidMap);
         SchemaHelper.setVersion(file, '', '');
         await createSchema(file, owner, emptyNotifier());
+        num++;
+        notifier.info(`Schema ${num} (${file.name || '-'}) created`);
     }
 
     const schemasMap = [];
