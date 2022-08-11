@@ -562,6 +562,9 @@ export class PolicyEngineService {
         if (!policy.config) {
             throw new Error('The policy is empty');
         }
+        if (policy.status === PolicyType.PUBLISH) {
+            throw new Error(`Policy already published`);
+        }
         if (!ModelHelper.checkVersionFormat(version)) {
             throw new Error('Invalid version format');
         }
