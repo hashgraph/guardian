@@ -90,7 +90,7 @@ export function initNotifier(channel: MessageBrokerChannel, taskId: string): INo
                 await sendStatuses({ message, type: StatusType.INFO });
             },
             error: async (error: string | Error, code?: string) => {
-                let result = {
+                const result = {
                     code: code || 500,
                     message: null
                 }
