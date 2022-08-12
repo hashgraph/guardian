@@ -199,7 +199,7 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
  */
 async function createSchema(newSchema: ISchema, owner: string, notifier: INotifier): Promise<SchemaCollection> {
     delete newSchema.id;
-    
+
     const users = new Users();
     notifier.start('Resolve Hedera account');
     const root = await users.getHederaAccount(owner);
