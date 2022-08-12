@@ -46,7 +46,7 @@ async function run(name, maxTransaction, f, d) {
     return { success, failed };
 }
 
-describe.only('Stability test', function () {
+describe('Stability test', function () {
     this.timeout(20 * 60 * 1000);
 
     const OPERATOR_ID = '0.0.1548173';
