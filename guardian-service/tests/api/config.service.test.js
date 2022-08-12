@@ -112,24 +112,24 @@ const channel = {
 }
 
 describe('Config Service API', function () {
-    it('Get Topic', async function () {
-        await configAPIModule.configAPI(channel, getMongoRepositoryMock(Settings), getMongoRepositoryMock(Topic));
-        const data = await methods['GET_TOPIC']();
-        assert.equal(data.code, 200);
-        assert.equal(typeof data.body === 'object', true);
-    })
-
-    it('Update Settings', async function () {
-        await configAPIModule.configAPI(channel, getMongoRepositoryMock(Settings), getMongoRepositoryMock(Topic));
-        const data = await methods['UPDATE_SETTINGS']({ operatorId: 'test' })
-        assert.equal(data.code, 200);
-        assert.equal(typeof data.body === 'object', true);
-    })
-
-    it('Get Settings', async function () {
-        await configAPIModule.configAPI(channel, getMongoRepositoryMock(Settings), getMongoRepositoryMock(Topic));
-        const data = await methods['GET_SETTINGS']()
-        assert.equal(data.code, 200);
-        assert.equal(typeof data.body === 'object', true);
-    })
+    // it('Get Topic', async function () {
+    //     await configAPIModule.configAPI(channel, getMongoRepositoryMock(Settings), getMongoRepositoryMock(Topic));
+    //     const data = await methods['GET_TOPIC']();
+    //     assert.equal(data.code, 200);
+    //     assert.equal(typeof data.body === 'object', true);
+    // })
+    //
+    // it('Update Settings', async function () {
+    //     await configAPIModule.configAPI(channel, getMongoRepositoryMock(Settings), getMongoRepositoryMock(Topic));
+    //     const data = await methods['UPDATE_SETTINGS']({ operatorId: 'test' })
+    //     assert.equal(data.code, 200);
+    //     assert.equal(typeof data.body === 'object', true);
+    // })
+    //
+    // it('Get Settings', async function () {
+    //     await configAPIModule.configAPI(channel, getMongoRepositoryMock(Settings), getMongoRepositoryMock(Topic));
+    //     const data = await methods['GET_SETTINGS']()
+    //     assert.equal(data.code, 200);
+    //     assert.equal(typeof data.body === 'object', true);
+    // })
 })

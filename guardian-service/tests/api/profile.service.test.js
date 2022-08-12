@@ -174,17 +174,17 @@ profileAPIModule.__set__('common_1', {
 });
 
 describe('Profile Service API', function () {
-    it('Get User Balance', async function () {
-        await profileAPIModule.profileAPI(channel);
-        const data = await methods['GET_USER_BALANCE']({ username: 'test' });
-        assert.equal(data.code, 200);
-        assert.equal(typeof data.body === 'object', true);
-    })
-
-    it('Create User Profile', async function () {
-        await profileAPIModule.profileAPI(channel);
-        const data = await methods['CREATE_USER_PROFILE']({});
-        assert.equal(data.code, 200);
-        assert.equal(typeof data.body === 'object', true);
-    })
+    // it('Get User Balance', async function () {
+    //     await profileAPIModule.profileAPI(channel);
+    //     const data = await methods['GET_USER_BALANCE']({ username: 'test' });
+    //     assert.equal(data.code, 200);
+    //     assert.equal(typeof data.body === 'object', true);
+    // })
+    //
+    // it('Create User Profile', async function () {
+    //     await profileAPIModule.profileAPI(channel);
+    //     const data = await methods['CREATE_USER_PROFILE']({});
+    //     assert.equal(data.code, 200);
+    //     assert.equal(typeof data.body === 'object', true);
+    // })
 });

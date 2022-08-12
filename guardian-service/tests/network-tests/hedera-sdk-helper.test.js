@@ -293,7 +293,7 @@ describe('Hedera SDK Helper', function () {
         if (!account2Id) assert.fail('Account not created');
         if (!token2Id) assert.fail('Token not created');
         if (!nft) assert.fail('Token not minted');
-        
+
         let status;
         status = await sdk.transferNFT(
             token2Id,
@@ -329,7 +329,7 @@ describe('Hedera SDK Helper', function () {
 
     it('Test SDK newTopic', async function () {
         this.timeout(2 * transactionTimeout);
-        
+
         if (!accountId) assert.fail('Account not created');
         const id = await sdk.newTopic(accountKey, accountKey,'Memo');
         assert.exists(id);
