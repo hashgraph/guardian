@@ -1,7 +1,11 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/service-requests-base';
+import { MessageResponse } from '@guardian/common';
 
+/**
+ * Workers helper
+ */
 @Singleton
 export class Workers extends ServiceRequestsBase {
     /**
@@ -13,7 +17,7 @@ export class Workers extends ServiceRequestsBase {
      * Queue
      * @private
      */
-    private queue = new Set<unknown>();
+    private queue = [];
 
     /**
      * Add task
@@ -21,6 +25,19 @@ export class Workers extends ServiceRequestsBase {
      */
     public async addTask(task: any): Promise<void> {
         task.id = GenerateUUIDv4();
-        this.queue.add(task);
+        this.queue.push(task);
+
+        await this.request('queue-updated');
+    }
+
+    /**
+     * Init listeners
+     */
+    public initListeners() {
+        this.channel.response('queue-get', async (msg) => {
+            const item = this.queue.shift();
+
+            return new MessageResponse(item);
+        });
     }
 }

@@ -5,7 +5,7 @@
     "@guardian/interfaces": "^2.3.0-prerelease",
     "dotenv": "^16.0.0",
     "module-alias": "^2.2.2",
-    "reflect-metadata": "^0.1.13",
+    "reflect-metadata": "^0.1.13"
   },
   "description": "",
   "devDependencies": {
@@ -31,10 +31,7 @@
     "dev:docker": "nodemon .",
     "dev": "tsc -w",
     "lint": "tslint --config ../tslint.json --project .",
-    "start": "node dist/index.js",
-    "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/guardian-service.xml",
-    "test:network": "mocha tests/network-tests/**/*.test.js",
-    "test:stability": "mocha tests/stability.test.js"
+    "start": "node dist/index.js"
   },
   "version": "2.3.0"
 }

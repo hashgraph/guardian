@@ -1,6 +1,7 @@
 import { MessageBrokerChannel } from '@guardian/common';
 import { MessageAPI, IGetFileMessage, IFileResponse, IAddFileMessage } from '@guardian/interfaces';
 import { IPFSTaskManager } from './ipfs-task-manager';
+import { Workers } from '@helpers/workers';
 
 /**
  * IPFS service
@@ -73,6 +74,10 @@ export class IPFS {
          */
         url: string
     }> {
+        await new Workers().addTask({
+            target: [IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'),
+            content: Buffer.from(file).toString('base64')
+        })
         const res = await IPFS.channel.request<IAddFileMessage, any>([IPFS.target, MessageAPI.IPFS_ADD_FILE_ASYNC].join('.'), { content: Buffer.from(file).toString('base64') });
         if (!res) {
             throw new Error('Invalid response');
@@ -99,6 +104,11 @@ export class IPFS {
      * @returns File
      */
     public static async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
+        await new Workers().addTask({
+            target: [IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'),
+            cid,
+            responseType
+        })
         const res = (await IPFS.channel.request<IGetFileMessage, any>([IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'), { cid, responseType }));
         if (!res) {
             throw new Error('Invalid response');
