@@ -96,7 +96,7 @@ const channel = {
     }
 }
 
-describe.only('Approve Service API', function () {
+describe('Approve Service API', function () {
     it('Get Approve Documents', async function () {
         approveAPIModule.approveAPI(channel, getMongoRepositoryMock(ApprovalDocument));
 
