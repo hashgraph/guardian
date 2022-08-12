@@ -835,6 +835,9 @@ export class PolicyEngineService {
                 if (model.status === PolicyType.PUBLISH) {
                     throw new Error(`Policy published`);
                 }
+                if (model.status === PolicyType.DRY_RUN) {
+                    throw new Error(`Policy already in Dry Run`);
+                }
 
                 const userFull = await this.users.getUser(user.username);
                 const owner = userFull.did;
@@ -874,6 +877,9 @@ export class PolicyEngineService {
                 }
                 if (model.status === PolicyType.PUBLISH) {
                     throw new Error(`Policy published`);
+                }
+                if (model.status === PolicyType.DRAFT) {
+                    throw new Error(`Policy already in draft`);
                 }
 
                 const userFull = await this.users.getUser(user.username);
