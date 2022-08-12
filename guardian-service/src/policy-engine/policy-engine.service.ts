@@ -219,6 +219,9 @@ export class PolicyEngineService {
         const logger = new Logger();
         logger.info('Create Policy', ['GUARDIAN_SERVICE']);
         notifier.start('Save in DB');
+        if (data) {
+            delete data.status;
+        }
         const model = DatabaseServer.createPolicy(data);
         if (model.uuid) {
             const old = await DatabaseServer.getPolicyByUUID(model.uuid);

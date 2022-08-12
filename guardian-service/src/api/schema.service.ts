@@ -204,6 +204,9 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
     notifier.start('Resolve Hedera account');
     const root = await users.getHederaAccount(owner);
     notifier.completedAndStart('Save in DB');
+    if (newSchema) {
+        delete newSchema.status;
+    }
     const schemaObject = DatabaseServer.createSchema(newSchema);
     notifier.completedAndStart('Resolve Topic');
     let topic: Topic;
