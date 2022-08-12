@@ -122,24 +122,24 @@ const channel = {
 }
 
 describe('Loader Service API', function () {
-    it('Load DID Document', async function () {
-        await loaderAPIModule.loaderAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(Schema));
-        const data = await methods['load-did-document']({ did: 'test' });
-        assert.equal(data.code, 200);
-        assert.equal(typeof data.body === 'object', true);
-    })
-
-    it('Load Schema Document', async function () {
-        await loaderAPIModule.loaderAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(Schema));
-        const data = await methods['load-schema-document']({});
-        assert.equal(data.code, 200);
-        assert.equal(typeof data.body === 'object', true);
-    })
-
-    it('Load Schema Context', async function () {
-        await loaderAPIModule.loaderAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(Schema));
-        const data = await methods['load-schema-context']({});
-        assert.equal(data.code, 200);
-        assert.equal(typeof data.body === 'object', true);
-    })
+    // it('Load DID Document', async function () {
+    //     await loaderAPIModule.loaderAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(Schema));
+    //     const data = await methods['load-did-document']({ did: 'test' });
+    //     assert.equal(data.code, 200);
+    //     assert.equal(typeof data.body === 'object', true);
+    // })
+    //
+    // it('Load Schema Document', async function () {
+    //     await loaderAPIModule.loaderAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(Schema));
+    //     const data = await methods['load-schema-document']({});
+    //     assert.equal(data.code, 200);
+    //     assert.equal(typeof data.body === 'object', true);
+    // })
+    //
+    // it('Load Schema Context', async function () {
+    //     await loaderAPIModule.loaderAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(Schema));
+    //     const data = await methods['load-schema-context']({});
+    //     assert.equal(data.code, 200);
+    //     assert.equal(typeof data.body === 'object', true);
+    // })
 })
