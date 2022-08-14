@@ -29,7 +29,7 @@ import {
 } from '@hedera-modules'
 import { replaceAllEntities, SchemaFields } from '@helpers/utils';
 import { IPolicyBlock, IPolicyInterfaceBlock } from './policy-engine.interface';
-import { incrementSchemaVersion, findAndPublishSchema, publishSystemSchema, findAndDryRunSchema } from '@api/schema.service';
+import { incrementSchemaVersion, findAndPublishSchema, publishSystemSchema, findAndDryRunSchema, deleteSchema } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { VcHelper } from '@helpers/vc-helper';
 import { Users } from '@helpers/users';
@@ -309,6 +309,50 @@ export class PolicyEngineService {
 
         notifier.completed();
         return policy;
+    }
+
+    /**
+     * Delete policy
+     * @param policyId Policy ID
+     * @param user User
+     * @param notifier Notifier
+     */
+    private async deletePolicy(policyId: string, user: IAuthUser, notifier: INotifier): Promise<void> {
+        const logger = new Logger();
+        logger.info('Delete Policy', ['GUARDIAN_SERVICE']);
+
+        const policyToDelete = await DatabaseServer.getPolicyById(policyId);
+        if (policyToDelete.owner !== user.did) {
+            throw new Error('Insufficient permissions to delete the policy');
+        }
+
+        notifier.start('Delete schemas');
+        const schemasToDelete = await DatabaseServer.getSchemas({
+            topicId: policyToDelete.topicId,
+            readonly: false
+        });
+        const  publishedSchemas = schemasToDelete.filter(item => item.status === SchemaStatus.PUBLISHED);
+        if (publishedSchemas.length) {
+            throw new Error(`There are published schemas: ${publishedSchemas.map(item => item.name).join(', ')}`);
+        }
+        for (const schema of schemasToDelete) {
+            await deleteSchema(schema.id, notifier);
+        }
+
+        notifier.completedAndStart('Publishing delete policy message');
+        const topic = await DatabaseServer.getTopicById(policyToDelete.topicId);
+        const users = new Users();
+        const root = await users.getHederaAccount(policyToDelete.owner);
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        const message = new PolicyMessage(MessageType.Policy, MessageAction.DeletePolicy);
+        message.setDocument(policyToDelete);
+        await messageServer.setTopicObject(topic)
+            .sendMessage(message);
+
+        notifier.completedAndStart('Delete policy from DB');
+        await DatabaseServer.deletePolicy(policyId);
+        notifier.completed();
+        await DatabaseServer.getPolicies();
     }
 
     /**
@@ -757,6 +801,19 @@ export class PolicyEngineService {
                     const userFull = await this.users.getUser(user.username);
                     const policy = await this.createPolicy(model, userFull.did, notifier);
                     notifier.result(policy.id);
+                } catch (error) {
+                    notifier.error(error);
+                }
+            });
+            return new MessageResponse({ taskId });
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.DELETE_POLICY_ASYNC, async (msg) => {
+            const { policyId, user, taskId } = msg;
+            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+            setImmediate(async () => {
+                try {
+                    notifier.result(await this.deletePolicy(policyId, user, notifier));
                 } catch (error) {
                     notifier.error(error);
                 }

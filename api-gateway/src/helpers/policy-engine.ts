@@ -58,6 +58,16 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Async delete policy
+     * @param policyId Policy identifier
+     * @param user User
+     * @param taskId Task identifier
+     */
+    public async deletePolicyAsync(policyId, user, taskId) {
+        return await this.request(PolicyEngineEvents.DELETE_POLICY_ASYNC, { policyId, user, taskId });
+    }
+
+    /**
      * Save policy
      * @param model
      * @param user
