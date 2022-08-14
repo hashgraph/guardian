@@ -264,6 +264,23 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
     }
 });
 
+schemaAPI.get('/:schemaId', async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const schemaId = req.params.schemaId as string;
+        const guardians = new Guardians();
+        const schema = await guardians.getSchemaById(schemaId);
+        if (!schema) {
+            throw new Error('Schema not found');
+        }
+        SchemaHelper.updatePermission([schema], user.did);
+        res.status(200).json(schema);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).json({ code: error.code, message: error.message });
+    }
+});
+
 schemaAPI.get('/:topicId', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
