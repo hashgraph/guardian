@@ -177,6 +177,28 @@ function fromOld(schema: ISchema): ISchema {
 }
 
 /**
+ * Single schema route
+ */
+export const singleSchemaRoute = Router();
+
+singleSchemaRoute.get('/:schemaId', async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const schemaId = req.params.schemaId as string;
+        const guardians = new Guardians();
+        const schema = await guardians.getSchemaById(schemaId);
+        if (!schema) {
+            throw new Error('Schema not found');
+        }
+        SchemaHelper.updatePermission([schema], user.did);
+        res.status(200).json(schema);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).json({ code: error.code, message: error.message });
+    }
+});
+
+/**
  * Schema route
  */
 export const schemaAPI = Router();
@@ -258,23 +280,6 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
         const { schemas, count } = await guardians.getSchemasByOwner(owner, topicId, pageIndex, pageSize);
         SchemaHelper.updatePermission(schemas, user.did);
         res.status(200).setHeader('X-Total-Count', count).json(toOld(schemas));
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: error.code, message: error.message });
-    }
-});
-
-schemaAPI.get('/:schemaId', async (req: AuthenticatedRequest, res: Response) => {
-    try {
-        const user = req.user;
-        const schemaId = req.params.schemaId as string;
-        const guardians = new Guardians();
-        const schema = await guardians.getSchemaById(schemaId);
-        if (!schema) {
-            throw new Error('Schema not found');
-        }
-        SchemaHelper.updatePermission([schema], user.did);
-        res.status(200).json(schema);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code, message: error.message });

@@ -23,6 +23,7 @@ import { loggerAPI } from '@api/service/logger';
 import { MessageBrokerChannel, Logger } from '@guardian/common';
 import { taskAPI } from '@api/service/task';
 import { TaskManager } from '@helpers/task-manager';
+import { singleSchemaRoute } from '@api/service/schema';
 
 const PORT = process.env.PORT || 3002;
 
@@ -58,6 +59,7 @@ Promise.all([
     app.use('/accounts/', accountAPI);
     app.use('/profiles/', authorizationHelper, profileAPI);
     app.use('/settings/', authorizationHelper, settingsAPI);
+    app.use('/schema', authorizationHelper, singleSchemaRoute);
     app.use('/schemas', authorizationHelper, schemaAPI);
     app.use('/tokens', authorizationHelper, tokenAPI);
     app.use('/trustchains/', authorizationHelper, trustchainsAPI);
