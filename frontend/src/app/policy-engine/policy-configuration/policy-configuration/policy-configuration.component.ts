@@ -562,7 +562,6 @@ export class PolicyConfigurationComponent implements OnInit {
     public saveAsPolicy() {
         const dialogRef = this.dialog.open(SavePolicyDialog, {
             width: '500px',
-            disableClose: true,
             data: {
                 policy: this.policyModel,
                 action: this.policyModel.status === 'DRAFT'

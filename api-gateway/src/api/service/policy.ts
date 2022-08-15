@@ -84,6 +84,24 @@ policyAPI.post('/push', permissionHelper(UserRole.STANDARD_REGISTRY), async (req
     res.status(201).send({ taskId, expectation });
 });
 
+policyAPI.delete('/push/:policyId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Delete policy');
+    const policyId = req.params.policyId;
+    const user = req.user;
+
+    setImmediate(async () => {
+        const engineService = new PolicyEngine();
+        try {
+            await engineService.deletePolicyAsync(policyId, user, taskId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: 500, message: error.message });
+        }
+    });
+    res.status(201).send({ taskId, expectation });
+});
+
 policyAPI.get('/:policyId', async (req: AuthenticatedRequest, res: Response) => {
     const users = new Users();
     const engineService = new PolicyEngine();

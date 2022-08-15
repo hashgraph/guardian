@@ -575,6 +575,8 @@ tags:
     description: "Operations related to Guardian users"
   - name: "profiles"
     description: "Hedera profile related operations"
+  - name: "schema"
+    description: "Single schema operations"
   - name: "schemas"
     description: "Operations with data schemas"
   - name: "tokens"
@@ -952,6 +954,39 @@ paths:
               schema:
                 type: array
                 items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schema/{schemaId}:
+    get:
+      tags:
+        - schema
+      description: Returns schema by schema ID.
+      security:
+      - bearerAuth: []
+      summary: Returns schema by schema ID.
+      parameters:
+        - in: path
+          name: schemaId
+          schema:
+            type: string
+          required: true
+          description: Schema ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
                   $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.

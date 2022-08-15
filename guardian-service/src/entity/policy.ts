@@ -116,7 +116,7 @@ export class Policy extends BaseEntity {
     /**
      * Created at
      */
-    @Property({ onUpdate: () => new Date() })
+    @Property()
     createDate: Date = new Date();
 
     /**

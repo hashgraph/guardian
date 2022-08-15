@@ -199,11 +199,14 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
  */
 async function createSchema(newSchema: ISchema, owner: string, notifier: INotifier): Promise<SchemaCollection> {
     delete newSchema.id;
-
+    delete newSchema._id;
     const users = new Users();
     notifier.start('Resolve Hedera account');
     const root = await users.getHederaAccount(owner);
     notifier.completedAndStart('Save in DB');
+    if (newSchema) {
+        delete newSchema.status;
+    }
     const schemaObject = DatabaseServer.createSchema(newSchema);
     notifier.completedAndStart('Resolve Topic');
     let topic: Topic;
@@ -522,6 +525,35 @@ async function prepareSchemaPreview(messageIds: string[], notifier: INotifier): 
 }
 
 /**
+ * Delete schema
+ * @param schemaId Schema ID
+ * @param notifier Notifier
+ */
+export async function deleteSchema(schemaId: any, notifier: INotifier) {
+    if (!schemaId) {
+        return;
+    }
+
+    const item = await DatabaseServer.getSchema(schemaId);
+    if (item) {
+        notifier.info(`Delete schema ${item.name}`);
+        if (item.topicId) {
+            const topic = await DatabaseServer.getTopicById(item.topicId);
+            if (topic) {
+                const users = new Users();
+                const root = await users.getHederaAccount(item.owner);
+                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+                const message = new SchemaMessage(MessageAction.DeleteSchema);
+                message.setDocument(item);
+                await messageServer.setTopicObject(topic)
+                    .sendMessage(message);
+            }
+        }
+        await DatabaseServer.deleteSchemas(item.id);
+    }
+}
+
+/**
  * Connect to the message broker methods of working with schemas.
  *
  * @param channel - channel
@@ -733,22 +765,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
     ApiResponse(channel, MessageAPI.DELETE_SCHEMA, async (msg) => {
         try {
             if (msg && msg.id) {
-                const item = await DatabaseServer.getSchema(msg.id);
-                if (item) {
-                    if (item.topicId) {
-                        const topic = await DatabaseServer.getTopicById(item.topicId);
-                        if (topic) {
-                            const users = new Users();
-                            const root = await users.getHederaAccount(item.owner);
-                            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-                            const message = new SchemaMessage(MessageAction.DeleteSchema);
-                            message.setDocument(item);
-                            await messageServer.setTopicObject(topic)
-                                .sendMessage(message);
-                        }
-                    }
-                    await DatabaseServer.deleteSchemas(item.id);
-                }
+                await deleteSchema(msg.id, emptyNotifier());
             }
             const schemas = await DatabaseServer.getSchemas();
             return new MessageResponse(schemas);
