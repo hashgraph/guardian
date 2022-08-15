@@ -980,7 +980,7 @@ paths:
           schema:
             type: string
           required: true
-          description: Topic ID.
+          description: Schema ID.
       responses:
         200:
           description: Successful operation.

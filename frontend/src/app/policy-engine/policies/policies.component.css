@@ -209,7 +209,8 @@
 
 .btn-icon-edit,
 .btn-icon-delete,
-.btn-icon-import {
+.btn-icon-import,
+.btn-icon-delete-des {
     font-weight: 500;
     cursor: pointer;
     position: relative;
@@ -226,7 +227,8 @@
     color: #f44336;
 }
 
-.btn-icon-delete mat-icon {
+.btn-icon-delete mat-icon,
+.btn-icon-delete-des mat-icon {
     font-size: 30px;
     position: absolute;
     left: 0;

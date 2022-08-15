@@ -540,7 +540,6 @@ export async function deleteSchema(schemaId: any, notifier: INotifier) {
         if (item.topicId) {
             const topic = await DatabaseServer.getTopicById(item.topicId);
             if (topic) {
-                notifier.info('Publishing delete schema message');
                 const users = new Users();
                 const root = await users.getHederaAccount(item.owner);
                 const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
@@ -550,7 +549,6 @@ export async function deleteSchema(schemaId: any, notifier: INotifier) {
                     .sendMessage(message);
             }
         }
-        notifier.info('Delete schema from DB');
         await DatabaseServer.deleteSchemas(item.id);
     }
 }
