@@ -895,6 +895,9 @@ export class PolicyEngineService {
                 if (model.status === PolicyType.PUBLISH) {
                     throw new Error(`Policy published`);
                 }
+                if (model.status === PolicyType.DRY_RUN) {
+                    throw new Error(`Policy already in Dry Run`);
+                }
 
                 const userFull = await this.users.getUser(user.username);
                 const owner = userFull.did;
@@ -934,6 +937,9 @@ export class PolicyEngineService {
                 }
                 if (model.status === PolicyType.PUBLISH) {
                     throw new Error(`Policy published`);
+                }
+                if (model.status === PolicyType.DRAFT) {
+                    throw new Error(`Policy already in draft`);
                 }
 
                 const userFull = await this.users.getUser(user.username);
@@ -1287,6 +1293,15 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.GET_VIRTUAL_USERS, async (msg) => {
             try {
                 const { policyId } = msg;
+
+                const model = await DatabaseServer.getPolicyById(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (model.status !== PolicyType.DRY_RUN) {
+                    throw new Error(`Policy is not in Dry Run`);
+                }
+
                 const users = await DatabaseServer.getVirtualUsers(policyId);
                 return new MessageResponse(users);
             } catch (error) {
@@ -1297,6 +1312,14 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.CREATE_VIRTUAL_USER, async (msg) => {
             try {
                 const { policyId, did } = msg;
+
+                const model = await DatabaseServer.getPolicyById(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (model.status !== PolicyType.DRY_RUN) {
+                    throw new Error(`Policy is not in Dry Run`);
+                }
 
                 const topic = await DatabaseServer.getTopicByType(did, TopicType.UserTopic);
                 const treasury = await HederaSDKHelper.createVirtualAccount()
@@ -1328,6 +1351,15 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.SET_VIRTUAL_USER, async (msg) => {
             try {
                 const { policyId, did } = msg;
+
+                const model = await DatabaseServer.getPolicyById(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (model.status !== PolicyType.DRY_RUN) {
+                    throw new Error(`Policy is not in Dry Run`);
+                }
+
                 await DatabaseServer.setVirtualUser(policyId, did)
                 const users = await DatabaseServer.getVirtualUsers(policyId);
                 return new MessageResponse(users);
@@ -1354,6 +1386,9 @@ export class PolicyEngineService {
                 if (!model.config) {
                     throw new Error('The policy is empty');
                 }
+                if (model.status !== PolicyType.DRY_RUN) {
+                    throw new Error(`Policy is not in Dry Run`);
+                }
 
                 await this.policyGenerator.destroy(model.id.toString());
                 const databaseServer = new DatabaseServer(model.id.toString());
@@ -1375,6 +1410,15 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS, async (msg) => {
             try {
                 const { policyId, type, pageIndex, pageSize } = msg;
+
+                const model = await DatabaseServer.getPolicyById(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (model.status !== PolicyType.DRY_RUN) {
+                    throw new Error(`Policy is not in Dry Run`);
+                }
+
                 const documents = await DatabaseServer.getVirtualDocuments(policyId, type, pageIndex, pageSize);
                 return new MessageResponse(documents);
             } catch (error) {
