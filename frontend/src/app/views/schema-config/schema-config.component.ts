@@ -376,7 +376,7 @@ export class SchemaConfigComponent implements OnInit {
                 dialogText: 'Are you sure to delete schema?'
             },
             autoFocus: false
-        })
+        });
         dialogRef.afterClosed().subscribe((result) => {
             if (!result) {
                 return;

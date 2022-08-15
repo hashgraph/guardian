@@ -316,8 +316,9 @@ export class PolicyEngineService {
      * @param policyId Policy ID
      * @param user User
      * @param notifier Notifier
+     * @returns Result
      */
-    private async deletePolicy(policyId: string, user: IAuthUser, notifier: INotifier): Promise<void> {
+    private async deletePolicy(policyId: string, user: IAuthUser, notifier: INotifier): Promise<boolean> {
         const logger = new Logger();
         logger.info('Delete Policy', ['GUARDIAN_SERVICE']);
 
@@ -352,7 +353,7 @@ export class PolicyEngineService {
         notifier.completedAndStart('Delete policy from DB');
         await DatabaseServer.deletePolicy(policyId);
         notifier.completed();
-        await DatabaseServer.getPolicies();
+        return true;
     }
 
     /**
