@@ -187,11 +187,23 @@ singleSchemaRoute.get('/:schemaId', async (req: AuthenticatedRequest, res: Respo
         const schemaId = req.params.schemaId as string;
         const guardians = new Guardians();
         const schema = await guardians.getSchemaById(schemaId);
+        let owner = user.parent;
+        if (user.role === UserRole.STANDARD_REGISTRY) {
+            owner = user.did;
+        }
         if (!schema) {
             throw new Error('Schema not found');
         }
-        SchemaHelper.updatePermission([schema], user.did);
-        res.status(200).json(schema);
+        if (!schema.system && schema.owner && schema.owner !== owner) {
+            throw new Error('Insufficient permissions to read schema');
+        }
+        if (schema.system) {
+            schema.readonly = schema.readonly || schema.owner !== owner;
+        }
+        else {
+            SchemaHelper.updatePermission([schema], owner);
+        }
+        res.status(200).json(toOld(schema));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code, message: error.message });
