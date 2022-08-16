@@ -332,12 +332,10 @@ export class PolicyEngineService {
             topicId: policyToDelete.topicId,
             readonly: false
         });
-        const  publishedSchemas = schemasToDelete.filter(item => item.status === SchemaStatus.PUBLISHED);
-        if (publishedSchemas.length) {
-            throw new Error(`There are published schemas: ${publishedSchemas.map(item => item.name).join(', ')}`);
-        }
         for (const schema of schemasToDelete) {
-            await deleteSchema(schema.id, notifier);
+            if (schema.status !== SchemaStatus.PUBLISHED) {
+                await deleteSchema(schema.id, notifier);
+            }
         }
 
         notifier.completedAndStart('Publishing delete policy message');
