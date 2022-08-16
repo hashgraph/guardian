@@ -2,7 +2,7 @@
 
 ### Introduction
 
-Guardian will publish number of events to Nats server so that you can hooks into those event when it happen to extend the function that suitable for your solution
+Guardian will publish a number of events to Nats server so that you can hook into those event when it happen to extend the function that suitable for your solution
 
 ### Hooks to external event
 
@@ -65,17 +65,17 @@ const responseToIpfsEvent = (type: string, cb: (data: Buffer) => Buffer) => {
 
 ### External events list
 
-| event                                      | type    |                  payload                  | notes                                                                                                                             |
-| ------------------------------------------ | ------- | :---------------------------------------: | --------------------------------------------------------------------------------------------------------------------------------- |
-| externals-events.ipfs_added_file           | publish |                {cid, url}                 | Event published when ipfs filf is added                                                                                           |
-| external-events.token_minted               | publish |       { tokenId, tokenValue, memo }       | When token minted successfully                                                                                                    |
-| external-events.error_logs                 | publish |        {message, type, attributes}        | when any error send to logger service                                                                                             |
-| external-events.block_run_action_event     | publish | {blockType, blockTag, uuid ,data, result} | event emit for these block `aggregateDocumentBlock` `mintDocumentBlock` `sendToGuardianBlock` `timerBlock` after runAction finish |
-| external-events.ipfs_before_upload_content | request |                 {content}                 | the base64 of the content (buffer) to be hooks and modify                                                                         |
-| external-events.ipfs_after_read_content    | request |                 {content}                 | the base64 of the content (buffer) to be modify/process                                                                           |
+| event                                         | type    |                  payload                  | notes                                                                                                                             |
+| --------------------------------------------- | ------- | :---------------------------------------: | --------------------------------------------------------------------------------------------------------------------------------- |
+| externals-events.ipfs\_added\_file            | publish |                 {cid, url}                | Event published when ipfs filf is added                                                                                           |
+| external-events.token\_minted                 | publish |       { tokenId, tokenValue, memo }       | When token minted successfully                                                                                                    |
+| external-events.error\_logs                   | publish |        {message, type, attributes}        | when any error send to logger service                                                                                             |
+| external-events.block\_run\_action\_event     | publish | {blockType, blockTag, uuid ,data, result} | event emit for these block `aggregateDocumentBlock` `mintDocumentBlock` `sendToGuardianBlock` `timerBlock` after runAction finish |
+| external-events.ipfs\_before\_upload\_content | request |                 {content}                 | the base64 of the content (buffer) to be hooks and modify                                                                         |
+| external-events.ipfs\_after\_read\_content    | request |                 {content}                 | the base64 of the content (buffer) to be modify/process                                                                           |
 
 ### Example
 
-Please refer to [https://github.com/hashgraph/guardian/blob/main/common/src/mq/sample-external-client.ts](https://github.com/hashgraph/guardian/blob/main/common/src/mq/sample-external-client.ts)
+Please refer to [https://github.com/hashgraph/guardian/blob/main/common/src/mq/sample-external-client.ts](../../common/src/mq/sample-external-client.ts)
 
 In the example we implement the simple encrypt/descrypt ipfs content
