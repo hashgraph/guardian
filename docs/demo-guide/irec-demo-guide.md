@@ -13,7 +13,7 @@ This folder contains a sample file that is referenced in the Demo Guide
 
 3\. You will now be prompted to configure your Standard Registry account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the details of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../.gitbook/assets/iREC\_4.2.png)
+![](../.gitbook/assets/Verra\_2.2.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
 
@@ -71,7 +71,7 @@ Registrant fills out all the Device Registrant details and clicks on OK. Once co
 
 12\. Once approved, we now log back in as Registrant and navigate to Devices tab and will create Issue request by clicking on Create Issue Request.
 
-![](<../.gitbook/assets/iREC3\_new\_14 (1).png>)
+![](../.gitbook/assets/iREC3\_new\_14.png)
 
 For now, we will be adding it manually, but in future, we will be automating the process by fetching the data from the device.
 

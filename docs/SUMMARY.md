@@ -38,6 +38,10 @@
 * [iREC Demo UI Guide](demo-guide/irec-demo-guide.md)
 * [iREC API Demo Guide](demo-guide/api-workflow-of-irec-demo.md)
 
+## Dry Run Demo
+
+* [Demo Guide on Dry Run Operations](dry-run-demo/demo-guide-on-dry-run-operations.md)
+
 ## Versioning and Deprecation Policy
 
 * [API Versioning & Deprecation Policy](versioning-and-deprecation-policy/api-versioning-and-deprecation-policy.md)
@@ -208,6 +212,10 @@
 
 * [Returning Logs](logs-apis/returning-logs.md)
 * [Returning Log Attributes](logs-apis/returning-log-attributes.md)
+
+## Dry Run APIs
+
+* [Start Dry Run Mode](dry-run-apis/start-dry-run-mode.md)
 
 ## External APIs
 

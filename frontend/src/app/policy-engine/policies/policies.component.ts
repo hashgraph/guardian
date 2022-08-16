@@ -286,7 +286,9 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
             data: {
                 dialogTitle: 'Delete policy',
-                dialogText: 'Are you sure to delete policy with related schemas?'
+                dialogText: !element.previousVersion 
+                    ? 'Are you sure to delete policy with related schemas?'
+                    : 'Are you sure to delete policy?'
             },
             autoFocus: false
         });
