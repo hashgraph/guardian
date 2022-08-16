@@ -60,3 +60,20 @@ form {
     display: flex;
     flex-direction: column;
 }
+
+.group-name {
+    height: 30px;
+}
+
+.group-value {
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 50px 10px 50px;
+}
+
+.group-value[disabled="true"] {
+    user-select: none;
+    pointer-events: none;
+    opacity: 0.5;
+}

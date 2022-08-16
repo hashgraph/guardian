@@ -9,14 +9,34 @@
                 {{description}}
             </div>
             <div class="roles-form">
-                <mat-form-field appearance="outline">
-                    <mat-label>Roles</mat-label>
-                    <mat-select formControlName="role">
-                        <mat-option *ngFor="let role of roles" [value]="role">{{role}}</mat-option>
-                    </mat-select>
-                </mat-form-field>
+                <mat-radio-group aria-label="Select an option" [value]="type">
+                    <div>
+                        <div class="group-name">
+                            <mat-radio-button value="role" color="primary" (change)="onChange($event)">Create new group</mat-radio-button>
+                        </div>
+                        <div class="group-value" [attr.disabled]="type!=='role'">
+                            <mat-form-field appearance="outline">
+                                <mat-label>Roles</mat-label>
+                                <mat-select formControlName="role">
+                                    <mat-option *ngFor="let role of roles" [value]="role">{{role}}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="group-name">
+                            <mat-radio-button value="invite" color="primary" (change)="onChange($event)">Use an invitation</mat-radio-button>
+                        </div>
+                        <div class="group-value" [attr.disabled]="type!=='invite'">
+                            <mat-form-field appearance="outline">
+                                <mat-label>Invite</mat-label>
+                                <input matInput formControlName="invitation">
+                            </mat-form-field>
+                        </div>
+                    </div>
+                </mat-radio-group>
             </div>
-            <div  class="btn-form">
+            <div class="btn-form">
                 <button mat-raised-button color="primary" type="submit" [disabled]="!roleForm.valid">Ok</button>
             </div>
         </form>

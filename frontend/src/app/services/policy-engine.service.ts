@@ -54,7 +54,7 @@ export class PolicyEngineService {
     public draft(policyId: string): Observable<any> {
         return this.http.put<any>(`${this.url}/${policyId}/draft`, null);
     }
-    
+
     public pushPublish(policyId: string, policyVersion: string): Observable<{ taskId: string, expectation: number }> {
         return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}/publish`, { policyVersion });
     }
@@ -191,5 +191,9 @@ export class PolicyEngineService {
             return this.http.get<any>(`${this.url}/${policyId}/dry-run/${documentType}?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response' });
         }
         return this.http.get<any>(`${this.url}/${policyId}/dry-run/${documentType}`, { observe: 'response' });
+    }
+
+    public createInvite(policyId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/invite`);
     }
 }

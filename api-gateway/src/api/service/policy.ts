@@ -131,6 +131,8 @@ policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
         model.topicDescription = policy.topicDescription;
         model.policyRoles = policy.policyRoles;
         model.policyTopics = policy.policyTopics;
+        model.policyGroups = policy.policyGroups;
+        console.log(model);
         const result = await engineService.savePolicy(model, req.user, req.params.policyId);
         res.json(result);
     } catch (error) {
@@ -562,5 +564,19 @@ policyAPI.get('/:policyId/dry-run/ipfs', permissionHelper(UserRole.STANDARD_REGI
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+policyAPI.get('/:policyId/invite', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        const invitation = await engineService.getPolicyInvite(req.user, req.params.policyId);
+        res.send({
+            invitation,
+            link: null
+        });
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
 });

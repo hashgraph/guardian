@@ -26,15 +26,17 @@ export class RolesBlockComponent implements OnInit {
     title?: any;
     description?: any;
     roleForm: FormGroup;
+    type: any = 'role';
 
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         private fb: FormBuilder
-        ) {
+    ) {
         this.roleForm = fb.group({
             role: ['', Validators.required],
+            invitation: [''],
         });
     }
 
@@ -99,6 +101,21 @@ export class RolesBlockComponent implements OnInit {
             }, (e) => {
                 console.error(e.error);
                 this.loading = false;
+            });
+        }
+    }
+
+    onChange(event: any) {
+        this.type = event.value;
+        if (this.type === 'role') {
+            this.roleForm = this.fb.group({
+                role: ['', Validators.required],
+                invitation: [''],
+            });
+        } else {
+            this.roleForm = this.fb.group({
+                role: [''],
+                invitation: ['', Validators.required],
             });
         }
     }

@@ -20,10 +20,16 @@ export class PolicyRoles extends BaseEntity {
     policyId?: string;
 
     /**
-     * Group creator (User DID)
+     * Member (User DID)
      */
     @Property({ nullable: true })
     did?: string;
+
+    /**
+     * Group owner (User DID)
+     */
+    @Property({ nullable: true })
+    owner?: string;
 
     /**
      * Group Role

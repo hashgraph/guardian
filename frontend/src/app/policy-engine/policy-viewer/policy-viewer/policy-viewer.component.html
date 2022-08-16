@@ -71,6 +71,9 @@
             <span *ngIf="policyInfo && policyInfo.userRoles" class="current-user-role">
                 Roles: {{policyInfo.userRoles.join(', ')}}
             </span>
+            <span class="current-user-role" (click)="createInvite()">
+               Create Invite
+            </span>
         </div>
 
         <div class="policy-container" [attr.policy-status]="policyInfo.status"

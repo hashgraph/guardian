@@ -273,4 +273,17 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
         return document;
     }
+
+    createInvite() {
+        this.loading = true;
+        this.policyEngineService.createInvite(this.policyInfo.id).subscribe((invite: any) => {
+            navigator.clipboard.writeText(invite.invitation);
+            alert(invite.invitation);
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }, (e) => {
+            this.loading = false;
+        });
+    }
 }

@@ -1424,5 +1424,29 @@ export class PolicyEngineService {
                 return new MessageError(error);
             }
         });
+
+        this.channel.response<any, any>(PolicyEngineEvents.GET_INVITE, async (msg) => {
+            try {
+                const { user, policyId, } = msg;
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                if (policy.status === PolicyType.DRAFT) {
+                    throw new Error(`Policy in Draft`);
+                } else if (policy.status === PolicyType.PUBLISH) {
+                    const userFull = await this.getUser(user, policyId, null);
+                    const invitation = await PolicyComponentsUtils.CreateInvite(userFull, policyId, policyId);
+                    return new MessageResponse(invitation);
+                } else if (policy.status === PolicyType.DRY_RUN) {
+                    const userFull = await this.getUser(user, policyId, policyId);
+                    const invitation = await PolicyComponentsUtils.CreateInvite(userFull, policyId, policyId);
+                    return new MessageResponse(invitation);
+                } else {
+                    throw new Error(`Invalid Policy`);
+                }
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
     }
 }

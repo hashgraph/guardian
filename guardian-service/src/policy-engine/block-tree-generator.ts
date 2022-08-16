@@ -99,7 +99,7 @@ export class BlockTreeGenerator {
 
         const policyInstance = await this.generate(arg, true);
         this.tagFinder(policyConfig, resultsContainer);
-        resultsContainer.addPermissions(policy.policyRoles);
+        resultsContainer.addPermissions(policy.policyGroups);
         await policyInstance.validate(resultsContainer);
         return resultsContainer.getSerializedErrors();
     }

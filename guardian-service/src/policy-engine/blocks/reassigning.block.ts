@@ -105,12 +105,12 @@ export class ReassigningBlock {
         if (Array.isArray(documents)) {
             result = [];
             for (const doc of documents) {
-                const { item, owner } = await this.documentReassigning(event.data, event.user);
+                const { item, owner } = await this.documentReassigning(doc, event.user);
                 result.push(item);
                 user = owner;
             }
         } else {
-            const { item, owner } = await this.documentReassigning(event.data, event.user);
+            const { item, owner } = await this.documentReassigning(documents, event.user);
             result = item;
             user = owner;
         }

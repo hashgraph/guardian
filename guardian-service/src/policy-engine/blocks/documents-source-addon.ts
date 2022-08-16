@@ -97,7 +97,6 @@ export class DocumentsSourceAddon {
             } else {
                 otherOptions.orderBy.createDate = ref.options.createdOrderDirection;
             }
-
         }
 
         let data: IPolicyDocument[];

@@ -45,6 +45,7 @@ export class DatabaseServer {
         this.classMap.set(TokenCollection, 'TokenCollection');
         this.classMap.set(TopicCollection, 'TopicCollection');
         this.classMap.set(DryRun, 'DryRun');
+        this.classMap.set(PolicyRolesCollection, 'PolicyRolesCollection');
     }
 
     /**
@@ -731,6 +732,39 @@ export class DatabaseServer {
     }
 
     /**
+     * Get Group By UUID
+     * @param policyId
+     * @param uuid
+     *
+     * @virtual
+     */
+    public async getGroup(policyId: string, uuid: string): Promise<PolicyRolesCollection> {
+        return await this.findOne(PolicyRolesCollection, { policyId, uuid });
+    }
+
+    /**
+     * Get Group By Name
+     * @param policyId
+     * @param role
+     *
+     * @virtual
+     */
+    public async getGroupByName(policyId: string, role: string): Promise<PolicyRolesCollection> {
+        return await this.findOne(PolicyRolesCollection, { policyId, role });
+    }
+
+    /**
+     * Get Group By UUID
+     * @param policyId
+     * @param owner
+     *
+     * @virtual
+     */
+    public async getGroupByOwner(policyId: string, owner: string): Promise<PolicyRolesCollection> {
+        return await this.findOne(PolicyRolesCollection, { policyId, owner });
+    }
+
+    /**
      * Set user in group
      * 
      * @param group 
@@ -1084,6 +1118,7 @@ export class DatabaseServer {
         model.topicDescription = data.topicDescription;
         model.policyRoles = data.policyRoles;
         model.policyTopics = data.policyTopics;
+        model.policyGroups = data.policyGroups;
         return await new DataBaseHelper(Policy).save(model);
     }
 

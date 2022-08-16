@@ -102,15 +102,13 @@ export class DocumentValidatorBlock {
 
         const userDID = event?.user?.did;
 
-        if (ref.options.checkGroupDocument) {
-            const users = await ref.databaseServer.getGroupMembers(ref.policyId, userDID);
-            if (users.indexOf(document.owner) === -1) {
-                return false;
-            }
-        }
-
         if (ref.options.checkOwnerDocument) {
             if (document.owner !== userDID) {
+                return false;
+            }
+        } else if (ref.options.checkGroupDocument) {
+            const users = await ref.databaseServer.getGroupMembers(ref.policyId, userDID);
+            if (users.indexOf(document.owner) === -1) {
                 return false;
             }
         }

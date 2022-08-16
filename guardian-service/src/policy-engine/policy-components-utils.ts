@@ -8,7 +8,7 @@ import {
     EventCallback,
     PolicyOutputEventType
 } from '@policy-engine/interfaces';
-import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
+import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, PolicyType } from '@guardian/interfaces';
 import { IAuthUser } from '@guardian/common';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { Policy } from '@entity/policy';
@@ -432,7 +432,7 @@ export class PolicyComponentsUtils {
      * @param tag
      */
     public static GetBlockByTag<T extends (IPolicyInterfaceBlock | IPolicyBlock)>(policyId: string, tag: string): T {
-    	const uuid = PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(tag);
+        const uuid = PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(tag);
         return PolicyComponentsUtils.BlockByBlockId.get(uuid) as T;
     }
 
@@ -533,5 +533,28 @@ export class PolicyComponentsUtils {
             return await DatabaseServer.getUserRole(policy.id.toString(), user.did);
         }
         return null;
+    }
+
+
+    /**
+     * Create Policy Invite
+     * @param user
+     * @param policyId
+     * @param dryRun
+     */
+    public static async CreateInvite(user: IPolicyUser, policyId: string, dryRun: string): Promise<string> {
+        const db = new DatabaseServer(dryRun);
+        const group = await db.getGroupByOwner(policyId, user.did);
+        if (!group) {
+            throw new Error(`Group not found`);
+        }
+        if (
+            group.groupRelationshipType === GroupRelationshipType.Multiple &&
+            group.groupAccessType === GroupAccessType.Private
+        ) {
+            return group.uuid;
+        } else {
+            throw new Error(`Invalid Group type`);
+        }
     }
 }
