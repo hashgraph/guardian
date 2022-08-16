@@ -2,11 +2,11 @@
 
 ### Introduction
 
-Guardian will publish a number of events to Nats server so that you can hook into those event when it happen to extend the function that suitable for your solution
+Guardian will publish a number of events to Nats server so that you can hook into those events when they happen to extend the functionality that is suitable for your solution
 
 ### Hooks to external event
 
-To hooks into guardian events, you need to have a client that connect to same NATS instance with guardian and implement the response function for a specific event. Below are sample to use nodejs, if you are using other language please refer to Nats.io for document
+To hook into guardian events, you need to have a client that connects to the same NATS instance with the guardian and implements the response function for a specific event. Below are samples to use nodejs, if you are using other languages please refer to Nats.io for document
 
 #### publish/subscribe events
 
@@ -36,7 +36,7 @@ Please read more at [https://github.com/nats-io/nats.js#publish-and-subscribe](h
 
 Some event has type=`request` you have to subscribe and respond to the event. see example below.
 
-For the before/after ipfs event, if the listener respond error ipfs service will skip and upload/response the actual content. this also happen same when we have no listerner to the event. For example we can use this to encrypt/decrypt ipfs content file
+For the before/after ipfs event, if the listener respond error ipfs service will skip and upload/response the actual content. This also happen same when we have no listerner to the event. For example we can use this to encrypt/decrypt ipfs content file
 
 ```js
 const responseToIpfsEvent = (type: string, cb: (data: Buffer) => Buffer) => {
