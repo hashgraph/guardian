@@ -1,7 +1,7 @@
 import { ActionCallback, ContainerBlock, StateField } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
@@ -77,7 +77,7 @@ export class InterfaceStepBlock {
     @ActionCallback({
         type: PolicyInputEventType.ReleaseEvent
     })
-    async releaseChild(event: IPolicyEvent<any>) {
+    async releaseChild(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const index = ref.children.findIndex(c => c.uuid === event.sourceId);
         if (

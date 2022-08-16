@@ -3,7 +3,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyBlock, IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { Token as TokenCollection } from '@entity/token';
@@ -162,14 +162,15 @@ export class TokenConfirmationBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
 
         const field = ref.options.accountId;
         if (event) {
-            const doc = event.data?.data;
+            const documents = event.data?.data;
             const did = event.user?.did;
+            const doc = Array.isArray(documents) ? documents[0] : documents;
 
             let hederaAccountId: string = null;
             if (doc) {

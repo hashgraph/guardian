@@ -3,7 +3,7 @@ import { AggregateVC } from '@entity/aggregate-documents';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
@@ -173,7 +173,7 @@ export class AggregateBlock {
      * @param ref
      * @param doc
      */
-    async saveDocuments(ref: AnyBlockType, doc: any): Promise<void> {
+    async saveDocuments(ref: AnyBlockType, doc: IPolicyDocument): Promise<void> {
         const vc = VcDocument.fromJsonTree(doc.document);
 
         const item = ref.databaseServer.createVCRecord(
@@ -192,11 +192,11 @@ export class AggregateBlock {
      * @event PolicyInputEventType.RunEvent
      * @param {IPolicyEvent} event
      */
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const { aggregateType } = ref.options;
 
-        const docs: any | any[] = event.data.data;
+        const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
         let owner: string = null;
         if (Array.isArray(docs)) {
             for (const doc of docs) {

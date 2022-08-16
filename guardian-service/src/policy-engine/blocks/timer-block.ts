@@ -3,7 +3,7 @@ import { CronJob } from 'cron';
 import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
 import { PolicyInputEventType as PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { IPolicyEvent } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
@@ -79,6 +79,29 @@ export class TimerBlock {
     destroy() {
         if (this.job) {
             this.job.stop();
+        }
+    }
+
+    /**
+     * Start cron
+     * @param event
+     * @private
+     */
+    private getDocumentOwner(event: IPolicyEvent<IPolicyEventState>): string {
+        try {
+            const document = event.data?.data;
+            if (document) {
+                if (Array.isArray(document)) {
+                    if (document.length) {
+                        return document[0].owner;
+                    }
+                } else {
+                    return document.owner;
+                }
+            }
+            return null;
+        } catch (error) {
+            return null;
         }
     }
 
@@ -204,9 +227,9 @@ export class TimerBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const owner: string = event.data?.data?.owner;
+        const owner = this.getDocumentOwner(event);
         if (owner) {
             this.state[owner] = true;
             ref.log(`start scheduler for: ${owner}`);
@@ -225,9 +248,9 @@ export class TimerBlock {
     @ActionCallback({
         type: PolicyInputEventType.StartTimerEvent
     })
-    async startAction(event: IPolicyEvent<any>) {
+    async startAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const owner: string = event.data?.data?.owner;
+        const owner = this.getDocumentOwner(event);
         if (owner) {
             this.state[owner] = true;
             ref.log(`start scheduler for: ${owner}`);
@@ -243,9 +266,9 @@ export class TimerBlock {
     @ActionCallback({
         type: PolicyInputEventType.StopTimerEvent
     })
-    async stopAction(event: IPolicyEvent<any>) {
+    async stopAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const owner: string = event.data?.data?.owner;
+        const owner = this.getDocumentOwner(event);
         if (owner) {
             this.state[owner] = false;
             ref.log(`stop scheduler for: ${owner}`);

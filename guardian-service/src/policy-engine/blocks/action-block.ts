@@ -3,7 +3,7 @@ import { KeyType } from '@helpers/wallet';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { UserType, Schema } from '@guardian/interfaces';
 import { findOptions } from '@policy-engine/helpers/find-options';
-import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyAddonBlock, IPolicyDocument, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { DidDocumentBase } from '@hedera-modules';
 import { PrivateKey } from '@hashgraph/sdk';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
@@ -73,7 +73,7 @@ export class InterfaceDocumentActionBlock {
      * @param user
      * @param document
      */
-    async setData(user: IPolicyUser, document: any): Promise<any> {
+    async setData(user: IPolicyUser, document: IPolicyDocument): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
         const state: any = { data: document };

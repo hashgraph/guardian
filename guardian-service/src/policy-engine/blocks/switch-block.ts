@@ -6,6 +6,7 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
+import { IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
 
 /**
  * Switch block
@@ -35,7 +36,7 @@ export class SwitchBlock {
      * @param docs
      * @private
      */
-    private getScope(docs: any | any[]): any {
+    private getScope(docs: IPolicyDocument | IPolicyDocument[]): any {
         let result: any = {};
         if (!docs) {
             return null;
@@ -91,12 +92,12 @@ export class SwitchBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         ref.log(`switch: ${event.user?.did}`);
 
-        const docs: any | any[] = event.data.data;
+        const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
 
         let owner: string = null;
         let issuer: string = null;
@@ -106,7 +107,6 @@ export class SwitchBlock {
         } else {
             owner = docs?.owner;
             issuer = docs?.document?.issuer;
-
         }
 
         const scope = this.getScope(docs);

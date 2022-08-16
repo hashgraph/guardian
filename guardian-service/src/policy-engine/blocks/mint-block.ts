@@ -4,11 +4,11 @@ import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage } from '@hedera-modules';
+import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage, VpDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
 import { Token as TokenCollection } from '@entity/token';
-import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { DataTypes, IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
@@ -46,7 +46,9 @@ export class MintBlock {
      * @param ref
      * @private
      */
-    private async createMintVC(root: any, token: any, data: any, ref: AnyBlockType): Promise<VcDocument> {
+    private async createMintVC(
+        root: IHederaAccount, token: any, data: string, ref: AnyBlockType
+    ): Promise<VcDocument> {
         const vcHelper = new VcHelper();
         const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.MINT_TOKEN);
         const amount = data as string;
@@ -71,7 +73,7 @@ export class MintBlock {
      * @param vcs
      * @private
      */
-    private async createVP(root, uuid: string, vcs: VcDocument[]) {
+    private async createVP(root: IHederaAccount, uuid: string, vcs: VcDocument[]) {
         const vcHelper = new VcHelper();
         const vp = await vcHelper.createVP(
             root.did,
@@ -97,10 +99,10 @@ export class MintBlock {
         documents: VcDocument[],
         relationships: string[],
         topicId: string,
-        root: any,
+        root: IHederaAccount,
         user: IPolicyUser,
         targetAccountId: string
-    ): Promise<any> {
+    ): Promise<VpDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         const uuid = GenerateUUIDv4();
@@ -161,7 +163,7 @@ export class MintBlock {
             tag: ref.tag,
             messageId: vpMessageResult.getId(),
             topicId: vpMessageResult.getTopicId(),
-        } as any);
+        } as IPolicyDocument);
 
         await PolicyUtils.mint(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());
 
@@ -177,7 +179,7 @@ export class MintBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         const token = await ref.databaseServer.getTokenById(ref.options.tokenId);
@@ -185,7 +187,7 @@ export class MintBlock {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        const docs = PolicyUtils.getArray<any>(event.data.data);
+        const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }

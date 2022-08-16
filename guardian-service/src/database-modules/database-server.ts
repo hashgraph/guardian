@@ -11,7 +11,7 @@ import { Token as TokenCollection } from '@entity/token';
 import { Topic as TopicCollection } from '@entity/topic';
 import { DryRun } from '@entity/dry-run';
 import { PolicyRoles as PolicyRolesCollection } from '@entity/policy-roles';
-import { DocumentSignature, DocumentStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
+import { DocumentSignature, DocumentStatus, GroupAccessType, GroupRelationshipType, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { BaseEntity, DataBaseHelper } from '@guardian/common';
 
 /**
@@ -723,33 +723,78 @@ export class DatabaseServer {
         if (!did) {
             return null;
         }
-        const role = await this.findOne(PolicyRolesCollection, { policyId, did });
-        if (role) {
-            return role.role;
+        const group = await this.findOne(PolicyRolesCollection, { policyId, did });
+        if (group) {
+            return group.role;
         }
         return null;
     }
 
     /**
-     * Set user role in policy
-     * @param policyId
-     * @param did
-     *
-     * @virtual
+     * Set user in group
+     * 
+     * @param group 
      */
-    public async setUserRole(policyId: string, did: string, role: string): Promise<void> {
-        if (!did) {
-            return;
+    public async setUserInGroup(
+        group: {
+            /**
+             * policyId
+             */
+            policyId: string,
+            /**
+             * did
+             */
+            did: string,
+            /**
+             * uuid
+             */
+            uuid: string,
+            /**
+             * role
+             */
+            role: string,
+            /**
+             * groupRelationshipType
+             */
+            groupRelationshipType: GroupRelationshipType,
+            /**
+             * groupAccessType
+             */
+            groupAccessType: GroupAccessType
         }
-        const doc = this.create(PolicyRolesCollection, { policyId, did, role });
+    ): Promise<PolicyRolesCollection> {
+        const doc = this.create(PolicyRolesCollection, group);
         await this.save(PolicyRolesCollection, doc);
+        return doc;
+    }
+
+    /**
+     * Get group members
+     * 
+     * @param group 
+     */
+    public async getGroupMembers(policyId: string, did: string): Promise<string[]> {
+        if (!did) {
+            return [];
+        }
+        const group = await this.findOne(PolicyRolesCollection, { policyId, did });
+        if (group) {
+            if (group.groupRelationshipType === GroupRelationshipType.Multiple) {
+                if (!group.uuid) {
+                    return [];
+                }
+                const members = await this.find(PolicyRolesCollection, { policyId, uuid: group.uuid });
+                return members.map(m => m.did);
+            } else {
+                return [did];
+            }
+        }
+        return [];
     }
 
     /**
      * Get all policy users
      * @param policyId
-     *
-     * @virtual
      */
     public async getAllPolicyUsers(policyId: string): Promise<PolicyRolesCollection[]> {
         return await this.find(PolicyRolesCollection, { policyId });

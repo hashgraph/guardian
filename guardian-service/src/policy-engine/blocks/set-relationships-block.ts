@@ -1,6 +1,6 @@
 import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, IPolicyState } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
@@ -34,18 +34,25 @@ export class SetRelationshipsBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent]
     })
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-        const data: any[] = await ref.getSources(event.user);
+        const data: IPolicyDocument[] = await ref.getSources(event.user);
         const relationships = [];
         for (const doc of data) {
             if (doc.messageId && !relationships.includes(doc.messageId)) {
                 relationships.push(doc.messageId);
             }
         }
-        const document: any = event.data?.data;
-        if (document) {
-            document.relationships = document.relationships ? document.relationships.concat(relationships) : relationships;
+
+        const documents = event.data?.data;
+        if (documents) {
+            if (Array.isArray(documents)) {
+                for (const doc of documents) {
+                    doc.relationships = doc.relationships ? doc.relationships.concat(relationships) : relationships;
+                }
+            } else {
+                documents.relationships = documents.relationships ? documents.relationships.concat(relationships) : relationships;
+            }
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);

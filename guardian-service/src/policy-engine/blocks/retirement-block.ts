@@ -8,7 +8,7 @@ import { VcDocument, MessageServer, VCMessage, MessageAction, VPMessage } from '
 import { VcHelper } from '@helpers/vc-helper';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
@@ -172,7 +172,7 @@ export class RetirementBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         const token = await ref.databaseServer.getTokenById(ref.options.tokenI);
@@ -180,7 +180,7 @@ export class RetirementBlock {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        const docs = PolicyUtils.getArray<any>(event.data.data);
+        const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }

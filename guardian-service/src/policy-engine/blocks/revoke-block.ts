@@ -1,7 +1,7 @@
 import { ActionCallback, BasicBlock, EventBlock } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { AnyBlockType, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyInterfaceBlock, IPolicyState } from '@policy-engine/policy-engine.interface';
 import { Message, MessageServer } from '@hedera-modules';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -125,10 +125,11 @@ export class RevokeBlock {
         output: [PolicyOutputEventType.RunEvent]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<any>): Promise<any> {
+    async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const uiMetaData = ref.options.uiMetaData;
         const data = event.data.data;
+        const doc = Array.isArray(data) ? data[0] : data;
 
         const hederaAccount = await PolicyUtils.getHederaAccount(ref, event.user.did);
         const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey, ref.dryRun);
@@ -142,7 +143,7 @@ export class RevokeBlock {
         const messagesToFind = policyTopicsMessages
             .filter(item => !item.isRevoked());
 
-        const topicMessage = policyTopicsMessages.find(item => item.id === data.messageId);
+        const topicMessage = policyTopicsMessages.find(item => item.id === doc.messageId);
 
         const relatedMessages = await this.findRelatedMessageIds(topicMessage, messagesToFind);
         for (const policyTopicMessage of policyTopicsMessages) {
@@ -152,7 +153,7 @@ export class RevokeBlock {
                     policyTopicMessage,
                     messageServer,
                     ref,
-                    data.comment,
+                    doc.comment,
                     relatedMessage.parentIds
                 );
             }
@@ -162,11 +163,11 @@ export class RevokeBlock {
         for (const doc of documents) {
             doc.option = doc.option || {};
             doc.option.status = RevokedStatus;
-            doc.comment = data.comment;
+            doc.comment = doc.comment;
         }
 
-        if (uiMetaData && uiMetaData.updatePrevDoc && data.relationships) {
-            const prevDocs = await this.findDocumentByMessageIds(data.relationships);
+        if (uiMetaData && uiMetaData.updatePrevDoc && doc.relationships) {
+            const prevDocs = await this.findDocumentByMessageIds(doc.relationships);
             const prevDocument = prevDocs[prevDocs.length - 1];
             if (prevDocument) {
                 prevDocument.option.status = uiMetaData.prevDocStatus;
@@ -175,7 +176,7 @@ export class RevokeBlock {
             }
         }
 
-        const state = {
+        const state: IPolicyEventState = {
             data: documents
         };
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);

@@ -3,7 +3,7 @@ import { ActionCallback, ValidatorBlock } from '@policy-engine/helpers/decorator
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyDocument, IPolicyEventState, IPolicyState, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -32,20 +32,23 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
     }
 })
 export class DocumentValidatorBlock {
-    /**
-     * Run block logic
-     * @param event
-     */
-    public async run(event: IPolicyEvent<any>): Promise<boolean> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
 
-        let document = event?.data?.data;
+    /**
+     * Validate Document
+     * @param ref
+     * @param event
+     * @param document
+     */
+    private async validateDocument(
+        ref: IPolicyValidatorBlock,
+        event: IPolicyEvent<IPolicyEventState>,
+        document: IPolicyDocument
+    ): Promise<boolean> {
+        const documentRef = PolicyUtils.getDocumentRef(document);
 
         if (!document) {
             return false;
         }
-
-        const documentRef = PolicyUtils.getDocumentRef(document);
 
         if (ref.options.documentType === 'related-vc-document') {
             if (documentRef) {
@@ -97,14 +100,23 @@ export class DocumentValidatorBlock {
             }
         }
 
+        const userDID = event?.user?.did;
+
+        if (ref.options.checkGroupDocument) {
+            const users = await ref.databaseServer.getGroupMembers(ref.policyId, userDID);
+            if (users.indexOf(document.owner) === -1) {
+                return false;
+            }
+        }
+
         if (ref.options.checkOwnerDocument) {
-            if (document.owner !== event?.user?.did) {
+            if (document.owner !== userDID) {
                 return false;
             }
         }
 
         if (ref.options.checkAssignDocument) {
-            if (document.assignee !== event?.user?.did) {
+            if (document.assignee !== userDID) {
                 return false;
             }
         }
@@ -128,6 +140,31 @@ export class DocumentValidatorBlock {
     }
 
     /**
+     * Run block logic
+     * @param event
+     */
+    public async run(event: IPolicyEvent<IPolicyEventState>): Promise<boolean> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
+
+        let document = event?.data?.data;
+
+        if (!document) {
+            return false;
+        }
+
+        if (Array.isArray(document)) {
+            for (const doc of document) {
+                if (!(await this.validateDocument(ref, event, doc))) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return await this.validateDocument(ref, event, document);
+        }
+    }
+
+    /**
      * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
@@ -136,7 +173,7 @@ export class DocumentValidatorBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<any>): Promise<void> {
+    async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
         ref.log(`runAction`);
 

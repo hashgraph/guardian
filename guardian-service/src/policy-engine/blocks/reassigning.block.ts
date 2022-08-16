@@ -1,7 +1,7 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcHelper } from '@helpers/vc-helper';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -45,10 +45,9 @@ export class ReassigningBlock {
      * @param state
      * @param user
      */
-    async documentReassigning(state, user: IPolicyUser): Promise<any> {
+    async documentReassigning(document: IPolicyDocument, user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
-        const document = state.data;
         const vcDocument = document.document;
 
         let root: any;
@@ -97,13 +96,29 @@ export class ReassigningBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        const { item, owner } = await this.documentReassigning(event.data, event.user);
-        event.data.data = item;
-        ref.log(`Reassigning Document: ${JSON.stringify(item)}`);
+        const documents = event?.data?.data;
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, owner, event.data);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, event.data);
+        let result: IPolicyDocument | IPolicyDocument[];
+        let user: IPolicyUser;
+        if (Array.isArray(documents)) {
+            result = [];
+            for (const doc of documents) {
+                const { item, owner } = await this.documentReassigning(event.data, event.user);
+                result.push(item);
+                user = owner;
+            }
+        } else {
+            const { item, owner } = await this.documentReassigning(event.data, event.user);
+            result = item;
+            user = owner;
+        }
+
+        event.data.data = result;
+        ref.log(`Reassigning Document: ${JSON.stringify(result)}`);
+
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, event.data);
     }
 }

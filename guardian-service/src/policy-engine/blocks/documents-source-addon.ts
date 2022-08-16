@@ -2,7 +2,7 @@ import { SourceAddon } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyAddonBlock, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -40,6 +40,9 @@ export class DocumentsSourceAddon {
 
         if (ref.options.onlyOwnDocuments) {
             filters.owner = user.did;
+        } else if (ref.options.onlyGroupDocuments) {
+            const users = await ref.databaseServer.getGroupMembers(ref.policyId, user.did);
+            filters.owner = { $in: users };
         }
 
         if (ref.options.onlyAssignDocuments) {
@@ -97,7 +100,7 @@ export class DocumentsSourceAddon {
 
         }
 
-        let data: any[];
+        let data: IPolicyDocument[];
         switch (ref.options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;

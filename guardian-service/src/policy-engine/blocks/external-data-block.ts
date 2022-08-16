@@ -7,7 +7,7 @@ import { VcHelper } from '@helpers/vc-helper';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { AnyBlockType, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -86,7 +86,6 @@ export class ExternalDataBlock {
     /**
      * Get Relationships
      * @param ref
-     * @param policyId
      * @param refId
      */
     private async getRelationships(ref: AnyBlockType, refId: any): Promise<VcDocumentCollection> {
@@ -124,7 +123,7 @@ export class ExternalDataBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    async receiveData(data: any) {
+    async receiveData(data: IPolicyDocument) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         let verify: boolean;
         try {

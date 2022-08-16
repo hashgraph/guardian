@@ -2,7 +2,7 @@ import { Token } from '@entity/token';
 import { Topic } from '@entity/topic';
 import { HederaSDKHelper, HederaUtils, VcDocument, VcDocument as HVcDocument, TopicHelper } from '@hedera-modules';
 import * as mathjs from 'mathjs';
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import { ExternalMessageEvents, Schema, TopicType } from '@guardian/interfaces';
 import { ExternalEventChannel, IAuthUser } from '@guardian/common';
 import { Schema as SchemaCollection } from '@entity/schema';
@@ -390,7 +390,7 @@ export class PolicyUtils {
      * Check Document Ref
      * @param document
      */
-    public static getDocumentRef(document: any) {
+    public static getDocumentRef(document: IPolicyDocument) {
         let item: any = null;
         if (document && document.document) {
             if (document.document.credentialSubject) {

@@ -1,7 +1,7 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
 import { VcHelper } from '@helpers/vc-helper';
 import { SchemaHelper } from '@guardian/interfaces';
 import * as mathjs from 'mathjs';
@@ -50,7 +50,7 @@ export class CustomLogicBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    public async runAction(event: IPolicyEvent<any>) {
+    public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
         try {
@@ -67,10 +67,10 @@ export class CustomLogicBlock {
      * @param state
      * @param user
      */
-    execute(state: any, user: IPolicyUser): Promise<any> {
+    execute(state: IPolicyEventState, user: IPolicyUser): Promise<any> {
         return new Promise((resolve, reject) => {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
-            let documents = null;
+            let documents: IPolicyDocument[] = null;
             if (Array.isArray(state.data)) {
                 documents = state.data;
             } else {

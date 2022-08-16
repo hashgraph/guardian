@@ -612,3 +612,45 @@ export type AnyBlockType =
     | IPolicyCalculateAddon
     | IPolicyRequestBlock
     | IPolicyValidatorBlock;
+
+/**
+ * Policy document
+ */
+export interface IPolicyDocument {
+    /**
+     * Policy id
+     */
+    policyId?: string;
+    /**
+     * Block Tag
+     */
+    tag?: string;
+    /**
+     * Document instance
+     */
+    document?: any;
+    /**
+     * Document owner
+     */
+    owner?: string;
+    /**
+     * Assigned To
+     */
+    assignedTo?: string;
+    /**
+     * Other fields
+     */
+    [x: string]: any;
+}
+
+/**
+ * Policy document
+ */
+export interface IPolicyState<T> {
+    data: T
+}
+
+/**
+ * Policy document
+ */
+export type IPolicyEventState = IPolicyState<IPolicyDocument | IPolicyDocument[]>;
