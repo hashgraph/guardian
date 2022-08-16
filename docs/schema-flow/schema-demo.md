@@ -108,7 +108,11 @@ Once the Import button is clicked, we get two options: Import from file and Impo
 
 ![](<../.gitbook/assets/image (1) (2).png>)
 
-Import from file: You can select the required Schema .zip file from your local machine. Sample iREC Schema (iREC Schema.zip) is provided in the link: [https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
+Import from file: You can select the required Schema .schema file from your local machine. Sample iREC Schema (iREC Schema.zip) is provided in the link: [https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
+
+{% hint style="info" %}
+Files with **.schema** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.
+{% endhint %}
 
 ![](<../.gitbook/assets/image (17) (1).png>)
 
@@ -131,7 +135,7 @@ After selecting the required Policy, click on the Import button.
 When the Schema is imported, it will be in draft status.
 
 {% hint style="info" %}
-Note: Initially when the Schema is created/imported, it will be in draft status.
+**Note**: Initially when the Schema is created/imported, it will be in draft status.
 {% endhint %}
 
 Once the Schema is imported, we will have the following options:\
@@ -152,5 +156,5 @@ After clicking on Publish, you will be prompted to enter the version. After ente
 ![](<../.gitbook/assets/image (18).png>)
 
 {% hint style="info" %}
-Note: All Schemas connected to a Policy gets published automatically when Policy gets published.
+**Note**: All Schemas connected to a Policy gets published automatically when Policy gets published.
 {% endhint %}
