@@ -48,4 +48,10 @@ export class PolicyRoles extends BaseEntity {
      */
     @Property({ nullable: true })
     groupAccessType?: GroupAccessType;
+
+    /**
+     * User name
+     */
+    @Property({ nullable: true })
+    username?: string;
 }

@@ -106,7 +106,7 @@ export class DocumentValidatorBlock {
             if (document.owner !== userDID) {
                 return false;
             }
-        } else if (ref.options.checkGroupDocument) {
+        } else if (ref.options.checkOwnerByGroupDocument) {
             const users = await ref.databaseServer.getGroupMembers(ref.policyId, userDID);
             if (users.indexOf(document.owner) === -1) {
                 return false;
@@ -115,6 +115,11 @@ export class DocumentValidatorBlock {
 
         if (ref.options.checkAssignDocument) {
             if (document.assignee !== userDID) {
+                return false;
+            }
+        } else if (ref.options.checkAssignByGroupDocument) {
+            const users = await ref.databaseServer.getGroupMembers(ref.policyId, userDID);
+            if (users.indexOf(document.assignee) === -1) {
                 return false;
             }
         }

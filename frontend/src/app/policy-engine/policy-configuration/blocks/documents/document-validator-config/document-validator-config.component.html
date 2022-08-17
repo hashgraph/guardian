@@ -27,23 +27,30 @@
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Check Owner Document</td>
+        <td class="propRowCell cellName">Check Owned by User</td>
         <td class="propRowCell">
             <input type="checkbox" [(ngModel)]="block.checkOwnerDocument" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Check Group Document</td>
+        <td class="propRowCell cellName">Check Owned by Group</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.checkGroupDocument" [readonly]="readonly">
+            <input type="checkbox" [(ngModel)]="block.checkOwnerByGroupDocument" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Check Assign Document</td>
+        <td class="propRowCell cellName">Check Assigned to User</td>
         <td class="propRowCell">
             <input type="checkbox" [(ngModel)]="block.checkAssignDocument" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Check Assigned to Group</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.checkAssignByGroupDocument" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propHeader">

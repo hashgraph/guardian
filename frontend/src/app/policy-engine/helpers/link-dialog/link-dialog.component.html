@@ -1,0 +1,21 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-title">
+            {{header}}
+        </div>
+        <div mat-dialog-actions>
+            <div class="g-dialog-title-btn" (click)="onOk()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="link-content">
+            <input type="text" [value]="link" readonly>
+            <div [cdkCopyToClipboard]="link" class="link-btn">
+                <mat-icon>link</mat-icon>
+                Copy link
+            </div>
+        </div>
+    </div>
+</div>

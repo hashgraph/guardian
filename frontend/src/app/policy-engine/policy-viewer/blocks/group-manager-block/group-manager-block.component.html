@@ -1,0 +1,50 @@
+<div class="content" [hidden]="!isActive">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+    <div *ngIf="visible">
+        <div *ngIf="canInvite" class="actions">
+            <div class="role">
+                <span>Role: </span>
+                <span>{{role}}</span>
+            </div>
+            <div class="role">
+                <span>Relationship Type: </span>
+                <span>{{groupRelationshipType}}</span>
+            </div>
+            <div class="role" style="flex: 1">
+                <span>Access Type: </span>
+                <span>{{groupAccessType}}</span>
+            </div>
+            <button mat-raised-button color="primary" (click)="onInvite()" style="margin: 15px; min-width: 100px;">
+                Get Invite
+            </button>
+        </div>
+        <div *ngIf="users" class="table-container">
+            <table mat-table [dataSource]="users" class="table">
+                <ng-container matColumnDef="username">
+                    <th mat-header-cell *matHeaderCellDef> User Name </th>
+                    <td mat-cell *matCellDef="let element"> {{element.username}} </td>
+                </ng-container>
+                <ng-container matColumnDef="type">
+                    <th mat-header-cell *matHeaderCellDef> Type </th>
+                    <td mat-cell *matCellDef="let element"> {{element.type}} </td>
+                </ng-container>
+                <ng-container matColumnDef="action">
+                    <th mat-header-cell *matHeaderCellDef> </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div *ngIf="canDelete && element.type !== 'Owner'" (click)="onDelete(element)"
+                            class="btn-settings btn-delete">
+                            <mat-icon>delete</mat-icon>
+                        </div>
+                    </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+            <div *ngIf="paginationAddon" class="pagination">
+                <render-block [block]="paginationAddon" [policyId]="policyId"></render-block>
+            </div>
+        </div>
+    </div>
+</div>

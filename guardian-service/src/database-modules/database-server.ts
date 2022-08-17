@@ -765,6 +765,19 @@ export class DatabaseServer {
     }
 
     /**
+     * Get Group By User
+     * @param policyId
+     * @param did
+     *
+     * @virtual
+     */
+    public async getGroupByUser(policyId: string, did: string): Promise<PolicyRolesCollection> {
+        if (!did) {
+            return null;
+        }
+        return await this.findOne(PolicyRolesCollection, { policyId, did });
+    }
+    /**
      * Set user in group
      * 
      * @param group 
@@ -794,7 +807,11 @@ export class DatabaseServer {
             /**
              * groupAccessType
              */
-            groupAccessType: GroupAccessType
+            groupAccessType: GroupAccessType,
+            /**
+             * User name
+             */
+            username: String
         }
     ): Promise<PolicyRolesCollection> {
         const doc = this.create(PolicyRolesCollection, group);
@@ -824,6 +841,21 @@ export class DatabaseServer {
             }
         }
         return [];
+    }
+
+    /**
+     * Get group members
+     * 
+     * @param group 
+     */
+    public async getGroupAllMembers(group: PolicyRolesCollection): Promise<PolicyRolesCollection[]> {
+        if (!group.uuid) {
+            return [];
+        }
+        return await this.find(PolicyRolesCollection, {
+            policyId: group.policyId,
+            uuid: group.uuid
+        });
     }
 
     /**

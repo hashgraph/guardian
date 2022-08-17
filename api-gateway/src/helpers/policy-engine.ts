@@ -354,13 +354,4 @@ export class PolicyEngine extends ServiceRequestsBase {
             pageSize
         });
     }
-
-    /**
-     * Get invite
-     * @param user
-     * @param policyId
-     */
-     public async getPolicyInvite(user: any, policyId: string) {
-        return await this.request(PolicyEngineEvents.GET_INVITE, { user, policyId });
-    }
 }

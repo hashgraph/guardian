@@ -566,17 +566,3 @@ policyAPI.get('/:policyId/dry-run/ipfs', permissionHelper(UserRole.STANDARD_REGI
         res.status(500).send({ code: 500, message: error.message || error });
     }
 });
-
-policyAPI.get('/:policyId/invite', async (req: AuthenticatedRequest, res: Response) => {
-    const engineService = new PolicyEngine();
-    try {
-        const invitation = await engineService.getPolicyInvite(req.user, req.params.policyId);
-        res.send({
-            invitation,
-            link: null
-        });
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
-    }
-});

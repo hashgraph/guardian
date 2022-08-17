@@ -534,27 +534,4 @@ export class PolicyComponentsUtils {
         }
         return null;
     }
-
-
-    /**
-     * Create Policy Invite
-     * @param user
-     * @param policyId
-     * @param dryRun
-     */
-    public static async CreateInvite(user: IPolicyUser, policyId: string, dryRun: string): Promise<string> {
-        const db = new DatabaseServer(dryRun);
-        const group = await db.getGroupByOwner(policyId, user.did);
-        if (!group) {
-            throw new Error(`Group not found`);
-        }
-        if (
-            group.groupRelationshipType === GroupRelationshipType.Multiple &&
-            group.groupAccessType === GroupAccessType.Private
-        ) {
-            return group.uuid;
-        } else {
-            throw new Error(`Invalid Group type`);
-        }
-    }
 }

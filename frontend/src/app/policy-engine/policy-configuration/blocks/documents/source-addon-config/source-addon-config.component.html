@@ -25,25 +25,33 @@
             </mat-select>
         </td>
     </tr>
+
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Only Own Documents</td>
+        <td class="propRowCell cellName">Owned by User</td>
         <td class="propRowCell">
             <input type="checkbox" [(ngModel)]="block.onlyOwnDocuments" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Only Group Documents</td>
+        <td class="propRowCell cellName">Owned by Group</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.onlyGroupDocuments" [readonly]="readonly">
+            <input type="checkbox" [(ngModel)]="block.onlyOwnByGroupDocuments" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Only Assign Documents</td>
+        <td class="propRowCell cellName">Assigned to User</td>
         <td class="propRowCell">
             <input type="checkbox" [(ngModel)]="block.onlyAssignDocuments" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Assigned to Group</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.onlyAssignByGroupDocuments" [readonly]="readonly">
         </td>
     </tr>
 

@@ -40,13 +40,16 @@ export class DocumentsSourceAddon {
 
         if (ref.options.onlyOwnDocuments) {
             filters.owner = user.did;
-        } else if (ref.options.onlyGroupDocuments) {
+        } else if (ref.options.onlyOwnByGroupDocuments) {
             const users = await ref.databaseServer.getGroupMembers(ref.policyId, user.did);
             filters.owner = { $in: users };
         }
 
         if (ref.options.onlyAssignDocuments) {
             filters.assignedTo = user.did;
+        } else if (ref.options.onlyAssignByGroupDocuments) {
+            const users = await ref.databaseServer.getGroupMembers(ref.policyId, user.did);
+            filters.assignedTo = { $in: users };
         }
 
         if (ref.options.schema) {

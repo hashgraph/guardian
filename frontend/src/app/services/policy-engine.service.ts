@@ -192,8 +192,4 @@ export class PolicyEngineService {
         }
         return this.http.get<any>(`${this.url}/${policyId}/dry-run/${documentType}`, { observe: 'response' });
     }
-
-    public createInvite(policyId: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${policyId}/invite`);
-    }
 }

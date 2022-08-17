@@ -6,6 +6,7 @@ import { IPolicyUser } from '@policy-engine/policy-user';
 import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 interface IUserGroup {
     /**
@@ -35,7 +36,11 @@ interface IUserGroup {
     /**
      * groupAccessType
      */
-    groupAccessType: GroupAccessType
+    groupAccessType: GroupAccessType,
+    /**
+     * User name
+     */
+    username: String
 }
 
 /**
@@ -83,7 +88,9 @@ export class PolicyRolesBlock {
         }
     }
 
-    private async getGroupByConfig(ref: AnyBlockType, did: string, groupConfig: any): Promise<IUserGroup> {
+    private async getGroupByConfig(
+        ref: AnyBlockType, did: string, username: string, groupConfig: any
+    ): Promise<IUserGroup> {
         if (groupConfig.groupRelationshipType === GroupRelationshipType.Multiple) {
             if (groupConfig.groupAccessType === GroupAccessType.Global) {
                 const result = await ref.databaseServer.getGroupByName(ref.policyId, groupConfig.role);
@@ -91,6 +98,7 @@ export class PolicyRolesBlock {
                     return {
                         policyId: ref.policyId,
                         did,
+                        username,
                         owner: null,
                         uuid: result.uuid,
                         role: result.role,
@@ -101,6 +109,7 @@ export class PolicyRolesBlock {
                     return {
                         policyId: ref.policyId,
                         did,
+                        username,
                         owner: null,
                         uuid: GenerateUUIDv4(),
                         role: groupConfig.role,
@@ -112,6 +121,7 @@ export class PolicyRolesBlock {
                 return {
                     policyId: ref.policyId,
                     did,
+                    username,
                     owner: did,
                     uuid: GenerateUUIDv4(),
                     role: groupConfig.role,
@@ -123,6 +133,7 @@ export class PolicyRolesBlock {
             return {
                 policyId: ref.policyId,
                 did,
+                username,
                 owner: did,
                 uuid: GenerateUUIDv4(),
                 role: groupConfig.role,
@@ -132,7 +143,9 @@ export class PolicyRolesBlock {
         }
     }
 
-    private async getGroupByToken(ref: AnyBlockType, did: string, token: string): Promise<IUserGroup> {
+    private async getGroupByToken(
+        ref: AnyBlockType, did: string, username: string, token: string
+    ): Promise<IUserGroup> {
         const uuid = token;
         const result = await ref.databaseServer.getGroup(ref.policyId, uuid);
         if (!result) {
@@ -141,6 +154,7 @@ export class PolicyRolesBlock {
         const group = {
             policyId: ref.policyId,
             did,
+            username,
             owner: result.owner,
             uuid: result.uuid,
             role: result.role,
@@ -170,6 +184,8 @@ export class PolicyRolesBlock {
     async setData(user: IPolicyUser, data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const did = user?.did;
+        const curUser = await PolicyUtils.getUser(ref, did);
+        const username = curUser?.username;
 
         if (!did) {
             throw new BlockActionError('Invalid user', ref.blockType, ref.uuid);
@@ -177,10 +193,10 @@ export class PolicyRolesBlock {
 
         let group: IUserGroup;
         if (data.invitation) {
-            group = await this.getGroupByToken(ref, did, data.invitation);
+            group = await this.getGroupByToken(ref, did, username, data.invitation);
         } else if (data.role) {
             const groupConfig = this.getGroupConfig(ref, data.role);
-            group = await this.getGroupByConfig(ref, did, groupConfig);
+            group = await this.getGroupByConfig(ref, did, username, groupConfig);
         } else {
             throw new BlockActionError('Invalid role', ref.blockType, ref.uuid);
         }
