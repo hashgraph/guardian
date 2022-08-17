@@ -225,6 +225,7 @@
 ## Dry Run APIs
 
 * [Start Dry Run Mode](dry-run-apis/start-dry-run-mode.md)
+* [Running Policy without making any changes](dry-run-apis/running-policy-without-making-any-changes.md)
 
 ## External APIs
 
