@@ -1,9 +1,11 @@
 import assert from 'assert';
-import { Subscription, NatsConnection, StringCodec, connect, JSONCodec } from 'nats';
+import { Subscription, NatsConnection, StringCodec, connect, JSONCodec, headers } from 'nats';
 import { IMessageResponse, MessageError } from '../models/message-response';
-import * as zlib from 'zlib';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 const MQ_TIMEOUT = 300000;
+
+const reqMap = new Map<string, any>();
 
 /**
  * Message broker channel
@@ -12,7 +14,21 @@ export class MessageBrokerChannel {
     constructor(
         private readonly channel: NatsConnection,
         public channelName: string
-    ) { }
+    ) {
+        const fn = async (_sub: Subscription) => {
+            for await (const m of _sub) {
+                const messageId = m.headers.get('messageId');
+                if (reqMap.has(messageId)) {
+                    const dataObj = JSON.parse(new Buffer(Object.values(JSON.parse(StringCodec().decode(m.data)))).toString());
+                    const func = reqMap.get(messageId);
+
+                    func(dataObj);
+                }
+            }
+        }
+
+        fn(this.channel.subscribe('response-message', { queue: process.env.SERVICE_CHANNEL })).then();
+    }
 
     /**
      * Get target
@@ -25,6 +41,7 @@ export class MessageBrokerChannel {
         }
         return `${this.channelName}.${eventType}`;
     }
+
     /**
      * Subscribe to the MQ event
      * @param eventType : target event type @example  ipfs-clients.get-file
@@ -32,18 +49,31 @@ export class MessageBrokerChannel {
      */
     public async response<TData, TResponse>(eventType: string, handleFunc: (data: TData) => Promise<IMessageResponse<TResponse>>) {
         const target = this.getTarget(eventType);
-        console.log('MQ subscribed: %s', target);
+        // console.log('MQ subscribed: %s', target);
         const sub = this.channel.subscribe(target, { queue: process.env.SERVICE_CHANNEL });
         const fn = async (_sub: Subscription) => {
             for await (const m of _sub) {
+                const payload = JSON.parse(StringCodec().decode(m.data));
+                const messageId = m.headers.get('messageId');
+
                 let responseMessage: IMessageResponse<TResponse>;
                 try {
-                    responseMessage = await handleFunc(JSON.parse(StringCodec().decode(m.data)));
+                    responseMessage = await handleFunc(payload);
                 } catch (error) {
                     responseMessage = new MessageError(error, error.code);
                 }
-                const archResponse = zlib.deflateSync(JSON.stringify(responseMessage)).toString('binary');
-                m.respond(StringCodec().encode(archResponse));
+                // const archResponse = zlib.deflateSync(JSON.stringify(responseMessage)).toString('binary');
+
+                const sc = JSONCodec();
+                const resp = sc.encode(StringCodec().encode(JSON.stringify(responseMessage)));
+
+                const head = headers();
+                head.append('messageId', messageId);
+
+                this.channel.publish('response-message', resp, {headers: head});
+
+                m.respond(new Uint8Array(0));
+                // m.respond(StringCodec().encode(JSON.stringify(responseMessage)));
             }
         };
         try {
@@ -52,6 +82,7 @@ export class MessageBrokerChannel {
             console.error(error.message);
         }
     }
+
     /**
      * sending the request to the MQ and waiting for response
      * @param eventType target subscription , it should follow the pattern: target subscription . event type (ex : ipfs-clients.get-file)
@@ -61,6 +92,10 @@ export class MessageBrokerChannel {
      */
     public async request<T, TResponse>(eventType: string, payload: T, timeout?: number): Promise<IMessageResponse<TResponse>> {
         try {
+            const messageId = GenerateUUIDv4();
+            const head = headers();
+            head.append('messageId', messageId);
+
             let stringPayload: string;
             switch (typeof payload) {
                 case 'string':
@@ -78,12 +113,19 @@ export class MessageBrokerChannel {
             // NOTE: If get NATS TIMEOUT error to quckly resolve just uncomment next line.
             // And then, implement async processing of operation.
             // const msg = await this.channel.request(eventType, StringCodec().encode(stringPayload), { timeout: 300000 });
-            const msg = await this.channel.request(eventType, StringCodec().encode(stringPayload), {
+            await this.channel.request(eventType, StringCodec().encode(stringPayload), {
                 timeout: timeout || MQ_TIMEOUT,
+                headers: head
             });
 
-            const unpackedString = zlib.inflateSync(new Buffer(StringCodec().decode(msg.data), 'binary')).toString();
-            return JSON.parse(unpackedString);
+            return new Promise((resolve) => {
+                reqMap.set(messageId, (data) => {
+                    resolve(data);
+                    reqMap.delete(messageId);
+                });
+            })
+
+            // return JSON.parse(unpackedString);
 
         } catch (error) {
             // Nats no subscribe error
