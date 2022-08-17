@@ -1,5 +1,7 @@
 # Roadmap
 
+To get more information on Roadmap, please click: [https://app.zenhub.com/workspaces/guardian-618c27c08661c0001461263a/roadmap?invite=true](https://app.zenhub.com/workspaces/guardian-618c27c08661c0001461263a/roadmap?invite=true)
+
 ### ----August 2022----
 
 * **Dry Run for Guardian Operations**
@@ -162,5 +164,3 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/36](https://github
 This will target the problem that ESG market participants need ability to 'reconcile' two sides of the environmental balance sheet, i.e. to match and retire pairs of assets they own.&#x20;
 
 Referral Link : [https://github.com/hashgraph/guardian/issues/1039](https://github.com/hashgraph/guardian/issues/1039)
-
-![](<../.gitbook/assets/Guardian Roadmap 2022-08-17.svg>)
