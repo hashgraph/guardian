@@ -17,9 +17,13 @@ export class MessageBrokerChannel {
     ) {
         const fn = async (_sub: Subscription) => {
             for await (const m of _sub) {
+                if (!m.headers) {
+                    console.error('No headers');
+                    return;
+                }
                 const messageId = m.headers.get('messageId');
                 if (reqMap.has(messageId)) {
-                    const dataObj = JSON.parse(new Buffer(Object.values(JSON.parse(StringCodec().decode(m.data)))).toString());
+                    const dataObj = JSON.parse(StringCodec().decode(m.data));
                     const func = reqMap.get(messageId);
 
                     func(dataObj);
@@ -54,7 +58,6 @@ export class MessageBrokerChannel {
         const fn = async (_sub: Subscription) => {
             for await (const m of _sub) {
                 const payload = JSON.parse(StringCodec().decode(m.data));
-                const messageId = m.headers.get('messageId');
 
                 let responseMessage: IMessageResponse<TResponse>;
                 try {
@@ -62,18 +65,21 @@ export class MessageBrokerChannel {
                 } catch (error) {
                     responseMessage = new MessageError(error, error.code);
                 }
-                // const archResponse = zlib.deflateSync(JSON.stringify(responseMessage)).toString('binary');
 
-                const sc = JSONCodec();
-                const resp = sc.encode(StringCodec().encode(JSON.stringify(responseMessage)));
+                if (!m.headers || !m.headers.has('messageId')) {
+                    m.respond(StringCodec().encode(JSON.stringify(responseMessage)));
+                    return;
+                } else {
 
-                const head = headers();
-                head.append('messageId', messageId);
+                    const messageId = m.headers.get('messageId');
 
-                this.channel.publish('response-message', resp, {headers: head});
+                    const head = headers();
+                    head.append('messageId', messageId);
 
-                m.respond(new Uint8Array(0));
-                // m.respond(StringCodec().encode(JSON.stringify(responseMessage)));
+                    this.channel.publish('response-message', StringCodec().encode(JSON.stringify(responseMessage)), {headers: head});
+
+                    m.respond(new Uint8Array(0));
+                }
             }
         };
         try {
@@ -123,9 +129,7 @@ export class MessageBrokerChannel {
                     resolve(data);
                     reqMap.delete(messageId);
                 });
-            })
-
-            // return JSON.parse(unpackedString);
+            });
 
         } catch (error) {
             // Nats no subscribe error
@@ -147,6 +151,7 @@ export class MessageBrokerChannel {
     public publish<T>(eventType: string, data: T, allowError = true) {
         try {
             console.log('MQ publish: %s', eventType);
+            console.log(data);
             const sc = JSONCodec();
             this.channel.publish(eventType, sc.encode(data));
         } catch (e) {
