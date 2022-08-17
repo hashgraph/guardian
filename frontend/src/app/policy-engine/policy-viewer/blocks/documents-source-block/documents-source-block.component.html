@@ -61,14 +61,14 @@
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="columns"></tr>
-            <tr mat-row *matRowDef="let row; columns: columns;" 
+            <tr mat-row *matRowDef="let row; columns: columns;"
                 class="table-row" [ngClass]="{'has-history-row': row.history, 'revoked': row.option?.status === 'Revoked'}"
                 (click)="statusDetailed = statusDetailed === row ? null : row"
             ></tr>
             <tr mat-row *matRowDef="let row; columns: ['statusDetails']" class="detailed-row"></tr>
         </table>
         <div *ngIf="paginationAddon" class="pagination">
-            <render-block [block]="paginationAddon"></render-block>
+            <render-block [block]="paginationAddon" [policyId]="policyId"></render-block>
         </div>
     </div>
 

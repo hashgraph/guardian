@@ -178,7 +178,7 @@ export class MintBlock {
             topicId: vpMessageResult.getTopicId(),
         } as any);
 
-        await PolicyUtils.mint(token, tokenValue, root, targetAccountId, vpMessageResult.getId());
+        await PolicyUtils.mint(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());
 
         return vp;
     }
@@ -231,20 +231,28 @@ export class MintBlock {
                 topicIds.push(doc.topicId);
             }
             if (doc.accounts) {
-                accounts.push(doc.accounts[field]);
+                const accountId: string = doc.accounts[field];
+                accounts.push(accountId);
             }
         }
-        if (accounts.find(a => a !== accounts[0])) {
-            ref.error(`More than one account found! Transfer made on the first (${accounts[0]})`);
+
+        const firstAccounts = accounts[0];
+        if (accounts.find(a => a !== firstAccounts)) {
+            ref.error(`More than one account found! Transfer made on the first (${firstAccounts})`);
         }
         const topicId = topicIds[0];
 
         const targetAccountId: string = ref.options.accountId ?
-            accounts[0] :
+            firstAccounts :
             docOwner.hederaAccountId;
-        const root = await this.users.getHederaAccount(ref.policyOwner);
 
+        if (!targetAccountId) {
+            throw new BlockActionError('Token recipient not set', ref.blockType, ref.uuid);
+        }
+
+        const root = await this.users.getHederaAccount(ref.policyOwner);
         await this.mintProcessing(token, vcs, vsMessages, topicId, root, docOwner, targetAccountId);
+
         ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data);
     }

@@ -107,4 +107,16 @@ export class AggregateVC {
      */
     @Column()
     relationships: string[];
+
+    /**
+     * Comment
+     */
+    @Column()
+    comment?: string;
+
+    /**
+     * Hedera Accounts
+     */
+    @Column()
+    accounts?: any
 }

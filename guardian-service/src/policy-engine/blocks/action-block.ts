@@ -145,7 +145,8 @@ export class InterfaceDocumentActionBlock {
                     },
                     'didDocument': didDocument.getPrivateDidDocument(),
                     'policyId': ref.policyId,
-                    'policyTag': policy.policyTag
+                    'policyTag': policy.policyTag,
+                    'ref': sensorDid
                 }
             }
         }
