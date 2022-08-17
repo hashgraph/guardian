@@ -66,20 +66,14 @@ export class MessageBrokerChannel {
                     responseMessage = new MessageError(error, error.code);
                 }
 
-                if (!m.headers || !m.headers.has('messageId')) {
-                    m.respond(StringCodec().encode(JSON.stringify(responseMessage)));
-                    return;
-                } else {
+                const messageId = m.headers.get('messageId');
 
-                    const messageId = m.headers.get('messageId');
+                const head = headers();
+                head.append('messageId', messageId);
 
-                    const head = headers();
-                    head.append('messageId', messageId);
+                this.channel.publish('response-message', StringCodec().encode(JSON.stringify(responseMessage)), {headers: head});
 
-                    this.channel.publish('response-message', StringCodec().encode(JSON.stringify(responseMessage)), {headers: head});
-
-                    m.respond(new Uint8Array(0));
-                }
+                m.respond(new Uint8Array(0));
             }
         };
         try {
@@ -152,8 +146,12 @@ export class MessageBrokerChannel {
         try {
             console.log('MQ publish: %s', eventType);
             console.log(data);
+            const messageId = GenerateUUIDv4();
+            const head = headers();
+            head.append('messageId', messageId);
+
             const sc = JSONCodec();
-            this.channel.publish(eventType, sc.encode(data));
+            this.channel.publish(eventType, sc.encode(data), {headers: head});
         } catch (e) {
 
             console.error(e.message, e.stack, e);
