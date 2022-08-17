@@ -1,9 +1,7 @@
 import assert from 'assert';
 import { Subscription, NatsConnection, StringCodec, connect, JSONCodec, headers } from 'nats';
 import { IMessageResponse, MessageError } from '../models/message-response';
-import * as zlib from 'zlib';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { Singleton } from '../decorators/singleton';
 
 const MQ_TIMEOUT = 300000;
 
