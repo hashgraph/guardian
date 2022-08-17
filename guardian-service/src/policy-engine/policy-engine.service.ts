@@ -29,7 +29,7 @@ import {
 } from '@hedera-modules'
 import { replaceAllEntities, SchemaFields } from '@helpers/utils';
 import { IPolicyBlock, IPolicyInterfaceBlock } from './policy-engine.interface';
-import { incrementSchemaVersion, findAndPublishSchema, publishSystemSchema, findAndDryRunSchema } from '@api/schema.service';
+import { incrementSchemaVersion, findAndPublishSchema, publishSystemSchema, findAndDryRunSchema, deleteSchema } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { VcHelper } from '@helpers/vc-helper';
 import { Users } from '@helpers/users';
@@ -219,6 +219,9 @@ export class PolicyEngineService {
         const logger = new Logger();
         logger.info('Create Policy', ['GUARDIAN_SERVICE']);
         notifier.start('Save in DB');
+        if (data) {
+            delete data.status;
+        }
         const model = DatabaseServer.createPolicy(data);
         if (model.uuid) {
             const old = await DatabaseServer.getPolicyByUUID(model.uuid);
@@ -306,6 +309,49 @@ export class PolicyEngineService {
 
         notifier.completed();
         return policy;
+    }
+
+    /**
+     * Delete policy
+     * @param policyId Policy ID
+     * @param user User
+     * @param notifier Notifier
+     * @returns Result
+     */
+    private async deletePolicy(policyId: string, user: IAuthUser, notifier: INotifier): Promise<boolean> {
+        const logger = new Logger();
+        logger.info('Delete Policy', ['GUARDIAN_SERVICE']);
+
+        const policyToDelete = await DatabaseServer.getPolicyById(policyId);
+        if (policyToDelete.owner !== user.did) {
+            throw new Error('Insufficient permissions to delete the policy');
+        }
+
+        notifier.start('Delete schemas');
+        const schemasToDelete = await DatabaseServer.getSchemas({
+            topicId: policyToDelete.topicId,
+            readonly: false
+        });
+        for (const schema of schemasToDelete) {
+            if (schema.status !== SchemaStatus.PUBLISHED) {
+                await deleteSchema(schema.id, notifier);
+            }
+        }
+
+        notifier.completedAndStart('Publishing delete policy message');
+        const topic = await DatabaseServer.getTopicById(policyToDelete.topicId);
+        const users = new Users();
+        const root = await users.getHederaAccount(policyToDelete.owner);
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        const message = new PolicyMessage(MessageType.Policy, MessageAction.DeletePolicy);
+        message.setDocument(policyToDelete);
+        await messageServer.setTopicObject(topic)
+            .sendMessage(message);
+
+        notifier.completedAndStart('Delete policy from DB');
+        await DatabaseServer.deletePolicy(policyId);
+        notifier.completed();
+        return true;
     }
 
     /**
@@ -761,6 +807,19 @@ export class PolicyEngineService {
             return new MessageResponse({ taskId });
         });
 
+        this.channel.response<any, any>(PolicyEngineEvents.DELETE_POLICY_ASYNC, async (msg) => {
+            const { policyId, user, taskId } = msg;
+            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+            setImmediate(async () => {
+                try {
+                    notifier.result(await this.deletePolicy(policyId, user, notifier));
+                } catch (error) {
+                    notifier.error(error);
+                }
+            });
+            return new MessageResponse({ taskId });
+        });
+
         this.channel.response<any, any>(PolicyEngineEvents.SAVE_POLICIES, async (msg) => {
             try {
                 const result = await DatabaseServer.updatePolicyConfig(msg.policyId, msg.model);
@@ -835,6 +894,9 @@ export class PolicyEngineService {
                 if (model.status === PolicyType.PUBLISH) {
                     throw new Error(`Policy published`);
                 }
+                if (model.status === PolicyType.DRY_RUN) {
+                    throw new Error(`Policy already in Dry Run`);
+                }
 
                 const userFull = await this.users.getUser(user.username);
                 const owner = userFull.did;
@@ -874,6 +936,9 @@ export class PolicyEngineService {
                 }
                 if (model.status === PolicyType.PUBLISH) {
                     throw new Error(`Policy published`);
+                }
+                if (model.status === PolicyType.DRAFT) {
+                    throw new Error(`Policy already in draft`);
                 }
 
                 const userFull = await this.users.getUser(user.username);
@@ -1227,6 +1292,15 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.GET_VIRTUAL_USERS, async (msg) => {
             try {
                 const { policyId } = msg;
+
+                const model = await DatabaseServer.getPolicyById(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (model.status !== PolicyType.DRY_RUN) {
+                    throw new Error(`Policy is not in Dry Run`);
+                }
+
                 const users = await DatabaseServer.getVirtualUsers(policyId);
                 return new MessageResponse(users);
             } catch (error) {
@@ -1237,6 +1311,14 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.CREATE_VIRTUAL_USER, async (msg) => {
             try {
                 const { policyId, did } = msg;
+
+                const model = await DatabaseServer.getPolicyById(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (model.status !== PolicyType.DRY_RUN) {
+                    throw new Error(`Policy is not in Dry Run`);
+                }
 
                 const topic = await DatabaseServer.getTopicByType(did, TopicType.UserTopic);
                 const treasury = await HederaSDKHelper.createVirtualAccount()
@@ -1268,6 +1350,15 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.SET_VIRTUAL_USER, async (msg) => {
             try {
                 const { policyId, did } = msg;
+
+                const model = await DatabaseServer.getPolicyById(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (model.status !== PolicyType.DRY_RUN) {
+                    throw new Error(`Policy is not in Dry Run`);
+                }
+
                 await DatabaseServer.setVirtualUser(policyId, did)
                 const users = await DatabaseServer.getVirtualUsers(policyId);
                 return new MessageResponse(users);
@@ -1294,6 +1385,9 @@ export class PolicyEngineService {
                 if (!model.config) {
                     throw new Error('The policy is empty');
                 }
+                if (model.status !== PolicyType.DRY_RUN) {
+                    throw new Error(`Policy is not in Dry Run`);
+                }
 
                 await this.policyGenerator.destroy(model.id.toString());
                 const databaseServer = new DatabaseServer(model.id.toString());
@@ -1315,6 +1409,15 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS, async (msg) => {
             try {
                 const { policyId, type, pageIndex, pageSize } = msg;
+
+                const model = await DatabaseServer.getPolicyById(policyId);
+                if (!model) {
+                    throw new Error('Unknown policy');
+                }
+                if (model.status !== PolicyType.DRY_RUN) {
+                    throw new Error(`Policy is not in Dry Run`);
+                }
+
                 const documents = await DatabaseServer.getVirtualDocuments(policyId, type, pageIndex, pageSize);
                 return new MessageResponse(documents);
             } catch (error) {

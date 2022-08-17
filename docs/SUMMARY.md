@@ -38,6 +38,10 @@
 * [iREC Demo UI Guide](demo-guide/irec-demo-guide.md)
 * [iREC API Demo Guide](demo-guide/api-workflow-of-irec-demo.md)
 
+## Dry Run Demo
+
+* [Demo Guide on Dry Run Operations](dry-run-demo/demo-guide-on-dry-run-operations.md)
+
 ## Versioning and Deprecation Policy
 
 * [API Versioning & Deprecation Policy](versioning-and-deprecation-policy/api-versioning-and-deprecation-policy.md)
@@ -139,6 +143,14 @@
 * [Import from zip file](policy-creation-using-the-guardian-apis/import-from-zip-file.md)
 * [Retrieves Block Data by Tag](policy-creation-using-the-guardian-apis/retrieves-block-data-by-tag.md)
 
+## Policy related APIs for Asynchronous Execution
+
+* [Creates new Policy](policy-related-apis-for-asynchronous-execution/creates-new-policy.md)
+* [Publishing a Policy](policy-related-apis-for-asynchronous-execution/publishing-a-policy.md)
+* [Importing a Policy from IPFS](policy-related-apis-for-asynchronous-execution/importing-a-policy-from-ipfs.md)
+* [Importing a Policy from file](policy-related-apis-for-asynchronous-execution/importing-a-policy-from-file.md)
+* [Policy Review](policy-related-apis-for-asynchronous-execution/policy-review.md)
+
 ## SCHEMA CREATION USING THE GUARDIAN APIS
 
 * [Creation of a Schema (Deprecated)](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
@@ -181,6 +193,7 @@
 * [User Account Balance](profile-apis/user-account-balance.md)
 * [User Account Information](profile-apis/user-account-information.md)
 * [Setting User Credentials](profile-apis/setting-user-credentials.md)
+* [Setting User Credentials Asynchronously](profile-apis/setting-user-credentials-asynchronously.md)
 
 ## TOKEN APIS
 
@@ -209,14 +222,23 @@
 * [Returning Logs](logs-apis/returning-logs.md)
 * [Returning Log Attributes](logs-apis/returning-log-attributes.md)
 
+## Dry Run APIs
+
+* [Start Dry Run Mode](dry-run-apis/start-dry-run-mode.md)
+
 ## External APIs
 
 * [Sends Data from External Source](external-apis/sends-data-from-external-source.md)
 
 ## External events
 
-* [Listen to external event published by guardian](external-events/external-events.md)
+* [Listen to external event published by Guardian](external-events/external-events.md)
 
 ## FAQs
 
 * [FAQs](faqs/faqs.md)
+
+## Schema Related APIs for Asynchronous Execution
+
+* [Creation of Schema](schema-related-apis-for-asynchronous-execution/creation-of-schema.md)
+* [Publishing Schema](schema-related-apis-for-asynchronous-execution/publishing-schema.md)

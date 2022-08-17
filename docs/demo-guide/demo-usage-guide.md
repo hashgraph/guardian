@@ -4,9 +4,9 @@
 
 This folder contains sample files that are referenced in the Demo Usage Guide
 
-1. Sample Schema for iRec Policy (`iREC Schema.zip`)
-2. Sample of iREC Policy (`IRec Policy 3.zip`)
-3. Sample Policy Workflow configuration file (`irec-policy-config.txt`)
+1. Sample Schema for iRec Policy (`iREC Schema.schema`)
+2. Sample of iREC Policy (`IRec Policy.policy`)
+3. Sample Policy Workflow configuration file `(irec-policy-config.txt`)
 
 1.The Guardian reference implementation comes with two predefined users:
 
@@ -27,7 +27,7 @@ There is also a _Custom Role_ which is called _User_. This role can be used to c
 
 3\. You'll now be prompted to configure your Standard Registry account. Enter all the mandatory fields and then Press the **Generate** button to generate a Hedera Operator ID and an Operator Key. Press **Connect** when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../.gitbook/assets/iREC\_4.2.png)
+![](../.gitbook/assets/Verra\_2.2.png)
 
 **NOTE**
 
@@ -35,7 +35,7 @@ There is a new feature as of version 1.0.2 which allows for the _Importing of Po
 
 4\. Next, we move over to the **Schemas** tab. Schemas are the structure of which Verifiable Credentials will be filled out. Remember the iRec Policy we mentioned at the beginning of the section? We will be creating the first step of that Policy; which is to create the following schemas: iRec registration applicant details, Inverter, and MRV Schemas. The current version of the solution allows you to either build schemas from scratch or import schemas. Please note, that when you build schemas from scratch and publish them, they will be uploaded into IPFS and then the message containing the IPFS CID is sent into the corresponding Hedera topic. In this guide, we have already uploaded sample schemas for you to use. To import the sample schemas, please click on the **Import** button and paste the following Hedera message IDs one by one:
 
-![](<../.gitbook/assets/iREC\_new\_1 (1).png>)
+![](../.gitbook/assets/iREC\_new\_1.png)
 
 * `1644847084.945541771` (iRec Schema)
 * `1644847093.979895804` (Inverter)
@@ -84,7 +84,7 @@ In step 1 we discussed creating a custom role called installer. There is a defau
 
 To demonstrate how you can edit other workflow actions, you will need to click on the **mint\_token** block and select the token we created.
 
-![](<../.gitbook/assets/iREC\_new\_7 (1).png>)
+![](../.gitbook/assets/iREC\_new\_7.png)
 
 We will now press the **Save** button and the **Publish** button.
 

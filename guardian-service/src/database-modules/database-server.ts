@@ -975,6 +975,14 @@ export class DatabaseServer {
     }
 
     /**
+     * Delete policy
+     * @param id Policy ID
+     */
+    public static async deletePolicy(id: any): Promise<void> {
+        await new DataBaseHelper(Policy).delete({ id });
+    }
+
+    /**
      * Get topic by id
      * @param topicId
      */

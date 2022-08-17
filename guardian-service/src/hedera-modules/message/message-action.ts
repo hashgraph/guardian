@@ -6,6 +6,7 @@ export enum MessageAction {
     CreateVC = 'create-vc-document',
     CreatePolicy = 'create-policy',
     PublishPolicy = 'publish-policy',
+    DeletePolicy = 'delete-policy',
     CreateSchema = 'create-schema',
     PublishSchema = 'publish-schema',
     DeleteSchema = 'delete-schema',

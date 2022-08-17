@@ -16,6 +16,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { HttpResponse } from '@angular/common/http';
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
+import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
@@ -369,18 +370,30 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     deleteSchema(element: any) {
-        this.loading = true;
+        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+            data: {
+                dialogTitle: 'Delete schema',
+                dialogText: 'Are you sure to delete schema?'
+            },
+            autoFocus: false
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            if (!result) {
+                return;
+            }
+            
+            this.loading = true;
+            const request = this.system ?
+                this.schemaService.deleteSystemSchemas(element.id) :
+                this.schemaService.delete(element.id);
 
-        const request = this.system ?
-            this.schemaService.deleteSystemSchemas(element.id) :
-            this.schemaService.delete(element.id);
-
-        request.subscribe((data: any) => {
-            const schemas = SchemaHelper.map(data);
-            this.schemaMapping(schemas);
-            this.loadSchemas();
-        }, (e) => {
-            this.loading = false;
+            request.subscribe((data: any) => {
+                const schemas = SchemaHelper.map(data);
+                this.schemaMapping(schemas);
+                this.loadSchemas();
+            }, (e) => {
+                this.loading = false;
+            });
         });
     }
 

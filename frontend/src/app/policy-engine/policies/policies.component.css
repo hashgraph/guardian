@@ -86,11 +86,9 @@
     font-size: 20px;
 }
 
-.table .mat-column-export {
-    width: 110px;
-}
-
-.table .mat-column-edit {
+.table .mat-column-export,
+.table .mat-column-edit,
+.table .mat-column-delete {
     width: 110px;
 }
 
@@ -129,12 +127,9 @@
     max-height: calc(100vh - var(--header-height) - 170px);
 }
 
-.table-container .mat-column-edit {
-    padding-left: 8px;
-    width: 30px;
-    max-width: 30px;
-}
-.table-container .mat-column-export {
+.table-container .mat-column-edit,
+.table-container .mat-column-export,
+.table-container .mat-column-delete {
     padding-left: 8px;
     width: 30px;
     max-width: 30px;
@@ -213,13 +208,36 @@
 }
 
 .btn-icon-edit,
-.btn-icon-import {
-    color: #3f51b5;
+.btn-icon-delete,
+.btn-icon-import,
+.btn-icon-delete-des {
     font-weight: 500;
     cursor: pointer;
     position: relative;
     width: 30px;
     height: 30px;
+}
+
+.btn-icon-import,
+.btn-icon-edit {
+    color: #3f51b5;
+}
+
+.btn-icon-delete {
+    color: #f44336;
+}
+
+.btn-icon-delete mat-icon,
+.btn-icon-delete-des mat-icon {
+    font-size: 30px;
+    position: absolute;
+    left: 0;
+    top: 0px;
+}
+
+.btn-icon-delete-des {
+    color: #b5b5b5;
+    cursor: not-allowed;
 }
 
 .btn-icon-edit mat-icon {

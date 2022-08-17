@@ -7,13 +7,13 @@ Once you login as a Standard Registry and finish the setup, click on Policies ta
 We have two options to create Policy :
 
 1. Creating Policy from scratch
-2. Importing Policy either from file or from IPFS.
+2. Importing Policy (zip file format)either from file or from IPFS.
 
 ### 1. Creating Policy from Scratch
 
 1.1 To create Policy from scratch, we need to click on "Create Policy" button.
 
-![](<../.gitbook/assets/image (1) (1) (1).png>)
+![](<../.gitbook/assets/image (1) (1) (2).png>)
 
 1.2 Once you click on Create Policy , you get a dialog box to fill out basic Policy details.
 
@@ -37,7 +37,11 @@ We have two options to create Policy :
 
 ### 2. Importing Policy either from File or from IPFS
 
-Instead of creating Policy from scratch, there is an option of importing the Policy zip file from Local system.
+Instead of creating Policy from scratch, there is an option of importing the Policy zip file from Local system.&#x20;
+
+{% hint style="info" %}
+**Note:** Files with **.policy** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.
+{% endhint %}
 
 ![](<../.gitbook/assets/image (11) (1).png>)
 

@@ -14,12 +14,14 @@ import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-po
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
+import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 
 enum OperationMode {
     None,
     Create,
     Import,
     Publish,
+    Delete
 }
 
 /**
@@ -97,7 +99,8 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             'operation',
             'open',
             'export',
-            'edit'
+            'edit',
+            'delete'
         ]
         this.columnsRole[UserRole.USER] = [
             'name',
@@ -174,6 +177,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
 
     onAsyncCompleted() {
         switch (this.mode) {
+            case OperationMode.Delete:
             case OperationMode.Create:
             case OperationMode.Import:
                 this.taskId = undefined;
@@ -275,6 +279,33 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             this.mode = OperationMode.Publish;
         }, (e) => {
             this.loading = false;
+        });
+    }
+
+    deletePolicy(element: any) {
+        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+            data: {
+                dialogTitle: 'Delete policy',
+                dialogText: !element.previousVersion 
+                    ? 'Are you sure to delete policy with related schemas?'
+                    : 'Are you sure to delete policy?'
+            },
+            autoFocus: false
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            if (!result) {
+                return;
+            }
+            
+            this.loading = true;
+            this.policyEngineService.pushDelete(element.id).subscribe((result) => {
+                const { taskId, expectation } = result;
+                this.taskId = taskId;
+                this.expectedTaskMessages = expectation;
+                this.mode = OperationMode.Delete;
+            }, (e) => {
+                this.loading = false;
+            });
         });
     }
 
