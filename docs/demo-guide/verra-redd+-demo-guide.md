@@ -2,7 +2,7 @@
 
 This folder contains a sample file that is referenced in the Demo Usage Guide
 
-1. Sample of Verra REDD Policy (`Verra REDD Policy 2.zip`)
+1. Sample of Verra REDD Policy (`Verra REDD Policy 2.policy`)
 2. Sample Schema design template for Verra REDD Policy (`REDD APD Schema Design Template.xlsx`)
 
 1.The Guardian reference implementation comes with three predefined users:

@@ -2,7 +2,7 @@
 
 This folder contains a sample file that is referenced in the Demo Guide
 
-1. New iREC Policy ([iRec Policy 3.zip)](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
+1. New iREC Policy (`IRec Policy 4.policy`[)](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
 
 1.The Guardian reference implementation comes with two predefined users:
 
