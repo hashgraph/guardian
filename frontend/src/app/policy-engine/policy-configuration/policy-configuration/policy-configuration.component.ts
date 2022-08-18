@@ -568,7 +568,8 @@ export class PolicyConfigurationComponent implements OnInit {
                     ? PolicyAction.CREATE_NEW_POLICY
                     : null
             },
-            autoFocus: false
+            autoFocus: false,
+            disableClose: true
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result && this.policyModel) {

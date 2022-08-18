@@ -327,13 +327,17 @@ export class PolicyEngineService {
             throw new Error('Insufficient permissions to delete the policy');
         }
 
+        if (policyToDelete.status !== PolicyType.DRAFT) {
+            throw new Error('Policy is not in draft status');
+        }
+
         notifier.start('Delete schemas');
         const schemasToDelete = await DatabaseServer.getSchemas({
             topicId: policyToDelete.topicId,
             readonly: false
         });
         for (const schema of schemasToDelete) {
-            if (schema.status !== SchemaStatus.PUBLISHED) {
+            if (schema.status === SchemaStatus.DRAFT) {
                 await deleteSchema(schema.id, notifier);
             }
         }
