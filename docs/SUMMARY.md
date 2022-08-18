@@ -226,6 +226,14 @@
 
 * [Start Dry Run Mode](dry-run-apis/start-dry-run-mode.md)
 * [Running Policy without making any changes](dry-run-apis/running-policy-without-making-any-changes.md)
+* [Returning all Virtual Users](dry-run-apis/returning-all-virtual-users.md)
+* [Creating Virtual Account](dry-run-apis/creating-virtual-account.md)
+* [Logging Virtual User](dry-run-apis/logging-virtual-user.md)
+* [Restarting the execution of Policy](dry-run-apis/restarting-the-execution-of-policy.md)
+* [Returns List of Transactions](dry-run-apis/returns-list-of-transactions.md)
+* [Returns List of Artifacts](dry-run-apis/returns-list-of-artifacts.md)
+* [Returns List of IPFS Files](dry-run-apis/returns-list-of-ipfs-files.md)
+* [Returning Policy to Editing](dry-run-apis/returning-policy-to-editing.md)
 
 ## External APIs
 
