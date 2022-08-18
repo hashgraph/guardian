@@ -326,8 +326,12 @@ table#results {
 }
 
 .swiper {
-    margin: 0 10px;
+    padding: 0 10px;
+    margin: 0 5px;
     cursor: pointer;
+    border-radius: 5px;
+    background-color: #3f51b5;
+    color: white;
 }
 
 .mode-label, .swiper {
@@ -336,7 +340,7 @@ table#results {
 }
 
 .mode-label {
-    margin-left: 30px;
+    margin-left: 20px;
 }
 
 .template-container {
