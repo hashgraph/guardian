@@ -1,5 +1,8 @@
 const configs = [];
 
+const mode = ["VALUES", "TEMPLATES"]
+let modeNumber = 0;
+
 function addFile() {
     let configFile;
     const config = document.getElementById('config');
@@ -45,10 +48,28 @@ function addFile() {
 }
 
 function addConfig(config) {
+    modeNumber = 0;
     const dialog = document.createElement("div");
     const content = document.createElement("div");
     dialog.className = "dialog";
     content.className = "dialog-content";
+
+    function changeModeCallback() {
+        switch(mode[modeNumber % mode.length]) {
+            case mode[0]:
+                bSetting.hidden = false;
+                templateContainer.hidden = true;
+                break;
+            case mode[1]:
+                templateContainer.hidden = false;
+                bSetting.hidden = true;
+                break;
+        }
+    }
+
+    const templateValue = {};
+    insertChangeMode(content, changeModeCallback);
+    const templateContainer = appendTemplateContainer(content, templateValue);
 
     let keys;
     if (config.schema) {
@@ -102,14 +123,20 @@ function addConfig(config) {
     document.body.append(dialog);
 
     b1.addEventListener('click', () => {
+        const currentMode = mode[modeNumber % mode.length];
         configs.push({
             name: config.did,
             file: config,
             start: false,
             task: null,
             lastTime: null,
-            setting: setting,
-            wipe: wipe
+            setting: currentMode == mode[0] 
+            ? setting
+            : currentMode == mode[1]
+            ? templateValue
+            : {},
+            wipe: wipe,
+            mode: currentMode
         });
         dialog.remove();
         renderConfigs();
@@ -118,6 +145,68 @@ function addConfig(config) {
         dialog.remove();
         renderConfigs();
     });
+}
+
+function insertChangeMode(dialogContent, changeModeCallback) {
+    const swipeRight = document.createElement('div');
+    swipeRight.innerText = ">";
+    const swipeLeft = document.createElement('div');
+    swipeLeft.innerText = "<";
+    const modeLabel = document.createElement('div');
+    modeLabel.innerText = "Change Mode";
+
+    swipeRight.className = "swiper";
+    swipeLeft.className = "swiper";
+    modeLabel.className = "mode-label";
+
+    swipeRight.addEventListener('click', () => {
+        modeNumber++;
+        changeModeCallback();
+    });
+    swipeLeft.addEventListener('click', () => {
+        modeNumber--;
+        changeModeCallback();
+    });
+
+    dialogContent.append(swipeLeft, swipeRight, modeLabel);
+}
+
+function appendTemplateContainer(dialogContent, templateValue) {
+    const templateContainer = document.createElement("div");
+    templateContainer.hidden = true;
+    templateContainer.className = "template-container";
+    insertTemplateOptions(templateContainer, templateValue);
+    return dialogContent.appendChild(templateContainer);
+}
+
+function insertTemplateOptions(templateContainer, templateValue) {
+    const templateLabel = document.createElement("span");
+    templateLabel.className = "template-container-label";
+    templateLabel.innerText = "Please choose template to use: ";
+    templateContainer.appendChild(templateLabel);
+
+    const templateSelector = document.createElement("select");
+    templateSelector.style = "border: 1px solid black;";
+    // Empty option
+    templateSelector.appendChild(document.createElement("option"));
+    templateSelector.id = 'templateSelector';
+    getTemplates().then((result) => {
+        if (!result) {
+            return;
+        }
+
+        for (const item of result) {
+            const option = document.createElement("option");
+            option.innerHTML = item;
+            templateSelector.appendChild(option);
+        }
+    });
+
+    templateSelector.addEventListener("change", 
+        () => templateValue.fileName = templateSelector.value
+    );
+
+    templateContainer.appendChild(templateSelector);
 }
 
 function createCheckbox(className, text, callback) {
@@ -327,8 +416,33 @@ async function generateAndSendMRV(config) {
             referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
             body: JSON.stringify({
                 config: config.file,
-                setting: config.setting
+                setting: config.setting,
+                mode: config.mode,
             })
+        });
+        if (result.status === 200) {
+            const data = await result.json();
+            return data;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        return null;
+    }
+}
+
+async function getTemplates() {
+    try {
+        const result = await fetch(location.href + 'templates', {
+            method: 'GET', // *GET, POST, PUT, DELETE, etc.
+            mode: 'cors', // no-cors, *cors, same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            redirect: 'follow', // manual, *follow, error
+            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
         });
         if (result.status === 200) {
             const data = await result.json();
@@ -355,6 +469,7 @@ async function generateAndSendWipe(config) {
             referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
             body: JSON.stringify({
                 config: config.file,
+                mode: config.mode,
                 setting: config.setting
             })
         });
