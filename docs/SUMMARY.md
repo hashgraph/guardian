@@ -168,6 +168,7 @@
 * [Returns all Schemas related to the topic](schema-creation-using-the-guardian-apis/returns-all-schemas-related-to-the-topic.md)
 * [Importing Zip file containing Schema](schema-creation-using-the-guardian-apis/importing-zip-file-containing-schema.md)
 * [Importing Schema from IPFS](schema-creation-using-the-guardian-apis/importing-schema-from-ipfs.md)
+* [Returning Schema by SchemaID](schema-creation-using-the-guardian-apis/returning-schema-by-schemaid.md)
 
 ## System Schemas APIs
 
