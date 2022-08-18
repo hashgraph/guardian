@@ -535,22 +535,27 @@ export async function deleteSchema(schemaId: any, notifier: INotifier) {
     }
 
     const item = await DatabaseServer.getSchema(schemaId);
-    if (item) {
-        notifier.info(`Delete schema ${item.name}`);
-        if (item.topicId) {
-            const topic = await DatabaseServer.getTopicById(item.topicId);
-            if (topic) {
-                const users = new Users();
-                const root = await users.getHederaAccount(item.owner);
-                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-                const message = new SchemaMessage(MessageAction.DeleteSchema);
-                message.setDocument(item);
-                await messageServer.setTopicObject(topic)
-                    .sendMessage(message);
-            }
-        }
-        await DatabaseServer.deleteSchemas(item.id);
+    if (!item) {
+        throw new Error('Schema not found');
     }
+    if (item.status !== SchemaStatus.DRAFT) {
+        throw new Error('Schema is not in draft status');
+    }
+
+    notifier.info(`Delete schema ${item.name}`);
+    if (item.topicId) {
+        const topic = await DatabaseServer.getTopicById(item.topicId);
+        if (topic) {
+            const users = new Users();
+            const root = await users.getHederaAccount(item.owner);
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+            const message = new SchemaMessage(MessageAction.DeleteSchema);
+            message.setDocument(item);
+            await messageServer.setTopicObject(topic)
+                .sendMessage(message);
+        }
+    }
+    await DatabaseServer.deleteSchemas(item.id);
 }
 
 /**
