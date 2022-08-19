@@ -49,9 +49,19 @@ export class GroupManagerBlock {
             group.groupAccessType === GroupAccessType.Private
         ) {
             if (ref.options.canInvite === 'all') {
-                return group.uuid;
+                const inviteId = await ref.databaseServer.createInviteToken(ref.policyId, group.uuid, user.did);
+                return Buffer.from(JSON.stringify({
+                    invitation: inviteId,
+                    role: group.role,
+                    policyName: ref.policyInstance?.name
+                })).toString('base64');
             } else if (group.owner === user.did) {
-                return group.uuid;
+                const inviteId = await ref.databaseServer.createInviteToken(ref.policyId, group.uuid, user.did);
+                return Buffer.from(JSON.stringify({
+                    invitation: inviteId,
+                    role: group.role,
+                    policyName: ref.policyInstance?.name
+                })).toString('base64');
             } else {
                 throw new Error(`Permission denied`);
             }

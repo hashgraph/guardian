@@ -11,6 +11,13 @@
     </div>
     <div class="g-dialog-body">
         <div class="link-content">
+            <input type="text" [value]="invitation" readonly>
+            <div [cdkCopyToClipboard]="invitation" class="link-btn">
+                <mat-icon>link</mat-icon>
+                Copy invitation
+            </div>
+        </div>
+        <div class="link-content">
             <input type="text" [value]="link" readonly>
             <div [cdkCopyToClipboard]="link" class="link-btn">
                 <mat-icon>link</mat-icon>

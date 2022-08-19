@@ -13,6 +13,7 @@ import { DryRun } from '@entity/dry-run';
 import { PolicyRoles as PolicyRolesCollection } from '@entity/policy-roles';
 import { DocumentSignature, DocumentStatus, GroupAccessType, GroupRelationshipType, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { BaseEntity, DataBaseHelper } from '@guardian/common';
+import { PolicyInvitations } from '@entity/policy-invitations';
 
 /**
  * Database server
@@ -46,6 +47,7 @@ export class DatabaseServer {
         this.classMap.set(TopicCollection, 'TopicCollection');
         this.classMap.set(DryRun, 'DryRun');
         this.classMap.set(PolicyRolesCollection, 'PolicyRolesCollection');
+        this.classMap.set(PolicyInvitations, 'PolicyInvitations');
     }
 
     /**
@@ -864,6 +866,38 @@ export class DatabaseServer {
      */
     public async getAllPolicyUsers(policyId: string): Promise<PolicyRolesCollection[]> {
         return await this.find(PolicyRolesCollection, { policyId });
+    }
+
+    /**
+     * Create invite token
+     * @param policyId
+     * @param uuid
+     * @param owner
+     */
+    public async createInviteToken(policyId: string, uuid: string, owner: string): Promise<string> {
+        const doc = this.create(PolicyInvitations, {
+            uuid,
+            policyId,
+            owner,
+            active: true
+        });
+        await this.save(PolicyInvitations, doc);
+        return doc.id.toString();
+    }
+
+    /**
+     * Parse invite token
+     * @param invitationId
+     */
+    public async parseInviteToken(policyId: string, invitationId: string): Promise<string> {
+        const invitation = await new DataBaseHelper(PolicyInvitations).findOne(invitationId);
+        if (invitation && invitation.policyId === policyId && invitation.active === true) {
+            invitation.active = false;
+            await this.save(PolicyInvitations, invitation);
+            invitation.uuid;
+        } else {
+            return null;
+        }
     }
 
     //Static

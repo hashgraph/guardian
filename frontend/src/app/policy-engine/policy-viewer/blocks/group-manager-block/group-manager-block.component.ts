@@ -131,7 +131,8 @@ export class GroupManagerBlockComponent implements OnInit {
                 disableClose: true,
                 data: {
                     header: 'Invitation',
-                    link: result.invitation
+                    invitation: result.invitation,
+                    link: location.origin + location.pathname + `?policyParams=${btoa(JSON.stringify(result))}`
                 }
             });
             dialogRef.afterClosed().subscribe(async () => {

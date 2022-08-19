@@ -20,6 +20,7 @@ export class LinkDialogComponent implements OnInit, AfterContentInit {
 
     initDialog = false;
     link: string;
+    invitation: string;
     header: string;
 
     constructor(
@@ -27,6 +28,7 @@ export class LinkDialogComponent implements OnInit, AfterContentInit {
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         this.header = data.header;
+        this.invitation = data.invitation;
         this.link = data.link;
     }
 

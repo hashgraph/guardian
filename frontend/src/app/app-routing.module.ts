@@ -17,7 +17,7 @@ import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
 import { AuthService } from './services/auth.service';
 import { AdminHeaderComponent } from './views/admin/admin-header/admin-panel.component';
 import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
-import { SettingsViewComponent } from './views/admin/settings-view/settings-viewcomponent';
+import { SettingsViewComponent } from './views/admin/settings-view/settings-view.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { InfoComponent } from './components/info/info/info.component';
 import { WebSocketService } from './services/web-socket.service';

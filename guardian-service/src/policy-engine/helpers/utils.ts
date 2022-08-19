@@ -790,14 +790,14 @@ export class PolicyUtils {
     /**
      * Get error message
      */
-     public static getErrorMessage(error: string | Error | any): string {
-        if(typeof error === 'string') {
+    public static getErrorMessage(error: string | Error | any): string {
+        if (typeof error === 'string') {
             return error;
-        } else if(error.message) {
+        } else if (error.message) {
             return error.message;
-        } else if(error.error) {
+        } else if (error.error) {
             return error.error;
-        } else if(error.name) {
+        } else if (error.name) {
             return error.name;
         } else {
             console.log(error);

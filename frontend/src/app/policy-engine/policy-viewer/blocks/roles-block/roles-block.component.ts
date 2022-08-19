@@ -28,6 +28,10 @@ export class RolesBlockComponent implements OnInit {
     roleForm: FormGroup;
     type: any = 'role';
 
+    params: any;
+    role: string = '';
+    policy: string = '';
+    
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
@@ -44,12 +48,16 @@ export class RolesBlockComponent implements OnInit {
         if (!this.static) {
             this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
+        this.params = this.policyHelper.subscribe(this.onUpdateParams.bind(this));
         this.loadData();
     }
 
     ngOnDestroy(): void {
         if (this.socket) {
             this.socket.unsubscribe();
+        }
+        if (this.params) {
+            this.params.unsubscribe();
         }
     }
 
@@ -86,6 +94,15 @@ export class RolesBlockComponent implements OnInit {
             this.title = uiMetaData.title;
             this.description = uiMetaData.description;
 
+            const invitation = this.policyHelper.getParams('invitation');
+            if(invitation) {
+                this.type = 'invite';
+                this.roleForm = this.fb.group({
+                    role: [''],
+                    invitation: [invitation, Validators.required],
+                });
+            }
+
             this.isActive = true;
         } else {
             this.content = null;
@@ -117,6 +134,24 @@ export class RolesBlockComponent implements OnInit {
                 role: [''],
                 invitation: ['', Validators.required],
             });
+        }
+    }
+    
+    onUpdateParams() {
+        const invitation = this.policyHelper.getParams('invitation');
+        debugger;
+    }
+    
+    onParse(event: any) {
+        if (event) {
+            try {
+                const json = JSON.parse(atob(event));
+                this.role = json.role || '';
+                this.policy = json.policyName || '';
+            } catch (error) {
+                this.role = '';
+                this.policy = '';
+            }
         }
     }
 }

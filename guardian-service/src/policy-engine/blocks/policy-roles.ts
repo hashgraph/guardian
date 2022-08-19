@@ -66,6 +66,26 @@ interface IUserGroup {
 })
 export class PolicyRolesBlock {
 
+    /**
+     * Create Policy Invite
+     * @param ref
+     * @param token
+     */
+     private async parseInvite(ref: AnyBlockType, token: string): Promise<string> {
+        let uuid: string;
+        try {
+            const { invitation } = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
+            uuid = await ref.databaseServer.parseInviteToken(ref.policyId, invitation);
+        } catch (error) {
+            throw new BlockActionError('Invalid invitation', ref.blockType, ref.uuid);
+        }
+        if(uuid) {
+            return uuid;
+        } else {
+            throw new BlockActionError('Invalid invitation', ref.blockType, ref.uuid);
+        }
+     }
+
     private getGroupConfig(ref: AnyBlockType, role: string): any {
         console.log(ref.policyInstance);
 
@@ -144,9 +164,11 @@ export class PolicyRolesBlock {
     }
 
     private async getGroupByToken(
-        ref: AnyBlockType, did: string, username: string, token: string
+        ref: AnyBlockType,
+        did: string,
+        username: string,
+        uuid: string
     ): Promise<IUserGroup> {
-        const uuid = token;
         const result = await ref.databaseServer.getGroup(ref.policyId, uuid);
         if (!result) {
             throw new BlockActionError('Invalid token', ref.blockType, ref.uuid);
@@ -193,7 +215,8 @@ export class PolicyRolesBlock {
 
         let group: IUserGroup;
         if (data.invitation) {
-            group = await this.getGroupByToken(ref, did, username, data.invitation);
+            const uuid = await this.parseInvite(ref, data.invitation);          
+            group = await this.getGroupByToken(ref, did, username, uuid);
         } else if (data.role) {
             const groupConfig = this.getGroupConfig(ref, data.role);
             group = await this.getGroupByConfig(ref, did, username, groupConfig);

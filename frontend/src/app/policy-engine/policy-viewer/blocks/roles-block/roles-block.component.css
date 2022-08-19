@@ -66,10 +66,9 @@ form {
 }
 
 .group-value {
-    height: 80px;
     display: flex;
     flex-direction: column;
-    padding: 10px 50px 10px 50px;
+    padding: 10px 50px 15px 50px;
 }
 
 .group-value[disabled="true"] {

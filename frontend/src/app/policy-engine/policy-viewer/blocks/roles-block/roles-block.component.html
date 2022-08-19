@@ -12,7 +12,8 @@
                 <mat-radio-group aria-label="Select an option" [value]="type">
                     <div>
                         <div class="group-name">
-                            <mat-radio-button value="role" color="primary" (change)="onChange($event)">Create new group</mat-radio-button>
+                            <mat-radio-button value="role" color="primary" (change)="onChange($event)">Create new group
+                            </mat-radio-button>
                         </div>
                         <div class="group-value" [attr.disabled]="type!=='role'">
                             <mat-form-field appearance="outline">
@@ -25,12 +26,17 @@
                     </div>
                     <div>
                         <div class="group-name">
-                            <mat-radio-button value="invite" color="primary" (change)="onChange($event)">Use an invitation</mat-radio-button>
+                            <mat-radio-button value="invite" color="primary" (change)="onChange($event)">Use an
+                                invitation</mat-radio-button>
                         </div>
                         <div class="group-value" [attr.disabled]="type!=='invite'">
+                            <div *ngIf="role" style="margin-bottom: 15px;color: #707070">
+                                <span>Role: </span>
+                                <span>{{role}}</span>
+                            </div>
                             <mat-form-field appearance="outline">
                                 <mat-label>Invite</mat-label>
-                                <input matInput formControlName="invitation">
+                                <input matInput formControlName="invitation" (ngModelChange)="onParse($event)">
                             </mat-form-field>
                         </div>
                     </div>

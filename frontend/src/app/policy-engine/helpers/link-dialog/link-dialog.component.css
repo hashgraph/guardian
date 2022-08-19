@@ -97,7 +97,7 @@
     height: 40px;
     border: 1px solid var(--button-primary-color);
     border-radius: 6px;
-    width: 125px;
+    width: 150px;
     position: relative;
     padding: 9px 10px 8px 44px;
     box-sizing: border-box;
@@ -118,7 +118,7 @@
 
 .link-content {
     display: grid;
-    grid-template-columns: auto 150px;
+    grid-template-columns: auto 170px;
     padding: 15px 0px 20px 0px;
 }
 
