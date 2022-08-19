@@ -383,6 +383,45 @@ export async function publishSystemSchema(
 }
 
 /**
+ * Update refs in related Schemas
+ * @param newSchemaId New id of schema
+ * @param oldSchemaId Old id of schema
+ */
+export async function updateDefsInRelatedSchemas(newSchemaId, oldSchemaId) {
+    const filters = {};
+    filters[`document.$defs.${oldSchemaId}`] = { $exists: true };
+    const relatedSchemas = await DatabaseServer.getSchemas(filters);
+    for (const rSchema of relatedSchemas) {
+        let document = JSON.stringify(rSchema.document) as string;
+        document = document.replaceAll(oldSchemaId, newSchemaId);
+        rSchema.document = JSON.parse(document);
+    }
+    await DatabaseServer.updateSchemas(relatedSchemas);
+}
+
+/**
+ * Publishing schemas in defs
+ * @param defs Definitions
+ * @param version Version
+ * @param owner Owner
+ */
+export async function publishDefsSchemas(defs: any, version: string, owner: string) {
+    if (!defs) {
+        return;
+    }
+
+    const schemasIdsInDocument = Object.keys(defs);
+    for (const schemaId of schemasIdsInDocument) {
+        const schema = await DatabaseServer.getSchema({
+            'document.$id': schemaId
+        });
+        if (schema && schema.status !== SchemaStatus.PUBLISHED) {
+            await findAndPublishSchema(schema.id, version, owner, emptyNotifier());
+        }
+    }
+}
+
+/**
  * Find and publish schema
  * @param id
  * @param version
@@ -393,22 +432,23 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
     notifier.start('Load schema');
 
     let item = await DatabaseServer.getSchema(id);
-
     if (!item) {
         throw new Error(`Schema not found: ${id}`);
     }
-
     if (item.creator !== owner) {
         throw new Error('Invalid owner');
     }
-
     if (!item.topicId) {
         throw new Error('Invalid topicId');
     }
-
     if (item.status === SchemaStatus.PUBLISHED) {
         throw new Error('Invalid status');
     }
+
+    notifier.completedAndStart('Publishing related schemas');
+    const oldSchemaId = item.document?.$id;
+    await publishDefsSchemas(item.document?.$defs, version, owner);
+    item = await DatabaseServer.getSchema(id);
 
     notifier.completedAndStart('Resolve Hedera account');
     const users = new Users();
@@ -422,6 +462,7 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
 
     notifier.completedAndStart('Update in DB');
     await DatabaseServer.updateSchema(item.id, item);
+    await updateDefsInRelatedSchemas(item.document?.$id, oldSchemaId);
     notifier.completed();
     return item;
 }
