@@ -142,6 +142,7 @@
 * [Export to zip file](policy-creation-using-the-guardian-apis/export-to-zip-file.md)
 * [Import from zip file](policy-creation-using-the-guardian-apis/import-from-zip-file.md)
 * [Retrieves Block Data by Tag](policy-creation-using-the-guardian-apis/retrieves-block-data-by-tag.md)
+* [Sends Data to specified Block by Tag](policy-creation-using-the-guardian-apis/sends-data-to-specified-block-by-tag.md)
 
 ## Policy related APIs for Asynchronous Execution
 
@@ -225,7 +226,6 @@
 
 ## Dry Run APIs
 
-* [Start Dry Run Mode](dry-run-apis/start-dry-run-mode.md)
 * [Running Policy without making any changes](dry-run-apis/running-policy-without-making-any-changes.md)
 * [Returning all Virtual Users](dry-run-apis/returning-all-virtual-users.md)
 * [Creating Virtual Account](dry-run-apis/creating-virtual-account.md)
@@ -252,3 +252,18 @@
 
 * [Creation of Schema](schema-related-apis-for-asynchronous-execution/creation-of-schema.md)
 * [Publishing Schema](schema-related-apis-for-asynchronous-execution/publishing-schema.md)
+* [Previews the Schema from IPFS](schema-related-apis-for-asynchronous-execution/previews-the-schema-from-ipfs.md)
+* [Importing Schema from IPFS](schema-related-apis-for-asynchronous-execution/importing-schema-from-ipfs.md)
+* [Importing Schema from .zip](schema-related-apis-for-asynchronous-execution/importing-schema-from-.zip.md)
+
+## Token Related APIs for Asynchronous Execution
+
+* [Token Creation](token-related-apis-for-asynchronous-execution/token-creation.md)
+* [Associating User with the Hedera Token](token-related-apis-for-asynchronous-execution/associating-user-with-the-hedera-token.md)
+* [Disassociating User with the Hedera Token](token-related-apis-for-asynchronous-execution/disassociating-user-with-the-hedera-token.md)
+* [Setting KYC for the User](token-related-apis-for-asynchronous-execution/setting-kyc-for-the-user.md)
+* [Unsetting KYC for the User](token-related-apis-for-asynchronous-execution/unsetting-kyc-for-the-user.md)
+
+## Task APIs
+
+* [Returning Task Statuses](task-apis/returning-task-statuses.md)
