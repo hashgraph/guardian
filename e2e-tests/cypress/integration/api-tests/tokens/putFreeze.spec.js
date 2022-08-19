@@ -6,14 +6,19 @@ context("Tokens", () => {
     const tokenId = Cypress.env("tokenId");
     const user = Cypress.env("root_user");
 
-    it("get token info", () => {
+    it("Freezes transfers of the specified token for the user", () => {
         cy.sendRequest(
-            METHOD.GET,
-            API.ListOfTokens + tokenId + "/" + user + "/info",
+            METHOD.PUT,
+            API.ListOfTokens + tokenId + "/" + user + "/freeze",
             { authorization }
         ).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body).to.not.be.oneOf([null, ""]);
+
+            let token = resp.body.tokenId;
+            let frozen = resp.body.frozen;
+
+            expect(token).to.deep.equal(tokenId);
+            expect(frozen).to.be.true;
         });
     });
 });
