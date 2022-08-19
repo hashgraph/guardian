@@ -195,7 +195,7 @@ export class DataBaseHelper<T extends BaseEntity> {
 
         let entityToUpdateOrCreate: any = await repository.findOne(filter?.where || filter || entity.id || entity._id);
         if (entityToUpdateOrCreate) {
-            wrap(entityToUpdateOrCreate).assign(entity);
+            wrap(entityToUpdateOrCreate).assign(entity, { mergeObjects: false });
         } else {
             entityToUpdateOrCreate = repository.create({ ...entity });
             await repository.persist(entityToUpdateOrCreate);
@@ -237,13 +237,13 @@ export class DataBaseHelper<T extends BaseEntity> {
         const entitiesToUpdate: any = await repository.find(filter?.where || filter || entity.id || entity._id);
         if (entitiesToUpdate.length > 1) {
             for (const entityToUpdate of entitiesToUpdate) {
-                wrap(entityToUpdate).assign(entity);
+                wrap(entityToUpdate).assign(entity, { mergeObjects: false });
             }
             await repository.flush();
             return entitiesToUpdate;
         } else if (entitiesToUpdate.length === 1) {
             const entityToUpdate = entitiesToUpdate[0];
-            wrap(entityToUpdate).assign(entity);
+            wrap(entityToUpdate).assign(entity, { mergeObjects: false });
             await repository.flush();
             return entityToUpdate;
         }
