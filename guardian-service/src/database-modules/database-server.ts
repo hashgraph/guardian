@@ -808,6 +808,14 @@ export class DatabaseServer {
     }
 
     /**
+     * Update schemas
+     * @param items Schemas
+     */
+    public static async updateSchemas(items: SchemaCollection[]): Promise<void> {
+        await new DataBaseHelper(SchemaCollection).update(items);
+    }
+
+    /**
      * Get schemas
      * @param filters
      */
