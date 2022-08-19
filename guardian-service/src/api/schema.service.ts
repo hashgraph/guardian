@@ -169,7 +169,7 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
     const schema = await DatabaseServer.getSchema({ iri, owner });
 
     if (!schema) {
-        throw new Error(`Schema not found: ${iri} for owner ${owner}`);
+        return;
     }
 
     if (schema.status === SchemaStatus.PUBLISHED) {
@@ -412,11 +412,12 @@ export async function publishDefsSchemas(defs: any, version: string, owner: stri
 
     const schemasIdsInDocument = Object.keys(defs);
     for (const schemaId of schemasIdsInDocument) {
-        const schema = await DatabaseServer.getSchema({
+        let schema = await DatabaseServer.getSchema({
             'document.$id': schemaId
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
-            await findAndPublishSchema(schema.id, version, owner, emptyNotifier());
+            schema = await incrementSchemaVersion(schema.iri, owner);
+            await findAndPublishSchema(schema.id, schema.version, owner, emptyNotifier());
         }
     }
 }
