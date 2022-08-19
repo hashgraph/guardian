@@ -1,4 +1,3 @@
-/// <reference types="cypress" />
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
