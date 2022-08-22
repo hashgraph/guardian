@@ -110,7 +110,7 @@ export class WebSocketService {
 
     private heartbeat() {
         this.socket.next('ping');
-        // this.send(MessageAPI.GET_STATUS, null);
+        this.send(MessageAPI.GET_STATUS, null);
         this.heartbeatTimeout = setTimeout(
             this.heartbeat.bind(this), WebSocketService.HEARTBEAT_DELAY
         );
