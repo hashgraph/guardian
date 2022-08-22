@@ -69,13 +69,31 @@ policyAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Au
 policyAPI.post('/push', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Create policy');
-
     const model = req.body;
     const user = req.user;
     setImmediate(async () => {
         const engineService = new PolicyEngine();
         try {
             await engineService.createPolicyAsync(model, user, taskId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: 500, message: error.message });
+        }
+    });
+    res.status(201).send({ taskId, expectation });
+});
+
+policyAPI.post('/push/:policyId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Clone policy');
+    const policyId = req.params.policyId;
+    const model = req.body;
+    const user = req.user;
+
+    setImmediate(async () => {
+        const engineService = new PolicyEngine();
+        try {
+            await engineService.clonePolicyAsync(policyId, model, user, taskId);
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
             taskManager.addError(taskId, { code: 500, message: error.message });

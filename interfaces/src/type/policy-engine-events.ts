@@ -35,5 +35,6 @@ export enum PolicyEngineEvents {
     SET_VIRTUAL_USER = 'login-virtual-user',
     RESTART_DRY_RUN= 'restart-dry-run',
     GET_VIRTUAL_DOCUMENTS = 'get-virtual-documents',
-    DELETE_POLICY_ASYNC = 'delete-policy-async'
+    DELETE_POLICY_ASYNC = 'delete-policy-async',
+    CLONE_POLICY_ASYNC = 'clone-policy-async'
 }

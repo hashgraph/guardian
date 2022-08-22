@@ -135,8 +135,8 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Entities
      */
     @UseRequestContext(() => DB_DI.orm)
-    public async find(filters: any | string | ObjectId, options?: any): Promise<T[]> {
-        return await this._em.getRepository<T>(this.entityClass).find(filters?.where || filters, options);
+    public async find(filters?: any | string | ObjectId, options?: any): Promise<T[]> {
+        return await this._em.getRepository<T>(this.entityClass).find(filters?.where || filters || {}, options);
     }
 
     /**
