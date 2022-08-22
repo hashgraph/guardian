@@ -2,7 +2,7 @@ import { Injectable, NgModule } from '@angular/core';
 import { CanActivate, Router, RouterModule, Routes } from '@angular/router';
 import { ISession, IUser, UserRole } from '@guardian/interfaces';
 import { of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, map, shareReplay } from 'rxjs/operators';
 import { PolicyConfigurationComponent } from './policy-engine/policy-configuration/policy-configuration/policy-configuration.component';
 import { PolicyViewerComponent } from './policy-engine/policy-viewer/policy-viewer/policy-viewer.component';
 import { AuditComponent } from './views/audit/audit.component';
@@ -134,9 +134,7 @@ export class ServicesStatusGuard implements CanActivate {
     }
 
     canActivate() {
-        return this.status.IsServicesReady().pipe(
-            map(item => item || this.router.parseUrl('/status'))
-        );
+        return this.status.IsServicesReady();
     }
 }
 
