@@ -577,27 +577,39 @@ export class PolicyConfigurationComponent implements OnInit {
                 const json = this.policyModel.getJSON();
 
                 const policy = Object.assign({}, json, result.policy);
-                delete policy._id;
-                delete policy.id;
-                delete policy.status;
-                delete policy.owner;
-                delete policy.version;
 
                 if (result.action === PolicyAction.CREATE_NEW_POLICY) {
-                    delete policy.uuid;
+                    this.policyEngineService.pushClone(policy.id, {
+                        policyTag: policy.policyTag,
+                        name: policy.name,
+                        topicDescription: policy.topicDescription,
+                        description: policy.description
+                    }).subscribe((result) => {
+                        const { taskId, expectation } = result;
+                        this.taskId = taskId;
+                        this.expectedTaskMessages = expectation;
+                        this.operationMode = OperationMode.create;
+                    }, (e) => {
+                        this.loading = false;
+                        this.taskId = undefined;
+                    });
                 } else if (result.action === PolicyAction.CREATE_NEW_VERSION) {
+                    delete policy._id;
+                    delete policy.id;
+                    delete policy.status;
+                    delete policy.owner;
+                    delete policy.version;
                     policy.previousVersion = json.version;
+                    this.policyEngineService.pushCreate(policy).subscribe((result) => {
+                        const { taskId, expectation } = result;
+                        this.taskId = taskId;
+                        this.expectedTaskMessages = expectation;
+                        this.operationMode = OperationMode.create;
+                    }, (e) => {
+                        this.loading = false;
+                        this.taskId = undefined;
+                    });
                 }
-
-                this.policyEngineService.pushCreate(policy).subscribe((result) => {
-                    const { taskId, expectation } = result;
-                    this.taskId = taskId;
-                    this.expectedTaskMessages = expectation;
-                    this.operationMode = OperationMode.create;
-                }, (e) => {
-                    this.loading = false;
-                    this.taskId = undefined;
-                });
             }
         });
     }

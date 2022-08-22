@@ -27,7 +27,7 @@ import {
     PolicyMessage,
     TopicHelper
 } from '@hedera-modules'
-import { replaceAllEntities, SchemaFields } from '@helpers/utils';
+import { findAllEntities, replaceAllEntities, SchemaFields } from '@helpers/utils';
 import { IPolicyBlock, IPolicyInterfaceBlock } from './policy-engine.interface';
 import { incrementSchemaVersion, findAndPublishSchema, publishSystemSchema, findAndDryRunSchema, deleteSchema } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
@@ -309,6 +309,38 @@ export class PolicyEngineService {
 
         notifier.completed();
         return policy;
+    }
+
+    /**
+     * Clone policy
+     */
+     private async clonePolicy(policyId: string, data: any, owner: string, notifier: INotifier): Promise<string> {
+        const logger = new Logger();
+        logger.info('Create Policy', ['GUARDIAN_SERVICE']);
+
+        const policy = await DatabaseServer.getPolicyById(policyId);
+        if (!policy) {
+            throw new Error('Policy does not exists');
+        }
+        if (policy.creator !== owner) {
+            throw new Error('Invalid owner');
+        }
+
+        const schemas = await DatabaseServer.getSchemas({
+            topicId: policy.topicId,
+            readonly: false
+        });
+
+        const tokenIds = findAllEntities(policy.config, ['tokenId']);
+        const tokens = await DatabaseServer.getTokens({
+            tokenId: { $in: tokenIds }
+        });
+
+        const dataToCreate = {
+            policy, schemas, tokens
+        };
+        const newPolicy = await PolicyImportExportHelper.importPolicy(dataToCreate, owner, null, notifier, data);
+        return newPolicy.id;
     }
 
     /**
@@ -804,6 +836,19 @@ export class PolicyEngineService {
                     const userFull = await this.users.getUser(user.username);
                     const policy = await this.createPolicy(model, userFull.did, notifier);
                     notifier.result(policy.id);
+                } catch (error) {
+                    notifier.error(error);
+                }
+            });
+            return new MessageResponse({ taskId });
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.CLONE_POLICY_ASYNC, async (msg) => {
+            const { policyId, model, user, taskId } = msg;
+            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+            setImmediate(async () => {
+                try {
+                    notifier.result(await this.clonePolicy(policyId, model, user.did, notifier));
                 } catch (error) {
                     notifier.error(error);
                 }
