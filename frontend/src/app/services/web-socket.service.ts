@@ -4,6 +4,8 @@ import { webSocket, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { ApplicationStates, MessageAPI } from '@guardian/interfaces';
+import { Router } from '@angular/router';
+import { map } from 'rxjs/operators';
 
 /**
  *  WebSocket service.
@@ -26,7 +28,7 @@ export class WebSocketService {
     private taskStatusSubject: Subject<any>;
     private serviesStates: any = [];
 
-    constructor(private auth: AuthService, private toastr: ToastrService) {
+    constructor(private auth: AuthService, private toastr: ToastrService, private router: Router) {
         this.blockUpdateSubject = new Subject();
         this.userInfoUpdateSubject = new Subject();
         this.servicesReady = new Subject();
@@ -155,9 +157,11 @@ export class WebSocketService {
                 case MessageAPI.GET_STATUS:
                 case MessageAPI.UPDATE_STATUS:
                     this.updateStatus(event.data);
-                    this.servicesReady.next(
-                        !this.serviesStates.find((item: any) => item.state !== ApplicationStates.READY)
-                    );
+                    const allStatesReady = !this.serviesStates.find((item: any) => item.state !== ApplicationStates.READY)
+                    if (!allStatesReady) {
+                        this.router.navigate(['/status']);
+                    }
+                    this.servicesReady.next(allStatesReady);
                     break;
                 case 'update-event': {
                     this.blockUpdateSubject.next(event.data);
