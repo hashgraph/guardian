@@ -210,6 +210,10 @@
                         <policy-properties [policy]="policyModel" [readonly]="readonly" [type]="'Role'">
                         </policy-properties>
                     </ng-container>
+                    <ng-container *ngIf="policyTab=='Groups'">
+                        <policy-properties [policy]="policyModel" [readonly]="readonly" [type]="'Groups'">
+                        </policy-properties>
+                    </ng-container>
                     <ng-container *ngIf="policyTab=='Topics'">
                         <policy-properties [policy]="policyModel" [readonly]="readonly" [type]="'Topics'">
                         </policy-properties>
@@ -221,7 +225,10 @@
                         Description
                     </div>
                     <div class="group-tab-item" [attr.active]="policyTab=='Roles'" (click)="policyTab='Roles'">
-                        Roles & Groups
+                        Roles
+                    </div>
+                    <div class="group-tab-item" [attr.active]="policyTab=='Groups'" (click)="policyTab='Groups'">
+                        Groups
                     </div>
                     <div class="group-tab-item" [attr.active]="policyTab=='Topics'" (click)="policyTab='Topics'">
                         Topics

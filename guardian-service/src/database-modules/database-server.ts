@@ -139,7 +139,7 @@ export class DatabaseServer {
      */
     private async save<T extends BaseEntity>(entityClass: new () => T, item: any): Promise<T> {
         if (this.dryRun) {
-            const _item: any = { ...item };
+            const _item: any = item;
             _item.dryRunId = this.dryRun;
             _item.dryRunClass = this.classMap.get(entityClass);
             return await new DataBaseHelper(DryRun).save(_item) as any;
@@ -272,59 +272,49 @@ export class DatabaseServer {
         const item = this.create(DocumentState, { documentId, status });
         return await this.save(DocumentState, item);
     }
+    
+    /**
+     * Update Approval record
+     * @param row
+     *
+     * @virtual
+     */
+    public async updateApprovalRecord(row: ApprovalDocumentCollection): Promise<ApprovalDocumentCollection> {
+        let item: ApprovalDocumentCollection;
+        if (row.id) {
+            item = await this.findOne(ApprovalDocumentCollection, row.id);
+        }
+        if (item) {
+            item.owner = row.owner;
+            item.group = row.group;
+            item.option = row.option;
+            item.schema = row.schema;
+            item.document = row.document;
+            item.tag = row.tag;
+            item.type = row.type;
+        } else {
+            item = this.create(ApprovalDocumentCollection, row as ApprovalDocumentCollection);
+        }
+        return await this.save(ApprovalDocumentCollection, item);
+    }
 
     /**
-     * Create VC record
-     * @param policyId
-     * @param tag
-     * @param type
-     * @param newVc
-     * @param oldDoc
+     * Update did record
+     * @param row
+     *
+     * @virtual
      */
-    public createVCRecord(
-        policyId: string,
-        tag: string,
-        type: string,
-        newVc: any,
-        oldDoc: any = null,
-        refDoc: any = null
-    ): VcDocumentCollection {
-        if (!oldDoc) {
-            oldDoc = {};
+    public async updateDIDRecord(row: DidDocumentCollection): Promise<DidDocumentCollection> {
+        let item = await this.findOne(DidDocumentCollection, { did: row.did });
+        if (item) {
+            item.document = row.document;
+            item.status = row.status;
+            await this.update(DidDocumentCollection, item.id, item);
+            return item;
+        } else {
+            item = this.create(DidDocumentCollection, row as DidDocumentCollection);
+            return await this.save(DidDocumentCollection, item);
         }
-
-        const item = {
-            policyId,
-            tag: tag || oldDoc.tag || null,
-            type: type || oldDoc.type || null,
-            hash: newVc.toCredentialHash(),
-            document: newVc.toJsonTree(),
-            owner: oldDoc.owner || null,
-            assignedTo: oldDoc.assignedTo || null,
-            option: oldDoc.option || null,
-            schema: oldDoc.schema || null,
-            hederaStatus: oldDoc.hederaStatus || DocumentStatus.NEW,
-            signature: oldDoc.signature || DocumentSignature.NEW,
-            messageId: oldDoc.messageId || null,
-            topicId: oldDoc.topicId || null,
-            relationships: oldDoc.relationships || null,
-            comment: oldDoc.comment || null,
-            accounts: oldDoc.accounts || null,
-        };
-
-        if (!item.relationships || !item.relationships.length) {
-            item.relationships = null;
-        }
-
-        if (refDoc && refDoc.messageId) {
-            item.relationships = [refDoc.messageId];
-        }
-
-        if (refDoc && refDoc.accounts) {
-            item.accounts = Object.assign({}, refDoc.accounts, item.accounts);
-        }
-
-        return item as VcDocumentCollection;
     }
 
     /**
@@ -346,6 +336,7 @@ export class DatabaseServer {
                 updateStatus = item.option?.status !== row.option.status
             }
             item.owner = row.owner;
+            item.group = row.group;
             item.assignedTo = row.assignedTo;
             item.option = row.option;
             item.schema = row.schema;
@@ -358,10 +349,12 @@ export class DatabaseServer {
             item.topicId = row.topicId || item.topicId;
             item.comment = row.comment;
             item.relationships = row.relationships;
+
             await this.update(VcDocumentCollection, item.id, item);
         } else {
             item = this.create(VcDocumentCollection, row);
             updateStatus = !!item.option?.status;
+
             await this.save(VcDocumentCollection, item);
         }
         if (updateStatus) {
@@ -386,25 +379,6 @@ export class DatabaseServer {
     }
 
     /**
-     * Update did record
-     * @param row
-     *
-     * @virtual
-     */
-    public async updateDIDRecord(row: DidDocumentCollection): Promise<DidDocumentCollection> {
-        let item = await this.findOne(DidDocumentCollection, { did: row.did });
-        if (item) {
-            item.document = row.document;
-            item.status = row.status;
-            await this.update(DidDocumentCollection, item.id, item);
-            return item;
-        } else {
-            item = this.create(DidDocumentCollection, row as DidDocumentCollection);
-            return await this.save(DidDocumentCollection, item);
-        }
-    }
-
-    /**
      * Update VP record
      * @param row
      *
@@ -413,30 +387,6 @@ export class DatabaseServer {
     public async updateVPRecord(row: VpDocumentCollection): Promise<VpDocumentCollection> {
         const doc = this.create(VpDocumentCollection, row);
         return await this.save(VpDocumentCollection, doc);
-    }
-
-    /**
-     * Update Approval record
-     * @param row
-     *
-     * @virtual
-     */
-    public async updateApprovalRecord(row: ApprovalDocumentCollection): Promise<ApprovalDocumentCollection> {
-        let item: ApprovalDocumentCollection;
-        if (row.id) {
-            item = await this.findOne(ApprovalDocumentCollection, row.id);
-        }
-        if (item) {
-            item.owner = row.owner;
-            item.option = row.option;
-            item.schema = row.schema;
-            item.document = row.document;
-            item.tag = row.tag;
-            item.type = row.type;
-        } else {
-            item = this.create(ApprovalDocumentCollection, row as ApprovalDocumentCollection);
-        }
-        return await this.save(ApprovalDocumentCollection, item);
     }
 
     /**
@@ -487,12 +437,22 @@ export class DatabaseServer {
      * @param policyId
      * @param blockId
      * @param owner
-     *
+     * @param owner
+     * 
      * @virtual
      */
-    public async getAggregateDocuments(policyId: string, blockId: string, owner?: string): Promise<AggregateVC[]> {
+    public async getAggregateDocuments(
+        policyId: string,
+        blockId: string,
+        owner?: string,
+        group?: string
+    ): Promise<AggregateVC[]> {
         if (owner) {
-            return await this.find(AggregateVC, { policyId, blockId, owner });
+            if (group) {
+                return await this.find(AggregateVC, { policyId, blockId, owner, group });
+            } else {
+                return await this.find(AggregateVC, { policyId, blockId, owner });
+            }
         } else {
             return await this.find(AggregateVC, { policyId, blockId });
         }
@@ -671,8 +631,6 @@ export class DatabaseServer {
     /**
      * Get Token
      * @param tokenId
-     *
-     * @virtual
      */
     public async getTokenById(tokenId: string): Promise<TokenCollection> {
         return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
@@ -715,22 +673,43 @@ export class DatabaseServer {
         });
     }
 
+
+
+
+
+
+
+
+
+
     /**
-     * Get user role in policy
-     * @param policyId
-     * @param did
+     * Set user in group
+     * 
+     * @param group 
      *
      * @virtual
      */
-    public async getUserRole(policyId: string, did: string): Promise<string> {
-        if (!did) {
-            return null;
+    public async setUserInGroup(group: any): Promise<PolicyRolesCollection> {
+        const doc = this.create(PolicyRolesCollection, group);
+        await this.save(PolicyRolesCollection, doc);
+        return doc;
+    }
+
+    /**
+     * Active Group
+     * 
+     * @param policyId
+     * @param did
+     * @param uuid
+     *
+     * @virtual
+     */
+    public async activeGroup(policyId: string, did: string, uuid: string): Promise<void> {
+        const groups = await this.find(PolicyRolesCollection, { policyId, did });
+        for (const group of groups) {
+            group.active = group.uuid === uuid;
         }
-        const group = await this.findOne(PolicyRolesCollection, { policyId, did });
-        if (group) {
-            return group.role;
-        }
-        return null;
+        await this.save(PolicyRolesCollection, groups);
     }
 
     /**
@@ -740,117 +719,58 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getGroup(policyId: string, uuid: string): Promise<PolicyRolesCollection> {
+    public async getGroupByID(policyId: string, uuid: string): Promise<PolicyRolesCollection> {
         return await this.findOne(PolicyRolesCollection, { policyId, uuid });
     }
 
     /**
      * Get Group By Name
      * @param policyId
-     * @param role
+     * @param groupName
      *
      * @virtual
      */
-    public async getGroupByName(policyId: string, role: string): Promise<PolicyRolesCollection> {
-        return await this.findOne(PolicyRolesCollection, { policyId, role });
+    public async getGlobalGroup(policyId: string, groupName: string): Promise<PolicyRolesCollection> {
+        return await this.findOne(PolicyRolesCollection, { policyId, groupName });
     }
 
     /**
-     * Get Group By UUID
+     * Get User In Group
      * @param policyId
-     * @param owner
+     * @param did
+     * @param uuid
      *
      * @virtual
      */
-    public async getGroupByOwner(policyId: string, owner: string): Promise<PolicyRolesCollection> {
-        return await this.findOne(PolicyRolesCollection, { policyId, owner });
+    public async getUserInGroup(policyId: string, did: string, uuid: string): Promise<PolicyRolesCollection> {
+        if (!did && !uuid) {
+            return null;
+        }
+        return await this.findOne(PolicyRolesCollection, { policyId, did, uuid });
     }
 
     /**
-     * Get Group By User
+     * Get Groups By User
      * @param policyId
      * @param did
      *
      * @virtual
      */
-    public async getGroupByUser(policyId: string, did: string): Promise<PolicyRolesCollection> {
+    public async getGroupsByUser(policyId: string, did: string): Promise<PolicyRolesCollection[]> {
         if (!did) {
             return null;
         }
-        return await this.findOne(PolicyRolesCollection, { policyId, did });
-    }
-    /**
-     * Set user in group
-     * 
-     * @param group 
-     */
-    public async setUserInGroup(
-        group: {
-            /**
-             * policyId
-             */
-            policyId: string,
-            /**
-             * did
-             */
-            did: string,
-            /**
-             * uuid
-             */
-            uuid: string,
-            /**
-             * role
-             */
-            role: string,
-            /**
-             * groupRelationshipType
-             */
-            groupRelationshipType: GroupRelationshipType,
-            /**
-             * groupAccessType
-             */
-            groupAccessType: GroupAccessType,
-            /**
-             * User name
-             */
-            username: String
-        }
-    ): Promise<PolicyRolesCollection> {
-        const doc = this.create(PolicyRolesCollection, group);
-        await this.save(PolicyRolesCollection, doc);
-        return doc;
+        return await this.find(PolicyRolesCollection, { policyId, did });
     }
 
     /**
-     * Get group members
+     * Get members
      * 
      * @param group 
+     *
+     * @virtual
      */
-    public async getGroupMembers(policyId: string, did: string): Promise<string[]> {
-        if (!did) {
-            return [];
-        }
-        const group = await this.findOne(PolicyRolesCollection, { policyId, did });
-        if (group) {
-            if (group.groupRelationshipType === GroupRelationshipType.Multiple) {
-                if (!group.uuid) {
-                    return [];
-                }
-                const members = await this.find(PolicyRolesCollection, { policyId, uuid: group.uuid });
-                return members.map(m => m.did);
-            } else {
-                return [did];
-            }
-        }
-        return [];
-    }
-
-    /**
-     * Get group members
-     * 
-     * @param group 
-     */
-    public async getGroupAllMembers(group: PolicyRolesCollection): Promise<PolicyRolesCollection[]> {
+    public async getAllMembersByGroup(group: PolicyRolesCollection): Promise<PolicyRolesCollection[]> {
         if (!group.uuid) {
             return [];
         }
@@ -863,22 +783,70 @@ export class DatabaseServer {
     /**
      * Get all policy users
      * @param policyId
+     *
+     * @virtual
      */
     public async getAllPolicyUsers(policyId: string): Promise<PolicyRolesCollection[]> {
+        console.warn("deleted")
         return await this.find(PolicyRolesCollection, { policyId });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Create invite token
      * @param policyId
      * @param uuid
      * @param owner
+     *
+     * @virtual
      */
-    public async createInviteToken(policyId: string, uuid: string, owner: string): Promise<string> {
+    public async createInviteToken(policyId: string, uuid: string, owner: string, role: string): Promise<string> {
         const doc = this.create(PolicyInvitations, {
             uuid,
             policyId,
             owner,
+            role,
             active: true
         });
         await this.save(PolicyInvitations, doc);
@@ -888,13 +856,15 @@ export class DatabaseServer {
     /**
      * Parse invite token
      * @param invitationId
+     *
+     * @virtual
      */
-    public async parseInviteToken(policyId: string, invitationId: string): Promise<string> {
-        const invitation = await new DataBaseHelper(PolicyInvitations).findOne(invitationId);
+    public async parseInviteToken(policyId: string, invitationId: string): Promise<PolicyInvitations> {
+        const invitation = await this.findOne(PolicyInvitations, invitationId);
         if (invitation && invitation.policyId === policyId && invitation.active === true) {
             invitation.active = false;
             await this.save(PolicyInvitations, invitation);
-            invitation.uuid;
+            return invitation;
         } else {
             return null;
         }
@@ -1024,8 +994,6 @@ export class DatabaseServer {
      * Get user role in policy
      * @param policyId
      * @param did
-     *
-     * @virtual
      */
     public static async getUserRole(policyId: string, did: string): Promise<string> {
         if (!did) {
@@ -1163,8 +1131,6 @@ export class DatabaseServer {
     /**
      * Save VC
      * @param row
-     *
-     * @virtual
      */
     public static async saveVC(row: Partial<VcDocumentCollection>): Promise<VcDocumentCollection> {
         return await new DataBaseHelper(VcDocumentCollection).save(row);

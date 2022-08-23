@@ -45,13 +45,12 @@ export class SendToGuardianBlock {
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                const doc = ref.databaseServer.createVCRecord(
-                    ref.policyId,
-                    ref.tag,
-                    ref.options.entityType,
-                    vc,
-                    document
-                );
+                
+                const doc = PolicyUtils.cloneVC(ref, document);
+                doc.type = ref.options.entityType || doc.type;
+                doc.hash = vc.toCredentialHash();
+                doc.document = vc.toJsonTree();
+
                 result = await ref.databaseServer.updateVCRecord(doc);
                 break;
             }
@@ -130,13 +129,12 @@ export class SendToGuardianBlock {
         switch (documentType) {
             case 'vc': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                const doc: any = ref.databaseServer.createVCRecord(
-                    ref.policyId,
-                    ref.tag,
-                    ref.options.entityType,
-                    vc,
-                    document
-                );
+                
+                const doc = PolicyUtils.cloneVC(ref, document);
+                doc.type = ref.options.entityType || doc.type;
+                doc.hash = vc.toCredentialHash();
+                doc.document = vc.toJsonTree();
+
                 return await ref.databaseServer.updateVCRecord(doc);
             }
             case 'did': {

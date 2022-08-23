@@ -11,6 +11,7 @@ import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/inte
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { PolicyRoles } from '@entity/policy-roles';
 
 /**
  * Document action clock with UI
@@ -38,9 +39,16 @@ export class GroupManagerBlock {
      * Create Policy Invite
      * @param ref
      * @param user
+     * @param groupId
+     * @param role
      */
-    private async createInvite(ref: IPolicyInterfaceBlock, user: IPolicyUser): Promise<string> {
-        const group = await ref.databaseServer.getGroupByUser(ref.policyId, user.did);
+    private async createInvite(
+        ref: IPolicyInterfaceBlock,
+        user: IPolicyUser,
+        groupId: string,
+        role: string
+    ): Promise<string> {
+        const group = await ref.databaseServer.getUserInGroup(ref.policyId, user.did, groupId);
         if (!group) {
             throw new Error(`Group not found`);
         }
@@ -49,14 +57,14 @@ export class GroupManagerBlock {
             group.groupAccessType === GroupAccessType.Private
         ) {
             if (ref.options.canInvite === 'all') {
-                const inviteId = await ref.databaseServer.createInviteToken(ref.policyId, group.uuid, user.did);
+                const inviteId = await ref.databaseServer.createInviteToken(ref.policyId, group.uuid, user.did, role);
                 return Buffer.from(JSON.stringify({
                     invitation: inviteId,
                     role: group.role,
                     policyName: ref.policyInstance?.name
                 })).toString('base64');
             } else if (group.owner === user.did) {
-                const inviteId = await ref.databaseServer.createInviteToken(ref.policyId, group.uuid, user.did);
+                const inviteId = await ref.databaseServer.createInviteToken(ref.policyId, group.uuid, user.did, role);
                 return Buffer.from(JSON.stringify({
                     invitation: inviteId,
                     role: group.role,
@@ -74,6 +82,37 @@ export class GroupManagerBlock {
 
     }
 
+    private getGroupConfig(ref: IPolicyInterfaceBlock, groupName: string): any {
+        const policyGroups: any[] = ref.policyInstance.policyGroups || [];
+        return policyGroups.find(e => e.name === groupName);
+    }
+
+    private async groupMapping(ref: IPolicyInterfaceBlock, user: IPolicyUser, group: PolicyRoles): Promise<any> {
+        const config = this.getGroupConfig(ref, group.groupName);
+        const members = (await ref.databaseServer.getAllMembersByGroup(group)).map(member => {
+            return {
+                username: member.username,
+                role: member.role,
+                type: member.did === member.owner ? 'Owner' : 'Member',
+                current: member.did === user.did
+            }
+        });
+        const canInvite = ref.options.canInvite === 'all' ? true : group.owner === user.did;
+        const canDelete = ref.options.canDelete === 'all' ? true : group.owner === user.did;
+        return {
+            id: group.uuid,
+            role: group.role,
+            groupName: group.groupName,
+            type: group.did === group.owner ? 'Owner' : 'Member',
+            groupRelationshipType: group.groupRelationshipType,
+            groupAccessType: group.groupAccessType,
+            canInvite,
+            canDelete,
+            roles: canInvite ? config.members : null,
+            data: members
+        };
+    }
+
     /**
      * Get block data
      * @param user
@@ -84,47 +123,14 @@ export class GroupManagerBlock {
             throw new Error(`Permission denied`);
         }
 
-        const group = await ref.databaseServer.getGroupByUser(ref.policyId, user.did);
-        if (group) {
-            const role = group.role;
-            const visible = ref.options.visible === 'all' ? true : group.owner === user.did;
-            const data = await ref.databaseServer.getGroupAllMembers(group);
-            if (visible) {
-                return {
-                    role,
-                    groupRelationshipType: group.groupRelationshipType,
-                    groupAccessType: group.groupAccessType,
-                    visible: true,
-                    data: data.map(user => {
-                        return {
-                            username: user.username,
-                            type: user.did === user.owner ? 'Owner' : 'Member'
-                        }
-                    }),
-                    canInvite: ref.options.canInvite === 'all' ? true : group.owner === user.did,
-                    canDelete: ref.options.canDelete === 'all' ? true : group.owner === user.did
-                };
-            } else {
-                return {
-                    role,
-                    groupRelationshipType: group.groupRelationshipType,
-                    groupAccessType: group.groupAccessType,
-                    visible: false,
-                    canInvite: false,
-                    canDelete: false,
-                    data: []
-                };
-            }
-        } else {
-            return {
-                role: null,
-                groupRelationshipType: null,
-                groupAccessType: null,
-                visible: false,
-                canInvite: false,
-                canDelete: false,
-            };
+        const groups = await ref.databaseServer.getGroupsByUser(ref.policyId, user.did);
+        const data: any[] = [];
+
+        for (const group of groups) {
+            data.push(await this.groupMapping(ref, user, group));
         }
+
+        return { data };
     }
 
     /**
@@ -135,7 +141,7 @@ export class GroupManagerBlock {
     async setData(user: IPolicyUser, blockData: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         if (blockData.action === 'invite') {
-            const invitation = await this.createInvite(ref, user);
+            const invitation = await this.createInvite(ref, user, blockData.group, blockData.role);
             return { invitation };
         }
         if (blockData.action === 'delete') {

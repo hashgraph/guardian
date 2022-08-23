@@ -2,11 +2,67 @@
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
-    <div *ngIf="visible">
-        <div *ngIf="canInvite" class="actions">
+
+    <div *ngIf="!selected">
+
+
+        <div *ngIf="groups" class="table-container">
+            <table mat-table [dataSource]="groups" class="table">
+                <ng-container matColumnDef="id">
+                    <th mat-header-cell *matHeaderCellDef> Group Id </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div class="select-btn" (click)="onSelect(element)">{{element.id}} </div>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="groupName">
+                    <th mat-header-cell *matHeaderCellDef> Group Name </th>
+                    <td mat-cell *matCellDef="let element"> {{element.groupName}} </td>
+                </ng-container>
+                <ng-container matColumnDef="role">
+                    <th mat-header-cell *matHeaderCellDef> Role </th>
+                    <td mat-cell *matCellDef="let element"> {{element.role}} </td>
+                </ng-container>
+                <ng-container matColumnDef="type">
+                    <th mat-header-cell *matHeaderCellDef> Type </th>
+                    <td mat-cell *matCellDef="let element"> {{element.type}} </td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef> </th>
+                    <td mat-cell *matCellDef="let element">
+                        <button mat-raised-button color="primary" (click)="onActive(element)"
+                            style="margin: 15px; min-width: 100px;">
+                            Active
+                        </button>
+                        <button *ngIf="element.canInvite" mat-raised-button color="primary" (click)="onInvite(element)"
+                            style="margin: 15px; min-width: 100px;">
+                            Get Invite
+                        </button>
+                    </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="groupColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: groupColumns;"></tr>
+            </table>
+        </div>
+
+
+
+    </div>
+
+    <div *ngIf="selected">
+        <div class="actions">
+            <div class="role">
+                <div (click)="onBack()">
+                    <mat-icon>chevron_left</mat-icon>
+                    Back
+                </div>
+            </div>
             <div class="role">
                 <span>Role: </span>
                 <span>{{role}}</span>
+            </div>
+            <div class="role">
+                <span>Type: </span>
+                <span>{{type}}</span>
             </div>
             <div class="role">
                 <span>Relationship Type: </span>
@@ -16,7 +72,8 @@
                 <span>Access Type: </span>
                 <span>{{groupAccessType}}</span>
             </div>
-            <button mat-raised-button color="primary" (click)="onInvite()" style="margin: 15px; min-width: 100px;">
+            <button *ngIf="canInvite" mat-raised-button color="primary" (click)="onInvite(selected)"
+                style="margin: 15px; min-width: 100px;">
                 Get Invite
             </button>
         </div>
@@ -25,6 +82,10 @@
                 <ng-container matColumnDef="username">
                     <th mat-header-cell *matHeaderCellDef> User Name </th>
                     <td mat-cell *matCellDef="let element"> {{element.username}} </td>
+                </ng-container>
+                <ng-container matColumnDef="role">
+                    <th mat-header-cell *matHeaderCellDef> Role </th>
+                    <td mat-cell *matCellDef="let element"> {{element.role}} </td>
                 </ng-container>
                 <ng-container matColumnDef="type">
                     <th mat-header-cell *matHeaderCellDef> Type </th>
@@ -39,12 +100,9 @@
                         </div>
                     </td>
                 </ng-container>
-                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                <tr mat-header-row *matHeaderRowDef="userColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: userColumns;"></tr>
             </table>
-            <div *ngIf="paginationAddon" class="pagination">
-                <render-block [block]="paginationAddon" [policyId]="policyId"></render-block>
-            </div>
         </div>
     </div>
 </div>

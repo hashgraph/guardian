@@ -48,11 +48,11 @@ export class InterfaceStepBlock {
     async changeStep(user: IPolicyUser, data: any, target: IPolicyBlock) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
-        if (!this.state.hasOwnProperty(user.did)) {
+        if (!this.state.hasOwnProperty(user.id)) {
             blockState = {};
-            this.state[user.did] = blockState;
+            this.state[user.id] = blockState;
         } else {
-            blockState = this.state[user.did];
+            blockState = this.state[user.id];
         }
 
         if (target) {
@@ -64,7 +64,7 @@ export class InterfaceStepBlock {
         } else {
             throw new BlockActionError('Bad child block', ref.blockType, ref.uuid);
         }
-        ref.log(`changeStep: ${blockState?.index}, ${user?.did}`);
+        ref.log(`changeStep: ${blockState?.index}, ${user?.id}`);
         ref.updateBlock(blockState, user);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
     }
@@ -88,11 +88,11 @@ export class InterfaceStepBlock {
             const user = event.user;
             if(user) {
                 let blockState: any;
-                if (!this.state.hasOwnProperty(user.did)) {
+                if (!this.state.hasOwnProperty(user.id)) {
                     blockState = {};
-                    this.state[user.did] = blockState;
+                    this.state[user.id] = blockState;
                 } else {
-                    blockState = this.state[user.did];
+                    blockState = this.state[user.id];
                 }
                 blockState.index = 0;
                 ref.updateBlock(blockState, user);
@@ -108,11 +108,11 @@ export class InterfaceStepBlock {
     async getData(user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
-        if (!this.state.hasOwnProperty(user.did)) {
+        if (!this.state.hasOwnProperty(user.id)) {
             blockState = {};
-            this.state[user.did] = blockState;
+            this.state[user.id] = blockState;
         } else {
-            blockState = this.state[user.did];
+            blockState = this.state[user.id];
         }
         if (blockState.index === undefined) {
             blockState.index = 0;
@@ -134,7 +134,7 @@ export class InterfaceStepBlock {
         }
 
         let index = 0;
-        const state = this.state[user.did];
+        const state = this.state[user.id];
         if (state) {
             index = state.index;
         }

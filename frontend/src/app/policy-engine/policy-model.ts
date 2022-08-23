@@ -1,11 +1,66 @@
 import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, PolicyType } from '@guardian/interfaces';
 
+export class PolicyRoleModel {
+    private readonly policy: PolicyModel;
+
+    public readonly id: string;
+
+    private _name: string;
+
+    private _changed: boolean;
+
+    constructor(name: string, policy: PolicyModel) {
+        this._changed = false;
+        this.policy = policy;
+        this.id = GenerateUUIDv4();
+        this._name = name;
+    }
+
+    public get name(): string {
+        return this._name;
+    }
+
+    public set name(value: string) {
+        this._name = value;
+        this.changed = true;
+    }
+
+    public get changed(): boolean {
+        return this._changed;
+    }
+
+    public set changed(value: boolean) {
+        this._changed = value;
+        if (this.policy) {
+            this.policy.changed = true;
+        }
+    }
+
+    public emitUpdate() {
+        this._changed = false;
+        this.policy.emitUpdate();
+    }
+
+    public getJSON(): string {
+        return this.name;
+    }
+
+    public checkChange() {
+        if (this._changed) {
+            this.emitUpdate();
+        }
+    }
+}
+
 export class PolicyGroupModel {
     private readonly policy: PolicyModel;
 
     public readonly id: string;
 
     private _name: string;
+    private _creator: string;
+    private _members: string[];
+
     private _groupRelationshipType: GroupRelationshipType
     private _groupAccessType: GroupAccessType
 
@@ -13,7 +68,9 @@ export class PolicyGroupModel {
 
     constructor(
         config: {
-            role: string,
+            name: string,
+            creator: string,
+            members: string[],
             groupRelationshipType?: GroupRelationshipType,
             groupAccessType?: GroupAccessType,
         },
@@ -22,7 +79,10 @@ export class PolicyGroupModel {
         this._changed = false;
         this.policy = policy;
         this.id = GenerateUUIDv4();
-        this._name = config.role;
+        this._name = config.name;
+        this._creator = config.creator;
+        this._members = config.members || [];
+
         this._groupRelationshipType = config.groupRelationshipType === GroupRelationshipType.Multiple ?
             GroupRelationshipType.Multiple : GroupRelationshipType.Single;
         this._groupAccessType = config.groupAccessType === GroupAccessType.Global ?
@@ -31,6 +91,14 @@ export class PolicyGroupModel {
 
     public get name(): string {
         return this._name;
+    }
+
+    public get creator(): string {
+        return this._creator;
+    }
+
+    public get members(): string[] {
+        return this._members;
     }
 
     public get groupRelationshipType(): GroupRelationshipType {
@@ -43,6 +111,16 @@ export class PolicyGroupModel {
 
     public set name(value: string) {
         this._name = value;
+        this.changed = true;
+    }
+
+    public set creator(value: string) {
+        this._creator = value;
+        this.changed = true;
+    }
+
+    public set members(value: string[]) {
+        this._members = value;
         this.changed = true;
     }
 
@@ -74,9 +152,11 @@ export class PolicyGroupModel {
 
     public getJSON(): any {
         return {
-            role: this.name,
-            groupRelationshipType: this.groupRelationshipType,
-            groupAccessType: this.groupAccessType,
+            name: this._name,
+            creator: this._creator,
+            members: this._members,
+            groupRelationshipType: this._groupRelationshipType,
+            groupAccessType: this._groupAccessType,
         };
     }
 
@@ -617,6 +697,7 @@ export class PolicyModel {
     private _config!: PolicyBlockModel;
     private _policyGroups!: PolicyGroupModel[];
     private _policyTopics!: PolicyTopicModel[];
+    private _policyRoles!: PolicyRoleModel[];
 
     private _tagMap: { [tag: string]: PolicyBlockModel; } = {};
     private _idMap: { [tag: string]: PolicyBlockModel; } = {};
@@ -722,6 +803,10 @@ export class PolicyModel {
         return this._policyTopics;
     }
 
+    public get policyRoles(): PolicyRoleModel[] {
+        return this._policyRoles;
+    }
+
     public get changed(): boolean {
         return this._changed;
     }
@@ -752,20 +837,42 @@ export class PolicyModel {
         }
     }
 
-    public createRole(name: string) {
-        const e = new PolicyGroupModel({ role: name }, this);
-        this.addRole(e);
+    public createGroup() {
+        const e = new PolicyGroupModel({
+            name: '',
+            creator: '',
+            members: []
+        }, this);
+        this.addGroup(e);
     }
 
-    public addRole(role: PolicyGroupModel) {
+    public addGroup(role: PolicyGroupModel) {
         this._policyGroups.push(role);
         this.emitUpdate();
     }
 
-    public removeRole(role: PolicyGroupModel) {
+    public removeGroup(role: PolicyGroupModel) {
         const index = this._policyGroups.findIndex((c) => c.id == role.id);
         if (index !== -1) {
             this._policyGroups.splice(index, 1);
+            this.emitUpdate();
+        }
+    }
+
+    public createRole(name: string) {
+        const e = new PolicyRoleModel(name, this);
+        this.addRole(e);
+    }
+
+    public addRole(role: PolicyRoleModel) {
+        this._policyRoles.push(role);
+        this.emitUpdate();
+    }
+
+    public removeRole(role: PolicyRoleModel) {
+        const index = this._policyRoles.findIndex((c) => c.id == role.id);
+        if (index !== -1) {
+            this._policyRoles.splice(index, 1);
             this.emitUpdate();
         }
     }
@@ -800,13 +907,25 @@ export class PolicyModel {
         this._description = policy.description;
         this._topicDescription = policy.topicDescription;
 
-        this._policyGroups = [];
-        if (policy.policyRoles && Array.isArray(policy.policyRoles)) {
+
+        this._policyRoles = [];
+        if (Array.isArray(policy.policyRoles)) {
             for (const role of policy.policyRoles) {
-                this._policyGroups.push(new PolicyGroupModel({ role }, this));
+                this._policyRoles.push(new PolicyRoleModel(role, this));
             }
         }
-        delete policy.policyRoles;
+
+        // if (policy.policyRoles && Array.isArray(policy.policyRoles)) {
+        //     for (const role of policy.policyRoles) {
+        //         this._policyGroups.push(new PolicyGroupModel({
+        //             name: role,
+        //             creator: role,
+        //             members: [role],
+        //         }, this));
+        //     }
+        // }
+
+        this._policyGroups = [];
         if (policy.policyGroups && Array.isArray(policy.policyGroups)) {
             for (const group of policy.policyGroups) {
                 this._policyGroups.push(new PolicyGroupModel(group, this));
@@ -906,6 +1025,9 @@ export class PolicyModel {
             policyGroups: Array<any>(),
             config: null,
         };
+        for (const role of this.policyRoles) {
+            json.policyRoles.push(role.getJSON());
+        }
         for (const group of this._policyGroups) {
             json.policyGroups.push(group.getJSON());
         }

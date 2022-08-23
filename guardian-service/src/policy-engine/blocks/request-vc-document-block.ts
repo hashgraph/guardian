@@ -103,11 +103,11 @@ export class RequestVcDocumentBlock {
     async changeActive(user: IPolicyUser, active: boolean) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
-        if (!this.state.hasOwnProperty(user.did)) {
+        if (!this.state.hasOwnProperty(user.id)) {
             blockState = {};
-            this.state[user.did] = blockState;
+            this.state[user.id] = blockState;
         } else {
-            blockState = this.state[user.did];
+            blockState = this.state[user.id];
         }
         blockState.active = active;
 
@@ -121,11 +121,11 @@ export class RequestVcDocumentBlock {
      */
     getActive(user: IPolicyUser) {
         let blockState: any;
-        if (!this.state.hasOwnProperty(user.did)) {
+        if (!this.state.hasOwnProperty(user.id)) {
             blockState = {};
-            this.state[user.did] = blockState;
+            this.state[user.id] = blockState;
         } else {
-            blockState = this.state[user.did];
+            blockState = this.state[user.id];
         }
         if (blockState.active === undefined) {
             blockState.active = true;
@@ -248,19 +248,12 @@ export class RequestVcDocumentBlock {
 
             const vc = await _vcHelper.createVC(user.did, hederaAccount.hederaAccountKey, credentialSubject);
             const accounts = PolicyUtils.getHederaAccounts(vc, hederaAccount.hederaAccountId, schema);
-            const item = ref.databaseServer.createVCRecord(
-                ref.policyId,
-                ref.tag,
-                null,
-                vc,
-                {
-                    type: schemaIRI,
-                    owner: user.did,
-                    schema: schemaIRI,
-                    accounts
-                },
-                documentRef
-            )
+
+            let item = PolicyUtils.createVC(ref, user, vc);
+            item.type = schemaIRI;
+            item.schema = schemaIRI;
+            item.accounts = accounts;
+            item = PolicyUtils.setDocumentRef(item, documentRef);
 
             const state = { data: item };
 
@@ -310,13 +303,11 @@ export class RequestVcDocumentBlock {
                     .setTopicObject(topic)
                     .sendMessage(message);
 
-                await ref.databaseServer.saveDid({
-                    did,
-                    document,
-                    status: DidDocumentStatus.CREATE,
-                    messageId: messageResult.getId(),
-                    topicId: messageResult.getTopicId()
-                } as any);
+                const item = PolicyUtils.createDID(ref, user, did, document);
+                item.messageId = messageResult.getId();
+                item.topicId = messageResult.getTopicId();
+
+                await ref.databaseServer.saveDid(item);
 
                 await PolicyUtils.setAccountKey(ref, user.did, KeyType.KEY, did, key);
                 return did;

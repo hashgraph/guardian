@@ -87,16 +87,16 @@ export class TimerBlock {
      * @param event
      * @private
      */
-    private getDocumentOwner(event: IPolicyEvent<IPolicyEventState>): string {
+    private getUserId(event: IPolicyEvent<IPolicyEventState>): string {
         try {
             const document = event.data?.data;
             if (document) {
                 if (Array.isArray(document)) {
                     if (document.length) {
-                        return document[0].owner;
+                        return PolicyUtils.getScopeId(document[0]);
                     }
                 } else {
-                    return document.owner;
+                    return PolicyUtils.getScopeId(document);
                 }
             }
             return null;
@@ -210,9 +210,9 @@ export class TimerBlock {
 
         const users = Object.keys(this.state);
         const map = [];
-        for (const did of users) {
-            if (this.state[did] === true) {
-                map.push(did);
+        for (const id of users) {
+            if (this.state[id] === true) {
+                map.push(id);
             }
         }
 
@@ -229,10 +229,10 @@ export class TimerBlock {
     })
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const owner = this.getDocumentOwner(event);
-        if (owner) {
-            this.state[owner] = true;
-            ref.log(`start scheduler for: ${owner}`);
+        const id = this.getUserId(event);
+        if (id) {
+            this.state[id] = true;
+            ref.log(`start scheduler for: ${id}`);
         }
         await ref.saveState();
 
@@ -250,10 +250,10 @@ export class TimerBlock {
     })
     async startAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const owner = this.getDocumentOwner(event);
-        if (owner) {
-            this.state[owner] = true;
-            ref.log(`start scheduler for: ${owner}`);
+        const id = this.getUserId(event);
+        if (id) {
+            this.state[id] = true;
+            ref.log(`start scheduler for: ${id}`);
         }
         await ref.saveState();
     }
@@ -268,10 +268,10 @@ export class TimerBlock {
     })
     async stopAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const owner = this.getDocumentOwner(event);
-        if (owner) {
-            this.state[owner] = false;
-            ref.log(`stop scheduler for: ${owner}`);
+        const id = this.getUserId(event);
+        if (id) {
+            this.state[id] = false;
+            ref.log(`stop scheduler for: ${id}`);
         }
         await ref.saveState();
     }

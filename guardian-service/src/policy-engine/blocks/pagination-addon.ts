@@ -41,8 +41,8 @@ export class PaginationAddon {
      * @param user
      */
     public async getState(user: IPolicyUser):Promise<any> {
-        if (!this.state[user.did]) {
-            this.state[user.did] = {
+        if (!this.state[user.id]) {
+            this.state[user.id] = {
                 size: 20,
                 itemsPerPage: 10,
                 page: 0
@@ -51,11 +51,11 @@ export class PaginationAddon {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const totalCount = (await (ref.parent as IPolicySourceBlock).getGlobalSources(user, null)).length;
 
-        if (this.state[user.did].size !== totalCount) {
-            this.state[user.did].size = totalCount;
+        if (this.state[user.id].size !== totalCount) {
+            this.state[user.id].size = totalCount;
         }
 
-        return this.state[user.did]
+        return this.state[user.id];
     }
 
     /**
@@ -73,7 +73,7 @@ export class PaginationAddon {
      */
     public async setData(user: IPolicyUser, data: any): Promise<void> {
         const oldState = this.state;
-        oldState[user.did] = data;
+        oldState[user.id] = data;
         this.state = oldState;
 
         const ref = PolicyComponentsUtils.GetBlockRef(this);

@@ -23,15 +23,17 @@ export class RolesBlockComponent implements OnInit {
     content: string | null = null;
 
     roles?: string[];
+    groups?: string[];
     title?: any;
     description?: any;
     roleForm: FormGroup;
-    type: any = 'role';
+    type: any = 'new';
 
     params: any;
-    role: string = '';
+    inviteRole: string = '';
     policy: string = '';
-    
+    isGroup: boolean = false;
+
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
@@ -39,7 +41,7 @@ export class RolesBlockComponent implements OnInit {
         private fb: FormBuilder
     ) {
         this.roleForm = fb.group({
-            role: ['', Validators.required],
+            roleOrGroup: ['', Validators.required],
             invitation: [''],
         });
     }
@@ -90,15 +92,17 @@ export class RolesBlockComponent implements OnInit {
         if (data) {
             const uiMetaData = data.uiMetaData || {};
 
+            this.groups = data.groups;
             this.roles = data.roles;
             this.title = uiMetaData.title;
             this.description = uiMetaData.description;
+            this.isGroup = !!(this.groups && this.groups.length);
 
             const invitation = this.policyHelper.getParams('invitation');
-            if(invitation) {
+            if (invitation) {
                 this.type = 'invite';
                 this.roleForm = this.fb.group({
-                    role: [''],
+                    roleOrGroup: [''],
                     invitation: [invitation, Validators.required],
                 });
             }
@@ -112,7 +116,15 @@ export class RolesBlockComponent implements OnInit {
 
     onSubmit() {
         if (this.roleForm.valid) {
-            const data = this.roleForm.value;
+            const value = this.roleForm.value;
+            let data: any;
+            if (this.type === 'invite') {
+                data = { invitation: value.invitation };
+            } else if (this.isGroup) {
+                data = { group: value.roleOrGroup };
+            } else {
+                data = { role: value.roleOrGroup };
+            }
             this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
                 this.loading = false;
             }, (e) => {
@@ -124,32 +136,32 @@ export class RolesBlockComponent implements OnInit {
 
     onChange(event: any) {
         this.type = event.value;
-        if (this.type === 'role') {
+        if (this.type === 'new') {
             this.roleForm = this.fb.group({
-                role: ['', Validators.required],
+                roleOrGroup: ['', Validators.required],
                 invitation: [''],
             });
         } else {
             this.roleForm = this.fb.group({
-                role: [''],
+                roleOrGroup: [''],
                 invitation: ['', Validators.required],
             });
         }
     }
-    
+
     onUpdateParams() {
         const invitation = this.policyHelper.getParams('invitation');
         debugger;
     }
-    
+
     onParse(event: any) {
         if (event) {
             try {
                 const json = JSON.parse(atob(event));
-                this.role = json.role || '';
+                this.inviteRole = json.role || '';
                 this.policy = json.policyName || '';
             } catch (error) {
-                this.role = '';
+                this.inviteRole = '';
                 this.policy = '';
             }
         }

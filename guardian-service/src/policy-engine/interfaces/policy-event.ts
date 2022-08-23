@@ -1,5 +1,5 @@
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { EventActor, PolicyInputEventType, PolicyOutputEventType } from './policy-event-type';
 
 /**
@@ -117,9 +117,9 @@ export class PolicyLink<T> {
      */
     public run(user?: IPolicyUser, data?: T): void {
         if (this.actor === EventActor.Owner) {
-            user = this.createUser(this.getOwner(data));
+            user = this.getOwner(data);
         } else if (this.actor === EventActor.Issuer) {
-            user = this.createUser(this.getIssuer(data));
+            user = this.getIssuer(data);
         }
         this.callback.call(this.target, {
             type: this.type,
@@ -140,14 +140,14 @@ export class PolicyLink<T> {
      * @param data
      * @private
      */
-    private getOwner(data: any): string {
+    private getOwner(data: any): IPolicyUser {
         if (!data) {
             return null;
         }
         if (data.data) {
             data = Array.isArray(data.data) ? data.data[0] : data.data;
         }
-        return data ? data.owner : null;
+        return this.createUser(data.owner, data.group);
     }
 
     /**
@@ -155,7 +155,7 @@ export class PolicyLink<T> {
      * @param data
      * @private
      */
-    private getIssuer(data: any): string {
+    private getIssuer(data: any): IPolicyUser {
         if (!data) {
             return null;
         }
@@ -164,9 +164,9 @@ export class PolicyLink<T> {
         }
         if (data) {
             if (data.document) {
-                return data.document.issuer;
+                return this.createUser(data.document.issuer, data.group)
             }
-            return data.owner;
+            return this.createUser(data.owner, data.group)
         }
         return null;
     }
@@ -176,9 +176,13 @@ export class PolicyLink<T> {
      * @param did
      * @private
      */
-    private createUser(did: string): IPolicyUser {
+    private createUser(did: string, group: string): IPolicyUser {
         if (did) {
-            return { did } as IPolicyUser;
+            const user = new PolicyUser(did, !!this.target?.dryRun);
+            if (group) {
+                user.setGroup({ role: null, uuid: group });
+            }
+            return user;
         }
         return null;
     }

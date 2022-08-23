@@ -95,18 +95,21 @@ export class SwitchBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        ref.log(`switch: ${event.user?.did}`);
+        ref.log(`switch: ${event.user?.id}`);
 
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
 
         let owner: string = null;
         let issuer: string = null;
+        let group: string = null;
         if (Array.isArray(docs)) {
             owner = docs[0]?.owner;
             issuer = docs[0]?.document?.issuer;
+            group = docs[0]?.document?.group;
         } else {
             owner = docs?.owner;
             issuer = docs?.document?.issuer;
+            group = docs?.document?.group;
         }
 
         const scope = this.getScope(docs);
@@ -149,12 +152,12 @@ export class SwitchBlock {
 
             let curUser: IPolicyUser = event.user;
             if (actor === 'owner' && owner) {
-                curUser = await PolicyUtils.getPolicyUser(ref, owner);
+                curUser = PolicyUtils.getPolicyUser(ref, owner, group);
             } else if (actor === 'issuer' && issuer) {
-                curUser = await PolicyUtils.getPolicyUser(ref, issuer);
+                curUser = PolicyUtils.getPolicyUser(ref, issuer, group);
             }
 
-            ref.log(`check condition: ${curUser?.did}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);
+            ref.log(`check condition: ${curUser?.id}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);
 
             if (result) {
                 ref.triggerEvents(tag, curUser, event.data);

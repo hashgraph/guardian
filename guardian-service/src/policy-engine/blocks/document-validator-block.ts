@@ -101,25 +101,24 @@ export class DocumentValidatorBlock {
         }
 
         const userDID = event?.user?.did;
+        const userGroup = event?.user?.group;
 
         if (ref.options.checkOwnerDocument) {
             if (document.owner !== userDID) {
                 return false;
             }
         } else if (ref.options.checkOwnerByGroupDocument) {
-            const users = await ref.databaseServer.getGroupMembers(ref.policyId, userDID);
-            if (users.indexOf(document.owner) === -1) {
+            if (document.group !== userGroup) {
                 return false;
             }
         }
 
         if (ref.options.checkAssignDocument) {
-            if (document.assignee !== userDID) {
+            if (document.assignedTo !== userDID) {
                 return false;
             }
         } else if (ref.options.checkAssignByGroupDocument) {
-            const users = await ref.databaseServer.getGroupMembers(ref.policyId, userDID);
-            if (users.indexOf(document.assignee) === -1) {
+            if (document.assignedToGroup !== userGroup) {
                 return false;
             }
         }

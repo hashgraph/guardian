@@ -49,21 +49,22 @@ export class AggregateBlock {
         if (ref.options.aggregateType !== 'period') {
             return;
         }
-        const users = event.data || [];
+        const ids = event.data || [];
 
-        ref.log(`tick scheduler, ${users.length}`);
+        ref.log(`tick scheduler, ${ids.length}`);
 
         const rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid);
 
         const map = new Map<string, AggregateVC[]>();
         const removeMsp: AggregateVC[] = [];
-        for (const did of users) {
-            map.set(did, []);
+        for (const id of ids) {
+            map.set(id, []);
         }
+
         for (const element of rawEntities) {
-            const owner = element.owner;
-            if (map.has(owner)) {
-                map.get(owner).push(element);
+            const id = PolicyUtils.getScopeId(element);
+            if (map.has(id)) {
+                map.get(id).push(element);
             } else {
                 removeMsp.push(element);
             }
@@ -73,14 +74,14 @@ export class AggregateBlock {
             await ref.databaseServer.removeAggregateDocuments(removeMsp);
         }
 
-        for (const did of users) {
-            const user = await PolicyUtils.getPolicyUser(ref, did);
-            const documents = map.get(did);
+        for (const id of ids) {
+            const documents = map.get(id);
             if (documents.length) {
                 await ref.databaseServer.removeAggregateDocuments(documents);
             }
             if (documents.length || ref.options.emptyData) {
                 const state = { data: documents };
+                const user = PolicyUtils.getDocumentOwner(ref, documents[0]);
                 ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
             }
@@ -141,10 +142,10 @@ export class AggregateBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    private async tickAggregate(ref: AnyBlockType, owner: string) {
+    private async tickAggregate(ref: AnyBlockType, owner: string, group: string) {
         const { expressions, condition } = ref.options;
 
-        const rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid, owner);
+        const rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid, owner, group);
 
         const scopes: any[] = [];
         for (const doc of rawEntities) {
@@ -160,7 +161,7 @@ export class AggregateBlock {
         }
 
         if (result === true) {
-            const user = await PolicyUtils.getPolicyUser(ref, owner);
+            const user = PolicyUtils.getPolicyUser(ref, owner, group);
             await ref.databaseServer.removeAggregateDocuments(rawEntities);
             const state = { data: rawEntities };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
@@ -174,16 +175,7 @@ export class AggregateBlock {
      * @param doc
      */
     async saveDocuments(ref: AnyBlockType, doc: IPolicyDocument): Promise<void> {
-        const vc = VcDocument.fromJsonTree(doc.document);
-
-        const item = ref.databaseServer.createVCRecord(
-            ref.policyId,
-            null,
-            null,
-            vc,
-            doc
-        );
-
+        const item = PolicyUtils.cloneVC(ref, doc);
         await ref.databaseServer.createAggregateDocuments(item, ref.uuid);
     }
 
@@ -198,18 +190,21 @@ export class AggregateBlock {
 
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
         let owner: string = null;
+        let group: string = null;
         if (Array.isArray(docs)) {
             for (const doc of docs) {
                 owner = doc.owner;
+                group = doc.group;
                 await this.saveDocuments(ref, doc);
             }
         } else {
             owner = docs.owner;
+            group = docs.group;
             await this.saveDocuments(ref, docs);
         }
 
         if (aggregateType === 'cumulative') {
-            this.tickAggregate(ref, owner).then();
+            this.tickAggregate(ref, owner, group).then();
         }
     }
 

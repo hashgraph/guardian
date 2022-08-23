@@ -54,6 +54,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     pageIndex: number;
     pageSize: number;
     documentCount: any;
+    groups: any[] = [];
+    isMultipleGroups: boolean = false;
 
     private subscription = new Subscription();
 
@@ -100,6 +102,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         if (!policyId) {
             this.policyId = policyId;
             this.policy = null;
+            this.isMultipleGroups = false;
             this.policyInfo = null;
             this.loading = false;
             return;
@@ -107,6 +110,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
         this.policyId = policyId;
         this.policy = null;
+        this.isMultipleGroups = false;
         this.policyInfo = null;
         this.isConfirmed = false;
         this.loading = true;
@@ -128,11 +132,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     loadPolicyById(policyId: string) {
         forkJoin([
             this.policyEngineService.policyBlock(policyId),
-            this.policyEngineService.policy(policyId)
+            this.policyEngineService.policy(policyId),
+            this.policyEngineService.getGroups(policyId),
         ]).subscribe((value) => {
             this.policy = value[0];
             this.policyInfo = value[1];
+            this.groups = value[2] || [];
             this.virtualUsers = [];
+            this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
             if (this.policyInfo?.status === PolicyType.DRY_RUN) {
                 this.policyEngineService.getVirtualUsers(this.policyInfo.id).subscribe((users) => {
                     this.virtualUsers = users;
@@ -147,6 +154,17 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     this.loading = false;
                 }, 500);
             }
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    setGroup(item: any) {
+        this.loading = true;
+        this.policyEngineService.setGroup(this.policyInfo.id, item ? item.uuid : null).subscribe(() => {
+            this.policy = null;
+            this.policyInfo = null;
+            this.loadPolicyById(this.policyId);
         }, (e) => {
             this.loading = false;
         });
@@ -170,6 +188,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             this.virtualUsers = users;
             this.policy = null;
             this.policyInfo = null;
+            this.isMultipleGroups = false;
             this.loadPolicyById(this.policyId);
         }, (e) => {
             this.loading = false;
@@ -181,6 +200,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.policyEngineService.restartDryRun(this.policyInfo.id).subscribe((users) => {
             this.policy = null;
             this.policyInfo = null;
+            this.isMultipleGroups = false;
             this.loadPolicyById(this.policyId);
         }, (e) => {
             this.loading = false;

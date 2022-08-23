@@ -42,10 +42,13 @@ export class ReassigningBlock {
 
     /**
      * Document reassigning
-     * @param state
+     * @param document
      * @param user
      */
-    async documentReassigning(document: IPolicyDocument, user: IPolicyUser): Promise<any> {
+    async documentReassigning(document: IPolicyDocument, user: IPolicyUser): Promise<{
+        item: IPolicyDocument,
+        actor: IPolicyUser
+    }> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
         const vcDocument = document.document;
@@ -59,32 +62,28 @@ export class ReassigningBlock {
             root = await PolicyUtils.getHederaAccount(ref, user.did);
         }
 
-        let owner: IPolicyUser;
+        let actor: IPolicyUser;
         if (ref.options.actor === 'owner') {
-            owner = await PolicyUtils.getPolicyUser(ref, document.owner);
+            actor = PolicyUtils.getDocumentOwner(ref, document);
         } else if (ref.options.actor === 'issuer') {
-            owner = await PolicyUtils.getPolicyUser(ref, root.did);
+            actor = PolicyUtils.getPolicyUser(ref, root.did, document.group);
         } else {
-            owner = user;
+            actor = user;
         }
+
+        let owner: IPolicyUser = PolicyUtils.getDocumentOwner(ref, document);
 
         const credentialSubject = vcDocument.credentialSubject[0];
         const vc: any = await this.vcHelper.createVC(root.did, root.hederaAccountKey, credentialSubject);
-        const item = ref.databaseServer.createVCRecord(
-            ref.policyId,
-            ref.tag,
-            null,
-            vc,
-            {
-                schema: document.schema,
-                type: document.type,
-                option: document.option,
-                owner: document.owner,
-            },
-            document
-        );
+        
+        
+        let item = PolicyUtils.createVC(ref, owner, vc);
+        item.type = document.type;
+        item.schema = document.schema;
+        item.option = document.option;
+        item = PolicyUtils.setDocumentRef(item, document);
 
-        return { item, owner };
+        return { item, actor };
     }
 
     /**
@@ -105,14 +104,14 @@ export class ReassigningBlock {
         if (Array.isArray(documents)) {
             result = [];
             for (const doc of documents) {
-                const { item, owner } = await this.documentReassigning(doc, event.user);
+                const { item, actor } = await this.documentReassigning(doc, event.user);
                 result.push(item);
-                user = owner;
+                user = actor;
             }
         } else {
-            const { item, owner } = await this.documentReassigning(documents, event.user);
+            const { item, actor } = await this.documentReassigning(documents, event.user);
             result = item;
-            user = owner;
+            user = actor;
         }
 
         event.data.data = result;

@@ -44,9 +44,8 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
 
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyContainerBlock>(this);
-                const currentRole = await ref.databaseServer.getUserRole(ref.policyId, user?.did);
                 const children = ref.children.map(child => {
-                    if (child.defaultActive && child.isActive(user) && child.hasPermission(currentRole, user)) {
+                    if (child.defaultActive && child.isActive(user) && child.hasPermission(user.role, user)) {
                         return {
                             uiMetaData: child.options.uiMetaData,
                             content: child.blockType,

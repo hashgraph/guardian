@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { PolicyModel, PolicyGroupModel, PolicyTopicModel } from '../../policy-model';
+import { PolicyModel, PolicyGroupModel, PolicyRoleModel, PolicyTopicModel } from '../../policy-model';
 
 /**
  * Settings for policy.
@@ -23,11 +23,13 @@ export class PolicyPropertiesComponent implements OnInit {
 
     propHidden: any = {
         metaData: false,
-        rolesGroup: {},
+        rolesGroup: false,
+        groupsGroup: {},
         topicsGroup: {}
     };
     policyGroups: PolicyGroupModel[] = [];
     topics: PolicyTopicModel[] = [];
+    roles: any[] = [];
 
     constructor() {
     }
@@ -37,12 +39,30 @@ export class PolicyPropertiesComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        this.roles = this.policy.policyRoles;
         this.policyGroups = this.policy.policyGroups;
         this.topics = this.policy.policyTopics;
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
+    }
+
+    addGroup() {
+        this.policy.createGroup();
+        setTimeout(() => {
+            if (this.body) {
+                this.body.nativeElement.scrollTop = 10000;
+            }
+        });
+    }
+
+    onEditGroup(group: PolicyGroupModel) {
+        group.emitUpdate();
+    }
+
+    onRemoveGroup(group: PolicyGroupModel) {
+        this.policy.removeGroup(group)
     }
 
     addRoles() {
@@ -54,11 +74,11 @@ export class PolicyPropertiesComponent implements OnInit {
         });
     }
 
-    onEditRole(role: PolicyGroupModel) {
+    onEditRole(role: PolicyRoleModel) {
         role.emitUpdate();
     }
 
-    onRemoveRole(role: PolicyGroupModel) {
+    onRemoveRole(role: PolicyRoleModel) {
         this.policy.removeRole(role)
     }
 

@@ -9,7 +9,7 @@ import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { AnyBlockType, IPolicyDocument, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 
@@ -145,22 +145,20 @@ export class ExternalDataBlock {
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);
         const accounts = PolicyUtils.getHederaAccounts(vc, docOwner.hederaAccountId, schema);
-        const doc = ref.databaseServer.createVCRecord(
-            ref.policyId,
-            ref.tag,
-            ref.options.entityType,
-            vc,
-            {
-                owner: data.owner,
-                hederaStatus: DocumentStatus.NEW,
-                signature: (verify ?
-                    DocumentSignature.VERIFIED :
-                    DocumentSignature.INVALID),
-                schema: ref.options.schema,
-                accounts
-            },
-            documentRef
-        );
+
+        const groups = await ref.databaseServer.getGroupsByUser(ref.policyId, data.owner);
+        const user = new PolicyUser(data.owner, !!ref.dryRun);
+        user.setGroup(groups[0]);
+
+        let doc = PolicyUtils.createVC(ref, user, vc);
+        doc.type = ref.options.entityType;
+        doc.schema = ref.options.schema;
+        doc.accounts = accounts;
+        doc.signature = (verify ?
+            DocumentSignature.VERIFIED :
+            DocumentSignature.INVALID);
+
+        doc = PolicyUtils.setDocumentRef(doc, documentRef);
 
         const state = { data: doc };
 

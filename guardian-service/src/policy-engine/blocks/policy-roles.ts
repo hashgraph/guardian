@@ -40,7 +40,38 @@ interface IUserGroup {
     /**
      * User name
      */
-    username: String
+    username: string,
+    /**
+     * Group name
+     */
+    groupName: string
+    /**
+     * Is active
+     */
+    active: boolean
+}
+
+interface IGroupConfig {
+    /**
+     * Group name
+     */
+    name: string,
+    /**
+     * Creator (role)
+     */
+    creator: string,
+    /**
+     * Members (roles)
+     */
+    members: string[],
+    /**
+     * groupRelationshipType
+     */
+    groupRelationshipType: GroupRelationshipType,
+    /**
+     * groupAccessType
+     */
+    groupAccessType: GroupAccessType
 }
 
 /**
@@ -71,49 +102,60 @@ export class PolicyRolesBlock {
      * @param ref
      * @param token
      */
-     private async parseInvite(ref: AnyBlockType, token: string): Promise<string> {
+    private async parseInvite(ref: AnyBlockType, token: string): Promise<any> {
         let uuid: string;
+        let role: string;
         try {
             const { invitation } = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
-            uuid = await ref.databaseServer.parseInviteToken(ref.policyId, invitation);
+            const item = await ref.databaseServer.parseInviteToken(ref.policyId, invitation);
+            console.log('3', item, invitation);
+            uuid = item?.uuid;
+            role = item?.role;
         } catch (error) {
+            console.log('1', error);
+            ref.error(`Invalid invitation: ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError('Invalid invitation', ref.blockType, ref.uuid);
         }
-        if(uuid) {
-            return uuid;
+        if (uuid) {
+            return { uuid, role };
         } else {
+            console.log('2');
             throw new BlockActionError('Invalid invitation', ref.blockType, ref.uuid);
         }
-     }
+    }
 
-    private getGroupConfig(ref: AnyBlockType, role: string): any {
-        console.log(ref.policyInstance);
+    private getGroupConfig(ref: AnyBlockType, groupName: string): IGroupConfig {
+        const policyGroups: IGroupConfig[] = ref.policyInstance.policyGroups || [];
+        const groupConfig = policyGroups.find(e => e.name === groupName);
 
-        const policyGroups = ref.policyInstance.policyGroups || [];
-        const groupConfig = policyGroups.find(e => e.role === role);
         if (groupConfig) {
             return groupConfig;
         } else {
-            const policyRoles = ref.policyInstance.policyRoles || [];
-            const roleConfig = policyRoles.find(e => e === role);
+            const policyRoles: string[] = ref.policyInstance.policyRoles || [];
+            const roleConfig = policyRoles.find(e => e === groupName);
             if (roleConfig) {
                 return {
-                    role: roleConfig,
+                    name: roleConfig,
+                    creator: roleConfig,
+                    members: [roleConfig],
                     groupRelationshipType: GroupRelationshipType.Single,
                     groupAccessType: GroupAccessType.Private
                 }
             } else {
-                throw new Error(`Role "${role}" does not exist`);
+                throw new Error(`Group "${groupName}" does not exist`);
             }
         }
     }
 
     private async getGroupByConfig(
-        ref: AnyBlockType, did: string, username: string, groupConfig: any
+        ref: AnyBlockType,
+        did: string,
+        username: string,
+        groupConfig: IGroupConfig
     ): Promise<IUserGroup> {
         if (groupConfig.groupRelationshipType === GroupRelationshipType.Multiple) {
             if (groupConfig.groupAccessType === GroupAccessType.Global) {
-                const result = await ref.databaseServer.getGroupByName(ref.policyId, groupConfig.role);
+                const result = await ref.databaseServer.getGlobalGroup(ref.policyId, groupConfig.name);
                 if (result) {
                     return {
                         policyId: ref.policyId,
@@ -123,7 +165,9 @@ export class PolicyRolesBlock {
                         uuid: result.uuid,
                         role: result.role,
                         groupRelationshipType: result.groupRelationshipType,
-                        groupAccessType: result.groupAccessType
+                        groupAccessType: result.groupAccessType,
+                        groupName: result.groupName,
+                        active: true
                     }
                 } else {
                     return {
@@ -132,9 +176,11 @@ export class PolicyRolesBlock {
                         username,
                         owner: null,
                         uuid: GenerateUUIDv4(),
-                        role: groupConfig.role,
+                        role: groupConfig.creator,
+                        groupName: groupConfig.name,
                         groupRelationshipType: GroupRelationshipType.Multiple,
-                        groupAccessType: GroupAccessType.Global
+                        groupAccessType: GroupAccessType.Global,
+                        active: true
                     };
                 }
             } else {
@@ -144,9 +190,11 @@ export class PolicyRolesBlock {
                     username,
                     owner: did,
                     uuid: GenerateUUIDv4(),
-                    role: groupConfig.role,
+                    role: groupConfig.creator,
+                    groupName: groupConfig.name,
                     groupRelationshipType: GroupRelationshipType.Multiple,
-                    groupAccessType: GroupAccessType.Private
+                    groupAccessType: GroupAccessType.Private,
+                    active: true
                 }
             }
         } else {
@@ -156,9 +204,11 @@ export class PolicyRolesBlock {
                 username,
                 owner: did,
                 uuid: GenerateUUIDv4(),
-                role: groupConfig.role,
+                role: groupConfig.creator,
+                groupName: groupConfig.name,
                 groupRelationshipType: GroupRelationshipType.Single,
-                groupAccessType: GroupAccessType.Private
+                groupAccessType: GroupAccessType.Private,
+                active: true
             }
         }
     }
@@ -167,9 +217,10 @@ export class PolicyRolesBlock {
         ref: AnyBlockType,
         did: string,
         username: string,
-        uuid: string
+        uuid: string,
+        role: string
     ): Promise<IUserGroup> {
-        const result = await ref.databaseServer.getGroup(ref.policyId, uuid);
+        const result = await ref.databaseServer.getGroupByID(ref.policyId, uuid);
         if (!result) {
             throw new BlockActionError('Invalid token', ref.blockType, ref.uuid);
         }
@@ -179,9 +230,11 @@ export class PolicyRolesBlock {
             username,
             owner: result.owner,
             uuid: result.uuid,
-            role: result.role,
+            role: role,
             groupRelationshipType: result.groupRelationshipType,
-            groupAccessType: result.groupAccessType
+            groupAccessType: result.groupAccessType,
+            groupName: result.groupName,
+            active: true
         }
         return group;
     }
@@ -194,6 +247,7 @@ export class PolicyRolesBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         return {
             roles: Array.isArray(ref.options.roles) ? ref.options.roles : [],
+            groups: Array.isArray(ref.options.groups) ? ref.options.groups : [],
             uiMetaData: ref.options.uiMetaData
         }
     }
@@ -215,8 +269,11 @@ export class PolicyRolesBlock {
 
         let group: IUserGroup;
         if (data.invitation) {
-            const uuid = await this.parseInvite(ref, data.invitation);          
-            group = await this.getGroupByToken(ref, did, username, uuid);
+            const { uuid, role } = await this.parseInvite(ref, data.invitation);
+            group = await this.getGroupByToken(ref, did, username, uuid, role);
+        } else if (data.group) {
+            const groupConfig = this.getGroupConfig(ref, data.group);
+            group = await this.getGroupByConfig(ref, did, username, groupConfig);
         } else if (data.role) {
             const groupConfig = this.getGroupConfig(ref, data.role);
             group = await this.getGroupByConfig(ref, did, username, groupConfig);

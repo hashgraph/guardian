@@ -10,29 +10,46 @@
             </div>
             <div class="roles-form">
                 <mat-radio-group aria-label="Select an option" [value]="type">
-                    <div>
+                    
+                    <div *ngIf="!isGroup">
                         <div class="group-name">
-                            <mat-radio-button value="role" color="primary" (change)="onChange($event)">Create new group
+                            <mat-radio-button value="new" color="primary" (change)="onChange($event)">Create new group
                             </mat-radio-button>
                         </div>
-                        <div class="group-value" [attr.disabled]="type!=='role'">
+                        <div class="group-value" [attr.disabled]="type!=='new'">
                             <mat-form-field appearance="outline">
                                 <mat-label>Role</mat-label>
-                                <mat-select formControlName="role">
+                                <mat-select formControlName="roleOrGroup">
                                     <mat-option *ngFor="let role of roles" [value]="role">{{role}}</mat-option>
                                 </mat-select>
                             </mat-form-field>
                         </div>
                     </div>
+
+                    <div *ngIf="isGroup">
+                        <div class="group-name">
+                            <mat-radio-button value="new" color="primary" (change)="onChange($event)">Create new group
+                            </mat-radio-button>
+                        </div>
+                        <div class="group-value" [attr.disabled]="type!=='new'">
+                            <mat-form-field appearance="outline">
+                                <mat-label>Group</mat-label>
+                                <mat-select formControlName="roleOrGroup">
+                                    <mat-option *ngFor="let group of groups" [value]="group">{{group}}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    
                     <div>
                         <div class="group-name">
                             <mat-radio-button value="invite" color="primary" (change)="onChange($event)">Use an
                                 invitation</mat-radio-button>
                         </div>
                         <div class="group-value" [attr.disabled]="type!=='invite'">
-                            <div *ngIf="role" style="margin-bottom: 15px;color: #707070">
+                            <div *ngIf="inviteRole" style="margin-bottom: 15px;color: #707070">
                                 <span>Role: </span>
-                                <span>{{role}}</span>
+                                <span>{{inviteRole}}</span>
                             </div>
                             <mat-form-field appearance="outline">
                                 <mat-label>Invite</mat-label>

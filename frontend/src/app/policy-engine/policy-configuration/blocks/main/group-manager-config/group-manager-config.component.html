@@ -2,16 +2,6 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="block">
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Visible</td>
-        <td class="propRowCell">
-            <mat-select [(value)]="block.visible" [disabled]="readonly">
-                <mat-option value="owner">Group Owner</mat-option>
-                <mat-option value="all">All</mat-option>
-            </mat-select>
-        </td>
-    </tr>
-    <tr class="propRow">
-        <td class="propRowCol"></td>
         <td class="propRowCell cellName">Can Invite</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.canInvite" [disabled]="readonly">

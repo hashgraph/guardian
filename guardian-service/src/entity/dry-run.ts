@@ -457,6 +457,18 @@ export class DryRun extends BaseEntity {
     groupAccessType?: GroupAccessType;
 
     /**
+     * Group Type
+     */
+    @Property({ nullable: true })
+    groupName?: string;
+
+    /**
+     * User group
+     */
+    @Property({ nullable: true })
+    group?: any;
+
+    /**
      * Default document values
      */
     @BeforeCreate()

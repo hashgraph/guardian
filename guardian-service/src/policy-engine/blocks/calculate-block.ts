@@ -89,7 +89,8 @@ export class CalculateContainerBlock {
 
         // <-- aggregate
         const relationships = [];
-        const owner = isArray ? documents[0].owner : documents.owner;
+        const owner = PolicyUtils.getDocumentOwner(ref, isArray ? documents[0] : documents);
+
         let vcs: VcDocument | VcDocument[];
         let json: any | any[];
         if (isArray) {
@@ -135,18 +136,11 @@ export class CalculateContainerBlock {
 
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
         const newVC = await VCHelper.createVC(ref.policyOwner, root.hederaAccountKey, vcSubject);
-        const item = ref.databaseServer.createVCRecord(
-            ref.policyId,
-            ref.tag,
-            null,
-            newVC,
-            {
-                type: outputSchema.iri,
-                schema: outputSchema.iri,
-                owner,
-                relationships
-            }
-        );
+
+        const item = PolicyUtils.createVC(ref, owner, newVC);
+        item.type = outputSchema.iri;
+        item.schema = outputSchema.iri;
+        item.relationships = relationships.length ? relationships : null;
         // -->
 
         return item;

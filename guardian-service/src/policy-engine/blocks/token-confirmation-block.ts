@@ -64,7 +64,7 @@ export class TokenConfirmationBlock {
      */
     async getData(user: IPolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        const blockState = this.state[user?.did] || {};
+        const blockState = this.state[user?.id] || {};
         const token = await this.getToken();
         const block: any = {
             id: ref.uuid,
@@ -91,7 +91,7 @@ export class TokenConfirmationBlock {
             throw new BlockActionError(`Data is unknown`, ref.blockType, ref.uuid)
         }
 
-        const blockState = this.state[user?.did];
+        const blockState = this.state[user?.id];
         if (!blockState) {
             throw new BlockActionError(`Document not found`, ref.blockType, ref.uuid)
         }
@@ -169,7 +169,7 @@ export class TokenConfirmationBlock {
         const field = ref.options.accountId;
         if (event) {
             const documents = event.data?.data;
-            const did = event.user?.did;
+            const id = event.user?.id;
             const doc = Array.isArray(documents) ? documents[0] : documents;
 
             let hederaAccountId: string = null;
@@ -182,7 +182,7 @@ export class TokenConfirmationBlock {
                     hederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner);
                 }
             }
-            this.state[did] = {
+            this.state[id] = {
                 accountId: hederaAccountId,
                 data: event.data,
                 user: event.user

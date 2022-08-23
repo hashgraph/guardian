@@ -10,7 +10,7 @@ import {
 } from '@policy-engine/interfaces';
 import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, PolicyType } from '@guardian/interfaces';
 import { IAuthUser } from '@guardian/common';
-import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInstance, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { Policy } from '@entity/policy';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
 import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
@@ -71,6 +71,13 @@ export class PolicyComponentsUtils {
      * @private
      */
     private static readonly ActionMapByPolicyId: Map<string, PolicyActionMap> = new Map();
+
+    /**
+     * Policy Instance map
+     * policyId -> PolicyInstance
+     * @private
+     */
+    private static readonly PolicyById: Map<string, IPolicyInstance> = new Map();
 
     /**
      * Log events
@@ -296,6 +303,25 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Register policy instance
+     * 
+     * @param policyId
+     * @param policy
+     * @constructor
+     */
+    public static async RegisterPolicyInstance(policyId: string, policy: Policy) {
+        const dryRun = policy.status === PolicyType.DRY_RUN ? policyId : null;
+        const databaseServer = new DatabaseServer(dryRun);
+        const policyInstance = {
+            policyId,
+            dryRun,
+            databaseServer,
+            isMultipleGroup: !!(policy.policyGroups?.length)
+        }
+        PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
+    }
+
+    /**
      * Register block instances tree
      * @param allInstances
      * @constructor
@@ -335,6 +361,15 @@ export class PolicyComponentsUtils {
         }
         PolicyComponentsUtils.TagMapByPolicyId.delete(policyId);
         PolicyComponentsUtils.ActionMapByPolicyId.delete(policyId);
+    }
+
+    /**
+     * Unregister blocks
+     * @param policyId
+     * @constructor
+     */
+    public static async UnregisterPolicy(policyId: string) {
+        PolicyComponentsUtils.PolicyById.delete(policyId);
     }
 
     /**
@@ -437,10 +472,21 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Get block instance by tag
+     * @param policyId
+     */
+    public static GetPolicyInstance(policyId: string): IPolicyInstance {
+        if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
+            throw new Error('The policy does not exist');
+        }
+        return PolicyComponentsUtils.PolicyById.get(policyId);
+    }
+
+    /**
      * Return block state fields
      * @param target
      */
-    public static GetStateFields(target): any {
+    public static GetStateFields(target: any): any {
         return target[STATE_KEY];
     }
 
@@ -484,9 +530,9 @@ export class PolicyComponentsUtils {
                 userRoles.push('Administrator');
             }
             const db = new DatabaseServer(policyId);
-            const role = await db.getUserRole(policyId, did);
-            if (role) {
-                userRoles.push(role);
+            const groups = await db.getGroupsByUser(policyId, did);
+            for (const group of groups) {
+                userRoles.push(group.role);
             }
         }
         if (!userRoles.length) {
@@ -533,5 +579,26 @@ export class PolicyComponentsUtils {
             return await DatabaseServer.getUserRole(policy.id.toString(), user.did);
         }
         return null;
+    }
+
+    /**
+     * Get Policy Groups
+     * @param policy
+     * @param user
+     */
+    public static async GetGroups(policy: IPolicyInstance, user: IPolicyUser): Promise<any[]> {
+        return (await policy.databaseServer.getGroupsByUser(policy.policyId, user.did)).map(g => {
+            return { uuid: g.uuid, role: g.role }
+        });
+    }
+
+    /**
+     * Select Policy Group
+     * @param policy
+     * @param user
+     * @param uuid
+     */
+    public static async SelectGroup(policy: IPolicyInstance, user: IPolicyUser, uuid: string): Promise<void> {
+        await policy.databaseServer.activeGroup(policy.policyId, user.did, uuid);
     }
 }

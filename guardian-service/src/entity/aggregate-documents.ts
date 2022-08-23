@@ -113,5 +113,11 @@ export class AggregateVC extends BaseEntity {
      * Hedera Accounts
      */
     @Property({ nullable: true })
-    accounts?: any
+    accounts?: any;
+
+    /**
+     * User group
+     */
+    @Property({ nullable: true })
+    group?: any;
 }

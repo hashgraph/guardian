@@ -122,21 +122,14 @@ export class RetirementBlock {
             .setTopicObject(topic)
             .sendMessage(vcMessage);
 
-        await ref.databaseServer.updateVCRecord(
-            ref.databaseServer.createVCRecord(
-                ref.policyId,
-                ref.tag,
-                DataTypes.RETIREMENT,
-                wipeVC,
-                {
-                    owner: user.did,
-                    schema: `#${wipeVC.getSubjectType()}`,
-                    messageId: vcMessageResult.getId(),
-                    topicId: vcMessageResult.getTopicId(),
-                    relationships
-                }
-            )
-        );
+        const vcDocument = PolicyUtils.createVC(ref, user, wipeVC);
+        vcDocument.type = DataTypes.RETIREMENT;
+        vcDocument.schema = `#${wipeVC.getSubjectType()}`;
+        vcDocument.messageId = vcMessageResult.getId();
+        vcDocument.topicId = vcMessageResult.getTopicId();
+        vcDocument.relationships = relationships;
+
+        await ref.databaseServer.saveVC(vcDocument);
 
         relationships.push(vcMessageResult.getId());
         const vpMessage = new VPMessage(MessageAction.CreateVP);
@@ -147,16 +140,12 @@ export class RetirementBlock {
             .setTopicObject(topic)
             .sendMessage(vpMessage);
 
-        await ref.databaseServer.saveVP({
-            hash: vp.toCredentialHash(),
-            document: vp.toJsonTree(),
-            owner: user.did,
-            type: DataTypes.RETIREMENT,
-            policyId: ref.policyId,
-            tag: ref.tag,
-            messageId: vpMessageResult.getId(),
-            topicId: vpMessageResult.getTopicId(),
-        } as any);
+        const vpDocument = PolicyUtils.createVP(ref, user, vp);
+        vpDocument.type = DataTypes.RETIREMENT;
+        vcDocument.messageId = vpMessageResult.getId();
+        vcDocument.topicId = vpMessageResult.getTopicId();
+
+        await ref.databaseServer.saveVP(vpDocument);
 
         await PolicyUtils.wipe(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());
 
@@ -185,7 +174,7 @@ export class RetirementBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = await PolicyUtils.getPolicyUser(ref, docs[0].owner);
+        const docOwner = PolicyUtils.getDocumentOwner(ref, docs[0]);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }

@@ -6,7 +6,7 @@ import { BaseEntity } from '@guardian/common';
  * VC documents collection
  */
 @Entity()
-@Unique({ properties: ['hash'], options: { partialFilterExpression: { hash: { $type: 'string' }}}})
+@Unique({ properties: ['hash'], options: { partialFilterExpression: { hash: { $type: 'string' } } } })
 export class VcDocument extends BaseEntity implements IVCDocument {
     /**
      * Document owner
@@ -121,6 +121,12 @@ export class VcDocument extends BaseEntity implements IVCDocument {
      */
     @Property({ nullable: true })
     accounts?: any
+
+    /**
+     * User group
+     */
+    @Property({ nullable: true })
+    group?: any
 
     /**
      * Document defaults

@@ -117,7 +117,7 @@ export class ReportBlock {
     async getData(user: IPolicyUser, uuid: string): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
-            const blockState = this.state[user.did] || {};
+            const blockState = this.state[user.id] || {};
             if (!blockState.lastValue) {
                 return {
                     hash: null,
@@ -265,9 +265,9 @@ export class ReportBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const value = data.filterValue;
-            const blockState = this.state[user.did] || {};
+            const blockState = this.state[user.id] || {};
             blockState.lastValue = value;
-            this.state[user.did] = blockState;
+            this.state[user.id] = blockState;
         } catch (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }

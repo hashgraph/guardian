@@ -211,12 +211,6 @@ export interface IPolicyBlock {
     isAvailable(user: IPolicyUser): Promise<boolean>;
 
     /**
-     * Check Permission and Active
-     * @param user
-     */
-    isAvailableByRole(user: IPolicyUser | null, role: PolicyRole | null): boolean;
-
-    /**
      * Register child
      * @param child
      */
@@ -634,9 +628,21 @@ export interface IPolicyDocument {
      */
     owner?: string;
     /**
+     * Group (Group UUID)
+     */
+    group?: string;
+    /**
      * Assigned To
      */
     assignedTo?: string;
+    /**
+     * Message Id
+     */
+    messageId?: string,
+    /**
+     * Topic Id
+     */
+    topicId?: string,
     /**
      * Other fields
      */
@@ -654,3 +660,28 @@ export interface IPolicyState<T> {
  * Policy document
  */
 export type IPolicyEventState = IPolicyState<IPolicyDocument | IPolicyDocument[]>;
+
+/**
+ * Policy instance
+ */
+export interface IPolicyInstance {
+    /**
+     * Policy id
+     */
+    readonly policyId?: string;
+
+    /**
+     * Dry-run
+     */
+    readonly dryRun: string;
+
+    /**
+     * Database Server
+     */
+    readonly databaseServer: DatabaseServer;
+
+    /**
+     * Is Multiple Group
+     */
+     readonly isMultipleGroup: boolean;
+}

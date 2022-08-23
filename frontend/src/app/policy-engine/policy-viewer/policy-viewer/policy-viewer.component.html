@@ -2,7 +2,7 @@
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
-    
+
     <ng-container *ngIf="!isConfirmed">
         <div class="not-exist">
             Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
@@ -68,9 +68,17 @@
                 <span *ngIf="policyInfo && policyInfo.description">: {{policyInfo.description}}</span>
                 <span *ngIf="policyInfo && policyInfo.version">({{policyInfo.version}})</span>
             </a>
-            <span *ngIf="policyInfo && policyInfo.userRoles" class="current-user-role">
-                Role: {{policyInfo.userRoles.join(', ')}}
-            </span>
+            <ng-container *ngIf="policyInfo && policyInfo.userRoles">
+                <span *ngIf="!groups.length" class="current-user-role">
+                    Role: {{policyInfo.userRoles.join(', ')}}
+                </span>
+                <span *ngIf="isMultipleGroups" class="current-user-group" [matMenuTriggerFor]="group">
+                    Role: {{policyInfo.userRoles.join(', ')}}
+                    <div class="expand-group">
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </div>
+                </span>
+            </ng-container>
         </div>
 
         <div class="policy-container" [attr.policy-status]="policyInfo.status"
@@ -135,4 +143,13 @@
     <!-- <div class="new-debug-user" (click)="createVirtualUser()">
         Create virtual user
     </div> -->
+</mat-menu>
+
+<mat-menu #group="matMenu">
+    <div *ngFor="let item of groups" class="user-group" (click)="setGroup(item)">
+        {{item.role}}
+    </div>
+    <div class="user-group" (click)="setGroup(null)">
+        No role
+    </div>
 </mat-menu>

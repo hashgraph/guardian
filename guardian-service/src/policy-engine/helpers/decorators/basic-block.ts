@@ -375,9 +375,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @return {boolean} - true if state was changed
              */
             public updateDataState(user: IPolicyUser, state: any): boolean {
-                this.oldDataState[user.did] = this.currentDataState[user.did];
-                this.currentDataState[user.did] = { state };
-                return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
+                this.oldDataState[user.id] = this.currentDataState[user.id];
+                this.currentDataState[user.id] = { state };
+                return !deepEqual(this.currentDataState[user.id], this.oldDataState[user.id], {
                     strict: true
                 })
             }
@@ -393,7 +393,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (this.blockType === 'policyRolesBlock') {
                     return true;
                 }
-                return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
+                return !deepEqual(this.currentDataState[user.id], this.oldDataState[user.id], {
                     strict: true
                 })
             }
@@ -541,19 +541,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              */
             public async isAvailable(user: IPolicyUser): Promise<boolean> {
-                const role = await this.databaseServer.getUserRole(this.policyId, user?.did);
-                return this.isAvailableByRole(user, role);
-            }
-
-            /**
-             * Check Permission and Active
-             * @param user
-             * @param role
-             */
-            public isAvailableByRole(user: IPolicyUser | null, role: PolicyRole | null): boolean {
-                if (this.isActive(user) && this.hasPermission(role, user)) {
+                if (this.isActive(user) && this.hasPermission(user.role, user)) {
                     if (this.parent) {
-                        return this.parent.isAvailableByRole(user, role);
+                        return this.parent.isAvailable(user);
                     } else {
                         return true;
                     }

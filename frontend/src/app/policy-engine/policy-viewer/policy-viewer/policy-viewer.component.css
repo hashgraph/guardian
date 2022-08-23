@@ -353,3 +353,19 @@ a.go-back-link mat-icon {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.current-user-group {
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+}
+
+.current-user-group .expand-group {
+    position: absolute;
+    right: -30px;
+    top: 3px;
+}
+
+.user-group {
+    min-width: 300px;
+}

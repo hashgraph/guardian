@@ -10,14 +10,25 @@
         </div>
     </div>
     <div class="g-dialog-body">
-        <div class="link-content">
+        <div *ngIf="roles && roles.length > 1" class="link-content">
+            <mat-form-field appearance="outline">
+                <mat-label>Role</mat-label>
+                <mat-select [(value)]="role">
+                    <mat-option *ngFor="let role of roles" [value]="role">{{role}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <div class="generate-btn" (click)="onInvite()">
+                Generate invite
+            </div>
+        </div>
+        <div *ngIf="invitation" class="link-content">
             <input type="text" [value]="invitation" readonly>
             <div [cdkCopyToClipboard]="invitation" class="link-btn">
                 <mat-icon>link</mat-icon>
                 Copy invitation
             </div>
         </div>
-        <div class="link-content">
+        <div *ngIf="invitation" class="link-content">
             <input type="text" [value]="link" readonly>
             <div [cdkCopyToClipboard]="link" class="link-btn">
                 <mat-icon>link</mat-icon>

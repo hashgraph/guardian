@@ -98,7 +98,7 @@
                             <mat-option value="OWNER">Owner</mat-option>
                             <mat-option value="NO_ROLE">No Role</mat-option>
                             <mat-option value="ANY_ROLE">Any Role</mat-option>
-                            <mat-option *ngFor="let item of policy.policyGroups" [value]="item.name">{{item.name}}
+                            <mat-option *ngFor="let item of policy.policyRoles" [value]="item.name">{{item.name}}
                             </mat-option>
                         </mat-select>
                     </td>

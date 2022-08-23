@@ -129,21 +129,14 @@ export class MintBlock {
             .setTopicObject(topic)
             .sendMessage(vcMessage);
 
-        await ref.databaseServer.updateVCRecord(
-            ref.databaseServer.createVCRecord(
-                ref.policyId,
-                ref.tag,
-                DataTypes.MINT,
-                mintVC,
-                {
-                    owner: user.did,
-                    schema: `#${mintVC.getSubjectType()}`,
-                    messageId: vcMessageResult.getId(),
-                    topicId: vcMessageResult.getTopicId(),
-                    relationships
-                }
-            )
-        );
+        const vcDocument = PolicyUtils.createVC(ref, user, mintVC);
+        vcDocument.type = DataTypes.MINT;
+        vcDocument.schema = `#${mintVC.getSubjectType()}`;
+        vcDocument.messageId = vcMessageResult.getId();
+        vcDocument.topicId = vcMessageResult.getTopicId();
+        vcDocument.relationships = relationships;
+
+        await ref.databaseServer.saveVC(vcDocument);
 
         relationships.push(vcMessageResult.getId());
         const vpMessage = new VPMessage(MessageAction.CreateVP);
@@ -154,16 +147,12 @@ export class MintBlock {
             .setTopicObject(topic)
             .sendMessage(vpMessage);
 
-        await ref.databaseServer.saveVP({
-            hash: vp.toCredentialHash(),
-            document: vp.toJsonTree(),
-            owner: user.did,
-            type: DataTypes.MINT,
-            policyId: ref.policyId,
-            tag: ref.tag,
-            messageId: vpMessageResult.getId(),
-            topicId: vpMessageResult.getTopicId(),
-        } as IPolicyDocument);
+        const vpDocument = PolicyUtils.createVP(ref, user, vp);
+        vpDocument.type = DataTypes.MINT;
+        vcDocument.messageId = vpMessageResult.getId();
+        vcDocument.topicId = vpMessageResult.getTopicId();
+
+        await ref.databaseServer.saveVP(vcDocument);
 
         await PolicyUtils.mint(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());
 
@@ -192,7 +181,7 @@ export class MintBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = await PolicyUtils.getPolicyUser(ref, docs[0].owner);
+        const docOwner = PolicyUtils.getDocumentOwner(ref, docs[0]);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }

@@ -68,6 +68,12 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
     schema?: string;
 
     /**
+     * User group
+     */
+    @Property({ nullable: true })
+    group?: any;
+
+    /**
      * Default document values
      */
     @BeforeCreate()

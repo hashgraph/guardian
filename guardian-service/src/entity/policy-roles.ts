@@ -1,4 +1,4 @@
-import { Entity, Property } from '@mikro-orm/core';
+import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 import { GroupAccessType, GroupRelationshipType } from '@guardian/interfaces';
 
@@ -18,6 +18,12 @@ export class PolicyRoles extends BaseEntity {
      */
     @Property({ nullable: true })
     policyId?: string;
+
+    /**
+     * User name
+     */
+    @Property({ nullable: true })
+    username?: string;
 
     /**
      * Member (User DID)
@@ -41,6 +47,12 @@ export class PolicyRoles extends BaseEntity {
      * Group Type
      */
     @Property({ nullable: true })
+    groupName?: string;
+
+    /**
+     * Group Type
+     */
+    @Property({ nullable: true })
     groupRelationshipType?: GroupRelationshipType;
 
     /**
@@ -50,8 +62,16 @@ export class PolicyRoles extends BaseEntity {
     groupAccessType?: GroupAccessType;
 
     /**
-     * User name
+     * Is active
      */
     @Property({ nullable: true })
-    username?: string;
+    active?: boolean;
+
+    /**
+     * Default document values
+     */
+    @BeforeCreate()
+    setDefaults() {
+        this.active = this.active === false ? false : true;
+    }
 }

@@ -131,3 +131,24 @@
     border: 1px solid #ddd;
     padding: 0px 12px;
 }
+
+.generate-btn {
+    height: 52px;
+    border: 1px solid var(--button-primary-color);
+    border-radius: 6px;
+    width: 150px;
+    position: relative;
+    padding: 16px 27px 16px 27px;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: pointer;
+    background: var(--button-primary-color);
+    color: #fff;
+    margin-top: 4px;
+    margin-left: 20px;
+}
+
+.generate-btn:hover {
+    background: #0c69df;
+}

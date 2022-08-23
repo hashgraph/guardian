@@ -35,4 +35,10 @@ export class PolicyInvitations extends BaseEntity {
      */
     @Property({ nullable: true })
     active?: any;
+
+    /**
+     * User Role
+     */
+    @Property({ nullable: true })
+    role?: string;
 }
