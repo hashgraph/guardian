@@ -8,6 +8,13 @@ import { MessageResponse } from '@guardian/common';
  */
 @Singleton
 export class Workers extends ServiceRequestsBase {
+
+    /**
+     * Tasks sended to work
+     * @private
+     */
+    private tasksCallbacks: Map<string, (data: any) => void> = new Map();
+
     /**
      * Target
      */
@@ -23,21 +30,40 @@ export class Workers extends ServiceRequestsBase {
      * Add task
      * @param task
      */
-    public async addTask(task: any): Promise<void> {
-        task.id = GenerateUUIDv4();
+    public addTask(task: any, priority: number): Promise<any> {
+        const taskId = GenerateUUIDv4()
+        task.id = taskId;
+        task.priority = priority;
         this.queue.push(task);
+        this.channel.publish('queue-updated', null)
 
-        await this.request('queue-updated');
+        return new Promise(resolve => {
+            this.tasksCallbacks.set(taskId, (data) => {
+                resolve(data);
+                this.tasksCallbacks.delete(taskId);
+            });
+        });
+
     }
 
     /**
      * Init listeners
      */
     public initListeners() {
-        this.channel.response('queue-get', async (msg) => {
-            const item = this.queue.shift();
+        this.channel.response('queue-get', async (msg: any) => {
+            const itemIndex = this.queue.findIndex(_item => {
+                return (_item.priority >= msg.minPriority) && (_item.priority <= msg.maxPriority)
+            })
+            const item = this.queue[itemIndex];
+            this.queue.splice(itemIndex, 1);
 
             return new MessageResponse(item);
+        });
+
+        this.channel.response('complete-task', async (msg: any) => {
+            const fn = this.tasksCallbacks.get(msg.taskId);
+            fn(msg.data);
+            return new MessageResponse(null);
         });
     }
 }

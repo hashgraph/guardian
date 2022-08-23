@@ -187,7 +187,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@guardian/common@^2.3.1, @guardian/common@workspace:common":
+"@guardian/common@^2.3.0-prerelease, @guardian/common@^2.3.1, @guardian/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
@@ -209,7 +209,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@guardian/interfaces@^2.3.1, @guardian/interfaces@workspace:interfaces":
+"@guardian/interfaces@^2.3.0-prerelease, @guardian/interfaces@^2.3.1, @guardian/interfaces@workspace:interfaces":
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:

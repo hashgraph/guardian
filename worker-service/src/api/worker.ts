@@ -1,6 +1,16 @@
 import { MessageBrokerChannel, MessageResponse } from '@guardian/common';
 
 /**
+ * Sleep helper
+ * @param t
+ */
+function sleep(t: number): Promise<void> {
+    return new Promise(resolve => {
+        setTimeout(resolve, t);
+    })
+}
+
+/**
  * Worker class
  */
 export class Worker {
@@ -10,15 +20,29 @@ export class Worker {
      */
     private isInUse: boolean = false;
 
+    /**
+     * Minimum priority
+     * @private
+     */
+    private readonly minPriority: number;
+
+    /**
+     * Maximum priority
+     * @private
+     */
+    private readonly maxPriority: number;
+
     constructor(
         private readonly channel: MessageBrokerChannel
     ) {
-        this.channel.response('queue-updated', async (msg) => {
+        this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
+        this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10)
+
+        this.channel.subscribe('queue-updated', async (data: unknown) => {
             if (!this.isInUse) {
                 await this.getItem();
             }
-            return new MessageResponse(null);
-        })
+        });
     }
 
     /**
@@ -47,12 +71,23 @@ export class Worker {
      */
     public async getItem(): Promise<any> {
         this.isInUse = true;
-        const task = await this.request('queue-get');
-        console.log(task);
+        const task: any = await this.request('queue-get', {
+            minPriority: this.minPriority,
+            maxPriority: this.maxPriority
+        });
         if (!task) {
             this.isInUse = false;
             return;
         }
+
+        await sleep(10000);
+        await this.request('complete-task', {
+            taskId: task.id,
+            data: {
+                complete: true
+            }
+        })
+
         /**
          * Actions
          */

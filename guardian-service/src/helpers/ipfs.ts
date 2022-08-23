@@ -77,7 +77,7 @@ export class IPFS {
         await new Workers().addTask({
             target: [IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'),
             content: Buffer.from(file).toString('base64')
-        })
+        }, 0)
         const res = await IPFS.channel.request<IAddFileMessage, any>([IPFS.target, MessageAPI.IPFS_ADD_FILE_ASYNC].join('.'), { content: Buffer.from(file).toString('base64') });
         if (!res) {
             throw new Error('Invalid response');
@@ -108,7 +108,7 @@ export class IPFS {
             target: [IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'),
             cid,
             responseType
-        })
+        }, 0);
         const res = (await IPFS.channel.request<IGetFileMessage, any>([IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'), { cid, responseType }));
         if (!res) {
             throw new Error('Invalid response');

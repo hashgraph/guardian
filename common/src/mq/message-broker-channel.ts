@@ -162,6 +162,21 @@ export class MessageBrokerChannel {
     }
 
     /**
+     * Subscribe for subject
+     * @param subj
+     * @param callback
+     */
+    public subscribe(subj: string, callback: (data: unknown) => void | Promise<void>): void {
+        const fn = async (_sub: Subscription) => {
+            for await (const m of _sub) {
+                const dataObj = JSON.parse(StringCodec().decode(m.data));
+                await callback(dataObj);
+            }
+        }
+        fn(this.channel.subscribe(subj, { queue: process.env.SERVICE_CHANNEL })).then();
+    }
+
+    /**
      * Create the Nats MQ connection
      * @param connectionName
      * @returns
