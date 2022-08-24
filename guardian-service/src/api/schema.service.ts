@@ -434,7 +434,7 @@ async function updateSchemaDocument(schema: SchemaCollection, allSchemas?: Schem
     });
 
     const allParsedSchemas = allSchemasInTopic.map(item => new Schema(item));
-    const parsedSchema = new Schema(schema);
+    const parsedSchema = new Schema(schema, true);
     parsedSchema.update(parsedSchema.fields, parsedSchema.conditions);
     parsedSchema.updateRefs(allParsedSchemas);
     schema.document = parsedSchema.document;

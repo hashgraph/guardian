@@ -210,7 +210,7 @@ export class SchemaHelper {
      * @param contextURL
      * @param defs
      */
-    public static parseFields(document: ISchemaDocument, contextURL: string, defs?: any): SchemaField[] {
+    public static parseFields(document: ISchemaDocument, contextURL: string, defs?: any, includeSystemProperties: boolean = false): SchemaField[] {
         const fields: SchemaField[] = [];
 
         if (!document || !document.properties) {
@@ -227,7 +227,7 @@ export class SchemaHelper {
         const properties = Object.keys(document.properties);
         for (const name of properties) {
             const property = document.properties[name];
-            if (property.readOnly) {
+            if (!includeSystemProperties && property.readOnly) {
                 continue;
             }
             const field = SchemaHelper.parseField(name, property, !!required[name], contextURL);
@@ -372,7 +372,7 @@ export class SchemaHelper {
                 throw new Error(`Field key '${field.name}' must not contain spaces`);
             }
             if (properties[field.name]) {
-                throw new Error(`Field with key '${field.name}' already exists`);
+                continue;
             }
             if (field.required) {
                 required.push(field.name);
