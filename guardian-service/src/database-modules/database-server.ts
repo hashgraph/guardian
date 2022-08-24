@@ -272,7 +272,7 @@ export class DatabaseServer {
         const item = this.create(DocumentState, { documentId, status });
         return await this.save(DocumentState, item);
     }
-    
+
     /**
      * Update Approval record
      * @param row
@@ -753,14 +753,15 @@ export class DatabaseServer {
      * Get Groups By User
      * @param policyId
      * @param did
-     *
+     * @param options
+     * 
      * @virtual
      */
-    public async getGroupsByUser(policyId: string, did: string): Promise<PolicyRolesCollection[]> {
+    public async getGroupsByUser(policyId: string, did: string, options?: any): Promise<PolicyRolesCollection[]> {
         if (!did) {
             return null;
         }
-        return await this.find(PolicyRolesCollection, { policyId, did });
+        return await this.find(PolicyRolesCollection, { policyId, did }, options);
     }
 
     /**
@@ -995,15 +996,11 @@ export class DatabaseServer {
      * @param policyId
      * @param did
      */
-    public static async getUserRole(policyId: string, did: string): Promise<string> {
+    public static async getUserRole(policyId: string, did: string): Promise<PolicyRolesCollection[]> {
         if (!did) {
             return null;
         }
-        const role = await new DataBaseHelper(PolicyRolesCollection).findOne({ policyId, did });
-        if (role) {
-            return role.role;
-        }
-        return null;
+        return await new DataBaseHelper(PolicyRolesCollection).find({ policyId, did });
     }
 
     /**

@@ -56,6 +56,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     documentCount: any;
     groups: any[] = [];
     isMultipleGroups: boolean = false;
+    userRole!: string;
+    userGroup!: string;
 
     private subscription = new Subscription();
 
@@ -85,7 +87,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
         this.subscription.add(
             this.wsService.subscribeUserInfo((message => {
-                this.policyInfo.userRoles = [message.userRole];
+                const { userRole, userGroup, userGroups } = message;
+                this.userRole = userRole;
+                this.userGroup = userGroup?.groupLabel || userGroup?.uuid;
+                this.groups = userGroups;
             }))
         );
     }
@@ -140,6 +145,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             this.groups = value[2] || [];
             this.virtualUsers = [];
             this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
+
+            this.userRole = this.policyInfo.userRole;
+            this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
+
             if (this.policyInfo?.status === PolicyType.DRY_RUN) {
                 this.policyEngineService.getVirtualUsers(this.policyInfo.id).subscribe((users) => {
                     this.virtualUsers = users;

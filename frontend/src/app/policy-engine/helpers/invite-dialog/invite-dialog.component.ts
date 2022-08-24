@@ -13,11 +13,11 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
  * Export schema dialog.
  */
 @Component({
-    selector: 'link-dialog',
-    templateUrl: './link-dialog.component.html',
-    styleUrls: ['./link-dialog.component.css']
+    selector: 'invite-dialog',
+    templateUrl: './invite-dialog.component.html',
+    styleUrls: ['./invite-dialog.component.css']
 })
-export class LinkDialogComponent implements OnInit, AfterContentInit {
+export class InviteDialogComponent implements OnInit, AfterContentInit {
     loading = false;
     initDialog = false;
     link: string;
@@ -30,7 +30,7 @@ export class LinkDialogComponent implements OnInit, AfterContentInit {
     role: string;
 
     constructor(
-        public dialogRef: MatDialogRef<LinkDialogComponent>,
+        public dialogRef: MatDialogRef<InviteDialogComponent>,
         private policyEngineService: PolicyEngineService,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {

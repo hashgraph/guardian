@@ -4,8 +4,6 @@
     </div>
 
     <div *ngIf="!selected">
-
-
         <div *ngIf="groups" class="table-container">
             <table mat-table [dataSource]="groups" class="table">
                 <ng-container matColumnDef="id">
@@ -13,6 +11,10 @@
                     <td mat-cell *matCellDef="let element">
                         <div class="select-btn" (click)="onSelect(element)">{{element.id}} </div>
                     </td>
+                </ng-container>
+                <ng-container matColumnDef="groupLabel">
+                    <th mat-header-cell *matHeaderCellDef> Label </th>
+                    <td mat-cell *matCellDef="let element"> {{element.groupLabel}} </td>
                 </ng-container>
                 <ng-container matColumnDef="groupName">
                     <th mat-header-cell *matHeaderCellDef> Group Name </th>
@@ -29,10 +31,6 @@
                 <ng-container matColumnDef="actions">
                     <th mat-header-cell *matHeaderCellDef> </th>
                     <td mat-cell *matCellDef="let element">
-                        <button mat-raised-button color="primary" (click)="onActive(element)"
-                            style="margin: 15px; min-width: 100px;">
-                            Active
-                        </button>
                         <button *ngIf="element.canInvite" mat-raised-button color="primary" (click)="onInvite(element)"
                             style="margin: 15px; min-width: 100px;">
                             Get Invite
@@ -51,7 +49,7 @@
     <div *ngIf="selected">
         <div class="actions">
             <div class="role">
-                <div (click)="onBack()">
+                <div (click)="onBack()" class="link">
                     <mat-icon>chevron_left</mat-icon>
                     Back
                 </div>

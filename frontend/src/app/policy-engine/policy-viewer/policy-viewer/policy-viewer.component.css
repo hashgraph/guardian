@@ -366,6 +366,67 @@ a.go-back-link mat-icon {
     top: 3px;
 }
 
+
+
+
 .user-group {
+    padding: 10px;
+    cursor: pointer;
+    margin: 0 1px;
+    opacity: 0.9;
     min-width: 300px;
+}
+
+.user-group:hover {
+    background: #3f51b50d;
+}
+
+.user-group[active='true'] {
+    background: #f2f8ff;
+    font-weight: 500;
+}
+
+.user-group-header {
+    width: 350px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 16px;
+    margin-bottom: 2px;
+}
+
+.user-group-value {
+    width: 350px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    margin-bottom: 2px;
+    color: #3c3c3c;
+}
+
+.no-group {
+    padding: 10px;
+    cursor: pointer;
+    color: rgb(0, 0, 238);
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 16px;
+}
+
+.group-container {
+    max-height: 300px;
+    overflow: auto;
+}
+
+.user-group-default {
+    border-top: 1px solid #999;
+    margin-top: 10px;
+}
+
+.group-header {
+    font-size: 20px;
+    border-bottom: 1px solid #999;
+    margin-bottom: 10px;
+    padding: 8px 16px 16px 10px;
+    font-weight: 500;
+    color: #464646;
 }

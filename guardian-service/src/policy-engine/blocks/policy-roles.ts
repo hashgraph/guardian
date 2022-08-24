@@ -44,7 +44,11 @@ interface IUserGroup {
     /**
      * Group name
      */
-    groupName: string
+    groupName: string,
+    /**
+     * Group Label
+     */
+    groupLabel: string,
     /**
      * Is active
      */
@@ -56,6 +60,10 @@ interface IGroupConfig {
      * Group name
      */
     name: string,
+    /**
+     * Group name
+     */
+    label: string,
     /**
      * Creator (role)
      */
@@ -108,34 +116,32 @@ export class PolicyRolesBlock {
         try {
             const { invitation } = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
             const item = await ref.databaseServer.parseInviteToken(ref.policyId, invitation);
-            console.log('3', item, invitation);
             uuid = item?.uuid;
             role = item?.role;
         } catch (error) {
-            console.log('1', error);
             ref.error(`Invalid invitation: ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError('Invalid invitation', ref.blockType, ref.uuid);
         }
         if (uuid) {
             return { uuid, role };
         } else {
-            console.log('2');
             throw new BlockActionError('Invalid invitation', ref.blockType, ref.uuid);
         }
     }
 
-    private getGroupConfig(ref: AnyBlockType, groupName: string): IGroupConfig {
+    private getGroupConfig(ref: AnyBlockType, groupName: string, groupLabel: string): IGroupConfig {
         const policyGroups: IGroupConfig[] = ref.policyInstance.policyGroups || [];
         const groupConfig = policyGroups.find(e => e.name === groupName);
 
         if (groupConfig) {
-            return groupConfig;
+            return { ...groupConfig, label: groupLabel };
         } else {
             const policyRoles: string[] = ref.policyInstance.policyRoles || [];
             const roleConfig = policyRoles.find(e => e === groupName);
             if (roleConfig) {
                 return {
                     name: roleConfig,
+                    label: groupLabel,
                     creator: roleConfig,
                     members: [roleConfig],
                     groupRelationshipType: GroupRelationshipType.Single,
@@ -167,6 +173,7 @@ export class PolicyRolesBlock {
                         groupRelationshipType: result.groupRelationshipType,
                         groupAccessType: result.groupAccessType,
                         groupName: result.groupName,
+                        groupLabel: result.groupLabel,
                         active: true
                     }
                 } else {
@@ -178,6 +185,7 @@ export class PolicyRolesBlock {
                         uuid: GenerateUUIDv4(),
                         role: groupConfig.creator,
                         groupName: groupConfig.name,
+                        groupLabel: groupConfig.label,
                         groupRelationshipType: GroupRelationshipType.Multiple,
                         groupAccessType: GroupAccessType.Global,
                         active: true
@@ -192,6 +200,7 @@ export class PolicyRolesBlock {
                     uuid: GenerateUUIDv4(),
                     role: groupConfig.creator,
                     groupName: groupConfig.name,
+                    groupLabel: groupConfig.label,
                     groupRelationshipType: GroupRelationshipType.Multiple,
                     groupAccessType: GroupAccessType.Private,
                     active: true
@@ -206,6 +215,7 @@ export class PolicyRolesBlock {
                 uuid: GenerateUUIDv4(),
                 role: groupConfig.creator,
                 groupName: groupConfig.name,
+                groupLabel: groupConfig.label,
                 groupRelationshipType: GroupRelationshipType.Single,
                 groupAccessType: GroupAccessType.Private,
                 active: true
@@ -224,6 +234,12 @@ export class PolicyRolesBlock {
         if (!result) {
             throw new BlockActionError('Invalid token', ref.blockType, ref.uuid);
         }
+
+        const member = await ref.databaseServer.getUserInGroup(ref.policyId, did, uuid);
+        if(member) {
+            throw new BlockActionError('You are already a member of this group.', ref.blockType, ref.uuid);
+        }
+
         const group = {
             policyId: ref.policyId,
             did,
@@ -234,6 +250,7 @@ export class PolicyRolesBlock {
             groupRelationshipType: result.groupRelationshipType,
             groupAccessType: result.groupAccessType,
             groupName: result.groupName,
+            groupLabel: result.groupLabel,
             active: true
         }
         return group;
@@ -272,16 +289,16 @@ export class PolicyRolesBlock {
             const { uuid, role } = await this.parseInvite(ref, data.invitation);
             group = await this.getGroupByToken(ref, did, username, uuid, role);
         } else if (data.group) {
-            const groupConfig = this.getGroupConfig(ref, data.group);
+            const groupConfig = this.getGroupConfig(ref, data.group, data.label);
             group = await this.getGroupByConfig(ref, did, username, groupConfig);
         } else if (data.role) {
-            const groupConfig = this.getGroupConfig(ref, data.role);
+            const groupConfig = this.getGroupConfig(ref, data.role, null);
             group = await this.getGroupByConfig(ref, did, username, groupConfig);
         } else {
             throw new BlockActionError('Invalid role', ref.blockType, ref.uuid);
         }
 
-        const result = await ref.databaseServer.setUserInGroup(group);
+        await ref.databaseServer.setUserInGroup(group);
 
         await Promise.all([
             PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag),

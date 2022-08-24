@@ -3,7 +3,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { LinkDialogComponent as InviteDialogComponent } from 'src/app/policy-engine/helpers/link-dialog/link-dialog.component';
+import { InviteDialogComponent } from 'src/app/policy-engine/helpers/invite-dialog/invite-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
 /**
@@ -36,6 +36,7 @@ export class GroupManagerBlockComponent implements OnInit {
 
     groupColumns: string[] = [
         'id',
+        'groupLabel',
         'groupName',
         'role',
         'type',

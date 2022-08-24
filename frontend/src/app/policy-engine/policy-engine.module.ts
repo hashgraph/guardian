@@ -66,7 +66,8 @@ import { SaveBeforeDialogComponent } from './helpers/save-before-dialog/save-bef
 import { PoliciesComponent } from './policies/policies.component';
 import { GroupManagerConfigComponent } from './policy-configuration/blocks/main/group-manager-config/group-manager-config.component';
 import { GroupManagerBlockComponent } from './policy-viewer/blocks/group-manager-block/group-manager-block.component';
-import { LinkDialogComponent } from './helpers/link-dialog/link-dialog.component';
+import { InviteDialogComponent } from './helpers/invite-dialog/invite-dialog.component';
+import { DocumentPath } from './helpers/document-path/document-path.component';
 
 @NgModule({
     declarations: [
@@ -128,7 +129,8 @@ import { LinkDialogComponent } from './helpers/link-dialog/link-dialog.component
         SaveBeforeDialogComponent,
         GroupManagerConfigComponent,
         GroupManagerBlockComponent,
-        LinkDialogComponent
+        InviteDialogComponent,
+        DocumentPath
     ],
     imports: [
         CommonModule,
@@ -190,7 +192,7 @@ import { LinkDialogComponent } from './helpers/link-dialog/link-dialog.component
         TokenConfirmationBlockComponent,
         GroupManagerConfigComponent,
         GroupManagerBlockComponent,
-        LinkDialogComponent
+        InviteDialogComponent
     ],
     providers: [
         RegisteredBlocks

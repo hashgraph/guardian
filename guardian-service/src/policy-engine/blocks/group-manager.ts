@@ -56,18 +56,13 @@ export class GroupManagerBlock {
             group.groupRelationshipType === GroupRelationshipType.Multiple &&
             group.groupAccessType === GroupAccessType.Private
         ) {
-            if (ref.options.canInvite === 'all') {
+            if (ref.options.canInvite === 'all' || group.owner === user.did) {
                 const inviteId = await ref.databaseServer.createInviteToken(ref.policyId, group.uuid, user.did, role);
                 return Buffer.from(JSON.stringify({
                     invitation: inviteId,
                     role: group.role,
-                    policyName: ref.policyInstance?.name
-                })).toString('base64');
-            } else if (group.owner === user.did) {
-                const inviteId = await ref.databaseServer.createInviteToken(ref.policyId, group.uuid, user.did, role);
-                return Buffer.from(JSON.stringify({
-                    invitation: inviteId,
-                    role: group.role,
+                    name: group.groupName,
+                    label: group.groupLabel,
                     policyName: ref.policyInstance?.name
                 })).toString('base64');
             } else {
@@ -103,6 +98,7 @@ export class GroupManagerBlock {
             id: group.uuid,
             role: group.role,
             groupName: group.groupName,
+            groupLabel: group.groupLabel,
             type: group.did === group.owner ? 'Owner' : 'Member',
             groupRelationshipType: group.groupRelationshipType,
             groupAccessType: group.groupAccessType,

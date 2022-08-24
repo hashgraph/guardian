@@ -514,81 +514,13 @@ export class PolicyComponentsUtils {
     }
 
     /**
-     * Get User Role List
-     * @param policy
-     * @param did
-     */
-    public static async GetVirtualUserRoleList(policy: Policy, did: string): Promise<string[]> {
-        const userRoles: string[] = [];
-        if (policy) {
-            const policyId = policy.id.toString();
-            const activeUser = await DatabaseServer.getVirtualUser(policyId);
-            if (activeUser) {
-                did = activeUser.did;
-            }
-            if (policy.owner === did) {
-                userRoles.push('Administrator');
-            }
-            const db = new DatabaseServer(policyId);
-            const groups = await db.getGroupsByUser(policyId, did);
-            for (const group of groups) {
-                userRoles.push(group.role);
-            }
-        }
-        if (!userRoles.length) {
-            userRoles.push('The user does not have a role');
-        }
-        return userRoles;
-    }
-
-    /**
-     * Get User Role List
-     * @param policy
-     * @param did
-     */
-    public static async GetUserRoleList(policy: Policy, did: string): Promise<string[]> {
-        const userRoles: string[] = [];
-        if (policy && did) {
-            if (policy.status === PolicyType.DRY_RUN) {
-                const activeUser = await DatabaseServer.getVirtualUser(policy.id.toString());
-                if (activeUser) {
-                    did = activeUser.did;
-                }
-            }
-            if (policy.owner === did) {
-                userRoles.push('Administrator');
-            }
-            const role = await DatabaseServer.getUserRole(policy.id.toString(), did);
-            if (role) {
-                userRoles.push(role);
-            }
-        }
-        if (!userRoles.length) {
-            userRoles.push('The user does not have a role');
-        }
-        return userRoles;
-    }
-
-    /**
-     * Get User Role
-     * @param policy
-     * @param user
-     */
-    public static async GetUserRole(policy: Policy, user: IAuthUser): Promise<string> {
-        if (policy && user && user.did) {
-            return await DatabaseServer.getUserRole(policy.id.toString(), user.did);
-        }
-        return null;
-    }
-
-    /**
      * Get Policy Groups
      * @param policy
      * @param user
      */
     public static async GetGroups(policy: IPolicyInstance, user: IPolicyUser): Promise<any[]> {
-        return (await policy.databaseServer.getGroupsByUser(policy.policyId, user.did)).map(g => {
-            return { uuid: g.uuid, role: g.role }
+        return await policy.databaseServer.getGroupsByUser(policy.policyId, user.did, {
+            fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active']
         });
     }
 
@@ -601,4 +533,59 @@ export class PolicyComponentsUtils {
     public static async SelectGroup(policy: IPolicyInstance, user: IPolicyUser, uuid: string): Promise<void> {
         await policy.databaseServer.activeGroup(policy.policyId, user.did, uuid);
     }
+
+    /**
+     * Get Policy Full Info
+     * @param policy
+     * @param did
+     */
+    public static async GetPolicyInfo(policy: Policy, did: string): Promise<Policy> {
+        const result: any = policy;
+        if (policy && did) {
+            result.userRoles = [];
+            result.userGroups = [];
+            result.userRole = null;
+            result.userGroup = null;
+
+            const policyId = policy.id.toString();
+            if (policy.status === PolicyType.DRY_RUN) {
+                const activeUser = await DatabaseServer.getVirtualUser(policyId);
+                if (activeUser) {
+                    did = activeUser.did;
+                }
+            }
+
+            if (policy.owner === did) {
+                result.userRoles.push('Administrator');
+                result.userRole = 'Administrator';
+            }
+
+            const db = new DatabaseServer(policyId);
+            const groups = await db.getGroupsByUser(policyId, did, {
+                fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active']
+            });
+            for (const group of groups) {
+                if (group.active !== false) {
+                    result.userRoles.push(group.role);
+                    result.userRole = group.role;
+                    result.userGroup = group;
+                }
+            }
+
+            result.userGroups = groups;
+        } else {
+            result.userRoles = ['No role'];
+            result.userGroups = [];
+            result.userRole = 'No role';
+            result.userGroup = null;
+        }
+
+        if (!result.userRole) {
+            result.userRoles = ['No role'];
+            result.userRole = 'No role';
+        }
+
+        return result;
+    }
+
 }

@@ -50,6 +50,12 @@ export class PolicyRoles extends BaseEntity {
     groupName?: string;
 
     /**
+     * Group Label
+     */
+    @Property({ nullable: true })
+    groupLabel?: string;
+
+    /**
      * Group Type
      */
     @Property({ nullable: true })

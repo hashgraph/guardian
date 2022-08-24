@@ -86,3 +86,22 @@
     font-size: 20px;
     color: rgba(0,0,0,.54);
 }
+
+.role .link {
+    position: relative;
+    padding-left: 30px;
+    color: var(--button-primary-color);
+    cursor: pointer;
+}
+
+.role .link mat-icon {
+    position: absolute;
+    left: 0;
+    top: -2px;
+}
+
+.select-btn {
+    text-decoration: underline;
+    cursor: pointer;
+    color: var(--button-primary-color);
+}

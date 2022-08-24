@@ -469,6 +469,12 @@ export class DryRun extends BaseEntity {
     group?: any;
 
     /**
+     * Group Label
+     */
+    @Property({ nullable: true })
+    groupLabel?: string;
+
+    /**
      * Default document values
      */
     @BeforeCreate()

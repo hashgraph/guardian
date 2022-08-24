@@ -76,3 +76,9 @@ form {
     pointer-events: none;
     opacity: 0.5;
 }
+
+.role-value {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0px 15px 0px;
+}

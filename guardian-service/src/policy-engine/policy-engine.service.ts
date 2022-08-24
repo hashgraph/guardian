@@ -166,22 +166,29 @@ export class PolicyEngineService {
      * @param policy
      * @private
      */
-    private async updateUserInfo(user: IAuthUser, policy: Policy) {
+    private async updateUserInfo(user: IPolicyUser, policy: Policy) {
         if (!user || !user.did) {
             return;
         }
 
-        const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
+        const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policy.id.toString());
+        const userGroups = await PolicyComponentsUtils.GetGroups(policyInstance, user);
+
+        let userGroup = userGroups.find(g => g.active !== false);
+        if (!userGroup) {
+            userGroup = userGroups[0];
+        }
+        const userRole = userGroup ? userGroup.role : 'No role';
 
         await this.channel.request(['api-gateway', 'update-user-info'].join('.'), {
             policyId: policy.id.toString(),
             user: {
-                did: user.did,
-                role: user.role,
-                username: user.username,
-                hederaAccountId: user.hederaAccountId
+                did: user.virtual ? policy.owner : user.did,
+                role: user.role
             },
-            userRole
+            userRole,
+            userGroup,
+            userGroups
         });
     }
 
@@ -750,11 +757,7 @@ export class PolicyEngineService {
 
             const result: any = policy;
             if (policy) {
-                if (policy.status === PolicyType.DRY_RUN) {
-                    result.userRoles = await PolicyComponentsUtils.GetVirtualUserRoleList(policy, userDid);
-                } else {
-                    result.userRoles = await PolicyComponentsUtils.GetUserRoleList(policy, userDid);
-                }
+                await PolicyComponentsUtils.GetPolicyInfo(policy, userDid);
             }
 
             return new MessageResponse(result);
@@ -776,7 +779,7 @@ export class PolicyEngineService {
                 const [policies, count] = await DatabaseServer.getPoliciesAndCount(filter, otherOptions);
 
                 for (const policy of policies) {
-                    (policy as any).userRoles = await PolicyComponentsUtils.GetUserRoleList(policy, userDid);
+                    await PolicyComponentsUtils.GetPolicyInfo(policy, userDid);
                 }
 
                 return new MessageResponse({ policies, count });
@@ -1117,10 +1120,10 @@ export class PolicyEngineService {
                 const { user, policyId } = msg;
 
                 const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
-                if(!policyInstance.isMultipleGroup) {
+                if (!policyInstance.isMultipleGroup) {
                     return new MessageResponse([]);
                 }
-                
+
                 const userFull = await this.getUser(policyInstance, user);
                 const groups = await PolicyComponentsUtils.GetGroups(policyInstance, userFull);
 
@@ -1136,7 +1139,7 @@ export class PolicyEngineService {
                 const { user, policyId, uuid } = msg;
 
                 const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
-                if(!policyInstance.isMultipleGroup) {
+                if (!policyInstance.isMultipleGroup) {
                     throw new Error(`Policy does not contain groups`);
                 }
 
