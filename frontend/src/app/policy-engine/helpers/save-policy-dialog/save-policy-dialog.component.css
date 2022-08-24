@@ -1,3 +1,7 @@
+.content {
+    position: relative;
+}
+
 form {
     display: flex;
     flex-direction: column;
@@ -35,3 +39,13 @@ form {
     margin: 12px 0;
 }
 
+.close-button {
+    position: absolute;
+    right: 16px;
+    top: -10px;
+    opacity: 0.44;
+}
+
+.close-button:hover {
+    opacity: 1;
+}

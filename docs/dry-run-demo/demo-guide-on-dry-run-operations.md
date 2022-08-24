@@ -28,7 +28,7 @@ Dry Run mode can be started by calling the following API:
 PUT: /api/v1/policies/{policyId}/dry-run
 ```
 
-To get complete information on the above API, please check :&#x20;
+To get complete information on the above API, please check : [#dry-run-policy](../dry-run-apis/running-policy-without-making-any-changes.md#dry-run-policy "mention")
 
 ### 2. Exit Dry Run and return to Draft status
 
@@ -54,7 +54,7 @@ Dry Run mode can be exited to Draft status by calling following API:
 PUT: /api/v1/policies/{policyId}/draft
 ```
 
-To get complete information on the above API, please check :&#x20;
+To get complete information on the above API, please check : [#return-policy-to-editing](../dry-run-apis/returning-policy-to-editing.md#return-policy-to-editing "mention")
 
 ### 3. Opening of a running Policy in Dry Run mode
 
@@ -98,7 +98,7 @@ Restart can also be performed by calling the following API:
 POST: /api/v1/policies/{policyId}/dry-run/restart
 ```
 
-To get complete information on above API, please check :&#x20;
+To get complete information on above API, please check :[#restarts-the-execution-of-the-policy](../dry-run-apis/restarting-the-execution-of-policy.md#restarts-the-execution-of-the-policy "mention")
 
 #### 4.3 Create User
 
@@ -118,7 +118,7 @@ Virtual User for Dry Run can also be created by calling following API:
 POST: /api/v1/policies/{policyId}/dry-run/user
 ```
 
-To get complete information on the above API, please check :&#x20;
+To get complete information on the above API, please check : [#create-a-new-virtual-account](../dry-run-apis/creating-virtual-account.md#create-a-new-virtual-account "mention")
 
 #### 4.4 Users
 
@@ -140,7 +140,7 @@ Virtual user also can be selected by calling the following API:
 POST: /api/v1/policies/{policyId}/dry-run/login
 ```
 
-To get complete information on above API, please check :&#x20;
+To get complete information on above API, please check : [#logs-virtual-user-into-the-system](../dry-run-apis/logging-virtual-user.md#logs-virtual-user-into-the-system "mention")
 
 #### 4.5 Policy View
 
@@ -168,7 +168,7 @@ Transactions can also be viewed by calling the following API:
 GET: /api/v1/policies/{policyId}/dry-run/transactions?pageIndex=0&pageSize=100
 ```
 
-To get more information on the above API, please check:
+To get more information on the above API, please check:[#returns-lists-of-virtual-transactions](../dry-run-apis/returns-list-of-transactions.md#returns-lists-of-virtual-transactions "mention")
 
 #### 4.7 Artifacts
 
@@ -190,7 +190,7 @@ We can also view Artifacts list by calling the following API:
 GET: /api/v1/policies/{policyId}/dry-run/artifacts?pageIndex=0&pageSize=100
 ```
 
-To get complete information on the above API, please check :&#x20;
+To get complete information on the above API, please check : [#returns-lists-of-virtual-artifacts](../dry-run-apis/returns-list-of-artifacts.md#returns-lists-of-virtual-artifacts "mention")
 
 #### 4.8 IPFS
 
@@ -212,4 +212,4 @@ The IPFS files list can also be viewed by calling the following API:
 GET: /api/v1/policies/{policyId}/dry-run/ipfs?pageIndex=0&pageSize=100
 ```
 
-To get complete information on above API, please check :&#x20;
+To get complete information on above API, please check : [#returns-lists-of-ipfs-files.](../dry-run-apis/returns-list-of-ipfs-files.md#returns-lists-of-ipfs-files. "mention")

@@ -240,7 +240,6 @@ export class SchemaConfigurationComponent implements OnInit {
             }
             this.fields = [];
             this.conditions = [];
-            this.schemas = [];
         }
         if (changes.value && this.value) {
             this.updateFormControls();
@@ -256,7 +255,15 @@ export class SchemaConfigurationComponent implements OnInit {
     updateSubSchemas(topicId: string | null) {
         this.schemaTypes = [];
         if (this.schemasMap && topicId) {
-            this.schemas = this.schemasMap[topicId];
+            this.schemas = this.schemasMap[topicId]
+                ?.filter(s => {
+                    if (this.value?.document?.$id) {
+                        const isInDefs = Object.keys(s.document?.$defs || {})
+                            .includes(this.value.document.$id);
+                        return s.document?.$id !== this.value.document.$id && !isInDefs;
+                    }
+                    return true;
+                });
         }
         if (this.schemas) {
             for (let i = 0; i < this.schemas.length; i++) {

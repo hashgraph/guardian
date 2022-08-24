@@ -4,6 +4,7 @@ import { webSocket, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { ApplicationStates, MessageAPI } from '@guardian/interfaces';
+import { Router } from '@angular/router';
 
 /**
  *  WebSocket service.
@@ -26,7 +27,7 @@ export class WebSocketService {
     private taskStatusSubject: Subject<any>;
     private serviesStates: any = [];
 
-    constructor(private auth: AuthService, private toastr: ToastrService) {
+    constructor(private auth: AuthService, private toastr: ToastrService, private router: Router) {
         this.blockUpdateSubject = new Subject();
         this.userInfoUpdateSubject = new Subject();
         this.servicesReady = new Subject();
@@ -80,7 +81,7 @@ export class WebSocketService {
         this.reconnectAttempts = 10;
     }
 
-    private connect(): void {
+    private async connect(): Promise<void> {
         if (this.socket) {
             this.socket.unsubscribe();
         }
@@ -103,8 +104,8 @@ export class WebSocketService {
                 }
             });
         this.heartbeat();
-        this.send(MessageAPI.GET_STATUS, null);
-        this.send('SET_ACCESS_TOKEN', this.auth.getAccessToken());
+        await this.send('SET_ACCESS_TOKEN', this.auth.getAccessToken());
+        await this.send(MessageAPI.GET_STATUS, null);
     }
 
     private heartbeat() {
@@ -125,21 +126,27 @@ export class WebSocketService {
         }, this.reconnectInterval);
     }
 
-    private send(type: string, data: any) {
-        try {
-            if (this.socket) {
-                const message = JSON.stringify({ type, data });
-                this.socket.next(message);
+    private send(type: string, data: any): Promise<void> {
+        return new Promise((resolve, reject) => {
+            try {
+                if (this.socket) {
+                    const message = JSON.stringify({ type, data });
+                    setTimeout(() => {
+                        this.socket.next(message);
+                        resolve();
+                    }, 300);
+                }
+            } catch (error: any) {
+                console.error(error);
+                this.toastr.error(error.message, 'Web Socket', {
+                    timeOut: 10000,
+                    closeButton: true,
+                    positionClass: 'toast-bottom-right',
+                    enableHtml: true
+                });
+                resolve();
             }
-        } catch (error: any) {
-            console.error(error);
-            this.toastr.error(error.message, 'Web Socket', {
-                timeOut: 10000,
-                closeButton: true,
-                positionClass: 'toast-bottom-right',
-                enableHtml: true
-            });
-        }
+        });
     }
 
     private accept(message: string) {
@@ -155,9 +162,11 @@ export class WebSocketService {
                 case MessageAPI.GET_STATUS:
                 case MessageAPI.UPDATE_STATUS:
                     this.updateStatus(event.data);
-                    this.servicesReady.next(
-                        !this.serviesStates.find((item: any) => item.state !== ApplicationStates.READY)
-                    );
+                    const allStatesReady = !this.serviesStates.find((item: any) => item.state !== ApplicationStates.READY)
+                    if (!allStatesReady) {
+                        this.router.navigate(['/status']);
+                    }
+                    this.servicesReady.next(allStatesReady);
                     break;
                 case 'update-event': {
                     this.blockUpdateSubject.next(event.data);

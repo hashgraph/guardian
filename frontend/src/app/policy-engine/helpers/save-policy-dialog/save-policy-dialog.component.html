@@ -1,4 +1,4 @@
-<div mat-dialog-content>
+<div mat-dialog-content class="content">
     <div *ngIf="isActionSelected$ | async; else selectActionTemplate">
         <h1 mat-dialog-title *ngIf="isActionSelected$ | async">{{getTitle()}}</h1>
         <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
@@ -42,4 +42,8 @@
             </button>
         </div>
     </ng-template>
+
+    <button *ngIf="!(isActionSelected$ | async)" mat-icon-button class="close-button" type="button" [mat-dialog-close]>
+        <mat-icon>clear</mat-icon>
+    </button>
 </div>

@@ -142,6 +142,15 @@
 * [Export to zip file](policy-creation-using-the-guardian-apis/export-to-zip-file.md)
 * [Import from zip file](policy-creation-using-the-guardian-apis/import-from-zip-file.md)
 * [Retrieves Block Data by Tag](policy-creation-using-the-guardian-apis/retrieves-block-data-by-tag.md)
+* [Sends Data to specified Block by Tag](policy-creation-using-the-guardian-apis/sends-data-to-specified-block-by-tag.md)
+
+## Policy related APIs for Asynchronous Execution
+
+* [Creates new Policy](policy-related-apis-for-asynchronous-execution/creates-new-policy.md)
+* [Publishing a Policy](policy-related-apis-for-asynchronous-execution/publishing-a-policy.md)
+* [Importing a Policy from IPFS](policy-related-apis-for-asynchronous-execution/importing-a-policy-from-ipfs.md)
+* [Importing a Policy from file](policy-related-apis-for-asynchronous-execution/importing-a-policy-from-file.md)
+* [Policy Review](policy-related-apis-for-asynchronous-execution/policy-review.md)
 
 ## SCHEMA CREATION USING THE GUARDIAN APIS
 
@@ -160,6 +169,7 @@
 * [Returns all Schemas related to the topic](schema-creation-using-the-guardian-apis/returns-all-schemas-related-to-the-topic.md)
 * [Importing Zip file containing Schema](schema-creation-using-the-guardian-apis/importing-zip-file-containing-schema.md)
 * [Importing Schema from IPFS](schema-creation-using-the-guardian-apis/importing-schema-from-ipfs.md)
+* [Returning Schema by SchemaID](schema-creation-using-the-guardian-apis/returning-schema-by-schemaid.md)
 
 ## System Schemas APIs
 
@@ -185,6 +195,7 @@
 * [User Account Balance](profile-apis/user-account-balance.md)
 * [User Account Information](profile-apis/user-account-information.md)
 * [Setting User Credentials](profile-apis/setting-user-credentials.md)
+* [Setting User Credentials Asynchronously](profile-apis/setting-user-credentials-asynchronously.md)
 
 ## TOKEN APIS
 
@@ -215,7 +226,15 @@
 
 ## Dry Run APIs
 
-* [Start Dry Run Mode](dry-run-apis/start-dry-run-mode.md)
+* [Running Policy without making any changes](dry-run-apis/running-policy-without-making-any-changes.md)
+* [Returning all Virtual Users](dry-run-apis/returning-all-virtual-users.md)
+* [Creating Virtual Account](dry-run-apis/creating-virtual-account.md)
+* [Logging Virtual User](dry-run-apis/logging-virtual-user.md)
+* [Restarting the execution of Policy](dry-run-apis/restarting-the-execution-of-policy.md)
+* [Returns List of Transactions](dry-run-apis/returns-list-of-transactions.md)
+* [Returns List of Artifacts](dry-run-apis/returns-list-of-artifacts.md)
+* [Returns List of IPFS Files](dry-run-apis/returns-list-of-ipfs-files.md)
+* [Returning Policy to Editing](dry-run-apis/returning-policy-to-editing.md)
 
 ## External APIs
 
@@ -223,8 +242,28 @@
 
 ## External events
 
-* [Listen to external event published by guardian](external-events/external-events.md)
+* [Listen to external event published by Guardian](external-events/external-events.md)
 
 ## FAQs
 
 * [FAQs](faqs/faqs.md)
+
+## Schema Related APIs for Asynchronous Execution
+
+* [Creation of Schema](schema-related-apis-for-asynchronous-execution/creation-of-schema.md)
+* [Publishing Schema](schema-related-apis-for-asynchronous-execution/publishing-schema.md)
+* [Previews the Schema from IPFS](schema-related-apis-for-asynchronous-execution/previews-the-schema-from-ipfs.md)
+* [Importing Schema from IPFS](schema-related-apis-for-asynchronous-execution/importing-schema-from-ipfs.md)
+* [Importing Schema from .zip](schema-related-apis-for-asynchronous-execution/importing-schema-from-.zip.md)
+
+## Token Related APIs for Asynchronous Execution
+
+* [Token Creation](token-related-apis-for-asynchronous-execution/token-creation.md)
+* [Associating User with the Hedera Token](token-related-apis-for-asynchronous-execution/associating-user-with-the-hedera-token.md)
+* [Disassociating User with the Hedera Token](token-related-apis-for-asynchronous-execution/disassociating-user-with-the-hedera-token.md)
+* [Setting KYC for the User](token-related-apis-for-asynchronous-execution/setting-kyc-for-the-user.md)
+* [Unsetting KYC for the User](token-related-apis-for-asynchronous-execution/unsetting-kyc-for-the-user.md)
+
+## Task APIs
+
+* [Returning Task Statuses](task-apis/returning-task-statuses.md)

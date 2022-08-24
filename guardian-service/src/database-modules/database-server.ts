@@ -924,6 +924,14 @@ export class DatabaseServer {
     }
 
     /**
+     * Update schemas
+     * @param items Schemas
+     */
+    public static async updateSchemas(items: SchemaCollection[]): Promise<void> {
+        await new DataBaseHelper(SchemaCollection).update(items);
+    }
+
+    /**
      * Get schemas
      * @param filters
      */
@@ -1378,5 +1386,14 @@ export class DatabaseServer {
             topicId,
             messageId
         });
+    }
+
+    /**
+     * Get tokens
+     * @param filters Filters
+     * @returns Tokens
+     */
+    public static async getTokens(filters? : any): Promise<TokenCollection[]> {
+        return await new DataBaseHelper(TokenCollection).find(filters);
     }
 }

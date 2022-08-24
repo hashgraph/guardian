@@ -20,7 +20,7 @@ This block is responsible in performing automatic actions on the token.
 
 ![](<../.gitbook/assets/image (17).png>)
 
-![](<../.gitbook/assets/image (14).png>)
+![](<../.gitbook/assets/image (14) (2).png>)
 
 {% hint style="info" %}
 **Note:**
@@ -43,4 +43,4 @@ This block is responsible in performing automatic actions on the token.
 
 
 
-![](<../.gitbook/assets/image (15).png>)
+![](<../.gitbook/assets/image (15) (2).png>)

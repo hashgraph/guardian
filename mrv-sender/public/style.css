@@ -292,6 +292,7 @@ table#results {
 
 .dialog-content-setting {
     margin-bottom: 16px;
+    margin-top: 10px;
 }
 
 .dialog-content-row {
@@ -322,4 +323,26 @@ table#results {
 .dialog-row-decimal {
     width: 25px;
     margin-right: 10px;
+}
+
+.swiper {
+    padding: 0 10px;
+    margin: 0 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    background-color: #3f51b5;
+    color: white;
+}
+
+.mode-label, .swiper {
+    display: inline-block;
+    font-size: 2.2em;
+}
+
+.mode-label {
+    margin-left: 20px;
+}
+
+.template-container {
+    margin: 20px;
 }

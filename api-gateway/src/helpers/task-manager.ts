@@ -40,7 +40,8 @@ export class TaskManager {
         'Create token': 6,
         'Associate/dissociate token': 6,
         'Grant/revoke KYC': 6,
-        'Delete policy': 3
+        'Delete policy': 3,
+        'Clone policy': 8
     };
 
     /**

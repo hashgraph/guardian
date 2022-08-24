@@ -130,12 +130,21 @@ export class PolicyImportExportHelper {
 
     /**
      * Import policy
-     * @param policyToImport Policy json
-     * @param policyOwner Policy owner
+     * @param policyToImport
+     * @param policyOwner
+     * @param versionOfTopicId
+     * @param notifier
+     * @param additionalPolicyConfig 
      *
      * @returns Policies by owner
      */
-    static async importPolicy(policyToImport: any, policyOwner: string, versionOfTopicId: string, notifier: INotifier): Promise<Policy> {
+    static async importPolicy(
+        policyToImport: any, 
+        policyOwner: string, 
+        versionOfTopicId: string, 
+        notifier: INotifier, 
+        additionalPolicyConfig?: Partial<Policy>
+    ): Promise<Policy> {
         const { policy, tokens, schemas } = policyToImport;
 
         delete policy._id;
@@ -143,12 +152,15 @@ export class PolicyImportExportHelper {
         delete policy.messageId;
         delete policy.version;
         delete policy.previousVersion;
-        policy.policyTag = 'Tag_' + Date.now();
+        policy.policyTag = additionalPolicyConfig?.policyTag || 'Tag_' + Date.now();
         policy.uuid = GenerateUUIDv4();
         policy.creator = policyOwner;
         policy.owner = policyOwner;
         policy.status = 'DRAFT';
         policy.instanceTopicId = null;
+        policy.name = additionalPolicyConfig?.name || policy.name;
+        policy.topicDescription = additionalPolicyConfig?.topicDescription || policy.topicDescription;
+        policy.description = additionalPolicyConfig?.description || policy.description;
 
         const users = new Users();
         notifier.start('Resolve Hedera account');

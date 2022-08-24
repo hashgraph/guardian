@@ -25,15 +25,15 @@ To create a new System Schemas, click on the **New** button at the top right cor
 
 After clicking on the New button, you will be asked to enter Schema details such as Schema Name, Policy Dropdown, Entity : VC/MRV/NONE, Schema Description and any other required fields.
 
-![](<../.gitbook/assets/image (2).png>)
+![](<../.gitbook/assets/image (2) (3).png>)
 
 In addition to the basic Schema details we also have an option to add Field and Condition to each field.
 
-![](<../.gitbook/assets/image (3).png>)
+![](<../.gitbook/assets/image (3) (3).png>)
 
 We can also customize the Field keys and Field Title by clicking on Advanced Tab.
 
-![](../.gitbook/assets/image.png)
+![](<../.gitbook/assets/image (27).png>)
 
 There are different types of Field Types:
 
@@ -65,7 +65,7 @@ There are different types of Field Types:
 
 Once the above details are added, click on the Create button.
 
-![](<../.gitbook/assets/image (10).png>)
+![](<../.gitbook/assets/image (10) (2).png>)
 
 Once the System Schema is created, we have options for activating, deleting, editing and viewing JSON documents.
 
@@ -108,7 +108,11 @@ Once the Import button is clicked, we get two options: Import from file and Impo
 
 ![](<../.gitbook/assets/image (1) (2).png>)
 
-Import from file: You can select the required Schema .zip file from your local machine. Sample iREC Schema (iREC Schema.zip) is provided in the link: [https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
+Import from file: You can select the required Schema .schema file from your local machine. Sample iREC Schema (iREC Schema.zip) is provided in the link: [https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
+
+{% hint style="info" %}
+Files with **.schema** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.
+{% endhint %}
 
 ![](<../.gitbook/assets/image (17) (1).png>)
 
@@ -131,7 +135,7 @@ After selecting the required Policy, click on the Import button.
 When the Schema is imported, it will be in draft status.
 
 {% hint style="info" %}
-Note: Initially when the Schema is created/imported, it will be in draft status.
+**Note**: Initially when the Schema is created/imported, it will be in draft status.
 {% endhint %}
 
 Once the Schema is imported, we will have the following options:\
@@ -152,5 +156,5 @@ After clicking on Publish, you will be prompted to enter the version. After ente
 ![](<../.gitbook/assets/image (18).png>)
 
 {% hint style="info" %}
-Note: All Schemas connected to a Policy gets published automatically when Policy gets published.
+**Note**: All Schemas connected to a Policy gets published automatically when Policy gets published.
 {% endhint %}

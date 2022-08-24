@@ -58,6 +58,17 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Async clone policy
+     * @param policyId Policy identifier
+     * @param model Policy configuration
+     * @param user User
+     * @param taskId Task identifier
+     */
+     public async clonePolicyAsync(policyId, model, user, taskId) {
+        return await this.request(PolicyEngineEvents.CLONE_POLICY_ASYNC, { policyId, model, user, taskId });
+    }
+
+    /**
      * Async delete policy
      * @param policyId Policy identifier
      * @param user User

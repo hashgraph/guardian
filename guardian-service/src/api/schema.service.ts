@@ -169,7 +169,7 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
     const schema = await DatabaseServer.getSchema({ iri, owner });
 
     if (!schema) {
-        throw new Error(`Schema not found: ${iri} for owner ${owner}`);
+        return;
     }
 
     if (schema.status === SchemaStatus.PUBLISHED) {
@@ -383,6 +383,46 @@ export async function publishSystemSchema(
 }
 
 /**
+ * Update refs in related Schemas
+ * @param newSchemaId New id of schema
+ * @param oldSchemaId Old id of schema
+ */
+export async function updateDefsInRelatedSchemas(newSchemaId, oldSchemaId) {
+    const filters = {};
+    filters[`document.$defs.${oldSchemaId}`] = { $exists: true };
+    const relatedSchemas = await DatabaseServer.getSchemas(filters);
+    for (const rSchema of relatedSchemas) {
+        let document = JSON.stringify(rSchema.document) as string;
+        document = document.replaceAll(oldSchemaId, newSchemaId);
+        rSchema.document = JSON.parse(document);
+    }
+    await DatabaseServer.updateSchemas(relatedSchemas);
+}
+
+/**
+ * Publishing schemas in defs
+ * @param defs Definitions
+ * @param version Version
+ * @param owner Owner
+ */
+export async function publishDefsSchemas(defs: any, version: string, owner: string) {
+    if (!defs) {
+        return;
+    }
+
+    const schemasIdsInDocument = Object.keys(defs);
+    for (const schemaId of schemasIdsInDocument) {
+        let schema = await DatabaseServer.getSchema({
+            'document.$id': schemaId
+        });
+        if (schema && schema.status !== SchemaStatus.PUBLISHED) {
+            schema = await incrementSchemaVersion(schema.iri, owner);
+            await findAndPublishSchema(schema.id, schema.version, owner, emptyNotifier());
+        }
+    }
+}
+
+/**
  * Find and publish schema
  * @param id
  * @param version
@@ -393,22 +433,23 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
     notifier.start('Load schema');
 
     let item = await DatabaseServer.getSchema(id);
-
     if (!item) {
         throw new Error(`Schema not found: ${id}`);
     }
-
     if (item.creator !== owner) {
         throw new Error('Invalid owner');
     }
-
     if (!item.topicId) {
         throw new Error('Invalid topicId');
     }
-
     if (item.status === SchemaStatus.PUBLISHED) {
         throw new Error('Invalid status');
     }
+
+    notifier.completedAndStart('Publishing related schemas');
+    const oldSchemaId = item.document?.$id;
+    await publishDefsSchemas(item.document?.$defs, version, owner);
+    item = await DatabaseServer.getSchema(id);
 
     notifier.completedAndStart('Resolve Hedera account');
     const users = new Users();
@@ -422,6 +463,7 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
 
     notifier.completedAndStart('Update in DB');
     await DatabaseServer.updateSchema(item.id, item);
+    await updateDefsInRelatedSchemas(item.document?.$id, oldSchemaId);
     notifier.completed();
     return item;
 }
@@ -535,22 +577,27 @@ export async function deleteSchema(schemaId: any, notifier: INotifier) {
     }
 
     const item = await DatabaseServer.getSchema(schemaId);
-    if (item) {
-        notifier.info(`Delete schema ${item.name}`);
-        if (item.topicId) {
-            const topic = await DatabaseServer.getTopicById(item.topicId);
-            if (topic) {
-                const users = new Users();
-                const root = await users.getHederaAccount(item.owner);
-                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
-                const message = new SchemaMessage(MessageAction.DeleteSchema);
-                message.setDocument(item);
-                await messageServer.setTopicObject(topic)
-                    .sendMessage(message);
-            }
-        }
-        await DatabaseServer.deleteSchemas(item.id);
+    if (!item) {
+        throw new Error('Schema not found');
     }
+    if (item.status !== SchemaStatus.DRAFT) {
+        throw new Error('Schema is not in draft status');
+    }
+
+    notifier.info(`Delete schema ${item.name}`);
+    if (item.topicId) {
+        const topic = await DatabaseServer.getTopicById(item.topicId);
+        if (topic) {
+            const users = new Users();
+            const root = await users.getHederaAccount(item.owner);
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+            const message = new SchemaMessage(MessageAction.DeleteSchema);
+            message.setDocument(item);
+            await messageServer.setTopicObject(topic)
+                .sendMessage(message);
+        }
+    }
+    await DatabaseServer.deleteSchemas(item.id);
 }
 
 /**
