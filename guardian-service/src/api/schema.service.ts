@@ -7,7 +7,7 @@ import {
     SchemaStatus,
     TopicType,
     SchemaHelper,
-    ModelHelper, GenerateUUIDv4,
+    ModelHelper, GenerateUUIDv4, Schema,
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
@@ -297,13 +297,18 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
 
     notifier.info(`Found ${files.length} schemas`);
     let num: number = 0;
+    const createdSchemas = [];
     for (const file of files) {
         file.document = replaceValueRecursive(file.document, uuidMap);
         file.context = replaceValueRecursive(file.context, uuidMap);
         SchemaHelper.setVersion(file, '', '');
-        await createSchema(file, owner, emptyNotifier());
+        createdSchemas.push(await createSchema(file, owner, emptyNotifier()));
         num++;
         notifier.info(`Schema ${num} (${file.name || '-'}) created`);
+    }
+
+    for (const createdSchema of createdSchemas) {
+        await updateSchemaDocument(createdSchema, createdSchemas);
     }
 
     const schemasMap = [];
@@ -383,20 +388,57 @@ export async function publishSystemSchema(
 }
 
 /**
- * Update refs in related Schemas
- * @param newSchemaId New id of schema
- * @param oldSchemaId Old id of schema
+ * Update defs in related schemas
+ * @param schemaId Schema id
  */
-export async function updateDefsInRelatedSchemas(newSchemaId, oldSchemaId) {
+async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
+    if (!schemaId) {
+        return;
+    }
+
+    const schema = await DatabaseServer.getSchema({ 'document.$id': schemaId });
+    if (!schema) {
+        throw new Error(`Can not find schema ${schemaId}`);
+    }
+
+    const schemaDocument = schema.document;
+    if (!schemaDocument) {
+        return;
+    }
+    delete schemaDocument.$defs;
+
     const filters = {};
-    filters[`document.$defs.${oldSchemaId}`] = { $exists: true };
+    filters[`document.$defs.${oldSchemaId || schemaId}`] = { $exists: true };
     const relatedSchemas = await DatabaseServer.getSchemas(filters);
     for (const rSchema of relatedSchemas) {
-        let document = JSON.stringify(rSchema.document) as string;
-        document = document.replaceAll(oldSchemaId, newSchemaId);
-        rSchema.document = JSON.parse(document);
+        if (oldSchemaId) {
+            let document = JSON.stringify(rSchema.document) as string;
+            document = document.replaceAll(oldSchemaId.substring(1), schemaId.substring(1));
+            rSchema.document = JSON.parse(document);
+        }
+        rSchema.document.$defs[schemaId] = schemaDocument;
     }
     await DatabaseServer.updateSchemas(relatedSchemas);
+}
+
+/**
+ * Update schema document
+ * @param schemaId Schema Identifier
+ */
+async function updateSchemaDocument(schema: SchemaCollection, allSchemas?: SchemaCollection[]): Promise<void> {
+    if (!schema) {
+        throw new Error(`There is no schema to update document`);
+    }
+    const allSchemasInTopic = allSchemas || await DatabaseServer.getSchemas({
+        topicId: schema.topicId,
+    });
+
+    const allParsedSchemas = allSchemasInTopic.map(item => new Schema(item));
+    const parsedSchema = new Schema(schema, true);
+    parsedSchema.update(parsedSchema.fields, parsedSchema.conditions);
+    parsedSchema.updateRefs(allParsedSchemas);
+    schema.document = parsedSchema.document;
+    await DatabaseServer.updateSchema(schema.id, schema);
 }
 
 /**
@@ -462,8 +504,8 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
     item = await publishSchema(item, version, messageServer, MessageAction.PublishSchema);
 
     notifier.completedAndStart('Update in DB');
-    await DatabaseServer.updateSchema(item.id, item);
-    await updateDefsInRelatedSchemas(item.document?.$id, oldSchemaId);
+    await updateSchemaDocument(item);
+    await updateSchemaDefs(item.document?.$id, oldSchemaId);
     notifier.completed();
     return item;
 }
@@ -665,6 +707,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 SchemaHelper.setVersion(item, null, item.version);
                 SchemaHelper.updateIRI(item);
                 await DatabaseServer.updateSchema(item.id, item);
+                await updateSchemaDefs(item.document.$id);
             }
             const schemas = await DatabaseServer.getSchemas();
             return new MessageResponse(schemas);

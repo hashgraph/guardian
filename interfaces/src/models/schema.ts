@@ -124,7 +124,7 @@ export class Schema implements ISchema {
      * @param schema
      * @constructor
      */
-    constructor(schema?: ISchema) {
+    constructor(schema?: ISchema, includeSystemProperties: boolean = false) {
         this.userDID = null;
         if (schema) {
             this._id = schema._id || undefined;
@@ -194,7 +194,7 @@ export class Schema implements ISchema {
             this.iri = '';
         }
         if (this.document) {
-            this.parseDocument();
+            this.parseDocument(includeSystemProperties);
         }
     }
 
@@ -202,11 +202,11 @@ export class Schema implements ISchema {
      * Parse document
      * @private
      */
-    private parseDocument(): void {
+    private parseDocument(includeSystemProperties: boolean): void {
         this.type = SchemaHelper.buildType(this.uuid, this.version);
         const { previousVersion } = SchemaHelper.parseSchemaComment(this.document.$comment);
         this.previousVersion = previousVersion;
-        this.fields = SchemaHelper.parseFields(this.document, this.contextURL);
+        this.fields = SchemaHelper.parseFields(this.document, this.contextURL, null, includeSystemProperties);
         this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields);
     }
 
