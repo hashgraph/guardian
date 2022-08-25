@@ -11,7 +11,7 @@ export function CatchErrors() {
     return function (_target: any, propertyKey: string, descriptor: PropertyDescriptor) {
         descriptor.value = new Proxy(_target[propertyKey], {
             async apply(target: any, thisArg: any, argArray: any[]): Promise<any> {
-                const user = argArray[0];
+                const user = argArray[0].user;
                 const f = async () => {
                     try {
                         await target.apply(thisArg, argArray);
