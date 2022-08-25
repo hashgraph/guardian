@@ -4,7 +4,7 @@ import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage } from '@hedera-modules';
+import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage, MessageMemo } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
@@ -151,6 +151,7 @@ export class MintBlock {
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vpMessage);
+        const vpMessageId = vpMessageResult.getId();
 
         await ref.databaseServer.saveVP({
             hash: vp.toCredentialHash(),
@@ -159,12 +160,21 @@ export class MintBlock {
             type: DataTypes.MINT,
             policyId: ref.policyId,
             tag: ref.tag,
-            messageId: vpMessageResult.getId(),
+            messageId: vpMessageId,
             topicId: vpMessageResult.getTopicId(),
         } as any);
 
-        await PolicyUtils.mint(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());
-
+        await PolicyUtils.mint(
+            ref,
+            token,
+            tokenValue,
+            root,
+            targetAccountId,
+            vpMessageId,
+            vpMessageId
+                .concat(' ', MessageMemo.parseMemo(true, ref.options.memo, vp))
+                .trimEnd()
+        );
         return vp;
     }
 
