@@ -20,7 +20,7 @@ RUN npm pack
 WORKDIR /usr/worker-service
 COPY ./worker-service/package*.json ./
 COPY ./worker-service/tsconfig.json ./
-COPY ./worker-service/.env ./.env
+COPY ./worker-service/.env.docker ./.env
 RUN npm install --force /usr/interfaces/guardian-interfaces-*.tgz /usr/common/guardian-common-*.tgz
 RUN npm install --force
 ADD ./worker-service/src ./src/.
