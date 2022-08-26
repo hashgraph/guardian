@@ -11,15 +11,19 @@ The workflow begins with the Registrant, generally the owner of an energy produc
 
 <img width="1074" alt="image" src="https://user-images.githubusercontent.com/79293833/186931734-b7303b0e-81e5-433f-b71c-509e83dc186b.png">
 
+As the initial step in IREC Policy involve creation of following Schemas: iRec registration applicant details, Inverter, and MRV Schemas,for demo purpose, we have created those schemas and their IPFS timestamps and file links are mentioned in the table below.
 
-**IREC Versions and their timestamps:**
+**IREC Schema and Policy Versions and their IPFS timestamps:**
 
-| Version | Timestamp | Link |
+| Version | IPFS Timestamp | Schema/Policy File Link |
 |---|---|---:|
-| iREC 1 | 1661166202.802071003 | [Link](https://github.com/hashgraph/guardian) |
-| iREC 2 | 1661167347.064745885 | [Link](https://github.com/hashgraph/guardian) |
-| iREC 3 | 1661372984.332898003 | [Link](https://github.com/hashgraph/guardian) |
-| iREC 4 | 1661373147.975461003 | [Link](https://github.com/hashgraph/guardian) |
+| iREC Schema | 1644847084.945541771 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/iREC%20Schema.schema) |
+| Inverter Schema | 1644847093.979895804 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Inverter.schema) |
+| MRV Schema | 1644847107.415192828 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/MRV.schema) |
+| iREC 1 | 1661166202.802071003 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/iRec%20Policy.policy) |
+| iREC 2 | 1661167347.064745885 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/iRec%20Policy%202.policy) |
+| iREC 3 | 1661372984.332898003 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/IRec%20Policy%203.policy) |
+| iREC 4 | 1661373147.975461003 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/IRec%20Policy%204.policy) |
 
 For complete User Guide and API Flow for executing IREC Policy, please refer to :
 
