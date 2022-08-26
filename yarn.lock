@@ -187,7 +187,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@guardian/common@^2.3.1, @guardian/common@workspace:common":
+"@guardian/common@^2.3.0-prerelease, @guardian/common@^2.3.1, @guardian/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
@@ -209,7 +209,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@guardian/interfaces@^2.3.1, @guardian/interfaces@workspace:interfaces":
+"@guardian/interfaces@^2.3.0-prerelease, @guardian/interfaces@^2.3.1, @guardian/interfaces@workspace:interfaces":
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
@@ -9449,6 +9449,26 @@ __metadata:
   checksum: 953322ec8dd8b634a1a07a611760b0473e258073fd3bcab473082c6f0f30cdc48e641310209973d8557b9893bc291e32587f6dce05ea675242e21f8b0b0877bc
   languageName: node
   linkType: hard
+
+"worker-service@workspace:worker-service":
+  version: 0.0.0-use.local
+  resolution: "worker-service@workspace:worker-service"
+  dependencies:
+    "@guardian/common": ^2.3.0-prerelease
+    "@guardian/interfaces": ^2.3.0-prerelease
+    "@types/node": ^17.0.13
+    chai: 4.3.4
+    dotenv: ^16.0.0
+    mocha: ^9.2.0
+    mocha-junit-reporter: ^2.0.2
+    module-alias: ^2.2.2
+    nodemon: ^2.0.12
+    reflect-metadata: ^0.1.13
+    rewire: ^6.0.0
+    tslint: ^6.1.3
+    typescript: ^4.5.5
+  languageName: unknown
+  linkType: soft
 
 "workerpool@npm:6.2.0":
   version: 6.2.0

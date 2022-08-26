@@ -28,6 +28,24 @@ services:
     depends_on:
       - message-broker
 
+  worker-service-1:
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    depends_on:
+      - ipfs-client
+    environment:
+      - SERVICE_CHANNEL="worker.1"
+
+  worker-service-2:
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    depends_on:
+      - ipfs-client
+    environment:
+      - SERVICE_CHANNEL="worker.2"
+
   auth-service:
     build:
       context: .
@@ -59,6 +77,8 @@ services:
       - message-broker
       - auth-service
       - logger-service
+      - worker-service-1
+      - worker-service-2
 
   ipfs-client:
     build:

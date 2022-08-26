@@ -37,6 +37,7 @@ import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { DatabaseServer } from '@database-modules';
 import { ipfsAPI } from '@api/ipfs.service';
+import { Workers } from '@helpers/workers';
 
 Promise.all([
     Migration({
@@ -146,6 +147,9 @@ Promise.all([
 
     new Wallet().setChannel(channel);
     new Users().setChannel(channel);
+    const workersHelper = new Workers();
+    workersHelper.setChannel(channel);
+    workersHelper.initListeners();
 
     const policyGenerator = new BlockTreeGenerator();
     const policyService = new PolicyEngineService(channel, apiGatewayChannel);
