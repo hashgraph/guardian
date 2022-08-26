@@ -153,7 +153,7 @@ export class MintBlock {
             .sendMessage(vpMessage);
         const vpMessageId = vpMessageResult.getId();
 
-        await ref.databaseServer.saveVP({
+        const savedVp = await ref.databaseServer.saveVP({
             hash: vp.toCredentialHash(),
             document: vp.toJsonTree(),
             owner: user.did,
@@ -172,7 +172,7 @@ export class MintBlock {
             targetAccountId,
             vpMessageId,
             vpMessageId
-                .concat(' ', MessageMemo.parseMemo(true, ref.options.memo, vp))
+                .concat(' ', MessageMemo.parseMemo(true, ref.options.memo, savedVp))
                 .trimEnd()
         );
         return vp;

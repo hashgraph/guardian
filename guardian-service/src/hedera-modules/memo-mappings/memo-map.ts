@@ -1,3 +1,5 @@
+import ObjGet from 'lodash.get';
+
 /**
  * Memo map base
  */
@@ -17,17 +19,9 @@ export class MemoMap {
             return '';
         }
         return memo.replace(
-            /\${([A-Za-z0-9.]+)}/g,
+            /\${([A-Za-z0-9\.\[\]\@]+)}/g,
             (_, placeholderWithoutDelimiters) => {
-                let value;
-                try {
-                    value = placeholderWithoutDelimiters
-                        .split('.')
-                        .reduce((p, prop) => p[prop], memoObj);
-                }
-                catch {
-                    value = '';
-                }
+                const value = ObjGet(memoObj, placeholderWithoutDelimiters, '');
                 if (!value && !safetyParse) {
                     throw new Error(`Parameter ${placeholderWithoutDelimiters} in memo object is not defined`);
                 }
