@@ -18,12 +18,12 @@ RUN npm install
 RUN npm pack
 
 WORKDIR /usr/worker-service
-COPY ./ipfs-client/package*.json ./
-COPY ./ipfs-client/tsconfig.json ./
-COPY ./ipfs-client/.env ./.env
+COPY ./worker-service/package*.json ./
+COPY ./worker-service/tsconfig.json ./
+COPY ./worker-service/.env ./.env
 RUN npm install --force /usr/interfaces/guardian-interfaces-*.tgz /usr/common/guardian-common-*.tgz
 RUN npm install --force
-ADD ./ipfs-client/src ./src/.
+ADD ./worker-service/src ./src/.
 RUN npm run build
 
 CMD npm start
