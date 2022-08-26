@@ -34,6 +34,8 @@ services:
       dockerfile: ./worker-service/Dockerfile
     depends_on:
       - ipfs-client
+    environment:
+      - SERVICE_CHANNEL="worker.1"
 
   worker-service-2:
     build:
@@ -41,6 +43,8 @@ services:
       dockerfile: ./worker-service/Dockerfile
     depends_on:
       - ipfs-client
+    environment:
+      - SERVICE_CHANNEL="worker.2"
 
   auth-service:
     build:
