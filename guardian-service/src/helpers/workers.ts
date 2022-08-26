@@ -8,18 +8,11 @@ import { MessageResponse } from '@guardian/common';
  */
 @Singleton
 export class Workers extends ServiceRequestsBase {
-
-    /**
-     * Getting task
-     * @private
-     */
-    private gettingTask = true;
-
     /**
      * Tasks sended to work
      * @private
      */
-    private tasksCallbacks: Map<string, IActiveTask> = new Map();
+    private readonly tasksCallbacks: Map<string, IActiveTask> = new Map();
 
     /**
      * Target
@@ -30,7 +23,7 @@ export class Workers extends ServiceRequestsBase {
      * Queue
      * @private
      */
-    private queue: ITask[] = [];
+    private readonly queue: ITask[] = [];
 
     /**
      * Add task

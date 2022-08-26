@@ -15,7 +15,7 @@ import { SchemaMessage } from './schema-message';
 import { MessageAction } from './message-action';
 import { VPMessage } from './vp-message';
 import { TransactionLogger } from '../transaction-logger';
-import { GenerateUUIDv4, MessageAPI, WorkerTaskType } from '@guardian/interfaces';
+import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
 import { Workers } from '@helpers/workers';
 import { Environment } from '../environment';
@@ -58,7 +58,7 @@ export class MessageServer {
      * Client options
      * @private
      */
-    private clientOptions: any;
+    private readonly clientOptions: any;
 
     constructor(
         operatorId: string | AccountId | null,
