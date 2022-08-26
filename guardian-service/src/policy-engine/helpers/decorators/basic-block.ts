@@ -10,7 +10,7 @@ import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/inte
 import { ExternalEventChannel, Logger } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import deepEqual from 'deep-equal';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Basic block decorator
@@ -352,20 +352,24 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public async updateBlock(state: any, user: IPolicyUser, tag: string) {
                 await this.saveState();
+                const users: { [x: string]: IPolicyUser } = {};
                 if (!this.options.followUser) {
                     const allUsers = await this.databaseServer.getAllPolicyUsers(this.policyId);
                     for (const userRole of allUsers) {
                         if (this.permissions.includes(userRole.role)) {
-                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
+                            users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
                         } else if (this.permissions.includes('ANY_ROLE')) {
-                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
+                            users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
                         }
                     }
                     if (this.permissions.includes('OWNER') || this.permissions.includes('ANY_ROLE')) {
-                        PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, { did: this.policyOwner } as any, tag);
+                        users[this.policyOwner] = new PolicyUser(this.policyOwner);
                     }
                 } else {
-                    PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
+                    users[user.did] = user;
+                }
+                for (const did in users) {
+                    PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, users[did], tag);
                 }
             }
 

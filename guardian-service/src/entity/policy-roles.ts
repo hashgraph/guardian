@@ -74,6 +74,12 @@ export class PolicyRoles extends BaseEntity {
     active?: boolean;
 
     /**
+     * Message id
+     */
+    @Property({ nullable: true })
+    messageId?: string;
+
+    /**
      * Default document values
      */
     @BeforeCreate()

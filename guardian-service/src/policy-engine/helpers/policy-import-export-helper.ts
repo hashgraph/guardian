@@ -116,7 +116,9 @@ export class PolicyImportExportHelper {
             DatabaseServer.getSystemSchema(SchemaEntity.POLICY),
             DatabaseServer.getSystemSchema(SchemaEntity.MINT_TOKEN),
             DatabaseServer.getSystemSchema(SchemaEntity.MINT_NFTOKEN),
-            DatabaseServer.getSystemSchema(SchemaEntity.WIPE_TOKEN)
+            DatabaseServer.getSystemSchema(SchemaEntity.WIPE_TOKEN),
+            DatabaseServer.getSystemSchema(SchemaEntity.ISSUER),
+            DatabaseServer.getSystemSchema(SchemaEntity.USER_ROLE)
         ]);
 
         for (const schema of schemas) {
@@ -124,7 +126,6 @@ export class PolicyImportExportHelper {
                 throw new Error('One of system schemas is not exist');
             }
         }
-
         return schemas;
     }
 

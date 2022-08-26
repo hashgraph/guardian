@@ -3,10 +3,13 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType } from '@guardian/interfaces';
+import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
+import { VcHelper } from '@helpers/vc-helper';
+import { MessageAction, MessageServer, VcDocument, VCMessage } from '@hedera-modules';
+import { PolicyRoles } from '@entity/policy-roles';
 
 interface IUserGroup {
     /**
@@ -52,7 +55,11 @@ interface IUserGroup {
     /**
      * Is active
      */
-    active: boolean
+    active: boolean,
+    /**
+     * Message Id
+     */
+    messageId?: string
 }
 
 interface IGroupConfig {
@@ -236,7 +243,7 @@ export class PolicyRolesBlock {
         }
 
         const member = await ref.databaseServer.getUserInGroup(ref.policyId, did, uuid);
-        if(member) {
+        if (member) {
             throw new BlockActionError('You are already a member of this group.', ref.blockType, ref.uuid);
         }
 
@@ -254,6 +261,62 @@ export class PolicyRolesBlock {
             active: true
         }
         return group;
+    }
+
+
+    /**
+     * Create group VC
+     * @param root
+     * @param token
+     * @param data
+     * @param ref
+     * @private
+     */
+    private async createVC(ref: AnyBlockType, user: IPolicyUser, doc: IUserGroup): Promise<string> {
+        const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+        const vcHelper = new VcHelper();
+        const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.USER_ROLE);
+        const vcSubject: any = {
+            ...SchemaHelper.getContext(policySchema),
+            "id": GenerateUUIDv4(),
+            "role": doc.role,
+            "userId": doc.did,
+            "policyId": ref.policyId
+        }
+        if (doc.uuid) {
+            vcSubject.groupOwner = doc.uuid;
+        }
+        if (doc.owner) {
+            vcSubject.groupOwner = doc.owner;
+        }
+        if (doc.groupName) {
+            vcSubject.groupName = doc.groupName;
+        }
+        if (doc.groupLabel) {
+            vcSubject.groupLabel = doc.groupLabel;
+        }
+        
+        const mintVC = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+
+        const rootTopic = await ref.databaseServer.getTopic({
+            policyId: ref.policyId,
+            type: TopicType.InstancePolicyTopic
+        });
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
+        const vcMessage = new VCMessage(MessageAction.CreateVC);
+        vcMessage.setDocument(mintVC);
+        const vcMessageResult = await messageServer
+            .setTopicObject(rootTopic)
+            .sendMessage(vcMessage);
+
+        const vcDocument = PolicyUtils.createVC(ref, user, mintVC);
+        vcDocument.type = DataTypes.USER_ROLE;
+        vcDocument.schema = `#${mintVC.getSubjectType()}`;
+        vcDocument.messageId = vcMessageResult.getId();
+        vcDocument.topicId = vcMessageResult.getTopicId();
+        vcDocument.relationships = null;
+        await ref.databaseServer.saveVC(vcDocument);
+        return vcMessageResult.getId();
     }
 
     /**
@@ -298,6 +361,7 @@ export class PolicyRolesBlock {
             throw new BlockActionError('Invalid role', ref.blockType, ref.uuid);
         }
 
+        group.messageId = await this.createVC(ref, user, group);
         await ref.databaseServer.setUserInGroup(group);
 
         await Promise.all([

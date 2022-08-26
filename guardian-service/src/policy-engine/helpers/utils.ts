@@ -3,7 +3,7 @@ import { Topic } from '@entity/topic';
 import { HederaSDKHelper, HederaUtils, VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
-import { DidDocumentStatus, DocumentSignature, DocumentStatus, ExternalMessageEvents, Schema, TopicType } from '@guardian/interfaces';
+import { DidDocumentStatus, DocumentSignature, DocumentStatus, ExternalMessageEvents, Schema, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { ExternalEventChannel, IAuthUser } from '@guardian/common';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { TopicId } from '@hashgraph/sdk';
@@ -19,7 +19,8 @@ export enum DataTypes {
     MRV = 'mrv',
     REPORT = 'report',
     MINT = 'mint',
-    RETIREMENT = 'retirement'
+    RETIREMENT = 'retirement',
+    USER_ROLE = 'user-role'
 }
 
 /**
@@ -921,5 +922,18 @@ export class PolicyUtils {
         }
 
         return document;
+    }
+
+    public static async getGroupContext(ref: AnyBlockType, user: IPolicyUser): Promise<any> {
+        const group = await ref.databaseServer.getUserInGroup(ref.policyId, user.did, user.group);
+        if (group && group.messageId) {
+            const groupSchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.ISSUER);
+            return {
+                groupId: group.messageId,
+                context: groupSchema.contextURL,
+                type: groupSchema.name
+            }
+        }
+        return null;
     }
 }

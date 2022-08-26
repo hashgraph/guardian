@@ -131,3 +131,10 @@ form {
 :host mat-form-field {
     cursor: not-allowed;
 }
+
+.issuer-option {
+    padding-left: 42px;
+    border-left: 2px dashed #c8c8c8;
+    padding-top: 5px;
+    margin-top: 20px;
+}

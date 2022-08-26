@@ -1,5 +1,5 @@
 import { KeyType } from '@helpers/wallet';
-import { DidDocumentStatus, GenerateUUIDv4, Schema } from '@guardian/interfaces';
+import { DidDocumentStatus, GenerateUUIDv4, Schema, SchemaEntity } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
@@ -212,6 +212,7 @@ export class RequestVcDocumentBlock {
 
             const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
 
+
             const document = _data.document;
             const documentRef = await this.getRelationships(ref, _data.ref);
 
@@ -246,7 +247,13 @@ export class RequestVcDocumentBlock {
                 throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
             }
 
-            const vc = await _vcHelper.createVC(user.did, hederaAccount.hederaAccountKey, credentialSubject);
+            const groupContext = await PolicyUtils.getGroupContext(ref, user);
+            const vc = await _vcHelper.createVC(
+                user.did,
+                hederaAccount.hederaAccountKey,
+                credentialSubject,
+                groupContext
+            );
             const accounts = PolicyUtils.getHederaAccounts(vc, hederaAccount.hederaAccountId, schema);
 
             let item = PolicyUtils.createVC(ref, user, vc);

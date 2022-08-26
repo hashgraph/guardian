@@ -122,14 +122,13 @@ export class PolicyEngineService {
         }
 
         const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(uuid);
-
-        let changed = true;
         if (await block.isAvailable(user)) {
-            if (['interfaceStepBlock', 'interfaceContainerBlock'].includes(block.blockType)) {
+            let changed = true;
+            if (block.blockClassName === 'ContainerBlock') {
                 changed = true;
-            } else if (typeof PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(block).getData === 'function') {
-                const data = await PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(block).getData(user, null, null);
-                changed = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(block).updateDataState(user, data);
+            } else if (typeof block.getData === 'function') {
+                const data = await block.getData(user, null, null);
+                changed = block.updateDataState(user, data);
             }
             if (changed) {
                 await this.channel.request(['api-gateway', 'update-block'].join('.'), {

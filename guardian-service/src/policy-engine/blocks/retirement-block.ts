@@ -56,11 +56,7 @@ export class RetirementBlock {
             tokenId: token.tokenId,
             amount: amount.toString()
         }
-        const wipeVC = await vcHelper.createVC(
-            root.did,
-            root.hederaAccountKey,
-            vcSubject
-        );
+        const wipeVC = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
         return wipeVC;
     }
 

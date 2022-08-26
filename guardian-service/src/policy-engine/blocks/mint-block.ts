@@ -58,11 +58,7 @@ export class MintBlock {
             tokenId: token.tokenId,
             amount: amount.toString()
         }
-        const mintVC = await vcHelper.createVC(
-            root.did,
-            root.hederaAccountKey,
-            vcSubject
-        );
+        const mintVC = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
         return mintVC;
     }
 

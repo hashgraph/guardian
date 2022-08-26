@@ -673,15 +673,6 @@ export class DatabaseServer {
         });
     }
 
-
-
-
-
-
-
-
-
-
     /**
      * Set user in group
      * 
@@ -696,7 +687,7 @@ export class DatabaseServer {
     }
 
     /**
-     * Active Group
+     * Set Active Group
      * 
      * @param policyId
      * @param did
@@ -704,7 +695,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async activeGroup(policyId: string, did: string, uuid: string): Promise<void> {
+    public async setActiveGroup(policyId: string, did: string, uuid: string): Promise<void> {
         const groups = await this.find(PolicyRolesCollection, { policyId, did });
         for (const group of groups) {
             group.active = group.uuid === uuid;
@@ -788,51 +779,8 @@ export class DatabaseServer {
      * @virtual
      */
     public async getAllPolicyUsers(policyId: string): Promise<PolicyRolesCollection[]> {
-        console.warn("deleted")
-        return await this.find(PolicyRolesCollection, { policyId });
+        return await this.find(PolicyRolesCollection, { policyId, active: true });
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Create invite token
@@ -1393,7 +1341,7 @@ export class DatabaseServer {
      * @param filters Filters
      * @returns Tokens
      */
-    public static async getTokens(filters? : any): Promise<TokenCollection[]> {
+    public static async getTokens(filters?: any): Promise<TokenCollection[]> {
         return await new DataBaseHelper(TokenCollection).find(filters);
     }
 }

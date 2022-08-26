@@ -137,7 +137,11 @@ export class VCSchemaLoader extends SchemaLoader {
                                 'id': {
                                     'type': 'string',
                                 },
+                                'group': {
+                                    'type': 'string',
+                                },
                             },
+                            'required': ['id'],
                         },
                     ],
                 },

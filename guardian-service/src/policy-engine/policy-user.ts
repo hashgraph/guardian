@@ -1,3 +1,4 @@
+import { PolicyRoles } from "@entity/policy-roles";
 import { PolicyRole } from "@guardian/interfaces";
 
 /**
@@ -91,5 +92,10 @@ export class PolicyUser implements IPolicyUser {
             this.virtual = true;
         }
         return this;
+    }
+
+    public static create(group: PolicyRoles, virtual: boolean = false): PolicyUser {
+        const user = new PolicyUser(group.did, virtual);
+        return user.setGroup({ role: group.role, uuid: group.uuid });
     }
 }

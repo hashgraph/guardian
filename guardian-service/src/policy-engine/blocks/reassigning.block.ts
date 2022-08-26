@@ -8,6 +8,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@poli
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { SchemaEntity } from '@guardian/interfaces';
 
 /**
  * Reassigning block
@@ -50,16 +51,20 @@ export class ReassigningBlock {
         actor: IPolicyUser
     }> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-
         const vcDocument = document.document;
+        const owner: IPolicyUser = PolicyUtils.getDocumentOwner(ref, document);
 
         let root: any;
+        let groupContext: any;
         if (ref.options.issuer === 'owner') {
             root = await PolicyUtils.getHederaAccount(ref, document.owner);
+            groupContext = await PolicyUtils.getGroupContext(ref, owner);
         } else if (ref.options.issuer === 'policyOwner') {
             root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+            groupContext = null;
         } else {
             root = await PolicyUtils.getHederaAccount(ref, user.did);
+            groupContext = await PolicyUtils.getGroupContext(ref, user);
         }
 
         let actor: IPolicyUser;
@@ -71,12 +76,14 @@ export class ReassigningBlock {
             actor = user;
         }
 
-        let owner: IPolicyUser = PolicyUtils.getDocumentOwner(ref, document);
-
         const credentialSubject = vcDocument.credentialSubject[0];
-        const vc: any = await this.vcHelper.createVC(root.did, root.hederaAccountKey, credentialSubject);
-        
-        
+        const vc: any = await this.vcHelper.createVC(
+            root.did, 
+            root.hederaAccountKey, 
+            credentialSubject,
+            groupContext
+        );
+
         let item = PolicyUtils.createVC(ref, owner, vc);
         item.type = document.type;
         item.schema = document.schema;
@@ -121,3 +128,4 @@ export class ReassigningBlock {
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, event.data);
     }
 }
+

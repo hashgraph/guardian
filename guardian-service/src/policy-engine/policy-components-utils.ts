@@ -531,7 +531,7 @@ export class PolicyComponentsUtils {
      * @param uuid
      */
     public static async SelectGroup(policy: IPolicyInstance, user: IPolicyUser, uuid: string): Promise<void> {
-        await policy.databaseServer.activeGroup(policy.policyId, user.did, uuid);
+        await policy.databaseServer.setActiveGroup(policy.policyId, user.did, uuid);
     }
 
     /**
