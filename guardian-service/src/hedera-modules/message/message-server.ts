@@ -15,8 +15,10 @@ import { SchemaMessage } from './schema-message';
 import { MessageAction } from './message-action';
 import { VPMessage } from './vp-message';
 import { TransactionLogger } from '../transaction-logger';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
+import { Workers } from '@helpers/workers';
+import { Environment } from '../environment';
 
 /**
  * Message server
@@ -51,11 +53,20 @@ export class MessageServer {
      */
     private readonly dryRun: string = null;
 
+    /**
+     * Client options
+     * @private
+     */
+    private clientOptions: any;
+
     constructor(
         operatorId: string | AccountId | null,
         operatorKey: string | PrivateKey | null,
         dryRun: string = null
     ) {
+
+        this.clientOptions = {operatorId, operatorKey, dryRun};
+
         this.dryRun = dryRun || null;
         this.client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
     }
@@ -205,7 +216,18 @@ export class MessageServer {
         message.setLang(MessageServer.lang);
         const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
-        const id = await this.client.submitMessage(this.topicId, buffer, this.submitKey);
+        const id = await new Workers().addTask({
+            type: WorkerTaskType.SEND_HEDERA,
+            data: {
+                topicId: this.topicId,
+                buffer,
+                submitKey: this.submitKey,
+                clientOptions: this.clientOptions,
+                network: Environment.network,
+                localNodeAddress: Environment.localNodeAddress,
+                localNodeProtocol: Environment.localNodeProtocol
+            }
+        }, 0);
         await this.messageEndLog(time, 'Hedera');
         message.setId(id);
         message.setTopicId(this.topicId);

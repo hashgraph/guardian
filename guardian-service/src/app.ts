@@ -183,10 +183,4 @@ Promise.all([
     await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
 
     await state.updateState(ApplicationStates.READY);
-
-    setInterval(async () => {
-        console.log('task start')
-        const result = await workersHelper.addTask({name: 'new-task'}, 10);
-        console.log('task complete', result);
-    }, 5000)
 });
