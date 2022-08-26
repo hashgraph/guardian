@@ -31,7 +31,14 @@ import {
     COMMON_CONNECTION_CONFIG
 } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
-import { Environment, HederaSDKHelper, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
+import {
+    Environment,
+    HederaSDKHelper,
+    MessageServer,
+    TopicMemo,
+    TransactionLogger,
+    TransactionLogLvl
+} from '@hedera-modules';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -138,7 +145,7 @@ Promise.all([
 
     if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
         const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);
-        const topicId = await client.newTopic(process.env.OPERATOR_KEY);
+        const topicId = await client.newTopic(process.env.OPERATOR_KEY, null, TopicMemo.getGlobalTopicMemo());
         process.env.INITIALIZATION_TOPIC_ID = topicId;
     }
 

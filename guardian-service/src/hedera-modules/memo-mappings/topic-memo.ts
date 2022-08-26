@@ -16,6 +16,11 @@ export class TopicMemo extends MemoMap {
     private static readonly _topicMemoMapping = TopicMemo.initTopicMap();
 
     /**
+     * Global topic memo
+     */
+    private static readonly _globalTopicMemo = 'Standard Registries initialization topic';
+
+    /**
      * Get topic memo
      * @param config Topic config
      * @returns Memo
@@ -57,5 +62,13 @@ export class TopicMemo extends MemoMap {
         topicMemo[TopicType.DynamicTopic] = '${name} operation topic';
         topicMemo[TopicType.SchemaTopic] = 'Schema development topic';
         return topicMemo;
+    }
+
+    /**
+     * Get global topic memo
+     * @returns Global topic memo
+     */
+    public static getGlobalTopicMemo(): string {
+        return TopicMemo._globalTopicMemo;
     }
 }
