@@ -35,6 +35,10 @@ export class PolicyEngineService {
         return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push`, policy);
     }
 
+    public pushClone(policyId: string, policy: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/${policyId}`, policy);
+    }
+
     public policy(policyId: string): Observable<any> {
         return this.http.get<any>(`${this.url}/${policyId}`);
     }

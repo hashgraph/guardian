@@ -1278,4 +1278,13 @@ export class DatabaseServer {
             messageId
         });
     }
+
+    /**
+     * Get tokens
+     * @param filters Filters
+     * @returns Tokens
+     */
+    public static async getTokens(filters? : any): Promise<TokenCollection[]> {
+        return await new DataBaseHelper(TokenCollection).find(filters);
+    }
 }

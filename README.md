@@ -43,40 +43,40 @@ If you build with docker [MongoDB](https://www.mongodb.com), [NodeJS](https://no
    git clone https://github.com/hashgraph/guardian.git
    ```
 
-2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
+2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation ID and Operator Key by looking at link : [How to Create Operator ID and Operator Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key). There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
 
    For example:
 
    in `guardian-service/.env`:
 
    ```plaintext
-   OPERATOR_ID="0.0.29676495"
-   OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
+   OPERATOR_ID=""
+   OPERATOR_KEY=""
    ```
 
    in `guardian-service/.env.docker`:
 
    ```plaintext
-   OPERATOR_ID="0.0.29676495"
-   OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
+   OPERATOR_ID=""
+   OPERATOR_KEY=""
    ```
 
    **Note**. You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 
-3. Update the following files with your Web3.Storage API KEY. Please follow the steps from <https://web3.storage/docs/#quickstart> to obtain it.
+3. Update the following files with your Web3.Storage API KEY. Please follow the steps from <https://web3.storage/docs/#quickstart> to obtain it.To know complete information on generating API Key please check [How to Create Web3.Storage API Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-web3.storage-api-key).
 
    For example:
 
    in `ipfs-client/.env`:
 
    ```plaintext
-   IPFS_STORAGE_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDZhY0FFMmM3QjA5ODdCMjU1ZGZFMjMxZTA0YzI5NDZBZWI0YzE5NkQiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NjAwNzIyNzg4MDgsIm5hbWUiOiJ0ZXN0In0.vzt0-vBlbKiUSeyBZ6i3qTBKVMR3RL7CnkEXVNqvSH4"
+   IPFS_STORAGE_API_KEY=""
    ```
 
    or in `ipfs-client/.env.docker`:
 
    ```plaintext
-   IPFS_STORAGE_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDZhY0FFMmM3QjA5ODdCMjU1ZGZFMjMxZTA0YzI5NDZBZWI0YzE5NkQiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NjAwNzIyNzg4MDgsIm5hbWUiOiJ0ZXN0In0.vzt0-vBlbKiUSeyBZ6i3qTBKVMR3RL7CnkEXVNqvSH4"
+   IPFS_STORAGE_API_KEY=""
    ```
 
 4. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
@@ -239,8 +239,8 @@ Install, configure and start all the prerequisites, then build and start each co
 2. Configure Guardian's configuration files `.env/.env.docker` accordingly:
 
    ```shell
-   OPERATOR_ID="0.0.2"
-   OPERATOR_KEY="302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
+   OPERATOR_ID=""
+   OPERATOR_KEY=""
    LOCALNODE_ADDRESS="11.11.11.11"
    LOCALNODE_PROTOCOL="http"
    HEDERA_NET="localnode"
@@ -250,7 +250,7 @@ Install, configure and start all the prerequisites, then build and start each co
 
    * Set `LOCALNODE_ADDRESS` to the IP address of your local node instance. The value above is given as example.
    * Set `HEDERA_NET` to `localnode`. If not specified, the default value is `testnet`.
-   * Configure `OPERATOR_ID` and `OPERATOR_KEY` accordingly with your local node configuration. The values above are given as example.
+   * Configure `OPERATOR_ID` and `OPERATOR_KEY` accordingly with your local node configuration.
    * Remove `INITIALIZATION_TOPIC_ID` as the topic will be created automatically.
    * Set `LOCALNODE_PROTOCOL` to `http` or `https` accordingly with your local node configuration (it uses HTTP by default).
 

@@ -19,6 +19,7 @@ import { GenerateUUIDv4, MessageAPI, WorkerTaskType } from '@guardian/interfaces
 import { DatabaseServer } from '@database-modules';
 import { Workers } from '@helpers/workers';
 import { Environment } from '../environment';
+import { MessageMemo } from '../memo-mappings/message-memo';
 
 /**
  * Message server
@@ -209,7 +210,7 @@ export class MessageServer {
      * @param message
      * @private
      */
-    private async sendHedera<T extends Message>(message: T): Promise<T> {
+    private async sendHedera<T extends Message>(message: T, memo?: string): Promise<T> {
         if (!this.topicId) {
             throw new Error('Topic not set');
         }
@@ -225,7 +226,8 @@ export class MessageServer {
                 clientOptions: this.clientOptions,
                 network: Environment.network,
                 localNodeAddress: Environment.localNodeAddress,
-                localNodeProtocol: Environment.localNodeProtocol
+                localNodeProtocol: Environment.localNodeProtocol,
+                memo:  memo || MessageMemo.getMessageMemo(message)
             }
         }, 0);
         await this.messageEndLog(time, 'Hedera');
@@ -340,11 +342,11 @@ export class MessageServer {
      * @param message
      * @param sendToIPFS
      */
-    public async sendMessage<T extends Message>(message: T, sendToIPFS: boolean = true): Promise<T> {
+    public async sendMessage<T extends Message>(message: T, sendToIPFS: boolean = true, memo?: string): Promise<T> {
         if (sendToIPFS) {
             message = await this.sendIPFS(message);
         }
-        message = await this.sendHedera(message);
+        message = await this.sendHedera(message, memo);
         if(this.dryRun) {
             await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
         }

@@ -1,6 +1,7 @@
 import { TopicType } from '@guardian/interfaces';
 import { HederaSDKHelper, MessageAction, MessageServer, TopicMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';
+import { TopicMemo } from './memo-mappings/topic-memo';
 
 /**
  * Topic Helper
@@ -72,11 +73,25 @@ export class TopicHelper {
             /**
              * Policy UUID
              */
-            policyUUID?: string
+            policyUUID?: string,
+
+            /**
+             * Topic Memo
+             */
+            memo?: string,
+
+            /**
+             * Memo parameters object
+             */
+            memoObj?: any
         }
     ): Promise<Topic> {
         const client = new HederaSDKHelper(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
-        const topicId = await client.newTopic(this.hederaAccountKey, this.hederaAccountKey, config.type);
+        const topicId = await client.newTopic(
+            this.hederaAccountKey,
+            this.hederaAccountKey,
+            TopicMemo.parseMemo(true, config.memo, config.memoObj) || TopicMemo.getTopicMemo(config)
+        );
         return {
             topicId,
             name: config.name,
