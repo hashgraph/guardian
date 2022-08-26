@@ -18,13 +18,18 @@ Roles in the below Workflow Diagram are represented as follows : Project Propone
 
 ![image](https://user-images.githubusercontent.com/79293833/186554269-b68a5631-b4bd-4e40-9daf-e0afc443ff39.png)
 
+**Note** :
+For Demo purpose, we have uploaded two versions of Verra Policies into IPFS and created Timestamps, which are mentioned in the below table.
 
-**Verra REDD Versions and their timestamps:**
 
-| Version | Timestamp | Link |
+**Verra REDD Versions and their IPFS timestamps:**
+
+| Version | IPFS Timestamp | Policy File Link |
 |---|---|---:|
 | Verra 1.1.0  | 1660047003.069328003 | [Link](https://github.com/hashgraph/guardian) |
 | Verra 2.2.2 | 1660047783.273928893 | [Link](https://github.com/hashgraph/guardian) |
+
+In addition to the above Policy Versions, we have also added Schema Design Template file for demo purpose. Please check : [Sample Design Template](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/Verra%20Redd/REDD%20APD%20Schema%20Design%20Template.xlsx)
 
 For step by step user guide to execute Verra Policy, please refer to https://docs.hedera.com/guardian/demo-guide/verra-redd+-demo-guide.
 
