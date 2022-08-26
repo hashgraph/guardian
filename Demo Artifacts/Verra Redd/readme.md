@@ -23,5 +23,8 @@ Roles in the below Workflow Diagram are represented as follows : Project Propone
 
 | Version | Timestamp | Link |
 |---|---|---:|
-| Verra 1 | 1661166202.802071003 | [Link](https://github.com/hashgraph/guardian) |
-| Verra 2 | 1661167347.064745885 | [Link](https://github.com/hashgraph/guardian) |
+| Verra 1.1.0  | 1660047003.069328003 | [Link](https://github.com/hashgraph/guardian) |
+| Verra 2.2.2 | 1660047783.273928893 | [Link](https://github.com/hashgraph/guardian) |
+
+For step by step user guide to execute Verra Policy, please refer to https://docs.hedera.com/guardian/demo-guide/verra-redd+-demo-guide.
+
