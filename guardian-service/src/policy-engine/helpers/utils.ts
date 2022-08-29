@@ -972,6 +972,9 @@ export class PolicyUtils {
      * @param user
      */
     public static async getGroupContext(ref: AnyBlockType, user: IPolicyUser): Promise<any> {
+        if(!ref.isMultipleGroups) {
+            return null;
+        }
         const group = await ref.databaseServer.getUserInGroup(ref.policyId, user.did, user.group);
         if (group && group.messageId) {
             const groupSchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.ISSUER);

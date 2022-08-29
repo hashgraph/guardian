@@ -351,6 +351,7 @@ export class PolicyRolesBlock {
         return {
             roles: Array.isArray(ref.options.roles) ? ref.options.roles : [],
             groups: Array.isArray(ref.options.groups) ? ref.options.groups : [],
+            isMultipleGroups: ref.isMultipleGroups,
             uiMetaData: ref.options.uiMetaData
         }
     }

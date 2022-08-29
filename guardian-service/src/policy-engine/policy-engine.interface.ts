@@ -142,6 +142,11 @@ export interface IPolicyBlock {
     readonly dryRun: string;
 
     /**
+     * If policy contain multiple groups
+     */
+    readonly isMultipleGroups: boolean;
+
+    /**
      * Set policy owner
      * @param did
      */
@@ -686,5 +691,5 @@ export interface IPolicyInstance {
     /**
      * Is Multiple Group
      */
-     readonly isMultipleGroup: boolean;
+    readonly isMultipleGroup: boolean;
 }

@@ -200,6 +200,20 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
+             * If policy contain multiple groups
+             */
+            public get isMultipleGroups(): boolean {
+                if (
+                    this.policyInstance &&
+                    this.policyInstance.policyGroups &&
+                    this.policyInstance.policyGroups.length
+                ) {
+                    return true;
+                }
+                return false;
+            }
+
+            /**
              * Before init callback
              */
             public async beforeInit(): Promise<void> {
