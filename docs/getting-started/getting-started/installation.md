@@ -5,42 +5,42 @@
     ```
     git clone https://github.com/hashgraph/guardian.git
     ```
-2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
+2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation ID and Operator Key by looking at link : [Broken link](broken-reference "mention"). There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
 
 For example:
 
 in `guardian-service/.env`:
 
 ```
- OPERATOR_ID="0.0.29676495"
- OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
+ OPERATOR_ID=""
+ OPERATOR_KEY=""
 ```
 
 in `guardian-service/.env.docker`:
 
 ```
- OPERATOR_ID="0.0.29676495"
- OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
+ OPERATOR_ID=""
+ OPERATOR_KEY=""
 ```
 
 {% hint style="info" %}
 **Note:** You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 {% endhint %}
 
-3\. Update the following files with your Web3.Storage API KEY. Please follow the steps from [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart) to obtain it.
+3\. Update the following files with your Web3.Storage API KEY. Please follow the steps from [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart) to obtain it. To know complete information on generating API Key please check [Broken link](broken-reference "mention")
 
 For example:
 
 in `ipfs-client/.env`:
 
 ```
-IPFS_STORAGE_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+IPFS_STORAGE_API_KEY=""
 ```
 
 or in `ipfs-client/.env.docker`:
 
 ```
-IPFS_STORAGE_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+IPFS_STORAGE_API_KEY=""
 ```
 
 4\. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
@@ -204,8 +204,8 @@ npm start
 2. Configure Guardian's configuration files `.env/.env.docker` accordingly:
 
 ```
-OPERATOR_ID="0.0.2"
-OPERATOR_KEY="302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
+OPERATOR_ID=""
+OPERATOR_KEY=""
 LOCALNODE_ADDRESS="11.11.11.11"
 LOCALNODE_PROTOCOL="http"
 HEDERA_NET="localnode"
@@ -216,7 +216,7 @@ Note:
 
 1. Set **LOCALNODE\_ADDRESS** to the IP address of your local node instance. The value above is given as example.
 2. Set **HEDERA\_NET** to **localnode**. If not specified, the default value is **testnet.**
-3. Configure **OPERATOR\_ID** _and_ **OPERATOR\_KEY** accordingly with your local node configuration. The values above are given as example.
+3. Configure **OPERATOR\_ID** _and_ **OPERATOR\_KEY** accordingly with your local node configuration.
 4. Remove **INITIALISATION\_TOPIC\_ID** as the topic will be created automatically.
 5. Set **LOCALNODE\_PROTOCOL** to **http** or **https** accordingly with your local node configuration (It uses HTTP by default).
 {% endhint %}
@@ -289,7 +289,7 @@ npm run test
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialize Standard Registry by completing the Setup.
 
-![](<../../.gitbook/assets/image (23) (2).png>)
+![](<../../.gitbook/assets/image (14).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
@@ -331,23 +331,23 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 
 ### .env Parameters
 
-| Parameter                              | Purpose                                                                            | Example                                                                                          |
-| -------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| MQ\_ADDRESS                            | Web Socket Address                                                                 | localhost                                                                                        |
-| SERVICE\_CHANNEL                       | Version of the Guardian                                                            | guardian.1                                                                                       |
-| DB\_HOST                               | Hostname of the Database                                                           | localhost                                                                                        |
-| DB\_DATABASE                           | Database Name                                                                      | guardian\_db                                                                                     |
-| MAX\__TRANSACTION\_FEE_                | Maximum Transaction Fees Value                                                     | 10                                                                                               |
-| INITIAL\_BALANCE                       | Initial Balance Value                                                              | 500                                                                                              |
-| INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                                                                                              |
-| OPERATOR\_ID                           | The ID of the operation                                                            | 0.0.29676495                                                                                     |
-| OPERATOR\_KEY                          | Private key of the operator                                                        | 302e020100300506032b657004220420dcb89b3fcb576879ee2df40ecd0404244c74d0e75fbad5d8f327805361c2c92e |
-| LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                                                                                          |
-| LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                                                                                       |
-| HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet                                                                      |
-| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialisation topic.                                                | 0.0.46022543                                                                                     |
-| MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                                                                                            |
-| LOG\_LEVEL                             | level of the Logs                                                                  | 2                                                                                                |
+| Parameter                              | Purpose                                                                            | Example                     |
+| -------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------- |
+| MQ\_ADDRESS                            | Web Socket Address                                                                 | localhost                   |
+| SERVICE\_CHANNEL                       | Version of the Guardian                                                            | guardian.1                  |
+| DB\_HOST                               | Hostname of the Database                                                           | localhost                   |
+| DB\_DATABASE                           | Database Name                                                                      | guardian\_db                |
+| MAX\__TRANSACTION\_FEE_                | Maximum Transaction Fees Value                                                     | 10                          |
+| INITIAL\_BALANCE                       | Initial Balance Value                                                              | 500                         |
+| INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                         |
+| OPERATOR\_ID                           | The ID of the operation                                                            | -                           |
+| OPERATOR\_KEY                          | Private key of the operator                                                        | -                           |
+| LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                     |
+| LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                  |
+| HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet |
+| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialisation topic.                                                | 0.0.46022543                |
+| MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                       |
+| LOG\_LEVEL                             | level of the Logs                                                                  | 2                           |
 
 ### Summary of URLs and Ports
 

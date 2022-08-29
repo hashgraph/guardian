@@ -4,6 +4,8 @@ This block is responsible for adding configurations on calculating the amount of
 
 ### Properties
 
+
+
 | Block Property   | Definition                                                                        | Example Input                                                                         | Status |
 | ---------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------ |
 | tag              | Unique name for the logic block.                                                  | mintDocumentBlock                                                                     |        |
@@ -11,6 +13,17 @@ This block is responsible for adding configurations on calculating the amount of
 | defaultActive    | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                                                                 |        |
 | On errors        | Called if the system error has occurs in the Block                                | <p></p><ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul> |        |
 | Stop Propagation | End processing here, don't pass control to the next block.                        | Checked or unchecked.                                                                 |        |
+
+### UI Properties
+
+| UI Property        | Definition                                                                                                                                                                                                                                                     |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|  Token             | Token which is affected by the action                                                                                                                                                                                                                          |
+| Rule               | Math expression for calculation of the amount of tokens to mint.                                                                                                                                                                                               |
+| Account Id (Field) | The value from this field is used as the ID of the account under which the action is performed when ‘Account Type’ is set to ‘Custom’.                                                                                                                         |
+| Account Type       | <p>The type of the account under which the action is performed. If set to ‘Default’ the account of the currently logged in user is used (i.e. the owner of the document).</p><p>If set to ‘Custom’ the account specified in the ‘accountId’ field is used.</p> |
+
+
 
 ### UI Properties
 
@@ -28,6 +41,6 @@ This block is responsible for adding configurations on calculating the amount of
 2. If the field specified in the ‘accountId’ not found in the current document the system will look for it in the parent documents.
 {% endhint %}
 
-![](<../.gitbook/assets/image (5) (2).png>)
+![](<../.gitbook/assets/image (3).png>)
 
-![](<../.gitbook/assets/image (6) (2).png>)
+![](<../.gitbook/assets/image (10).png>)
