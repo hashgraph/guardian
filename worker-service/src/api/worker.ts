@@ -1,4 +1,4 @@
-import { MessageBrokerChannel } from '@guardian/common';
+import { Logger, MessageBrokerChannel } from '@guardian/common';
 import {
     IAddFileMessage,
     ITask,
@@ -26,6 +26,12 @@ function rejectTimeout(t: number): Promise<void> {
  * Worker class
  */
 export class Worker {
+    /**
+     * Logger instance
+     * @private
+     */
+    private logger: Logger;
+
     /**
      * Current task ID
      */
@@ -80,19 +86,25 @@ export class Worker {
     constructor(
         private readonly channel: MessageBrokerChannel
     ) {
+        this.logger = new Logger();
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
         this.taskTimeout = parseInt(process.env.TASK_TIMEOUT, 10) * 1000; // env in seconds
+    }
 
-        setInterval(async () => {
+    /**
+     * Initialize worker
+     */
+    public init(): void {
+        setInterval(() => {
             if (!this.isInUse) {
-                await this.getItem();
+                this.getItem().then();
             }
         }, parseInt(process.env.REFRESH_INTERVAL, 10) * 1000);
 
-        this.channel.subscribe(WorkerEvents.QUEUE_UPDATED, async (data: unknown) => {
+        this.channel.subscribe(WorkerEvents.QUEUE_UPDATED, () => {
             if (!this.isInUse) {
-                await this.getItem();
+                this.getItem().then();
             } else {
                 this.updateEventReceived = true;
             }
@@ -131,43 +143,15 @@ export class Worker {
     }
 
     /**
-     * Get item from queue
+     * Task actions
+     * @param task
+     * @private
      */
-    public async getItem(): Promise<any> {
-        this.isInUse = true;
-        let task: any = null;
-        try {
-            task = await Promise.race([
-                this.request(WorkerEvents.QUEUE_GET, {
-                    minPriority: this.minPriority,
-                    maxPriority: this.maxPriority,
-                    taskTimeout: this.taskTimeout
-                }),
-                rejectTimeout(parseInt(process.env.TASK_TIMEOUT, 10) * 1000)
-            ]);
-        } catch (e) {
-            this.clearState();
-            return;
-        }
-        if (!task) {
-            this.isInUse = false;
-
-            if (this.updateEventReceived) {
-                this.updateEventReceived = false;
-                await this.getItem();
-            }
-
-            return;
-        }
-
-        this.currentTaskId = task.id;
+    private async processTask(task: ITask): Promise<ITaskResult> {
         const result: ITaskResult = {
             id: this.currentTaskId
         }
 
-        /**
-         * Actions
-         */
         try {
             switch (task.type) {
                 case WorkerTaskType.GET_FILE:
@@ -193,8 +177,70 @@ export class Worker {
             result.error = e.message;
         }
 
+        return result;
+    }
+
+    /**
+     * Process with timeout
+     * @param task
+     * @private
+     */
+    private processTaskWithTimeout(task: ITask): Promise<ITaskResult> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const result = await Promise.race([
+                    this.processTask(task),
+                    rejectTimeout(this.taskTimeout)
+                ]);
+                resolve(result as ITaskResult);
+            } catch (e) {
+                resolve({
+                    id: this.currentTaskId,
+                    error: e.message
+                });
+            }
+        })
+    }
+
+    /**
+     * Get item from queue
+     */
+    public async getItem(): Promise<any> {
+        this.isInUse = true;
+        let task: any = null;
+        try {
+            task = await Promise.race([
+                this.request(WorkerEvents.QUEUE_GET, {
+                    minPriority: this.minPriority,
+                    maxPriority: this.maxPriority,
+                    taskTimeout: this.taskTimeout
+                }),
+                rejectTimeout(this.taskTimeout)
+            ]);
+        } catch (e) {
+            this.clearState();
+            return;
+        }
+
+        this.logger.info(`Task recieved`, [process.env.SERVICE_CHANNEL.toUpperCase()])
+
+        if (!task) {
+            this.isInUse = false;
+
+            if (this.updateEventReceived) {
+                this.updateEventReceived = false;
+                this.getItem().then();
+            }
+
+            return;
+        }
+
+        this.currentTaskId = task.id;
+
+        const result = await this.processTaskWithTimeout(task);
+
         await this.request(WorkerEvents.TASK_COMPLETE, result);
 
-        await this.getItem();
+        this.getItem().then();
     }
 }

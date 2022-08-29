@@ -1,4 +1,4 @@
-import { MessageBrokerChannel } from '@guardian/common';
+import { ApplicationState, Logger, MessageBrokerChannel } from '@guardian/common';
 import { Worker } from './api/worker';
 
 Promise.all([
@@ -7,7 +7,13 @@ Promise.all([
     const [cn] = values;
     const channel = new MessageBrokerChannel(cn, 'worker');
 
-    const w = new Worker(channel);
+    const logger = new Logger();
+    logger.setChannel(channel);
+    const state = new ApplicationState(process.env.SERVICE_CHANNEL.toUpperCase());
+    state.setChannel(channel);
 
-    console.log('Worker started');
+    const w = new Worker(channel);
+    w.init();
+
+    logger.info('Worker started', [process.env.SERVICE_CHANNEL.toUpperCase()]);
 })
