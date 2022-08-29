@@ -26,3 +26,5 @@ export { Environment } from './environment';
 export { TransactionLogger, TransactionLogLvl } from './transaction-logger';
 export { RegistrationMessage } from './message/registration-message';
 export { TopicHelper } from './topic-helper';
+export { MessageMemo } from './memo-mappings/message-memo';
+export { TopicMemo } from './memo-mappings/topic-memo';

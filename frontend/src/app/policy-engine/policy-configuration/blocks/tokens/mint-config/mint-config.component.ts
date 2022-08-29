@@ -46,4 +46,10 @@ export class MintConfigComponent implements OnInit {
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
+
+    changeAccountType(value: any) {
+        if (value === "default") {
+            delete this.block.accountId;
+        }
+    }
 }

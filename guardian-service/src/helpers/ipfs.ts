@@ -1,6 +1,7 @@
 import { MessageBrokerChannel } from '@guardian/common';
-import { MessageAPI, IGetFileMessage, IFileResponse, IAddFileMessage } from '@guardian/interfaces';
+import { MessageAPI, IFileResponse, WorkerTaskType } from '@guardian/interfaces';
 import { IPFSTaskManager } from './ipfs-task-manager';
+import { Workers } from '@helpers/workers';
 
 /**
  * IPFS service
@@ -48,7 +49,16 @@ export class IPFS {
          */
         url: string
     }> {
-        const res = await IPFS.channel.request<IAddFileMessage, IFileResponse>([IPFS.target, MessageAPI.IPFS_ADD_FILE].join('.'), { content: Buffer.from(file).toString('base64') });
+        const res = await new Workers().addTask({
+        type: WorkerTaskType.ADD_FILE,
+        data: {
+            target: [IPFS.target, MessageAPI.IPFS_ADD_FILE].join('.'),
+            payload: {
+                content: Buffer.from(file).toString('base64')
+            }
+        }
+    }, 10);
+
         if (!res) {
             throw new Error('Invalid response');
         }
@@ -73,7 +83,15 @@ export class IPFS {
          */
         url: string
     }> {
-        const res = await IPFS.channel.request<IAddFileMessage, any>([IPFS.target, MessageAPI.IPFS_ADD_FILE_ASYNC].join('.'), { content: Buffer.from(file).toString('base64') });
+        const res = await new Workers().addTask({
+            type: WorkerTaskType.ADD_FILE,
+            data: {
+                target: [IPFS.target, MessageAPI.IPFS_ADD_FILE_ASYNC].join('.'),
+                payload: {
+                    content: Buffer.from(file).toString('base64')
+                }
+            }
+        }, 10);
         if (!res) {
             throw new Error('Invalid response');
         }
@@ -99,7 +117,13 @@ export class IPFS {
      * @returns File
      */
     public static async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
-        const res = (await IPFS.channel.request<IGetFileMessage, any>([IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'), { cid, responseType }));
+        const res = await new Workers().addTask({
+            type: WorkerTaskType.GET_FILE,
+            data: {
+                target: [IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'),
+                payload: { cid, responseType }
+            }
+        }, 10);
         if (!res) {
             throw new Error('Invalid response');
         }
@@ -116,7 +140,13 @@ export class IPFS {
      * @returns File
      */
     public static async getFileAsync(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
-        const res = (await IPFS.channel.request<IGetFileMessage, any>([IPFS.target, MessageAPI.IPFS_GET_FILE_ASYNC].join('.'), { cid, responseType }));
+        const res = await new Workers().addTask({
+            type: WorkerTaskType.GET_FILE,
+            data: {
+                target: [IPFS.target, MessageAPI.IPFS_GET_FILE_ASYNC].join('.'),
+                payload: { cid, responseType }
+            }
+        }, 10);
         if (!res) {
             throw new Error('Invalid response');
         }

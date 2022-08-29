@@ -176,6 +176,8 @@ export class PolicyTopicModel {
     private _description: string;
     private _type: string;
     private _static: boolean;
+    private _memoObj: string;
+    private _memo: string;
 
     private _changed: boolean;
 
@@ -189,6 +191,8 @@ export class PolicyTopicModel {
         this._description = topic.description;
         this._type = topic.type;
         this._static = topic.static;
+        this._memoObj = topic.memoObj || "topic";
+        this._memo = topic.memo;
     }
 
     public get name(): string {
@@ -227,6 +231,24 @@ export class PolicyTopicModel {
         this.changed = true;
     }
 
+    public get memoObj(): string {
+        return this._memoObj;
+    }
+
+    public set memoObj(value: string) {
+        this._memoObj = value;
+        this.changed = true;
+    }
+
+    public get memo(): string {
+        return this._memo;
+    }
+
+    public set memo(value: string) {
+        this._memo = value;
+        this.changed = true;
+    }
+
     public get changed(): boolean {
         return this._changed;
     }
@@ -248,7 +270,9 @@ export class PolicyTopicModel {
             type: this.type,
             name: this.name,
             description: this.description,
-            static: this.static
+            static: this.static,
+            memo: this.memo,
+            memoObj: this.memoObj
         };
     }
 

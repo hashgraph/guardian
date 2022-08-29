@@ -142,15 +142,25 @@ export class MintBlock {
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vpMessage);
-
+        const vpMessageId = vpMessageResult.getId();
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DataTypes.MINT;
-        vcDocument.messageId = vpMessageResult.getId();
+        vcDocument.messageId = vpMessageId;
         vcDocument.topicId = vpMessageResult.getTopicId();
 
         await ref.databaseServer.saveVP(vcDocument);
 
-        await PolicyUtils.mint(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());
+        await PolicyUtils.mint(
+            ref,
+            token,
+            tokenValue,
+            root,
+            targetAccountId,
+            vpMessageId,
+            vpMessageId
+                .concat(' ', MessageMemo.parseMemo(true, ref.options.memo, savedVp))
+                .trimEnd()
+        );
 
         return vp;
     }

@@ -204,7 +204,8 @@ export class PolicyUtils {
         tokenValue: number,
         root: any,
         targetAccount: string,
-        uuid: string
+        uuid: string,
+        transactionMemo: string
     ): Promise<void> {
         const mintId = Date.now();
         ref.log(`Mint(${mintId}): Start (Count: ${tokenValue})`);
@@ -227,7 +228,7 @@ export class PolicyUtils {
                     ref.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
                 }
                 try {
-                    const newSerials = await client.mintNFT(tokenId, supplyKey, element, uuid);
+                    const newSerials = await client.mintNFT(tokenId, supplyKey, element, transactionMemo);
                     for (const serial of newSerials) {
                         serials.push(serial)
                     }
@@ -246,17 +247,17 @@ export class PolicyUtils {
                     ref.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`);
                 }
                 try {
-                    await client.transferNFT(tokenId, targetAccount, adminId, adminKey, element, uuid);
+                    await client.transferNFT(tokenId, targetAccount, adminId, adminKey, element, transactionMemo);
                 } catch (error) {
                     ref.error(`Mint(${mintId}): Transfer Error (${error.message})`);
                 }
             }
         } else {
-            await client.mint(tokenId, supplyKey, tokenValue, uuid);
-            await client.transfer(tokenId, targetAccount, adminId, adminKey, tokenValue, uuid);
+            await client.mint(tokenId, supplyKey, tokenValue, transactionMemo);
+            await client.transfer(tokenId, targetAccount, adminId, adminKey, tokenValue, transactionMemo);
         }
 
-        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: uuid });
+        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: transactionMemo });
 
         ref.log(`Mint(${mintId}): End`);
     }
@@ -535,7 +536,8 @@ export class PolicyUtils {
         ref: AnyBlockType,
         topicName: string,
         root: any,
-        user: any
+        user: any,
+        memoObj?: any
     ): Promise<Topic> {
         const rootTopic = await ref.databaseServer.getTopic({
             policyId: ref.policyId,
@@ -576,7 +578,11 @@ export class PolicyUtils {
                 name: config.name,
                 description: config.description,
                 policyId: ref.policyId,
-                policyUUID: null
+                policyUUID: null,
+                memo: config.memo,
+                memoObj: config.memoObj === 'doc'
+                    ? memoObj
+                    : config
             });
             await topicHelper.twoWayLink(topic, rootTopic, null);
             topic = await ref.databaseServer.saveTopic(topic);

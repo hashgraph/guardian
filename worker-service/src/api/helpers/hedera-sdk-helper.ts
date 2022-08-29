@@ -639,7 +639,7 @@ export class HederaSDKHelper {
         let transaction: any = new TopicCreateTransaction()
 
         if (topicMemo) {
-            transaction = transaction.setTopicMemo(topicMemo.substring(0, 100));
+            transaction = transaction.setTopicMemo(topicMemo);
         }
 
         if (submitKey) {
@@ -677,8 +677,7 @@ export class HederaSDKHelper {
     public async submitMessage(
         topicId: string | TopicId,
         message: string,
-        privateKey?: string | PrivateKey,
-        transactionMemo?: string
+        privateKey?: string | PrivateKey
     ): Promise<string> {
         const client = this.client;
 
@@ -686,11 +685,6 @@ export class HederaSDKHelper {
             topicId,
             message,
         });
-
-        if (transactionMemo) {
-            messageTransaction = messageTransaction.setTransactionMemo(transactionMemo.substring(0, 100));
-        }
-
         if (privateKey) {
             messageTransaction = messageTransaction.freezeWith(client);
             if (typeof privateKey === 'string') {

@@ -5,7 +5,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage } from '@hedera-modules';
+import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage, MessageMemo } from '@hedera-modules';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
@@ -171,7 +171,13 @@ export class SendToGuardianBlock {
                 throw new Error(`Topic owner not found`);
             }
 
-            const topic = await PolicyUtils.getOrCreateTopic(ref, ref.options.topic, root, topicOwner);
+            const topic = await PolicyUtils.getOrCreateTopic(
+                ref,
+                ref.options.topic,
+                root,
+                topicOwner,
+                document
+            );
             const vc = HVcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
             vcMessage.setStatus(document.option?.status || DocumentStatus.NEW);
@@ -180,7 +186,11 @@ export class SendToGuardianBlock {
             const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, ref.dryRun);
             const vcMessageResult = await messageServer
                 .setTopicObject(topic)
-                .sendMessage(vcMessage);
+                .sendMessage(
+                    vcMessage,
+                    true,
+                    MessageMemo.parseMemo(true, ref.options.memo, document)
+                );
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
             document.topicId = vcMessageResult.getTopicId();

@@ -133,20 +133,6 @@ export class Environment {
     }
 
     /**
-     * Network
-     */
-    public static get localNodeAddress(): string {
-        return Environment._localnodeaddress;
-    }
-
-    /**
-     * Network
-     */
-    public static get localNodeProtocol(): string {
-        return Environment._localnodeprotocol;
-    }
-
-    /**
      * Hedera message API
      * @constructor
      */

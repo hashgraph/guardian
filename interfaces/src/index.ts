@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+export { WorkerEvents } from './type/worker-events';
 export { GenerateUUIDv4 } from './helpers/generate-uuid-v4';
 export { BlockErrorActions } from './type/block-error-actions';
 export { AuthEvents } from './type/auth-events';
@@ -53,4 +54,4 @@ export { UnitSystem } from './type/unit-system.type';
 export * from './interface/messages';
 export { StatusType, IStatus } from './interface/async.interface';
 export { GroupRelationshipType, GroupAccessType } from './type/user-group.type';
-
+export * from './type/workers.type';

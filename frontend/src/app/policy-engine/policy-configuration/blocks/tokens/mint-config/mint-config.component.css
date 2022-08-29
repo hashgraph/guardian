@@ -1,0 +1,8 @@
+.mint-memo-prefix {
+    margin-left: 5px;
+    margin-right: 10px;
+}
+
+.mint-memo-prefix + .mint-memo-input {
+    width: 191px;
+}

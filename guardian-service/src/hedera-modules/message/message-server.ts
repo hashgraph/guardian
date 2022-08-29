@@ -15,8 +15,11 @@ import { SchemaMessage } from './schema-message';
 import { MessageAction } from './message-action';
 import { VPMessage } from './vp-message';
 import { TransactionLogger } from '../transaction-logger';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
+import { Workers } from '@helpers/workers';
+import { Environment } from '../environment';
+import { MessageMemo } from '../memo-mappings/message-memo';
 
 /**
  * Message server
@@ -51,11 +54,20 @@ export class MessageServer {
      */
     private readonly dryRun: string = null;
 
+    /**
+     * Client options
+     * @private
+     */
+    private readonly clientOptions: any;
+
     constructor(
         operatorId: string | AccountId | null,
         operatorKey: string | PrivateKey | null,
         dryRun: string = null
     ) {
+
+        this.clientOptions = {operatorId, operatorKey, dryRun};
+
         this.dryRun = dryRun || null;
         this.client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
     }
@@ -198,14 +210,26 @@ export class MessageServer {
      * @param message
      * @private
      */
-    private async sendHedera<T extends Message>(message: T): Promise<T> {
+    private async sendHedera<T extends Message>(message: T, memo?: string): Promise<T> {
         if (!this.topicId) {
             throw new Error('Topic not set');
         }
         message.setLang(MessageServer.lang);
         const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
-        const id = await this.client.submitMessage(this.topicId, buffer, this.submitKey);
+        const id = await new Workers().addTask({
+            type: WorkerTaskType.SEND_HEDERA,
+            data: {
+                topicId: this.topicId,
+                buffer,
+                submitKey: this.submitKey,
+                clientOptions: this.clientOptions,
+                network: Environment.network,
+                localNodeAddress: Environment.localNodeAddress,
+                localNodeProtocol: Environment.localNodeProtocol,
+                memo:  memo || MessageMemo.getMessageMemo(message)
+            }
+        }, 0);
         await this.messageEndLog(time, 'Hedera');
         message.setId(id);
         message.setTopicId(this.topicId);
@@ -318,11 +342,11 @@ export class MessageServer {
      * @param message
      * @param sendToIPFS
      */
-    public async sendMessage<T extends Message>(message: T, sendToIPFS: boolean = true): Promise<T> {
+    public async sendMessage<T extends Message>(message: T, sendToIPFS: boolean = true, memo?: string): Promise<T> {
         if (sendToIPFS) {
             message = await this.sendIPFS(message);
         }
-        message = await this.sendHedera(message);
+        message = await this.sendHedera(message, memo);
         if(this.dryRun) {
             await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
         }
