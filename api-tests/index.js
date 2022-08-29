@@ -33,7 +33,7 @@ describe('Tests', async function () {
                     env: Object.assign(process.env, p[1])
                 })
             )
-            console.info(path.parse(p[0]).name, 'was started');
+            console.info(`"${path.parse(p[0]).name}"`, 'was started');
             await sleep(15000);
         }
         await sleep(10000);
