@@ -1,5 +1,5 @@
 import { KeyType } from '@helpers/wallet';
-import { DidDocumentStatus, GenerateUUIDv4, Schema, SchemaEntity } from '@guardian/interfaces';
+import { GenerateUUIDv4, Schema } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
@@ -211,7 +211,6 @@ export class RequestVcDocumentBlock {
             await this.changeActive(user, false);
 
             const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
-
 
             const document = _data.document;
             const documentRef = await this.getRelationships(ref, _data.ref);

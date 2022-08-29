@@ -3,7 +3,7 @@ import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { DocumentStatus } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage, MessageMemo } from '@hedera-modules';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -45,7 +45,7 @@ export class SendToGuardianBlock {
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                
+
                 const doc = PolicyUtils.cloneVC(ref, document);
                 doc.type = ref.options.entityType || doc.type;
                 doc.hash = vc.toCredentialHash();
@@ -129,7 +129,7 @@ export class SendToGuardianBlock {
         switch (documentType) {
             case 'vc': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                
+
                 const doc = PolicyUtils.cloneVC(ref, document);
                 doc.type = ref.options.entityType || doc.type;
                 doc.hash = vc.toCredentialHash();

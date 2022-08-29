@@ -1,5 +1,5 @@
 import { ActionCallback, ExternalData } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus, Schema } from '@guardian/interfaces';
+import { DocumentSignature, Schema } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';

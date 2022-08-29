@@ -6,7 +6,7 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
+import { IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 
 /**
  * Switch block

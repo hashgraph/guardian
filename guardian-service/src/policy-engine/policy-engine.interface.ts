@@ -653,7 +653,10 @@ export interface IPolicyDocument {
  * Policy document
  */
 export interface IPolicyState<T> {
-    data: T
+    /**
+     * Data
+     */
+    data: T;
 }
 
 /**

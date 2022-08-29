@@ -291,18 +291,14 @@ export class VCJS {
      * @param {string} did - DID
      * @param {PrivateKey | string} key - Private Key
      * @param {any} subject - Credential Object
-     *
+     * @param {any} [group] - Issuer
      * @returns {HcsVcDocument<VcSubject>} - VC Document
      */
     public async createVC(
         did: string,
         key: string | PrivateKey,
         subject: ICredentialSubject,
-        group?: {
-            groupId: string,
-            context: string,
-            type: string
-        }
+        group?: any
     ): Promise<VcDocument> {
         const document = DidRootKey.createByPrivateKey(did, key);
         const id = GenerateUUIDv4();
@@ -316,7 +312,7 @@ export class VCJS {
         vc.setId(id);
         vc.setIssuanceDate(TimestampUtils.now());
         vc.addCredentialSubject(vcSubject);
-        
+
         if(group) {
             vc.setIssuer(new Issuer(did, group.groupId));
             vc.addType(group.type);

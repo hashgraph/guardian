@@ -8,8 +8,7 @@ import {
     EventCallback,
     PolicyOutputEventType
 } from '@policy-engine/interfaces';
-import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, PolicyType } from '@guardian/interfaces';
-import { IAuthUser } from '@guardian/common';
+import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInstance, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { Policy } from '@entity/policy';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
@@ -304,7 +303,7 @@ export class PolicyComponentsUtils {
 
     /**
      * Register policy instance
-     * 
+     *
      * @param policyId
      * @param policy
      * @constructor

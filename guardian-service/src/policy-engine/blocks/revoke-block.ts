@@ -1,7 +1,7 @@
 import { ActionCallback, BasicBlock, EventBlock } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyInterfaceBlock, IPolicyState } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyEventState, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { Message, MessageServer } from '@hedera-modules';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -160,10 +160,10 @@ export class RevokeBlock {
         }
 
         const documents = await this.findDocumentByMessageIds(relatedMessages.map(item => item.id));
-        for (const doc of documents) {
-            doc.option = doc.option || {};
-            doc.option.status = RevokedStatus;
-            doc.comment = doc.comment;
+        for (const item of documents) {
+            item.option = item.option || {};
+            item.option.status = RevokedStatus;
+            item.comment = doc.comment;
         }
 
         if (uiMetaData && uiMetaData.updatePrevDoc && doc.relationships) {

@@ -8,9 +8,11 @@ import { BlockActionError } from '@policy-engine/errors';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { VcHelper } from '@helpers/vc-helper';
-import { MessageAction, MessageServer, VcDocument, VCMessage } from '@hedera-modules';
-import { PolicyRoles } from '@entity/policy-roles';
+import { MessageAction, MessageServer, VCMessage } from '@hedera-modules';
 
+/**
+ * User Group
+ */
 interface IUserGroup {
     /**
      * policyId
@@ -62,6 +64,9 @@ interface IUserGroup {
     messageId?: string
 }
 
+/**
+ * User Group Config
+ */
 interface IGroupConfig {
     /**
      * Group name
@@ -111,7 +116,6 @@ interface IGroupConfig {
     }
 })
 export class PolicyRolesBlock {
-
     /**
      * Create Policy Invite
      * @param ref
@@ -136,6 +140,12 @@ export class PolicyRolesBlock {
         }
     }
 
+    /**
+     * Find Group Config
+     * @param ref
+     * @param groupName
+     * @param groupLabel
+     */
     private getGroupConfig(ref: AnyBlockType, groupName: string, groupLabel: string): IGroupConfig {
         const policyGroups: IGroupConfig[] = ref.policyInstance.policyGroups || [];
         const groupConfig = policyGroups.find(e => e.name === groupName);
@@ -160,6 +170,13 @@ export class PolicyRolesBlock {
         }
     }
 
+    /**
+     * Create Group by Config
+     * @param ref
+     * @param did
+     * @param username
+     * @param groupConfig
+     */
     private async getGroupByConfig(
         ref: AnyBlockType,
         did: string,
@@ -230,6 +247,14 @@ export class PolicyRolesBlock {
         }
     }
 
+    /**
+     * Create Group by invitation
+     * @param ref
+     * @param did
+     * @param username
+     * @param uuid
+     * @param role
+     */
     private async getGroupByToken(
         ref: AnyBlockType,
         did: string,
@@ -253,7 +278,7 @@ export class PolicyRolesBlock {
             username,
             owner: result.owner,
             uuid: result.uuid,
-            role: role,
+            role,
             groupRelationshipType: result.groupRelationshipType,
             groupAccessType: result.groupAccessType,
             groupName: result.groupName,
@@ -263,13 +288,11 @@ export class PolicyRolesBlock {
         return group;
     }
 
-
     /**
      * Create group VC
-     * @param root
-     * @param token
-     * @param data
      * @param ref
+     * @param user
+     * @param doc
      * @private
      */
     private async createVC(ref: AnyBlockType, user: IPolicyUser, doc: IUserGroup): Promise<string> {
@@ -278,10 +301,10 @@ export class PolicyRolesBlock {
         const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.USER_ROLE);
         const vcSubject: any = {
             ...SchemaHelper.getContext(policySchema),
-            "id": GenerateUUIDv4(),
-            "role": doc.role,
-            "userId": doc.did,
-            "policyId": ref.policyId
+            id: GenerateUUIDv4(),
+            role: doc.role,
+            userId: doc.did,
+            policyId: ref.policyId
         }
         if (doc.uuid) {
             vcSubject.groupOwner = doc.uuid;
@@ -295,7 +318,7 @@ export class PolicyRolesBlock {
         if (doc.groupLabel) {
             vcSubject.groupLabel = doc.groupLabel;
         }
-        
+
         const mintVC = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
 
         const rootTopic = await ref.databaseServer.getTopic({

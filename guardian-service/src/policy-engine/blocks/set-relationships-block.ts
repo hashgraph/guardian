@@ -1,6 +1,6 @@
 import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, IPolicyState } from '@policy-engine/policy-engine.interface';
+import { IPolicyDocument, IPolicyEventState, IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 

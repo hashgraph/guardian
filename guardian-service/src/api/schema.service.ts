@@ -500,7 +500,7 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
         .setTopicObject(topic);
     notifier.completedAndStart('Publish schema');
-    
+
     SchemaHelper.updateVersion(item, version);
     item = await publishSchema(item, messageServer, MessageAction.PublishSchema);
 

@@ -11,7 +11,7 @@ import { Token as TokenCollection } from '@entity/token';
 import { Topic as TopicCollection } from '@entity/topic';
 import { DryRun } from '@entity/dry-run';
 import { PolicyRoles as PolicyRolesCollection } from '@entity/policy-roles';
-import { DocumentSignature, DocumentStatus, GroupAccessType, GroupRelationshipType, SchemaEntity, TopicType } from '@guardian/interfaces';
+import { DocumentStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { BaseEntity, DataBaseHelper } from '@guardian/common';
 import { PolicyInvitations } from '@entity/policy-invitations';
 
@@ -167,7 +167,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param entities
      */
-    private async remove<T extends BaseEntity>(entityClass: new () => T, entities: T[]): Promise<void> {
+    private async remove<T extends BaseEntity>(entityClass: new () => T, entities: T | T[]): Promise<void> {
         if (this.dryRun) {
             await new DataBaseHelper(DryRun).remove(entities as any);
         } else {
@@ -438,7 +438,7 @@ export class DatabaseServer {
      * @param blockId
      * @param owner
      * @param owner
-     * 
+     *
      * @virtual
      */
     public async getAggregateDocuments(
@@ -675,8 +675,8 @@ export class DatabaseServer {
 
     /**
      * Set user in group
-     * 
-     * @param group 
+     *
+     * @param group
      *
      * @virtual
      */
@@ -688,7 +688,7 @@ export class DatabaseServer {
 
     /**
      * Set Active Group
-     * 
+     *
      * @param policyId
      * @param did
      * @param uuid
@@ -745,7 +745,7 @@ export class DatabaseServer {
      * @param policyId
      * @param did
      * @param options
-     * 
+     *
      * @virtual
      */
     public async getGroupsByUser(policyId: string, did: string, options?: any): Promise<PolicyRolesCollection[]> {
@@ -757,8 +757,8 @@ export class DatabaseServer {
 
     /**
      * Get members
-     * 
-     * @param group 
+     *
+     * @param group
      *
      * @virtual
      */
@@ -780,6 +780,16 @@ export class DatabaseServer {
      */
     public async getAllPolicyUsers(policyId: string): Promise<PolicyRolesCollection[]> {
         return await this.find(PolicyRolesCollection, { policyId, active: true });
+    }
+
+    /**
+     * Delete user
+     * @param group
+     *
+     * @virtual
+     */
+    public async deleteGroup(group: PolicyRolesCollection): Promise<void> {
+        return await this.remove(PolicyRolesCollection, group);
     }
 
     /**

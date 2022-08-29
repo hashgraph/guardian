@@ -1,16 +1,10 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
-import { KeyType } from '@helpers/wallet';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { UserType, Schema, GroupRelationshipType, GroupAccessType } from '@guardian/interfaces';
-import { findOptions } from '@policy-engine/helpers/find-options';
-import { IPolicyAddonBlock, IPolicyDocument, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
-import { DidDocumentBase } from '@hedera-modules';
-import { PrivateKey } from '@hashgraph/sdk';
+import { GroupRelationshipType, GroupAccessType } from '@guardian/interfaces';
+import { IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { PolicyRoles } from '@entity/policy-roles';
 
 /**
@@ -73,15 +67,56 @@ export class GroupManagerBlock {
         }
     }
 
-    private async deleteMember(ref: IPolicyInterfaceBlock, user: IPolicyUser, member: string): Promise<void> {
-
+    /**
+     * Delete Member
+     * @param ref
+     * @param user
+     * @param groupId
+     * @param did
+     */
+    private async deleteMember(
+        ref: IPolicyInterfaceBlock,
+        user: IPolicyUser,
+        groupId: string,
+        did: string
+    ): Promise<void> {
+        if (user.did === did) {
+            throw new Error(`Permission denied`);
+        }
+        const member = await ref.databaseServer.getUserInGroup(ref.policyId, did, groupId);
+        if (!member) {
+            throw new Error(`Group not found`);
+        }
+        if (
+            member.groupRelationshipType === GroupRelationshipType.Multiple &&
+            member.groupAccessType === GroupAccessType.Private
+        ) {
+            if (ref.options.canDelete === 'all' || member.owner === user.did) {
+                await ref.databaseServer.deleteGroup(member);
+            } else {
+                throw new Error(`Permission denied`);
+            }
+        } else {
+            throw new Error(`Invalid Group type`);
+        }
     }
 
+    /**
+     * Find Group Config
+     * @param ref
+     * @param groupName
+     */
     private getGroupConfig(ref: IPolicyInterfaceBlock, groupName: string): any {
         const policyGroups: any[] = ref.policyInstance.policyGroups || [];
         return policyGroups.find(e => e.name === groupName);
     }
 
+    /**
+     * Get Group data
+     * @param ref
+     * @param user
+     * @param group
+     */
     private async groupMapping(ref: IPolicyInterfaceBlock, user: IPolicyUser, group: PolicyRoles): Promise<any> {
         const config = this.getGroupConfig(ref, group.groupName);
         const members = (await ref.databaseServer.getAllMembersByGroup(group)).map(member => {
@@ -141,21 +176,8 @@ export class GroupManagerBlock {
             return { invitation };
         }
         if (blockData.action === 'delete') {
-            await this.deleteMember(ref, user, blockData.username);
+            await this.deleteMember(ref, user, blockData.group, blockData.user);
             return { deleted: true };
-        }
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

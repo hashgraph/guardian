@@ -8,7 +8,7 @@ import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage, VpDocum
 import { VcHelper } from '@helpers/vc-helper';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
-import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';

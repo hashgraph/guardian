@@ -620,7 +620,7 @@ export class PolicyUtils {
      */
     public static getPolicyUser(ref: AnyBlockType, did: string, uuid: string): IPolicyUser {
         const user = new PolicyUser(did, !!ref.dryRun);
-        return user.setGroup({ role: null, uuid: uuid });
+        return user.setGroup({ role: null, uuid });
     }
 
     /**
@@ -641,7 +641,7 @@ export class PolicyUtils {
         if (document.group) {
             return `${document.group}:${document.owner}`;
         } else {
-            document.owner;
+            return document.owner;
         }
     }
 
@@ -816,6 +816,7 @@ export class PolicyUtils {
 
     /**
      * Get error message
+     * @param error
      */
     public static getErrorMessage(error: string | Error | any): string {
         if (typeof error === 'string') {
@@ -832,6 +833,12 @@ export class PolicyUtils {
         }
     }
 
+    /**
+     * Create Document
+     * @param ref
+     * @param owner
+     * @param document
+     */
     public static createPolicyDocument(ref: AnyBlockType, owner: IPolicyUser, document: any): IPolicyDocument {
         document.policyId = ref.policyId;
         document.tag = ref.tag;
@@ -840,6 +847,12 @@ export class PolicyUtils {
         return document;
     }
 
+    /**
+     * Create DID Document
+     * @param ref
+     * @param owner
+     * @param document
+     */
     public static createDID(ref: AnyBlockType, owner: IPolicyUser, did: string, document: any): IPolicyDocument {
         return {
             policyId: ref.policyId,
@@ -854,6 +867,12 @@ export class PolicyUtils {
         };
     }
 
+    /**
+     * Create VP Document
+     * @param ref
+     * @param owner
+     * @param document
+     */
     public static createVP(ref: AnyBlockType, owner: IPolicyUser, document: VpDocument): IPolicyDocument {
         return {
             policyId: ref.policyId,
@@ -870,6 +889,12 @@ export class PolicyUtils {
         };
     }
 
+    /**
+     * Create VC Document
+     * @param ref
+     * @param owner
+     * @param document
+     */
     public static createVC(ref: AnyBlockType, owner: IPolicyUser, document: VcDocument): IPolicyDocument {
         return {
             policyId: ref.policyId,
@@ -892,6 +917,11 @@ export class PolicyUtils {
         };
     }
 
+    /**
+     * Clone DID Document
+     * @param ref
+     * @param document
+     */
     public static cloneVC(ref: AnyBlockType, document: IPolicyDocument): VcDocumentCollection {
         return {
             policyId: ref.policyId,
@@ -914,6 +944,12 @@ export class PolicyUtils {
         } as VcDocumentCollection;
     }
 
+    /**
+     * Update Document Ref
+     * @param ref
+     * @param owner
+     * @param document
+     */
     public static setDocumentRef(document: IPolicyDocument, ref: IPolicyDocument): IPolicyDocument {
         if (!document.relationships || !document.relationships.length) {
             document.relationships = null;
@@ -930,6 +966,11 @@ export class PolicyUtils {
         return document;
     }
 
+    /**
+     * Get Group VC by User
+     * @param ref
+     * @param user
+     */
     public static async getGroupContext(ref: AnyBlockType, user: IPolicyUser): Promise<any> {
         const group = await ref.databaseServer.getUserInGroup(ref.policyId, user.did, user.group);
         if (group && group.messageId) {

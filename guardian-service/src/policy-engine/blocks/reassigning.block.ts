@@ -1,14 +1,13 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState, IPolicyState } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcHelper } from '@helpers/vc-helper';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { SchemaEntity } from '@guardian/interfaces';
 
 /**
  * Reassigning block
@@ -47,7 +46,13 @@ export class ReassigningBlock {
      * @param user
      */
     async documentReassigning(document: IPolicyDocument, user: IPolicyUser): Promise<{
+        /**
+         * New Document
+         */
         item: IPolicyDocument,
+        /**
+         * New Actor
+         */
         actor: IPolicyUser
     }> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
@@ -78,8 +83,8 @@ export class ReassigningBlock {
 
         const credentialSubject = vcDocument.credentialSubject[0];
         const vc: any = await this.vcHelper.createVC(
-            root.did, 
-            root.hederaAccountKey, 
+            root.did,
+            root.hederaAccountKey,
             credentialSubject,
             groupContext
         );
@@ -128,4 +133,3 @@ export class ReassigningBlock {
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, event.data);
     }
 }
-

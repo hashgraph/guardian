@@ -3,7 +3,7 @@ import { ActionCallback, ValidatorBlock } from '@policy-engine/helpers/decorator
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyDocument, IPolicyEventState, IPolicyState, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -148,7 +148,7 @@ export class DocumentValidatorBlock {
     public async run(event: IPolicyEvent<IPolicyEventState>): Promise<boolean> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
 
-        let document = event?.data?.data;
+        const document = event?.data?.data;
 
         if (!document) {
             return false;

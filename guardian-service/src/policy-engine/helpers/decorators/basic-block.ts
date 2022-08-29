@@ -368,8 +368,8 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 } else {
                     users[user.did] = user;
                 }
-                for (const did in users) {
-                    PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, users[did], tag);
+                for (const item of Object.values(users)) {
+                    PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, item, tag);
                 }
             }
 

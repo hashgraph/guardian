@@ -135,15 +135,15 @@ export class PolicyImportExportHelper {
      * @param policyOwner
      * @param versionOfTopicId
      * @param notifier
-     * @param additionalPolicyConfig 
+     * @param additionalPolicyConfig
      *
      * @returns Policies by owner
      */
     static async importPolicy(
-        policyToImport: any, 
-        policyOwner: string, 
-        versionOfTopicId: string, 
-        notifier: INotifier, 
+        policyToImport: any,
+        policyOwner: string,
+        versionOfTopicId: string,
+        notifier: INotifier,
         additionalPolicyConfig?: Partial<Policy>
     ): Promise<Policy> {
         const { policy, tokens, schemas } = policyToImport;

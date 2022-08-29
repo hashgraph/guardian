@@ -100,7 +100,7 @@ export class InterfaceDocumentActionBlock {
         if (ref.options.type === 'download') {
             const sensorDid = document.document.credentialSubject[0].id;
             const policy = await ref.databaseServer.getPolicy(ref.policyId);
-            
+
             const userDID = document.owner;
             const hederaAccount = await PolicyUtils.getHederaAccount(ref, userDID);
             const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
