@@ -80,9 +80,23 @@ function Accounts() {
                 return v;
             }),
             [
-                { username: 'Installer' },
-                { username: 'Installer2' },
+                {
+                    username: 'Installer'
+                },
+                {
+                    username: 'Installer2'
+                },
+                {
+                    username: 'Registrant'
+                },
+                {
+                    username: 'VVB'
+                },
+                {
+                    username: 'ProjectProponent'
+                }
             ]
+
         )
     })
 
@@ -101,7 +115,15 @@ function Accounts() {
         );
         delete result.data.did;
         delete result.data.iat;
-        assert.deepEqual(result.data, { username: 'StandardRegistry', role: 'STANDARD_REGISTRY' })
+        delete result.data._id;
+        delete result.data.hederaAccountId;
+        delete result.data.id;
+        delete result.data.password;
+        delete result.data.walletToken;
+        assert.deepEqual(result.data, {
+            role: 'STANDARD_REGISTRY',
+            username: 'StandardRegistry',
+        })
 
         result = await axios.get(
             GetURL('accounts', 'session'),
@@ -114,6 +136,11 @@ function Accounts() {
         );
         delete result.data.did;
         delete result.data.iat;
+        delete result.data._id;
+        delete result.data.hederaAccountId;
+        delete result.data.id;
+        delete result.data.password;
+        delete result.data.walletToken;
         assert.deepEqual(result.data, { username: 'Installer', role: 'USER' });
     });
 
@@ -129,8 +156,10 @@ function Accounts() {
                 }
             }
         );
-        delete result.data.id;
         delete result.data.password;
+        delete result.data.id;
+        delete result.data._id;
+        delete result.data.parent;
         assert.deepEqual(result.data, {
             username: 'apiTest',
             did: null,
