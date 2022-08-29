@@ -137,7 +137,7 @@ export class Worker {
         this.isInUse = true;
         let task: any = null;
         try {
-            task = Promise.race([
+            task = await Promise.race([
                 this.request(WorkerEvents.QUEUE_GET, {
                     minPriority: this.minPriority,
                     maxPriority: this.maxPriority,
