@@ -26,10 +26,10 @@ For Demo purpose, we have uploaded two versions of Verra Policies into IPFS and 
 
 | Version | IPFS Timestamp | Policy File Link |
 |---|---|---:|
-| Verra 1.1.0  | 1660047003.069328003 | [Link](https://github.com/hashgraph/guardian) |
-| Verra 2.2.2 | 1660047783.273928893 | [Link](https://github.com/hashgraph/guardian) |
+| Verra 1.1.0  | 1660047003.069328003 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/Verra/Verra%20Redd/VM0007/Policies/Verra%20REDD.policy) |
+| Verra 2.2.2 | 1660047783.273928893 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/Verra/Verra%20Redd/VM0007/Policies/Verra%20REDD%20Policy%202.policy) |
 
-In addition to the above Policy Versions, we have also added Schema Design Template file for demo purpose. Please check : [Sample Design Template](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/Verra%20Redd/REDD%20APD%20Schema%20Design%20Template.xlsx)
+In addition to the above Policy Versions, we have also added Schema Design Template file for demo purpose. Please check : [Sample Design Template](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/Verra/Verra%20Redd/VM0007/REDD%20APD%20Schema%20Design%20Template.xlsx)
 
 For step by step user guide to execute Verra Policy, please refer to https://docs.hedera.com/guardian/demo-guide/verra-redd+-demo-guide.
 
