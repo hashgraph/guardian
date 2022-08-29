@@ -4,7 +4,7 @@ import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage, VpDocument } from '@hedera-modules';
+import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage, VpDocument, MessageMemo } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
@@ -148,7 +148,7 @@ export class MintBlock {
         vcDocument.messageId = vpMessageId;
         vcDocument.topicId = vpMessageResult.getTopicId();
 
-        await ref.databaseServer.saveVP(vcDocument);
+        const savedVp = await ref.databaseServer.saveVP(vcDocument);
 
         await PolicyUtils.mint(
             ref,
