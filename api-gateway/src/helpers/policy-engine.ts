@@ -368,7 +368,7 @@ export class PolicyEngine extends ServiceRequestsBase {
 
     /**
      * Get policy groups
-     * 
+     *
      * @param user
      * @param policyId
      */
@@ -378,7 +378,7 @@ export class PolicyEngine extends ServiceRequestsBase {
 
     /**
      * Select policy group
-     * 
+     *
      * @param user
      * @param policyId
      * @param uuid
