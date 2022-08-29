@@ -1,6 +1,6 @@
 # ReadMe
 
-This folder contains sub folders for each Methodology.
+This folder contains sub folders for each Methodology (with many more to be added in the future).
 1. IREC
 2. Verra Redd
 
