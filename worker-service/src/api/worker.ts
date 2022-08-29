@@ -14,9 +14,11 @@ import { Environment } from './helpers/environment';
  * Sleep helper
  * @param t
  */
-function sleep(t: number): Promise<void> {
-    return new Promise(resolve => {
-        setTimeout(resolve, t);
+function rejectTimeout(t: number): Promise<void> {
+    return new Promise((_, reject) => {
+        setTimeout(() => {
+            reject('Timeout error');
+        }, t);
     })
 }
 
@@ -25,10 +27,37 @@ function sleep(t: number): Promise<void> {
  */
 export class Worker {
     /**
+     * Current task ID
+     */
+    private currentTaskId: string;
+
+    /**
+     * Update event received flag
+     * @private
+     */
+    private updateEventReceived = false;
+
+    /**
      * Worker in use
      * @private
      */
-    private isInUse: boolean = false;
+    private _isInUse: boolean = false;
+
+    /**
+     * Worker in use getter
+     * @private
+     */
+    private get isInUse(): boolean {
+        return this._isInUse;
+    }
+
+    /**
+     * Worker in use setter
+     * @private
+     */
+    private set isInUse(v: boolean) {
+        this._isInUse = v;
+    }
 
     /**
      * Minimum priority
@@ -55,9 +84,17 @@ export class Worker {
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
         this.taskTimeout = parseInt(process.env.TASK_TIMEOUT, 10) * 1000; // env in seconds
 
+        setInterval(async () => {
+            if (!this.isInUse) {
+                await this.getItem();
+            }
+        }, parseInt(process.env.REFRESH_INTERVAL, 10) * 1000);
+
         this.channel.subscribe(WorkerEvents.QUEUE_UPDATED, async (data: unknown) => {
             if (!this.isInUse) {
                 await this.getItem();
+            } else {
+                this.updateEventReceived = true;
             }
         });
     }
@@ -84,47 +121,77 @@ export class Worker {
     }
 
     /**
+     * Clear states
+     * @private
+     */
+    private clearState(): void {
+        this.isInUse = false;
+        this.currentTaskId = null;
+        this.updateEventReceived = false;
+    }
+
+    /**
      * Get item from queue
      */
     public async getItem(): Promise<any> {
         this.isInUse = true;
-        const task: any = await this.request(WorkerEvents.QUEUE_GET, {
-            minPriority: this.minPriority,
-            maxPriority: this.maxPriority,
-            taskTimeout: this.taskTimeout
-        });
+        let task: any = null;
+        try {
+            task = Promise.race([
+                this.request(WorkerEvents.QUEUE_GET, {
+                    minPriority: this.minPriority,
+                    maxPriority: this.maxPriority,
+                    taskTimeout: this.taskTimeout
+                }),
+                rejectTimeout(parseInt(process.env.TASK_TIMEOUT, 10) * 1000)
+            ]);
+        } catch (e) {
+            this.clearState();
+            return;
+        }
         if (!task) {
             this.isInUse = false;
+
+            if (this.updateEventReceived) {
+                this.updateEventReceived = false;
+                await this.getItem();
+            }
+
             return;
         }
 
+        this.currentTaskId = task.id;
         const result: ITaskResult = {
-            id: task.id
+            id: this.currentTaskId
         }
 
         /**
          * Actions
          */
-        switch (task.type) {
-            case WorkerTaskType.GET_FILE:
-            case WorkerTaskType.ADD_FILE:
-                result.data = await this.channel.request<IAddFileMessage, any>(task.data.target, task.data.payload);
-                break;
+        try {
+            switch (task.type) {
+                case WorkerTaskType.GET_FILE:
+                case WorkerTaskType.ADD_FILE:
+                    result.data = await this.channel.request<IAddFileMessage, any>(task.data.target, task.data.payload);
+                    break;
 
-            case WorkerTaskType.SEND_HEDERA:
-                Environment.setNetwork(task.data.network);
-                Environment.setLocalNodeAddress(task.data.localNodeAddress);
-                Environment.setLocalNodeProtocol(task.data.localNodeProtocol);
-                const {operatorId, operatorKey, dryRun} = task.data.clientOptions;
-                const client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
-                const {topicId, buffer, submitKey} = task.data;
-                result.data = await client.submitMessage(topicId, buffer, submitKey);
-                break;
+                case WorkerTaskType.SEND_HEDERA:
+                    Environment.setNetwork(task.data.network);
+                    Environment.setLocalNodeAddress(task.data.localNodeAddress);
+                    Environment.setLocalNodeProtocol(task.data.localNodeProtocol);
+                    const {operatorId, operatorKey, dryRun} = task.data.clientOptions;
+                    const client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
+                    const {topicId, buffer, submitKey} = task.data;
+                    result.data = await client.submitMessage(topicId, buffer, submitKey);
+                    break;
 
-            default:
-                result.error = 'unknown task'
+                default:
+                    result.error = 'unknown task'
+            }
+            ///////
+        } catch (e) {
+            result.error = e.message;
         }
-        ///////
 
         await this.request(WorkerEvents.TASK_COMPLETE, result);
 
