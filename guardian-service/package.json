@@ -71,6 +71,7 @@
     "lint": "tslint --config ../tslint.json --project .",
     "start": "node dist/index.js",
     "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/guardian-service.xml",
+    "test:local": "mocha tests/**/*.test.js",
     "test:network": "mocha tests/network-tests/**/*.test.js",
     "test:stability": "mocha tests/stability.test.js"
   },
