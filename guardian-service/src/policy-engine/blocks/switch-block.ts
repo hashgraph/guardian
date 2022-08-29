@@ -104,11 +104,11 @@ export class SwitchBlock {
         let group: string = null;
         if (Array.isArray(docs)) {
             owner = docs[0]?.owner;
-            issuer = docs[0]?.document?.issuer;
+            issuer = PolicyUtils.getDocumentIssuer(docs[0]?.document);
             group = docs[0]?.document?.group;
         } else {
             owner = docs?.owner;
-            issuer = docs?.document?.issuer;
+            issuer = PolicyUtils.getDocumentIssuer(docs?.document);
             group = docs?.document?.group;
         }
 

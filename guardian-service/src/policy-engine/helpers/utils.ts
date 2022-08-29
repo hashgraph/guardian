@@ -972,7 +972,7 @@ export class PolicyUtils {
      * @param user
      */
     public static async getGroupContext(ref: AnyBlockType, user: IPolicyUser): Promise<any> {
-        if(!ref.isMultipleGroups) {
+        if (!ref.isMultipleGroups) {
             return null;
         }
         const group = await ref.databaseServer.getUserInGroup(ref.policyId, user.did, user.group);
@@ -985,5 +985,21 @@ export class PolicyUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Get document issuer (DID)
+     * @param document
+     */
+    public static getDocumentIssuer(document: any): string {
+        if (document) {
+            if (typeof document.issuer === 'string') {
+                return document.issuer;
+            } else {
+                return document.issuer.id || null;
+            }
+        } else {
+            return null
+        }
     }
 }

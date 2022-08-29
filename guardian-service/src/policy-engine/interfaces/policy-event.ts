@@ -1,3 +1,4 @@
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { EventActor, PolicyInputEventType, PolicyOutputEventType } from './policy-event-type';
@@ -164,7 +165,7 @@ export class PolicyLink<T> {
         }
         if (data) {
             if (data.document) {
-                return this.createUser(data.document.issuer, data.group)
+                return this.createUser(PolicyUtils.getDocumentIssuer(data.document), data.group);
             }
             return this.createUser(data.owner, data.group)
         }

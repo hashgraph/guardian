@@ -107,7 +107,7 @@ export class DocumentValidatorBlock {
             if (document.owner !== userDID) {
                 return false;
             }
-        } 
+        }
         if (ref.options.checkOwnerByGroupDocument) {
             if (document.group !== userGroup) {
                 return false;
@@ -117,7 +117,7 @@ export class DocumentValidatorBlock {
             if (document.assignedTo !== userDID) {
                 return false;
             }
-        } 
+        }
         if (ref.options.checkAssignByGroupDocument) {
             if (document.assignedToGroup !== userGroup) {
                 return false;

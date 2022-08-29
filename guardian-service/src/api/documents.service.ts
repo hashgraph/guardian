@@ -83,12 +83,8 @@ export async function documentsAPI(
      * Return VC Documents
      *
      * @param {Object} [payload] - filters
-     * @param {string} [payload.id] - filter by id
      * @param {string} [payload.type] - filter by type
      * @param {string} [payload.owner] - filter by owner
-     * @param {string} [payload.issuer] - filter by issuer
-     * @param {string} [payload.hash] - filter by hash
-     * @param {string} [payload.policyId] - filter by policy id
      *
      * @returns {IVCDocument[]} - VC Documents
      */
@@ -96,27 +92,12 @@ export async function documentsAPI(
         try {
             if (msg) {
                 const reqObj: any = {};
-                const { owner, assignedTo, issuer, id, hash, policyId, schema, ...otherArgs } = msg;
+                const { owner, type, ...otherArgs } = msg;
                 if (owner) {
                     reqObj.owner = { $eq: owner }
                 }
-                if (assignedTo) {
-                    reqObj.assignedTo = { $eq: assignedTo }
-                }
-                if (issuer) {
-                    reqObj['document.issuer'] = { $eq: issuer }
-                }
-                if (id) {
-                    reqObj['document.id'] = { $eq: id }
-                }
-                if (hash) {
-                    reqObj.hash = { $eq: hash }
-                }
-                if (policyId) {
-                    reqObj.policyId = { $eq: policyId }
-                }
-                if (schema) {
-                    reqObj.schema = { $eq: schema }
+                if (type) {
+                    reqObj.type = { $eq: type }
                 }
                 Object.assign(reqObj, otherArgs);
                 const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);

@@ -163,7 +163,7 @@ export class SendToGuardianBlock {
             if (ref.options.topicOwner === 'user') {
                 topicOwner = await PolicyUtils.getHederaAccount(ref, currentUser.did);
             } else if (ref.options.topicOwner === 'issuer') {
-                topicOwner = await PolicyUtils.getHederaAccount(ref, document.document.issuer);
+                topicOwner = await PolicyUtils.getHederaAccount(ref, PolicyUtils.getDocumentIssuer(document.document));
             } else {
                 topicOwner = user;
             }

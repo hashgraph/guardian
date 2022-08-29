@@ -28,7 +28,11 @@ trustchainsAPI.get('/:hash', permissionHelper(UserRole.AUDITOR), async (req: Aut
         const chain = await guardians.getChain(hash);
         const DIDs = chain.map((item) => {
             if (item.type === 'VC' && item.document) {
-                return item.document.issuer;
+                if(typeof item.document.issuer === 'string') {
+                    return item.document.issuer;
+                } else {
+                    return item.document.issuer.id;
+                }
             }
             if (item.type === 'DID') {
                 return item.id;

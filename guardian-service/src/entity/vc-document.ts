@@ -1,4 +1,4 @@
-import { DocumentSignature, DocumentStatus, IVCDocument } from '@guardian/interfaces';
+import { DocumentSignature, DocumentStatus, IVC, IVCDocument } from '@guardian/interfaces';
 import { Entity, Property, Enum, BeforeCreate, Unique } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
@@ -30,7 +30,7 @@ export class VcDocument extends BaseEntity implements IVCDocument {
      * Document instance
      */
     @Property({ nullable: true })
-    document?: any;
+    document?: IVC;
 
     /**
      * Created at
