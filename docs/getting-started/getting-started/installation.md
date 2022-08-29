@@ -5,7 +5,7 @@
     ```
     git clone https://github.com/hashgraph/guardian.git
     ```
-2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation ID and Operator Key by looking at link : [Broken link](broken-reference "mention"). There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
+2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation ID and Operator Key by looking at link : [how-to-create-operator-id-and-operator-key.md](how-to-create-operator-id-and-operator-key.md "mention"). There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
 
 For example:
 
@@ -27,7 +27,7 @@ in `guardian-service/.env.docker`:
 **Note:** You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 {% endhint %}
 
-3\. Update the following files with your Web3.Storage API KEY. Please follow the steps from [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart) to obtain it. To know complete information on generating API Key please check [Broken link](broken-reference "mention")
+3\. Update the following files with your Web3.Storage API KEY. Please follow the steps from [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart) to obtain it. To know complete information on generating API Key please check : [how-to-generate-web3.storage-api-key.md](how-to-generate-web3.storage-api-key.md "mention")
 
 For example:
 

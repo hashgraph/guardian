@@ -40,7 +40,7 @@ Once Policy is imported successfully, click on "Publish" button to publish the p
 
 ![](../.gitbook/assets/iREC3\_new\_3.png)
 
-<figure><img src="../.gitbook/assets/image (7) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (7) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../.gitbook/assets/image (6) (2).png" alt=""><figcaption></figcaption></figure>
 
@@ -56,13 +56,13 @@ Once Submitted, Registrant waits for the approval of the application by Standard
 
 8\. The next step of our flow is to log out and sign back in as Standard Registry. Navigate to the Policies tab and click the Open button on the far right. Here you will find the approval actions based on our Policy Workflow required by Standard Registry. You will be able to view the Verifiable Credential prior to approval by selecting the View Document link. Once you are ready to approve the document, you can click on the Approve button.
 
-<figure><img src="../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (9) (2).png" alt=""><figcaption></figcaption></figure>
 
 9\. After the approval process, Standard Registry grants KYC to the Registrant by going to Tokens tab and clicking on Grant KYC button.
 
-<figure><img src="../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (31).png" alt=""><figcaption></figcaption></figure>
 
 10\. Once the Registrant application is approved by Standard Registry, we log back in as Registrant and register for a new Device for sending MRV Data by clicking on Create New Device
 
@@ -78,7 +78,7 @@ Registrant fills out all the Device Registrant details and clicks on OK. Once co
 
 12\. Once approved, we now log back in as Registrant and navigate to Devices tab and will create Issue request by clicking on Create Issue Request.
 
-<figure><img src="../.gitbook/assets/image (10) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
 
 For now, we will be adding it manually, but in future, we will be automating the process by fetching the data from the device.
 
@@ -94,15 +94,15 @@ After submitting the data, the Registrant is waiting for approval from Standard 
 
 14\. Once the token issuance is complete, we log out and log back to Registrant, we will navigate it to Token History tab to check the Token IDs being issued.
 
-<figure><img src="../.gitbook/assets/image (29).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (29) (1).png" alt=""><figcaption></figcaption></figure>
 
 15\. We can also check Token Balance in the Tokens tab under Profile.
 
-<figure><img src="../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 16\. We can also check Token History by logging back as Standard Registry.
 
-<figure><img src="../.gitbook/assets/image (23) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (23).png" alt=""><figcaption></figcaption></figure>
 
 We have the option of viewing TrustChain. You can view TrustChain by clicking on View TrustChain button.
 

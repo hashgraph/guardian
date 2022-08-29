@@ -41,6 +41,6 @@ This block is responsible for adding configurations on calculating the amount of
 2. If the field specified in the ‘accountId’ not found in the current document the system will look for it in the parent documents.
 {% endhint %}
 
-![](<../.gitbook/assets/image (3).png>)
+![](<../.gitbook/assets/image (7).png>)
 
-![](<../.gitbook/assets/image (10).png>)
+![](<../.gitbook/assets/image (2).png>)

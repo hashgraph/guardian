@@ -7,6 +7,7 @@
 * [Getting started](getting-started/getting-started/README.md)
   * [Prerequisites](getting-started/getting-started/prerequisites.md)
   * [Installation](getting-started/getting-started/installation.md)
+  * [How to create Operator ID and Operator Key](getting-started/getting-started/how-to-create-operator-id-and-operator-key.md)
   * [How to generate Web3.Storage API Key](getting-started/getting-started/how-to-generate-web3.storage-api-key.md)
 * [Contributing](getting-started/contributing/README.md)
   * [Contribute a New Policy](getting-started/contributing/contribute-a-new-policy.md)

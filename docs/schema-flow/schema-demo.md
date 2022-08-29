@@ -69,7 +69,7 @@ Once the above details are added, click on the Create button.
 
 Once the System Schema is created, we have options for activating, deleting, editing and viewing JSON documents.
 
-![](<../.gitbook/assets/image (9) (2).png>)
+![](<../.gitbook/assets/image (9) (3).png>)
 
 ### 2. Policy Schemas
 
@@ -106,7 +106,7 @@ To import the Schema, click on the Import button.
 
 Once the Import button is clicked, we get two options: Import from file and Import from IPFS
 
-![](<../.gitbook/assets/image (17).png>)
+![](<../.gitbook/assets/image (29).png>)
 
 Import from file: You can select the required Schema .schema file from your local machine. Sample iREC Schema (iREC Schema.zip) is provided in the link: [https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
 
@@ -128,7 +128,7 @@ Once the Schema is imported, we need to select the Policy from the Policy dropdo
 
 ![](<../.gitbook/assets/image (2) (2).png>)
 
-![](<../.gitbook/assets/image (11) (1).png>)
+![](<../.gitbook/assets/image (11) (2).png>)
 
 After selecting the required Policy, click on the Import button.
 
@@ -149,7 +149,7 @@ Once the Schema is imported, we will have the following options:\
 
 To Publish the Schema, click on Publish button.
 
-![](<../.gitbook/assets/image (22) (1).png>)
+![](<../.gitbook/assets/image (22).png>)
 
 After clicking on Publish, you will be prompted to enter the version. After entering the Version and pressing the submit button, the status will change to Published.
 
