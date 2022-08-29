@@ -14,9 +14,11 @@ import { Environment } from './helpers/environment';
  * Sleep helper
  * @param t
  */
-function sleep(t: number): Promise<void> {
-    return new Promise(resolve => {
-        setTimeout(resolve, t);
+function rejectTimeout(t: number): Promise<void> {
+    return new Promise((_, reject) => {
+        setTimeout(() => {
+            reject('Timeout error');
+        }, t);
     })
 }
 
@@ -119,15 +121,34 @@ export class Worker {
     }
 
     /**
+     * Clear states
+     * @private
+     */
+    private clearState(): void {
+        this.isInUse = false;
+        this.currentTaskId = null;
+        this.updateEventReceived = false;
+    }
+
+    /**
      * Get item from queue
      */
     public async getItem(): Promise<any> {
         this.isInUse = true;
-        const task: any = await this.request(WorkerEvents.QUEUE_GET, {
-            minPriority: this.minPriority,
-            maxPriority: this.maxPriority,
-            taskTimeout: this.taskTimeout
-        });
+        let task: any = null;
+        try {
+            task = Promise.race([
+                this.request(WorkerEvents.QUEUE_GET, {
+                    minPriority: this.minPriority,
+                    maxPriority: this.maxPriority,
+                    taskTimeout: this.taskTimeout
+                }),
+                rejectTimeout(parseInt(process.env.TASK_TIMEOUT, 10) * 1000)
+            ]);
+        } catch (e) {
+            this.clearState();
+            return;
+        }
         if (!task) {
             this.isInUse = false;
 
