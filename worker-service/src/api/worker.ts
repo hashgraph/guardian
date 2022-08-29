@@ -55,6 +55,12 @@ export class Worker {
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
         this.taskTimeout = parseInt(process.env.TASK_TIMEOUT, 10) * 1000; // env in seconds
 
+        setInterval(async () => {
+            if (!this.isInUse) {
+                await this.getItem();
+            }
+        }, parseInt(process.env.REFRESH_INTERVAL, 10) * 1000)
+
         this.channel.subscribe(WorkerEvents.QUEUE_UPDATED, async (data: unknown) => {
             if (!this.isInUse) {
                 await this.getItem();
@@ -105,26 +111,30 @@ export class Worker {
         /**
          * Actions
          */
-        switch (task.type) {
-            case WorkerTaskType.GET_FILE:
-            case WorkerTaskType.ADD_FILE:
-                result.data = await this.channel.request<IAddFileMessage, any>(task.data.target, task.data.payload);
-                break;
+        try {
+            switch (task.type) {
+                case WorkerTaskType.GET_FILE:
+                case WorkerTaskType.ADD_FILE:
+                    result.data = await this.channel.request<IAddFileMessage, any>(task.data.target, task.data.payload);
+                    break;
 
-            case WorkerTaskType.SEND_HEDERA:
-                Environment.setNetwork(task.data.network);
-                Environment.setLocalNodeAddress(task.data.localNodeAddress);
-                Environment.setLocalNodeProtocol(task.data.localNodeProtocol);
-                const {operatorId, operatorKey, dryRun} = task.data.clientOptions;
-                const client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
-                const {topicId, buffer, submitKey} = task.data;
-                result.data = await client.submitMessage(topicId, buffer, submitKey);
-                break;
+                case WorkerTaskType.SEND_HEDERA:
+                    Environment.setNetwork(task.data.network);
+                    Environment.setLocalNodeAddress(task.data.localNodeAddress);
+                    Environment.setLocalNodeProtocol(task.data.localNodeProtocol);
+                    const {operatorId, operatorKey, dryRun} = task.data.clientOptions;
+                    const client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
+                    const {topicId, buffer, submitKey} = task.data;
+                    result.data = await client.submitMessage(topicId, buffer, submitKey);
+                    break;
 
-            default:
-                result.error = 'unknown task'
+                default:
+                    result.error = 'unknown task'
+            }
+            ///////
+        } catch (e) {
+            result.error = e.message;
         }
-        ///////
 
         await this.request(WorkerEvents.TASK_COMPLETE, result);
 
