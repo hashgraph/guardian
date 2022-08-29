@@ -138,17 +138,27 @@ export class ExternalDataBlock {
             verify = false;
         }
 
+        let user: PolicyUser = null;
+        if (data.owner) {
+            user = new PolicyUser(data.owner, !!ref.dryRun);
+            if (data.group) {
+                const group = await ref.databaseServer.getUserInGroup(ref.policyId, data.owner, data.group);
+                user.setGroup(group);
+            } else {
+                const groups = await ref.databaseServer.getGroupsByUser(ref.policyId, data.owner);
+                for (const group of groups) {
+                    if (group.active !== false) {
+                        user.setGroup(group);
+                    }
+                }
+            }
+        }
+
         const docOwner = await PolicyUtils.getHederaAccount(ref, data.owner);
-
         const documentRef = await this.getRelationships(ref, data.ref);
-
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);
         const accounts = PolicyUtils.getHederaAccounts(vc, docOwner.hederaAccountId, schema);
-
-        const groups = await ref.databaseServer.getGroupsByUser(ref.policyId, data.owner);
-        const user = new PolicyUser(data.owner, !!ref.dryRun);
-        user.setGroup(groups[0]);
 
         let doc = PolicyUtils.createVC(ref, user, vc);
         doc.type = ref.options.entityType;
@@ -157,18 +167,17 @@ export class ExternalDataBlock {
         doc.signature = (verify ?
             DocumentSignature.VERIFIED :
             DocumentSignature.INVALID);
-
         doc = PolicyUtils.setDocumentRef(doc, documentRef);
 
         const state = { data: doc };
 
-        const valid = await this.validateDocuments(null, state);
+        const valid = await this.validateDocuments(user, state);
         if (!valid) {
             throw new BlockActionError('Invalid document', ref.blockType, ref.uuid);
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, null, state);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, state);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
     }
 
     /**
