@@ -25,10 +25,37 @@ function sleep(t: number): Promise<void> {
  */
 export class Worker {
     /**
+     * Current task ID
+     */
+    private currentTaskId: string;
+
+    /**
+     * Update event received flag
+     * @private
+     */
+    private updateEventReceived = false;
+
+    /**
      * Worker in use
      * @private
      */
-    private isInUse: boolean = false;
+    private _isInUse: boolean = false;
+
+    /**
+     * Worker in use getter
+     * @private
+     */
+    private get isInUse(): boolean {
+        return this._isInUse;
+    }
+
+    /**
+     * Worker in use setter
+     * @private
+     */
+    private set isInUse(v: boolean) {
+        this._isInUse = v;
+    }
 
     /**
      * Minimum priority
@@ -59,11 +86,13 @@ export class Worker {
             if (!this.isInUse) {
                 await this.getItem();
             }
-        }, parseInt(process.env.REFRESH_INTERVAL, 10) * 1000)
+        }, parseInt(process.env.REFRESH_INTERVAL, 10) * 1000);
 
         this.channel.subscribe(WorkerEvents.QUEUE_UPDATED, async (data: unknown) => {
             if (!this.isInUse) {
                 await this.getItem();
+            } else {
+                this.updateEventReceived = true;
             }
         });
     }
@@ -101,11 +130,18 @@ export class Worker {
         });
         if (!task) {
             this.isInUse = false;
+
+            if (this.updateEventReceived) {
+                this.updateEventReceived = false;
+                await this.getItem();
+            }
+
             return;
         }
 
+        this.currentTaskId = task.id;
         const result: ITaskResult = {
-            id: task.id
+            id: this.currentTaskId
         }
 
         /**
