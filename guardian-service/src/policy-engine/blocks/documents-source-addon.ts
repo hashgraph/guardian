@@ -40,13 +40,14 @@ export class DocumentsSourceAddon {
 
         if (ref.options.onlyOwnDocuments) {
             filters.owner = user.did;
-        } else if (ref.options.onlyOwnByGroupDocuments) {
+        } 
+        if (ref.options.onlyOwnByGroupDocuments) {
             filters.group = user.group;
         }
-
         if (ref.options.onlyAssignDocuments) {
             filters.assignedTo = user.did;
-        } else if (ref.options.onlyAssignByGroupDocuments) {
+        } 
+        if (ref.options.onlyAssignByGroupDocuments) {
             filters.assignedToGroup = user.group;
         }
 

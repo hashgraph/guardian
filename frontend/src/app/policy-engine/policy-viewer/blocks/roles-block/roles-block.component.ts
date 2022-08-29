@@ -136,8 +136,11 @@ export class RolesBlockComponent implements OnInit {
             } else {
                 data = { role: value.roleOrGroup };
             }
+            this.loading = true;
             this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-                this.loading = false;
+                setTimeout(() => {
+                    this.loading = false;
+                }, 1000);
             }, (e) => {
                 console.error(e.error);
                 this.loading = false;

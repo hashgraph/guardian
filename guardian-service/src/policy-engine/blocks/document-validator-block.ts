@@ -107,17 +107,18 @@ export class DocumentValidatorBlock {
             if (document.owner !== userDID) {
                 return false;
             }
-        } else if (ref.options.checkOwnerByGroupDocument) {
+        } 
+        if (ref.options.checkOwnerByGroupDocument) {
             if (document.group !== userGroup) {
                 return false;
             }
         }
-
         if (ref.options.checkAssignDocument) {
             if (document.assignedTo !== userDID) {
                 return false;
             }
-        } else if (ref.options.checkAssignByGroupDocument) {
+        } 
+        if (ref.options.checkAssignByGroupDocument) {
             if (document.assignedToGroup !== userGroup) {
                 return false;
             }

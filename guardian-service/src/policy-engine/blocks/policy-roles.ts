@@ -1,8 +1,8 @@
-import { EventBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
@@ -111,7 +111,10 @@ interface IGroupConfig {
             PolicyInputEventType.RunEvent,
             PolicyInputEventType.RefreshEvent,
         ],
-        output: null,
+        output: [
+            PolicyOutputEventType.CreateGroup,
+            PolicyOutputEventType.JoinGroup
+        ],
         defaultEvent: false
     }
 })
@@ -361,6 +364,9 @@ export class PolicyRolesBlock {
      * @param user
      * @param data
      */
+    @ActionCallback({
+        output: [PolicyOutputEventType.JoinGroup, PolicyOutputEventType.CreateGroup]
+    })
     async setData(user: IPolicyUser, data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const did = user?.did;
@@ -386,7 +392,15 @@ export class PolicyRolesBlock {
         }
 
         group.messageId = await this.createVC(ref, user, group);
-        await ref.databaseServer.setUserInGroup(group);
+
+        const userGroup = await ref.databaseServer.setUserInGroup(group);
+
+        const newUser = PolicyUser.create(userGroup, !!ref.dryRun);
+        if (data.invitation) {
+            ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null);
+        } else {
+            ref.triggerEvents(PolicyOutputEventType.CreateGroup, newUser, null);
+        }
 
         await Promise.all([
             PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag),
