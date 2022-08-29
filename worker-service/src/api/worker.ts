@@ -165,8 +165,8 @@ export class Worker {
                     Environment.setLocalNodeProtocol(task.data.localNodeProtocol);
                     const {operatorId, operatorKey, dryRun} = task.data.clientOptions;
                     const client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
-                    const {topicId, buffer, submitKey} = task.data;
-                    result.data = await client.submitMessage(topicId, buffer, submitKey);
+                    const {topicId, buffer, submitKey, memo} = task.data;
+                    result.data = await client.submitMessage(topicId, buffer, submitKey, memo);
                     break;
 
                 default:
