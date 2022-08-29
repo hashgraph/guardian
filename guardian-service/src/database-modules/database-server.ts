@@ -750,7 +750,7 @@ export class DatabaseServer {
      */
     public async getGroupsByUser(policyId: string, did: string, options?: any): Promise<PolicyRolesCollection[]> {
         if (!did) {
-            return null;
+            return [];
         }
         return await this.find(PolicyRolesCollection, { policyId, did }, options);
     }

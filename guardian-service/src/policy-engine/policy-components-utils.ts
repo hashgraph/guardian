@@ -559,7 +559,8 @@ export class PolicyComponentsUtils {
                 result.userRole = 'Administrator';
             }
 
-            const db = new DatabaseServer(policyId);
+            const dryRun = policy.status === PolicyType.DRY_RUN ? policyId : null;
+            const db = new DatabaseServer(dryRun);
             const groups = await db.getGroupsByUser(policyId, did, {
                 fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active']
             });
