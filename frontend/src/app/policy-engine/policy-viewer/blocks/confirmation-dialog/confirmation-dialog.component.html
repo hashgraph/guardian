@@ -1,6 +1,13 @@
 <h1 mat-dialog-title>{{this.title}}</h1>
 <div mat-dialog-content class="content">
-    <div class="description">{{this.description}}</div>
+    <div *ngIf="this.description" class="description">
+        {{this.description}}
+    </div>
+    <div *ngIf="this.descriptions" class="description">
+        <div *ngFor="let item of this.descriptions">
+            {{item}}
+        </div>
+    </div>
     <div class="textarea">
         <mat-form-field appearance="outline">
             <textarea matInput rows="4" [formControl]="value"></textarea>

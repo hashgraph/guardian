@@ -154,12 +154,17 @@ export class GroupManagerBlockComponent implements OnInit {
     }
 
     onDelete(user: any) {
+        const groupLabel = this.selected.groupLabel || this.selected.id;
+        const title = `Withdraw user ${user.username} from group ${groupLabel}`;
+        const description = [
+            `User: ${user.username}`,
+            `User DID: ${user.did}`,
+            `Group: ${groupLabel}`,
+            `Group ID: ${this.selected.id}`
+        ];
         const dialogRef = this.dialog.open(ConfirmationDialog, {
             width: '550px',
-            data: {
-                title: 'title',
-                description: `description`
-            }
+            data: { title, description }
         });
 
         dialogRef.afterClosed().subscribe(result => {

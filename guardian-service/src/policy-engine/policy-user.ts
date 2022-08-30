@@ -76,8 +76,12 @@ export class PolicyUser implements IPolicyUser {
     } | null): PolicyUser {
         if (group) {
             this.role = group.role;
-            this.group = group.uuid;
-            this.id = `${this.group}:${this.did}`;
+            this.group = group.uuid || null;
+            if (this.group) {
+                this.id = `${this.group}:${this.did}`;
+            } else {
+                this.id = this.did;
+            }
         }
         return this;
     }

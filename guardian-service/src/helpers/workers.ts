@@ -76,9 +76,5 @@ export class Workers extends ServiceRequestsBase {
             this.tasksCallbacks.delete(msg.id);
             return new MessageResponse(null);
         });
-
-        setInterval(() => {
-            console.log(this.queue.length)
-        }, 1000);
     }
 }
