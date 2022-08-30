@@ -138,7 +138,9 @@ export class WebSocketService {
         return new Promise((resolve, reject) => {
             if (this.sendingEvent) {
                 setTimeout(async () => {
-                    resolve(await this._send(data));
+                    await this._send(data);
+                    this.sendingEvent = false;
+                    resolve();
                 }, 10);
             } else {
                 this.sendingEvent = true;
@@ -158,7 +160,6 @@ export class WebSocketService {
             if (this.socket) {
                 const message = JSON.stringify({ type, data });
                 await this._send(message);
-                return;
             }
         } catch (error: any) {
             console.error(error);
