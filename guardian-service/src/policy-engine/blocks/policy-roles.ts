@@ -303,7 +303,7 @@ export class PolicyRolesBlock {
         if(!policySchema) {
             return null;
         }
-        
+
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
         const vcHelper = new VcHelper();
         const vcSubject: any = {
