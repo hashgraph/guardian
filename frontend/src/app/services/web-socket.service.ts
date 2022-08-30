@@ -140,24 +140,14 @@ export class WebSocketService {
 
     private _send(data: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            if (this.sendingEvent) {
-                setTimeout(() => {
-                    this._send(data).then(() => {
-                        this.sendingEvent = false;
-                        resolve();
-                    });
-                }, 10);
-            } else {
-                console.log('not ');
-                this.sendingEvent = true;
-                this.socket?.next(data);
-
-                setTimeout(() => {
+            this.sendingEvent = true;
+            this.socket?.next(data);
+            setTimeout(() => {
                     this.sendingEvent = false;
                     resolve();
-                }, 100);
-            }
-
+                },
+                100
+            );
         })
     }
 
