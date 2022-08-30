@@ -1,5 +1,14 @@
 <div class="custom-field" [formGroup]="form">
-
+    <ng-template [ngIf]="field.controlKey.invalid && field.controlKey.errors">
+        <small class="error-message"
+            *ngIf="field.controlKey.hasError('key')">
+            Key contains invalid characters.
+        </small>
+        <small class="error-message"
+            *ngIf="field.controlKey.hasError('systemName')">
+            Key has a system name.
+        </small>
+    </ng-template>
     <div class="extended-config" [attr.extended]="extended">
         <div class="custom-field-name f1">
             <mat-form-field class="example-full-width" appearance="outline">

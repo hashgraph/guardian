@@ -3,7 +3,13 @@ import {
     FormGroup, ValidationErrors, ValidatorFn, Validators
 } from '@angular/forms';
 import { SchemaField } from '@guardian/interfaces';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
+export const SYSTEM_FIELDS = [
+    '@context',
+    'type',
+]
 
 export class FieldControl {
     public readonly name: string;
@@ -15,14 +21,29 @@ export class FieldControl {
     public controlRequired: FormControl;
     public controlArray: FormControl;
     public controlUnit: FormControl;
+    private readonly _defaultFieldMap!: any;
+    private _entityType!: FormControl;
 
-    constructor(field: SchemaField | null, type: string, name?: string) {
+    constructor(
+        field: SchemaField | null,
+        type: string,
+        destroyEvent: Subject<any>,
+        defaultFieldMap: any,
+        entityType: FormControl,
+        name?: string
+    ) {
+        this._defaultFieldMap = defaultFieldMap;
+        this._entityType = entityType;
         this.name = `field${Date.now()}${Math.floor(Math.random() * 1000000)}`;
         if (field) {
             this.controlKey = new FormControl(field.name, [
                 Validators.required, 
-                this.keyValidator()
+                this.keyValidator(),
+                this.fieldSystemKeyValidator()
             ]);
+            this.controlKey.valueChanges
+                .pipe(takeUntil(destroyEvent))
+                .subscribe(this.trimFormControlValue.bind(this));
             this.controlTitle = new FormControl(field.title, Validators.required);
             this.controlDescription = new FormControl(field.description, Validators.required);
             this.controlType = new FormControl(type, Validators.required);
@@ -32,14 +53,27 @@ export class FieldControl {
         } else {
             this.controlKey = new FormControl(name || this.name, [
                 Validators.required, 
-                this.keyValidator()
+                this.keyValidator(),
+                this.fieldSystemKeyValidator()
             ]);
+            this.controlKey.valueChanges
+                .pipe(takeUntil(destroyEvent))
+                .subscribe(this.trimFormControlValue.bind(this));
             this.controlTitle = new FormControl(name || this.name, Validators.required);
             this.controlDescription = new FormControl('', Validators.required);
             this.controlType = new FormControl(type, Validators.required);
             this.controlRequired = new FormControl(false);
             this.controlArray = new FormControl(false);
             this.controlUnit = new FormControl('');
+        }
+        this._entityType.valueChanges
+            .pipe(takeUntil(destroyEvent))
+            .subscribe(() => this.controlKey.updateValueAndValidity());
+    }
+
+    private trimFormControlValue(value: string) {
+        if (value) {
+            this.controlKey.patchValue(value.trim(), { emitEvent: false })
         }
     }
 
@@ -113,6 +147,19 @@ export class FieldControl {
 
     public remove(parentControl: FormGroup) {
         parentControl.removeControl(this.name);
+    }
+
+    private fieldSystemKeyValidator(): ValidatorFn {
+        return (control: any): ValidationErrors | null => {
+            let systemFields = SYSTEM_FIELDS;
+            const entityTypeValue = this._entityType?.value;
+            if (entityTypeValue && this._defaultFieldMap && this._defaultFieldMap[entityTypeValue]) {
+                systemFields = systemFields.concat(this._defaultFieldMap[entityTypeValue].map((item: any) => item.name));
+            }
+            return systemFields.includes(control.value)
+                ? { systemName: { valid: false }}
+                : null;
+        };
     }
 
     private keyValidator(): ValidatorFn {
