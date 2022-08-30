@@ -45,10 +45,6 @@ export abstract class Message {
     public lang: string;
 
     /**
-     * Message action
-     */
-    public readonly action: MessageAction;
-    /**
      * Message type
      */
     public readonly type: MessageType;
@@ -83,6 +79,10 @@ export abstract class Message {
      * @protected
      */
     protected _statusReason: string;
+    /**
+     * Message action
+     */
+    protected _action: MessageAction;
 
     /**
      * Response type
@@ -92,12 +92,19 @@ export abstract class Message {
     }
 
     constructor(action: MessageAction, type: MessageType) {
-        this.action = action;
         this.type = type;
+        this.lang = 'en-US';
+        this._action = action;
         this._responseType = 'str';
         this._id = GenerateUUIDv4();
         this._status = MessageStatus.ISSUE;
-        this.lang = 'en-US';
+    }
+
+    /**
+     * Message action
+     */
+    public get action(): MessageAction {
+        return this._action;
     }
 
     /**
@@ -211,6 +218,7 @@ export abstract class Message {
             ? RevokeReason.ParentRevoked
             : RevokeReason.DocumentRevoked;
         this._parentIds = parentIds;
+        this._action = MessageAction.RevokeDocument;
     }
 
     /**
@@ -223,6 +231,7 @@ export abstract class Message {
         this._statusMessage = message;
         this._parentIds = parentIds;
         this._statusReason = 'Document Deleted';
+        this._action = MessageAction.DeleteDocument;
     }
 
     /**
@@ -241,6 +250,7 @@ export abstract class Message {
         this._status = status;
         this._statusMessage = message;
         this._statusReason = 'Change Status';
+        this._action = MessageAction.ChangeMessageStatus;
     }
 
     /**
