@@ -6,6 +6,8 @@ import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyRoles } from '@entity/policy-roles';
+import { MessageServer } from '@hedera-modules';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Document action clock with UI
@@ -78,7 +80,8 @@ export class GroupManagerBlock {
         ref: IPolicyInterfaceBlock,
         user: IPolicyUser,
         groupId: string,
-        did: string
+        did: string,
+        text: string
     ): Promise<void> {
         if (user.did === did) {
             throw new Error(`Permission denied`);
@@ -98,6 +101,17 @@ export class GroupManagerBlock {
             }
         } else {
             throw new Error(`Invalid Group type`);
+        }
+
+        if (member.messageId) {
+            const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
+            const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey, ref.dryRun);
+            const message = await messageServer.getMessage(member.messageId);
+            const topic = await PolicyUtils.getTopicById(ref, message.topicId);
+            message.delete(text);
+            await messageServer
+                .setTopicObject(topic)
+                .sendMessage(message, false);
         }
     }
 
@@ -121,6 +135,7 @@ export class GroupManagerBlock {
         const config = this.getGroupConfig(ref, group.groupName);
         const members = (await ref.databaseServer.getAllMembersByGroup(group)).map(member => {
             return {
+                did: member.did,
                 username: member.username,
                 role: member.role,
                 type: member.did === member.owner ? 'Owner' : 'Member',
@@ -176,7 +191,13 @@ export class GroupManagerBlock {
             return { invitation };
         }
         if (blockData.action === 'delete') {
-            await this.deleteMember(ref, user, blockData.group, blockData.user);
+            await this.deleteMember(
+                ref,
+                user,
+                blockData.group,
+                blockData.user,
+                blockData.message
+            );
             return { deleted: true };
         }
     }

@@ -10,7 +10,8 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
  */
 export enum MessageStatus {
     ISSUE = 'ISSUE',
-    REVOKE = 'REVOKE'
+    REVOKE = 'REVOKE',
+    DELETED = 'DELETED'
 }
 
 /**
@@ -81,6 +82,11 @@ export abstract class Message {
      * @protected
      */
     protected _parentIds: string[];
+    /**
+     * Delete message
+     * @protected
+     */
+    protected _deleteMessage: string;
 
     /**
      * Response type
@@ -212,6 +218,17 @@ export abstract class Message {
     }
 
     /**
+     * Delete
+     * @param message
+     * @param parentIds
+     */
+    public delete(message: string, parentIds?: string[]): void {
+        this._status = MessageStatus.DELETED;
+        this._deleteMessage = message;
+        this._parentIds = parentIds;
+    }
+
+    /**
      * Is revoked
      */
     public isRevoked() {
@@ -232,6 +249,16 @@ export abstract class Message {
                 revokeMessage: this._revokeMessage,
                 reason: this._revokeReason,
                 parentIds: this._parentIds
+            }
+            return JSON.stringify(body);
+        } else if (this._status === MessageStatus.DELETED) {
+            const body: MessageBody = {
+                id: this._id,
+                status: this._status,
+                type: this.type,
+                action: this.action,
+                lang: this.lang,
+                deleteMessage: this._deleteMessage
             }
             return JSON.stringify(body);
         } else {

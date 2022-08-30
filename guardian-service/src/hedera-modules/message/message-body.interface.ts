@@ -38,6 +38,10 @@ export interface MessageBody {
      * Parent IDs
      */
     parentIds?: string[];
+    /**
+     * Delete message
+     */
+    deleteMessage?: string;
 }
 
 /**

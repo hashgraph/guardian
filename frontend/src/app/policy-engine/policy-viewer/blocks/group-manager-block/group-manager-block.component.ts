@@ -5,6 +5,7 @@ import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { InviteDialogComponent } from 'src/app/policy-engine/helpers/invite-dialog/invite-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
 
 /**
  * Component for display block of 'policyRolesBlock' types.
@@ -142,7 +143,7 @@ export class GroupManagerBlockComponent implements OnInit {
             disableClose: true,
             data: {
                 header: 'Invitation',
-                blockId: this.id, 
+                blockId: this.id,
                 policyId: this.policyId,
                 group: group.id,
                 roles: group.roles
@@ -153,10 +154,28 @@ export class GroupManagerBlockComponent implements OnInit {
     }
 
     onDelete(user: any) {
+        const dialogRef = this.dialog.open(ConfirmationDialog, {
+            width: '550px',
+            data: {
+                title: 'title',
+                description: `description`
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.delete(user, result);
+            }
+        });
+    }
+
+    delete(user: any, message: any) {
         this.loading = true;
         this.policyEngineService.setBlockData(this.id, this.policyId, {
             action: 'delete',
-            username: user.username
+            group: this.selected?.id,
+            user: user.did,
+            message: message
         }).subscribe((result) => {
             this.loadData();
         }, (e) => {

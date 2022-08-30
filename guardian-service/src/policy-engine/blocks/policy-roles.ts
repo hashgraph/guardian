@@ -300,6 +300,7 @@ export class PolicyRolesBlock {
      */
     private async createVC(ref: AnyBlockType, user: IPolicyUser, doc: IUserGroup): Promise<string> {
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+        
         const vcHelper = new VcHelper();
         const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.USER_ROLE);
         const vcSubject: any = {
