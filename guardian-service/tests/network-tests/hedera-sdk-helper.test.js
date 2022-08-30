@@ -18,8 +18,8 @@ describe('Hedera SDK Helper', function () {
     let sdk, accountId, accountKey, tokenId, account2Id, account2Key, token2Id, nft;
 
     const initialBalance = 5;
-    const OPERATOR_ID = '0.0.1548173';
-    const OPERATOR_KEY = '302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc';
+    const OPERATOR_ID = process.env.OPERATOR_ID;
+    const OPERATOR_KEY = process.env.OPERATOR_KEY;
 
     this.timeout(60 * transactionTimeout);
 
