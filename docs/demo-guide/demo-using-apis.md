@@ -235,7 +235,7 @@ Years of registration
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/API\_4 (1).png>)
+![](<../.gitbook/assets/API\_4 (1) (1).png>)
 
 ### 1.8 Request the root block and all contained blocks again.
 

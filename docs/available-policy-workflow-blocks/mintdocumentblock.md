@@ -4,8 +4,6 @@ This block is responsible for adding configurations on calculating the amount of
 
 ### Properties
 
-
-
 | Block Property   | Definition                                                                        | Example Input                                                                         | Status |
 | ---------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------ |
 | tag              | Unique name for the logic block.                                                  | mintDocumentBlock                                                                     |        |
@@ -16,23 +14,15 @@ This block is responsible for adding configurations on calculating the amount of
 
 ### UI Properties
 
-| UI Property        | Definition                                                                                                                                                                                                                                                     |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|  Token             | Token which is affected by the action                                                                                                                                                                                                                          |
-| Rule               | Math expression for calculation of the amount of tokens to mint.                                                                                                                                                                                               |
-| Account Id (Field) | The value from this field is used as the ID of the account under which the action is performed when ‘Account Type’ is set to ‘Custom’.                                                                                                                         |
-| Account Type       | <p>The type of the account under which the action is performed. If set to ‘Default’ the account of the currently logged in user is used (i.e. the owner of the document).</p><p>If set to ‘Custom’ the account specified in the ‘accountId’ field is used.</p> |
-
-
-
-### UI Properties
-
 | UI Property        | Definition                                                                                                                             |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Token              | The token which is affected by the action                                                                                              |
 | Account Type       | The value from this field is used as the ID of the account under which the action is performed when ‘Account Type’ is set to ‘Custom’. |
 | Rule               | Math expression for calculation of the amount of tokens to mint.                                                                       |
 | Account Id (Field) | The value from this field is used as the ID of the account under which the action is performed when ‘Account Type’ is set to ‘Custom’. |
+| Memo               | The value in this filed is used to customize the Memo field name.                                                                      |
+
+<figure><img src="../.gitbook/assets/image (31).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Notes:**
@@ -40,7 +30,3 @@ This block is responsible for adding configurations on calculating the amount of
 1. Only fields of ‘Hedera Account’ type can be used for ‘accountId’.
 2. If the field specified in the ‘accountId’ not found in the current document the system will look for it in the parent documents.
 {% endhint %}
-
-![](<../.gitbook/assets/image (7).png>)
-
-![](<../.gitbook/assets/image (2).png>)

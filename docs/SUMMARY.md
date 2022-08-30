@@ -156,13 +156,13 @@
 
 ## SCHEMA CREATION USING THE GUARDIAN APIS
 
-* [Creation of a Schema (Deprecated)](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
+* [Creation of a Schema (Cancelled)](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
 * [Listing of Schema](schema-creation-using-the-guardian-apis/creation-of-a-schema-1.md)
 * [Publishing Schema based on Schema ID](schema-creation-using-the-guardian-apis/publishing-schema-based-on-schema-id.md)
 * [Updating Schema](schema-creation-using-the-guardian-apis/updating-schema.md)
 * [Deleting a Schema](schema-creation-using-the-guardian-apis/deleting-a-schema.md)
-* [Import Schema from Zip (Deprecated)](schema-creation-using-the-guardian-apis/import-schema-from-ipfs.md)
-* [Import Schema from IPFS (Deprecated)](schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1.md)
+* [Import Schema from Zip (Cancelled)](schema-creation-using-the-guardian-apis/import-schema-from-ipfs.md)
+* [Import Schema from IPFS (Cancelled)](schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1.md)
 * [Schema Preview from IPFS](schema-creation-using-the-guardian-apis/schema-preview-from-ipfs.md)
 * [Schema Preview from Zip](schema-creation-using-the-guardian-apis/schema-preview-from-zip.md)
 * [Export message IDs of Schema](schema-creation-using-the-guardian-apis/export-a-schema.md)

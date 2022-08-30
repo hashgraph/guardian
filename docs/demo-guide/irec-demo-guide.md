@@ -62,7 +62,7 @@ Once Submitted, Registrant waits for the approval of the application by Standard
 
 9\. After the approval process, Standard Registry grants KYC to the Registrant by going to Tokens tab and clicking on Grant KYC button.
 
-<figure><img src="../.gitbook/assets/image (31).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (31) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 10\. Once the Registrant application is approved by Standard Registry, we log back in as Registrant and register for a new Device for sending MRV Data by clicking on Create New Device
 
