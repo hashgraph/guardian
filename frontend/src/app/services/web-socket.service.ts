@@ -9,9 +9,7 @@ import { Router } from '@angular/router';
 /**
  *  WebSocket service.
  */
-@Injectable({
-    providedIn: 'root'
-})
+@Injectable()
 export class WebSocketService {
     private static HEARTBEAT_DELAY = 30 * 1000;
     private socket: WebSocketSubject<string> | null;
@@ -150,6 +148,7 @@ export class WebSocketService {
                     });
                 }, 10);
             } else {
+                console.log('not ');
                 this.sendingEvent = true;
                 this.socket?.next(data);
 
