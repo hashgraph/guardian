@@ -5,7 +5,8 @@ import { findOptions } from '@policy-engine/helpers/find-options';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Filters addon
@@ -38,7 +39,7 @@ export class FiltersAddonBlock {
      * Get filters
      * @param user
      */
-    public getFilters(user: IAuthUser): { [key: string]: string } {
+    public getFilters(user: IPolicyUser): { [key: string]: string } {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const filters = ref.filters[user.did] || {};
         if (ref.options.type === 'dropdown') {
@@ -53,7 +54,7 @@ export class FiltersAddonBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IAuthUser) {
+    async getData(user: IPolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const block: any = {
@@ -89,7 +90,7 @@ export class FiltersAddonBlock {
      * @param user
      * @param data
      */
-    async setData(user: IAuthUser, data: any) {
+    async setData(user: IPolicyUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const filter: any = {};
         if (!data) {
@@ -131,7 +132,7 @@ export class FiltersAddonBlock {
                 }
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

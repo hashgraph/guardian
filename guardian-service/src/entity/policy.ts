@@ -1,141 +1,139 @@
-import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn } from 'typeorm';
+import { BaseEntity } from '@guardian/common';
+import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
+import { BeforeCreate, Entity, Property, Unique } from '@mikro-orm/core';
 
 /**
  * Policy collection
  */
 @Entity()
-export class Policy {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
+@Unique({ properties: ['policyTag'], options: { partialFilterExpression: { policyTag: { $type: 'string' }}}})
+export class Policy extends BaseEntity {
 
     /**
      * Policy UUID
      */
-    @Column()
-    uuid: string;
+    @Property({ nullable: true })
+    uuid?: string;
 
     /**
      * Policy name
      */
-    @Column()
-    name: string;
+    @Property({ nullable: true })
+    name?: string;
 
     /**
      * Policy version
      */
-    @Column()
-    version: string;
+    @Property({ nullable: true })
+    version?: string;
 
     /**
      * Policy previous version
      */
-    @Column()
-    previousVersion: string;
+    @Property({ nullable: true })
+    previousVersion?: string;
 
     /**
      * Policy description
      */
-    @Column()
-    description: string;
+    @Property({ nullable: true })
+    description?: string;
 
     /**
      * Policy topic description
      */
-    @Column()
-    topicDescription: string;
+    @Property({ nullable: true })
+    topicDescription?: string;
 
     /**
      * Policy config
      */
-    @Column()
-    config: Object;
+    @Property({ nullable: true })
+    config?: any;
 
     /**
      * Policy status
      */
-    @Column()
-    status: string;
+    @Property({ nullable: true })
+    status?: PolicyType;
 
     /**
      * Policy creator
      */
-    @Column()
-    creator: string;
+    @Property({ nullable: true })
+    creator?: string;
 
     /**
      * Policy owner
      */
-    @Column()
-    owner: string;
+    @Property({ nullable: true })
+    owner?: string;
 
     /**
      * Policy roles
      */
-    @Column()
-    policyRoles: string[];
+    @Property({ nullable: true })
+    policyRoles?: string[];
 
     /**
      * Policy topics
      */
-    @Column()
-    policyTopics: any[];
-
-    /**
-     * Policy registered users
-     */
-    @Column()
-    registeredUsers: Object;
+    @Property({ nullable: true })
+    policyTopics?: any[];
 
     /**
      * Policy topic id
      */
-    @Column()
-    topicId: string;
+    @Property({ nullable: true })
+    topicId?: string;
 
     /**
      * Policy instance topic id
      */
-    @Column()
-    instanceTopicId: string;
+    @Property({ nullable: true })
+    instanceTopicId?: string;
 
     /**
      * Policy tag
      */
-    @Column({
-        unique: true
+    @Property({
+        nullable: true
     })
-    policyTag: string;
+    policyTag?: string;
 
     /**
      * Policy message id
      */
-    @Column()
-    messageId: string;
+    @Property({ nullable: true })
+    messageId?: string;
 
     /**
      * Policy code version
      */
-    @Column()
-    codeVersion: string;
+    @Property({ nullable: true })
+    codeVersion?: string;
 
     /**
      * Created at
      */
-    @CreateDateColumn()
-    createDate: Date;
+    @Property()
+    createDate: Date = new Date();
+
+    /**
+     * User roles
+     * @deprecated
+     */
+    @Property({ nullable: true })
+    registeredUsers?: any
 
     /**
      * Set policy defaults
      */
-    @BeforeInsert()
+    @BeforeCreate()
     setDefaults() {
-        this.status = this.status || 'DRAFT';
-        this.registeredUsers = {};
+        this.status = this.status || PolicyType.DRAFT;
         this.uuid = this.uuid || GenerateUUIDv4();
         this.codeVersion = this.codeVersion || '1.0.0';
+        delete this.registeredUsers;
     }
 }

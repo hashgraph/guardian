@@ -1,20 +1,25 @@
-# Usage Demo Guide Artifacts
+# ReadMe
 
-This folder contains sample files that are referenced in the Demo Usage Guide from previous versions of the Guardian. As of version 1.0.5 the following files will not be needed to follow the guide:
+This folder contains sub folders for each Methodology and their authors (with many more to be added in the future). Each methodlogy has a corresponding Policy (digital version of a Methodology) and Schema (calculations within a Policy).
+1. IREC - Envision
+2. Verra Redd - Envision
+3. Agrecalc MRV - Dovu
+4. Cool Farm Tool MRV - Dovu
 
-1. Sample Schema of iREC (`iREC Schema.zip`)
-2. Sample of iREC Policy (`IRec Policy 3.zip`)
-3. Sample Policy Workflow configuration file (`irec-policy-config.txt`)
-4. Sample of Verra REDD Policy (`Verra REDD Policy 2.zip`)
-5. Sample Schema design template for Verra REDD Policy (`REDD APD Schema Design Template.xlsx`)
+[IREC](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts/iREC)
 
-We are keeping them in the repo as they may be relevant in future releases.
+**Description**: 
 
-## Demo Usage Guide
+This policy supports the tokenization of Renewable Energy Certificates (RECs) in accordance with the I-REC Standard, and specifically, the I-REC(E) Product Code. The I-REC Standard is a non-profit organization that provides an attribute tracking standard that can be used around the world. While the I-REC Standard is designed to track attributes for a diversity of products, Product Codes provide additional requitements for specific products and markets. The I-REC(E) Product Code provides requirements for electricity products, and was developed by Evident, who acts as Code Manager and Registry Operator. The schema and workflow of this policy were designed to reflect the MRV requirements, processes, and roles outlined by both I-REC Standard and the I-REC(E) Product Code. For more info, please check : https://github.com/hashgraph/guardian/blob/develop/Demo%20Artifacts/iREC/readme.md
 
-1. The Guardian reference implementation comes with two predefined users:
+[Verra](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts/Verra/Verra%20Redd/VM0007)
 
-- **Standard Registry**: A standard registry, or a Standard Registry in our scenario, is an organization that establishes science-based standards for measuring, reporting, and verifying (MRV) ecological benefit claims and issues value in the form of credit for claims that meet the standard set. A standard registry also authorizes validation and verification bodies (VVBs) to collect and process claims based on the established standard. The creation of scientific-based standards for MRV is a rigorous discipline that requires independence from commercial influence in the pursuit of accurate accounting of benefit or emissions claims. A standard registry organization can also maintain a central registry of credits they have issued that can be sold directly via the registry itself or established as reference value on networks, exchanges, or marketplaces.
-- **Auditor**: This is a 3rd part who will need to view/audit the entire chain of events; from the establishment of the science-based standards through creation of the credit.
+**Description**: 
 
-For complete flow documentation, please refer to https://docs.hedera.com/guardian/demo-guide/demo-usage-guide
+This policy supports the tokenization of carbon offsets, specifically Verified Carbon Units (VCUs) in accordance with Verra’s Verified Carbon Standard (VCS), and specifically, the VM0007 REDD+ Methodology Framework (REDD+ MF). Verra develops and manages standards that are globally applicable and advance action across a wide range of sectors and activities. The VCS Program is the world’s most widely used voluntary GHG program. For more info please check : https://github.com/hashgraph/guardian/blob/develop/Demo%20Artifacts/Verra/Verra%20Redd/VM0007/readme.md
+
+**For complete flow documentation, please refer to :**
+
+IREC Demo : https://docs.hedera.com/guardian-dev/demo-guide/irec-demo-guide
+
+Verra REDD Demo : https://docs.hedera.com/guardian-dev/demo-guide/verra-redd+-demo-guide

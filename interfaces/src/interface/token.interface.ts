@@ -9,51 +9,51 @@ export interface IToken {
     /**
      * Token ID
      */
-    tokenId: string;
+    tokenId?: string;
     /**
      * Name
      */
-    tokenName: string;
+    tokenName?: string;
     /**
      * Symbol
      */
-    tokenSymbol: string;
+    tokenSymbol?: string;
     /**
      * Type
      */
-    tokenType: string;
+    tokenType?: string;
     /**
      * Decimals
      */
-    decimals: string;
+    decimals?: string;
     /**
      * Initial supply
      */
-    initialSupply: string;
+    initialSupply?: string;
     /**
      * Admin id
      */
-    adminId: string;
+    adminId?: string;
     /**
      * Admin key
      */
-    adminKey: string;
+    adminKey?: string;
     /**
      * KYC key
      */
-    kycKey: string;
+    kycKey?: string;
     /**
      * Freeze key
      */
-    freezeKey: string;
+    freezeKey?: string;
     /**
      * Wipe key
      */
-    wipeKey: string;
+    wipeKey?: string;
     /**
      * Supply key
      */
-    supplyKey: string;
+    supplyKey?: string;
 }
 
 /**

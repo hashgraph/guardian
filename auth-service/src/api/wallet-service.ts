@@ -1,6 +1,11 @@
-import { getMongoRepository } from 'typeorm';
 import { WalletAccount } from '@entity/wallet-account';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import {
+    MessageBrokerChannel,
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper
+} from '@guardian/common';
 import { WalletEvents, IGetKeyMessage, ISetKeyMessage } from '@guardian/interfaces';
 
 /**
@@ -21,7 +26,7 @@ export class WalletService {
             const { token, type, key } = msg;
 
             try {
-                return new MessageResponse(await getMongoRepository(WalletAccount).findOne({ token, type: type + '|' + key }));
+                return new MessageResponse(await new DataBaseHelper(WalletAccount).findOne({ token, type: type + '|' + key }));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error)
@@ -32,12 +37,12 @@ export class WalletService {
             const { token, type, key, value } = msg;
 
             try {
-                const walletAcc = getMongoRepository(WalletAccount).create({
+                const walletAcc = new DataBaseHelper(WalletAccount).create({
                     token,
                     type: type + '|' + key,
                     key: value
                 });
-                return new MessageResponse(await getMongoRepository(WalletAccount).save(walletAcc));
+                return new MessageResponse(await new DataBaseHelper(WalletAccount).save(walletAcc));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error)

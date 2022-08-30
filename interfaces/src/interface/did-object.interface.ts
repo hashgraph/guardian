@@ -12,21 +12,21 @@ export interface IDidObject {
     /**
      * Object did
      */
-    did: string;
+    did?: string;
     /**
      * Object document instance
      */
-    document: IDidDocument;
+    document?: IDidDocument;
     /**
      * Object creation date
      */
-    createDate: Date;
+    createDate?: Date;
     /**
      * Object last update
      */
-    updateDate: Date;
+    updateDate?: Date;
     /**
      * Object status
      */
-    status: DidDocumentStatus;
+    status?: DidDocumentStatus;
 }

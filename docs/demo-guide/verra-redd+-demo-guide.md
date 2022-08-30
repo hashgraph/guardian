@@ -2,7 +2,7 @@
 
 This folder contains a sample file that is referenced in the Demo Usage Guide
 
-1. Sample of Verra REDD Policy (`Verra REDD Policy 2.zip`)
+1. Sample of Verra REDD Policy (`Verra REDD Policy 2.policy`)
 2. Sample Schema design template for Verra REDD Policy (`REDD APD Schema Design Template.xlsx`)
 
 1.The Guardian reference implementation comes with three predefined users:
@@ -19,10 +19,11 @@ This folder contains a sample file that is referenced in the Demo Usage Guide
 
 ![](../.gitbook/assets/Verra\_2.2.png)
 
-4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the import button and enter the following Hedera message ID:
+4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the import button and enter the one of the following Hedera message IDs:
 
 ```
-1655294125.233515155 (Verra REDD+ Policy)  
+REDD 1.1.0 = 1660047003.069328003
+REDD 2.2.2 = 1660047783.273928893
 ```
 
 ![](../.gitbook/assets/verra\_new\_1.png)

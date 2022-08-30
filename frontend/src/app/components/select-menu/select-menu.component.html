@@ -1,0 +1,20 @@
+<ng-container *ngIf="options; else elseTemplate">
+    <div class="select-menu" [matMenuTriggerFor]="publishMenu">
+        <ng-container *ngTemplateOutlet="tempOutlet" ></ng-container>
+        <mat-icon>arrow_drop_down</mat-icon>
+    </div>
+    <mat-menu #publishMenu="matMenu">
+        <div *ngFor="let item of options" class="select-menu-item" (click)="onAction(item)">
+            <div class="select-menu-item-title" [style.color]="item.color">{{item.title}}</div>
+            <div class="select-menu-item-description">{{item.description}}</div>
+        </div>
+    </mat-menu>
+</ng-container>
+<ng-template #elseTemplate>
+    <div class="select-menu-min" (click)="onClick()">
+        <ng-container *ngTemplateOutlet="tempOutlet" ></ng-container>
+    </div>
+</ng-template>
+ <ng-template #tempOutlet>
+    <ng-content></ng-content>
+ </ng-template>

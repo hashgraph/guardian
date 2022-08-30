@@ -1,4 +1,3 @@
-import { createConnection } from 'typeorm';
 import { approveAPI } from '@api/approve.service';
 import { configAPI } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
@@ -21,30 +20,53 @@ import { Users } from '@helpers/users';
 import { Settings } from '@entity/settings';
 import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
-import { MessageBrokerChannel, ApplicationState, Logger, ExternalEventChannel } from '@guardian/common';
+import {
+    MessageBrokerChannel,
+    ApplicationState,
+    Logger,
+    ExternalEventChannel,
+    DataBaseHelper,
+    DB_DI,
+    Migration,
+    COMMON_CONNECTION_CONFIG
+} from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
-import { Environment, HederaSDKHelper, MessageServer, TransactionLogger, TransactionLogLvl } from '@hedera-modules';
+import {
+    Environment,
+    HederaSDKHelper,
+    MessageServer,
+    TopicMemo,
+    TransactionLogger,
+    TransactionLogLvl
+} from '@hedera-modules';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
+import { MikroORM } from '@mikro-orm/core';
+import { MongoDriver } from '@mikro-orm/mongodb';
+import { DatabaseServer } from '@database-modules';
+import { ipfsAPI } from '@api/ipfs.service';
+import { Workers } from '@helpers/workers';
 
 Promise.all([
-    createConnection({
-        type: 'mongodb',
-        host: process.env.DB_HOST,
-        database: process.env.DB_DATABASE,
-        synchronize: true,
-        logging: true,
-        useUnifiedTopology: true,
-        entities: [
-            'dist/entity/*.js'
-        ],
-        cli: {
-            entitiesDir: 'dist/entity'
+    Migration({
+        ...COMMON_CONNECTION_CONFIG,
+        migrations: {
+            path: 'dist/migrations',
+            transactional: false
         }
+    }),
+    MikroORM.init<MongoDriver>({
+        ...COMMON_CONNECTION_CONFIG,
+        driverOptions: {
+            useUnifiedTopology: true
+        },
+        ensureIndexes: true
     }),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE')
 ]).then(async values => {
-    const [db, cn] = values;
+    const [_, db, cn] = values;
+    DB_DI.orm = db;
     const channel = new MessageBrokerChannel(cn, 'guardians');
+    const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
 
     new Logger().setChannel(channel);
     const state = new ApplicationState('GUARDIAN_SERVICE');
@@ -111,13 +133,19 @@ Promise.all([
             log.info(name, attributes, 4);
         }
     });
+    TransactionLogger.setVirtualFileFunction(async (date: string, id: string, file: ArrayBuffer, url:any) => {
+        await DatabaseServer.setVirtualFile(id, file, url);
+    });
+
+    TransactionLogger.setVirtualTransactionFunction(async (date: string, id: string, type: string, operatorId?: string) => {
+        await DatabaseServer.setVirtualTransaction(id, type, operatorId);
+    });
+
     HederaSDKHelper.setTransactionResponseCallback(updateUserBalance(channel));
 
     if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
         const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);
-        const topicId = await client.newTopic(process.env.OPERATOR_KEY);
-
-        console.log(topicId);
+        const topicId = await client.newTopic(process.env.OPERATOR_KEY, null, TopicMemo.getGlobalTopicMemo());
         process.env.INITIALIZATION_TOPIC_ID = topicId;
     }
 
@@ -126,33 +154,38 @@ Promise.all([
 
     new Wallet().setChannel(channel);
     new Users().setChannel(channel);
+    const workersHelper = new Workers();
+    workersHelper.setChannel(channel);
+    workersHelper.initListeners();
 
     const policyGenerator = new BlockTreeGenerator();
-    const policyService = new PolicyEngineService(channel);
+    const policyService = new PolicyEngineService(channel, apiGatewayChannel);
     await policyGenerator.init();
     policyService.registerListeners();
 
-    const didDocumentRepository = db.getMongoRepository(DidDocument);
-    const vcDocumentRepository = db.getMongoRepository(VcDocument);
-    const vpDocumentRepository = db.getMongoRepository(VpDocument);
-    const approvalDocumentRepository = db.getMongoRepository(ApprovalDocument);
-    const tokenRepository = db.getMongoRepository(Token);
-    const schemaRepository = db.getMongoRepository(Schema);
-    const settingsRepository = db.getMongoRepository(Settings);
-    const topicRepository = db.getMongoRepository(Topic);
+    const didDocumentRepository = new DataBaseHelper(DidDocument);
+    const vcDocumentRepository = new DataBaseHelper(VcDocument);
+    const vpDocumentRepository = new DataBaseHelper(VpDocument);
+    const approvalDocumentRepository = new DataBaseHelper(ApprovalDocument);
+    const tokenRepository = new DataBaseHelper(Token);
+    const schemaRepository = new DataBaseHelper(Schema);
+    const settingsRepository = new DataBaseHelper(Settings);
+    const topicRepository = new DataBaseHelper(Topic);
 
     state.updateState(ApplicationStates.INITIALIZING);
 
     await configAPI(channel, settingsRepository, topicRepository);
-    await schemaAPI(channel, schemaRepository);
-    await tokenAPI(channel, tokenRepository);
+    await schemaAPI(channel, apiGatewayChannel);
+    await tokenAPI(channel, apiGatewayChannel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
-    await profileAPI(channel);
+    await profileAPI(channel, apiGatewayChannel);
     await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
-    await demoAPI(channel, settingsRepository);
+    await demoAPI(channel, apiGatewayChannel, settingsRepository);
     await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await setDefaultSchema();
+
+    await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'));
 
     await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
 

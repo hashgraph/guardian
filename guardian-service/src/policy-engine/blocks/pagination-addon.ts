@@ -2,7 +2,7 @@ import { SourceAddon, StateField } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Pagination addon
@@ -40,7 +40,7 @@ export class PaginationAddon {
      * Get pagination state
      * @param user
      */
-    public async getState(user: IAuthUser):Promise<any> {
+    public async getState(user: IPolicyUser):Promise<any> {
         if (!this.state[user.did]) {
             this.state[user.did] = {
                 size: 20,
@@ -62,7 +62,7 @@ export class PaginationAddon {
      * Get block data
      * @param user
      */
-    public async getData(user: IAuthUser): Promise<any> {
+    public async getData(user: IPolicyUser): Promise<any> {
         return this.getState(user);
     }
 
@@ -71,7 +71,7 @@ export class PaginationAddon {
      * @param user
      * @param data
      */
-    public async setData(user: IAuthUser, data: any): Promise<void> {
+    public async setData(user: IPolicyUser, data: any): Promise<void> {
         const oldState = this.state;
         oldState[user.did] = data;
         this.state = oldState;

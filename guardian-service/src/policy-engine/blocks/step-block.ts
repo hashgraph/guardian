@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Step block
@@ -45,7 +45,7 @@ export class InterfaceStepBlock {
     @ActionCallback({
         output: PolicyOutputEventType.RefreshEvent
     })
-    async changeStep(user: IAuthUser, data: any, target: IPolicyBlock) {
+    async changeStep(user: IPolicyUser, data: any, target: IPolicyBlock) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
         if (!this.state.hasOwnProperty(user.did)) {
@@ -105,7 +105,7 @@ export class InterfaceStepBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IAuthUser): Promise<any> {
+    async getData(user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
         if (!this.state.hasOwnProperty(user.did)) {
@@ -126,7 +126,7 @@ export class InterfaceStepBlock {
      * @param child
      * @param user
      */
-    public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {
+    public isChildActive(child: AnyBlockType, user: IPolicyUser): boolean {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyContainerBlock>(this);
         const childIndex = ref.children.indexOf(child);
         if (childIndex === -1) {

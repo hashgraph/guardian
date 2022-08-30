@@ -1,4 +1,3 @@
 # Guardian Introduction
 
-The Guardian is an open-source tool that leverages the Hedera public distributed ledger network to mint emissions and carbon offset tokens. It provides auditable, traceable, reproducible records that document the emission process and lifecycle of carbon credits, which reduce fraud in the ESG market.
-
+Guardian is a modular open-source solution that includes best-in-class identity management and Decentralized Ledger Technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation.

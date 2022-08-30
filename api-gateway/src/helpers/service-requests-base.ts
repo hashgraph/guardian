@@ -1,4 +1,4 @@
-import { MessageBrokerChannel } from '@guardian/common';
+import { IMessageResponse, MessageBrokerChannel } from '@guardian/common';
 
 /**
  * Service error class
@@ -49,11 +49,11 @@ export abstract class ServiceRequestsBase {
      * @param params
      */
     public async request<T>(entity: string, params?: unknown): Promise<T> {
-        let response;
+        let response: IMessageResponse<T>;
         try {
             response = await this.channel.request<unknown, T>([this.target, entity].join('.'), params);
         } catch (error) {
-            throw new ServiceError(this.target, entity, error.error, error.code);
+            throw new ServiceError(this.target, entity, this.getErrorMessage(error), error.code);
         }
         if (!response) {
             throw new ServiceError(this.target, entity, 'Server is not available');
@@ -75,12 +75,30 @@ export abstract class ServiceRequestsBase {
             // Binary data will return as base64 string inbody
             response = (await this.channel.request<any, string>([this.target, entity].join('.'), params));
         } catch (error) {
-            throw new ServiceError(this.target, entity, error.error, error.code);
+            throw new ServiceError(this.target, entity, this.getErrorMessage(error), error.code);
         }
 
         if (!response) {
             throw new ServiceError(this.target, entity, 'Server is not available');
         }
         return Buffer.from(response.body, 'base64');
+    }
+
+    /**
+     * Get error message
+     */
+    private getErrorMessage(error: string | Error | any): string {
+        if (typeof error === 'string') {
+            return error;
+        } else if (error.message) {
+            return error.message;
+        } else if (error.error) {
+            return error.error;
+        } else if (error.name) {
+            return error.name;
+        } else {
+            console.log(error);
+            return 'Unidentified error';
+        }
     }
 }

@@ -113,8 +113,8 @@ export class Users extends ServiceRequestsBase {
      * @param req
      * @param item
      */
-    public async updateCurrentUser(req: AuthenticatedRequest, item: any) {
-        return await this.request(AuthEvents.UPDATE_USER, { username: req.user.username, item });
+    public async updateCurrentUser(username: string, item: any) {
+        return await this.request(AuthEvents.UPDATE_USER, { username, item });
     }
 
     /**
@@ -192,7 +192,7 @@ export class Users extends ServiceRequestsBase {
         did: string;
     }> {
         if (!did) {
-            throw new Error('User not found');
+            throw new Error('Invalid DID');
         }
         const userFull = await this.getUserById(did);
         if (!userFull) {

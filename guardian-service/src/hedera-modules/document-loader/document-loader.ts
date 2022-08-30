@@ -30,7 +30,7 @@ export abstract class DocumentLoader {
                     return await documentLoader.get(iri);
                 }
             }
-            throw new Error('IRI not found: ' + iri);
+            throw new Error('(DocumentLoader) IRI not found: ' + iri);
         };
     }
 }

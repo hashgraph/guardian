@@ -1,4 +1,4 @@
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
 
 export class PolicyRoleModel {
     private readonly policy: PolicyModel;
@@ -61,6 +61,8 @@ export class PolicyTopicModel {
     private _description: string;
     private _type: string;
     private _static: boolean;
+    private _memoObj: string;
+    private _memo: string;
 
     private _changed: boolean;
 
@@ -74,6 +76,8 @@ export class PolicyTopicModel {
         this._description = topic.description;
         this._type = topic.type;
         this._static = topic.static;
+        this._memoObj = topic.memoObj || "topic";
+        this._memo = topic.memo;
     }
 
     public get name(): string {
@@ -112,6 +116,24 @@ export class PolicyTopicModel {
         this.changed = true;
     }
 
+    public get memoObj(): string {
+        return this._memoObj;
+    }
+
+    public set memoObj(value: string) {
+        this._memoObj = value;
+        this.changed = true;
+    }
+
+    public get memo(): string {
+        return this._memo;
+    }
+
+    public set memo(value: string) {
+        this._memo = value;
+        this.changed = true;
+    }
+
     public get changed(): boolean {
         return this._changed;
     }
@@ -133,7 +155,9 @@ export class PolicyTopicModel {
             type: this.type,
             name: this.name,
             description: this.description,
-            static: this.static
+            static: this.static,
+            memo: this.memo,
+            memoObj: this.memoObj
         };
     }
 
@@ -591,6 +615,11 @@ export class PolicyModel {
 
     private _changed: boolean;
 
+    public readonly isDraft: boolean = false;
+    public readonly isPublished: boolean = false;
+    public readonly isDryRun: boolean = false;
+    public readonly readonly: boolean = false;
+
     constructor(policy?: any) {
         this._changed = false;
 
@@ -615,6 +644,11 @@ export class PolicyModel {
 
         this.buildPolicy(policy);
         this.buildBlock(policy.config);
+
+        this.isDraft = this.status === PolicyType.DRAFT;
+        this.isPublished = this.status === PolicyType.PUBLISH;
+        this.isDryRun = this.status === PolicyType.DRY_RUN;
+        this.readonly = this.isPublished || this.isDryRun;
     }
 
     public get policyTag(): string {
@@ -667,10 +701,6 @@ export class PolicyModel {
 
     public get dataSource(): PolicyBlockModel[] {
         return this._dataSource;
-    }
-
-    public get readonly(): boolean {
-        return this.status == 'PUBLISH';
     }
 
     public get policyRoles(): PolicyRoleModel[] {

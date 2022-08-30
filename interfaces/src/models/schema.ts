@@ -13,7 +13,12 @@ import { SchemaField } from '../interface/schema-field.interface';
  */
 export class Schema implements ISchema {
     /**
-     * ID
+     * Id
+     */
+    public _id: string;
+
+    /**
+     * Serialized Id
      */
     public id: string;
     /**
@@ -119,9 +124,10 @@ export class Schema implements ISchema {
      * @param schema
      * @constructor
      */
-    constructor(schema?: ISchema) {
+    constructor(schema?: ISchema, includeSystemProperties: boolean = false) {
         this.userDID = null;
         if (schema) {
+            this._id = schema._id || undefined;
             this.id = schema.id || undefined;
             this.uuid = schema.uuid || GenerateUUIDv4();
             this.hash = schema.hash || '';
@@ -165,6 +171,7 @@ export class Schema implements ISchema {
                 this.context = null;
             }
         } else {
+            this._id = undefined;
             this.id = undefined;
             this.uuid = GenerateUUIDv4();
             this.hash = '';
@@ -187,7 +194,7 @@ export class Schema implements ISchema {
             this.iri = '';
         }
         if (this.document) {
-            this.parseDocument();
+            this.parseDocument(includeSystemProperties);
         }
     }
 
@@ -195,11 +202,11 @@ export class Schema implements ISchema {
      * Parse document
      * @private
      */
-    private parseDocument(): void {
+    private parseDocument(includeSystemProperties: boolean): void {
         this.type = SchemaHelper.buildType(this.uuid, this.version);
         const { previousVersion } = SchemaHelper.parseSchemaComment(this.document.$comment);
         this.previousVersion = previousVersion;
-        this.fields = SchemaHelper.parseFields(this.document, this.contextURL);
+        this.fields = SchemaHelper.parseFields(this.document, this.contextURL, null, includeSystemProperties);
         this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields);
     }
 
@@ -247,6 +254,7 @@ export class Schema implements ISchema {
      */
     public clone(): Schema {
         const clone = new Schema();
+        clone._id = this._id;
         clone.id = this.id;
         clone.uuid = this.uuid;
         clone.hash = this.hash;

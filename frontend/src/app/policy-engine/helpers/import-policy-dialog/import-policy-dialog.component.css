@@ -115,3 +115,8 @@ form {
     background: #fff;
     z-index: 1;
 }
+
+.loading-progress {
+    width: 80%;
+    height: 80%;
+}

@@ -155,6 +155,23 @@
                                 <input type="checkbox" [(ngModel)]="item.static" [readonly]="readonly">
                             </td>
                         </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Memo Parameters Object</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [(ngModel)]="item.memoObj" [disabled]="readonly">
+                                    <mat-option value="topic">Topic Config</mat-option>
+                                    <mat-option value="doc">Document</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Memo</td>
+                            <td class="propRowCell remove-cell">
+                                <input [(ngModel)]="item.memo" [readonly]="readonly">
+                            </td>
+                        </tr>
                     </ng-container>
                     <tr class="propRow" style="height: 26px;">
                         <td class="propRowCol"></td>

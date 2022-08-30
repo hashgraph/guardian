@@ -1,17 +1,10 @@
 import { ActionCallback, BasicBlock, EventBlock } from '@policy-engine/helpers/decorators';
-import { Inject } from '@helpers/decorators/inject';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { getMongoRepository } from 'typeorm';
-import { Users } from '@helpers/users';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { AnyBlockType, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { Message, MessageServer } from '@hedera-modules';
-import { VcDocument } from '@entity/vc-document';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { DocumentState } from '@entity/document-state';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { VpDocument } from '@entity/vp-document';
-import { DidDocument } from '@entity/did-document';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 
@@ -20,7 +13,7 @@ export const RevokedStatus = 'Revoked';
 /**
  * Revoke document action with UI
  */
- @BasicBlock({
+@BasicBlock({
     blockType: 'revokeBlock',
     about: {
         label: 'Revoke Document',
@@ -44,13 +37,6 @@ export const RevokedStatus = 'Revoked';
 })
 export class RevokeBlock {
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
      * Send to hedera
      * @param message
      * @param messageServer
@@ -65,7 +51,7 @@ export class RevokeBlock {
         revokeMessage: string,
         parentId?: string[]
     ) {
-        const topic = await PolicyUtils.getTopicById(message.topicId.toString(), ref);
+        const topic = await PolicyUtils.getTopicById(ref, message.topicId);
         message.revoke(revokeMessage, parentId);
         await messageServer
             .setTopicObject(topic)
@@ -82,7 +68,7 @@ export class RevokeBlock {
     async findRelatedMessageIds(
         topicMessage: any,
         topicMessages: any[],
-        relatedMessageIds: any[]= [],
+        relatedMessageIds: any[] = [],
         parentId?: string
     ): Promise<any[]> {
         if (!topicMessage) {
@@ -105,7 +91,7 @@ export class RevokeBlock {
                 parentIds: parentId ? [parentId] : undefined,
                 id: topicMessage.id
             });
-        } else if (relatedMessageId.parentIds && !relatedMessageId.parentIds.includes(parentId)){
+        } else if (relatedMessageId.parentIds && !relatedMessageId.parentIds.includes(parentId)) {
             relatedMessageId.parentIds.push(parentId);
         }
         return relatedMessageIds;
@@ -116,17 +102,18 @@ export class RevokeBlock {
      * @param messageIds
      */
     async findDocumentByMessageIds(messageIds: string[]): Promise<any[]> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const filters: any = {
-            where: {
-                messageId: { $in: messageIds }
-            },
-            order: {
+            messageId: { $in: messageIds }
+        };
+        const otherOptions = {
+            orderBy: {
                 messageId: 'ASC'
             }
-        };
-        const vcDocuments: any[] = await getMongoRepository(VcDocument).find(filters);
-        const vpDocuments: any[] = await getMongoRepository(VpDocument).find(filters);
-        const didDocuments: any[] = await getMongoRepository(DidDocument).find(filters);
+        }
+        const vcDocuments: any[] = await ref.databaseServer.getVcDocuments(filters, otherOptions);
+        const vpDocuments: any[] = await ref.databaseServer.getVpDocuments(filters, otherOptions);
+        const didDocuments: any[] = await ref.databaseServer.getDidDocuments(filters, otherOptions);
         return vcDocuments.concat(vpDocuments).concat(didDocuments);
     }
 
@@ -142,23 +129,24 @@ export class RevokeBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         const uiMetaData = ref.options.uiMetaData;
         const data = event.data.data;
-        const hederaAccount = await this.users.getHederaAccount(event.user.did);
-        const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey);
-        const policyTopics = await PolicyUtils.getPolicyTopics(ref.policyId);
+
+        const hederaAccount = await PolicyUtils.getHederaAccount(ref, event.user.did);
+        const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey, ref.dryRun);
+        const policyTopics = await ref.databaseServer.getTopics({ policyId: ref.policyId });
+
         const policyTopicsMessages = [];
-        for (const topicId of policyTopics.map(topic => topic.topicId)) {
-            const topicMessages = await messageServer.getMessages(topicId);
+        for (const topic of policyTopics) {
+            const topicMessages = await messageServer.getMessages(topic.topicId);
             policyTopicsMessages.push(...topicMessages);
         }
-        const revokedMessagesIds = policyTopicsMessages
-            .filter(item => item.isRevoked())
-            .map(item => item.getMessageId());
         const messagesToFind = policyTopicsMessages
-            .filter(item => !revokedMessagesIds.includes(item.getMessageId()));
+            .filter(item => !item.isRevoked());
+
         const topicMessage = policyTopicsMessages.find(item => item.id === data.messageId);
+
         const relatedMessages = await this.findRelatedMessageIds(topicMessage, messagesToFind);
         for (const policyTopicMessage of policyTopicsMessages) {
-            const relatedMessage = relatedMessages.find(item=> item.id === policyTopicMessage.id);
+            const relatedMessage = relatedMessages.find(item => item.id === policyTopicMessage.id);
             if (relatedMessage) {
                 await this.sendToHedera(
                     policyTopicMessage,
@@ -169,25 +157,24 @@ export class RevokeBlock {
                 );
             }
         }
+
         const documents = await this.findDocumentByMessageIds(relatedMessages.map(item => item.id));
         for (const doc of documents) {
             doc.option = doc.option || {};
             doc.option.status = RevokedStatus;
             doc.comment = data.comment;
         }
+
         if (uiMetaData && uiMetaData.updatePrevDoc && data.relationships) {
             const prevDocs = await this.findDocumentByMessageIds(data.relationships);
-            const prevDocument = prevDocs[prevDocs.length-1];
+            const prevDocument = prevDocs[prevDocs.length - 1];
             if (prevDocument) {
                 prevDocument.option.status = uiMetaData.prevDocStatus;
-                await getMongoRepository(VcDocument).update(prevDocument.id, prevDocument);
-                const docStatusRepo = getMongoRepository(DocumentState);
-                docStatusRepo.save({
-                    documentId: prevDocument.id,
-                    status: uiMetaData.prevDocStatus
-                });
+                await ref.databaseServer.updateVCRecordById(prevDocument);
+                await ref.databaseServer.saveDocumentState(prevDocument.id, uiMetaData.prevDocStatus);
             }
         }
+
         const state = {
             data: documents
         };
@@ -222,7 +209,7 @@ export class RevokeBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "Status Value" does not set');
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

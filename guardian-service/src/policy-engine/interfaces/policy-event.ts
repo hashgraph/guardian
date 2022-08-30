@@ -1,5 +1,5 @@
-import { IAuthUser } from '@guardian/common';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { IPolicyUser } from '@policy-engine/policy-user';
 import { EventActor, PolicyInputEventType, PolicyOutputEventType } from './policy-event-type';
 
 /**
@@ -46,7 +46,7 @@ export interface IPolicyEvent<T> {
     /**
      * User
      */
-    user?: IAuthUser;
+    user?: IPolicyUser;
     /**
      * Data
      */
@@ -115,7 +115,7 @@ export class PolicyLink<T> {
      * @param user
      * @param data
      */
-    public run(user?: IAuthUser, data?: T): void {
+    public run(user?: IPolicyUser, data?: T): void {
         if (this.actor === EventActor.Owner) {
             user = this.createUser(this.getOwner(data));
         } else if (this.actor === EventActor.Issuer) {
@@ -176,10 +176,17 @@ export class PolicyLink<T> {
      * @param did
      * @private
      */
-    private createUser(did: string): IAuthUser {
+    private createUser(did: string): IPolicyUser {
         if (did) {
-            return { did } as IAuthUser;
+            return { did } as IPolicyUser;
         }
         return null;
+    }
+
+    /**
+     * Destructor
+     */
+    public destroy(): void {
+        return;
     }
 }

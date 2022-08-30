@@ -48,6 +48,37 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Async create policy
+     * @param model
+     * @param user
+     * @param taskId
+     */
+    public async createPolicyAsync(model, user, taskId) {
+        return await this.request(PolicyEngineEvents.CREATE_POLICIES_ASYNC, { model, user, taskId });
+    }
+
+    /**
+     * Async clone policy
+     * @param policyId Policy identifier
+     * @param model Policy configuration
+     * @param user User
+     * @param taskId Task identifier
+     */
+     public async clonePolicyAsync(policyId, model, user, taskId) {
+        return await this.request(PolicyEngineEvents.CLONE_POLICY_ASYNC, { policyId, model, user, taskId });
+    }
+
+    /**
+     * Async delete policy
+     * @param policyId Policy identifier
+     * @param user User
+     * @param taskId Task identifier
+     */
+    public async deletePolicyAsync(policyId, user, taskId) {
+        return await this.request(PolicyEngineEvents.DELETE_POLICY_ASYNC, { policyId, user, taskId });
+    }
+
+    /**
      * Save policy
      * @param model
      * @param user
@@ -65,6 +96,35 @@ export class PolicyEngine extends ServiceRequestsBase {
      */
     public async publishPolicy(model, user, policyId) {
         return await this.request(PolicyEngineEvents.PUBLISH_POLICIES, { model, user, policyId });
+    }
+
+    /**
+     * Async publish policy
+     * @param model
+     * @param user
+     * @param policyId
+     * @param taskId
+     */
+    public async publishPolicyAsync(model, user, policyId, taskId) {
+        return await this.request(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, { model, user, policyId, taskId });
+    }
+
+    /**
+     * Dry-run policy
+     * @param user
+     * @param policyId
+     */
+    public async dryRunPolicy(user: any, policyId: string) {
+        return await this.request(PolicyEngineEvents.DRY_RUN_POLICIES, { user, policyId });
+    }
+
+    /**
+     * Dry-run policy
+     * @param user
+     * @param policyId
+     */
+    public async draft(user: any, policyId: string) {
+        return await this.request(PolicyEngineEvents.DRAFT_POLICIES, { user, policyId });
     }
 
     /**
@@ -97,6 +157,16 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Get block data by tag name
+     * @param user
+     * @param policyId
+     * @param tag
+     */
+    public async getBlockDataByTag(user, policyId, tag: string) {
+        return await this.request(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, { user, tag, policyId });
+    }
+
+    /**
      * Set block data
      * @param user
      * @param policyId
@@ -105,6 +175,17 @@ export class PolicyEngine extends ServiceRequestsBase {
      */
     public async setBlockData(user, policyId, blockId: string, data: any) {
         return await this.request(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data });
+    }
+
+    /**
+     * Set block data
+     * @param user
+     * @param policyId
+     * @param blockId
+     * @param data
+     */
+    public async setBlockDataByTag(user, policyId, tag: string, data: any) {
+        return await this.request(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, { user, tag, policyId, data });
     }
 
     /**
@@ -155,12 +236,34 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Async load policy file for import
+     * @param user
+     * @param zip
+     * @param versionOfTopicId
+     * @param taskId
+     */
+    public async importFileAsync(user, zip, versionOfTopicId, taskId) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC, { zip, user, versionOfTopicId, taskId });
+    }
+
+    /**
      * Import policy from message
      * @param user
      * @param messageId
      */
-    public async importMessage(user, messageId, versionOfTopicId?) {
+    public async importMessage(user, messageId, versionOfTopicId) {
         return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, { messageId, user, versionOfTopicId });
+    }
+
+    /**
+     * Async import policy from message
+     * @param user
+     * @param messageId
+     * @param versionOfTopicId
+     * @param taskId
+     */
+    public async importMessageAsync(user, messageId, versionOfTopicId, taskId) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC, { messageId, user, versionOfTopicId, taskId });
     }
 
     /**
@@ -182,6 +285,16 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Async get policy info from message
+     * @param user
+     * @param messageId
+     * @param taskId
+     */
+    public async importMessagePreviewAsync(user, messageId, taskId: string) {
+        return await this.request(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, { messageId, user, taskId });
+    }
+
+    /**
      * Receive external data
      * @param data
      */
@@ -194,5 +307,62 @@ export class PolicyEngine extends ServiceRequestsBase {
      */
     public async blockAbout() {
         return await this.request(PolicyEngineEvents.BLOCK_ABOUT, null);
+    }
+
+    /**
+     * Get Virtual Users by policy id
+     * @param policyId
+     */
+    public async getVirtualUsers(policyId: string) {
+        return await this.request(PolicyEngineEvents.GET_VIRTUAL_USERS, { policyId });
+    }
+
+    /**
+     * Create new Virtual User
+     * @param policyId
+     * @param did
+     */
+    public async createVirtualUser(policyId: string, did: string) {
+        return await this.request(PolicyEngineEvents.CREATE_VIRTUAL_USER, { policyId, did });
+    }
+
+    /**
+     * Select Virtual User
+     * @param policyId
+     * @param did
+     */
+    public async loginVirtualUser(policyId: string, did: string) {
+        return await this.request(PolicyEngineEvents.SET_VIRTUAL_USER, { policyId, did });
+    }
+
+    /**
+     * Restart Dry-run policy
+     * @param model
+     * @param user
+     * @param policyId
+     */
+    public async restartDryRun(model: any, user: any, policyId: string) {
+        return await this.request(PolicyEngineEvents.RESTART_DRY_RUN, { model, user, policyId });
+    }
+
+    /**
+     * Get Virtual Documents
+     * @param policyId
+     * @param type
+     * @param pageIndex
+     * @param pageSize
+     */
+    public async getVirtualDocuments(
+        policyId: string,
+        type: string,
+        pageIndex?: string,
+        pageSize?: string
+    ): Promise<[any[], number]> {
+        return await this.request(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS, {
+            policyId,
+            type,
+            pageIndex,
+            pageSize
+        });
     }
 }

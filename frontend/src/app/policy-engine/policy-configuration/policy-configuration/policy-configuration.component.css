@@ -21,6 +21,11 @@
     align-content: center;
 }
 
+.loading-progress {
+    width: 80%;
+    height: 80%;
+}
+
 .render {
     position: relative;
     flex: 1;
@@ -642,4 +647,10 @@ input[readonly] {
     pointer-events: none;
     filter: grayscale(1);
     opacity: 0.6;
+}
+
+.btn-label {
+    background: rgb(252 252 252) !important;
+    border: 1px solid rgb(252 252 252) !important;
+    cursor: default !important;
 }

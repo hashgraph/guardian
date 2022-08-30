@@ -2,7 +2,7 @@ import { EventBlock } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Policy roles block
@@ -30,7 +30,7 @@ export class PolicyRolesBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IAuthUser): Promise<any> {
+    async getData(user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         return {
             roles: Array.isArray(ref.options.roles) ? ref.options.roles : [],
@@ -43,16 +43,13 @@ export class PolicyRolesBlock {
      * @param user
      * @param document
      */
-    async setData(user: IAuthUser, document: any): Promise<any> {
+    async setData(user: IPolicyUser, document: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const { username, role, did } = user;
-        const result = await PolicyComponentsUtils.SetUserRole(ref.policyId, user, document.role);
-
+        const result = await ref.databaseServer.setUserRole(ref.policyId, user?.did, document.role);
         await Promise.all([
-            PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, { username, role, did }, ref.tag),
-            PolicyComponentsUtils.UpdateUserInfoFn({ username, role, did }, result)
+            PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag),
+            PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance)
         ]);
-
         return result;
     }
 }

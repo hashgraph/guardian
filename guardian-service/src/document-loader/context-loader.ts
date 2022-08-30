@@ -1,5 +1,5 @@
 import { Schema } from '@entity/schema';
-import { getMongoRepository } from 'typeorm';
+import { DataBaseHelper } from '@guardian/common';
 import { ISchema } from '@guardian/interfaces';
 import { DocumentLoader, IDocumentFormat } from '@hedera-modules';
 
@@ -69,7 +69,7 @@ export class ContextDocumentLoader extends DocumentLoader {
             if (!context) {
                 return null;
             }
-            const schema = await getMongoRepository(Schema).findOne({
+            const schema = await new DataBaseHelper(Schema).findOne({
                 where: { contextURL: { $eq: context } }
             });
             return schema;

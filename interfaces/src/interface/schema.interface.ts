@@ -8,7 +8,12 @@ import { ISchemaDocument } from './schema-document.interface';
  */
 export interface ISchema {
     /**
-     * ID
+     * Id
+     */
+    _id: any;
+
+    /**
+     * Serialized Id
      */
     id: string;
     /**

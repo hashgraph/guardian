@@ -1,137 +1,131 @@
 import { DocumentSignature, DocumentStatus, IVCDocument } from '@guardian/interfaces';
-import { BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Property, Enum, BeforeCreate, Unique } from '@mikro-orm/core';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * VC documents collection
  */
 @Entity()
-export class VcDocument implements IVCDocument {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
-
+@Unique({ properties: ['hash'], options: { partialFilterExpression: { hash: { $type: 'string' }}}})
+export class VcDocument extends BaseEntity implements IVCDocument {
     /**
      * Document owner
      */
-    @Column()
-    owner: string;
+    @Property({ nullable: true })
+    owner?: string;
 
     /**
      * Assign
      */
-    @Column()
-    assign: string;
+    @Property({ nullable: true })
+    assignedTo?: string;
 
     /**
      * Document hash
      */
-    @Column({
-        unique: true
-    })
-    hash: string;
+    @Property({ nullable: true })
+    hash?: string;
 
     /**
      * Document instance
      */
-    @Column()
-    document: any;
+    @Property({ nullable: true })
+    document?: any;
 
     /**
      * Created at
      */
-    @CreateDateColumn()
-    createDate: Date;
+    @Property()
+    createDate: Date = new Date();
 
     /**
      * Updated at
      */
-    @UpdateDateColumn()
-    updateDate: Date;
+    @Property({ onUpdate: () => new Date() })
+    updateDate: Date = new Date();
 
     /**
      * Document hedera status
      */
-    @Column()
-    hederaStatus: DocumentStatus;
+    @Enum({ nullable: true })
+    hederaStatus?: DocumentStatus;
 
     /**
      * Document signature
      */
-    @Column()
-    signature: DocumentSignature;
+    @Enum({ nullable: true })
+    signature?: DocumentSignature;
 
     /**
      * Document processing status
      */
-    @Column()
-    processingStatus: string;
+    @Property({ nullable: true })
+    processingStatus?: string;
 
     /**
      * Type
      */
-    @Column()
-    type: string;
+    @Property({ nullable: true })
+    type?: string;
 
     /**
      * Policy id
      */
-    @Column()
-    policyId: string;
+    @Property({ nullable: true })
+    policyId?: string;
 
     /**
      * Tag
      */
-    @Column()
-    tag: string;
+    @Property({ nullable: true })
+    tag?: string;
 
     /**
      * Document option
      */
-    @Column()
-    option: any;
+    @Property({ nullable: true })
+    option?: any;
 
     /**
      * Document schema
      */
-    @Column()
-    schema: string;
+    @Property({ nullable: true })
+    schema?: string;
 
     /**
      * Message id
      */
-    @Column()
-    messageId: string;
+    @Property({ nullable: true })
+    messageId?: string;
 
     /**
      * Topic id
      */
-    @Column()
-    topicId: string;
+    @Property({ nullable: true })
+    topicId?: string;
 
     /**
      * Relationships
      */
-    @Column()
-    relationships: string[];
+    @Property({ nullable: true })
+    relationships?: string[];
 
     /**
      * Comment
      */
-    @Column()
+    @Property({ nullable: true })
     comment?: string;
 
     /**
      * Hedera Accounts
      */
-    @Column()
+    @Property({ nullable: true })
     accounts?: any
 
     /**
      * Document defaults
      */
-    @BeforeInsert()
+    @BeforeCreate()
     setDefaults() {
         this.hederaStatus = this.hederaStatus || DocumentStatus.NEW;
         this.signature = this.signature || DocumentSignature.NEW;

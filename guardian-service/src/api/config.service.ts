@@ -1,8 +1,13 @@
 import { Settings } from '@entity/settings';
 import { Topic } from '@entity/topic';
-import { MongoRepository } from 'typeorm';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import {
+    MessageBrokerChannel,
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper
+} from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
 import { Environment } from '@hedera-modules';
 
@@ -14,8 +19,8 @@ import { Environment } from '@hedera-modules';
  */
 export async function configAPI(
     channel: MessageBrokerChannel,
-    settingsRepository: MongoRepository<Settings>,
-    topicRepository: MongoRepository<Topic>,
+    settingsRepository: DataBaseHelper<Settings>,
+    topicRepository: DataBaseHelper<Topic>,
 ): Promise<void> {
     ApiResponse(channel, MessageAPI.GET_TOPIC, async (msg) => {
         const topic = await topicRepository.findOne(msg);
@@ -29,39 +34,20 @@ export async function configAPI(
     ApiResponse(channel, MessageAPI.UPDATE_SETTINGS, async (msg) => {
         try {
             const settings = msg as CommonSettings;
-            const oldOperatorId = await settingsRepository.findOne({
+            const opId = {
+                name: 'OPERATOR_ID',
+                value: settings.operatorId
+            };
+            await settingsRepository.save(opId, {
                 name: 'OPERATOR_ID'
             });
-            if (oldOperatorId) {
-                await settingsRepository.update({
-                    name: 'OPERATOR_ID'
-                }, {
-                    value: settings.operatorId
-                });
-            }
-            else {
-                await settingsRepository.save({
-                    name: 'OPERATOR_ID',
-                    value: settings.operatorId
-                });
-            }
-
-            const oldOperatorKey = await settingsRepository.findOne({
+            const opKey = {
+                name: 'OPERATOR_KEY',
+                value: settings.operatorKey
+            };
+            await settingsRepository.save(opKey, {
                 name: 'OPERATOR_KEY'
             });
-            if (oldOperatorKey) {
-                await settingsRepository.update({
-                    name: 'OPERATOR_KEY'
-                }, {
-                    value: settings.operatorKey
-                });
-            }
-            else {
-                await settingsRepository.save({
-                    name: 'OPERATOR_KEY',
-                    value: settings.operatorKey
-                });
-            }
             return new MessageResponse(null);
         }
         catch (error) {

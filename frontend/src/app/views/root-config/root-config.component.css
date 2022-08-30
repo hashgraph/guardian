@@ -36,6 +36,11 @@
     align-content: center;
 }
 
+.loading-progress {
+    width: 80%;
+    height: 80%;
+}
+
 .progress {
     width: 500px;
     margin-left: 20px;

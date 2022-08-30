@@ -1,13 +1,9 @@
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import { findOptions, getVCIssuer } from '@helpers/utils';
 import { ReportItem } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';
 import { IReportItem } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
-import { getMongoRepository } from 'typeorm';
-import { VcDocument } from '@entity/vc-document';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 
 /**
@@ -29,12 +25,6 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class ReportItemBlock {
-    /**
-     * Users helper
-     */
-    @Inject()
-    public users: Users;
-
     /**
      * Run logic
      * @param resultFields
@@ -103,7 +93,7 @@ export class ReportItemBlock {
         }
         filtersToVc.policyId = { $eq: ref.policyId };
 
-        const vcDocument = await getMongoRepository(VcDocument).findOne(filtersToVc);
+        const vcDocument = await ref.databaseServer.getVcDocument(filtersToVc);
 
         if (vcDocument) {
             item.tag = vcDocument.tag;

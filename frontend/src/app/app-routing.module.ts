@@ -2,7 +2,7 @@ import { Injectable, NgModule } from '@angular/core';
 import { CanActivate, Router, RouterModule, Routes } from '@angular/router';
 import { ISession, IUser, UserRole } from '@guardian/interfaces';
 import { of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, map, shareReplay } from 'rxjs/operators';
 import { PolicyConfigurationComponent } from './policy-engine/policy-configuration/policy-configuration/policy-configuration.component';
 import { PolicyViewerComponent } from './policy-engine/policy-viewer/policy-viewer/policy-viewer.component';
 import { AuditComponent } from './views/audit/audit.component';
@@ -21,6 +21,7 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { InfoComponent } from './components/info/info/info.component';
 import { WebSocketService } from './services/web-socket.service';
+import { PoliciesComponent } from './policy-engine/policies/policies.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -133,9 +134,7 @@ export class ServicesStatusGuard implements CanActivate {
     }
 
     canActivate() {
-        return this.status.IsServicesReady().pipe(
-            map(item => item || this.router.parseUrl('/status'))
-        );
+        return this.status.IsServicesReady();
     }
 }
 
@@ -160,7 +159,8 @@ const routes: Routes = [
     { path: 'audit', component: AuditComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
     { path: 'trust-chain', component: TrustChainComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
 
-    { path: 'policy-viewer', component: PolicyViewerComponent, canActivate: [ServicesStatusGuard] },
+    { path: 'policy-viewer', component: PoliciesComponent, canActivate: [ServicesStatusGuard] },
+    { path: 'policy-viewer/:id', component: PolicyViewerComponent, canActivate: [ServicesStatusGuard] },
     { path: 'policy-configuration', component: PolicyConfigurationComponent, canActivate: [ServicesStatusGuard] },
 
     { path: '', component: HomeComponent },
