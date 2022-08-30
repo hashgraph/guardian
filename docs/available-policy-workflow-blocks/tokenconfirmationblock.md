@@ -26,13 +26,13 @@ This block enables the owner of the private key for the account to manually perf
 3. Users can skip the action by selecting “I will _Action_ manually” option in the UI. This would require the user to perform the corresponding action off-Guardian platform (directly on Hedera chain).
 {% endhint %}
 
-![Block Properties](<../.gitbook/assets/image (8) (2).png>)
+![Block Properties](<../.gitbook/assets/image (6).png>)
 
-![JSON View of the Block](<../.gitbook/assets/image (7) (2).png>)
+![JSON View of the Block](<../.gitbook/assets/image (9).png>)
 
-![Configuring tokenConfirmationBlock](<../.gitbook/assets/image (1) (3).png>)
+![Configuring tokenConfirmationBlock](<../.gitbook/assets/image (18).png>)
 
-![Creating Event to move to next step](<../.gitbook/assets/image (16).png>)
+![Creating Event to move to next step](<../.gitbook/assets/image (8).png>)
 
 ### 2. Performing Token Associate using Guardian UI
 
@@ -42,5 +42,5 @@ The user need to input the private key for the account to enable Guardian to per
 **Note:** Users can skip the action in UI if they prefer to perform it outside Guardian (directly with Hedera blockchain).
 {% endhint %}
 
-![](<../.gitbook/assets/image (4) (2).png>)
+![](<../.gitbook/assets/image (17).png>)
 

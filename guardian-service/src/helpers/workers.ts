@@ -60,7 +60,10 @@ export class Workers extends ServiceRequestsBase {
         this.channel.response(WorkerEvents.QUEUE_GET, async (msg: IWorkerRequest) => {
             const itemIndex = this.queue.findIndex(_item => {
                 return (_item.priority >= msg.minPriority) && (_item.priority <= msg.maxPriority)
-            })
+            });
+            if (itemIndex === -1) {
+                return new MessageResponse(null);
+            }
             const item = this.queue[itemIndex];
             this.queue.splice(itemIndex, 1);
 
@@ -73,5 +76,9 @@ export class Workers extends ServiceRequestsBase {
             this.tasksCallbacks.delete(msg.id);
             return new MessageResponse(null);
         });
+
+        setInterval(() => {
+            console.log(this.queue.length)
+        }, 1000);
     }
 }

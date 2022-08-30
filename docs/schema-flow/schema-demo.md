@@ -13,7 +13,7 @@ To display System / Policy Schemas in the GUI, we have added a toggle in the Sch
 
 Whenever an account is created, System Schemas are generated automatically.
 
-![](<../.gitbook/assets/image (13) (1).png>)
+![](<../.gitbook/assets/image (13) (1) (1).png>)
 
 {% hint style="info" %}
 Note: By default System Schemas cannot be edited / deleted.
@@ -69,7 +69,7 @@ Once the above details are added, click on the Create button.
 
 Once the System Schema is created, we have options for activating, deleting, editing and viewing JSON documents.
 
-![](<../.gitbook/assets/image (9) (2).png>)
+![](<../.gitbook/assets/image (9) (3).png>)
 
 ### 2. Policy Schemas
 
@@ -77,11 +77,11 @@ This is the second option in the Schemas tab. This option displays all the Polic
 
 The below screenshot shows the Policy Schemas of an imported Policy (iRec).
 
-![](<../.gitbook/assets/image (19).png>)
+![](<../.gitbook/assets/image (19) (1).png>)
 
 We also have a filter, where by default, all the Schemas of Policies are shown. We can also select a particular Policy to show the Schemas of the selected Policy.
 
-![](<../.gitbook/assets/image (8) (1).png>)
+![](<../.gitbook/assets/image (8) (3).png>)
 
 Policy Schema can also be created by clicking on the New button.
 
@@ -102,11 +102,11 @@ Instead of creating a new Schema from scratch, there is also an option to import
 
 To import the Schema, click on the Import button.
 
-![](<../.gitbook/assets/image (7) (1).png>)
+![](<../.gitbook/assets/image (7) (2).png>)
 
 Once the Import button is clicked, we get two options: Import from file and Import from IPFS
 
-![](<../.gitbook/assets/image (1) (2).png>)
+![](<../.gitbook/assets/image (29).png>)
 
 Import from file: You can select the required Schema .schema file from your local machine. Sample iREC Schema (iREC Schema.zip) is provided in the link: [https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
 
@@ -122,13 +122,13 @@ Import from IPFS: You can also import Schema from IPFS by entering the correct S
 1644847084.945541771 (iREC 3 Policy)
 ```
 
-![](<../.gitbook/assets/image (14) (1) (1) (1).png>)
+![](<../.gitbook/assets/image (14) (1) (1).png>)
 
 Once the Schema is imported, we need to select the Policy from the Policy dropdown to connect the Schema and the Policy.
 
 ![](<../.gitbook/assets/image (2) (2).png>)
 
-![](<../.gitbook/assets/image (11).png>)
+![](<../.gitbook/assets/image (11) (2).png>)
 
 After selecting the required Policy, click on the Import button.
 
@@ -153,7 +153,7 @@ To Publish the Schema, click on Publish button.
 
 After clicking on Publish, you will be prompted to enter the version. After entering the Version and pressing the submit button, the status will change to Published.
 
-![](<../.gitbook/assets/image (18).png>)
+![](<../.gitbook/assets/image (18) (1).png>)
 
 {% hint style="info" %}
 **Note**: All Schemas connected to a Policy gets published automatically when Policy gets published.

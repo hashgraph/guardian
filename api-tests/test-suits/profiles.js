@@ -3,10 +3,10 @@ const { GetURL, GetToken } = require("../helpers");
 const assert = require("assert");
 
 function Profiles() {
-    it('/profile/balance', async function () {
+    it('/profiles/:username/balance', async function () {
         this.timeout(60000);
         const result = await axios.get(
-            GetURL('profile', 'balance'),
+            GetURL('profiles', 'Installer', 'balance'),
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -16,13 +16,13 @@ function Profiles() {
         );
     })
 
-    it('/profile', async function () {
+    it('/profiles', async function () {
         this.timeout(120000);
 
         let result;
 
         result = await axios.get(
-            GetURL('profile'),
+            GetURL('profiles', 'Installer'),
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ function Profiles() {
         const profile = result.data;
 
         result = await axios.get(
-            GetURL('demo', 'randomKey'),
+            GetURL('demo', 'push', 'randomKey'),
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -42,45 +42,22 @@ function Profiles() {
         );
 
         result = await axios.put(
-            GetURL('profile'),
+            GetURL('profiles', 'push', 'StandardRegistry'),
             {
-                "hederaAccountId": result.data.id,
-                "hederaAccountKey": result.data.key,
-                "vcDocument": {
-                    "name": "1234"
-                },
-                "addressBook": {
-                    "appnetName": "Test Identity SDK appnet",
-                    "didServerUrl": "http://localhost:3000/api/v1",
-                    "didTopicMemo": "Test Identity SDK appnet DID topic", "vcTopicMemo": "Test Identity SDK appnet VC topic"
-                }
+                'hederaAccountId': result.data.id,
+                'hederaAccountKey': result.data.key,
+                'vcDocument':{
+                    'geography':'123123',
+                    'law':'123123',
+                    'tags':'123123',
+                    'ISIC':'123123',
+                    'type':'StandardRegistry',
+                    '@context':[]}
             },
             {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
-                }
-            }
-        );
-
-        assert.equal(result.data, null);
-
-        result = await axios.get(
-            GetURL('demo', 'randomKey'),
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            }
-        );
-
-        result = await axios.put(
-            GetURL('profile'),
-            { "hederaAccountId": result.data.id, "hederaAccountKey": result.data.key },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('Installer')}`,
                 }
             }
         );
