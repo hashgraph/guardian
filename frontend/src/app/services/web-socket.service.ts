@@ -9,9 +9,7 @@ import { Router } from '@angular/router';
 /**
  *  WebSocket service.
  */
-@Injectable({
-    providedIn: 'root'
-})
+@Injectable()
 export class WebSocketService {
     private static HEARTBEAT_DELAY = 30 * 1000;
     private socket: WebSocketSubject<string> | null;
@@ -54,11 +52,17 @@ export class WebSocketService {
                 next: this.openWebSocket.bind(this)
             }
         };
+
         this.auth.subscribe(() => {
             this.reconnectAttempts = 10;
             this.send('SET_ACCESS_TOKEN', this.auth.getAccessToken());
         })
         this.connect();
+
+    }
+
+    static initialize() {
+        return this;
     }
 
     private closeWebSocket() {
@@ -137,12 +141,14 @@ export class WebSocketService {
     private _send(data: string): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.sendingEvent) {
-                setTimeout(async () => {
-                    await this._send(data);
-                    this.sendingEvent = false;
-                    resolve();
+                setTimeout(() => {
+                    this._send(data).then(() => {
+                        this.sendingEvent = false;
+                        resolve();
+                    });
                 }, 10);
             } else {
+                console.log('not ');
                 this.sendingEvent = true;
                 this.socket?.next(data);
 
