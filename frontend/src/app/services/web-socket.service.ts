@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, Subject, Subscription } from 'rxjs';
-import { webSocket, WebSocketSubjectConfig } from 'rxjs/webSocket';
+import { Subject, Subscription } from 'rxjs';
+import { webSocket, WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { ApplicationStates, MessageAPI } from '@guardian/interfaces';
@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 })
 export class WebSocketService {
     private static HEARTBEAT_DELAY = 30 * 1000;
-    private socket: any;
+    private socket: WebSocketSubject<string> | null;
     private wsSubjectConfig: WebSocketSubjectConfig<string>;
     private socketSubscription: Subscription | null = null;
     private heartbeatTimeout: any = null;
@@ -26,6 +26,7 @@ export class WebSocketService {
     private userInfoUpdateSubject: Subject<any>;
     private taskStatusSubject: Subject<any>;
     private serviesStates: any = [];
+    private sendingEvent: boolean;
 
     constructor(private auth: AuthService, private toastr: ToastrService, private router: Router) {
         this.blockUpdateSubject = new Subject();
@@ -33,12 +34,19 @@ export class WebSocketService {
         this.servicesReady = new Subject();
         this.profileSubject = new Subject();
         this.taskStatusSubject = new Subject();
+        this.socket = null;
+        this.sendingEvent = false;
 
         this.socketSubscription = null;
         this.wsSubjectConfig = {
             url: this.getUrl(),
-            deserializer: (e) => e.data,
-            serializer: (value) => value,
+            deserializer: (e) => {
+                this.sendingEvent = true;
+                return e.data
+            },
+            serializer: (value) => {
+                return value
+            },
             closeObserver: {
                 next: this.closeWebSocket.bind(this)
             },
@@ -94,7 +102,7 @@ export class WebSocketService {
         const accessToken = this.auth.getAccessToken();
         this.wsSubjectConfig.url = this.getUrl(accessToken);
         this.socket = webSocket(this.wsSubjectConfig);
-        this.socketSubscription = this.socket.subscribe(
+        this.socketSubscription = this.socket?.subscribe(
             (m: any) => {
                 this.accept(m);
             },
@@ -109,7 +117,7 @@ export class WebSocketService {
     }
 
     private heartbeat() {
-        this.socket.next('ping');
+        this.socket?.next('ping');
         this.send(MessageAPI.GET_STATUS, null);
         this.heartbeatTimeout = setTimeout(
             this.heartbeat.bind(this), WebSocketService.HEARTBEAT_DELAY
@@ -126,27 +134,41 @@ export class WebSocketService {
         }, this.reconnectInterval);
     }
 
-    private send(type: string, data: any): Promise<void> {
+    private _send(data: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            try {
-                if (this.socket) {
-                    const message = JSON.stringify({ type, data });
-                    setTimeout(() => {
-                        this.socket.next(message);
-                        resolve();
-                    }, 300);
-                }
-            } catch (error: any) {
-                console.error(error);
-                this.toastr.error(error.message, 'Web Socket', {
-                    timeOut: 10000,
-                    closeButton: true,
-                    positionClass: 'toast-bottom-right',
-                    enableHtml: true
-                });
-                resolve();
+            if (this.sendingEvent) {
+                setTimeout(async () => {
+                    resolve(await this._send(data));
+                }, 10);
+            } else {
+                this.sendingEvent = true;
+                this.socket?.next(data);
+
+                setTimeout(() => {
+                    this.sendingEvent = false;
+                    resolve();
+                }, 100);
             }
-        });
+
+        })
+    }
+
+    private async send(type: string, data: any): Promise<void> {
+        try {
+            if (this.socket) {
+                const message = JSON.stringify({ type, data });
+                await this._send(message);
+                return;
+            }
+        } catch (error: any) {
+            console.error(error);
+            this.toastr.error(error.message, 'Web Socket', {
+                timeOut: 10000,
+                closeButton: true,
+                positionClass: 'toast-bottom-right',
+                enableHtml: true
+            });
+        }
     }
 
     private accept(message: string) {
