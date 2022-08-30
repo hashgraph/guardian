@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const {
     Client,
     AccountBalanceQuery,
@@ -49,8 +52,8 @@ async function run(name, maxTransaction, f, d) {
 describe('Stability test', function () {
     this.timeout(20 * 60 * 1000);
 
-    const OPERATOR_ID = '0.0.1548173';
-    const OPERATOR_KEY = '302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc';
+    const OPERATOR_ID = process.env.OPERATOR_ID;
+    const OPERATOR_KEY = process.env.OPERATOR_KEY;
     const maxTransaction = 10;
 
     const client = Client.forTestnet();

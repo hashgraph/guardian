@@ -1,8 +1,10 @@
 # ReadMe
 
-This folder contains sub folders for each Methodology (with many more to be added in the future).
-1. IREC
-2. Verra Redd
+This folder contains sub folders for each Methodology and their authors (with many more to be added in the future). Each methodlogy has a corresponding Policy (digital version of a Methodology) and Schema (calculations within a Policy).
+1. IREC - Envision
+2. Verra Redd - Envision
+3. Agrecalc MRV - Dovu
+4. Cool Farm Tool MRV - Dovu
 
 [IREC](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts/iREC)
 

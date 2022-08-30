@@ -37,7 +37,7 @@ export class MessageMemo extends MemoMap {
             /**
              * Topic Type
              */
-            topicType?: TopicType,
+            messageType?: TopicType,
 
             /**
              * Topic Name
@@ -47,7 +47,7 @@ export class MessageMemo extends MemoMap {
     ): string {
         let memo: string;
         if (message.type === MessageType.Topic) {
-            memo = MessageMemo._messageMemoMapping[`${message.type}.${message.action}.${message.topicType}`]
+            memo = MessageMemo._messageMemoMapping[`${message.type}.${message.action}.${message.messageType}`]
         } else {
             if (MessageMemo._messageMemoMapping[message.action]) {
                 memo = MessageMemo._messageMemoMapping[message.action];
@@ -55,7 +55,7 @@ export class MessageMemo extends MemoMap {
                 memo = MessageMemo._messageMemoMapping[`${message.type}.${message.action}`];
             }
         }
-        if (message.topicType === TopicType.DynamicTopic) {
+        if (message.messageType === TopicType.DynamicTopic) {
             try {
                 memo = MessageMemo.parseMemo(false, memo, message);
             }
@@ -82,7 +82,8 @@ export class MessageMemo extends MemoMap {
         messageMemo[`${MessageType.Schema}.${MessageAction.PublishSchema}`] = 'Schema publishing message';
         messageMemo[`${MessageType.Schema}.${MessageAction.PublishSystemSchema}`] = 'System Schema publishing message';
         messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.PolicyTopic}`] = 'Policy Topic creation message';
-        messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.InstancePolicyTopic}`] = 'Policy Instance Topic creation message';
+        messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.InstancePolicyTopic}`] = 'Policy Instance topic creation message';
+        messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.UserTopic}`] = 'Standard Registry topic creation message';
         messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.DynamicTopic}`] = '${name} operation topic creation message';
         messageMemo[MessageAction.ChangeMessageStatus] = 'Status change message';
         messageMemo[MessageAction.RevokeDocument] = 'Revoke document message';

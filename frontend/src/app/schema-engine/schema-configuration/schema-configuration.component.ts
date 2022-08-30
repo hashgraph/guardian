@@ -300,12 +300,26 @@ export class SchemaConfigurationComponent implements OnInit {
             this.onIfConditionFieldChange(newCondition, newCondition.field!.value);
 
             condition.thenFields.forEach((field) => {
-                const fieldValue = new FieldControl(field, this.getType(field), this.getFieldName());
+                const fieldValue = new FieldControl(
+                    field,
+                    this.getType(field),
+                    this.destroy$,
+                    this.defaultFieldsMap,
+                    this.dataForm?.get('entity') as FormControl,
+                    this.getFieldName()
+                );
                 newCondition.addThenControl(fieldValue);
             });
 
             condition.elseFields?.forEach((field) => {
-                const fieldValue = new FieldControl(field, this.getType(field), this.getFieldName());
+                const fieldValue = new FieldControl(
+                    field,
+                    this.getType(field),
+                    this.destroy$,
+                    this.defaultFieldsMap,
+                    this.dataForm?.get('entity') as FormControl,
+                    this.getFieldName()
+                );
                 newCondition.addElseControl(fieldValue);
             });
 
@@ -320,7 +334,14 @@ export class SchemaConfigurationComponent implements OnInit {
             if (field.readOnly || conditionsFields.find(elem => elem === field.name)) {
                 continue;
             }
-            const control = new FieldControl(field, this.getType(field), this.getFieldName());
+            const control = new FieldControl(
+                field,
+                this.getType(field),
+                this.destroy$,
+                this.defaultFieldsMap,
+                this.dataForm?.get('entity') as FormControl,
+                this.getFieldName()
+            );
             control.append(this.fieldsForm);
             this.fields.push(control);
         }
@@ -407,7 +428,13 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     onConditionFieldAdd(condition: ConditionControl, type: 'then' | 'else') {
-        const field = new FieldControl(null, this.getType(null), this.getFieldName());
+        const field = new FieldControl(null,
+            this.getType(null),
+            this.destroy$,
+            this.defaultFieldsMap,
+            this.dataForm?.get('entity') as FormControl,
+            this.getFieldName()
+        );
         condition.addControl(type, field);
     }
 
@@ -424,7 +451,14 @@ export class SchemaConfigurationComponent implements OnInit {
 
     onAdd(event: MouseEvent) {
         event.preventDefault();
-        const control = new FieldControl(null, this.getType(null), this.getFieldName());
+        const control = new FieldControl(
+            null,
+            this.getType(null),
+            this.destroy$,
+            this.defaultFieldsMap,
+            this.dataForm?.get('entity') as FormControl,
+            this.getFieldName()
+        );
         control.append(this.fieldsForm)
         this.fields.push(control);
         this.fields = this.fields.slice();

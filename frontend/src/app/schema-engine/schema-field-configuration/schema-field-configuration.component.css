@@ -178,3 +178,7 @@
     right: 5px;
     position: relative;
 }
+
+.error-message {
+    color: red;
+}
