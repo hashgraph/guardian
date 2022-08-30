@@ -37,7 +37,7 @@ export class MessageMemo extends MemoMap {
             /**
              * Topic Type
              */
-            topicType?: TopicType,
+            messageType?: TopicType,
 
             /**
              * Topic Name
@@ -46,9 +46,9 @@ export class MessageMemo extends MemoMap {
         }
     ): string {
         let memo = message.type === MessageType.Topic
-            ? MessageMemo._messageMemoMapping[`${message.type}.${message.action}.${message.topicType}`]
+            ? MessageMemo._messageMemoMapping[`${message.type}.${message.action}.${message.messageType}`]
             : MessageMemo._messageMemoMapping[`${message.type}.${message.action}`];
-        if (message.topicType === TopicType.DynamicTopic) {
+        if (message.messageType === TopicType.DynamicTopic) {
             try {
                 memo = MessageMemo.parseMemo(false, memo, message);
             }
