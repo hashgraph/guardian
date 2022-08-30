@@ -5,7 +5,6 @@ import { profileAPI, updateUserBalance } from '@api/profile.service';
 import { schemaAPI, setDefaultSchema } from '@api/schema.service';
 import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
-import { ApprovalDocument } from '@entity/approval-document';
 import { DidDocument } from '@entity/did-document';
 import { Schema } from '@entity/schema';
 import { Token } from '@entity/token';
