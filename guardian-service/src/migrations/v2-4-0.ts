@@ -16,9 +16,9 @@ export class ReleaseMigration extends Migration {
      * Rename assign column
      */
     async renameAssignColumn() {
-        await this.getCollection('VcDocument').updateMany({}, { $rename: { assign: 'assignedTo'} }, { session: this.ctx });
-        await this.getCollection('DryRun').updateMany({}, { $rename: { assign: 'assignedTo'} }, { session: this.ctx });
-        await this.getCollection('AggregateVC').updateMany({}, { $rename: { assign: 'assignedTo'} }, { session: this.ctx });
+        await this.getCollection('VcDocument').updateMany({}, { $rename: { assign: 'assignedTo' } }, { session: this.ctx });
+        await this.getCollection('DryRun').updateMany({}, { $rename: { assign: 'assignedTo' } }, { session: this.ctx });
+        await this.getCollection('AggregateVC').updateMany({}, { $rename: { assign: 'assignedTo' } }, { session: this.ctx });
     }
 
     /**
@@ -28,7 +28,7 @@ export class ReleaseMigration extends Migration {
         const policiesCollection = this.getCollection('Policy');
         const policyRolesCollection = this.getCollection('PolicyRoles');
         const policies = policiesCollection.find({}, { session: this.ctx });
-        while(await policies.hasNext()) {
+        while (await policies.hasNext()) {
             const policy = await policies.next();
             if (policy.registeredUsers) {
                 if (typeof policy.registeredUsers === 'object') {
@@ -39,7 +39,7 @@ export class ReleaseMigration extends Migration {
                         const role = policy.registeredUsers[did];
                         const currentRole = await policyRolesCollection.findOne({ policyId, did }, { session: this.ctx });
                         if (!currentRole) {
-                            transactions.push({ policyId, did, role });
+                            transactions.push({ policyId, did, role, owner: did, active: true });
                         }
                     }
                     if (transactions.length) {

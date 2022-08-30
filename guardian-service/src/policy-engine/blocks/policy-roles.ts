@@ -194,7 +194,7 @@ export class PolicyRolesBlock {
                         policyId: ref.policyId,
                         did,
                         username,
-                        owner: null,
+                        owner: ref.policyOwner,
                         uuid: result.uuid,
                         role: result.role,
                         groupRelationshipType: result.groupRelationshipType,
@@ -208,7 +208,7 @@ export class PolicyRolesBlock {
                         policyId: ref.policyId,
                         did,
                         username,
-                        owner: null,
+                        owner: ref.policyOwner,
                         uuid: GenerateUUIDv4(),
                         role: groupConfig.creator,
                         groupName: groupConfig.name,
@@ -295,44 +295,44 @@ export class PolicyRolesBlock {
      * Create group VC
      * @param ref
      * @param user
-     * @param doc
+     * @param group
      * @private
      */
-    private async createVC(ref: AnyBlockType, user: IPolicyUser, doc: IUserGroup): Promise<string> {
+    private async createVC(ref: AnyBlockType, user: IPolicyUser, group: IUserGroup): Promise<string> {
         const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.USER_ROLE);
-        if(!policySchema) {
+        if (!policySchema) {
             return null;
         }
 
-        const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+        const groupOwner = await PolicyUtils.getHederaAccount(ref, group.owner);
         const vcHelper = new VcHelper();
         const vcSubject: any = {
             ...SchemaHelper.getContext(policySchema),
             id: GenerateUUIDv4(),
-            role: doc.role,
-            userId: doc.did,
+            role: group.role,
+            userId: group.did,
             policyId: ref.policyId
         }
-        if (doc.uuid) {
-            vcSubject.groupOwner = doc.uuid;
+        if (group.uuid) {
+            vcSubject.groupOwner = group.uuid;
         }
-        if (doc.owner) {
-            vcSubject.groupOwner = doc.owner;
+        if (group.owner) {
+            vcSubject.groupOwner = group.owner;
         }
-        if (doc.groupName) {
-            vcSubject.groupName = doc.groupName;
+        if (group.groupName) {
+            vcSubject.groupName = group.groupName;
         }
-        if (doc.groupLabel) {
-            vcSubject.groupLabel = doc.groupLabel;
+        if (group.groupLabel) {
+            vcSubject.groupLabel = group.groupLabel;
         }
 
-        const mintVC = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+        const mintVC = await vcHelper.createVC(groupOwner.did, groupOwner.hederaAccountKey, vcSubject);
 
         const rootTopic = await ref.databaseServer.getTopic({
             policyId: ref.policyId,
             type: TopicType.InstancePolicyTopic
         });
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
+        const messageServer = new MessageServer(groupOwner.hederaAccountId, groupOwner.hederaAccountKey, ref.dryRun);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
         const vcMessageResult = await messageServer
