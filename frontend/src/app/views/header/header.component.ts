@@ -227,7 +227,7 @@ export class HeaderComponent implements OnInit {
     }
 
     isActive(link: any) {
-        if(this.activeLink == link.link || this.activeLinkRoot == link.link) {
+        if (this.activeLink == link.link || this.activeLinkRoot == link.link) {
             return true;
         }
         if (link.links) {

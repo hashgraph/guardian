@@ -180,7 +180,7 @@ export class SendToGuardianBlock {
             );
             const vc = HVcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
-            vcMessage.setStatus(document.option?.status || DocumentStatus.NEW);
+            vcMessage.setDocumentStatus(document.option?.status || DocumentStatus.NEW);
             vcMessage.setDocument(vc);
             vcMessage.setRelationships(document.relationships);
             const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, ref.dryRun);

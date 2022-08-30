@@ -36,12 +36,12 @@ export class PreviewPolicyDialog {
             if (this.policy.policyRoles) {
                 this.policyGroups += this.policy.policyRoles.join(', ');
             }
-            if (this.policy.policyGroups) {
-                if (this.policyGroups) {
-                    this.policyGroups += ', ';
-                }
-                this.policyGroups += this.policy.policyGroups.join(', ');
-            }
+            // if (this.policy.policyGroups) {
+            //     if (this.policyGroups) {
+            //         this.policyGroups += ', ';
+            //     }
+            //     this.policyGroups += this.policy.policyGroups.join(', ');
+            // }
 
             const schemas = data.policy.schemas || [];
             const tokens = data.policy.tokens || [];

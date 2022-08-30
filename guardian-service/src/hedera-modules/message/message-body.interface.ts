@@ -42,6 +42,10 @@ export interface MessageBody {
      * Delete message
      */
     deleteMessage?: string;
+    /**
+     * Status message
+     */
+    statusMessage?: string;
 }
 
 /**

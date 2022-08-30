@@ -6,7 +6,7 @@ import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyRoles } from '@entity/policy-roles';
-import { MessageServer } from '@hedera-modules';
+import { MessageServer, MessageStatus } from '@hedera-modules';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
@@ -108,7 +108,7 @@ export class GroupManagerBlock {
             const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey, ref.dryRun);
             const message = await messageServer.getMessage(member.messageId);
             const topic = await PolicyUtils.getTopicById(ref, message.topicId);
-            message.delete(text);
+            message.setMessageStatus(MessageStatus.WITHDRAW, text);
             await messageServer
                 .setTopicObject(topic)
                 .sendMessage(message, false);
