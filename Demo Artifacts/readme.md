@@ -1,6 +1,6 @@
 # ReadMe
 
-This folder contains sub folders for each Methodology and their authors (with many more to be added in the future). Each methodlogy has a corresponding Policy (digital version of a Methodology) and Schema (calculations within a Policy).
+This folder contains sub folders for each Methodology and their authors (with many more to be added in the future). Each methodlogy has a corresponding Policy (digital version of a Methodology) and Schema (data definitions within a Policy).
 
 1. IREC - Envision
 2. Verra Redd - Envision

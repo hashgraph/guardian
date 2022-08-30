@@ -84,6 +84,7 @@ import { TasksService } from './services/tasks.service';
     ],
     exports: [],
     providers: [
+        WebSocketService,
         UserGuard,
         StandardRegistryGuard,
         AuditorGuard,
@@ -92,7 +93,6 @@ import { TasksService } from './services/tasks.service';
         TokenService,
         SchemaService,
         AuditService,
-        WebSocketService,
         PolicyEngineService,
         PolicyHelper,
         IPFSService,

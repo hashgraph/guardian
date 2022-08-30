@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthStateService } from './services/auth-state.service';
+import { WebSocketService } from './services/web-socket.service';
 
 @Component({
   selector: 'app-root',
@@ -9,5 +10,5 @@ import { AuthStateService } from './services/auth-state.service';
 export class AppComponent {
   title = 'guardian';
 
-  constructor(public authState: AuthStateService) {}
+  constructor(public authState: AuthStateService, public wsService: WebSocketService) {}
 }
