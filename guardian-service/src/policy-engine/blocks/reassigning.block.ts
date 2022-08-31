@@ -1,13 +1,12 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { Inject } from '@helpers/decorators/inject';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcHelper } from '@helpers/vc-helper';
-import { Users } from '@helpers/users';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
@@ -35,13 +34,6 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 })
 export class ReassigningBlock {
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
      * VC helper
      * @private
      */
@@ -50,50 +42,60 @@ export class ReassigningBlock {
 
     /**
      * Document reassigning
-     * @param state
+     * @param document
      * @param user
      */
-    async documentReassigning(state, user: IAuthUser): Promise<any> {
+    async documentReassigning(document: IPolicyDocument, user: IPolicyUser): Promise<{
+        /**
+         * New Document
+         */
+        item: IPolicyDocument,
+        /**
+         * New Actor
+         */
+        actor: IPolicyUser
+    }> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-
-        const document = state.data;
         const vcDocument = document.document;
+        const owner: IPolicyUser = PolicyUtils.getDocumentOwner(ref, document);
 
         let root: any;
+        let groupContext: any;
         if (ref.options.issuer === 'owner') {
-            root = await this.users.getHederaAccount(document.owner);
+            root = await PolicyUtils.getHederaAccount(ref, document.owner);
+            groupContext = await PolicyUtils.getGroupContext(ref, owner);
         } else if (ref.options.issuer === 'policyOwner') {
-            root = await this.users.getHederaAccount(ref.policyOwner);
+            root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+            groupContext = null;
         } else {
-            root = await this.users.getHederaAccount(user.did);
+            root = await PolicyUtils.getHederaAccount(ref, user.did);
+            groupContext = await PolicyUtils.getGroupContext(ref, user);
         }
 
-        let owner: IAuthUser;
+        let actor: IPolicyUser;
         if (ref.options.actor === 'owner') {
-            owner = await this.users.getUserById(document.owner);
+            actor = PolicyUtils.getDocumentOwner(ref, document);
         } else if (ref.options.actor === 'issuer') {
-            owner = await this.users.getUserById(root.did);
+            actor = PolicyUtils.getPolicyUser(ref, root.did, document.group);
         } else {
-            owner = user;
+            actor = user;
         }
 
         const credentialSubject = vcDocument.credentialSubject[0];
-        const vc: any = await this.vcHelper.createVC(root.did, root.hederaAccountKey, credentialSubject);
-        const item = PolicyUtils.createVCRecord(
-            ref.policyId,
-            ref.tag,
-            null,
-            vc,
-            {
-                schema: document.schema,
-                type: document.type,
-                option: document.option,
-                owner: document.owner,
-            },
-            document
+        const vc: any = await this.vcHelper.createVC(
+            root.did,
+            root.hederaAccountKey,
+            credentialSubject,
+            groupContext
         );
 
-        return { item, owner };
+        let item = PolicyUtils.createVC(ref, owner, vc);
+        item.type = document.type;
+        item.schema = document.schema;
+        item.option = document.option;
+        item = PolicyUtils.setDocumentRef(item, document);
+
+        return { item, actor };
     }
 
     /**
@@ -105,13 +107,29 @@ export class ReassigningBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        const { item, owner } = await this.documentReassigning(event.data, event.user);
-        event.data.data = item;
-        ref.log(`Reassigning Document: ${JSON.stringify(item)}`);
+        const documents = event?.data?.data;
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, owner, event.data);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, event.data);
+        let result: IPolicyDocument | IPolicyDocument[];
+        let user: IPolicyUser;
+        if (Array.isArray(documents)) {
+            result = [];
+            for (const doc of documents) {
+                const { item, actor } = await this.documentReassigning(doc, event.user);
+                result.push(item);
+                user = actor;
+            }
+        } else {
+            const { item, actor } = await this.documentReassigning(documents, event.user);
+            result = item;
+            user = actor;
+        }
+
+        event.data.data = result;
+        ref.log(`Reassigning Document: ${JSON.stringify(result)}`);
+
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, event.data);
     }
 }

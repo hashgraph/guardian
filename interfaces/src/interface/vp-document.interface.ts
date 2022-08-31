@@ -14,15 +14,15 @@ export interface IVPDocument {
     /**
      * Owner
      */
-    owner: string;
+    owner?: string;
     /**
      * Hash
      */
-    hash: string;
+    hash?: string;
     /**
      * VP instance
      */
-    document: IVP;
+    document?: IVP;
     /**
      * Creation date
      */
@@ -42,13 +42,13 @@ export interface IVPDocument {
     /**
      * Type
      */
-    type: SchemaEntity;
+    type?: SchemaEntity;
     /**
      * Policy ID
      */
-    policyId: string;
+    policyId?: string;
     /**
      * Tag
      */
-    tag: string;
+    tag?: string;
 }

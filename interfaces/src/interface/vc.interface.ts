@@ -1,6 +1,6 @@
-import {ICredentialSubject} from './credential-subject.interface';
-import {did} from './did.interface';
-import {uuid} from './uuid.interface';
+import { ICredentialSubject } from './credential-subject.interface';
+import { did } from './did.interface';
+import { uuid } from './uuid.interface';
 
 /**
  * VC interface
@@ -25,7 +25,12 @@ export interface IVC {
     /**
      * Issuer
      */
-    issuer: did;
+    issuer: did | {
+        /**
+         * Issuer
+         */
+        id: did
+    };
     /**
      * Issuance Date
      */

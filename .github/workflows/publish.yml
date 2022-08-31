@@ -134,6 +134,24 @@ jobs:
           push: true
           tags: 'gcr.io/hedera-registry/ipfs-client:${{ steps.package-version.outputs.current-version}}'
 
+      - name: worker-service-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./worker-service/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/worker-service:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/worker-service:latest'
+
+      - name: worker-service
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./worker-service/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/worker-service:${{ steps.package-version.outputs.current-version}}'
+
       - name: topic-viewer-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@v2

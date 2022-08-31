@@ -4,9 +4,11 @@
 
 * [Guardian Introduction](README.md)
 * [Discovering ESG assets on Hedera](getting-started/discovering-esg-assets-on-hedera.md)
-* [Getting Started](getting-started/getting-started/README.md)
+* [Getting started](getting-started/getting-started/README.md)
   * [Prerequisites](getting-started/getting-started/prerequisites.md)
   * [Installation](getting-started/getting-started/installation.md)
+  * [How to create Operator ID and Operator Key](getting-started/getting-started/how-to-create-operator-id-and-operator-key.md)
+  * [How to generate Web3.Storage API Key](getting-started/getting-started/how-to-generate-web3.storage-api-key.md)
 * [Contributing](getting-started/contributing/README.md)
   * [Contribute a New Policy](getting-started/contributing/contribute-a-new-policy.md)
 * [Frameworks/Libraries](getting-started/built-with.md)
@@ -18,9 +20,9 @@
 
 ## Guardian Architecture
 
-* [Reference Architecture](guardian-architecture/reference-architecture.md)
-* [Architecture 2](guardian-architecture/architecture-2.md)
-* [Policies, Projects and Topics Mapping Architecture](guardian-architecture/schema-architecture.md)
+* [Deep Dive Architecture](guardian-architecture/reference-architecture.md)
+* [High Level Architecture](guardian-architecture/architecture-2.md)
+* [Policies,Projects and Topics Mapping Architecture](guardian-architecture/schema-architecture.md)
 
 ## Schema Flow
 
@@ -37,6 +39,10 @@
 * [Verra Redd+ Demo Guide](demo-guide/verra-redd+-demo-guide.md)
 * [iREC Demo UI Guide](demo-guide/irec-demo-guide.md)
 * [iREC API Demo Guide](demo-guide/api-workflow-of-irec-demo.md)
+
+## Dry Run Demo
+
+* [Demo Guide on Dry Run Operations](dry-run-demo/demo-guide-on-dry-run-operations.md)
 
 ## Versioning and Deprecation Policy
 
@@ -137,16 +143,26 @@
 * [Exporting Message ID](policy-creation-using-the-guardian-apis/exporting-message-id.md)
 * [Export to zip file](policy-creation-using-the-guardian-apis/export-to-zip-file.md)
 * [Import from zip file](policy-creation-using-the-guardian-apis/import-from-zip-file.md)
+* [Retrieves Block Data by Tag](policy-creation-using-the-guardian-apis/retrieves-block-data-by-tag.md)
+* [Sends Data to specified Block by Tag](policy-creation-using-the-guardian-apis/sends-data-to-specified-block-by-tag.md)
+
+## Policy related APIs for Asynchronous Execution
+
+* [Creates new Policy](policy-related-apis-for-asynchronous-execution/creates-new-policy.md)
+* [Publishing a Policy](policy-related-apis-for-asynchronous-execution/publishing-a-policy.md)
+* [Importing a Policy from IPFS](policy-related-apis-for-asynchronous-execution/importing-a-policy-from-ipfs.md)
+* [Importing a Policy from file](policy-related-apis-for-asynchronous-execution/importing-a-policy-from-file.md)
+* [Policy Review](policy-related-apis-for-asynchronous-execution/policy-review.md)
 
 ## SCHEMA CREATION USING THE GUARDIAN APIS
 
-* [Creation of a Schema (Deprecated)](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
+* [Creation of a Schema (Cancelled)](schema-creation-using-the-guardian-apis/creation-of-a-schema.md)
 * [Listing of Schema](schema-creation-using-the-guardian-apis/creation-of-a-schema-1.md)
 * [Publishing Schema based on Schema ID](schema-creation-using-the-guardian-apis/publishing-schema-based-on-schema-id.md)
 * [Updating Schema](schema-creation-using-the-guardian-apis/updating-schema.md)
 * [Deleting a Schema](schema-creation-using-the-guardian-apis/deleting-a-schema.md)
-* [Import Schema from Zip (Deprecated)](schema-creation-using-the-guardian-apis/import-schema-from-ipfs.md)
-* [Import Schema from IPFS (Deprecated)](schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1.md)
+* [Import Schema from Zip (Cancelled)](schema-creation-using-the-guardian-apis/import-schema-from-ipfs.md)
+* [Import Schema from IPFS (Cancelled)](schema-creation-using-the-guardian-apis/import-schema-from-ipfs-1.md)
 * [Schema Preview from IPFS](schema-creation-using-the-guardian-apis/schema-preview-from-ipfs.md)
 * [Schema Preview from Zip](schema-creation-using-the-guardian-apis/schema-preview-from-zip.md)
 * [Export message IDs of Schema](schema-creation-using-the-guardian-apis/export-a-schema.md)
@@ -155,6 +171,7 @@
 * [Returns all Schemas related to the topic](schema-creation-using-the-guardian-apis/returns-all-schemas-related-to-the-topic.md)
 * [Importing Zip file containing Schema](schema-creation-using-the-guardian-apis/importing-zip-file-containing-schema.md)
 * [Importing Schema from IPFS](schema-creation-using-the-guardian-apis/importing-schema-from-ipfs.md)
+* [Returning Schema by SchemaID](schema-creation-using-the-guardian-apis/returning-schema-by-schemaid.md)
 
 ## System Schemas APIs
 
@@ -180,6 +197,7 @@
 * [User Account Balance](profile-apis/user-account-balance.md)
 * [User Account Information](profile-apis/user-account-information.md)
 * [Setting User Credentials](profile-apis/setting-user-credentials.md)
+* [Setting User Credentials Asynchronously](profile-apis/setting-user-credentials-asynchronously.md)
 
 ## TOKEN APIS
 
@@ -208,14 +226,46 @@
 * [Returning Logs](logs-apis/returning-logs.md)
 * [Returning Log Attributes](logs-apis/returning-log-attributes.md)
 
+## Dry Run APIs
+
+* [Running Policy without making any changes](dry-run-apis/running-policy-without-making-any-changes.md)
+* [Returning all Virtual Users](dry-run-apis/returning-all-virtual-users.md)
+* [Creating Virtual Account](dry-run-apis/creating-virtual-account.md)
+* [Logging Virtual User](dry-run-apis/logging-virtual-user.md)
+* [Restarting the execution of Policy](dry-run-apis/restarting-the-execution-of-policy.md)
+* [Returns List of Transactions](dry-run-apis/returns-list-of-transactions.md)
+* [Returns List of Artifacts](dry-run-apis/returns-list-of-artifacts.md)
+* [Returns List of IPFS Files](dry-run-apis/returns-list-of-ipfs-files.md)
+* [Returning Policy to Editing](dry-run-apis/returning-policy-to-editing.md)
+
 ## External APIs
 
 * [Sends Data from External Source](external-apis/sends-data-from-external-source.md)
 
 ## External events
 
-* [Listen to external event published by guardian](external-events/external-events.md)
+* [Listen to external event published by Guardian](external-events/external-events.md)
 
 ## FAQs
 
 * [FAQs](faqs/faqs.md)
+
+## Schema Related APIs for Asynchronous Execution
+
+* [Creation of Schema](schema-related-apis-for-asynchronous-execution/creation-of-schema.md)
+* [Publishing Schema](schema-related-apis-for-asynchronous-execution/publishing-schema.md)
+* [Previews the Schema from IPFS](schema-related-apis-for-asynchronous-execution/previews-the-schema-from-ipfs.md)
+* [Importing Schema from IPFS](schema-related-apis-for-asynchronous-execution/importing-schema-from-ipfs.md)
+* [Importing Schema from .zip](schema-related-apis-for-asynchronous-execution/importing-schema-from-.zip.md)
+
+## Token Related APIs for Asynchronous Execution
+
+* [Token Creation](token-related-apis-for-asynchronous-execution/token-creation.md)
+* [Associating User with the Hedera Token](token-related-apis-for-asynchronous-execution/associating-user-with-the-hedera-token.md)
+* [Disassociating User with the Hedera Token](token-related-apis-for-asynchronous-execution/disassociating-user-with-the-hedera-token.md)
+* [Setting KYC for the User](token-related-apis-for-asynchronous-execution/setting-kyc-for-the-user.md)
+* [Unsetting KYC for the User](token-related-apis-for-asynchronous-execution/unsetting-kyc-for-the-user.md)
+
+## Task APIs
+
+* [Returning Task Statuses](task-apis/returning-task-statuses.md)

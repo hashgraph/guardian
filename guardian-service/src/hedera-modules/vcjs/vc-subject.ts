@@ -168,9 +168,8 @@ export class VcSubject {
     /**
      * Create
      * @param subject
-     * @param schema
      */
-    public static create(subject: any, schema?: string): VcSubject {
+    public static create(subject: any): VcSubject {
         if (!subject) {
             throw new Error('Subject is empty');
         }
@@ -178,7 +177,7 @@ export class VcSubject {
         const result = new VcSubject();
 
         result.id = subject[VcSubject.CREDENTIAL_ID];
-        result.type = subject[VcSubject.CREDENTIAL_TYPE] || schema;
+        result.type = subject[VcSubject.CREDENTIAL_TYPE];
         const context = subject[VcSubject.CONTEXT];
         result.addContext(context);
 

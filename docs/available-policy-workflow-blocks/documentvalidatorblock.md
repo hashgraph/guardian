@@ -21,7 +21,7 @@ This block is to validate documents, including linked documents. This block retu
 
 
 
-![](<../.gitbook/assets/image (23) (1).png>)
+![](<../.gitbook/assets/image (23) (1) (1).png>)
 
 ### Document Type
 

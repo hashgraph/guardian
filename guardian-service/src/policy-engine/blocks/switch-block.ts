@@ -2,12 +2,11 @@ import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
-import { Users } from '@helpers/users';
-import { Inject } from '@helpers/decorators/inject';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
+import { IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 
 /**
  * Switch block
@@ -33,18 +32,11 @@ import { IAuthUser } from '@guardian/common';
 })
 export class SwitchBlock {
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
      * Get scope
      * @param docs
      * @private
      */
-    private getScope(docs: any | any[]): any {
+    private getScope(docs: IPolicyDocument | IPolicyDocument[]): any {
         let result: any = {};
         if (!docs) {
             return null;
@@ -100,22 +92,24 @@ export class SwitchBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        ref.log(`switch: ${event.user?.did}`);
+        ref.log(`switch: ${event.user?.id}`);
 
-        const docs: any | any[] = event.data.data;
+        const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
 
         let owner: string = null;
         let issuer: string = null;
+        let group: string = null;
         if (Array.isArray(docs)) {
             owner = docs[0]?.owner;
-            issuer = docs[0]?.document?.issuer;
+            issuer = PolicyUtils.getDocumentIssuer(docs[0]?.document);
+            group = docs[0]?.document?.group;
         } else {
             owner = docs?.owner;
-            issuer = docs?.document?.issuer;
-
+            issuer = PolicyUtils.getDocumentIssuer(docs?.document);
+            group = docs?.document?.group;
         }
 
         const scope = this.getScope(docs);
@@ -156,14 +150,14 @@ export class SwitchBlock {
                 result = true;
             }
 
-            let curUser: IAuthUser = event.user;
+            let curUser: IPolicyUser = event.user;
             if (actor === 'owner' && owner) {
-                curUser = await this.users.getUserById(owner);
+                curUser = PolicyUtils.getPolicyUser(ref, owner, group);
             } else if (actor === 'issuer' && issuer) {
-                curUser = await this.users.getUserById(issuer);
+                curUser = PolicyUtils.getPolicyUser(ref, issuer, group);
             }
 
-            ref.log(`check condition: ${curUser?.did}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);
+            ref.log(`check condition: ${curUser?.id}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);
 
             if (result) {
                 ref.triggerEvents(tag, curUser, event.data);
@@ -219,7 +213,7 @@ export class SwitchBlock {
             }
 
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

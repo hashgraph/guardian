@@ -1,20 +1,16 @@
 import { ActionCallback, ExternalData } from '@policy-engine/helpers/decorators';
-import { DocumentSignature, DocumentStatus, Schema } from '@guardian/interfaces';
+import { DocumentSignature, Schema } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
-import { getMongoRepository } from 'typeorm';
-import { Schema as SchemaCollection } from '@entity/schema';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { AnyBlockType, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
-import { IAuthUser } from '@guardian/common';
+import { AnyBlockType, IPolicyDocument, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
+import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 
 /**
@@ -39,12 +35,6 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
     }
 })
 export class ExternalDataBlock {
-    /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
 
     /**
      * Schema
@@ -71,7 +61,7 @@ export class ExternalDataBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IAuthUser, state: any): Promise<boolean> {
+    protected async validateDocuments(user: IPolicyUser, state: any): Promise<boolean> {
         const validators = this.getValidators();
         for (const validator of validators) {
             const valid = await validator.run({
@@ -95,15 +85,14 @@ export class ExternalDataBlock {
 
     /**
      * Get Relationships
-     * @param policyId
+     * @param ref
      * @param refId
      */
-    async getRelationships(policyId: string, refId: any): Promise<VcDocumentCollection> {
+    private async getRelationships(ref: AnyBlockType, refId: any): Promise<VcDocumentCollection> {
         try {
-            return await PolicyUtils.getRelationships(policyId, refId);
+            return await PolicyUtils.getRelationships(ref, ref.policyId, refId);
         } catch (error) {
-            const ref = PolicyComponentsUtils.GetBlockRef(this);
-            ref.error(error.message);
+            ref.error(PolicyUtils.getErrorMessage(error));
             throw new BlockActionError('Invalid relationships', ref.blockType, ref.uuid);
         }
     }
@@ -111,16 +100,13 @@ export class ExternalDataBlock {
     /**
      * Get Schema
      */
-    async getSchema(): Promise<Schema> {
+    private async getSchema(): Promise<Schema> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (!ref.options.schema) {
             return null;
         }
         if (!this.schema) {
-            const schema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.schema,
-                topicId: ref.topicId
-            });
+            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
             this.schema = schema ? new Schema(schema) : null;
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
@@ -137,7 +123,7 @@ export class ExternalDataBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    async receiveData(data: any) {
+    async receiveData(data: IPolicyDocument) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         let verify: boolean;
         try {
@@ -148,43 +134,50 @@ export class ExternalDataBlock {
                 verify = await VCHelper.verifyVC(data.document);
             }
         } catch (error) {
-            ref.error(`Verify VC: ${error.message}`)
+            ref.error(`Verify VC: ${PolicyUtils.getErrorMessage(error)}`)
             verify = false;
         }
-        const docOwner = await this.users.getUserById(data.owner);
 
-        const documentRef = await this.getRelationships(ref.policyId, data.ref);
+        let user: PolicyUser = null;
+        if (data.owner) {
+            user = new PolicyUser(data.owner, !!ref.dryRun);
+            if (data.group) {
+                const group = await ref.databaseServer.getUserInGroup(ref.policyId, data.owner, data.group);
+                user.setGroup(group);
+            } else {
+                const groups = await ref.databaseServer.getGroupsByUser(ref.policyId, data.owner);
+                for (const group of groups) {
+                    if (group.active !== false) {
+                        user.setGroup(group);
+                    }
+                }
+            }
+        }
 
+        const docOwner = await PolicyUtils.getHederaAccount(ref, data.owner);
+        const documentRef = await this.getRelationships(ref, data.ref);
         const schema = await this.getSchema();
         const vc = VcDocument.fromJsonTree(data.document);
         const accounts = PolicyUtils.getHederaAccounts(vc, docOwner.hederaAccountId, schema);
 
-        const doc = PolicyUtils.createVCRecord(
-            ref.policyId,
-            ref.tag,
-            ref.options.entityType,
-            vc,
-            {
-                owner: data.owner,
-                hederaStatus: DocumentStatus.NEW,
-                signature: (verify ?
-                    DocumentSignature.VERIFIED :
-                    DocumentSignature.INVALID),
-                schema: ref.options.schema,
-                accounts
-            },
-            documentRef
-        );
+        let doc = PolicyUtils.createVC(ref, user, vc);
+        doc.type = ref.options.entityType;
+        doc.schema = ref.options.schema;
+        doc.accounts = accounts;
+        doc.signature = (verify ?
+            DocumentSignature.VERIFIED :
+            DocumentSignature.INVALID);
+        doc = PolicyUtils.setDocumentRef(doc, documentRef);
 
         const state = { data: doc };
 
-        const valid = await this.validateDocuments(null, state);
+        const valid = await this.validateDocuments(user, state);
         if (!valid) {
             throw new BlockActionError('Invalid document', ref.blockType, ref.uuid);
         }
 
-        ref.triggerEvents(PolicyOutputEventType.RunEvent, null, state);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, state);
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
     }
 
     /**
@@ -200,17 +193,14 @@ export class ExternalDataBlock {
                     return;
                 }
 
-                const schema = await getMongoRepository(SchemaCollection).findOne({
-                    iri: ref.options.schema,
-                    topicId: ref.topicId
-                });
+                const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
                 if (!schema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                     return;
                 }
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

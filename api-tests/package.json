@@ -1,6 +1,6 @@
 {
   "name": "api-tests",
-  "version": "1.2.1",
+  "version": "2.4.0",
   "description": "API Tests",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "tree-kill": "^1.2.2"
   },
   "dependencies": {
-    "axios": "^0.25.0"
+    "axios": "^0.25.0",
+    "dotenv": "^16.0.1"
   }
 }

@@ -16,10 +16,12 @@ export class DocumentViewComponent implements OnInit {
     @Input('hide-fields') hideFields!: { [x: string]: boolean };
     @Input('type') type!: 'VC' | 'VP';
 
-    subjects: any[] = []
+    subjects: any[] = [];
     proofJson!: string;
     schemaMap: any = {};
     loading: number = 0;
+    isIssuerObject: boolean = false;
+    issuerOptions: any[] = [];
 
     constructor(
         private schemaService: SchemaService,
@@ -29,10 +31,18 @@ export class DocumentViewComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.issuerOptions = [];
         this.proofJson = this.document.proof
             ? JSON.stringify(this.document.proof, null, 4)
             : "";
-
+        this.isIssuerObject = typeof this.document.issuer === 'object';
+        if (this.isIssuerObject) {
+            for (const key in this.document.issuer) {
+                if (key !== 'id') {
+                    this.issuerOptions.push([key, this.document.issuer[key]]);
+                }
+            }
+        }
         switch (this.type) {
             case 'VC':
                 if (Object.getPrototypeOf(this.document.credentialSubject) === Object.prototype) {
@@ -62,7 +72,7 @@ export class DocumentViewComponent implements OnInit {
     loadSchema(type: string) {
         if (type) {
             this.schemaService.getSchemasByType(type).subscribe((result) => {
-                if(result) {
+                if (result) {
                     this.schemaMap[type] = new Schema(result);
                 } else {
                     this.schemaMap[type] = null;

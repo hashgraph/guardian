@@ -1,7 +1,7 @@
-import { IAuthUser } from '@guardian/common';
 import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
 import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
 import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Datasource block decorator
@@ -65,7 +65,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param paginationData
              * @protected
              */
-            protected async getGlobalSources(user: IAuthUser, paginationData: any) {
+            protected async getGlobalSources(user: IPolicyUser, paginationData: any) {
                 const dynFilters = {};
                 for (const child of this.children) {
                     if (child.blockClassName === 'DataSourceAddon') {
@@ -84,7 +84,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param paginationData
              * @protected
              */
-            protected async getSources(user: IAuthUser, globalFilters: any, paginationData: any): Promise<any[]> {
+            protected async getSources(user: IPolicyUser, globalFilters: any, paginationData: any): Promise<any[]> {
                 let data = [];
                 for (const child of this.children) {
                     if (child.blockClassName === 'SourceAddon') {

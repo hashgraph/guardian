@@ -1,8 +1,6 @@
-import { MongoRepository } from 'typeorm';
 import { Log } from '@entity/log';
-import { MessageBrokerChannel, MessageResponse, MessageError } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, DataBaseHelper } from '@guardian/common';
 import { MessageAPI, ILog, IGetLogsMessage, IGetLogsResponse, IGetLogAttributesMessage, LogType, ExternalMessageEvents } from '@guardian/interfaces';
-
 /**
  * Logegr API
  * @param channel
@@ -10,7 +8,7 @@ import { MessageAPI, ILog, IGetLogsMessage, IGetLogsResponse, IGetLogAttributesM
  */
 export async function loggerAPI(
     channel: MessageBrokerChannel,
-    logRepository: MongoRepository<Log>
+    logRepository: DataBaseHelper<Log>
 ): Promise<void> {
     /**
      * Add log message
@@ -52,14 +50,12 @@ export async function loggerAPI(
                 filters.datetime.$lt = new Date(filters.datetime.$lt);
             }
             const pageParameters = msg && msg.pageParameters || {};
-            const allFilters = {
-                where: filters,
-                order: {
-                    datetime: msg.sortDirection && msg.sortDirection.toUpperCase() || 'DESC'
-                },
-                ...pageParameters
-            };
-            const logs = await logRepository.find(allFilters as any);
+            const logs = await logRepository.find(filters, {
+                    orderBy: {
+                        datetime: msg.sortDirection && msg.sortDirection.toUpperCase() || 'DESC'
+                    },
+                    ...pageParameters
+            });
             const totalCount = await logRepository.count(filters as any);
             return new MessageResponse({
                 logs,
@@ -82,7 +78,7 @@ export async function loggerAPI(
         try {
             const nameFilter = `.*${msg.name || ''}.*`;
             const existingAttributes = msg.existingAttributes || [];
-            const attrCursor = await logRepository.aggregate([
+            const aggregateAttrResult = await logRepository.aggregate([
                 { $project: { attributes: '$attributes' } },
                 { $unwind: { path: '$attributes' } },
                 { $match: { attributes: { $regex: nameFilter, $options: 'i' } } },
@@ -92,9 +88,7 @@ export async function loggerAPI(
                 { $limit: 20 },
                 { $group: { _id: null, uniqueValues: { $addToSet: '$uniqueValues' } } }
             ]);
-            const attrObject = await attrCursor.next();
-            attrCursor.close();
-            return new MessageResponse(attrObject?.uniqueValues?.sort() || []);
+            return new MessageResponse(aggregateAttrResult[0].uniqueValues?.sort() || []);
         }
         catch (error) {
             return new MessageError<string>(error.toString());

@@ -23,18 +23,30 @@ export class RolesBlockComponent implements OnInit {
     content: string | null = null;
 
     roles?: string[];
+    groups?: string[];
     title?: any;
     description?: any;
     roleForm: FormGroup;
+    type: any = 'new';
+
+    params: any;
+    inviteRole: string = '';
+    isGroup: boolean = false;
+
+    policyName: string = '';
+    groupName: string = '';
+    groupLabel: string = '';
 
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         private fb: FormBuilder
-        ) {
+    ) {
         this.roleForm = fb.group({
-            role: ['', Validators.required],
+            roleOrGroup: ['', Validators.required],
+            invitation: [''],
+            groupLabel: [''],
         });
     }
 
@@ -42,12 +54,16 @@ export class RolesBlockComponent implements OnInit {
         if (!this.static) {
             this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
+        this.params = this.policyHelper.subscribe(this.onUpdateParams.bind(this));
         this.loadData();
     }
 
     ngOnDestroy(): void {
         if (this.socket) {
             this.socket.unsubscribe();
+        }
+        if (this.params) {
+            this.params.unsubscribe();
         }
     }
 
@@ -80,9 +96,27 @@ export class RolesBlockComponent implements OnInit {
         if (data) {
             const uiMetaData = data.uiMetaData || {};
 
+            this.groups = data.groups;
             this.roles = data.roles;
             this.title = uiMetaData.title;
             this.description = uiMetaData.description;
+            this.isGroup = !!(this.groups && this.groups.length);
+
+            const invitation = this.policyHelper.getParams('invitation');
+            if (invitation) {
+                this.type = 'invite';
+                this.roleForm = this.fb.group({
+                    roleOrGroup: [''],
+                    groupLabel: [''],
+                    invitation: [invitation, Validators.required],
+                });
+            } else {
+                this.roleForm = this.fb.group({
+                    roleOrGroup: ['', Validators.required],
+                    groupLabel: this.isGroup ? ['', Validators.required] : [''],
+                    invitation: [''],
+                });
+            }
 
             this.isActive = true;
         } else {
@@ -93,13 +127,67 @@ export class RolesBlockComponent implements OnInit {
 
     onSubmit() {
         if (this.roleForm.valid) {
-            const data = this.roleForm.value;
+            const value = this.roleForm.value;
+            let data: any;
+            if (this.type === 'invite') {
+                data = { invitation: value.invitation };
+            } else if (this.isGroup) {
+                data = { group: value.roleOrGroup, label: value.groupLabel };
+            } else {
+                data = { role: value.roleOrGroup };
+            }
+            this.loading = true;
             this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-                this.loading = false;
+                setTimeout(() => {
+                    this.loading = false;
+                }, 1000);
             }, (e) => {
                 console.error(e.error);
                 this.loading = false;
             });
+        }
+    }
+
+    onChange(event: any) {
+        this.type = event.value;
+        this.inviteRole = '';
+        this.policyName = '';
+        this.groupName = '';
+        this.groupLabel = '';
+        if (this.type === 'new') {
+            this.roleForm = this.fb.group({
+                roleOrGroup: ['', Validators.required],
+                groupLabel: this.isGroup ? ['', Validators.required] : [''],
+                invitation: [''],
+            });
+        } else {
+            this.roleForm = this.fb.group({
+                roleOrGroup: [''],
+                groupLabel: [''],
+                invitation: ['', Validators.required],
+            });
+        }
+    }
+
+    onUpdateParams() {
+        // const invitation = this.policyHelper.getParams('invitation');
+        // debugger;
+    }
+
+    onParse(event: any) {
+        if (event) {
+            try {
+                const json = JSON.parse(atob(event));
+                this.inviteRole = json.role || '';
+                this.policyName = json.policyName || '';
+                this.groupName = json.name || '';
+                this.groupLabel = json.label || '';
+            } catch (error) {
+                this.inviteRole = '';
+                this.policyName = '';
+                this.groupName = '';
+                this.groupLabel = '';
+            }
         }
     }
 }

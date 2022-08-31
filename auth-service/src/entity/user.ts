@@ -1,73 +1,66 @@
-import {BeforeInsert, Column, Entity, ObjectIdColumn} from 'typeorm';
-import {IUser, UserRole} from '@guardian/interfaces';
+import { Entity, Property, Enum, BeforeCreate, Unique } from '@mikro-orm/core';
+import { IUser, UserRole } from '@guardian/interfaces';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * User collection
  */
 @Entity()
-export class User implements IUser {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
-
+@Unique({ properties: ['username'], options: { partialFilterExpression: { username: { $type: 'string' }}}})
+@Unique({ properties: ['did'], options: { partialFilterExpression: { did: { $type: 'string' }}}})
+export class User extends BaseEntity implements IUser {
     /**
      * Username
      */
-    @Column({
-        unique: true
-    })
-    username: string;
+    @Property({ nullable: true })
+    username?: string;
 
     /**
      * Password hash
      */
-    @Column()
-    password: string;
+    @Property({ nullable: true })
+    password?: string;
 
     /**
      * User DID
      */
-    @Column({
-        unique: false
-    })
-    did: string;
+    @Property({ nullable: true })
+    did?: string;
 
     /**
      * Parent user
      */
-    @Column()
-    parent: string;
+    @Property({ nullable: true })
+    parent?: string;
 
     /**
      * Wallet token
      */
-    @Column()
-    walletToken: string;
+    @Property({ nullable: true })
+    walletToken?: string;
 
     /**
      * Hedera account ID
      */
-    @Column()
-    hederaAccountId: string;
+    @Property({ nullable: true })
+    hederaAccountId?: string;
 
     /**
      * User role
      */
-    @Column()
-    role: UserRole;
+    @Enum({ nullable: true})
+    role?: UserRole;
 
     /**
      * Policy roles
      */
-    @Column()
-    policyRoles: any;
+    @Property({ nullable: true })
+    policyRoles?: any;
 
     /**
      * Set defaults
      */
-    @BeforeInsert()
+    @BeforeCreate()
     setInitState() {
         this.role = this.role || UserRole.USER;
     }

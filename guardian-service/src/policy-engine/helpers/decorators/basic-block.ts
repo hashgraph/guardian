@@ -1,16 +1,16 @@
 import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-default-options';
 import { EventConfig } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
-import { ExternalMessageEvents, PolicyRole } from '@guardian/interfaces';
+import { ExternalMessageEvents, PolicyRole, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { getMongoRepository } from 'typeorm';
-import { BlockState } from '@entity/block-state';
-import deepEqual from 'deep-equal';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
-import { IAuthUser, ExternalEventChannel, Logger } from '@guardian/common';
+import { ExternalEventChannel, Logger } from '@guardian/common';
+import { DatabaseServer } from '@database-modules';
+import deepEqual from 'deep-equal';
+import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Basic block decorator
@@ -99,6 +99,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             protected logger: Logger;
             /**
+             * Database instance
+             * @protected
+             */
+            protected databaseServer: DatabaseServer;
+            /**
              * Policy id
              */
             public policyId: string;
@@ -127,6 +132,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public actions: any[];
             /**
+             * Dry-run
+             */
+            private _dryRun: string;
+            /**
              * Block class name
              */
             public readonly blockClassName = 'BasicBlock';
@@ -148,7 +157,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     defaultOptions.blockType, defaultOptions.commonBlock,
                     tag, active, permissions, _uuid, parent, _options
                 );
+                this._dryRun = null;
                 this.logger = new Logger();
+                this.databaseServer = new DatabaseServer(this.dryRun);
 
                 if (this.parent) {
                     this.parent.registerChild(this as any as IPolicyBlock);
@@ -162,6 +173,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
                 this.actions.push([PolicyInputEventType.RunEvent, this.runAction]);
                 this.actions.push([PolicyInputEventType.RefreshEvent, this.refreshAction]);
+            }
+
+            /**
+             * Dry Run id
+             */
+            public get dryRun(): string {
+                return this._dryRun;
             }
 
             /**
@@ -179,6 +197,20 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public get events(): EventConfig[] {
                 return this.options.events || [];
+            }
+
+            /**
+             * If policy contain multiple groups
+             */
+            public get isMultipleGroups(): boolean {
+                if (
+                    this.policyInstance &&
+                    this.policyInstance.policyGroups &&
+                    this.policyInstance.policyGroups.length
+                ) {
+                    return true;
+                }
+                return false;
             }
 
             /**
@@ -267,7 +299,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param data
              */
-            public triggerEvents(output: PolicyOutputEventType, user?: IAuthUser, data?: any): void {
+            public triggerEvents(output: PolicyOutputEventType, user?: IPolicyUser, data?: any): void {
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
                         link.run(user, data);
@@ -281,7 +313,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param data
              */
-            public triggerEvent(event: any, user?: IAuthUser, data?: any): void {
+            public triggerEvent(event: any, user?: IPolicyUser, data?: any): void {
                 console.error('triggerEvent');
             }
 
@@ -332,22 +364,26 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param tag
              */
-            public async updateBlock(state: any, user: IAuthUser, tag: string) {
+            public async updateBlock(state: any, user: IPolicyUser, tag: string) {
                 await this.saveState();
+                const users: { [x: string]: IPolicyUser } = {};
                 if (!this.options.followUser) {
-                    const allUsers = await PolicyComponentsUtils.GetAllRegisteredUsers(this.policyId)
-                    for (const [did, role] of allUsers) {
-                        if (this.permissions.includes(role)) {
-                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, { did } as any, tag);
+                    const allUsers = await this.databaseServer.getAllPolicyUsers(this.policyId);
+                    for (const userRole of allUsers) {
+                        if (this.permissions.includes(userRole.role)) {
+                            users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
                         } else if (this.permissions.includes('ANY_ROLE')) {
-                            PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, { did } as any, tag);
+                            users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
                         }
                     }
                     if (this.permissions.includes('OWNER') || this.permissions.includes('ANY_ROLE')) {
-                        PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, { did: this.policyOwner } as any, tag);
+                        users[this.policyOwner] = new PolicyUser(this.policyOwner);
                     }
                 } else {
-                    PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, user, tag);
+                    users[user.did] = user;
+                }
+                for (const item of Object.values(users)) {
+                    PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, item, tag);
                 }
             }
 
@@ -356,10 +392,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param state
              * @return {boolean} - true if state was changed
              */
-            public updateDataState(user: IAuthUser, state: any): boolean {
-                this.oldDataState[user.did] = this.currentDataState[user.did];
-                this.currentDataState[user.did] = { state };
-                return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
+            public updateDataState(user: IPolicyUser, state: any): boolean {
+                this.oldDataState[user.id] = this.currentDataState[user.id];
+                this.currentDataState[user.id] = { state };
+                return !deepEqual(this.currentDataState[user.id], this.oldDataState[user.id], {
                     strict: true
                 })
             }
@@ -375,17 +411,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (this.blockType === 'policyRolesBlock') {
                     return true;
                 }
-                return !deepEqual(this.currentDataState[user.did], this.oldDataState[user.did], {
+                return !deepEqual(this.currentDataState[user.id], this.oldDataState[user.id], {
                     strict: true
                 })
-            }
-
-            /**
-             * Set policy id
-             * @param id
-             */
-            public setPolicyId(id: string): void {
-                this.policyId = id;
             }
 
             /**
@@ -398,10 +426,18 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
             /**
              * Set policy instance
+             * @param policyId
              * @param policy
              */
-            public setPolicyInstance(policy: any) {
+            public setPolicyInstance(policyId: string, policy: any) {
                 this.policyInstance = policy;
+                this.policyId = policyId;
+                if (this.policyInstance && this.policyInstance.status === PolicyType.DRY_RUN) {
+                    this._dryRun = this.policyId;
+                } else {
+                    this._dryRun = null;
+                }
+                this.databaseServer.setDryRun(this._dryRun);
             }
 
             /**
@@ -441,7 +477,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param child
              * @param user
              */
-            public isChildActive(child: AnyBlockType, user: IAuthUser): boolean {
+            public isChildActive(child: AnyBlockType, user: IPolicyUser): boolean {
                 if (typeof super.isChildActive === 'function') {
                     return super.isChildActive(child, user);
                 }
@@ -452,7 +488,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Is block active
              * @param user
              */
-            isActive(user: IAuthUser): boolean {
+            isActive(user: IPolicyUser): boolean {
                 if (!this.parent) {
                     return true;
                 }
@@ -465,22 +501,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public async saveState(): Promise<void> {
                 const stateFields = PolicyComponentsUtils.GetStateFields(this);
                 if (stateFields && (Object.keys(stateFields).length > 0) && this.policyId) {
-                    const repo = getMongoRepository(BlockState);
-                    let stateEntity = await repo.findOne({
-                        policyId: this.policyId,
-                        blockId: this.uuid
-                    });
-                    if (!stateEntity) {
-                        stateEntity = repo.create({
-                            policyId: this.policyId,
-                            blockId: this.uuid,
-                        })
-                    }
-
-                    stateEntity.blockState = JSON.stringify(stateFields);
-
-                    await repo.save(stateEntity)
-
+                    await this.databaseServer.saveBlockState(this.policyId, this.uuid, stateFields);
                 }
             }
 
@@ -488,10 +509,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Restore block state
              */
             public async restoreState(): Promise<void> {
-                const stateEntity = await getMongoRepository(BlockState).findOne({
-                    policyId: this.policyId,
-                    blockId: this.uuid
-                });
+                const stateEntity = await this.databaseServer.getBlockState(this.policyId, this.uuid);
 
                 if (!stateEntity) {
                     return;
@@ -515,7 +533,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param role
              * @param user
              */
-            public hasPermission(role: PolicyRole | null, user: IAuthUser | null): boolean {
+            public hasPermission(role: PolicyRole | null, user: IPolicyUser | null): boolean {
                 let hasAccess = false;
                 if (this.permissions.includes('NO_ROLE')) {
                     if (!role && user.did !== this.policyOwner) {
@@ -526,15 +544,30 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     hasAccess = true;
                 }
                 if (this.permissions.includes('OWNER')) {
-                    if (user) {
-                        return user.did === this.policyOwner;
+                    if (user && user.did === this.policyOwner) {
+                        return true;
                     }
                 }
-
                 if (this.permissions.indexOf(role) > -1) {
                     hasAccess = true;
                 }
                 return hasAccess;
+            }
+
+            /**
+             * Check Permission and Active
+             * @param user
+             */
+            public async isAvailable(user: IPolicyUser): Promise<boolean> {
+                if (this.isActive(user) && this.hasPermission(user.role, user)) {
+                    if (this.parent) {
+                        return this.parent.isAvailable(user);
+                    } else {
+                        return true;
+                    }
+                } else {
+                    return false;
+                }
             }
 
             /**
@@ -568,6 +601,15 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Block destructor
              */
             public destroy() {
+                for (const link of this.sourceLinks) {
+                    link.destroy();
+                }
+                for (const link of this.targetLinks) {
+                    link.destroy();
+                }
+                this.sourceLinks.length = 0;
+                this.targetLinks.length = 0;
+
                 if (typeof super.destroy === 'function') {
                     super.destroy();
                 }

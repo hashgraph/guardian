@@ -6,14 +6,14 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.3.1",
-    "@guardian/interfaces": "^2.3.1",
+    "@guardian/common": "^2.4.0",
+    "@guardian/interfaces": "^2.4.0",
+    "@mikro-orm/core": "^5.3.0",
+    "@mikro-orm/mongodb": "^5.3.0",
     "dotenv": "^16.0.0",
     "jsonwebtoken": "^8.5.1",
     "module-alias": "^2.2.2",
-    "mongodb": "4.2.1",
-    "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.2.41"
+    "reflect-metadata": "^0.1.13"
   },
   "description": "",
   "devDependencies": {
@@ -44,5 +44,5 @@
     "start": "node dist/index.js",
     "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
   },
-  "version": "2.3.1"
+  "version": "2.4.0"
 }

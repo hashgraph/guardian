@@ -1,12 +1,19 @@
 <h1 mat-dialog-title>{{this.title}}</h1>
 <div mat-dialog-content class="content">
-    <div>{{this.description}}</div>
-    <div>
+    <div *ngIf="this.description" class="description">
+        {{this.description}}
+    </div>
+    <div *ngIf="this.descriptions" class="description">
+        <div *ngFor="let item of this.descriptions">
+            {{item}}
+        </div>
+    </div>
+    <div class="textarea">
         <mat-form-field appearance="outline">
             <textarea matInput rows="4" [formControl]="value"></textarea>
         </mat-form-field>
     </div>
-    <div mat-dialog-actions>
+    <div class="buttons" mat-dialog-actions>
         <button mat-raised-button color="primary" [disabled]="value.invalid" (click)="onSubmit()">Ok</button>
         <button mat-button type="button" (click)="onNoClick()">Cancel</button>
     </div>

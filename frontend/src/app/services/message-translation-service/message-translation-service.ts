@@ -10,7 +10,6 @@ export class MessageTranslationService {
 
     constructor() {
         this.generateRegExpMap();
-        console.log(this);
     }
 
     private generateRegExpMap(): void {
@@ -31,7 +30,11 @@ export class MessageTranslationService {
 
     }
 
-    public translateMessage(message: string): { wasTranslated: boolean, text: string } {
+    public translateMessage(message: string): {
+        wasTranslated: boolean,
+        text: string,
+        message: string
+    } {
         for (let [re, key] of this.regExpMap.entries()) {
             if (re.test(message)) {
                 let text = this.messagesMap.get(key);
@@ -42,13 +45,15 @@ export class MessageTranslationService {
 
                 return {
                     wasTranslated: true,
-                    text
+                    text,
+                    message
                 };
             }
         }
         return {
             wasTranslated: false,
-            text: message
+            text: message,
+            message
         };
     }
 }

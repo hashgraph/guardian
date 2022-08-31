@@ -19,6 +19,8 @@ export enum PolicyOutputEventType {
     RefreshEvent = 'RefreshEvent',
     DropdownEvent = 'DropdownEvent',
     Confirm = 'Confirm',
+    CreateGroup = 'CreateGroup',
+    JoinGroup = 'JoinGroup'
 }
 
 /**

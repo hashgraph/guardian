@@ -1,22 +1,18 @@
-import { Inject } from '@helpers/decorators/inject';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { DidDocumentStatus, GenerateUUIDv4, Schema } from '@guardian/interfaces';
+import { KeyType } from '@helpers/wallet';
+import { GenerateUUIDv4, Schema } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
-import { IPolicyRequestBlock, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument, IPolicyRequestBlock, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
 import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
-import { IAuthUser } from '@guardian/common';
-import { getMongoRepository } from 'typeorm';
-import { Schema as SchemaCollection } from '@entity/schema';
-import { DidDocument as DidDocumentCollection } from '@entity/did-document';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Request VC document block
@@ -50,13 +46,6 @@ export class RequestVcDocumentBlock {
     public readonly state: { [key: string]: any } = { active: true };
 
     /**
-     * Wallet helper
-     * @private
-     */
-    @Inject()
-    private readonly wallet: Wallet;
-
-    /**
      * Schema
      * @private
      */
@@ -81,7 +70,7 @@ export class RequestVcDocumentBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IAuthUser, state: any): Promise<boolean> {
+    protected async validateDocuments(user: IPolicyUser, state: any): Promise<boolean> {
         const validators = this.getValidators();
         for (const validator of validators) {
             const valid = await validator.run({
@@ -111,14 +100,14 @@ export class RequestVcDocumentBlock {
     @ActionCallback({
         output: PolicyOutputEventType.RefreshEvent
     })
-    async changeActive(user: IAuthUser, active: boolean) {
+    async changeActive(user: IPolicyUser, active: boolean) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
-        if (!this.state.hasOwnProperty(user.did)) {
+        if (!this.state.hasOwnProperty(user.id)) {
             blockState = {};
-            this.state[user.did] = blockState;
+            this.state[user.id] = blockState;
         } else {
-            blockState = this.state[user.did];
+            blockState = this.state[user.id];
         }
         blockState.active = active;
 
@@ -130,13 +119,13 @@ export class RequestVcDocumentBlock {
      * Get active
      * @param user
      */
-    getActive(user: IAuthUser) {
+    getActive(user: IPolicyUser) {
         let blockState: any;
-        if (!this.state.hasOwnProperty(user.did)) {
+        if (!this.state.hasOwnProperty(user.id)) {
             blockState = {};
-            this.state[user.did] = blockState;
+            this.state[user.id] = blockState;
         } else {
-            blockState = this.state[user.did];
+            blockState = this.state[user.id];
         }
         if (blockState.active === undefined) {
             blockState.active = true;
@@ -150,10 +139,7 @@ export class RequestVcDocumentBlock {
     async getSchema(): Promise<Schema> {
         if (!this.schema) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-            const schema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.schema,
-                topicId: ref.topicId
-            });
+            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
             this.schema = schema ? new Schema(schema) : null;
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
@@ -166,7 +152,7 @@ export class RequestVcDocumentBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IAuthUser): Promise<any> {
+    async getData(user: IPolicyUser): Promise<any> {
         const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
@@ -188,15 +174,14 @@ export class RequestVcDocumentBlock {
 
     /**
      * Get Relationships
-     * @param policyId
+     * @param ref
      * @param refId
      */
-    async getRelationships(policyId: string, refId: any): Promise<VcDocumentCollection> {
+    private async getRelationships(ref: AnyBlockType, refId: any): Promise<VcDocumentCollection> {
         try {
-            return await PolicyUtils.getRelationships(policyId, refId);
+            return await PolicyUtils.getRelationships(ref, ref.policyId, refId);
         } catch (error) {
-            const ref = PolicyComponentsUtils.GetBlockRef(this);
-            ref.error(error.message);
+            ref.error(PolicyUtils.getErrorMessage(error));
             throw new BlockActionError('Invalid relationships', ref.blockType, ref.uuid);
         }
     }
@@ -209,7 +194,7 @@ export class RequestVcDocumentBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async setData(user: IAuthUser, _data: any): Promise<any> {
+    async setData(user: IPolicyUser, _data: IPolicyDocument): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         ref.log(`setData`);
 
@@ -225,11 +210,10 @@ export class RequestVcDocumentBlock {
         try {
             await this.changeActive(user, false);
 
-            const userHederaAccount = user.hederaAccountId;
-            const userHederaKey = await this.wallet.getKey(user.walletToken, KeyType.KEY, user.did);
+            const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
 
             const document = _data.document;
-            const documentRef = await this.getRelationships(ref.policyId, _data.ref);
+            const documentRef = await this.getRelationships(ref, _data.ref);
 
             const credentialSubject = document;
             const schemaIRI = ref.options.schema;
@@ -237,8 +221,10 @@ export class RequestVcDocumentBlock {
 
             const schema = await this.getSchema();
 
-            const id = await this.generateId(idType, user, userHederaAccount, userHederaKey);
-            const VCHelper = new VcHelper();
+            const id = await this.generateId(
+                idType, user, hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey
+            );
+            const _vcHelper = new VcHelper();
 
             if (id) {
                 credentialSubject.id = id;
@@ -250,26 +236,30 @@ export class RequestVcDocumentBlock {
 
             credentialSubject.policyId = ref.policyId;
 
-            const res = await VCHelper.verifySubject(credentialSubject);
+            if (ref.dryRun) {
+                _vcHelper.addDryRunContext(credentialSubject);
+            }
+
+            const res = await _vcHelper.verifySubject(credentialSubject);
+
             if (!res.ok) {
                 throw new BlockActionError(JSON.stringify(res.error), ref.blockType, ref.uuid);
             }
 
-            const vc = await VCHelper.createVC(user.did, userHederaKey, credentialSubject);
-            const accounts = PolicyUtils.getHederaAccounts(vc, userHederaAccount, schema);
-            const item = PolicyUtils.createVCRecord(
-                ref.policyId,
-                ref.tag,
-                null,
-                vc,
-                {
-                    type: schemaIRI,
-                    owner: user.did,
-                    schema: schemaIRI,
-                    accounts
-                },
-                documentRef
-            )
+            const groupContext = await PolicyUtils.getGroupContext(ref, user);
+            const vc = await _vcHelper.createVC(
+                user.did,
+                hederaAccount.hederaAccountKey,
+                credentialSubject,
+                groupContext
+            );
+            const accounts = PolicyUtils.getHederaAccounts(vc, hederaAccount.hederaAccountId, schema);
+
+            let item = PolicyUtils.createVC(ref, user, vc);
+            item.type = schemaIRI;
+            item.schema = schemaIRI;
+            item.accounts = accounts;
+            item = PolicyUtils.setDocumentRef(item, documentRef);
 
             const state = { data: item };
 
@@ -282,7 +272,7 @@ export class RequestVcDocumentBlock {
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
         } catch (error) {
-            ref.error(`setData: ${error.message}`);
+            ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             await this.changeActive(user, true);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
@@ -297,14 +287,14 @@ export class RequestVcDocumentBlock {
      * @param userHederaAccount
      * @param userHederaKey
      */
-    async generateId(idType: string, user: any, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
+    async generateId(idType: string, user: IPolicyUser, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (idType === 'UUID') {
                 return GenerateUUIDv4();
             }
             if (idType === 'DID') {
-                const topic = await PolicyUtils.getTopic('root', null, null, ref);
+                const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);
 
                 const didObject = DIDDocument.create(null, topic.topicId);
                 const did = didObject.getDid();
@@ -314,22 +304,18 @@ export class RequestVcDocumentBlock {
                 const message = new DIDMessage(MessageAction.CreateDID);
                 message.setDocument(didObject);
 
-                const client = new MessageServer(userHederaAccount, userHederaKey);
+                const client = new MessageServer(userHederaAccount, userHederaKey, ref.dryRun);
                 const messageResult = await client
                     .setTopicObject(topic)
                     .sendMessage(message);
 
-                const doc = getMongoRepository(DidDocumentCollection).create({
-                    did,
-                    document,
-                    status: DidDocumentStatus.CREATE,
-                    messageId: messageResult.getId(),
-                    topicId: messageResult.getTopicId()
-                });
+                const item = PolicyUtils.createDID(ref, user, did, document);
+                item.messageId = messageResult.getId();
+                item.topicId = messageResult.getTopicId();
 
-                await getMongoRepository(DidDocumentCollection).save(doc);
+                await ref.databaseServer.saveDid(item);
 
-                await this.wallet.setKey(user.walletToken, KeyType.KEY, did, key);
+                await PolicyUtils.setAccountKey(ref, user.did, KeyType.KEY, did, key);
                 return did;
             }
             if (idType === 'OWNER') {
@@ -337,7 +323,7 @@ export class RequestVcDocumentBlock {
             }
             return undefined;
         } catch (error) {
-            ref.error(`generateId: ${idType} : ${error.message}`);
+            ref.error(`generateId: ${idType} : ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
     }
@@ -358,26 +344,20 @@ export class RequestVcDocumentBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                 return;
             }
-            const schema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.schema,
-                topicId: ref.topicId
-            });
+            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
             if (!schema) {
                 resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                 return;
             }
             if (ref.options.presetSchema) {
-                const presetSchema = await getMongoRepository(SchemaCollection).findOne({
-                    iri: ref.options.presetSchema,
-                    topicId: ref.topicId
-                });
+                const presetSchema = await ref.databaseServer.getSchemaByIRI(ref.options.presetSchema, ref.topicId);
                 if (!presetSchema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
                     return;
                 }
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

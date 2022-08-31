@@ -152,7 +152,8 @@ export class PolicyMessage extends Message {
             throw new Error('Invalid message type')
         }
 
-        const message = new PolicyMessage(json.type, json.action);
+        let message = new PolicyMessage(json.type, json.action);
+        message = Message._fromMessageObject(message, json);
         message._id = json.id;
         message._status = json.status;
         message.uuid = json.uuid;

@@ -1,0 +1,46 @@
+{
+  "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+  "dependencies": {
+    "@guardian/common": "^2.4.0",
+    "@guardian/interfaces": "^2.4.0",
+    "@hashgraph/sdk": "^2.15.0",
+    "@transmute/credentials-context": "^0.7.0-unstable.60",
+    "@transmute/did-context": "^0.7.0-unstable.60",
+    "@transmute/ed25519-signature-2018": "^0.7.0-unstable.60",
+    "@transmute/json-web-signature": "^0.7.0-unstable.60",
+    "@transmute/jsonld-schema": "^0.7.0-unstable.60",
+    "@transmute/security-context": "^0.7.0-unstable.60",
+    "@transmute/vc.js": "^0.7.0-unstable.60",
+    "axios": "^0.25.0",
+    "dotenv": "^16.0.0",
+    "module-alias": "^2.2.2",
+    "reflect-metadata": "^0.1.13"
+  },
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^17.0.13",
+    "chai": "4.3.4",
+    "mocha": "^9.2.0",
+    "mocha-junit-reporter": "^2.0.2",
+    "nodemon": "^2.0.12",
+    "rewire": "^6.0.0",
+    "tslint": "^6.1.3",
+    "typescript": "^4.5.5"
+  },
+  "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "name": "worker-service",
+  "scripts": {
+    "build": "tsc",
+    "debug": "nodemon dist/index.js",
+    "dev:docker": "nodemon .",
+    "dev": "tsc -w",
+    "lint": "tslint --config ../tslint.json --project .",
+    "start": "node dist/index.js"
+  },
+  "version": "2.4.0"
+}

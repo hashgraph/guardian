@@ -1,2 +1,2 @@
-export const OPERATOR_ID = '0.0.30858115';
-export const OPERATOR_KEY = '302e020100300506032b65700422042003b7b031bc884d72ad265b1d0c2f0410e9d5d02984c025f0ecc07bb88d5bfa0c';
+export const OPERATOR_ID = '...';
+export const OPERATOR_KEY = '...';

@@ -15,7 +15,11 @@ import { SchemaMessage } from './schema-message';
 import { MessageAction } from './message-action';
 import { VPMessage } from './vp-message';
 import { TransactionLogger } from '../transaction-logger';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
+import { DatabaseServer } from '@database-modules';
+import { Workers } from '@helpers/workers';
+import { Environment } from '../environment';
+import { MessageMemo } from '../memo-mappings/message-memo';
 
 /**
  * Message server
@@ -44,8 +48,61 @@ export class MessageServer {
      */
     private static lang: string;
 
-    constructor(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
-        this.client = new HederaSDKHelper(operatorId, operatorKey);
+    /**
+     * Dry-run
+     * @private
+     */
+    private readonly dryRun: string = null;
+
+    /**
+     * Client options
+     * @private
+     */
+    private readonly clientOptions: any;
+
+    constructor(
+        operatorId: string | AccountId | null,
+        operatorKey: string | PrivateKey | null,
+        dryRun: string = null
+    ) {
+
+        this.clientOptions = {operatorId, operatorKey, dryRun};
+
+        this.dryRun = dryRun || null;
+        this.client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
+    }
+
+    /**
+     * Save File
+     * @param file
+     * @virtual
+     * @private
+     */
+    private async addFile(file: ArrayBuffer) {
+        if (this.dryRun) {
+            const id = GenerateUUIDv4();
+            const result = {
+                cid: id,
+                url: id
+            }
+            await TransactionLogger.virtualFileLog(this.dryRun, file, result);
+            return result
+        }
+        return IPFS.addFileAsync(file);
+    }
+
+    /**
+     * Get File
+     * @param cid
+     * @param responseType
+     * @virtual
+     * @private
+     */
+    private async getFile(cid: string, responseType: 'json' | 'raw' | 'str') {
+        if (this.dryRun) {
+            throw new Error('Unable to get virtual file');
+        }
+        return IPFS.getFileAsync(cid, responseType);
     }
 
     /**
@@ -83,11 +140,11 @@ export class MessageServer {
         /**
          * Topic ID
          */
-        topicId: string,
+        topicId?: string,
         /**
          * Key
          */
-        key: string
+        key?: string
     }): MessageServer {
         this.submitKey = topic.key;
         this.topicId = topic.topicId;
@@ -123,11 +180,11 @@ export class MessageServer {
     private async sendIPFS<T extends Message>(message: T): Promise<T> {
         const time = await this.messageStartLog('IPFS');
         const buffers = await message.toDocuments();
-        const urls = [];
-        for (const buffer of buffers) {
-            const result = await IPFS.addFile(buffer);
-            urls.push(result);
-        }
+
+        const promises = buffers.map(buffer => {
+            return this.addFile(buffer);
+        });
+        const urls = await Promise.all(promises);
         await this.messageEndLog(time, 'IPFS');
         message.setUrls(urls);
         return message;
@@ -140,11 +197,10 @@ export class MessageServer {
      */
     private async loadIPFS<T extends Message>(message: T): Promise<T> {
         const urls = message.getUrls();
-        const documents = [];
-        for (const url of urls) {
-            const document = await IPFS.getFile(url.cid, message.responseType);
-            documents.push(document);
-        }
+        const promises = urls.map(url => {
+            return this.getFile(url.cid, message.responseType);
+        });
+        const documents = await Promise.all(promises);
         message = message.loadDocuments(documents) as T;
         return message;
     }
@@ -154,14 +210,26 @@ export class MessageServer {
      * @param message
      * @private
      */
-    private async sendHedera<T extends Message>(message: T): Promise<T> {
+    private async sendHedera<T extends Message>(message: T, memo?: string): Promise<T> {
         if (!this.topicId) {
             throw new Error('Topic not set');
         }
         message.setLang(MessageServer.lang);
         const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
-        const id = await this.client.submitMessage(this.topicId, buffer, this.submitKey);
+        const id = await new Workers().addTask({
+            type: WorkerTaskType.SEND_HEDERA,
+            data: {
+                topicId: this.topicId,
+                buffer,
+                submitKey: this.submitKey,
+                clientOptions: this.clientOptions,
+                network: Environment.network,
+                localNodeAddress: Environment.localNodeAddress,
+                localNodeProtocol: Environment.localNodeProtocol,
+                memo:  memo || MessageMemo.getMessageMemo(message)
+            }
+        }, 0);
         await this.messageEndLog(time, 'Hedera');
         message.setId(id);
         message.setTopicId(this.topicId);
@@ -274,11 +342,14 @@ export class MessageServer {
      * @param message
      * @param sendToIPFS
      */
-    public async sendMessage<T extends Message>(message: T, sendToIPFS: boolean = true): Promise<T> {
+    public async sendMessage<T extends Message>(message: T, sendToIPFS: boolean = true, memo?: string): Promise<T> {
         if (sendToIPFS) {
             message = await this.sendIPFS(message);
         }
-        message = await this.sendHedera(message);
+        message = await this.sendHedera(message, memo);
+        if(this.dryRun) {
+            await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
+        }
         return message;
     }
 
@@ -288,9 +359,17 @@ export class MessageServer {
      * @param type
      */
     public async getMessage<T extends Message>(id: string, type?: MessageType): Promise<T> {
-        let message = await this.getTopicMessage<T>(id, type);
-        message = await this.loadIPFS(message);
-        return message as T;
+        if(this.dryRun) {
+            const message =  await DatabaseServer.getVirtualMessage(this.dryRun, id);
+            const result = MessageServer.fromMessage<T>(message.document, type);
+            result.setId(message.messageId);
+            result.setTopicId(message.topicId);
+            return result;
+        } else {
+            let message = await this.getTopicMessage<T>(id, type);
+            message = await this.loadIPFS(message);
+            return message as T;
+        }
     }
 
     /**
@@ -300,8 +379,33 @@ export class MessageServer {
      * @param action
      */
     public async getMessages<T extends Message>(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<T[]> {
-        const messages = await this.getTopicMessages(topicId, type, action);
-        return messages as T[];
+        if(this.dryRun) {
+            const messages = await DatabaseServer.getVirtualMessages(this.dryRun, topicId);
+            const result: T[] = [];
+            for (const message of messages) {
+                try {
+                    const item = MessageServer.fromMessage<T>(message.document);
+                    let filter = true;
+                    if (type) {
+                        filter = filter && item.type === type;
+                    }
+                    if (action) {
+                        filter = filter && item.action === action;
+                    }
+                    if (filter) {
+                        item.setId(message.messageId);
+                        item.setTopicId(message.topicId);
+                        result.push(item);
+                    }
+                } catch (error) {
+                    continue;
+                }
+            }
+            return result;
+        } else {
+            const messages = await this.getTopicMessages(topicId, type, action);
+            return messages as T[];
+        }
     }
 
     /**

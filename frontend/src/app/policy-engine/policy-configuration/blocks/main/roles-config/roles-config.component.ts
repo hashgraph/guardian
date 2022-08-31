@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
  * Settings for block of 'policyRolesBlock' type.

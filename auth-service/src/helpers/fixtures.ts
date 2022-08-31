@@ -1,13 +1,13 @@
 import crypto from 'crypto';
-import {User} from '@entity/user';
-import {getMongoRepository} from 'typeorm';
-import {UserRole} from '@guardian/interfaces';
+import { User } from '@entity/user';
+import { UserRole } from '@guardian/interfaces';
+import { DataBaseHelper } from '@guardian/common';
 
 /**
  * Create default users
  */
 export async function fixtures(): Promise<void> {
-    const usersRepository = getMongoRepository(User);
+    const usersRepository = new DataBaseHelper(User);
     // Fixture user
     if (await usersRepository.count() === 0) {
         let user = usersRepository.create({

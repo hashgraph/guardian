@@ -6,19 +6,18 @@ import {
     MessageAPI,
     SchemaEntity
 } from '@guardian/interfaces';
-import { MongoRepository } from 'typeorm';
 import {
     VpDocument as HVpDocument
 } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger, DataBaseHelper } from '@guardian/common';
 
 /**
  * Get field
  * @param vcDocument
  * @param name
  */
-function getField(vcDocument: VcDocument | VpDocument, name: string): any {
+function getField(vcDocument: VcDocument, name: string): any {
     if (
         vcDocument &&
         vcDocument.document &&
@@ -34,9 +33,13 @@ function getField(vcDocument: VcDocument | VpDocument, name: string): any {
  * Get issuer
  * @param vcDocument
  */
-function getIssuer(vcDocument: VcDocument | VpDocument): string {
+function getIssuer(vcDocument: VcDocument): string {
     if (vcDocument && vcDocument.document) {
-        return vcDocument.document.issuer;
+        if (typeof vcDocument.document.issuer === 'string') {
+            return vcDocument.document.issuer;
+        } else {
+            return vcDocument.document.issuer.id || null;
+        }
     }
     return null;
 }
@@ -65,9 +68,9 @@ function checkPolicy(vcDocument: VcDocument, policyId: string) {
  */
 export async function trustChainAPI(
     channel: MessageBrokerChannel,
-    didDocumentRepository: MongoRepository<DidDocument>,
-    vcDocumentRepository: MongoRepository<VcDocument>,
-    vpDocumentRepository: MongoRepository<VpDocument>
+    didDocumentRepository: DataBaseHelper<DidDocument>,
+    vcDocumentRepository: DataBaseHelper<VcDocument>,
+    vpDocumentRepository: DataBaseHelper<VpDocument>
 ): Promise<void> {
     /**
      * Search parent by VC or VP Document
@@ -82,8 +85,8 @@ export async function trustChainAPI(
             return;
         }
 
-        const issuer = getIssuer(vc);
-        const schema = getField(vc, 'type');
+        const issuer = getIssuer(vc as VcDocument);
+        const schema = getField(vc as VcDocument, 'type');
 
         if (map[vc.hash]) {
             return;

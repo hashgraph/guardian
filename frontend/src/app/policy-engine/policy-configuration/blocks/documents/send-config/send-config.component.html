@@ -87,6 +87,14 @@
         </td>
     </tr>
 
+    <tr *ngIf="block.dataSource=='hedera'" class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Memo</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="block.memo" [readonly]="readonly">
+        </td>
+    </tr>
+
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'optionGroup')" [attr.collapse]="propHidden.optionGroup">
             <mat-icon>

@@ -41,7 +41,7 @@
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Issuer: Name</div>
-                            <div class="vp-field-value" [title]="vpMint.issuer">{{userMap[vpMint.issuer]}}</div>
+                            <div class="vp-field-value" [title]="getIssuer(vpMint)">{{userMap[getIssuer(vpMint)]}}</div>
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Mint date</div>
@@ -69,7 +69,7 @@
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Issuer: Name</div>
-                            <div class="vp-field-value" [title]="vpPolicy.issuer">{{userMap[vpPolicy.issuer]}}</div>
+                            <div class="vp-field-value" [title]="getIssuer(vpPolicy)">{{userMap[getIssuer(vpPolicy)]}}</div>
                         </div>
                     </div>
                 </div>
@@ -105,7 +105,7 @@
                             <div class="parties">
                                 <div class="parties-label">Parties:</div>
                                 <div class="parties-value">
-                                    <div class="partie" [title]="item.document.issuer">{{getParties(item)}}</div>
+                                    <div class="partie" [title]="getIssuer(item.document)">{{getParties(item)}}</div>
                                 </div>
                             </div>
                             <div class="chain-document">

@@ -11,7 +11,8 @@
     "guardian-service",
     "ipfs-client",
     "logger-service",
-    "mrv-sender"
+    "mrv-sender",
+    "worker-service"
   ],
-  "version": "2.3.1"
+  "version": "2.4.0"
 }

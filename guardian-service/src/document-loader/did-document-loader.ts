@@ -1,6 +1,6 @@
 import { DidDocument } from '@entity/did-document';
+import { DataBaseHelper } from '@guardian/common';
 import { DidRootKey, DocumentLoader, IDocumentFormat } from '@hedera-modules';
-import { getMongoRepository } from 'typeorm';
 
 /**
  * DID Documents Loader
@@ -32,7 +32,7 @@ export class DIDDocumentLoader extends DocumentLoader {
      */
     public async getDocument(iri: string): Promise<any> {
         const did = DidRootKey.create(iri).getController();
-        const didDocuments = await getMongoRepository(DidDocument).findOne({ did });
+        const didDocuments = await new DataBaseHelper(DidDocument).findOne({ did });
         if (didDocuments) {
             return didDocuments.document;
         }

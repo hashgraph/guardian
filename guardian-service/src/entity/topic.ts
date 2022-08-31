@@ -1,70 +1,64 @@
 import { TopicType } from '@guardian/interfaces';
-import { Column, Entity, ObjectIdColumn } from 'typeorm';
+import { Entity, Property, Enum, Unique } from '@mikro-orm/core';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * Topics collection
  */
 @Entity()
-export class Topic {
-    /**
-     * Tokens collection
-     */
-    @ObjectIdColumn()
-    id: string;
-
+@Unique({ properties: ['topicId'], options: { partialFilterExpression: { topicId: { $type: 'string' }}}})
+export class Topic extends BaseEntity {
     /**
      * Topic id
      */
-    @Column({
-        unique: true
-    })
-    topicId: string;
+    @Property({ nullable: true })
+    topicId?: string;
 
     /**
      * Topic name
      */
-    @Column()
-    name: string;
+    @Property({ nullable: true })
+    name?: string;
 
     /**
      * Topic description
      */
-    @Column()
-    description: string;
+    @Property({ nullable: true })
+    description?: string;
 
     /**
      * Topic owner
      */
-    @Column()
-    owner: string;
+    @Property({ nullable: true })
+    owner?: string;
 
     /**
      * Topic type
      */
-    @Column()
-    type: TopicType;
+    @Enum()
+    type?: TopicType;
 
     /**
      * Topic key
      */
-    @Column()
-    key: string;
+    @Property({ nullable: true })
+    key?: string;
 
     /**
      * Parent
      */
-    @Column()
-    parent: string;
+    @Property({ nullable: true })
+    parent?: string;
 
     /**
      * Policy id
      */
-    @Column()
-    policyId: string;
+    @Property({ nullable: true })
+    policyId?: string;
 
     /**
      * Policy UUID
      */
-    @Column()
-    policyUUID: string;
+    @Property({ nullable: true })
+    policyUUID?: string;
 }

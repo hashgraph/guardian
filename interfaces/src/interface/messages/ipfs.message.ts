@@ -42,6 +42,12 @@ export interface IAddFileMessage {
 export interface IIpfsSettingsResponse {
     /**
      * NFT api key
+     * @deprecated 2022-10-08
      */
     nftApiKey: string;
+
+    /**
+     * IPFS Storage API KEY
+     */
+    ipfsStorageApiKey?: string
 }

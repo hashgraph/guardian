@@ -112,20 +112,20 @@ export class PolicyValidationResultsContainer {
 
     /**
      * Add permission
-     * @param permission
+     * @param role
      */
-    public addPermission(permission: string): void {
-        this.permissions.push(permission);
+    public addPermission(role: string): void {
+        this.permissions.push(role);
     }
 
     /**
      * Add permissions
-     * @param permissions
+     * @param roles
      */
-    public addPermissions(permissions: string[]): void {
-        if (permissions) {
-            for (const permission of permissions) {
-                this.permissions.push(permission);
+    public addPermissions(roles: string[]): void {
+        if (roles) {
+            for (const role of roles) {
+                this.addPermission(role);
             }
         }
     }

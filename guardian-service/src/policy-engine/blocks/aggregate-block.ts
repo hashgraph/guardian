@@ -1,12 +1,9 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { getMongoRepository } from 'typeorm';
 import { AggregateVC } from '@entity/aggregate-documents';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { Users } from '@helpers/users';
-import { Inject } from '@helpers/decorators/inject';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
@@ -39,13 +36,6 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 })
 export class AggregateBlock {
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
      * Tick cron
      * @event PolicyEventType.TimerEvent
      * @param {IPolicyEvent} event
@@ -59,42 +49,39 @@ export class AggregateBlock {
         if (ref.options.aggregateType !== 'period') {
             return;
         }
-        const users = event.data || [];
+        const ids = event.data || [];
 
-        ref.log(`tick scheduler, ${users.length}`);
+        ref.log(`tick scheduler, ${ids.length}`);
 
-        const repository = getMongoRepository(AggregateVC);
-        const rawEntities = await repository.find({
-            policyId: ref.policyId,
-            blockId: ref.uuid
-        });
+        const rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid);
 
         const map = new Map<string, AggregateVC[]>();
         const removeMsp: AggregateVC[] = [];
-        for (const did of users) {
-            map.set(did, []);
+        for (const id of ids) {
+            map.set(id, []);
         }
+
         for (const element of rawEntities) {
-            const owner = element.owner;
-            if (map.has(owner)) {
-                map.get(owner).push(element);
+            const id = PolicyUtils.getScopeId(element);
+            if (map.has(id)) {
+                map.get(id).push(element);
             } else {
                 removeMsp.push(element);
             }
         }
 
         if (removeMsp.length) {
-            await repository.remove(removeMsp);
+            await ref.databaseServer.removeAggregateDocuments(removeMsp);
         }
 
-        for (const did of users) {
-            const user = await this.users.getUserById(did);
-            const documents = map.get(did);
+        for (const id of ids) {
+            const documents = map.get(id);
             if (documents.length) {
-                await repository.remove(documents);
+                await ref.databaseServer.removeAggregateDocuments(documents);
             }
             if (documents.length || ref.options.emptyData) {
                 const state = { data: documents };
+                const user = PolicyUtils.getDocumentOwner(ref, documents[0]);
                 ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
             }
@@ -155,15 +142,10 @@ export class AggregateBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    private async tickAggregate(ref: AnyBlockType, owner: string) {
+    private async tickAggregate(ref: AnyBlockType, owner: string, group: string) {
         const { expressions, condition } = ref.options;
 
-        const repository = getMongoRepository(AggregateVC);
-        const rawEntities = await repository.find({
-            owner,
-            policyId: ref.policyId,
-            blockId: ref.uuid
-        });
+        const rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid, owner, group);
 
         const scopes: any[] = [];
         for (const doc of rawEntities) {
@@ -179,8 +161,8 @@ export class AggregateBlock {
         }
 
         if (result === true) {
-            const user = await this.users.getUserById(owner);
-            await repository.remove(rawEntities);
+            const user = PolicyUtils.getPolicyUser(ref, owner, group);
+            await ref.databaseServer.removeAggregateDocuments(rawEntities);
             const state = { data: rawEntities };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
@@ -192,23 +174,9 @@ export class AggregateBlock {
      * @param ref
      * @param doc
      */
-    async saveDocuments(ref: AnyBlockType, doc: any): Promise<void> {
-        const vc = VcDocument.fromJsonTree(doc.document);
-        const repository = getMongoRepository(AggregateVC);
-
-        const item: AggregateVC = {
-            ...PolicyUtils.createVCRecord(
-                ref.policyId,
-                null,
-                null,
-                vc,
-                doc
-            ),
-            blockId: ref.uuid
-        };
-
-        const newVC = repository.create(item);
-        await repository.save(newVC);
+    async saveDocuments(ref: AnyBlockType, doc: IPolicyDocument): Promise<void> {
+        const item = PolicyUtils.cloneVC(ref, doc);
+        await ref.databaseServer.createAggregateDocuments(item, ref.uuid);
     }
 
     /**
@@ -216,24 +184,27 @@ export class AggregateBlock {
      * @event PolicyInputEventType.RunEvent
      * @param {IPolicyEvent} event
      */
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const { aggregateType } = ref.options;
 
-        const docs: any | any[] = event.data.data;
+        const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
         let owner: string = null;
+        let group: string = null;
         if (Array.isArray(docs)) {
             for (const doc of docs) {
                 owner = doc.owner;
+                group = doc.group;
                 await this.saveDocuments(ref, doc);
             }
         } else {
             owner = docs.owner;
+            group = docs.group;
             await this.saveDocuments(ref, docs);
         }
 
         if (aggregateType === 'cumulative') {
-            this.tickAggregate(ref, owner).then();
+            this.tickAggregate(ref, owner, group).then();
         }
     }
 
@@ -271,7 +242,7 @@ export class AggregateBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "aggregateType" must be one of period, cumulative');
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

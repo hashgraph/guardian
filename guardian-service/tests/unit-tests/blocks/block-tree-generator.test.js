@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const moduleAlias = require('module-alias');
 const rewire = require("rewire");
 
@@ -9,7 +12,8 @@ moduleAlias.addAliases({
   "@auth": process.cwd() + '/dist' + "/auth",
   "@policy-engine": process.cwd() + '/dist' + "/policy-engine",
   "@hedera-modules": process.cwd() + '/dist' + "/hedera-modules/index",
-  "@document-loader": process.cwd() + '/dist' + "/document-loader"
+  "@document-loader": process.cwd() + '/dist' + "/document-loader",
+  "@database-modules": process.cwd() + '/dist' + "/database-modules"
 });
 
 const {Inject} = rewire('../../../dist/helpers/decorators/inject');
