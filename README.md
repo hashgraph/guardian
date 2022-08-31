@@ -127,7 +127,7 @@ Install, configure and start all the prerequisites, then build and start each co
    npm run build
    ```
 
-4. From the **logger-service** folder
+4. From the **worker-service** folder
 
    To build the service:
 
@@ -142,7 +142,7 @@ Install, configure and start all the prerequisites, then build and start each co
    npm start
    ```
 
-5. From the **auth-service** folder
+5. From the **logger-service** folder
 
    To build the service:
 
@@ -157,7 +157,7 @@ Install, configure and start all the prerequisites, then build and start each co
    npm start
    ```
 
-6. From the **ipfs-client** folder
+6. From the **auth-service** folder
 
    To build the service:
 
@@ -172,7 +172,22 @@ Install, configure and start all the prerequisites, then build and start each co
    npm start
    ```
 
-7. From the **guardian-service** folder
+7. From the **ipfs-client** folder
+
+   To build the service:
+
+   ```shell
+   npm install
+   npm run build
+   ```
+
+   To start the service:
+
+   ```shell
+   npm start
+   ```
+
+8. From the **guardian-service** folder
 
    To build the service:
 
@@ -187,7 +202,7 @@ Install, configure and start all the prerequisites, then build and start each co
    npm start
    ```
 
-8. From the **api-gateway** folder
+9. From the **api-gateway** folder
 
    To build the service:
 
@@ -202,22 +217,22 @@ Install, configure and start all the prerequisites, then build and start each co
    npm start
    ```
 
-9. From the **mrv-sender** folder
+10. From the **mrv-sender** folder
 
-   To build the service:
+    To build the service:
 
-   ```shell
-   npm install
-   npm run build
-   ```
+    ```shell
+    npm install
+    npm run build
+    ```
 
-   To start the service (found on <http://localhost:3005>):
+    To start the service (found on <http://localhost:3005>):
 
-   ```shell
-   npm start
-   ```
+    ```shell
+    npm start
+    ```
 
-10. From the **frontend** folder
+11. From the **frontend** folder
 
     To build the service:
 
