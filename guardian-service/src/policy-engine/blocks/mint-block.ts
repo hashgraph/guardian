@@ -145,10 +145,10 @@ export class MintBlock {
         const vpMessageId = vpMessageResult.getId();
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DataTypes.MINT;
-        vcDocument.messageId = vpMessageId;
-        vcDocument.topicId = vpMessageResult.getTopicId();
+        vpDocument.messageId = vpMessageId;
+        vpDocument.topicId = vpMessageResult.getTopicId();
 
-        const savedVp = await ref.databaseServer.saveVP(vcDocument);
+        const savedVp = await ref.databaseServer.saveVP(vpDocument);
 
         await PolicyUtils.mint(
             ref,

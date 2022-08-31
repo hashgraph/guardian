@@ -17,7 +17,7 @@ import { Environment } from './helpers/environment';
 function rejectTimeout(t: number): Promise<void> {
     return new Promise((_, reject) => {
         setTimeout(() => {
-            reject('Timeout error');
+            reject(new Error('Timeout error'));
         }, t);
     })
 }
@@ -201,10 +201,14 @@ export class Worker {
                 ]);
                 resolve(result as ITaskResult);
             } catch (e) {
-                resolve({
+                const error = {
                     id: this.currentTaskId,
-                    error: e.message
-                });
+                    error: 'Unknown error'
+                }
+                if (e) {
+                    error.error = e.message || e;
+                }
+                reject(error);
             }
         })
     }
