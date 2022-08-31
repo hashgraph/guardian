@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const {
     HederaSDKHelper
 } = require('../../../guardian-service/dist/hedera-modules/hedera-sdk-helper');

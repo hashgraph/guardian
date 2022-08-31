@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const moduleAlias = require("module-alias");
 moduleAlias.addAliases({
   "@api": process.cwd() + '/dist' + "/api",
