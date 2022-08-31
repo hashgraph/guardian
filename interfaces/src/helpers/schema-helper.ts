@@ -463,28 +463,26 @@ export class SchemaHelper {
             document = JSON.parse(document) as ISchemaDocument;
         }
 
-        const { version, uuid } = SchemaHelper.parseRef(document.$id);
-        let { previousVersion } = SchemaHelper.parseSchemaComment(document.$comment);
+        const { uuid } = SchemaHelper.parseRef(document.$id);
+        const { previousVersion } = SchemaHelper.parseSchemaComment(document.$comment);
 
-        let _version = data.version || version;
         const _owner = data.creator || data.owner;
         const _uuid = data.uuid || uuid;
 
         if (!ModelHelper.checkVersionFormat(newVersion)) {
             throw new Error('Invalid version format');
         }
-        if (ModelHelper.versionCompare(newVersion, _version) <= 0) {
-            throw new Error('Version must be greater than ' + _version);
-        }
-        previousVersion = _version;
-        _version = newVersion;
 
-        data.version = _version;
+        if (ModelHelper.versionCompare(newVersion, previousVersion) <= 0) {
+            throw new Error('Version must be greater than ' + previousVersion);
+        }
+
+        data.version = newVersion;
         data.owner = _owner;
         data.creator = _owner;
         data.uuid = _uuid;
 
-        const type = SchemaHelper.buildType(_uuid, _version);
+        const type = SchemaHelper.buildType(_uuid, newVersion);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
         document.$comment = SchemaHelper.buildSchemaComment(

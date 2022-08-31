@@ -215,22 +215,6 @@ singleSchemaRoute.get('/:schemaId', async (req: AuthenticatedRequest, res: Respo
  */
 export const schemaAPI = Router();
 
-/**
- * @deprecated 2022-08-04
- */
-schemaAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
-    try {
-        const user = req.user;
-        const newSchema = req.body;
-        fromOld(newSchema);
-        const schemas = await createSchema(newSchema, user.did);
-        res.status(201).json(toOld(schemas));
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
-    }
-});
-
 schemaAPI.post('/:topicId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
@@ -450,46 +434,6 @@ schemaAPI.put('/push/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGI
     });
 
     res.status(200).send({ taskId, expectation });
-});
-
-/**
- * @deprecated 2022-08-04
- */
-schemaAPI.post('/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
-    try {
-        const user = req.user;
-        const guardians = new Guardians();
-        const messageId = req.body.messageId as string;
-        await guardians.importSchemasByMessages([messageId], req.user.did, null);
-        const { schemas, count } = await guardians.getSchemasByOwner(user.did);
-        SchemaHelper.updatePermission(schemas, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemas));
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
-    }
-});
-
-/**
- * @deprecated 2022-08-04
- */
-schemaAPI.post('/import/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
-    try {
-        const user = req.user;
-        const guardians = new Guardians();
-        const zip = req.body;
-        if (!zip) {
-            throw new Error('file in body is empty');
-        }
-        const files = await parseZipFile(zip);
-        await guardians.importSchemasByFile(files, req.user.did, null);
-        const { schemas, count } = await guardians.getSchemasByOwner(user.did);
-        SchemaHelper.updatePermission(schemas, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemas));
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
-    }
 });
 
 schemaAPI.post('/import/message/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
