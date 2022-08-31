@@ -29,11 +29,11 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * Get block filters
              * @param user
              */
-            public getFilters(user): { [key: string]: string } {
+            public getFilters(user: IPolicyUser): { [key: string]: string } {
                 if (typeof super.getFilters === 'function') {
                     return super.getFilters(user);
                 }
-                return this.filters[user.did];
+                return this.filters[user.id];
             }
 
             /**
@@ -75,11 +75,11 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @protected
              */
-            protected setFilters(filters, user): void {
+            protected setFilters(filters: any, user: IPolicyUser): void {
                 if (typeof super.setFilters === 'function') {
                     super.setFilters(filters, user);
                 } else {
-                    this.filters[user.did] = filters
+                    this.filters[user.id] = filters
                 }
             }
 

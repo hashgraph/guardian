@@ -109,7 +109,8 @@ export async function demoAPI(
             const policies = await new DataBaseHelper(Policy).findAll();
             const result = [];
             for (const p of policies) {
-                const role = await DatabaseServer.getUserRole(p.id.toString(), did);
+                const roles = await DatabaseServer.getUserRole(p.id.toString(), did);
+                const role = roles.map(g => g.role).join(', ');
                 if (role) {
                     result.push({
                         name: p.name,

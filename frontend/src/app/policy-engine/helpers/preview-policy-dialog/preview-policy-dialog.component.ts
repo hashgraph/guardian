@@ -16,7 +16,7 @@ export class PreviewPolicyDialog {
     policy!: any;
     schemas!: string;
     tokens!: string;
-    policyRoles!: string;
+    policyGroups!: string;
     newVersions: any[] = [];
 
     versionOfTopicId: any;
@@ -31,7 +31,17 @@ export class PreviewPolicyDialog {
         if (data.policy) {
             this.newVersions = data.policy.newVersions || [];
             this.policy = data.policy.policy;
-            this.policyRoles = (this.policy.policyRoles || []).join(', ');
+
+            this.policyGroups = '';
+            if (this.policy.policyRoles) {
+                this.policyGroups += this.policy.policyRoles.join(', ');
+            }
+            // if (this.policy.policyGroups) {
+            //     if (this.policyGroups) {
+            //         this.policyGroups += ', ';
+            //     }
+            //     this.policyGroups += this.policy.policyGroups.join(', ');
+            // }
 
             const schemas = data.policy.schemas || [];
             const tokens = data.policy.tokens || [];

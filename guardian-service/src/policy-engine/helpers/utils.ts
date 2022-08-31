@@ -1,13 +1,13 @@
 import { Token } from '@entity/token';
 import { Topic } from '@entity/topic';
-import { HederaSDKHelper, HederaUtils, VcDocument, VcDocument as HVcDocument, TopicHelper } from '@hedera-modules';
+import { HederaSDKHelper, HederaUtils, VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument } from '@hedera-modules';
 import * as mathjs from 'mathjs';
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { ExternalMessageEvents, Schema, TopicType } from '@guardian/interfaces';
+import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
+import { DidDocumentStatus, DocumentSignature, DocumentStatus, ExternalMessageEvents, Schema, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { ExternalEventChannel, IAuthUser } from '@guardian/common';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { TopicId } from '@hashgraph/sdk';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
@@ -19,7 +19,8 @@ export enum DataTypes {
     MRV = 'mrv',
     REPORT = 'report',
     MINT = 'mint',
-    RETIREMENT = 'retirement'
+    RETIREMENT = 'retirement',
+    USER_ROLE = 'user-role'
 }
 
 /**
@@ -391,7 +392,7 @@ export class PolicyUtils {
      * Check Document Ref
      * @param document
      */
-    public static getDocumentRef(document: any) {
+    public static getDocumentRef(document: IPolicyDocument) {
         let item: any = null;
         if (document && document.document) {
             if (document.document.credentialSubject) {
@@ -617,10 +618,30 @@ export class PolicyUtils {
      * @param ref
      * @param did
      */
-    public static async getPolicyUser(ref: AnyBlockType, did: string): Promise<IPolicyUser> {
-        return {
-            did,
-            virtual: !!ref.dryRun
+    public static getPolicyUser(ref: AnyBlockType, did: string, uuid: string): IPolicyUser {
+        const user = new PolicyUser(did, !!ref.dryRun);
+        return user.setGroup({ role: null, uuid });
+    }
+
+    /**
+     * Get Policy User
+     * @param ref
+     * @param document
+     */
+    public static getDocumentOwner(ref: AnyBlockType, document: IPolicyDocument): IPolicyUser {
+        const user = new PolicyUser(document.owner, !!ref.dryRun);
+        return user.setGroup({ role: null, uuid: document.group });
+    }
+
+    /**
+     * Get Scope Id
+     * @param document
+     */
+    public static getScopeId(document: IPolicyDocument): string {
+        if (document.group) {
+            return `${document.group}:${document.owner}`;
+        } else {
+            return document.owner;
         }
     }
 
@@ -795,19 +816,190 @@ export class PolicyUtils {
 
     /**
      * Get error message
+     * @param error
      */
-     public static getErrorMessage(error: string | Error | any): string {
-        if(typeof error === 'string') {
+    public static getErrorMessage(error: string | Error | any): string {
+        if (typeof error === 'string') {
             return error;
-        } else if(error.message) {
+        } else if (error.message) {
             return error.message;
-        } else if(error.error) {
+        } else if (error.error) {
             return error.error;
-        } else if(error.name) {
+        } else if (error.name) {
             return error.name;
         } else {
             console.log(error);
             return 'Unidentified error';
+        }
+    }
+
+    /**
+     * Create Document
+     * @param ref
+     * @param owner
+     * @param document
+     */
+    public static createPolicyDocument(ref: AnyBlockType, owner: IPolicyUser, document: any): IPolicyDocument {
+        document.policyId = ref.policyId;
+        document.tag = ref.tag;
+        document.owner = owner.did;
+        document.group = owner.group;
+        return document;
+    }
+
+    /**
+     * Create DID Document
+     * @param ref
+     * @param owner
+     * @param document
+     */
+    public static createDID(ref: AnyBlockType, owner: IPolicyUser, did: string, document: any): IPolicyDocument {
+        return {
+            policyId: ref.policyId,
+            tag: ref.tag,
+            did,
+            document,
+            owner: owner.did,
+            group: owner.group,
+            status: DidDocumentStatus.CREATE,
+            messageId: null,
+            topicId: null,
+        };
+    }
+
+    /**
+     * Create VP Document
+     * @param ref
+     * @param owner
+     * @param document
+     */
+    public static createVP(ref: AnyBlockType, owner: IPolicyUser, document: VpDocument): IPolicyDocument {
+        return {
+            policyId: ref.policyId,
+            tag: ref.tag,
+            type: null,
+            hash: document.toCredentialHash(),
+            document: document.toJsonTree(),
+            owner: owner.did,
+            group: owner.group,
+            status: DocumentStatus.NEW,
+            signature: DocumentSignature.NEW,
+            messageId: null,
+            topicId: null,
+        };
+    }
+
+    /**
+     * Create VC Document
+     * @param ref
+     * @param owner
+     * @param document
+     */
+    public static createVC(ref: AnyBlockType, owner: IPolicyUser, document: VcDocument): IPolicyDocument {
+        return {
+            policyId: ref.policyId,
+            tag: ref.tag,
+            type: null,
+            hash: document.toCredentialHash(),
+            document: document.toJsonTree(),
+            owner: owner.did,
+            group: owner.group,
+            assignedTo: null,
+            option: null,
+            schema: null,
+            hederaStatus: DocumentStatus.NEW,
+            signature: DocumentSignature.NEW,
+            messageId: null,
+            topicId: null,
+            relationships: null,
+            comment: null,
+            accounts: null,
+        };
+    }
+
+    /**
+     * Clone DID Document
+     * @param ref
+     * @param document
+     */
+    public static cloneVC(ref: AnyBlockType, document: IPolicyDocument): VcDocumentCollection {
+        return {
+            policyId: ref.policyId,
+            tag: document.tag || null,
+            type: document.type || null,
+            hash: document.hash,
+            document: document.document,
+            owner: document.owner,
+            group: document.group,
+            assignedTo: document.assignedTo || null,
+            option: document.option || null,
+            schema: document.schema || null,
+            hederaStatus: document.hederaStatus || DocumentStatus.NEW,
+            signature: document.signature || DocumentSignature.NEW,
+            messageId: document.messageId || null,
+            topicId: document.topicId || null,
+            relationships: document.relationships || null,
+            comment: document.comment || null,
+            accounts: document.accounts || null,
+        } as VcDocumentCollection;
+    }
+
+    /**
+     * Update Document Ref
+     * @param ref
+     * @param owner
+     * @param document
+     */
+    public static setDocumentRef(document: IPolicyDocument, ref: IPolicyDocument): IPolicyDocument {
+        if (!document.relationships || !document.relationships.length) {
+            document.relationships = null;
+        }
+
+        if (ref && ref.messageId) {
+            document.relationships = [ref.messageId];
+        }
+
+        if (ref && ref.accounts) {
+            document.accounts = Object.assign({}, ref.accounts, document.accounts);
+        }
+
+        return document;
+    }
+
+    /**
+     * Get Group VC by User
+     * @param ref
+     * @param user
+     */
+    public static async getGroupContext(ref: AnyBlockType, user: IPolicyUser): Promise<any> {
+        if (!ref.isMultipleGroups) {
+            return null;
+        }
+        const group = await ref.databaseServer.getUserInGroup(ref.policyId, user.did, user.group);
+        if (group && group.messageId) {
+            const groupSchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.ISSUER);
+            return {
+                groupId: group.messageId,
+                context: groupSchema.contextURL,
+                type: groupSchema.name
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get document issuer (DID)
+     * @param document
+     */
+    public static getDocumentIssuer(document: any): string {
+        if (document) {
+            if (typeof document.issuer === 'string') {
+                return document.issuer;
+            } else {
+                return document.issuer.id || null;
+            }
+        } else {
+            return null
         }
     }
 }

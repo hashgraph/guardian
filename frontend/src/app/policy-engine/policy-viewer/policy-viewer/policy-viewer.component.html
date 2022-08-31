@@ -2,7 +2,7 @@
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
-    
+
     <ng-container *ngIf="!isConfirmed">
         <div class="not-exist">
             Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
@@ -68,9 +68,17 @@
                 <span *ngIf="policyInfo && policyInfo.description">: {{policyInfo.description}}</span>
                 <span *ngIf="policyInfo && policyInfo.version">({{policyInfo.version}})</span>
             </a>
-            <span *ngIf="policyInfo && policyInfo.userRoles" class="current-user-role">
-                Roles: {{policyInfo.userRoles.join(', ')}}
-            </span>
+            <ng-container *ngIf="policyInfo">
+                <span *ngIf="!groups.length" class="current-user-role">
+                    Role: {{policyInfo.userRoles.join(', ')}}
+                </span>
+                <span *ngIf="isMultipleGroups" class="current-user-group" [matMenuTriggerFor]="group">
+                    Group: {{userGroup}} / Role: {{userRole}}
+                    <div class="expand-group">
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </div>
+                </span>
+            </ng-container>
         </div>
 
         <div class="policy-container" [attr.policy-status]="policyInfo.status"
@@ -132,7 +140,35 @@
         <div class="debug-user-did">{{item.hederaAccountId}}</div>
         <div class="debug-user-did">{{item.did}}</div>
     </div>
-    <!-- <div class="new-debug-user" (click)="createVirtualUser()">
-        Create virtual user
-    </div> -->
+</mat-menu>
+
+<mat-menu #group="matMenu">
+    <div class="group-header">
+        Select Group
+    </div>
+    <div class="group-container">
+        <div *ngFor="let item of groups" class="user-group" (click)="setGroup(item)" [attr.active]="item.active">
+            <div class="user-group-header">
+                <span *ngIf="item.groupLabel">{{item.groupLabel}}</span>
+                <span *ngIf="!item.groupLabel">{{item.uuid}}</span>
+            </div>
+            <div class="user-group-value">
+                <span>Group: </span><span>{{item.groupName}}</span>
+            </div>
+            <div class="user-group-value">
+                <span>Role: </span><span>{{item.role}}</span>
+            </div>
+        </div>
+    </div>
+    <div class="user-group user-group-default" (click)="setGroup(null)">
+        <div class="user-group-header">
+            Default state
+        </div>
+        <div class="user-group-value">
+            <span>Group: </span><span>Not Set</span>
+        </div>
+        <div class="user-group-value">
+            <span>Role: </span><span>Not Set</span>
+        </div>
+    </div>
 </mat-menu>

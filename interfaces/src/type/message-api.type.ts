@@ -14,9 +14,6 @@ export enum MessageAPI {
     LOAD_DID_DOCUMENT = 'load-did-document',
     LOAD_SCHEMA_DOCUMENT = 'load-schema-document',
     LOAD_SCHEMA_CONTEXT = 'load-schema-context',
-    SET_APPROVE_DOCUMENTS = 'set-approve-documents',
-    GET_APPROVE_DOCUMENTS = 'get-approve-documents',
-    UPDATE_APPROVE_DOCUMENTS = 'update-approve-documents',
     GET_VP_DOCUMENTS = 'get-vp-documents',
     GET_CHAIN = 'get-chain',
     SET_VP_DOCUMENT = 'set-vp-document',
@@ -69,7 +66,7 @@ export enum MessageAPI {
     ACTIVE_SCHEMA = 'ACTIVE_SCHEMA',
     GET_SYSTEM_SCHEMA = 'GET_SYSTEM_SCHEMA',
     GET_BALANCE = 'GET_BALANCE',
-    GET_ENVIRONMENT='GET_ENVIRONMENT',
+    GET_ENVIRONMENT = 'GET_ENVIRONMENT',
     UPDATE_TASK_STATUS = 'UPDATE_TASK_STATUS'
 }
 

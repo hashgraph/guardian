@@ -67,7 +67,8 @@ export class BlockTreeGenerator {
             const model = PolicyComponentsUtils.BuildBlockTree(policy, policyId, instancesArray);
 
             if (!skipRegistration) {
-                await PolicyComponentsUtils.RegisterBlockTree(instancesArray)
+                await PolicyComponentsUtils.RegisterPolicyInstance(policyId, policy);
+                await PolicyComponentsUtils.RegisterBlockTree(instancesArray);
                 this.models.set(policy.id.toString(), model as any);
             }
             return model as IPolicyInterfaceBlock;
@@ -118,8 +119,10 @@ export class BlockTreeGenerator {
             policy = arg;
         }
         if (policy) {
-            this.models.delete(policy.id.toString());
-            await PolicyComponentsUtils.UnregisterBlocks(policy.id.toString());
+            const policyId = policy.id.toString()
+            this.models.delete(policyId);
+            await PolicyComponentsUtils.UnregisterBlocks(policyId);
+            await PolicyComponentsUtils.UnregisterPolicy(policyId);
         }
     }
 

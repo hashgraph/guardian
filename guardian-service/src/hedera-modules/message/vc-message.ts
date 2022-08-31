@@ -39,10 +39,10 @@ export class VCMessage extends Message {
     }
 
     /**
-     * Set status
+     * Set Document status
      * @param status
      */
-    public setStatus(status: string): void {
+    public setDocumentStatus(status: string): void {
         this.documentStatus = status;
     }
 
@@ -130,7 +130,8 @@ export class VCMessage extends Message {
             throw new Error('JSON Object is empty');
         }
 
-        const message = new VCMessage(json.action);
+        let message = new VCMessage(json.action);
+        message = Message._fromMessageObject(message, json);
         message._id = json.id;
         message._status = json.status;
         message.issuer = json.issuer;

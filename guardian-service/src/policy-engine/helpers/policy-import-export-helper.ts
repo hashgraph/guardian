@@ -116,7 +116,9 @@ export class PolicyImportExportHelper {
             DatabaseServer.getSystemSchema(SchemaEntity.POLICY),
             DatabaseServer.getSystemSchema(SchemaEntity.MINT_TOKEN),
             DatabaseServer.getSystemSchema(SchemaEntity.MINT_NFTOKEN),
-            DatabaseServer.getSystemSchema(SchemaEntity.WIPE_TOKEN)
+            DatabaseServer.getSystemSchema(SchemaEntity.WIPE_TOKEN),
+            DatabaseServer.getSystemSchema(SchemaEntity.ISSUER),
+            DatabaseServer.getSystemSchema(SchemaEntity.USER_ROLE)
         ]);
 
         for (const schema of schemas) {
@@ -124,18 +126,26 @@ export class PolicyImportExportHelper {
                 throw new Error('One of system schemas is not exist');
             }
         }
-
         return schemas;
     }
 
     /**
      * Import policy
-     * @param policyToImport Policy json
-     * @param policyOwner Policy owner
+     * @param policyToImport
+     * @param policyOwner
+     * @param versionOfTopicId
+     * @param notifier
+     * @param additionalPolicyConfig
      *
      * @returns Policies by owner
      */
-    static async importPolicy(policyToImport: any, policyOwner: string, versionOfTopicId: string, notifier: INotifier, additionalPolicyConfig?: Partial<Policy>): Promise<Policy> {
+    static async importPolicy(
+        policyToImport: any,
+        policyOwner: string,
+        versionOfTopicId: string,
+        notifier: INotifier,
+        additionalPolicyConfig?: Partial<Policy>
+    ): Promise<Policy> {
         const { policy, tokens, schemas } = policyToImport;
 
         delete policy._id;

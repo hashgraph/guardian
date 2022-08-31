@@ -3,7 +3,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyBlock, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { Token as TokenCollection } from '@entity/token';
@@ -64,7 +64,7 @@ export class TokenConfirmationBlock {
      */
     async getData(user: IPolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        const blockState = this.state[user?.did] || {};
+        const blockState = this.state[user?.id] || {};
         const token = await this.getToken();
         const block: any = {
             id: ref.uuid,
@@ -91,7 +91,7 @@ export class TokenConfirmationBlock {
             throw new BlockActionError(`Data is unknown`, ref.blockType, ref.uuid)
         }
 
-        const blockState = this.state[user?.did];
+        const blockState = this.state[user?.id];
         if (!blockState) {
             throw new BlockActionError(`Document not found`, ref.blockType, ref.uuid)
         }
@@ -162,14 +162,15 @@ export class TokenConfirmationBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
 
         const field = ref.options.accountId;
         if (event) {
-            const doc = event.data?.data;
-            const did = event.user?.did;
+            const documents = event.data?.data;
+            const id = event.user?.id;
+            const doc = Array.isArray(documents) ? documents[0] : documents;
 
             let hederaAccountId: string = null;
             if (doc) {
@@ -181,7 +182,7 @@ export class TokenConfirmationBlock {
                     hederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner);
                 }
             }
-            this.state[did] = {
+            this.state[id] = {
                 accountId: hederaAccountId,
                 data: event.data,
                 user: event.user

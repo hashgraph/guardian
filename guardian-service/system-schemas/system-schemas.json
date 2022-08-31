@@ -5,7 +5,7 @@
         "entity": "MINT_NFTOKEN",
         "document": {
             "$id": "#MintNFToken",
-            "$comment": "{ \"term\": \"MintNFToken\", \"@id\": \"undefined#MintNFToken\" }",
+            "$comment": "{ \"term\": \"MintNFToken\", \"@id\": \"#MintNFToken\" }",
             "title": "MintNFToken",
             "description": "MintNFToken",
             "type": "object",
@@ -80,8 +80,8 @@
         "name": "MintToken",
         "entity": "MINT_TOKEN",
         "document": {
-            "$id": "#MintToken&1.0.0",
-            "$comment": "{ \"term\": \"MintToken&1.0.0\", \"@id\": \"undefined#MintToken&1.0.0\" }",
+            "$id": "#MintToken",
+            "$comment": "{ \"term\": \"MintToken\", \"@id\": \"#MintToken\" }",
             "title": "MintToken",
             "description": "MintToken",
             "type": "object",
@@ -153,8 +153,8 @@
         "name": "Policy",
         "entity": "POLICY",
         "document": {
-            "$id": "#Policy&1.0.0",
-            "$comment": "{ \"term\": \"Policy&1.0.0\", \"@id\": \"undefined#Policy&1.0.0\" }",
+            "$id": "#Policy",
+            "$comment": "{ \"term\": \"Policy\", \"@id\": \"#Policy\" }",
             "title": "Policy",
             "description": "Policy",
             "type": "object",
@@ -282,8 +282,8 @@
         "name": "StandardRegistry",
         "entity": "STANDARD_REGISTRY",
         "document": {
-            "$id": "#StandardRegistry&1.0.0",
-            "$comment": "{ \"term\": \"StandardRegistry&1.0.0\", \"@id\": \"undefined#StandardRegistry&1.0.0\" }",
+            "$id": "#StandardRegistry",
+            "$comment": "{ \"term\": \"StandardRegistry\", \"@id\": \"#StandardRegistry\" }",
             "title": "StandardRegistry",
             "description": "StandardRegistry",
             "type": "object",
@@ -362,8 +362,8 @@
         "name": "WipeToken",
         "entity": "WIPE_TOKEN",
         "document": {
-            "$id": "#WipeToken&1.0.0",
-            "$comment": "{ \"term\": \"WipeToken&1.0.0\", \"@id\": \"undefined#WipeToken&1.0.0\" }",
+            "$id": "#WipeToken",
+            "$comment": "{ \"term\": \"WipeToken\", \"@id\": \"#WipeToken\" }",
             "title": "WipeToken",
             "description": "WipeToken",
             "type": "object",
@@ -428,6 +428,161 @@
                 "tokenId"
             ],
             "additionalProperties": false
+        }
+    },
+    {
+        "uuid": "UserRole",
+        "name": "UserRole",
+        "entity": "USER_ROLE",
+        "document": {
+            "$id": "#UserRole",
+            "$comment": "{ \"@id\": \"#UserRole\", \"term\": \"UserRole\" }",
+            "title": "User Role",
+            "description": "User Role",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "role": {
+                    "title": "Role",
+                    "description": "Role",
+                    "readOnly": false,
+                    "type": "string",
+                    "$comment": "{\"term\":\"role\",\"@id\":\"https://www.schema.org/text\"}"
+                },
+                "userId": {
+                    "title": "User DID",
+                    "description": "User DID",
+                    "readOnly": false,
+                    "type": "string",
+                    "$comment": "{\"term\":\"userId\",\"@id\":\"https://www.schema.org/text\"}"
+                },
+                "policyId": {
+                    "title": "Policy ID",
+                    "description": "Policy ID",
+                    "readOnly": false,
+                    "type": "string",
+                    "$comment": "{\"term\":\"policyId\",\"@id\":\"https://www.schema.org/text\"}"
+                },
+                "groupId": {
+                    "title": "Group ID",
+                    "description": "Group ID",
+                    "readOnly": false,
+                    "type": "string",
+                    "$comment": "{\"term\":\"groupId\",\"@id\":\"https://www.schema.org/text\"}"
+                },
+                "groupName": {
+                    "title": "Group Name",
+                    "description": "Group Name",
+                    "readOnly": false,
+                    "type": "string",
+                    "$comment": "{\"term\":\"groupName\",\"@id\":\"https://www.schema.org/text\"}"
+                },
+                "groupOwner": {
+                    "title": "Group Owner",
+                    "description": "Group Owner",
+                    "readOnly": false,
+                    "type": "string",
+                    "$comment": "{\"term\":\"groupOwner\",\"@id\":\"https://www.schema.org/text\"}"
+                },
+                "groupLabel": {
+                    "title": "Group Label",
+                    "description": "Group Label",
+                    "readOnly": false,
+                    "type": "string",
+                    "$comment": "{\"term\":\"groupLabel\",\"@id\":\"https://www.schema.org/text\"}"
+                }
+            },
+            "required": [
+                "role",
+                "userId",
+                "policyId"
+            ],
+            "additionalProperties": false
+        }
+    },
+    {
+        "uuid": "PolicyIssuer",
+        "name": "PolicyIssuer",
+        "entity": "ISSUER",
+        "document": {
+            "$id": "#PolicyIssuer",
+            "$comment": "{ \"@id\": \"#PolicyIssuer\", \"term\": \"PolicyIssuer\" }",
+            "title": "PolicyIssuer",
+            "description": "PolicyIssuer",
+            "type": "object",
+            "properties": {
+                "issuer": {
+                    "title": "Issuer",
+                    "description": "Issuer",
+                    "readOnly": false,
+                    "$ref": "#Issuer",
+                    "$comment": "{\"term\":\"issuer\",\"@id\":\"#Issuer\"}"
+                }
+            },
+            "required": [
+                "issuer"
+            ],
+            "additionalProperties": false,
+            "$defs": {
+                "#Issuer": {
+                    "$id": "#Issuer",
+                    "$comment": "{ \"@id\": \"#Issuer\", \"term\": \"Issuer\" }",
+                    "title": "User Role",
+                    "description": "User Role",
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "title": "id",
+                            "description": "id",
+                            "type": "string",
+                            "$comment": "{\"term\":\"id\",\"@id\":\"@id\"}",
+                            "readOnly": false
+                        },
+                        "group": {
+                            "title": "Group",
+                            "description": "Group",
+                            "type": "string",
+                            "$comment": "{\"term\":\"group\",\"@id\":\"@id\"}",
+                            "readOnly": false
+                        }
+                    },
+                    "required": [
+                        "id"
+                    ],
+                    "additionalProperties": false
+                }
+            }
         }
     }
 ]

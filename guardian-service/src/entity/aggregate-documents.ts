@@ -1,4 +1,4 @@
-import { DocumentSignature, DocumentStatus } from '@guardian/interfaces';
+import { DocumentSignature, DocumentStatus, IVC } from '@guardian/interfaces';
 import { Entity, Property, Enum } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
@@ -29,7 +29,7 @@ export class AggregateVC extends BaseEntity {
      * Document instance
      */
     @Property({ nullable: true })
-    document?: any;
+    document?: IVC;
 
     /**
      * Document hedera status
@@ -113,5 +113,11 @@ export class AggregateVC extends BaseEntity {
      * Hedera Accounts
      */
     @Property({ nullable: true })
-    accounts?: any
+    accounts?: any;
+
+    /**
+     * User group
+     */
+    @Property({ nullable: true })
+    group?: any;
 }

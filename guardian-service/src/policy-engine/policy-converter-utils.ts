@@ -9,7 +9,7 @@ export class PolicyConverterUtils {
     /**
      * Base version
      */
-    public static readonly VERSION = '1.3.0';
+    public static readonly VERSION = '1.4.0';
 
     /**
      * Policy converter

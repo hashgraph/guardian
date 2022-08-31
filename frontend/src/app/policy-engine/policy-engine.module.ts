@@ -64,6 +64,10 @@ import { TokenConfirmationConfigComponent } from './policy-configuration/blocks/
 import { TokenConfirmationBlockComponent } from './policy-viewer/blocks/token-confirmation-block/token-confirmation-block.component';
 import { SaveBeforeDialogComponent } from './helpers/save-before-dialog/save-before-dialog.component';
 import { PoliciesComponent } from './policies/policies.component';
+import { GroupManagerConfigComponent } from './policy-configuration/blocks/main/group-manager-config/group-manager-config.component';
+import { GroupManagerBlockComponent } from './policy-viewer/blocks/group-manager-block/group-manager-block.component';
+import { InviteDialogComponent } from './helpers/invite-dialog/invite-dialog.component';
+import { DocumentPath } from './helpers/document-path/document-path.component';
 
 @NgModule({
     declarations: [
@@ -122,7 +126,11 @@ import { PoliciesComponent } from './policies/policies.component';
         DocumentValidatorConfigComponent,
         TokenConfirmationConfigComponent,
         TokenConfirmationBlockComponent,
-        SaveBeforeDialogComponent
+        SaveBeforeDialogComponent,
+        GroupManagerConfigComponent,
+        GroupManagerBlockComponent,
+        InviteDialogComponent,
+        DocumentPath
     ],
     imports: [
         CommonModule,
@@ -181,7 +189,10 @@ import { PoliciesComponent } from './policies/policies.component';
         TokenActionConfigComponent,
         DocumentValidatorConfigComponent,
         TokenConfirmationConfigComponent,
-        TokenConfirmationBlockComponent
+        TokenConfirmationBlockComponent,
+        GroupManagerConfigComponent,
+        GroupManagerBlockComponent,
+        InviteDialogComponent
     ],
     providers: [
         RegisteredBlocks

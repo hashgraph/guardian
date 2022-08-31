@@ -28,7 +28,7 @@ import {
     TopicHelper
 } from '@hedera-modules'
 import { findAllEntities, replaceAllEntities, SchemaFields } from '@helpers/utils';
-import { IPolicyBlock, IPolicyInterfaceBlock } from './policy-engine.interface';
+import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock } from './policy-engine.interface';
 import { incrementSchemaVersion, findAndPublishSchema, publishSystemSchema, findAndDryRunSchema, deleteSchema } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { VcHelper } from '@helpers/vc-helper';
@@ -40,7 +40,7 @@ import { BlockTreeGenerator } from './block-tree-generator';
 import { Topic } from '@entity/topic';
 import { PolicyConverterUtils } from './policy-converter-utils';
 import { DatabaseServer } from '@database-modules';
-import { IPolicyUser } from './policy-user';
+import { IPolicyUser, PolicyUser } from './policy-user';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from './policy-validation-results-container';
 
@@ -122,14 +122,13 @@ export class PolicyEngineService {
         }
 
         const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(uuid);
-
-        let changed = true;
         if (await block.isAvailable(user)) {
-            if (['interfaceStepBlock', 'interfaceContainerBlock'].includes(block.blockType)) {
+            let changed = true;
+            if (block.blockClassName === 'ContainerBlock') {
                 changed = true;
-            } else if (typeof PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(block).getData === 'function') {
-                const data = await PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(block).getData(user, null, null);
-                changed = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(block).updateDataState(user, data);
+            } else if (typeof block.getData === 'function') {
+                const data = await block.getData(user, null, null);
+                changed = block.updateDataState(user, data);
             }
             if (changed) {
                 await this.channel.request(['api-gateway', 'update-block'].join('.'), {
@@ -166,45 +165,57 @@ export class PolicyEngineService {
      * @param policy
      * @private
      */
-    private async updateUserInfo(user: IAuthUser, policy: Policy) {
+    private async updateUserInfo(user: IPolicyUser, policy: Policy) {
         if (!user || !user.did) {
             return;
         }
 
-        const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
+        const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policy.id.toString());
+        const userGroups = await PolicyComponentsUtils.GetGroups(policyInstance, user);
+
+        let userGroup = userGroups.find(g => g.active !== false);
+        if (!userGroup) {
+            userGroup = userGroups[0];
+        }
+        const userRole = userGroup ? userGroup.role : 'No role';
 
         await this.channel.request(['api-gateway', 'update-user-info'].join('.'), {
             policyId: policy.id.toString(),
             user: {
-                did: user.did,
-                role: user.role,
-                username: user.username,
-                hederaAccountId: user.hederaAccountId
+                did: user.virtual ? policy.owner : user.did,
+                role: user.role
             },
-            userRole
+            userRole,
+            userGroup,
+            userGroups
         });
     }
 
     /**
      * Get user
+     * @param policy
      * @param user
-     * @param policyId
-     * @param dryRun
      * @private
      */
-    private async getUser(user: IUser, policyId: string, dryRun: string): Promise<IPolicyUser> {
-        let userFull: any;
-        if (dryRun) {
+    private async getUser(policy: IPolicyInstance, user: IUser): Promise<IPolicyUser> {
+        const regUser = await this.users.getUser(user.username);
+        if (!regUser || !regUser.did) {
+            throw new Error(`Forbidden`);
+        }
+        const userFull = new PolicyUser(regUser.did);
+        if (policy.dryRun) {
             if (user.role === UserRole.STANDARD_REGISTRY) {
-                userFull = await DatabaseServer.getVirtualUser(policyId);
-                if (!userFull) {
-                    userFull = await this.users.getUser(user.username);
-                }
+                const virtualUser = await DatabaseServer.getVirtualUser(policy.policyId);
+                userFull.setVirtualUser(virtualUser);
             } else {
                 throw new Error(`Forbidden`);
             }
-        } else {
-            userFull = await this.users.getUser(user.username);
+        }
+        const groups = await policy.databaseServer.getGroupsByUser(policy.policyId, userFull.did);
+        for (const group of groups) {
+            if (group.active !== false) {
+                return userFull.setGroup(group);
+            }
         }
         return userFull;
     }
@@ -314,7 +325,7 @@ export class PolicyEngineService {
     /**
      * Clone policy
      */
-     private async clonePolicy(policyId: string, data: any, owner: string, notifier: INotifier): Promise<string> {
+    private async clonePolicy(policyId: string, data: any, owner: string, notifier: INotifier): Promise<string> {
         const logger = new Logger();
         logger.info('Create Policy', ['GUARDIAN_SERVICE']);
 
@@ -404,7 +415,7 @@ export class PolicyEngineService {
         let skipped: number = 0;
         for (const schemaIRI of schemaIRIs) {
             const schema = await incrementSchemaVersion(schemaIRI, owner);
-            if (!schema || schema.status === SchemaStatus.PUBLISHED) {
+            if (schema.status === SchemaStatus.PUBLISHED) {
                 skipped++;
                 continue;
             }
@@ -781,11 +792,7 @@ export class PolicyEngineService {
 
             const result: any = policy;
             if (policy) {
-                if (policy.status === PolicyType.DRY_RUN) {
-                    result.userRoles = await PolicyComponentsUtils.GetVirtualUserRoleList(policy, userDid);
-                } else {
-                    result.userRoles = await PolicyComponentsUtils.GetUserRoleList(policy, userDid);
-                }
+                await PolicyComponentsUtils.GetPolicyInfo(policy, userDid);
             }
 
             return new MessageResponse(result);
@@ -807,7 +814,7 @@ export class PolicyEngineService {
                 const [policies, count] = await DatabaseServer.getPoliciesAndCount(filter, otherOptions);
 
                 for (const policy of policies) {
-                    (policy as any).userRoles = await PolicyComponentsUtils.GetUserRoleList(policy, userDid);
+                    await PolicyComponentsUtils.GetPolicyInfo(policy, userDid);
                 }
 
                 return new MessageResponse({ policies, count });
@@ -1032,8 +1039,9 @@ export class PolicyEngineService {
             try {
                 const { user, policyId } = msg;
 
+                const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
                 const block = this.policyGenerator.getRoot(policyId);
-                const userFull = await this.getUser(user, policyId, block.dryRun);
+                const userFull = await this.getUser(policyInstance, user);
 
                 if (block && (await block.isAvailable(userFull))) {
                     const data = await block.getData(userFull, block.uuid);
@@ -1051,8 +1059,9 @@ export class PolicyEngineService {
             try {
                 const { user, blockId, policyId } = msg;
 
+                const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
                 const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
-                const userFull = await this.getUser(user, policyId, block.dryRun);
+                const userFull = await this.getUser(policyInstance, user);
 
                 if (block && (await block.isAvailable(userFull))) {
                     const data = await block.getData(userFull, blockId, null);
@@ -1070,8 +1079,9 @@ export class PolicyEngineService {
             try {
                 const { user, tag, policyId } = msg;
 
+                const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
                 const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
-                const userFull = await this.getUser(user, policyId, block.dryRun);
+                const userFull = await this.getUser(policyInstance, user);
 
                 if (block && (await block.isAvailable(userFull))) {
                     const data = await block.getData(userFull, block.uuid, null);
@@ -1089,8 +1099,9 @@ export class PolicyEngineService {
             try {
                 const { user, blockId, policyId, data } = msg;
 
+                const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
                 const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
-                const userFull = await this.getUser(user, policyId, block.dryRun);
+                const userFull = await this.getUser(policyInstance, user);
 
                 if (block && (await block.isAvailable(userFull))) {
                     const result = await block.setData(userFull, data);
@@ -1108,8 +1119,9 @@ export class PolicyEngineService {
             try {
                 const { user, tag, policyId, data } = msg;
 
+                const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
                 const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
-                const userFull = await this.getUser(user, policyId, block.dryRun);
+                const userFull = await this.getUser(policyInstance, user);
 
                 if (block && (await block.isAvailable(userFull))) {
                     const result = await block.setData(userFull, data);
@@ -1145,6 +1157,44 @@ export class PolicyEngineService {
                     tmpBlock = tmpBlock.parent;
                 }
                 return new MessageResponse(parents);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.GET_POLICY_GROUPS, async (msg) => {
+            try {
+                const { user, policyId } = msg;
+
+                const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
+                if (!policyInstance.isMultipleGroup) {
+                    return new MessageResponse([]);
+                }
+
+                const userFull = await this.getUser(policyInstance, user);
+                const groups = await PolicyComponentsUtils.GetGroups(policyInstance, userFull);
+
+                return new MessageResponse(groups);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.SELECT_POLICY_GROUP, async (msg) => {
+            try {
+                const { user, policyId, uuid } = msg;
+
+                const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
+                if (!policyInstance.isMultipleGroup) {
+                    throw new Error(`Policy does not contain groups`);
+                }
+
+                const userFull = await this.getUser(policyInstance, user);
+                await PolicyComponentsUtils.SelectGroup(policyInstance, userFull, uuid);
+
+                return new MessageResponse(true);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

@@ -145,7 +145,8 @@ export class TopicMessage extends Message {
             throw new Error('Invalid message type');
         }
 
-        const message = new TopicMessage(json.action);
+        let message = new TopicMessage(json.action);
+        message = Message._fromMessageObject(message, json);
         message._id = json.id;
         message._status = json.status;
         message.name = json.name;

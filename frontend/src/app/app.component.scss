@@ -143,6 +143,18 @@ body {
         margin-right: 8px;
         margin-left: 2px;
     }
+    .g-dialog-title-btn {
+        width: 46px;
+        height: 46px;
+        box-sizing: border-box;
+        position: relative;
+        top: -12px;
+        cursor: pointer;
+        border-radius: 8px;
+        &:hover {
+            background: rgb(0 0 0 / 5%);
+        }
+    }
 }
 
 ::ng-deep body .mat-form-field-wrapper {

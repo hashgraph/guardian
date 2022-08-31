@@ -1,4 +1,4 @@
-import { DocumentSignature, DocumentStatus, IVCDocument } from '@guardian/interfaces';
+import { DocumentSignature, DocumentStatus, IVC, IVCDocument } from '@guardian/interfaces';
 import { Entity, Property, Enum, BeforeCreate, Unique } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
@@ -6,7 +6,7 @@ import { BaseEntity } from '@guardian/common';
  * VC documents collection
  */
 @Entity()
-@Unique({ properties: ['hash'], options: { partialFilterExpression: { hash: { $type: 'string' }}}})
+@Unique({ properties: ['hash'], options: { partialFilterExpression: { hash: { $type: 'string' } } } })
 export class VcDocument extends BaseEntity implements IVCDocument {
     /**
      * Document owner
@@ -30,7 +30,7 @@ export class VcDocument extends BaseEntity implements IVCDocument {
      * Document instance
      */
     @Property({ nullable: true })
-    document?: any;
+    document?: IVC;
 
     /**
      * Created at
@@ -121,6 +121,12 @@ export class VcDocument extends BaseEntity implements IVCDocument {
      */
     @Property({ nullable: true })
     accounts?: any
+
+    /**
+     * User group
+     */
+    @Property({ nullable: true })
+    group?: any
 
     /**
      * Document defaults

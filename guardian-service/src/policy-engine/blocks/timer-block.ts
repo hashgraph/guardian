@@ -3,7 +3,7 @@ import { CronJob } from 'cron';
 import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { PolicyInputEventType as PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { IPolicyEvent } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
@@ -79,6 +79,29 @@ export class TimerBlock {
     destroy() {
         if (this.job) {
             this.job.stop();
+        }
+    }
+
+    /**
+     * Start cron
+     * @param event
+     * @private
+     */
+    private getUserId(event: IPolicyEvent<IPolicyEventState>): string {
+        try {
+            const document = event.data?.data;
+            if (document) {
+                if (Array.isArray(document)) {
+                    if (document.length) {
+                        return PolicyUtils.getScopeId(document[0]);
+                    }
+                } else {
+                    return PolicyUtils.getScopeId(document);
+                }
+            }
+            return null;
+        } catch (error) {
+            return null;
         }
     }
 
@@ -187,9 +210,9 @@ export class TimerBlock {
 
         const users = Object.keys(this.state);
         const map = [];
-        for (const did of users) {
-            if (this.state[did] === true) {
-                map.push(did);
+        for (const id of users) {
+            if (this.state[id] === true) {
+                map.push(id);
             }
         }
 
@@ -204,12 +227,12 @@ export class TimerBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const owner: string = event.data?.data?.owner;
-        if (owner) {
-            this.state[owner] = true;
-            ref.log(`start scheduler for: ${owner}`);
+        const id = this.getUserId(event);
+        if (id) {
+            this.state[id] = true;
+            ref.log(`start scheduler for: ${id}`);
         }
         await ref.saveState();
 
@@ -225,12 +248,12 @@ export class TimerBlock {
     @ActionCallback({
         type: PolicyInputEventType.StartTimerEvent
     })
-    async startAction(event: IPolicyEvent<any>) {
+    async startAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const owner: string = event.data?.data?.owner;
-        if (owner) {
-            this.state[owner] = true;
-            ref.log(`start scheduler for: ${owner}`);
+        const id = this.getUserId(event);
+        if (id) {
+            this.state[id] = true;
+            ref.log(`start scheduler for: ${id}`);
         }
         await ref.saveState();
     }
@@ -243,12 +266,12 @@ export class TimerBlock {
     @ActionCallback({
         type: PolicyInputEventType.StopTimerEvent
     })
-    async stopAction(event: IPolicyEvent<any>) {
+    async stopAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const owner: string = event.data?.data?.owner;
-        if (owner) {
-            this.state[owner] = false;
-            ref.log(`stop scheduler for: ${owner}`);
+        const id = this.getUserId(event);
+        if (id) {
+            this.state[id] = false;
+            ref.log(`stop scheduler for: ${id}`);
         }
         await ref.saveState();
     }

@@ -1,4 +1,4 @@
-import { ApproveStatus, DocumentSignature, DocumentStatus, GenerateUUIDv4, SchemaEntity } from '@guardian/interfaces';
+import { ApproveStatus, DocumentSignature, DocumentStatus, GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity } from '@guardian/interfaces';
 import { Entity, Property, BeforeCreate } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
@@ -53,13 +53,13 @@ export class DryRun extends BaseEntity {
      * Created at
      */
     @Property()
-    created: any =  new Date();
+    created: any = new Date();
 
     /**
      * Updated at
      */
     @Property({ onUpdate: () => new Date() })
-    updated: any= new Date();
+    updated: any = new Date();
 
     /**
      * Document status
@@ -355,6 +355,12 @@ export class DryRun extends BaseEntity {
     policyRoles?: any;
 
     /**
+     * Policy groups
+     */
+    @Property({ nullable: true })
+    policyGroups?: any;
+
+    /**
      * Policy topics
      */
     @Property({ nullable: true })
@@ -437,6 +443,36 @@ export class DryRun extends BaseEntity {
      */
     @Property({ nullable: true })
     hederaAccountKey?: string;
+
+    /**
+     * Group Type
+     */
+    @Property({ nullable: true })
+    groupRelationshipType?: GroupRelationshipType;
+
+    /**
+     * Group Type
+     */
+    @Property({ nullable: true })
+    groupAccessType?: GroupAccessType;
+
+    /**
+     * Group Type
+     */
+    @Property({ nullable: true })
+    groupName?: string;
+
+    /**
+     * User group
+     */
+    @Property({ nullable: true })
+    group?: any;
+
+    /**
+     * Group Label
+     */
+    @Property({ nullable: true })
+    groupLabel?: string;
 
     /**
      * Default document values

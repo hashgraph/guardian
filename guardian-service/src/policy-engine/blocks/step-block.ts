@@ -1,7 +1,7 @@
 import { ActionCallback, ContainerBlock, StateField } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
@@ -48,11 +48,11 @@ export class InterfaceStepBlock {
     async changeStep(user: IPolicyUser, data: any, target: IPolicyBlock) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
-        if (!this.state.hasOwnProperty(user.did)) {
+        if (!this.state.hasOwnProperty(user.id)) {
             blockState = {};
-            this.state[user.did] = blockState;
+            this.state[user.id] = blockState;
         } else {
-            blockState = this.state[user.did];
+            blockState = this.state[user.id];
         }
 
         if (target) {
@@ -64,7 +64,7 @@ export class InterfaceStepBlock {
         } else {
             throw new BlockActionError('Bad child block', ref.blockType, ref.uuid);
         }
-        ref.log(`changeStep: ${blockState?.index}, ${user?.did}`);
+        ref.log(`changeStep: ${blockState?.index}, ${user?.id}`);
         ref.updateBlock(blockState, user);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
     }
@@ -77,7 +77,7 @@ export class InterfaceStepBlock {
     @ActionCallback({
         type: PolicyInputEventType.ReleaseEvent
     })
-    async releaseChild(event: IPolicyEvent<any>) {
+    async releaseChild(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const index = ref.children.findIndex(c => c.uuid === event.sourceId);
         if (
@@ -88,11 +88,11 @@ export class InterfaceStepBlock {
             const user = event.user;
             if(user) {
                 let blockState: any;
-                if (!this.state.hasOwnProperty(user.did)) {
+                if (!this.state.hasOwnProperty(user.id)) {
                     blockState = {};
-                    this.state[user.did] = blockState;
+                    this.state[user.id] = blockState;
                 } else {
-                    blockState = this.state[user.did];
+                    blockState = this.state[user.id];
                 }
                 blockState.index = 0;
                 ref.updateBlock(blockState, user);
@@ -108,11 +108,11 @@ export class InterfaceStepBlock {
     async getData(user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
-        if (!this.state.hasOwnProperty(user.did)) {
+        if (!this.state.hasOwnProperty(user.id)) {
             blockState = {};
-            this.state[user.did] = blockState;
+            this.state[user.id] = blockState;
         } else {
-            blockState = this.state[user.did];
+            blockState = this.state[user.id];
         }
         if (blockState.index === undefined) {
             blockState.index = 0;
@@ -134,7 +134,7 @@ export class InterfaceStepBlock {
         }
 
         let index = 0;
-        const state = this.state[user.did];
+        const state = this.state[user.id];
         if (state) {
             index = state.index;
         }

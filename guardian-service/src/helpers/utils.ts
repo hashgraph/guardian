@@ -107,7 +107,11 @@ export function getVCField(vcDocument: IVC, name: string): any {
  */
 export function getVCIssuer(vcDocument: IVCDocument | IVCDocument): string {
     if (vcDocument && vcDocument.document) {
-        return vcDocument.document.issuer;
+        if (typeof vcDocument.document.issuer === 'string') {
+            return vcDocument.document.issuer;
+        } else {
+            return vcDocument.document.issuer.id || null;
+        }
     }
     return null;
 }

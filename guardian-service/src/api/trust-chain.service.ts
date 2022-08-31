@@ -17,7 +17,7 @@ import { MessageBrokerChannel, MessageResponse, MessageError, Logger, DataBaseHe
  * @param vcDocument
  * @param name
  */
-function getField(vcDocument: VcDocument | VpDocument, name: string): any {
+function getField(vcDocument: VcDocument, name: string): any {
     if (
         vcDocument &&
         vcDocument.document &&
@@ -33,9 +33,13 @@ function getField(vcDocument: VcDocument | VpDocument, name: string): any {
  * Get issuer
  * @param vcDocument
  */
-function getIssuer(vcDocument: VcDocument | VpDocument): string {
+function getIssuer(vcDocument: VcDocument): string {
     if (vcDocument && vcDocument.document) {
-        return vcDocument.document.issuer;
+        if (typeof vcDocument.document.issuer === 'string') {
+            return vcDocument.document.issuer;
+        } else {
+            return vcDocument.document.issuer.id || null;
+        }
     }
     return null;
 }
@@ -81,8 +85,8 @@ export async function trustChainAPI(
             return;
         }
 
-        const issuer = getIssuer(vc);
-        const schema = getField(vc, 'type');
+        const issuer = getIssuer(vc as VcDocument);
+        const schema = getField(vc as VcDocument, 'type');
 
         if (map[vc.hash]) {
             return;

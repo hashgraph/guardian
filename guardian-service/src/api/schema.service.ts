@@ -60,7 +60,7 @@ export async function setDefaultSchema() {
     }
 
     const fn = async (schema: any) => {
-        const existingSchemas = await DatabaseServer.getSchema({ uuid: schema.uuid });
+        const existingSchemas = await DatabaseServer.getSchema({ uuid: schema.uuid, system: true });
         if (existingSchemas) {
             console.log(`Skip schema: ${schema.uuid}`);
             return;
@@ -79,6 +79,8 @@ export async function setDefaultSchema() {
     await fn(map[SchemaEntity.POLICY]);
     await fn(map[SchemaEntity.STANDARD_REGISTRY]);
     await fn(map[SchemaEntity.WIPE_TOKEN]);
+    await fn(map[SchemaEntity.ISSUER]);
+    await fn(map[SchemaEntity.USER_ROLE]);
 }
 
 /**
@@ -334,12 +336,9 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
  */
 export async function publishSchema(
     item: SchemaCollection,
-    version: string,
     messageServer: MessageServer,
     type?: MessageAction
 ): Promise<SchemaCollection> {
-    SchemaHelper.updateVersion(item, version);
-
     const itemDocument = item.document;
     const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
     item.context = schemasToContext([...defsArray, itemDocument]);
@@ -384,7 +383,7 @@ export async function publishSystemSchema(
     item.version = undefined;
     item.topicId = messageServer.getTopic();
     SchemaHelper.setVersion(item, undefined, undefined);
-    return await publishSchema(item, '1.0.0', messageServer, type);
+    return await publishSchema(item, messageServer, type);
 }
 
 /**
@@ -501,7 +500,9 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
         .setTopicObject(topic);
     notifier.completedAndStart('Publish schema');
-    item = await publishSchema(item, version, messageServer, MessageAction.PublishSchema);
+
+    SchemaHelper.updateVersion(item, version);
+    item = await publishSchema(item, messageServer, MessageAction.PublishSchema);
 
     notifier.completedAndStart('Update in DB');
     await updateSchemaDocument(item);

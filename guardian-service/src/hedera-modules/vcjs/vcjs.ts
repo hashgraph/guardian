@@ -13,6 +13,7 @@ import { DocumentLoaderFunction } from '../document-loader/document-loader-funct
 import { DocumentLoader } from '../document-loader/document-loader';
 import { SchemaLoader, SchemaLoaderFunction } from '../document-loader/schema-loader';
 import { DidRootKey } from './did-document';
+import { Issuer } from './issuer';
 
 /**
  * Suite interface
@@ -139,7 +140,7 @@ export class VCJS {
         suite: Ed25519Signature2018,
         documentLoader: DocumentLoaderFunction
     ): Promise<VcDocument> {
-        const vc = vcDocument.getDocument();
+        const vc: any = vcDocument.getDocument();
         const verifiableCredential = await vcjs.createVerifiableCredential({
             credential: vc,
             suite,
@@ -288,22 +289,21 @@ export class VCJS {
      * Create VC Document
      *
      * @param {string} did - DID
-     * @param {PrivateKey | string} privateKey - Private Key
-     * @param {any} data - Credential Object
-     * @param {string} schema - schema id
-     *
+     * @param {PrivateKey | string} key - Private Key
+     * @param {any} subject - Credential Object
+     * @param {any} [group] - Issuer
      * @returns {HcsVcDocument<VcSubject>} - VC Document
      */
     public async createVC(
         did: string,
         key: string | PrivateKey,
         subject: ICredentialSubject,
-        schema?: string
+        group?: any
     ): Promise<VcDocument> {
         const document = DidRootKey.createByPrivateKey(did, key);
         const id = GenerateUUIDv4();
         const suite = await this.createSuite(document);
-        const vcSubject = VcSubject.create(subject, schema);
+        const vcSubject = VcSubject.create(subject);
         for (const element of this.schemaContext) {
             vcSubject.addContext(element);
         }
@@ -312,7 +312,15 @@ export class VCJS {
         vc.setId(id);
         vc.setIssuanceDate(TimestampUtils.now());
         vc.addCredentialSubject(vcSubject);
-        vc.setIssuer(did);
+
+        if(group) {
+            vc.setIssuer(new Issuer(did, group.groupId));
+            vc.addType(group.type);
+            vc.addContext(group.context);
+        } else {
+            vc.setIssuer(new Issuer(did));
+        }
+
         vc = await this.issue(vc, suite, this.loader);
         return vc;
     }

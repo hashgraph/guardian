@@ -2,7 +2,7 @@ import { Schema, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcDocument } from '@hedera-modules';
@@ -81,7 +81,7 @@ export class CalculateContainerBlock {
      * @param ref
      * @private
      */
-    private async process(documents: any | any[], ref: IPolicyCalculateBlock): Promise<any> {
+    private async process(documents: IPolicyDocument | IPolicyDocument[], ref: IPolicyCalculateBlock): Promise<any> {
         const isArray = Array.isArray(documents);
         if (!documents || (isArray && !documents.length)) {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
@@ -89,7 +89,8 @@ export class CalculateContainerBlock {
 
         // <-- aggregate
         const relationships = [];
-        const owner = isArray ? documents[0].owner : documents.owner;
+        const owner = PolicyUtils.getDocumentOwner(ref, isArray ? documents[0] : documents);
+
         let vcs: VcDocument | VcDocument[];
         let json: any | any[];
         if (isArray) {
@@ -135,18 +136,11 @@ export class CalculateContainerBlock {
 
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
         const newVC = await VCHelper.createVC(ref.policyOwner, root.hederaAccountKey, vcSubject);
-        const item = ref.databaseServer.createVCRecord(
-            ref.policyId,
-            ref.tag,
-            null,
-            newVC,
-            {
-                type: outputSchema.iri,
-                schema: outputSchema.iri,
-                owner,
-                relationships
-            }
-        );
+
+        const item = PolicyUtils.createVC(ref, owner, newVC);
+        item.type = outputSchema.iri;
+        item.schema = outputSchema.iri;
+        item.relationships = relationships.length ? relationships : null;
         // -->
 
         return item;
@@ -163,7 +157,7 @@ export class CalculateContainerBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    public async runAction(event: IPolicyEvent<any>) {
+    public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
         if (ref.options.inputDocuments === 'separate') {

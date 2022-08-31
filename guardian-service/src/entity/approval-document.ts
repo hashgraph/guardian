@@ -1,4 +1,4 @@
-import { ApproveStatus, IApprovalDocument, SchemaEntity } from '@guardian/interfaces';
+import { ApproveStatus, IApprovalDocument, IVC, SchemaEntity } from '@guardian/interfaces';
 import { Entity, Property, BeforeCreate, Enum } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
@@ -23,7 +23,7 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
      * Document instance
      */
     @Property({ nullable: true })
-    document?: any;
+    document?: IVC;
 
     /**
      * Document policy id
@@ -66,6 +66,12 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
      */
     @Property({ nullable: true })
     schema?: string;
+
+    /**
+     * User group
+     */
+    @Property({ nullable: true })
+    group?: any;
 
     /**
      * Default document values

@@ -365,4 +365,25 @@ export class PolicyEngine extends ServiceRequestsBase {
             pageSize
         });
     }
+
+    /**
+     * Get policy groups
+     *
+     * @param user
+     * @param policyId
+     */
+    public async getGroups(user: any, policyId: string) {
+        return await this.request(PolicyEngineEvents.GET_POLICY_GROUPS, { user, policyId });
+    }
+
+    /**
+     * Select policy group
+     *
+     * @param user
+     * @param policyId
+     * @param uuid
+     */
+    public async selectGroup(user: any, policyId: string, uuid: string) {
+        return await this.request(PolicyEngineEvents.SELECT_POLICY_GROUP, { user, policyId, uuid });
+    }
 }

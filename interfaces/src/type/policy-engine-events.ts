@@ -36,5 +36,8 @@ export enum PolicyEngineEvents {
     RESTART_DRY_RUN= 'restart-dry-run',
     GET_VIRTUAL_DOCUMENTS = 'get-virtual-documents',
     DELETE_POLICY_ASYNC = 'delete-policy-async',
+    GET_INVITE = 'get-invite',
+    GET_POLICY_GROUPS = 'get-policy-groups',
+    SELECT_POLICY_GROUP = 'select-policy-group',
     CLONE_POLICY_ASYNC = 'clone-policy-async'
 }

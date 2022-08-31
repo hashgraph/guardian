@@ -1,4 +1,3 @@
-import { approveAPI } from '@api/approve.service';
 import { configAPI } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
 import { loaderAPI } from '@api/loader.service';
@@ -6,7 +5,6 @@ import { profileAPI, updateUserBalance } from '@api/profile.service';
 import { schemaAPI, setDefaultSchema } from '@api/schema.service';
 import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
-import { ApprovalDocument } from '@entity/approval-document';
 import { DidDocument } from '@entity/did-document';
 import { Schema } from '@entity/schema';
 import { Token } from '@entity/token';
@@ -166,7 +164,6 @@ Promise.all([
     const didDocumentRepository = new DataBaseHelper(DidDocument);
     const vcDocumentRepository = new DataBaseHelper(VcDocument);
     const vpDocumentRepository = new DataBaseHelper(VpDocument);
-    const approvalDocumentRepository = new DataBaseHelper(ApprovalDocument);
     const tokenRepository = new DataBaseHelper(Token);
     const schemaRepository = new DataBaseHelper(Schema);
     const settingsRepository = new DataBaseHelper(Settings);
@@ -181,7 +178,6 @@ Promise.all([
     await profileAPI(channel, apiGatewayChannel);
     await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await demoAPI(channel, apiGatewayChannel, settingsRepository);
-    await approveAPI(channel, approvalDocumentRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await setDefaultSchema();
 

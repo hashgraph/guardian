@@ -41,7 +41,7 @@ export class FiltersAddonBlock {
      */
     public getFilters(user: IPolicyUser): { [key: string]: string } {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const filters = ref.filters[user.did] || {};
+        const filters = ref.filters[user.id] || {};
         if (ref.options.type === 'dropdown') {
             if (!filters[ref.options.field] && !ref.options.canBeEmpty) {
                 filters[ref.options.field] = '';
@@ -68,7 +68,7 @@ export class FiltersAddonBlock {
         const data: any[] = await ref.getSources(user, null);
 
         if (ref.options.type === 'dropdown') {
-            const blockState = this.state[user.did] || {};
+            const blockState = this.state[user.id] || {};
             blockState.lastData = data.map((e) => {
                 return {
                     name: findOptions(e, ref.options.optionName),
@@ -79,7 +79,7 @@ export class FiltersAddonBlock {
             block.optionName = ref.options.optionName;
             block.optionValue = ref.options.optionValue;
             block.filterValue = blockState.lastValue;
-            this.state[user.did] = blockState;
+            this.state[user.id] = blockState;
         }
 
         return block;
@@ -98,7 +98,7 @@ export class FiltersAddonBlock {
         }
         if (ref.options.type === 'dropdown') {
             const value = data.filterValue;
-            const blockState = this.state[user.did] || {};
+            const blockState = this.state[user.id] || {};
             if (!blockState.lastData) {
                 await this.getData(user);
             }
@@ -109,7 +109,7 @@ export class FiltersAddonBlock {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
             }
             blockState.lastValue = value;
-            this.state[user.did] = blockState;
+            this.state[user.id] = blockState;
         }
         ref.setFilters(filter, user);
     }

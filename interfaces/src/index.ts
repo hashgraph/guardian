@@ -53,4 +53,5 @@ export { FieldTypesDictionary } from './helpers/field-types-dictionary';
 export { UnitSystem } from './type/unit-system.type';
 export * from './interface/messages';
 export { StatusType, IStatus } from './interface/async.interface';
+export { GroupRelationshipType, GroupAccessType } from './type/user-group.type';
 export * from './type/workers.type';

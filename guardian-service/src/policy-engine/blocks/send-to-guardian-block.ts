@@ -3,7 +3,7 @@ import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { DocumentStatus } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { AnyBlockType, IPolicyBlock } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage, MessageMemo } from '@hedera-modules';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -40,27 +40,26 @@ export class SendToGuardianBlock {
      * Send by type
      * @deprecated 2022-08-04
      */
-    async sendByType(document: any, currentUser: IPolicyUser, ref: AnyBlockType) {
+    async sendByType(document: IPolicyDocument, currentUser: IPolicyUser, ref: AnyBlockType) {
         let result: any;
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                const doc: any = ref.databaseServer.createVCRecord(
-                    ref.policyId,
-                    ref.tag,
-                    ref.options.entityType,
-                    vc,
-                    document
-                );
+
+                const doc = PolicyUtils.cloneVC(ref, document);
+                doc.type = ref.options.entityType || doc.type;
+                doc.hash = vc.toCredentialHash();
+                doc.document = vc.toJsonTree();
+
                 result = await ref.databaseServer.updateVCRecord(doc);
                 break;
             }
             case 'did-documents': {
-                result = await ref.databaseServer.updateDIDRecord(document);
+                result = await ref.databaseServer.updateDIDRecord(document as any);
                 break;
             }
             case 'approve': {
-                result = await ref.databaseServer.updateApprovalRecord(document)
+                result = await ref.databaseServer.updateApprovalRecord(document as any)
                 break;
             }
             case 'hedera': {
@@ -80,10 +79,14 @@ export class SendToGuardianBlock {
      * @param currentUser
      * @param ref
      */
-    async send(document: any, currentUser: IPolicyUser, ref: IPolicyBlock) {
+    async send(
+        document: IPolicyDocument,
+        currentUser: IPolicyUser,
+        ref: IPolicyBlock
+    ): Promise<IPolicyDocument> {
         const { dataSource } = ref.options;
 
-        let result: any;
+        let result: IPolicyDocument;
         switch (dataSource) {
             case 'database': {
                 result = await this.sendToDatabase(document, currentUser, ref);
@@ -106,7 +109,11 @@ export class SendToGuardianBlock {
      * @param currentUser
      * @param ref
      */
-    async sendToDatabase(document: any, currentUser: IPolicyUser, ref: IPolicyBlock) {
+    async sendToDatabase(
+        document: IPolicyDocument,
+        currentUser: IPolicyUser,
+        ref: IPolicyBlock
+    ): Promise<IPolicyDocument> {
         let { documentType } = ref.options;
         if (documentType === 'document') {
             const doc = document?.document;
@@ -122,20 +129,19 @@ export class SendToGuardianBlock {
         switch (documentType) {
             case 'vc': {
                 const vc = HVcDocument.fromJsonTree(document.document);
-                const doc: any = ref.databaseServer.createVCRecord(
-                    ref.policyId,
-                    ref.tag,
-                    ref.options.entityType,
-                    vc,
-                    document
-                );
+
+                const doc = PolicyUtils.cloneVC(ref, document);
+                doc.type = ref.options.entityType || doc.type;
+                doc.hash = vc.toCredentialHash();
+                doc.document = vc.toJsonTree();
+
                 return await ref.databaseServer.updateVCRecord(doc);
             }
             case 'did': {
-                return await ref.databaseServer.updateDIDRecord(document);
+                return await ref.databaseServer.updateDIDRecord(document as any);
             }
             case 'vp': {
-                return await ref.databaseServer.updateVPRecord(document);
+                return await ref.databaseServer.updateVPRecord(document as any);
             }
             default:
                 throw new BlockActionError(`documentType "${documentType}" is unknown`, ref.blockType, ref.uuid)
@@ -148,7 +154,7 @@ export class SendToGuardianBlock {
      * @param currentUser
      * @param ref
      */
-    async sendToHedera(document: any, currentUser: IPolicyUser, ref: IPolicyBlock) {
+    async sendToHedera(document: IPolicyDocument, currentUser: IPolicyUser, ref: IPolicyBlock) {
         try {
             const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
             const user = await PolicyUtils.getHederaAccount(ref, document.owner);
@@ -157,7 +163,7 @@ export class SendToGuardianBlock {
             if (ref.options.topicOwner === 'user') {
                 topicOwner = await PolicyUtils.getHederaAccount(ref, currentUser.did);
             } else if (ref.options.topicOwner === 'issuer') {
-                topicOwner = await PolicyUtils.getHederaAccount(ref, document.document.issuer);
+                topicOwner = await PolicyUtils.getHederaAccount(ref, PolicyUtils.getDocumentIssuer(document.document));
             } else {
                 topicOwner = user;
             }
@@ -174,7 +180,7 @@ export class SendToGuardianBlock {
             );
             const vc = HVcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
-            vcMessage.setStatus(document.option?.status || DocumentStatus.NEW);
+            vcMessage.setDocumentStatus(document.option?.status || DocumentStatus.NEW);
             vcMessage.setDocument(vc);
             vcMessage.setRelationships(document.relationships);
             const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, ref.dryRun);
@@ -199,7 +205,7 @@ export class SendToGuardianBlock {
      * @param document
      * @param user
      */
-    async documentSender(document: any, user: IPolicyUser): Promise<any> {
+    async documentSender(document: IPolicyDocument, user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         document.policyId = ref.policyId;
@@ -237,11 +243,11 @@ export class SendToGuardianBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<any>) {
+    async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
 
-        const docs: any | any[] = event.data.data;
+        const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
         if (Array.isArray(docs)) {
             const newDocs = [];
             for (const doc of docs) {

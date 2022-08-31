@@ -149,6 +149,7 @@ policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
         model.topicDescription = policy.topicDescription;
         model.policyRoles = policy.policyRoles;
         model.policyTopics = policy.policyTopics;
+        model.policyGroups = policy.policyGroups;
         const result = await engineService.savePolicy(model, req.user, req.params.policyId);
         res.json(result);
     } catch (error) {
@@ -217,6 +218,27 @@ policyAPI.post('/validate', async (req: AuthenticatedRequest, res: Response) => 
     }
 });
 //
+
+policyAPI.get('/:policyId/groups', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.send(await engineService.getGroups(req.user, req.params.policyId));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
+policyAPI.post('/:policyId/groups', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.send(await engineService.selectGroup(req.user, req.params.policyId, req.body.uuid));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
 policyAPI.get('/:policyId/blocks', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {

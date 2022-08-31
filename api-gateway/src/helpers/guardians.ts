@@ -68,12 +68,8 @@ export class Guardians extends ServiceRequestsBase {
      * Return VC Documents
      *
      * @param {Object} [params] - filters
-     * @param {string} [params.id] - filter by id
      * @param {string} [params.type] - filter by type
      * @param {string} [params.owner] - filter by owner
-     * @param {string} [params.issuer] - filter by issuer
-     * @param {string} [params.hash] - filter by hash
-     * @param {string} [params.policyId] - filter by policy id
      *
      * @returns {IVCDocument[]} - VC Documents
      */

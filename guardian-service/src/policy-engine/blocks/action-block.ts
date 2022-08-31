@@ -3,7 +3,7 @@ import { KeyType } from '@helpers/wallet';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { UserType, Schema } from '@guardian/interfaces';
 import { findOptions } from '@policy-engine/helpers/find-options';
-import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyAddonBlock, IPolicyDocument, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { DidDocumentBase } from '@hedera-modules';
 import { PrivateKey } from '@hashgraph/sdk';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
@@ -73,7 +73,7 @@ export class InterfaceDocumentActionBlock {
      * @param user
      * @param document
      */
-    async setData(user: IPolicyUser, document: any): Promise<any> {
+    async setData(user: IPolicyUser, document: IPolicyDocument): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
         const state: any = { data: document };
@@ -81,20 +81,19 @@ export class InterfaceDocumentActionBlock {
         if (ref.options.type === 'selector') {
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
             if (option) {
-                const ownerDid = option.user === UserType.CURRENT
-                    ? user.did
-                    : document.owner;
-                const owner = await PolicyUtils.getPolicyUser(ref, ownerDid);
-                ref.triggerEvents(option.tag, owner, state);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, state);
+                const newUser = option.user === UserType.CURRENT
+                    ? user
+                    : PolicyUtils.getDocumentOwner(ref, document);
+                ref.triggerEvents(option.tag, newUser, state);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
             }
             return;
         }
 
         if (ref.options.type === 'dropdown') {
-            const owner = await PolicyUtils.getPolicyUser(ref, document.owner);
-            ref.triggerEvents(PolicyOutputEventType.DropdownEvent, owner, state);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, state);
+            const newUser = PolicyUtils.getDocumentOwner(ref, document);
+            ref.triggerEvents(PolicyOutputEventType.DropdownEvent, newUser, state);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
             return;
         }
 
@@ -102,9 +101,9 @@ export class InterfaceDocumentActionBlock {
             const sensorDid = document.document.credentialSubject[0].id;
             const policy = await ref.databaseServer.getPolicy(ref.policyId);
 
-            const hederaAccount = await PolicyUtils.getHederaAccount(ref, document.owner);
-            const sensorKey = await PolicyUtils.getAccountKey(ref, document.owner, KeyType.KEY, sensorDid);
             const userDID = document.owner;
+            const hederaAccount = await PolicyUtils.getHederaAccount(ref, userDID);
+            const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
             const hederaAccountId = hederaAccount.hederaAccountId;
             const hederaAccountKey = hederaAccount.hederaAccountKey;
             const schemaObject = await ref.databaseServer.getSchemaByIRI(ref.options.schema);
