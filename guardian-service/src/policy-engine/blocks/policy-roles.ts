@@ -154,7 +154,8 @@ export class PolicyRolesBlock {
         const groupConfig = policyGroups.find(e => e.name === groupName);
 
         if (groupConfig) {
-            return { ...groupConfig, label: groupLabel };
+            const label = groupConfig.groupAccessType === GroupAccessType.Global ? groupConfig.name : groupLabel;
+            return { ...groupConfig, label };
         } else {
             const policyRoles: string[] = ref.policyInstance.policyRoles || [];
             const roleConfig = policyRoles.find(e => e === groupName);
