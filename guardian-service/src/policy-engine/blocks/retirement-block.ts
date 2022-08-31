@@ -138,8 +138,8 @@ export class RetirementBlock {
 
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
         vpDocument.type = DataTypes.RETIREMENT;
-        vpDocument.messageId = vpMessageResult.getId();
-        vpDocument.topicId = vpMessageResult.getTopicId();
+        vcDocument.messageId = vpMessageResult.getId();
+        vcDocument.topicId = vpMessageResult.getTopicId();
 
         await ref.databaseServer.saveVP(vpDocument);
 

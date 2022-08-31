@@ -43,4 +43,4 @@ This block is responsible in performing automatic actions on the token.
 
 
 
-![](<../.gitbook/assets/image (15) (2).png>)
+![](<../.gitbook/assets/image (1).png>)

@@ -145,8 +145,6 @@
 * [Import from zip file](policy-creation-using-the-guardian-apis/import-from-zip-file.md)
 * [Retrieves Block Data by Tag](policy-creation-using-the-guardian-apis/retrieves-block-data-by-tag.md)
 * [Sends Data to specified Block by Tag](policy-creation-using-the-guardian-apis/sends-data-to-specified-block-by-tag.md)
-* [Returns list of Groups of a particular user](policy-creation-using-the-guardian-apis/returns-list-of-groups-of-a-particular-user.md)
-* [Make the selected Group active](policy-creation-using-the-guardian-apis/make-the-selected-group-active.md)
 
 ## Policy related APIs for Asynchronous Execution
 
