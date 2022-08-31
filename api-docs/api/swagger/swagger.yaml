@@ -929,34 +929,6 @@ paths:
                 $ref: '#/components/schemas/Error'
 
   /schemas:
-    post:
-      deprecated: true
-      tags:
-        - schemas
-      description: Creates new schema. Only users with the Standard Registry role are allowed to make the request.
-      security:
-      - bearerAuth: []
-      summary: Create new schema.
-      requestBody:
-        description: Object that contains a valid schema.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Schema"
-      responses:
-        201:
-          description: Successful operation.
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
     get:
       tags:
         - schemas
@@ -1330,82 +1302,6 @@ paths:
       summary: Deletes the schema.
       responses:
         200:
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /schemas/import/file:
-    post:
-      deprecated: true
-      tags:
-        - schemas
-      description: Imports new schema from a zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
-      security:
-      - bearerAuth: []
-      summary: Imports new schema from a zip file.
-      requestBody:
-        description: A zip file containing schema to be imported.
-        content:
-          binary/octet-stream:
-            schema:
-              type: string
-              format: binary
-        required: true
-      responses:
-        201:
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /schemas/import/message:
-    post:
-      deprecated: true
-      tags:
-        - schemas
-      description: Imports new schema from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
-      security:
-      - bearerAuth: []
-      summary: Imports new schema from IPFS.
-      requestBody:
-        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                messageId:
-                  type: string
-      responses:
-        201:
           description: Successful operation.
           content:
             application/json:
