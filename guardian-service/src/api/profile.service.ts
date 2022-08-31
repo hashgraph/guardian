@@ -427,7 +427,8 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
                 return new MessageError('Invalid Hedera Account Key', 403);
             }
 
-            await setupUserProfile(username, profile, emptyNotifier());
+            const did = await setupUserProfile(username, profile, emptyNotifier());
+            return new MessageResponse(did);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);

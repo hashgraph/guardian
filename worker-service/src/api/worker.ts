@@ -83,6 +83,12 @@ export class Worker {
      */
     private readonly taskTimeout: number;
 
+    /**
+     * Channel Name
+     * @private
+     */
+    private readonly _channelName: string;
+
     constructor(
         private readonly channel: MessageBrokerChannel
     ) {
@@ -90,6 +96,7 @@ export class Worker {
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
         this.taskTimeout = parseInt(process.env.TASK_TIMEOUT, 10) * 1000; // env in seconds
+        this._channelName = process.env.SERVICE_CHANNEL.toUpperCase();
     }
 
     /**
@@ -163,9 +170,9 @@ export class Worker {
                     Environment.setNetwork(task.data.network);
                     Environment.setLocalNodeAddress(task.data.localNodeAddress);
                     Environment.setLocalNodeProtocol(task.data.localNodeProtocol);
-                    const {operatorId, operatorKey, dryRun} = task.data.clientOptions;
+                    const { operatorId, operatorKey, dryRun } = task.data.clientOptions;
                     const client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
-                    const {topicId, buffer, submitKey, memo} = task.data;
+                    const { topicId, buffer, submitKey, memo } = task.data;
                     result.data = await client.submitMessage(topicId, buffer, submitKey, memo);
                     break;
 
@@ -207,6 +214,9 @@ export class Worker {
      */
     public async getItem(): Promise<any> {
         this.isInUse = true;
+
+        this.logger.info(`Search task`, [this._channelName]);
+
         let task: any = null;
         try {
             task = await Promise.race([
@@ -222,10 +232,10 @@ export class Worker {
             return;
         }
 
-        this.logger.info(`Task recieved`, [process.env.SERVICE_CHANNEL.toUpperCase()])
-
         if (!task) {
             this.isInUse = false;
+
+            this.logger.info(`Task not found`, [this._channelName]);
 
             if (this.updateEventReceived) {
                 this.updateEventReceived = false;
@@ -237,9 +247,13 @@ export class Worker {
 
         this.currentTaskId = task.id;
 
+        this.logger.info(`Task started: ${this.currentTaskId}`, [this._channelName]);
+
         const result = await this.processTaskWithTimeout(task);
 
         await this.request(WorkerEvents.TASK_COMPLETE, result);
+
+        this.logger.info(`Task completed: ${this.currentTaskId}`, [this._channelName]);
 
         this.getItem().then();
     }
