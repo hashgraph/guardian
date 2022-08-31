@@ -56,7 +56,7 @@ export class GroupManagerBlock {
                 const inviteId = await ref.databaseServer.createInviteToken(ref.policyId, group.uuid, user.did, role);
                 return Buffer.from(JSON.stringify({
                     invitation: inviteId,
-                    role: role,
+                    role,
                     name: group.groupName,
                     label: group.groupLabel,
                     policyName: ref.policyInstance?.name
