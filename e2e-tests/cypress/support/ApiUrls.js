@@ -1,12 +1,24 @@
 const API = {
-    ApiServer: "http://localhost:3000/api/v1/",
-    //Accounts
-    Accounts: "http://localhost:3000/api/v1/accounts/",
-    RootAuthorities: "http://localhost:3000/api/v1/accounts/root-authorities",
-    //Tokens
-    ListOfTokens: "http://localhost:3000/api/v1/tokens/",
-    //Logs
-    Logs: "http://localhost:3000/api/v1/logs",
-    LogsAttributes: "http://localhost:3000/api/v1/logs/attributes/",
+ApiServer: "http://localhost:3000/api/v1/",
+//Accounts
+Accounts: "http://localhost:3000/api/v1/accounts/",
+AccountsLogin: "http://localhost:3000/api/v1/accounts/login/",
+RootAuthorities: "http://localhost:3000/api/v1/accounts/root-authorities",
+Installer: "http://localhost:3000/api/v1/accounts/installer",
+StandartRegistries: "http://localhost:3000/api/v1/accounts/standard-registries",
+Balance: "http://localhost:3000/api/v1/accounts/balance",
+//Profiles
+Profiles: "http://localhost:3000/api/v1/profiles/",
+//Tokens
+ListOfTokens: "http://localhost:3000/api/v1/tokens/",
+//Logs
+Logs: "http://localhost:3000/api/v1/logs",
+LogsAttributes: "http://localhost:3000/api/v1/logs/attributes/",
+//Schemas
+Schemas:"http://localhost:3000/api/v1/schemas/",
+//TrustChains
+Trustchains:"http://localhost:3000/api/v1/trustchains",
+//Settings
+SettingsEnv:"http://localhost:3000/api/v1/settings/environment",
 };
 export default API;
