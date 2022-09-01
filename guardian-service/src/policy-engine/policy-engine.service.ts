@@ -415,7 +415,7 @@ export class PolicyEngineService {
         let skipped: number = 0;
         for (const schemaIRI of schemaIRIs) {
             const schema = await incrementSchemaVersion(schemaIRI, owner);
-            if (schema.status === SchemaStatus.PUBLISHED) {
+            if (!schema || schema.status === SchemaStatus.PUBLISHED) {
                 skipped++;
                 continue;
             }
