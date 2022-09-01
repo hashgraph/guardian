@@ -42,5 +42,5 @@ The user need to input the private key for the account to enable Guardian to per
 **Note:** Users can skip the action in UI if they prefer to perform it outside Guardian (directly with Hedera blockchain).
 {% endhint %}
 
-![](<../.gitbook/assets/image (17).png>)
+![](<../.gitbook/assets/image (17) (2).png>)
 

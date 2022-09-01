@@ -271,3 +271,7 @@
 ## Task APIs
 
 * [Returning Task Statuses](task-apis/returning-task-statuses.md)
+
+## Multi - User Roles
+
+* [Roles and Groups](multi-user-roles/roles-and-groups.md)

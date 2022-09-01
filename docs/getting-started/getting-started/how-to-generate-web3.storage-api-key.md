@@ -6,7 +6,7 @@ Following are the steps to follow to generate Web3.Storage API Key:
 
 1. We need to create an account in Web3.Storage using [https://web3.storage/login/](https://web3.storage/login/)
 
-<figure><img src="../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (16) (2).png" alt=""><figcaption></figcaption></figure>
 
 2\. Once Logged in successfully, hover over **Account** and click **Create an API Token** in the dropdown menu.
 
