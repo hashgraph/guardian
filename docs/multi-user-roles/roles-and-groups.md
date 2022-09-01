@@ -8,7 +8,7 @@ Set of textual constants that are used to separate users into different roles.
 
 Roles can be created by adding Role Property and its Value in Policy Configurator as shown below:
 
-<figure><img src="../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (13) (3).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../.gitbook/assets/Role1.1.png" alt=""><figcaption></figcaption></figure>
 
@@ -16,9 +16,9 @@ Roles can be created by adding Role Property and its Value in Policy Configurato
 
 This is used for setting Permissions for a block, which limits which users can see this block or access it via the API.
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (4).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (33).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (33) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note:** Permissions do not affect the Block via Events.
@@ -61,7 +61,7 @@ Groups are separate sets of documents access , which can be limited to users who
 
 
 
-<figure><img src="../.gitbook/assets/image (23).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (23) (3).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
 

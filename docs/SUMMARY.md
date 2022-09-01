@@ -94,6 +94,7 @@
 * [tokenConfirmationBlock](available-policy-workflow-blocks/tokenconfirmationblock.md)
 * [mintDocumentBlock](available-policy-workflow-blocks/mintdocumentblock.md)
 * [Events](available-policy-workflow-blocks/events.md)
+* [groupManagerBlock](available-policy-workflow-blocks/groupmanagerblock.md)
 
 ## Policy Workflow Creation using the Guardian User Interface
 
