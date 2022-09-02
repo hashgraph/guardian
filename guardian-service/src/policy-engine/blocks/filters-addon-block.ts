@@ -39,12 +39,21 @@ export class FiltersAddonBlock {
      * Get filters
      * @param user
      */
-    public getFilters(user: IPolicyUser): { [key: string]: string } {
+    public async getFilters(user: IPolicyUser): Promise<{ [key: string]: string }> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const filters = ref.filters[user.id] || {};
         if (ref.options.type === 'dropdown') {
             if (!filters[ref.options.field] && !ref.options.canBeEmpty) {
-                filters[ref.options.field] = '';
+                const data: any[] = await ref.getSources(user, null);
+                const filterValue = findOptions(data[0], ref.options.optionValue);
+                if (filterValue) {
+                    const blockState = this.state[user.id] || {};
+                    blockState.lastValue = filterValue;
+                    this.state[user.id] = blockState;
+                    filters[ref.options.field] = filterValue;
+                } else {
+                    filters[ref.options.field] = '';
+                }
             }
         }
         return filters;

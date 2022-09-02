@@ -29,7 +29,7 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * Get block filters
              * @param user
              */
-            public getFilters(user: IPolicyUser): { [key: string]: string } {
+            public async getFilters(user: IPolicyUser): Promise<{ [key: string]: string }> {
                 if (typeof super.getFilters === 'function') {
                     return super.getFilters(user);
                 }
