@@ -103,6 +103,15 @@
                         </mat-select>
                     </td>
                 </tr>
+                <tr class="propRow"
+                    [attr.collapse]="propHidden.metaData">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell" colspan="2">
+                        <div class="common-properties-button-container">
+                            <button (click)="onChildrenApply(block, block)" mat-stroked-button color="primary" class="common-properties-button">Apply permissions to children</button>
+                        </div>
+                    </td>
+                </tr>
                 <tr class="propRow" [attr.collapse]="propHidden.metaData">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Default Active</td>
