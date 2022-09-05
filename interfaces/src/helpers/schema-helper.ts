@@ -312,17 +312,13 @@ export class SchemaHelper {
             allOf: []
         };
 
-        const properties = document.properties;
-        const required = document.required;
-
-        SchemaHelper.getFieldsFromObject(fields, required, properties, schema.contextURL);
-
         if (conditions.length === 0) {
             delete document.allOf;
         }
 
         const documentConditions = document.allOf;
         for (const element of conditions) {
+            const insertingPosition = fields.indexOf(fields.find(item => element.ifCondition.field.name === item.name)) + 1;
             const ifCondition = {};
             ifCondition[element.ifCondition.field.name] = { 'const': element.ifCondition.fieldValue };
             const condition = {
@@ -337,13 +333,12 @@ export class SchemaHelper {
             let props = {}
 
             SchemaHelper.getFieldsFromObject(element.thenFields, req, props, schema.contextURL);
-            fields.push(...element.thenFields);
+            fields.splice(insertingPosition, 0, ...element.thenFields);
             if (Object.keys(props).length > 0) {
                 condition.then = {
                     'properties': props,
                     'required': req
                 }
-                document.properties = { ...document.properties, ...props };
             }
             else {
                 delete condition.then;
@@ -353,13 +348,12 @@ export class SchemaHelper {
             props = {}
 
             SchemaHelper.getFieldsFromObject(element.elseFields, req, props, schema.contextURL);
-            fields.push(...element.elseFields);
+            fields.splice(insertingPosition + element.thenFields.length, 0, ...element.elseFields);
             if (Object.keys(props).length > 0) {
                 condition.else = {
                     'properties': props,
                     'required': req
                 }
-                document.properties = { ...document.properties, ...props };
             }
             else {
                 delete condition.else;
@@ -367,6 +361,8 @@ export class SchemaHelper {
 
             documentConditions.push(condition);
         }
+
+        SchemaHelper.getFieldsFromObject(fields, document.required, document.properties, schema.contextURL);
 
         return document;
     }
