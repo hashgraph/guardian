@@ -1,10 +1,43 @@
 <div class="custom-field" [formGroup]="form">
-    <div class="custom-field-name">
-        <mat-form-field class="example-full-width" appearance="outline">
-            <mat-label>* Field name</mat-label>
-            <input matInput placeholder="Field name" [formControl]="field.controlName">
-        </mat-form-field>
+    <ng-template [ngIf]="field.controlKey.invalid && field.controlKey.errors">
+        <small class="error-message"
+            *ngIf="field.controlKey.hasError('key')">
+            Key contains invalid characters.
+        </small>
+        <small class="error-message"
+            *ngIf="field.controlKey.hasError('systemName')">
+            Key has a system name.
+        </small>
+    </ng-template>
+    <div class="extended-config" [attr.extended]="extended">
+        <div class="custom-field-name f1">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>* Key</mat-label>
+                <input matInput placeholder="Field name" [formControl]="field.controlKey">
+            </mat-form-field>
+        </div>
+
+        <div class="custom-field-name f2">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>Title</mat-label>
+                <input matInput placeholder="Field name" [formControl]="field.controlTitle">
+            </mat-form-field>
+        </div>
+
+        <div class="custom-field-name f3">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>* Description</mat-label>
+                <input matInput placeholder="Field name" [formControl]="field.controlDescription">
+            </mat-form-field>
+        </div>
+
+        <div class="custom-field-remove f4">
+            <div class="custom-fields-remove" (click)="onRemove(field)">
+                <mat-icon>delete</mat-icon>
+            </div>
+        </div>
     </div>
+
     <div class="custom-field-type">
         <mat-form-field appearance="outline">
             <mat-label>Field type</mat-label>
@@ -44,10 +77,5 @@
         <mat-checkbox color="primary" [formControl]="field.controlArray">
             Allow multiple answers
         </mat-checkbox>
-    </div>
-    <div class="custom-field-remove">
-        <div class="custom-fields-remove" (click)="onRemove(field)">
-            <mat-icon>delete</mat-icon>
-        </div>
     </div>
 </div>

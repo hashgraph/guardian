@@ -3,6 +3,13 @@ import axios from 'axios';
 import { VCDocumentLoader } from './document-loader/vc-document-loader';
 import { DefaultDocumentLoader } from './document-loader/document-loader-default';
 import { VCHelper } from './vc-helper';
+import path from 'path';
+import fs from 'fs';
+
+enum GenerateMode {
+    TEMPLATES = "TEMPLATES",
+    VALUES = "VALUES"
+}
 
 const PORT = process.env.PORT || 3005;
 (async () => {
@@ -18,8 +25,15 @@ const PORT = process.env.PORT || 3005;
     vcHelper.addDocumentLoader(vcDocumentLoader);
     vcHelper.buildDocumentLoader();
 
+    app.get('/templates', async (req: Request, res: Response) => {
+        const directoryPath = path.join(__dirname, '..', 'templates');
+        fs.readdir(directoryPath, function (err, files) {
+            res.status(200).json(files);
+        });
+    });
+
     app.post('/mrv-generate', async (req: Request, res: Response) => {
-        const { num, config, setting } = req.body;
+        const { num, config, setting, mode } = req.body;
         const {
             url,
             topic,
@@ -33,7 +47,8 @@ const PORT = process.env.PORT || 3005;
             context,
             schema,
             policyTag,
-            didDocument
+            didDocument,
+            ref
         } = config;
 
         vcDocumentLoader.setDocument(schema);
@@ -42,22 +57,32 @@ const PORT = process.env.PORT || 3005;
         let document, vc;
         try {
             const date = (new Date()).toISOString();
-            const vcSubject: any = {
+            let vcSubject: any = {
                 ...context
             };
-            if (setting) {
-                const keys = Object.keys(setting);
-                for (let i = 0; i < keys.length; i++) {
-                    const key = keys[i];
-                    const item = setting[key];
-                    if (item.random) {
-                        const _decimal = Math.pow(10, item.decimal + 1);
-                        vcSubject[key] = String(Math.round(Math.random() * _decimal));
-                    } else {
-                        vcSubject[key] = String(item.value);
+
+            switch(mode) {
+                case GenerateMode.TEMPLATES:
+                    let data: any = fs.readFileSync(path.join(__dirname, '..', 'templates', setting.fileName));
+                    vcSubject = Object.assign(vcSubject, JSON.parse(data));
+                    break;
+                case GenerateMode.VALUES:
+                    if (setting) {
+                        const keys = Object.keys(setting);
+                        for (let i = 0; i < keys.length; i++) {
+                            const key = keys[i];
+                            const item = setting[key];
+                            if (item.random) {
+                                const _decimal = Math.pow(10, item.decimal + 1);
+                                vcSubject[key] = String(Math.round(Math.random() * _decimal));
+                            } else {
+                                vcSubject[key] = String(item.value);
+                            }
+                        }
                     }
-                }
+                    break;
             }
+           
             vcSubject.policyId = policyId;
             vcSubject.accountId = hederaAccountId;
 
@@ -72,13 +97,15 @@ const PORT = process.env.PORT || 3005;
 
         const body = {
             document: document,
+            ref: ref,
             owner: installer,
             policyTag: policyTag
         }
+
         try {
             console.log('start post');
             const resp = await axios.post(url, body);
-            console.log('end post', resp);
+            console.log('end post', resp.status);
         } catch (error) {
             console.error(error);
             res.status(500).json(error);

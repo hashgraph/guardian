@@ -25,7 +25,7 @@ form {
 
 .fields {
     padding-top: 12px;
-    padding-bottom: 38px;
+    padding-bottom: 0px;
 }
 
 .custom-fields-type {
@@ -96,7 +96,7 @@ form {
     grid-gap: 6px;
     column-gap: 14px;
     position: relative;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
 .custom-field-name {
@@ -181,7 +181,35 @@ form {
     top: 35px;
     left: 150px;
     right: 150px;
-    border-top: 1px solid #c8c8c8;
+    border-top: 1px solid #ababab;
+}
+
+.block-delimiter {
+    width: 100%;
+    height: 100px;
+    box-sizing: border-box;
+    position: relative;
+}
+.block-delimiter::after {
+    content: attr(data-label);
+    position: absolute;
+    color: #0c77ff;
+    font-size: 20px;
+    font-weight: 500;
+    padding: 10px;
+    background: #fff;
+    left: 50%;
+    top: 30px;
+    transform: translate(-50%, 0px);
+}
+.block-delimiter::before {
+    content: '';
+    position: absolute;
+    height: 2px;
+    top: 50px;
+    left: 0px;
+    right: 0px;
+    border-top: 2px solid #ababab;
 }
 
 
@@ -215,7 +243,7 @@ form {
 .add-btn span, .rmv-btn span {
     display: inline-block;
     position: relative;
-    padding: 3px 30px;
+    padding: 3px 15px 3px 30px;
     height: 24px;
     box-sizing: border-box;
     font-size: 16px;
@@ -244,7 +272,7 @@ form {
 }
 
 .condition-item {
-    border-left: 2px dashed #5a5a5a;
+    border-left: 2px dashed #878787;
     padding-left: 30px;
 }
 
@@ -265,4 +293,8 @@ form {
 
 .custom-field-required-warn mat-icon {
     margin-right: 5px;
+}
+
+.conditions-container {
+    margin-top: 10px;
 }

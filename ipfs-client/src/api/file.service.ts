@@ -1,8 +1,7 @@
-import { NFTStorage } from 'nft.storage';
+import { Web3Storage } from 'web3.storage';
 import Blob from 'cross-blob';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
-import { MongoRepository } from 'typeorm';
 import { Settings } from '../entity/settings';
 import {
     MessageAPI,
@@ -11,9 +10,10 @@ import {
     IGetFileMessage,
     IIpfsSettingsResponse,
     IAddFileMessage,
-    IFileResponse
+    IFileResponse,
+    GenerateUUIDv4
 } from '@guardian/interfaces';
-import { MessageBrokerChannel, MessageError, MessageResponse, Logger } from '@guardian/common';
+import { MessageBrokerChannel, MessageError, MessageResponse, Logger, DataBaseHelper } from '@guardian/common';
 
 /**
  * Public gateway
@@ -28,8 +28,8 @@ export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
  */
 export async function fileAPI(
     channel: MessageBrokerChannel,
-    client: NFTStorage,
-    settingsRepository: MongoRepository<Settings>
+    client: Web3Storage,
+    settingsRepository: DataBaseHelper<Settings>
 ): Promise<void> {
     /**
      * Add file and return hash
@@ -46,8 +46,8 @@ export async function fileAPI(
                 // If get data back from external event
                 fileContent = Buffer.from(data.body, 'base64')
             }
-            const blob = new Blob([fileContent]);
-            const cid = await client.storeBlob(blob);
+            const blob: any = new Blob([fileContent]);
+            const cid = await client.put([blob], { wrapWithDirectory: false });
             const url = `${IPFS_PUBLIC_GATEWAY}/${cid}`;
             channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { cid, url });
 
@@ -57,6 +57,36 @@ export async function fileAPI(
             new Logger().error(error, ['IPFS_CLIENT']);
             return new MessageError(error);
         }
+    })
+
+    /**
+     * Async add file and return hash
+     *
+     * @param {ArrayBuffer} [payload] - file to add
+     *
+     * @returns {string} - task id of adding file
+     */
+    channel.response<IAddFileMessage, any>(MessageAPI.IPFS_ADD_FILE_ASYNC, (msg) => {
+        const taskId = GenerateUUIDv4();
+        setImmediate(async () => {
+            try {
+                let fileContent = Buffer.from(msg.content, 'base64');
+                const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT, msg);
+                if (data && data.body) {
+                    // If get data back from external event
+                    fileContent = Buffer.from(data.body, 'base64')
+                }
+                const blob: any = new Blob([fileContent]);
+                const cid = await client.put([blob], { wrapWithDirectory: false });
+                const url = `${IPFS_PUBLIC_GATEWAY}/${cid}`;
+                channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { cid, url, taskId });
+            }
+            catch (error) {
+                new Logger().error(error, ['IPFS_CLIENT']);
+                channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, { taskId, error });
+            }
+        });
+        return Promise.resolve(new MessageResponse({ taskId }));
     })
 
     /**
@@ -84,7 +114,10 @@ export async function fileAPI(
             const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.cid}`, { responseType: 'arraybuffer', timeout: 20000 });
             let fileContent = fileRes.data;
             if (fileContent instanceof Buffer) {
-                const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, { content: fileContent.toString('base64') });
+                const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, {
+                    responseType: msg.responseType,
+                    content: fileContent.toString('base64'),
+                });
                 if (data && data.body) {
                     // If get data back from external event
                     fileContent = Buffer.from(data.body, 'base64')
@@ -106,6 +139,53 @@ export async function fileAPI(
         }
     })
 
+    channel.response<IGetFileMessage, any>(MessageAPI.IPFS_GET_FILE_ASYNC, async (msg) => {
+        const taskId = GenerateUUIDv4();
+        setImmediate(async () => {
+            try {
+                axiosRetry(axios, {
+                    retries: 3,
+                    shouldResetTimeout: true,
+                    retryCondition: (error) => axiosRetry.isNetworkOrIdempotentRequestError(error)
+                        || error.code === 'ECONNABORTED',
+                    retryDelay: (retryCount) => 10000
+                });
+
+                if (!msg || !msg.cid || !msg.responseType) {
+                    throw new Error('Invalid cid');
+                }
+
+                const fileRes = await axios.get(`${IPFS_PUBLIC_GATEWAY}/${msg.cid}`, { responseType: 'arraybuffer', timeout: 20000 });
+                let fileContent = fileRes.data;
+                if (fileContent instanceof Buffer) {
+                    const data = await channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, { content: fileContent.toString('base64') });
+                    if (data && data.body) {
+                        // If get data back from external event
+                        fileContent = Buffer.from(data.body, 'base64')
+                    }
+                }
+
+                switch (msg.responseType) {
+                    case 'str':
+                        fileContent = Buffer.from(fileContent, 'binary').toString();
+                        break;
+                    case 'json':
+                        fileContent = Buffer.from(fileContent, 'binary').toJSON();
+                        break;
+                    default:
+                        break;
+                }
+
+                channel.publish(ExternalMessageEvents.IPFS_LOADED_FILE, { taskId, fileContent });
+            }
+            catch (error) {
+                new Logger().error(error, ['IPFS_CLIENT']);
+                channel.publish(ExternalMessageEvents.IPFS_LOADED_FILE, { taskId, error });
+            }
+        });
+        return Promise.resolve(new MessageResponse({ taskId }));
+    });
+
     /**
      * Update settings.
      *
@@ -114,24 +194,14 @@ export async function fileAPI(
      */
     channel.response<CommonSettings, any>(MessageAPI.UPDATE_SETTINGS, async (settings) => {
         try {
-            const oldNftApiKey = await settingsRepository.findOne({
-                name: 'NFT_API_KEY'
+            const ipfsStorageApiKey = {
+                name: 'IPFS_STORAGE_API_KEY',
+                value: settings.nftApiKey || settings.ipfsStorageApiKey
+            };
+            await settingsRepository.save(ipfsStorageApiKey, {
+                name: 'IPFS_STORAGE_API_KEY'
             });
-            if (oldNftApiKey) {
-                await settingsRepository.update({
-                    name: 'NFT_API_KEY'
-                }, {
-                    value: settings.nftApiKey
-                });
-            }
-            else {
-                await settingsRepository.save({
-                    name: 'NFT_API_KEY',
-                    value: settings.nftApiKey
-                });
-            }
-
-            client = new NFTStorage({ token: settings.nftApiKey });
+            client = new Web3Storage({ token: settings.nftApiKey || settings.ipfsStorageApiKey } as any);
             return new MessageResponse({});
         }
         catch (error) {
@@ -146,11 +216,12 @@ export async function fileAPI(
      * @return {any} - settings
      */
     channel.response<any, IIpfsSettingsResponse>(MessageAPI.GET_SETTINGS, async (_) => {
-        const nftApiKey = await settingsRepository.findOne({
-            name: 'NFT_API_KEY'
+        const ipfsStorageApiKey = await settingsRepository.findOne({
+            name: 'IPFS_STORAGE_API_KEY'
         });
         return new MessageResponse({
-            nftApiKey: nftApiKey?.value || process.env.NFT_API_KEY
+            nftApiKey: ipfsStorageApiKey?.value || process.env.IPFS_STORAGE_API_KEY,
+            ipfsStorageApiKey: ipfsStorageApiKey?.value || process.env.IPFS_STORAGE_API_KEY
         });
     })
 }

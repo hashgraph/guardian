@@ -16,14 +16,19 @@ export class ConfirmationDialog {
         Validators.required
         );
     title: string = "";
-    description: string = "";
+    description?: string;
+    descriptions?: string[];
 
     constructor(
         public dialogRef: MatDialogRef<ConfirmationDialog>,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         this.title = data.title;
-        this.description = data.description;
+        if(Array.isArray(data.description)) {
+            this.descriptions  = data.description;
+        } else {
+            this.description = data.description;
+        }
     }
 
     ngOnInit() {

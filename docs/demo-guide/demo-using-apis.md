@@ -70,7 +70,7 @@
 {% endswagger-response %}
 {% endswagger %}
 
-![](../.gitbook/assets/API\_2.png)
+![](<../.gitbook/assets/API\_2 (1).png>)
 
 ### 1.5 At present only PolicyRolesBlock is available to the user. Select the "INSTALLER" role.
 
@@ -235,7 +235,7 @@ Years of registration
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](../.gitbook/assets/API\_4.png)
+![](<../.gitbook/assets/API\_4 (1).png>)
 
 ### 1.8 Request the root block and all contained blocks again.
 
@@ -701,7 +701,7 @@ capacity
 
 ![](../.gitbook/assets/API\_9.png)
 
-!\[]\(../.gitbook/assets/image 3.png)
+<figure><img src="../.gitbook/assets/API_10.png" alt=""><figcaption></figcaption></figure>
 
 ### 3.4 Refresh the Blocks
 

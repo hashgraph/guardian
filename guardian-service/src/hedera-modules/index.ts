@@ -1,6 +1,6 @@
 export { HederaSDKHelper } from './hedera-sdk-helper';
 export { timeout } from './utils';
-export { Message } from './message/message';
+export { Message, MessageStatus } from './message/message';
 export { HederaUtils } from './utils';
 export { VcDocument } from './vcjs/vc-document';
 export { VcSubject } from './vcjs/vc-subject';
@@ -25,3 +25,6 @@ export { VPMessage } from './message/vp-message';
 export { Environment } from './environment';
 export { TransactionLogger, TransactionLogLvl } from './transaction-logger';
 export { RegistrationMessage } from './message/registration-message';
+export { TopicHelper } from './topic-helper';
+export { MessageMemo } from './memo-mappings/message-memo';
+export { TopicMemo } from './memo-mappings/topic-memo';

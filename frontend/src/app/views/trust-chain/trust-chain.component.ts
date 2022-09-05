@@ -103,7 +103,7 @@ export class TrustChainComponent implements OnInit {
                     if (vcMint) {
                         this.vpMint = {
                             ...vcMint.credentialSubject[0],
-                            issuer: vcMint.issuer,
+                            issuer: this.getIssuer(vcMint),
                             document: vcMint,
                             schema: vcMint.credentialSubject[0].type,
                             entity: 'Mint',
@@ -121,7 +121,7 @@ export class TrustChainComponent implements OnInit {
                 if (vcPolicy) {
                     this.vpPolicy = {
                         ...vcPolicy.document.credentialSubject[0],
-                        issuer: vcPolicy.document.issuer,
+                        issuer: this.getIssuer(vcPolicy.document),
                         document: vcPolicy.document
                     };
                 } else {
@@ -199,9 +199,20 @@ export class TrustChainComponent implements OnInit {
     }
 
     getParties(item: any): string {
-        if (item.document.issuer in this.userMap) return this.userMap[item.document.issuer];
-        else if (item.owner in this.userMap) return this.userMap[item.owner];
+        let issuer = this.getIssuer(item.document);
+        if (issuer in this.userMap) {
+            return this.userMap[issuer];
+        } else if (item.owner in this.userMap) {
+            return this.userMap[item.owner];
+        }
+        return issuer;
+    }
 
-        return item.document.issuer;
+    getIssuer(document: any): string {
+        if (typeof document.issuer === 'string') {
+            return document.issuer;
+        } else {
+            return document.issuer.id;
+        }
     }
 }

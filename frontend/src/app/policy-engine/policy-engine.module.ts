@@ -63,9 +63,15 @@ import { DocumentValidatorConfigComponent } from './policy-configuration/blocks/
 import { TokenConfirmationConfigComponent } from './policy-configuration/blocks/tokens/token-confirmation-config/token-confirmation-config.component';
 import { TokenConfirmationBlockComponent } from './policy-viewer/blocks/token-confirmation-block/token-confirmation-block.component';
 import { SaveBeforeDialogComponent } from './helpers/save-before-dialog/save-before-dialog.component';
+import { PoliciesComponent } from './policies/policies.component';
+import { GroupManagerConfigComponent } from './policy-configuration/blocks/main/group-manager-config/group-manager-config.component';
+import { GroupManagerBlockComponent } from './policy-viewer/blocks/group-manager-block/group-manager-block.component';
+import { InviteDialogComponent } from './helpers/invite-dialog/invite-dialog.component';
+import { DocumentPath } from './helpers/document-path/document-path.component';
 
 @NgModule({
     declarations: [
+        PoliciesComponent,
         PolicyConfigurationComponent,
         DocumentSourceComponent,
         CommonPropertiesComponent,
@@ -120,7 +126,11 @@ import { SaveBeforeDialogComponent } from './helpers/save-before-dialog/save-bef
         DocumentValidatorConfigComponent,
         TokenConfirmationConfigComponent,
         TokenConfirmationBlockComponent,
-	SaveBeforeDialogComponent
+        SaveBeforeDialogComponent,
+        GroupManagerConfigComponent,
+        GroupManagerBlockComponent,
+        InviteDialogComponent,
+        DocumentPath
     ],
     imports: [
         CommonModule,
@@ -133,6 +143,7 @@ import { SaveBeforeDialogComponent } from './helpers/save-before-dialog/save-bef
         DragDropModule
     ],
     exports: [
+        PoliciesComponent,
         ButtonBlockComponent,
         ButtonConfigComponent,
         RevokeConfigComponent,
@@ -178,7 +189,10 @@ import { SaveBeforeDialogComponent } from './helpers/save-before-dialog/save-bef
         TokenActionConfigComponent,
         DocumentValidatorConfigComponent,
         TokenConfirmationConfigComponent,
-        TokenConfirmationBlockComponent
+        TokenConfirmationBlockComponent,
+        GroupManagerConfigComponent,
+        GroupManagerBlockComponent,
+        InviteDialogComponent
     ],
     providers: [
         RegisteredBlocks

@@ -1,10 +1,15 @@
 import { IAuthUser } from '@api/auth.interface';
 import { sign, verify } from 'jsonwebtoken';
-import { getMongoRepository } from 'typeorm';
 import { User } from '@entity/user';
 import * as util from 'util';
 import crypto from 'crypto';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import {
+    MessageBrokerChannel,
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper
+} from '@guardian/common';
 import {
     AuthEvents, UserRole,
     IGetUserByTokenMessage,
@@ -43,7 +48,7 @@ export class AccountService {
 
             try {
                 const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, process.env.ACCESS_TOKEN_SECRET, {});
-                const user = await getMongoRepository(User).findOne({ username: decryptedToken.username });
+                const user = await new DataBaseHelper(User).findOne({ username: decryptedToken.username });
                 return new MessageResponse(user);
             } catch (error) {
                 return new MessageError(error);
@@ -52,7 +57,7 @@ export class AccountService {
 
         this.channel.response<IRegisterNewUserMessage, User>(AuthEvents.REGISTER_NEW_USER, async (msg) => {
             try {
-                const userRepository = getMongoRepository(User);
+                const userRepository = new DataBaseHelper(User);
 
                 const { username, password, role } = msg;
                 const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
@@ -69,7 +74,7 @@ export class AccountService {
                     parent: null,
                     did: null
                 });
-                return new MessageResponse(await getMongoRepository(User).save(user));
+                return new MessageResponse(await userRepository.save(user));
 
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
@@ -82,7 +87,7 @@ export class AccountService {
                 const { username, password } = msg;
                 const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
-                const user = await getMongoRepository(User).findOne({ username });
+                const user = await new DataBaseHelper(User).findOne({ username });
                 if (user && passwordDigest === user.password) {
                     const accessToken = sign({
                         username: user.username,
@@ -107,7 +112,7 @@ export class AccountService {
 
         this.channel.response<any, IGetAllUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS, async (_) => {
             try {
-                const userAccounts = (await getMongoRepository(User).find({ role: UserRole.USER })).map((e) => ({
+                const userAccounts = (await new DataBaseHelper(User).find({ role: UserRole.USER })).map((e) => ({
                     username: e.username,
                     parent: e.parent,
                     did: e.did
@@ -121,7 +126,7 @@ export class AccountService {
 
         this.channel.response<any, IStandardRegistryUserResponse[]>(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS, async (_) => {
             try {
-                const userAccounts = (await getMongoRepository(User).find({ role: UserRole.STANDARD_REGISTRY })).map((e) => ({
+                const userAccounts = (await new DataBaseHelper(User).find({ role: UserRole.STANDARD_REGISTRY })).map((e) => ({
                     username: e.username,
                     did: e.did
                 }));
@@ -134,7 +139,7 @@ export class AccountService {
 
         this.channel.response<any, IGetDemoUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO, async (_) => {
             try {
-                const userAccounts = (await getMongoRepository(User).find()).map((e) => ({
+                const userAccounts = (await new DataBaseHelper(User).findAll()).map((e) => ({
                     parent: e.parent,
                     did: e.did,
                     username: e.username,
@@ -151,7 +156,7 @@ export class AccountService {
             const { username } = msg;
 
             try {
-                return new MessageResponse(await getMongoRepository(User).findOne({ username }));
+                return new MessageResponse(await new DataBaseHelper(User).findOne({ username }));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
@@ -162,7 +167,7 @@ export class AccountService {
             const { did } = msg;
 
             try {
-                return new MessageResponse(await getMongoRepository(User).findOne({ did }));
+                return new MessageResponse(await new DataBaseHelper(User).findOne({ did }));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
@@ -173,7 +178,7 @@ export class AccountService {
             const { account } = msg;
 
             try {
-                return new MessageResponse(await getMongoRepository(User).findOne({ hederaAccountId: account }));
+                return new MessageResponse(await new DataBaseHelper(User).findOne({ hederaAccountId: account }));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
@@ -184,7 +189,7 @@ export class AccountService {
             const { dids } = msg;
 
             try {
-                return new MessageResponse(await getMongoRepository(User).find({
+                return new MessageResponse(await new DataBaseHelper(User).find({
                     where: {
                         did: { $in: dids }
                     }
@@ -199,7 +204,7 @@ export class AccountService {
             const { role } = msg;
 
             try {
-                return new MessageResponse(await getMongoRepository(User).find({ role }));
+                return new MessageResponse(await new DataBaseHelper(User).find({ role }));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
@@ -210,7 +215,7 @@ export class AccountService {
             const { username, item } = msg;
 
             try {
-                return new MessageResponse(await getMongoRepository(User).update({ username }, item));
+                return new MessageResponse(await new DataBaseHelper(User).update(item, { username }));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
@@ -221,7 +226,7 @@ export class AccountService {
             const { user } = msg;
 
             try {
-                return new MessageResponse(await getMongoRepository(User).save(user));
+                return new MessageResponse(await new DataBaseHelper(User).save(user));
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);

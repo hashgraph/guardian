@@ -210,7 +210,7 @@ export class SchemaHelper {
      * @param contextURL
      * @param defs
      */
-    public static parseFields(document: ISchemaDocument, contextURL: string, defs?: any): SchemaField[] {
+    public static parseFields(document: ISchemaDocument, contextURL: string, defs?: any, includeSystemProperties: boolean = false): SchemaField[] {
         const fields: SchemaField[] = [];
 
         if (!document || !document.properties) {
@@ -227,7 +227,7 @@ export class SchemaHelper {
         const properties = Object.keys(document.properties);
         for (const name of properties) {
             const property = document.properties[name];
-            if (property.readOnly) {
+            if (!includeSystemProperties && property.readOnly) {
                 continue;
             }
             const field = SchemaHelper.parseField(name, property, !!required[name], contextURL);
@@ -366,14 +366,18 @@ export class SchemaHelper {
      * @private
      */
     private static getFieldsFromObject(fields: SchemaField[], required: string[], properties: any, contextURL: string, condition = false) {
-        for (let i = 0; i < fields.length; i++) {
-            const field = fields[i];
-            const name = (!field.readOnly && !condition) ? `field${i}` : field.name;
-            const property = SchemaHelper.buildField(field, name, contextURL);
-            if (field.required) {
-                required.push(name);
+        for (const field of fields) {
+            const property = SchemaHelper.buildField(field, field.name, contextURL);
+            if (/\s/.test(field.name)) {
+                throw new Error(`Field key '${field.name}' must not contain spaces`);
             }
-            properties[name] = property;
+            if (properties[field.name]) {
+                continue;
+            }
+            if (field.required) {
+                required.push(field.name);
+            }
+            properties[field.name] = property;
         }
     }
 
@@ -459,28 +463,26 @@ export class SchemaHelper {
             document = JSON.parse(document) as ISchemaDocument;
         }
 
-        const { version, uuid } = SchemaHelper.parseRef(document.$id);
-        let { previousVersion } = SchemaHelper.parseSchemaComment(document.$comment);
+        const { uuid } = SchemaHelper.parseRef(document.$id);
+        const { previousVersion } = SchemaHelper.parseSchemaComment(document.$comment);
 
-        let _version = data.version || version;
         const _owner = data.creator || data.owner;
         const _uuid = data.uuid || uuid;
 
         if (!ModelHelper.checkVersionFormat(newVersion)) {
             throw new Error('Invalid version format');
         }
-        if (ModelHelper.versionCompare(newVersion, _version) <= 0) {
-            throw new Error('Version must be greater than ' + _version);
-        }
-        previousVersion = _version;
-        _version = newVersion;
 
-        data.version = _version;
+        if (ModelHelper.versionCompare(newVersion, previousVersion) <= 0) {
+            throw new Error('Version must be greater than ' + previousVersion);
+        }
+
+        data.version = newVersion;
         data.owner = _owner;
         data.creator = _owner;
         data.uuid = _uuid;
 
-        const type = SchemaHelper.buildType(_uuid, _version);
+        const type = SchemaHelper.buildType(_uuid, newVersion);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
         document.$comment = SchemaHelper.buildSchemaComment(
@@ -799,5 +801,21 @@ export class SchemaHelper {
         } catch (error) {
             return {};
         }
+    }
+
+    /**
+     * Check Schema Key
+     * @param schema
+     * @private
+     */
+    public static checkSchemaKey(schema: ISchema): boolean {
+        if (schema?.document?.properties) {
+            for (const key in schema?.document?.properties) {
+                if (/\s/.test(key)) {
+                    throw new Error(`Field key '${key}' must not contain spaces`);
+                }
+            }
+        }
+        return true;
     }
 }

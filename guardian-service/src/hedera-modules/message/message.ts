@@ -10,7 +10,9 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
  */
 export enum MessageStatus {
     ISSUE = 'ISSUE',
-    REVOKE = 'REVOKE'
+    REVOKE = 'REVOKE',
+    DELETED = 'DELETED',
+    WITHDRAW = 'WITHDRAW'
 }
 
 /**
@@ -43,10 +45,6 @@ export abstract class Message {
     public lang: string;
 
     /**
-     * Message action
-     */
-    public readonly action: MessageAction;
-    /**
      * Message type
      */
     public readonly type: MessageType;
@@ -67,20 +65,24 @@ export abstract class Message {
      */
     protected _status: MessageStatus;
     /**
-     * Revoke message
-     * @protected
-     */
-    protected _revokeMessage: string;
-    /**
-     * Revoke reason
-     * @protected
-     */
-    protected _revokeReason: string;
-    /**
      * Parent ids
      * @protected
      */
     protected _parentIds: string[];
+    /**
+     * Status message
+     * @protected
+     */
+    protected _statusMessage: string;
+    /**
+     * Revoke reason
+     * @protected
+     */
+    protected _statusReason: string;
+    /**
+     * Message action
+     */
+    protected _action: MessageAction;
 
     /**
      * Response type
@@ -90,12 +92,19 @@ export abstract class Message {
     }
 
     constructor(action: MessageAction, type: MessageType) {
-        this.action = action;
         this.type = type;
+        this.lang = 'en-US';
+        this._action = action;
         this._responseType = 'str';
         this._id = GenerateUUIDv4();
         this._status = MessageStatus.ISSUE;
-        this.lang = 'en-US';
+    }
+
+    /**
+     * Message action
+     */
+    public get action(): MessageAction {
+        return this._action;
     }
 
     /**
@@ -204,11 +213,25 @@ export abstract class Message {
      */
     public revoke(message: string, parentIds?: string[]): void {
         this._status = MessageStatus.REVOKE;
-        this._revokeMessage = message;
-        this._revokeReason = parentIds
+        this._statusMessage = message;
+        this._statusReason = parentIds
             ? RevokeReason.ParentRevoked
             : RevokeReason.DocumentRevoked;
         this._parentIds = parentIds;
+        this._action = MessageAction.RevokeDocument;
+    }
+
+    /**
+     * Delete
+     * @param message
+     * @param parentIds
+     */
+    public delete(message: string, parentIds?: string[]): void {
+        this._status = MessageStatus.DELETED;
+        this._statusMessage = message;
+        this._parentIds = parentIds;
+        this._statusReason = 'Document Deleted';
+        this._action = MessageAction.DeleteDocument;
     }
 
     /**
@@ -216,6 +239,18 @@ export abstract class Message {
      */
     public isRevoked() {
         return this._status === MessageStatus.REVOKE;
+    }
+
+    /**
+     * Change message status
+     * @param status
+     * @param message
+     */
+    public setMessageStatus(status: MessageStatus, message: string): void {
+        this._status = status;
+        this._statusMessage = message;
+        this._statusReason = 'Change Status';
+        this._action = MessageAction.ChangeMessageStatus;
     }
 
     /**
@@ -229,15 +264,37 @@ export abstract class Message {
                 type: this.type,
                 action: this.action,
                 lang: this.lang,
-                revokeMessage: this._revokeMessage,
-                reason: this._revokeReason,
+                revokeMessage: this._statusMessage,
+                reason: this._statusReason,
                 parentIds: this._parentIds
             }
             return JSON.stringify(body);
-        } else {
+        } else if (this._status === MessageStatus.DELETED) {
+            const body: MessageBody = {
+                id: this._id,
+                status: this._status,
+                type: this.type,
+                action: this.action,
+                lang: this.lang,
+                deleteMessage: this._statusMessage,
+                reason: this._statusReason
+            }
+            return JSON.stringify(body);
+        } else if (this._status === MessageStatus.ISSUE) {
             const body = this.toMessageObject();
             body.id = this._id;
             body.status = this._status;
+            return JSON.stringify(body);
+        } else {
+            const body: MessageBody = {
+                id: this._id,
+                status: this._status,
+                type: this.type,
+                action: this.action,
+                lang: this.lang,
+                statusMessage: this._statusMessage,
+                reason: this._statusReason
+            }
             return JSON.stringify(body);
         }
     }
@@ -248,5 +305,32 @@ export abstract class Message {
      */
     public setLang(lang: string) {
         this.lang = lang || 'en-US';
+    }
+
+    /**
+     * From message object
+     * @param json
+     */
+    protected static _fromMessageObject<T extends Message>(message: T, json: MessageBody): T {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+        message._id = json.id;
+        message._status = json.status;
+        if (message._status === MessageStatus.REVOKE) {
+            message._statusMessage = json.revokeMessage;
+            message._statusReason = json.reason;
+            return message;
+        } else if (message._status === MessageStatus.DELETED) {
+            message._statusMessage = json.deleteMessage;
+            message._statusReason = json.reason;
+            return message;
+        } else if (message._status === MessageStatus.ISSUE) {
+            return message;
+        } else {
+            message._statusMessage = json.statusMessage;
+            message._statusReason = json.reason;
+            return message;
+        }
     }
 }

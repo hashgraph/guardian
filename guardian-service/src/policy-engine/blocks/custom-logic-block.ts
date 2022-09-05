@@ -1,17 +1,13 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyCalculateBlock } from '@policy-engine/policy-engine.interface';
-import { getMongoRepository } from 'typeorm';
-import { Schema as SchemaCollection } from '@entity/schema';
+import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { VcHelper } from '@helpers/vc-helper';
 import { SchemaHelper } from '@guardian/interfaces';
-import { Inject } from '@helpers/decorators/inject';
-import { Users } from '@helpers/users';
 import * as mathjs from 'mathjs';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
@@ -39,13 +35,6 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 })
 export class CustomLogicBlock {
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
      * After init callback
      */
     public afterInit() {
@@ -61,7 +50,7 @@ export class CustomLogicBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    public async runAction(event: IPolicyEvent<any>) {
+    public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
         try {
@@ -69,7 +58,7 @@ export class CustomLogicBlock {
             ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
         } catch (error) {
-            ref.error(error.message);
+            ref.error(PolicyUtils.getErrorMessage(error));
         }
     }
 
@@ -78,10 +67,10 @@ export class CustomLogicBlock {
      * @param state
      * @param user
      */
-    execute(state: any, user: IAuthUser): Promise<any> {
+    execute(state: IPolicyEventState, user: IPolicyUser): Promise<any> {
         return new Promise((resolve, reject) => {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
-            let documents = null;
+            let documents: IPolicyDocument[] = null;
             if (Array.isArray(state.data)) {
                 documents = state.data;
             } else {
@@ -90,20 +79,17 @@ export class CustomLogicBlock {
 
             const done = async (result) => {
                 try {
-                    const root = await this.users.getHederaAccount(ref.policyOwner);
-                    const outputSchema = await getMongoRepository(SchemaCollection).findOne({
-                        iri: ref.options.outputSchema,
-                        topicId: ref.topicId
-                    });
+                    const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+                    const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
                     const context = SchemaHelper.getContext(outputSchema);
-                    const owner = documents[0].owner;
                     const relationships = documents.filter(d => !!d.messageId).map(d => d.messageId);
                     const VCHelper = new VcHelper();
+                    const owner = PolicyUtils.getDocumentOwner(ref, documents[0]);
 
                     const processing = async (document) => {
 
                         const newVC = await VCHelper.createVC(
-                            root.did,
+                            ref.policyOwner,
                             root.hederaAccountKey,
                             {
                                 ...context,
@@ -112,18 +98,11 @@ export class CustomLogicBlock {
                             }
                         );
 
-                        return PolicyUtils.createVCRecord(
-                            ref.policyId,
-                            ref.tag,
-                            null,
-                            newVC,
-                            {
-                                type: outputSchema.iri,
-                                schema: outputSchema.iri,
-                                owner,
-                                relationships
-                            }
-                        );
+                        const item = PolicyUtils.createVC(ref, owner, newVC);
+                        item.type = outputSchema.iri;
+                        item.schema = outputSchema.iri;
+                        item.relationships = relationships.length ? relationships : null;
+                        return item;
                     }
 
                     if (Array.isArray(result)) {

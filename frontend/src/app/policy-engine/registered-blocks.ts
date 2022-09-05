@@ -38,6 +38,8 @@ import { TokenActionConfigComponent } from "./policy-configuration/blocks/tokens
 import { DocumentValidatorConfigComponent } from "./policy-configuration/blocks/documents/document-validator-config/document-validator-config.component";
 import { TokenConfirmationConfigComponent } from "./policy-configuration/blocks/tokens/token-confirmation-config/token-confirmation-config.component";
 import { TokenConfirmationBlockComponent } from "./policy-viewer/blocks/token-confirmation-block/token-confirmation-block.component";
+import { GroupManagerConfigComponent } from './policy-configuration/blocks/main/group-manager-config/group-manager-config.component';
+import { GroupManagerBlockComponent } from './policy-viewer/blocks/group-manager-block/group-manager-block.component';
 
 export enum BlockType {
     Container = 'interfaceContainerBlock',
@@ -68,7 +70,8 @@ export enum BlockType {
     ButtonBlock = 'buttonBlock',
     TokenActionBlock = 'tokenActionBlock',
     DocumentValidatorBlock = 'documentValidatorBlock',
-    TokenConfirmationBlock = 'tokenConfirmationBlock'
+    TokenConfirmationBlock = 'tokenConfirmationBlock',
+    GroupManagerBlock = 'groupManagerBlock'
 }
 
 export enum BlockGroup {
@@ -263,6 +266,7 @@ export class RegisteredBlocks {
         const allowedChildrenStepContainerBlocks = [
             { type: BlockType.Information },
             { type: BlockType.PolicyRoles },
+            { type: BlockType.GroupManagerBlock },
             { type: BlockType.Action },
             { type: BlockType.Container },
             { type: BlockType.Step },
@@ -313,6 +317,14 @@ export class RegisteredBlocks {
             header: BlockHeaders.UIComponents,
             factory: RolesBlockComponent,
             property: RolesConfigComponent
+        });
+        this.registerBlock({
+            type: BlockType.GroupManagerBlock,
+            icon: 'groups',
+            group: BlockGroup.Main,
+            header: BlockHeaders.UIComponents,
+            factory: GroupManagerBlockComponent,
+            property: GroupManagerConfigComponent
         });
         this.registerBlock({
             type: BlockType.Information,

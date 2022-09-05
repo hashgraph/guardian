@@ -17,6 +17,10 @@ jobs:
         uses: supercharge/mongodb-github-action@1.7.0
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
+      - name: Start NatsMQ
+        uses: onichandame/nats-action@master
+        with:
+          port: "4222"
       - name: Build
         run: |
           pushd interfaces
@@ -27,7 +31,11 @@ jobs:
           npm install
           npm run build
           popd
-          pushd frontend
+          pushd logger-service
+          npm install
+          npm run build
+          popd
+          pushd auth-service
           npm install
           npm run build
           popd
@@ -35,11 +43,15 @@ jobs:
           npm install
           npm run build
           popd
-          pushd message-broker
+          pushd worker-service
           npm install
           npm run build
           popd
-          pushd ui-service
+          pushd ipfs-client
+          npm install
+          npm run build
+          popd
+          pushd api-gateway
           npm install
           npm run build
           popd
@@ -53,6 +65,9 @@ jobs:
           popd
         env:
           CI: true
+          OPERATOR_ID: ${{ secrets.OPERATOR_ID }}
+          OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
+          IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
       - name: Publish API Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()

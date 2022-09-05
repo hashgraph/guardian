@@ -75,7 +75,8 @@ export class HeaderComponent implements OnInit {
         }, {
             name: "Policies",
             disabled: false,
-            link: '/policy-viewer'
+            link: '/policy-viewer',
+            pattern: new RegExp('^\/policy-viewer\/\\w+')
         }, {
             name: "Policies configuration",
             disabled: false,
@@ -226,8 +227,14 @@ export class HeaderComponent implements OnInit {
     }
 
     isActive(link: any) {
+        if (this.activeLink == link.link || this.activeLinkRoot == link.link) {
+            return true;
+        }
         if (link.links) {
             return link.links.indexOf(this.activeLink) !== -1;
+        }
+        if (link.pattern) {
+            return link.pattern.test(this.activeLink);
         }
         return this.activeLink == link.link || this.activeLinkRoot == link.link;
     }

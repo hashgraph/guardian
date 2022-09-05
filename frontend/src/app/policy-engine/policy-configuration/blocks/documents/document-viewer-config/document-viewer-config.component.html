@@ -36,13 +36,15 @@
                 </mat-icon>
             </td>
             <td class="propRowCell cellName">Field {{i}}</td>
-            <td class="propRowCell">{{field.name}}</td>
+            <td class="propRowCell">
+                {{field.name}}
+            </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Name</td>
+            <td class="propRowCell cellName">Field Path</td>
             <td class="propRowCell">
-                <input [(ngModel)]="field.name" [readonly]="readonly">
+                <document-path [(value)]="field.name" [readonly]="readonly"></document-path>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">

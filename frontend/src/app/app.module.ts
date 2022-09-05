@@ -35,7 +35,7 @@ import { SettingsService } from './services/settings.service';
 import { LoggerService } from './services/logger.service';
 import { AdminHeaderComponent } from './views/admin/admin-header/admin-panel.component';
 import { LogsViewComponent } from './views/admin/logs-view/logs-view.component';
-import { SettingsViewComponent } from './views/admin/settings-view/settings-viewcomponent';
+import { SettingsViewComponent } from './views/admin/settings-view/settings-view.component';
 import { IconPreviewDialog } from './components/icon-preview-dialog/icon-preview-dialog.component';
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
@@ -44,6 +44,7 @@ import { ConfirmationDialogComponent } from './components/confirmation-dialog/co
 import { InfoComponent } from './components/info/info/info.component';
 import { WebSocketService } from './services/web-socket.service';
 import { MessageTranslationService } from './services/message-translation-service/message-translation-service';
+import { TasksService } from './services/tasks.service';
 
 @NgModule({
     declarations: [
@@ -83,6 +84,7 @@ import { MessageTranslationService } from './services/message-translation-servic
     ],
     exports: [],
     providers: [
+        WebSocketService,
         UserGuard,
         StandardRegistryGuard,
         AuditorGuard,
@@ -91,7 +93,6 @@ import { MessageTranslationService } from './services/message-translation-servic
         TokenService,
         SchemaService,
         AuditService,
-        WebSocketService,
         PolicyEngineService,
         PolicyHelper,
         IPFSService,
@@ -99,6 +100,7 @@ import { MessageTranslationService } from './services/message-translation-servic
         LoggerService,
         DemoService,
         MessageTranslationService,
+        TasksService,
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,

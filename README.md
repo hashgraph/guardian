@@ -1,271 +1,330 @@
-# README
+# Guardian
 
-[![Apache 2.0 License](https://img.shields.io/hexpm/l/apa)](LICENSE) ![Build results](https://github.com/hashgraph/guardian/actions/workflows/main.yml/badge.svg?branch=main) ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/hashgraph/guardian/master/guardian-service?label=version) [![](https://img.shields.io/discord/373889138199494658)](https://discord.com/channels/373889138199494658/898264469786988545)
+[![Apache 2.0 License](https://img.shields.io/hexpm/l/apa)](LICENSE) ![Build results](https://github.com/hashgraph/guardian/actions/workflows/main.yml/badge.svg?branch=main) ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/hashgraph/guardian/master/guardian-service?label=version) [![Discord chat](https://img.shields.io/discord/373889138199494658)](https://discord.com/channels/373889138199494658/898264469786988545)
 
-## Guardian
+## Overview
 
-The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation.
+Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation.
 
-[HIP-19](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-19.md) · [HIP-28](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-28.md) · [HIP-29](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-29.md) · [Report a Bug](https://github.com/hashgraph/guardian/issues) · [Request a Policy or a Feature](https://github.com/hashgraph/guardian/issues)
+[HIP-19](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-19.md) · [HIP-28](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-28.md) · [HIP-29](https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-29.md) · [Report a Bug](CONTRIBUTING#bug-reports) · [Request a Policy or a Feature](CONTRIBUTING#new-policy-or-feature-requests)
 
-### Discovering ESG assets on Hedera
+## Discovering ESG assets on Hedera
 
-As identified in Hedera Improvement Proposal 19 (HIP-19), each transaction on the Hedera network must contain a specific identifier in the memo field for discoverability. The Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. In the memo field of newly minted tokens, you will find a [Verifiable Link](https://github.com/InterWorkAlliance/Sustainability/blob/2d07029cade3050d76f716034593cb067d1c4e7f/vem/supply/verification.md) which will allow users to discover the published standard the token is following and the entire history of the ESG asset and corresponding data to be publicly discoverable. This is further defined in Hedera Improvement Proposal 28 (HIP-28)
+As identified in Hedera Improvement Proposal 19 (HIP-19), each entity on the Hedera network may contain a specific identifier in the memo field for discoverability. Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. In the memo field of newly minted tokens, you will find a [Verifiable Link](https://github.com/InterWorkAlliance/Sustainability/blob/main/vem/supply/verification.md) which will allow users to discover the published standard the token is following and the entire history of the ESG asset and corresponding data to be publicly discoverable. This is further defined in [Hedera Improvement Proposal 28 (HIP-28)](https://hips.hedera.com/hip/hip-28).
 
-([back to top](broken-reference))
+([back to top](#readme))
 
-### Getting Started
+## Getting started
 
-To get a local copy up and running, follow these simple example steps. When building the reference implementation, you can manually build every component or run one command with Docker.
+To get a local copy up and running quickly, follow the steps below. Please refer to <https://docs.hedera.com/guardian> for complete documentation.
 
-#### Prerequisites
+**Note**. If you have already installed another version of Guardian, remember to **perform backup operation before upgrading**.
 
-* [Docker](https://www.docker.com) (To build with one command)
-* [MongoDB](https://www.mongodb.com), [NodeJS](https://nodejs.org) and [Nats](https://nats.io/) (If you build with docker these components will be installed automatically)
+## Prerequisites
+
 * [Hedera Testnet Account](https://portal.hedera.com)
-* [NFT.Storage Account](https://nft.storage/#getting-started)
+* [Web3.Storage Account](https://web3.storage/)
 
-#### Docker Installation
+When building the reference implementation, you can [manually build every component](#manual-installation) or run a single command with Docker.
+
+## Automatic installation
+
+### Prerequisites for automatic installation
+
+* [Docker](https://www.docker.com)
+
+If you build with docker [MongoDB](https://www.mongodb.com), [NodeJS](https://nodejs.org) and [Nats](https://nats.io/) will be installed and configured automatically.
+
+### Installation
 
 1. Clone the repo
 
-    ```
-    git clone https://github.com/hashgraph/guardian.git
-    ```
-2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please keep in mind that this Hedera Operator ID and Operator Key is used for this reference implementation as a placeholder until there is a wallet integration. There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
+   ```shell
+   git clone https://github.com/hashgraph/guardian.git
+   ```
 
-    For example:
+2. Update the following files with your Hedera Testnet account info (see prerequisites) as indicated. Please check complete steps to generate Operation ID and Operator Key by looking at link : [How to Create Operator ID and Operator Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-operator-id-and-operator-key). There will be other steps in the Demo Usage Guide that will require the generation of Operator IDs and Operator Keys. It is important to mention that the Operator IDs and Operator Keys in the .env will be used to generate demo accounts.
 
-    in `guardian-service/.env`:
+   For example:
 
-    ```
-    OPERATOR_ID="0.0.29676495"
-    OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
-    ```
+   in `guardian-service/.env`:
 
-    in `guardian-service/.env.docker`:
+   ```plaintext
+   OPERATOR_ID=""
+   OPERATOR_KEY=""
+   ```
 
-    ```
-    OPERATOR_ID="0.0.29676495"
-    OPERATOR_KEY="302e020100300506032b6570042204202119d6291aab20289f12cdb27a0ae446d6b319054e3de81b03564532b8e03cad"
-    ```
+   in `guardian-service/.env.docker`:
 
-    Note: You can use the Schema Topic ID listed above or you can enter your own if you have one.
+   ```plaintext
+   OPERATOR_ID=""
+   OPERATOR_KEY=""
+   ```
 
-3. Update the following files with your NFT.Storage API KEY. Please follow the steps from https://nft.storage/#getting-started to obtain it.
+   **Note**. You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
+
+3. Update the following files with your Web3.Storage API KEY. Please follow the steps from <https://web3.storage/docs/#quickstart> to obtain it.To know complete information on generating API Key please check [How to Create Web3.Storage API Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-web3.storage-api-key).
 
    For example:
 
    in `ipfs-client/.env`:
 
-   ```
-   NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
+   ```plaintext
+   IPFS_STORAGE_API_KEY=""
    ```
 
-   in `ipfs-client/.env.docker`:
+   or in `ipfs-client/.env.docker`:
 
+   ```plaintext
+   IPFS_STORAGE_API_KEY=""
    ```
-   NFT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGVhNzVBQzEwMmM2QTlCQjc4NDI5NDNlMmMzMUNEMzBmRUNmNUVmMTIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY0MjQyODUxMDUzMywibmFtZSI6IklQRlMifQ.BjD1EJM1OBWmYClDbRoR1O9vrU3_5-Isb292w3PSSAI"
-   ``` 
-4. If you want to build with Docker. Please note that the Docker build is meant to be used in production and will not contain any debug information. (Once this step you are finished)
-   ```
+
+4. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
+
+   ```shell
    docker-compose up -d --build
    ```
-### To Configure Hedera LocalNode
-Need to add following parameters in `.env/.env.docker`:
- ```
-  OPERATOR_ID="0.0.2"
-  OPERATOR_KEY="302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
-  LOCALNODE_ADDRESS="11.11.11.11"
-  LOCALNODE_PROTOCOL="http"
-  HEDERA_NET="localnode"
-  ``` 
-   Note: 
-   1. LOCALNODE_ADDRESS to be changed to your own instance IP Address.The above given value is just shown for an example.
-   2. Default value of HEDERA_NET will be testnet. It should be set to localnode.
-   3. The values of OPERATOR_ID, OPERATOR_KEY are the ones used in the default LocalNode configuration.
-   4. Need to remove INITIALIZATION_TOPIC_ID as the topic will be created automatically. 
-   5. LOCALNODE_PROTOCOL can be http or https depending on server configuration (http is default)
-   
-To setup Local Node instance, please check the link : https://github.com/hashgraph/hedera-local-node#docker   
-#### Manual Installation   
-   
+
+5. Browse to <http://localhost:3000> and complete the setup.
+
+## Manual installation
+
 If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
-  1. **From the interfaces folder**
+### Prerequisites for manual installation
 
-   Build package
-   ```sh
+* [MongoDB](https://www.mongodb.com)
+* [NodeJS](https://nodejs.org)
+* [Nats](https://nats.io/)
+
+### Build and start each component
+
+Install, configure and start all the prerequisites, then build and start each component.
+
+**Note: Once you start each service, please wait for the initialization process to be completed.**
+
+1. Clone the repo
+
+   ```shell
+   git clone https://github.com/hashgraph/guardian.git
+   ```
+
+2. From the **interfaces** folder
+
+   Build package:
+
+   ```shell
    npm install
    npm run build
    ```
 
+3. From the **common** folder
 
-  2. **From the common folder**
+   Build package:
 
-  Build package
-  ```sh
-  npm install
-  npm run build
-  ```
+   ```shell
+   npm install
+   npm run build
+   ```
 
-   3. **From the Logger service folder**
+4. From the **worker-service** folder
 
    To build the service:
 
-   ```
+   ```shell
    npm install
    npm run build
    ```
 
    To start the service:
 
-   ```
+   ```shell
    npm start
    ```
 
-   4. **From the Auth service folder**
+5. From the **logger-service** folder
 
    To build the service:
 
-   ```
+   ```shell
    npm install
    npm run build
    ```
 
    To start the service:
 
-   ```
+   ```shell
    npm start
    ```
 
-   5. **From the IPFS Client folder**
+6. From the **auth-service** folder
 
    To build the service:
 
-   ```
+   ```shell
    npm install
    npm run build
    ```
 
    To start the service:
 
-   ```
+   ```shell
    npm start
    ```
- 
-   6. **From the Guardian Service folder**
+
+7. From the **ipfs-client** folder
 
    To build the service:
 
-   ```
+   ```shell
    npm install
    npm run build
    ```
 
-   To start the service (found on http://localhost:3004):
+   To start the service:
 
-   ```
+   ```shell
    npm start
    ```
 
-   7. **From the API Gateway Service folder**
+8. From the **guardian-service** folder
 
    To build the service:
 
-   ```
+   ```shell
    npm install
    npm run build
    ```
 
-   To start the service (found on http://localhost:3002):
+   To start the service (found on <http://localhost:3004>):
 
-   ```
+   ```shell
    npm start
    ```
 
-   8. **From the MRV Sender Service folder**
+9. From the **api-gateway** folder
 
    To build the service:
 
-   ```
+   ```shell
    npm install
    npm run build
    ```
 
-   To start the service (found on http://localhost:3005):
+   To start the service (found on <http://localhost:3002>):
 
-   ```
+   ```shell
    npm start
    ```
 
-   9. **From the Frontend folder**
+10. From the **mrv-sender** folder
 
-   To build the service:
+    To build the service:
 
+    ```shell
+    npm install
+    npm run build
+    ```
+
+    To start the service (found on <http://localhost:3005>):
+
+    ```shell
+    npm start
+    ```
+
+11. From the **frontend** folder
+
+    To build the service:
+
+    ```shell
+    npm install
+    npm run build
+    ```
+
+    To start the service (found on <http://localhost:4200>):
+
+    ```shell
+    npm start
+    ```
+
+## Configuring a Hedera local network
+
+1. Install a Hedera Local Network following the [official documentation](https://github.com/hashgraph/hedera-local-node#docker)
+
+2. Configure Guardian's configuration files `.env/.env.docker` accordingly:
+
+   ```shell
+   OPERATOR_ID=""
+   OPERATOR_KEY=""
+   LOCALNODE_ADDRESS="11.11.11.11"
+   LOCALNODE_PROTOCOL="http"
+   HEDERA_NET="localnode"
    ```
-   npm install
-   npm run build
+
+   Note:
+
+   * Set `LOCALNODE_ADDRESS` to the IP address of your local node instance. The value above is given as example.
+   * Set `HEDERA_NET` to `localnode`. If not specified, the default value is `testnet`.
+   * Configure `OPERATOR_ID` and `OPERATOR_KEY` accordingly with your local node configuration.
+   * Remove `INITIALIZATION_TOPIC_ID` as the topic will be created automatically.
+   * Set `LOCALNODE_PROTOCOL` to `http` or `https` accordingly with your local node configuration (it uses HTTP by default).
+
+## Local development using Docker
+
+1. create .env file at the root level and update all variable requires for docker
+
+   ```shell
+   cp .env.example .env
    ```
 
-   To start the service (found on http://localhost:4200):
+2. Start local development using docker compose
 
+   ```shell
+   docker-compose -f docker-compose-dev.yml up --build
    ```
-   npm start
-   ```
-  ### Note: Once you start the service, please wait for the Initialization Process to be completed.
-  
-  ### Local development using docker
-  1. create .env file at the root level and update all variable requires for docker
-     ```sh
-        cp .env.example .env
-     ```
-  2. Start local development using docker compose
-     ```
-      docker-compose -f docker-compose-dev.yml up --build
 
-     ```
-  3. Access local development using http://localhost:3000 or http://localhost:4200
+3. Access local development using <http://localhost:3000> or <http://localhost:4200>
 
-  ### Troubleshoot 
-  
-  **To delete all the Containers**
-   ```
+## Troubleshoot
+
+**To delete all the containers**:
+
+   ```shell
    docker builder prune --all
-   
    ```
-   **To run by cleaning Docker Cache**
-   
-   ```
-   docker-compose build --no-cache
-   
-   ```
-([back to top](broken-reference))
 
-### Unit Tests
+**To run by cleaning Docker cache**:
+
+   ```shell
+   docker-compose build --no-cache
+   ```
+
+([back to top](readme))
+
+## Unit tests
 
 To run **guardian-service** unit tests, following commands needs to be executed:
 
-```
+```shell
 cd guardian-service 
 npm run test
 ```
 
 It is also an ability to run Hedera network test only. To do that, the following command needs to be executed:
 
-```
+```shell
 npm run test:network
 ```
 
 To run stability tests (certain transactions will be executed 10 times each), the following command needs to be executed:
 
-```
+```shell
 npm run test:stability
 ```
 
-([back to top](broken-reference))
+([back to top](readme))
 
-For complete documentation on following points. Please refer https://docs.hedera.com/guardian
+Please refer to <https://docs.hedera.com/guardian> for complete documentation about the following topics:
 
 * Swagger API
 * Postman Collection
@@ -278,14 +337,14 @@ For complete documentation on following points. Please refer https://docs.hedera
 * Contributing
 * License
 * Security
-### Contact
+
+## Contact
 
 For any questions, please reach out to the Envision Blockchain Solutions team at:
 
-* Website: \<www.envisionblockchain.com>
+* Website: <www.envisionblockchain.com>
 * Email: [info@envisionblockchain.com](mailto:info@envisionblockchain.com)
 
-([back to top](broken-reference))
-
+([back to top](#readme))
 
 [license-url]: https://github.com/hashgraph/guardian/blob/main/LICENSE

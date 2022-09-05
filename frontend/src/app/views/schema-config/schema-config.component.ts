@@ -14,6 +14,9 @@ import { ExportSchemaDialog } from 'src/app/schema-engine/export-schema-dialog/e
 import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { HttpResponse } from '@angular/common/http';
+import { TasksService } from 'src/app/services/tasks.service';
+import { InformService } from 'src/app/services/inform.service';
+import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
@@ -61,11 +64,16 @@ export class SchemaConfigComponent implements OnInit {
     policyNameByTopic: any;
     system: boolean = false;
 
+    taskId: string | undefined = undefined;
+    expectedTaskMessages: number = 0;
+
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
         private schemaService: SchemaService,
         private policyEngineService: PolicyEngineService,
+        private taskService: TasksService,
+        private informService: InformService,
         private route: ActivatedRoute,
         private router: Router,
         public dialog: MatDialog) {
@@ -199,11 +207,13 @@ export class SchemaConfigComponent implements OnInit {
                         this.loading = false;
                     });
                 } else {
-                    this.schemaService.create(schema, schema.topicId).subscribe((data) => {
-                        this.loadSchemas();
+                    this.schemaService.pushCreate(schema, schema.topicId).subscribe((result) => {
+                        const { taskId, expectation } = result;
+                        this.taskId = taskId;
+                        this.expectedTaskMessages = expectation;
                     }, (e) => {
-                        console.error(e.error);
                         this.loading = false;
+                        this.taskId = undefined;
                     });
                 }
             }
@@ -268,11 +278,13 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.newVersion(schema, element.id).subscribe((data) => {
-                    this.loadSchemas();
+                this.schemaService.newVersion(schema, element.id).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
                 }, (e) => {
-                    console.error(e.error);
                     this.loading = false;
+                    this.taskId = undefined;
                 });
             }
         });
@@ -280,6 +292,7 @@ export class SchemaConfigComponent implements OnInit {
 
     cloneDocument(element: Schema) {
         const newDocument: any = { ...element };
+        delete newDocument._id;
         delete newDocument.id;
         delete newDocument.uuid;
         delete newDocument.creator;
@@ -301,13 +314,13 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-                this.schemaService.create(schema, schema.topicId).subscribe((data) => {
-                    const schemas = SchemaHelper.map(data);
-                    this.schemaMapping(schemas);
-                    this.loadSchemas();
+                this.schemaService.pushCreate(schema, schema.topicId).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
                 }, (e) => {
-                    console.error(e.error);
                     this.loading = false;
+                    this.taskId = undefined;
                 });
             }
         });
@@ -324,15 +337,27 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (version) => {
             if (version) {
                 this.loading = true;
-                this.schemaService.publish(element.id, version).subscribe((data: any) => {
-                    const schemas = SchemaHelper.map(data);
-                    this.schemaMapping(schemas);
-                    this.loadSchemas();
+                this.schemaService.pushPublish(element.id, version).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
                 }, (e) => {
                     this.loading = false;
+                    this.taskId = undefined;
                 });
             }
         });
+    }
+
+    onAsyncError(error: any) {
+        this.informService.processAsyncError(error);
+        this.loading = false;
+        this.taskId = undefined;
+    }
+
+    onAsyncCompleted() {
+        this.taskId = undefined;
+        this.loadSchemas();
     }
 
     unpublished(element: any) {
@@ -347,18 +372,30 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     deleteSchema(element: any) {
-        this.loading = true;
+        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+            data: {
+                dialogTitle: 'Delete schema',
+                dialogText: 'Are you sure to delete schema?'
+            },
+            autoFocus: false
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            if (!result) {
+                return;
+            }
+            
+            this.loading = true;
+            const request = this.system ?
+                this.schemaService.deleteSystemSchemas(element.id) :
+                this.schemaService.delete(element.id);
 
-        const request = this.system ?
-            this.schemaService.deleteSystemSchemas(element.id) :
-            this.schemaService.delete(element.id);
-
-        request.subscribe((data: any) => {
-            const schemas = SchemaHelper.map(data);
-            this.schemaMapping(schemas);
-            this.loadSchemas();
-        }, (e) => {
-            this.loading = false;
+            request.subscribe((data: any) => {
+                const schemas = SchemaHelper.map(data);
+                this.schemaMapping(schemas);
+                this.loadSchemas();
+            }, (e) => {
+                this.loading = false;
+            });
         });
     }
 
@@ -395,16 +432,16 @@ export class SchemaConfigComponent implements OnInit {
             if (result && result.topicId) {
                 this.loading = true;
                 if (type == 'message') {
-                    this.schemaService.importByMessage(data, result.topicId).subscribe((schemas) => {
-                        this.loadSchemas();
-                    }, (e) => {
-                        this.loading = false;
+                    this.schemaService.pushImportByMessage(data, result.topicId).subscribe((result) => {
+                        const { taskId, expectation } = result;
+                        this.taskId = taskId;
+                        this.expectedTaskMessages = expectation;
                     });
                 } else if (type == 'file') {
-                    this.schemaService.importByFile(data, result.topicId).subscribe((schemas) => {
-                        this.loadSchemas();
-                    }, (e) => {
-                        this.loading = false;
+                    this.schemaService.pushImportByFile(data, result.topicId).subscribe((result) => {
+                        const { taskId, expectation } = result;
+                        this.taskId = taskId;
+                        this.expectedTaskMessages = expectation;
                     });
                 }
             }

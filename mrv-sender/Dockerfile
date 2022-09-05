@@ -24,6 +24,7 @@ RUN npm install /usr/interfaces/guardian-interfaces-*.tgz /usr/common/guardian-c
 RUN npm install
 ADD ./mrv-sender/src ./src/.
 ADD ./mrv-sender/public ./public/.
+ADD ./mrv-sender/templates ./templates/.
 RUN npm run build
 
 CMD npm start

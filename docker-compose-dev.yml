@@ -144,7 +144,7 @@ services:
         environment:
             - MQ_ADDRESS=message-broker
             - DB_HOST=mongo
-            - NFT_API_KEY=${NFT_API_KEY}
+            - IPFS_STORAGE_API_KEY=${IPFS_STORAGE_API_KEY}
         command: npm run dev:docker --prefix /app/ipfs-client
 
     mrv-sender:

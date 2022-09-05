@@ -4,7 +4,8 @@
         "target": "es6",
         "lib": [
             "es5",
-            "es6"
+            "es6",
+            "ES2021.String"
         ],
         "moduleResolution": "node",
         "sourceMap": true,
@@ -22,6 +23,7 @@
             "@policy-engine/*": ["policy-engine/*"],
             "@auth/*": ["auth/*"],
             "@hedera-modules": ["hedera-modules/index"],
+            "@database-modules": ["database-modules/index"],
             "@document-loader/*": ["document-loader/*"]
         }
     },

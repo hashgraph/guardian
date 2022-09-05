@@ -13,12 +13,28 @@
         <div class="delimiter"></div>
 
         <ng-template [ngIf]="this.type === 'VC'">
-            <div class="form-field">
+            <div *ngIf="!isIssuerObject" class="form-field">
                 <div class="label-field">Issuer</div>
                 <mat-form-field class="example-full-width" appearance="outline">
                     <input matInput readonly [value]="this.document.issuer || ''">
-
                 </mat-form-field>
+            </div>
+            <div *ngIf="isIssuerObject" class="form-field">
+                <div class="label-field">Issuer</div>
+                <div class="issuer-option">
+                    <div class="form-field">
+                        <div class="label-field">Issuer ID</div>
+                        <mat-form-field class="example-full-width" appearance="outline">
+                            <input matInput readonly [value]="this.document.issuer.id || ''">
+                        </mat-form-field>
+                    </div>
+                    <div *ngFor="let item of issuerOptions" class="form-field">
+                        <div class="label-field">{{item[0]}}</div>
+                        <mat-form-field class="example-full-width" appearance="outline">
+                            <input matInput readonly [value]="item[1]">
+                        </mat-form-field>
+                    </div>
+                </div>
             </div>
             <div class="delimiter"></div>
             <div class="form-field">

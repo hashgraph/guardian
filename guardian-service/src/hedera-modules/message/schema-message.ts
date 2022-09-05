@@ -146,7 +146,8 @@ export class SchemaMessage extends Message {
             throw new Error('JSON Object is empty');
         }
 
-        const message = new SchemaMessage(json.action);
+        let message = new SchemaMessage(json.action);
+        message = Message._fromMessageObject(message, json);
         message._id = json.id;
         message._status = json.status;
         message.name = json.name;

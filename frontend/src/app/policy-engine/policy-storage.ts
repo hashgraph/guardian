@@ -182,12 +182,14 @@ export class PolicyStorage {
         this.save();
     }
 
-    public set(view: string, value: string) {
+    public set(view: string, value: string | null) {
         this._policyStorage.clear();
-        this._policyStorage.push({
-            value: value,
-            view: view
-        });
+        if(value) {
+            this._policyStorage.push({
+                value: value,
+                view: view
+            });
+        }
         this.save();
     }
 

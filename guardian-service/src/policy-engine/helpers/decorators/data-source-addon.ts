@@ -2,7 +2,7 @@ import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces';
 import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { BlockActionError } from '@policy-engine/errors';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Data source addon decorator
@@ -29,11 +29,11 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * Get block filters
              * @param user
              */
-            public getFilters(user): { [key: string]: string } {
+            public async getFilters(user: IPolicyUser): Promise<{ [key: string]: string }> {
                 if (typeof super.getFilters === 'function') {
                     return super.getFilters(user);
                 }
-                return this.filters[user.did];
+                return this.filters[user.id];
             }
 
             /**
@@ -75,11 +75,11 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @protected
              */
-            protected setFilters(filters, user): void {
+            protected setFilters(filters: any, user: IPolicyUser): void {
                 if (typeof super.setFilters === 'function') {
                     super.setFilters(filters, user);
                 } else {
-                    this.filters[user.did] = filters
+                    this.filters[user.id] = filters
                 }
             }
 
@@ -89,7 +89,7 @@ export function DataSourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param globalFilters
              * @protected
              */
-            protected async getSources(user: IAuthUser, globalFilters: any): Promise<any[]> {
+            protected async getSources(user: IPolicyUser, globalFilters: any): Promise<any[]> {
                 const data = [];
                 for (const child of this.children) {
                     if (child.blockClassName === 'SourceAddon') {

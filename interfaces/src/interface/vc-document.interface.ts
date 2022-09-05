@@ -12,19 +12,19 @@ export interface IVCDocument {
     /**
      * Owner
      */
-    owner: string;
+    owner?: string;
     /**
      * Assign
      */
-    assign?: string;
+    assignedTo?: string;
     /**
      * Hash
      */
-    hash: string;
+    hash?: string;
     /**
      * Document instance
      */
-    document: IVC;
+    document?: IVC;
     /**
      * Creation date
      */
@@ -44,7 +44,7 @@ export interface IVCDocument {
     /**
      * Type
      */
-    type: string;
+    type?: string;
     /**
      * Signature
      */
@@ -52,13 +52,13 @@ export interface IVCDocument {
     /**
      * Policy ID
      */
-    policyId: string;
+    policyId?: string;
     /**
      * Tag
      */
-    tag: string;
+    tag?: string;
     /**
      * Option
      */
-    option: any;
+    option?: any;
 }

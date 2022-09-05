@@ -1,4 +1,3 @@
-import { Inject } from '@helpers/decorators/inject';
 import { getVCField } from '@helpers/utils';
 import { Report } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
@@ -13,13 +12,10 @@ import {
     SchemaEntity,
 } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
-import { Users } from '@helpers/users';
-import { getMongoRepository } from 'typeorm';
-import { VpDocument } from '@entity/vp-document';
-import { VcDocument } from '@entity/vc-document';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Report block
@@ -44,12 +40,6 @@ import { IAuthUser } from '@guardian/common';
 })
 export class ReportBlock {
     /**
-     * Users helper
-     */
-    @Inject()
-    public users: Users;
-
-    /**
      * Block state
      * @private
      */
@@ -69,7 +59,8 @@ export class ReportBlock {
         if (map[did]) {
             return map[did];
         } else {
-            const curUser = await this.users.getUserById(did);
+            const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
+            const curUser = await PolicyUtils.getUser(ref, did);
             if (curUser) {
                 map[did] = curUser.username;
                 return map[did];
@@ -123,10 +114,10 @@ export class ReportBlock {
      * @param user
      * @param uuid
      */
-    async getData(user: IAuthUser, uuid: string): Promise<any> {
+    async getData(user: IPolicyUser, uuid: string): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
-            const blockState = this.state[user.did] || {};
+            const blockState = this.state[user.id] || {};
             if (!blockState.lastValue) {
                 return {
                     hash: null,
@@ -152,7 +143,7 @@ export class ReportBlock {
                 documents
             }
 
-            const vp = await getMongoRepository(VpDocument).findOne({ hash, policyId: ref.policyId });
+            const vp = await ref.databaseServer.getVpDocument({ hash, policyId: ref.policyId });
 
             if (vp) {
                 const vpDocument: IVPReport = {
@@ -192,7 +183,7 @@ export class ReportBlock {
                 variables.documentId = doc.id;
                 variables.documentSubjectId = doc.credentialSubject[0].id;
             } else {
-                const vc = await getMongoRepository(VcDocument).findOne({ hash, policyId: ref.policyId })
+                const vc = await ref.databaseServer.getVcDocument({ hash, policyId: ref.policyId })
 
                 if (vc) {
                     const vcDocument: IVCReport = {
@@ -210,7 +201,7 @@ export class ReportBlock {
                 }
             }
 
-            const policy = await getMongoRepository(VcDocument).findOne({
+            const policy = await ref.databaseServer.getVcDocument({
                 type: SchemaEntity.POLICY,
                 policyId: ref.policyId
             });
@@ -228,7 +219,7 @@ export class ReportBlock {
                 }
                 report.policyDocument = policyDocument;
 
-                const policyCreator = await getMongoRepository(VcDocument).findOne({
+                const policyCreator = await ref.databaseServer.getVcDocument({
                     type: SchemaEntity.POLICY,
                     owner: policy.owner
                 });
@@ -270,13 +261,13 @@ export class ReportBlock {
      * @param user
      * @param data
      */
-    async setData(user: IAuthUser, data: any) {
+    async setData(user: IPolicyUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
             const value = data.filterValue;
-            const blockState = this.state[user.did] || {};
+            const blockState = this.state[user.id] || {};
             blockState.lastValue = value;
-            this.state[user.did] = blockState;
+            this.state[user.id] = blockState;
         } catch (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }

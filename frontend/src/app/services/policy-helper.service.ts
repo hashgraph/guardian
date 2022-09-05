@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, ActivationStart, NavigationEnd, Router } from '@angular/router';
 import { Observable, Subject, Subscription, of } from 'rxjs';
 
 @Injectable()
@@ -10,7 +10,12 @@ export class PolicyHelper {
 
     constructor(private route: ActivatedRoute, private router: Router) {
         this.subject = new Subject();
-        this.route.queryParams.subscribe(this.parsParams.bind(this));
+        this.parsParams(router.url);
+        router.events.subscribe((event: any) => {
+            if (event instanceof NavigationEnd) {
+                this.parsParams(event.url);
+            }
+        });
     }
 
     public subscribe(
@@ -21,20 +26,25 @@ export class PolicyHelper {
         return this.subject.subscribe(next, error, complete);
     }
 
-    private parsParams(params: any) {
+    private parsParams(url: any) {
         try {
             this.policyId = null;
             this.policyParams = {};
-            if (params) {
-                if (params.policyId) {
-                    this.policyId = params.policyId;
+            if (url) {
+                const params = /^\/policy-viewer\/(\w+)(.*)/.exec(url);
+                if(params) {
+                    this.policyId = params[1];
+                    if (params[2]) {
+                        const urlParams = new URLSearchParams(params[2]);
+                        const policyParams = urlParams.get('policyParams');
+                        if(policyParams) {
+                            const json = atob(policyParams);
+                            this.policyParams = JSON.parse(json);
+                        }
+                    }
                 }
-                if (params.policyParams) {
-                    const json = atob(params.policyParams);
-                    this.policyParams = JSON.parse(json);
-                }
+                this.subject.next();
             }
-            this.subject.next();
         } catch (error) {
             this.policyId = null;
             this.policyParams = {};
