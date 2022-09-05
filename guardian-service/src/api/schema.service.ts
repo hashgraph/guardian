@@ -445,8 +445,9 @@ async function updateSchemaDocument(schema: SchemaCollection, allSchemas?: Schem
  * @param defs Definitions
  * @param version Version
  * @param owner Owner
+ * @param root HederaAccount
  */
-export async function publishDefsSchemas(defs: any, version: string, owner: string) {
+export async function publishDefsSchemas(defs: any, version: string, owner: string, root: any) {
     if (!defs) {
         return;
     }
@@ -458,7 +459,7 @@ export async function publishDefsSchemas(defs: any, version: string, owner: stri
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
             schema = await incrementSchemaVersion(schema.iri, owner);
-            await findAndPublishSchema(schema.id, schema.version, owner, emptyNotifier());
+            await findAndPublishSchema(schema.id, schema.version, owner, root, emptyNotifier());
         }
     }
 }
@@ -468,9 +469,16 @@ export async function publishDefsSchemas(defs: any, version: string, owner: stri
  * @param id
  * @param version
  * @param owner
+ * @param root
  * @param notifier
  */
-export async function findAndPublishSchema(id: string, version: string, owner: string, notifier: INotifier): Promise<SchemaCollection> {
+export async function findAndPublishSchema(
+    id: string,
+    version: string,
+    owner: string,
+    root: any,
+    notifier: INotifier
+): Promise<SchemaCollection> {
     notifier.start('Load schema');
 
     let item = await DatabaseServer.getSchema(id);
@@ -489,12 +497,9 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
 
     notifier.completedAndStart('Publishing related schemas');
     const oldSchemaId = item.document?.$id;
-    await publishDefsSchemas(item.document?.$defs, version, owner);
+    await publishDefsSchemas(item.document?.$defs, version, root, owner);
     item = await DatabaseServer.getSchema(id);
 
-    notifier.completedAndStart('Resolve Hedera account');
-    const users = new Users();
-    const root = await users.getHederaAccount(owner);
     notifier.completedAndStart('Resolve topic');
     const topic = await DatabaseServer.getTopicById(item.topicId);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
@@ -817,7 +822,9 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             }
 
             const { id, version, owner } = msg;
-            const item = await findAndPublishSchema(id, version, owner, emptyNotifier());
+            const users = new Users();
+            const root = await users.getHederaAccount(owner);
+            const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
             return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -835,7 +842,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                     notifier.error('Invalid id');
                 }
 
-                const item = await findAndPublishSchema(id, version, owner, notifier);
+                notifier.completedAndStart('Resolve Hedera account');
+                const users = new Users();
+                const root = await users.getHederaAccount(owner);
+                const item = await findAndPublishSchema(id, version, owner, root, notifier);
                 notifier.result(item.id);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
