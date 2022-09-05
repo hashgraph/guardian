@@ -25,6 +25,7 @@ import {
     MessageServer,
     MessageType,
     PolicyMessage,
+    TokenMessage,
     TopicHelper
 } from '@hedera-modules'
 import { findAllEntities, replaceAllEntities, SchemaFields } from '@helpers/utils';
@@ -478,6 +479,16 @@ export class PolicyEngineService {
         const zip = await PolicyImportExportHelper.generateZipFile(model);
         const buffer = await zip.generateAsync({ type: 'arraybuffer' });
 
+        notifier.completedAndStart('Token');
+        const tokenIds = findAllEntities(model.config, ['tokenId']);
+        const tokens = await DatabaseServer.getTokens({ tokenId: { $in: tokenIds }, owner: model.owner });
+        for (const token of tokens) {
+            const tokenMessage = new TokenMessage(MessageAction.UseToken);
+            tokenMessage.setDocument(token);
+            await messageServer
+                .sendMessage(tokenMessage);
+        }
+
         notifier.completedAndStart('Create topic');
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         let rootTopic = await topicHelper.create({
@@ -497,15 +508,14 @@ export class PolicyEngineService {
             .sendMessage(message);
         model.messageId = result.getId();
         model.instanceTopicId = rootTopic.topicId;
+
         notifier.completedAndStart('Link topic and policy');
         await topicHelper.twoWayLink(rootTopic, topic, result.getId());
 
-        notifier.completedAndStart('Update policy schema');
+        notifier.completedAndStart('Create VC');
         const messageId = result.getId();
         const url = result.getUrl();
-
         const policySchema = await DatabaseServer.getSchemaByType(model.topicId, SchemaEntity.POLICY);
-
         const vcHelper = new VcHelper();
         let credentialSubject: any = {
             id: messageId,
@@ -524,8 +534,6 @@ export class PolicyEngineService {
             const schemaObject = new Schema(policySchema);
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
-
-        notifier.completedAndStart('Create VC');
         const vc = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
         await DatabaseServer.saveVC({
             hash: vc.toCredentialHash(),
@@ -536,6 +544,7 @@ export class PolicyEngineService {
         });
 
         logger.info('Published Policy', ['GUARDIAN_SERVICE']);
+
         notifier.completedAndStart('Saving in DB');
         const retVal = await DatabaseServer.updatePolicy(model);
         notifier.completed();
