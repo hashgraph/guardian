@@ -28,7 +28,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 @NgModule({
     declarations: [],
@@ -58,7 +59,8 @@ import {MatButtonToggleModule} from '@angular/material/button-toggle';
         MatTooltipModule,
         MatSlideToggleModule,
         MatPaginatorModule,
-        MatButtonToggleModule
+        MatButtonToggleModule,
+        DragDropModule
     ],
     exports: [
         MatTabsModule,
@@ -89,7 +91,8 @@ import {MatButtonToggleModule} from '@angular/material/button-toggle';
         MatSortModule,
         MatChipsModule,
         MatAutocompleteModule,
-        MatButtonToggleModule
+        MatButtonToggleModule,
+        DragDropModule
     ]
 })
 export class MaterialModule { }
