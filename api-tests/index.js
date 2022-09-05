@@ -9,7 +9,6 @@ const { sleep, GenerateTokens } = require("./helpers");
 
 const { Accounts } = require("./test-suits/accounts");
 const { Profiles } = require("./test-suits/profiles");
-const { Trustchains } = require("./test-suits/trustchains");
 
 
 const processes = [];
