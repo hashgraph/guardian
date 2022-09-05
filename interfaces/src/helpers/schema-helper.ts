@@ -14,7 +14,7 @@ export class SchemaHelper {
      * @param required
      * @param url
      */
-    public static parseField(name: string, property: any, required: boolean, url: string): SchemaField {
+    public static parseField(name: string, property: any, required: boolean, url: string): [SchemaField, number] {
         const field: SchemaField = {
             name: null,
             title: null,
@@ -34,6 +34,7 @@ export class SchemaHelper {
             customType: null,
         };
         let _property = property;
+        const readonly = _property.readOnly;
         if (_property.oneOf && _property.oneOf.length) {
             _property = _property.oneOf[0];
         }
@@ -45,7 +46,12 @@ export class SchemaHelper {
             _property = _property.items;
         }
         field.isRef = !!_property.$ref;
-
+        const {
+            unit,
+            unitSystem,
+            customType,
+            orderPosition
+        } = SchemaHelper.parseFieldComment(_property.$comment);
         if (field.isRef) {
             field.type = _property.$ref;
             const { type } = SchemaHelper.parseRef(field.type);
@@ -54,7 +60,6 @@ export class SchemaHelper {
                 context: [url]
             };
         } else {
-            const { unit, unitSystem, customType } = SchemaHelper.parseFieldComment(_property.$comment);
             field.type = _property.type ? String(_property.type) : null;
             field.format = _property.format ? String(_property.format) : null;
             field.pattern = _property.pattern ? String(_property.pattern) : null;
@@ -62,9 +67,9 @@ export class SchemaHelper {
             field.unitSystem = unitSystem ? String(unitSystem) : null;
             field.customType = customType ? String(customType) : null;
         }
-        field.readOnly = !!_property.readOnly;
+        field.readOnly = !!(_property.readOnly || readonly);
         field.required = required;
-        return field;
+        return [field, orderPosition];
     }
 
     /**
@@ -73,7 +78,7 @@ export class SchemaHelper {
      * @param name
      * @param contextURL
      */
-    public static buildField(field: SchemaField, name: string, contextURL: string): any {
+    public static buildField(field: SchemaField, name: string, contextURL: string, orderPosition?: number): any {
         let item: any;
         const property: any = {};
 
@@ -102,7 +107,7 @@ export class SchemaHelper {
             }
         }
 
-        property.$comment = SchemaHelper.buildFieldComment(field, name, contextURL);
+        property.$comment = SchemaHelper.buildFieldComment(field, name, contextURL, orderPosition);
 
         return property;
     }
@@ -224,13 +229,14 @@ export class SchemaHelper {
             }
         }
 
+        const fieldsWithPositions = [];
         const properties = Object.keys(document.properties);
         for (const name of properties) {
             const property = document.properties[name];
             if (!includeSystemProperties && property.readOnly) {
                 continue;
             }
-            const field = SchemaHelper.parseField(name, property, !!required[name], contextURL);
+            const [field, orderPosition] = SchemaHelper.parseField(name, property, !!required[name], contextURL);
             if (field.isRef) {
                 const subSchemas = defs || document.$defs;
                 const subDocument = subSchemas[field.type];
@@ -239,10 +245,19 @@ export class SchemaHelper {
                 field.fields = subFields;
                 field.conditions = conditions;
             }
-            fields.push(field);
+            if (orderPosition) {
+                fieldsWithPositions.push({field, orderPosition});
+            } else {
+                fields.push(field);
+            }
+
         }
 
-        return fields;
+        return fields.concat(
+            fieldsWithPositions
+                .sort((a,b) => a.orderPosition - b.orderPosition)
+                .map(item => item.field)
+        );
     }
 
     /**
@@ -300,7 +315,7 @@ export class SchemaHelper {
         const properties = document.properties;
         const required = document.required;
 
-        SchemaHelper.getFieldsFromObject(fields, required, properties, schema.contextURL, false);
+        SchemaHelper.getFieldsFromObject(fields, required, properties, schema.contextURL);
 
         if (conditions.length === 0) {
             delete document.allOf;
@@ -321,7 +336,7 @@ export class SchemaHelper {
             let req = []
             let props = {}
 
-            SchemaHelper.getFieldsFromObject(element.thenFields, req, props, schema.contextURL, true);
+            SchemaHelper.getFieldsFromObject(element.thenFields, req, props, schema.contextURL);
             fields.push(...element.thenFields);
             if (Object.keys(props).length > 0) {
                 condition.then = {
@@ -337,7 +352,7 @@ export class SchemaHelper {
             req = []
             props = {}
 
-            SchemaHelper.getFieldsFromObject(element.elseFields, req, props, schema.contextURL, true);
+            SchemaHelper.getFieldsFromObject(element.elseFields, req, props, schema.contextURL);
             fields.push(...element.elseFields);
             if (Object.keys(props).length > 0) {
                 condition.else = {
@@ -365,9 +380,10 @@ export class SchemaHelper {
      * @param condition
      * @private
      */
-    private static getFieldsFromObject(fields: SchemaField[], required: string[], properties: any, contextURL: string, condition = false) {
+    private static getFieldsFromObject(fields: SchemaField[], required: string[], properties: any, contextURL: string) {
+        const fieldsWithoutSystemFields = fields.filter(item => !item.readOnly);
         for (const field of fields) {
-            const property = SchemaHelper.buildField(field, field.name, contextURL);
+            const property = SchemaHelper.buildField(field, field.name, contextURL, fieldsWithoutSystemFields.indexOf(field));
             if (/\s/.test(field.name)) {
                 throw new Error(`Field key '${field.name}' must not contain spaces`);
             }
@@ -746,7 +762,7 @@ export class SchemaHelper {
      * @param name
      * @param url
      */
-    public static buildFieldComment(field: SchemaField, name: string, url: string): string {
+    public static buildFieldComment(field: SchemaField, name: string, url: string, orderPosition?: number): string {
         const comment: any = {};
         comment.term = name;
         comment['@id'] = field.isRef ?
@@ -760,6 +776,9 @@ export class SchemaHelper {
         }
         if (field.customType) {
             comment.customType = field.customType;
+        }
+        if (Number.isInteger(orderPosition) && orderPosition >= 0) {
+            comment.orderPosition = orderPosition;
         }
         return JSON.stringify(comment);
     }
