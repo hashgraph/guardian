@@ -37,12 +37,15 @@
 
     <div *ngIf="fields && fields.length" class="fields">
         <div class="custom-fields">
-            <ng-container *ngFor="let field of fields">
+            <div *ngFor="let field of fields" cdkDragLockAxis="y" cdkDrag class="custom-schema-field">
+                <div class="re-order-handler" cdkDragHandle>
+                    <mat-icon>drag_handle</mat-icon>
+                </div>
                 <schema-field-configuration [form]="dataForm" [field]="field" [types]="types"
                     [measureTypes]="measureTypes" [schemaTypes]="schemaTypes" [extended]="extended"
                     (remove)="onRemove(field)">
                 </schema-field-configuration>
-            </ng-container>
+            </div>
         </div>
     </div>
 
@@ -113,15 +116,19 @@
                     </div>
 
                     <p class="condition-label">THEN</p>
-                    <div *ngIf="condition.thenControls">
-                        <div class="custom-fields">
-                            <ng-container *ngFor="let conditionField of condition.thenControls">
-                                <schema-field-configuration
-                                    [form]="dataForm" [field]="conditionField" [types]="types"
+                    <div class="condition-container" *ngIf="condition.thenControls">
+                        <div class="custom-fields" cdkDropList [cdkDropListData]="condition.thenControls"
+                            (cdkDropListDropped)="drop($event)" [cdkDropListAutoScrollDisabled]>
+                            <div *ngFor="let conditionField of condition.thenControls" cdkDragLockAxis="y" cdkDrag
+                                class="custom-schema-field">
+                                <div class="re-order-handler" cdkDragHandle>
+                                    <mat-icon>drag_handle</mat-icon>
+                                </div>
+                                <schema-field-configuration [form]="dataForm" [field]="conditionField" [types]="types"
                                     [measureTypes]="measureTypes" [schemaTypes]="schemaTypes" [extended]="extended"
                                     (remove)="onConditionFieldRemove(condition, conditionField, 'then')">
                                 </schema-field-configuration>
-                            </ng-container>
+                            </div>
                         </div>
                     </div>
                     <div class="add-btn" (click)="onConditionFieldAdd(condition, 'then')">
@@ -131,14 +138,19 @@
                     </div>
 
                     <p class="condition-label">ELSE</p>
-                    <div *ngIf="condition.elseControls">
-                        <div class="custom-fields">
-                            <ng-container *ngFor="let conditionField of condition.elseControls">
+                    <div class="condition-container" *ngIf="condition.elseControls">
+                        <div class="custom-fields" cdkDropList [cdkDropListData]="condition.elseControls"
+                            (cdkDropListDropped)="drop($event)" [cdkDropListAutoScrollDisabled]>
+                            <div *ngFor="let conditionField of condition.elseControls" cdkDragLockAxis="y" cdkDrag
+                                class="custom-schema-field">
+                                <div class="re-order-handler" cdkDragHandle>
+                                    <mat-icon>drag_handle</mat-icon>
+                                </div>
                                 <schema-field-configuration [form]="dataForm" [field]="conditionField" [types]="types"
                                     [measureTypes]="measureTypes" [schemaTypes]="schemaTypes" [extended]="extended"
                                     (remove)="onConditionFieldRemove(condition, conditionField, 'else')">
                                 </schema-field-configuration>
-                            </ng-container>
+                            </div>
                         </div>
                     </div>
 

@@ -24,6 +24,7 @@ import { takeUntil } from 'rxjs/operators';
 import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 import { ConditionControl } from '../condition-control';
 import { FieldControl } from '../field-control';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 /**
  * Schemas constructor
@@ -47,6 +48,7 @@ export class SchemaConfigurationComponent implements OnInit {
     @Input('extended') extended!: boolean;
 
     @Output('change-form') changeForm = new EventEmitter<any>();
+    @Output('change-fields') changeFields = new EventEmitter<any>();
 
     started = false;
     fields!: FieldControl[];
@@ -239,6 +241,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 })
             }
             this.fields = [];
+            this.changeFields.emit(this.fields);
             this.conditions = [];
         }
         if (changes.value && this.value) {
@@ -330,6 +333,7 @@ export class SchemaConfigurationComponent implements OnInit {
 
     updateFieldControls(fields: SchemaField[], conditionsFields: string[]) {
         this.fields = [];
+        this.changeFields.emit(this.fields);
         for (const field of fields) {
             if (field.readOnly || conditionsFields.find(elem => elem === field.name)) {
                 continue;
@@ -462,11 +466,13 @@ export class SchemaConfigurationComponent implements OnInit {
         control.append(this.fieldsForm)
         this.fields.push(control);
         this.fields = this.fields.slice();
+        this.changeFields.emit(this.fields);
     }
 
     onRemove(item: FieldControl) {
         this.removeConditionsByField(item);
         this.fields = this.fields.filter(e => e != item);
+        this.changeFields.emit(this.fields);
         item.remove(this.fieldsForm);
     }
 
@@ -849,5 +855,9 @@ export class SchemaConfigurationComponent implements OnInit {
 
             return error;
         };
+    }
+
+    drop(event: CdkDragDrop<any[]>) {
+        moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     }
 }
