@@ -11,7 +11,7 @@
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "dotenv": "^16.0.0",
+    "dotenv": "^16.0.2",
     "express": "^4.17.3",
     "js-yaml": "^4.1.0",
     "swagger-ui-express": "^4.3.0"
