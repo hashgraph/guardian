@@ -486,3 +486,18 @@ div[disabled="true"] {
     color: inherit;
     user-select: inherit;
 }
+
+.common-properties-button {
+    width: 99%;
+    font-size: 12px;
+    line-height: 25px;
+    color: #6166ff;
+    background-color: white;
+}
+
+.common-properties-button-container {
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    padding: 3px;
+}

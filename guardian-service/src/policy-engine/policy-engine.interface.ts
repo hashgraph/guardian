@@ -480,7 +480,7 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * Get filters
      * @param user
      */
-    getFilters(user: IPolicyUser): { [key: string]: string };
+    getFilters(user: IPolicyUser): Promise<{ [key: string]: string }>;
 
     /**
      * Set filters

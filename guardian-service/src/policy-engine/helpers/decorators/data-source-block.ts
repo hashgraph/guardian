@@ -69,7 +69,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 const dynFilters = {};
                 for (const child of this.children) {
                     if (child.blockClassName === 'DataSourceAddon') {
-                        for (const [key, value] of Object.entries(child.getFilters(user))) {
+                        for (const [key, value] of Object.entries(await child.getFilters(user))) {
                             dynFilters[key] = { $eq: value };
                         }
                     }

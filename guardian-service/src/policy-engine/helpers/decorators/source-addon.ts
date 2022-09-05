@@ -52,11 +52,11 @@ export function SourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @protected
              */
-            protected getFilters(user): { [key: string]: string } {
+            protected async getFilters(user): Promise<{ [key: string]: string }> {
                 const filters = {};
 
                 for (const addon of this.getAddons()) {
-                    Object.assign(filters, (addon as any).getFilters(user));
+                    Object.assign(filters, await (addon as any).getFilters(user));
                 }
 
                 return filters;
