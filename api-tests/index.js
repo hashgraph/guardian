@@ -4,15 +4,12 @@ dotenv.config();
 const { spawn } = require('child_process');
 const kill = require('tree-kill');
 const path = require('path');
-const fs = require('fs');
 
 const { sleep, GenerateTokens } = require("./helpers");
 
 const { Accounts } = require("./test-suits/accounts");
 const { Profiles } = require("./test-suits/profiles");
-const { Schemas } = require("./test-suits/schemas");
 const { Trustchains } = require("./test-suits/trustchains");
-const { Policies } = require("./test-suits/policies");
 
 
 const processes = [];
