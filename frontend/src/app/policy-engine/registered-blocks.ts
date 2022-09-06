@@ -29,7 +29,7 @@ import { ReassigningConfigComponent } from "./policy-configuration/blocks/docume
 import { TimerConfigComponent } from "./policy-configuration/blocks/documents/timer-config/timer-config.component";
 import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
 import { SwitchConfigComponent } from "./policy-configuration/blocks/main/switch-config/switch-config.component";
-import { PolicyBlockModel } from "./policy-model";
+import { PolicyBlockModel } from "./structures/policy-model";
 import { RevokeConfigComponent } from "./policy-configuration/blocks/documents/revoke-config/revoke-config.component";
 import { ButtonConfigComponent } from "./policy-configuration/blocks/main/button-config/button-config.component";
 import { ButtonBlockComponent } from "./policy-viewer/blocks/button-block/button-block.component";
@@ -40,193 +40,14 @@ import { TokenConfirmationConfigComponent } from "./policy-configuration/blocks/
 import { TokenConfirmationBlockComponent } from "./policy-viewer/blocks/token-confirmation-block/token-confirmation-block.component";
 import { GroupManagerConfigComponent } from './policy-configuration/blocks/main/group-manager-config/group-manager-config.component';
 import { GroupManagerBlockComponent } from './policy-viewer/blocks/group-manager-block/group-manager-block.component';
-
-export enum BlockType {
-    Container = 'interfaceContainerBlock',
-    DocumentsViewer = 'interfaceDocumentsSourceBlock',
-    Information = 'informationBlock',
-    PolicyRoles = 'policyRolesBlock',
-    Request = 'requestVcDocumentBlock',
-    SendToGuardian = 'sendToGuardianBlock',
-    Action = 'interfaceActionBlock',
-    Step = 'interfaceStepBlock',
-    Mint = 'mintDocumentBlock',
-    ExternalData = 'externalDataBlock',
-    AggregateDocument = 'aggregateDocumentBlock',
-    Wipe = 'retirementDocumentBlock',
-    FiltersAddon = 'filtersAddon',
-    DocumentsSourceAddon = 'documentsSourceAddon',
-    Calculate = 'calculateContainerBlock',
-    CalculateMathAddon = 'calculateMathAddon',
-    Report = 'reportBlock',
-    ReportItem = 'reportItemBlock',
-    ReassigningBlock = 'reassigningBlock',
-    PaginationAddon = 'paginationAddon',
-    TimerBlock = 'timerBlock',
-    CustomLogicBlock = 'customLogicBlock',
-    Switch = 'switchBlock',
-    RevokeBlock = 'revokeBlock',
-    SetRelationshipsBlock = 'setRelationshipsBlock',
-    ButtonBlock = 'buttonBlock',
-    TokenActionBlock = 'tokenActionBlock',
-    DocumentValidatorBlock = 'documentValidatorBlock',
-    TokenConfirmationBlock = 'tokenConfirmationBlock',
-    GroupManagerBlock = 'groupManagerBlock'
-}
-
-export enum BlockGroup {
-    Main = 'Main',
-    Documents = 'Documents',
-    Tokens = 'Tokens',
-    Calculate = 'Calculate',
-    Report = 'Report',
-    UnGrouped = 'UnGrouped'
-}
-
-export enum BlockHeaders {
-    UIComponents = 'UI Components',
-    ServerBlocks = 'Server Blocks',
-    Addons = 'Addons'
-}
-
-export interface IBlockAbout {
-    post: boolean;
-    get: boolean;
-    input: any;
-    output: any;
-    children: ChildrenType;
-    control: ControlType;
-    defaultEvent: boolean;
-    prev?: IBlockAbout;
-    next?: boolean;
-}
-
-type ConfigFunction<T> = ((value: any, block: PolicyBlockModel, prev?: IBlockAbout, next?: boolean) => T) | T;
-
-export interface IBlockAboutConfig {
-    post: boolean;
-    get: boolean;
-    input: any;
-    output: any;
-    children: ChildrenType;
-    control: ControlType;
-    defaultEvent: boolean;
-}
-
-export interface IBlockDynamicAboutConfig {
-    post?: ConfigFunction<boolean>;
-    get?: ConfigFunction<boolean>;
-    input?: ConfigFunction<any>;
-    output?: ConfigFunction<any>;
-    children?: ConfigFunction<ChildrenType>;
-    control?: ConfigFunction<ControlType>;
-    defaultEvent?: ConfigFunction<boolean>;
-}
-
-export enum ChildrenType {
-    None = 'None',
-    Special = 'Special',
-    Any = 'Any',
-}
-
-export enum ControlType {
-    UI = 'UI',
-    Special = 'Special',
-    Server = 'Server',
-    None = 'None',
-}
-
-export class BlockAbout {
-    private _propFunc: { [x: string]: Function } = {};
-    private _propVal: { [x: string]: any } = {};
-    private _setProp(about: any, dynamic: any, name: string) {
-        this._propVal[name] = about[name];
-        if (dynamic && dynamic[name]) {
-            this._propFunc[name] = dynamic[name];
-        } else {
-            this._propFunc[name] = (value: any, block: any, prev?: IBlockAbout, next?: boolean) => {
-                return this._propVal[name];
-            };
-        }
-    }
-
-    constructor(about: IBlockAboutConfig, dynamic?: IBlockDynamicAboutConfig) {
-        this._setProp(about, dynamic, 'post');
-        this._setProp(about, dynamic, 'get');
-        this._setProp(about, dynamic, 'input');
-        this._setProp(about, dynamic, 'output');
-        this._setProp(about, dynamic, 'children');
-        this._setProp(about, dynamic, 'control');
-        this._setProp(about, dynamic, 'defaultEvent');
-    }
-
-    public get(block: PolicyBlockModel): IBlockAbout {
-        return {
-            post: this._propFunc.post(this._propVal.post, block),
-            get: this._propFunc.get(this._propVal.get, block),
-            input: this._propFunc.input(this._propVal.input, block),
-            output: this._propFunc.output(this._propVal.output, block),
-            children: this._propFunc.children(this._propVal.children, block),
-            control: this._propFunc.control(this._propVal.control, block),
-            defaultEvent: this._propFunc.defaultEvent(this._propVal.defaultEvent, block),
-        }
-    }
-
-    public bind(block: PolicyBlockModel, prev?: IBlockAbout, next?: boolean): IBlockAbout {
-        const bind = {
-            _block: block,
-            _prev: prev,
-            _next: next,
-            _func: this._propFunc,
-            _val: this._propVal,
-            get post() {
-                return this._func.post(this._val.post, this._block, this._prev, this._next);
-            },
-            get get() {
-                return this._func.get(this._val.get, this._block, this._prev, this._next);
-            },
-            get input() {
-                return this._func.input(this._val.input, this._block, this._prev, this._next);
-            },
-            get output() {
-                return this._func.output(this._val.output, this._block, this._prev, this._next);
-            },
-            get children() {
-                return this._func.children(this._val.children, this._block, this._prev, this._next);
-            },
-            get control() {
-                return this._func.control(this._val.control, this._block, this._prev, this._next);
-            },
-            get defaultEvent() {
-                return this._func.defaultEvent(this._val.defaultEvent, this._block, this._prev, this._next);
-            },
-            set prev(value: IBlockAbout) {
-                this._prev = value;
-            },
-            set next(value: boolean) {
-                this._next = value;
-            }
-        }
-        return bind
-    }
-}
-
-export interface IBlockSetting {
-    type: BlockType;
-    icon: string;
-    group: BlockGroup;
-    header: BlockHeaders;
-    factory: any;
-    property: any;
-    allowedChildren?: ChildrenDisplaySettings[];
-    about?: IBlockDynamicAboutConfig
-}
-
-export interface ChildrenDisplaySettings {
-    type: BlockType,
-    group?: BlockGroup,
-    header?: BlockHeaders
-}
+import { BlockType } from "./structures/types/block-type.type";
+import { BlockGroup } from "./structures/types/block-group.type";
+import { BlockHeaders } from "./structures/types/block-headers.type";
+import { IBlockAbout } from "./structures/interfaces/block-about.interface";
+import { ChildrenType } from "./structures/types/children-type.type";
+import { ControlType } from "./structures/types/control-type.type";
+import { BlockAbout } from "./structures/block-about";
+import { IBlockSetting } from "./structures/interfaces/block-setting.interface";
 
 @Injectable()
 export class RegisteredBlocks {
@@ -240,6 +61,7 @@ export class RegisteredBlocks {
     private about: any;
     private allowedChildren: any;
     private dynamicAbout: any;
+    private customProperties: any;
 
     private readonly defaultA = new BlockAbout({
         post: false,
@@ -262,6 +84,7 @@ export class RegisteredBlocks {
         this.about = {};
         this.allowedChildren = {};
         this.dynamicAbout = {};
+        this.customProperties = {};
 
         const allowedChildrenStepContainerBlocks = [
             { type: BlockType.Information },
@@ -288,7 +111,8 @@ export class RegisteredBlocks {
             { type: BlockType.ButtonBlock },
             { type: BlockType.TokenActionBlock },
             { type: BlockType.TokenConfirmationBlock },
-            { type: BlockType.DocumentValidatorBlock }
+            { type: BlockType.DocumentValidatorBlock },
+            { type: BlockType.MultiSigBlock }
         ];
 
         // Main, UI Components
@@ -504,6 +328,14 @@ export class RegisteredBlocks {
                 group: BlockGroup.UnGrouped
             }]
         });
+        this.registerBlock({
+            type: BlockType.MultiSigBlock,
+            icon: 'send',
+            group: BlockGroup.Documents,
+            header: BlockHeaders.ServerBlocks,
+            factory: null,
+            property: null,
+        });
 
         // Documents, Addons
         this.registerBlock({
@@ -588,7 +420,7 @@ export class RegisteredBlocks {
             factory: TokenConfirmationBlockComponent,
             property: TokenConfirmationConfigComponent,
         });
-        
+
         // Calculate, Server Blocks
         this.registerBlock({
             type: BlockType.Calculate,
@@ -673,6 +505,7 @@ export class RegisteredBlocks {
                 control: setting.control,
                 defaultEvent: setting.defaultEvent
             }, this.dynamicAbout[type]);
+            this.customProperties[type] = setting?.properties;
         }
     }
 
@@ -680,6 +513,7 @@ export class RegisteredBlocks {
         this.names = {};
         this.titles = {};
         this.about = {};
+        this.customProperties = {};
     }
 
     public getHeader(blockType: string): string {
@@ -726,6 +560,10 @@ export class RegisteredBlocks {
     public bindAbout(blockType: string, block: any, prev?: IBlockAbout, next?: boolean): IBlockAbout {
         const f: BlockAbout = this.about[blockType] || this.defaultA;
         return f.bind(block, prev, next);
+    }
+
+    public getCustomProperties(blockType: string): any[] {
+        return this.customProperties[blockType];
     }
 
     public newBlock(type: BlockType): BlockNode {

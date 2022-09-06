@@ -3,7 +3,7 @@ import { Schema, Token } from '@guardian/interfaces';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 import { MatDialog } from '@angular/material/dialog';
 import { CronConfigDialog } from '../../../../helpers/cron-config-dialog/cron-config-dialog.component';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 
 /**
  * Settings for block of 'aggregateDocument' type.

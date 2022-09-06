@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, HostListener, Injectable, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { PolicyBlockModel, PolicyEventModel, PolicyModel } from '../../policy-model';
+import { PolicyBlockModel, PolicyEventModel, PolicyModel } from '../../structures/policy-model';
 import { RegisteredBlocks } from '../../registered-blocks';
 import { TreeFlatOverview } from '../tree-flat-overview/tree-flat-overview';
 

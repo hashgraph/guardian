@@ -1,7 +1,8 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
 import { BlockErrorActions, GenerateUUIDv4, Schema, Token } from '@guardian/interfaces';
-import { IBlockAbout, RegisteredBlocks } from '../../registered-blocks';
-import { PolicyBlockModel, PolicyEventModel, PolicyModel } from '../../policy-model';
+import { RegisteredBlocks } from '../../registered-blocks';
+import { IBlockAbout } from "../../structures/interfaces/block-about.interface";
+import { PolicyBlockModel, PolicyEventModel, PolicyModel } from '../../structures/policy-model';
 
 /**
  * Settings for all blocks.
@@ -27,6 +28,7 @@ export class CommonPropertiesComponent implements OnInit {
     propHidden: any = {
         about: true,
         metaData: false,
+        customProperties: false,
         eventsGroup: {}
     };
 
@@ -54,6 +56,7 @@ export class CommonPropertiesComponent implements OnInit {
     inputEvents: any[] = [];
     outputEvents: any[] = [];
     defaultEvent: boolean = false;
+    customProperties?: any[];
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -182,6 +185,7 @@ export class CommonPropertiesComponent implements OnInit {
             this.configContainer.clear();
             const factory: any = this.registeredBlocks.getProperties(block.blockType);
             this.about = this.registeredBlocks.bindAbout(block.blockType, block);
+            this.customProperties = this.registeredBlocks.getCustomProperties(block.blockType);
             if (factory) {
                 let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
                 let componentRef: any = this.configContainer.createComponent(componentFactory);
@@ -195,7 +199,7 @@ export class CommonPropertiesComponent implements OnInit {
     }
 
     onSave() {
-        if(this.block) {
+        if (this.block) {
             this.block.emitUpdate();
         }
     }

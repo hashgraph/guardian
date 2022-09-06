@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@
 import { MatDialog } from '@angular/material/dialog';
 import { Schema, Token } from '@guardian/interfaces';
 import { IconPreviewDialog } from 'src/app/components/icon-preview-dialog/icon-preview-dialog.component';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 import { API_IPFS_GATEWAY_URL } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
