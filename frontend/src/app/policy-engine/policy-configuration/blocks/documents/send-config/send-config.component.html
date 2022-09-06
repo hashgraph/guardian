@@ -117,7 +117,7 @@
                 </mat-icon>
             </td>
             <td class="propRowCell cellName">Option {{i}}</td>
-            <td class="propRowCell">
+            <td class="propRowCell not-editable-text">
                 {{option.name}}
                 <span *ngIf="option.value">: {{option.value}}</span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="removeOption(i)">

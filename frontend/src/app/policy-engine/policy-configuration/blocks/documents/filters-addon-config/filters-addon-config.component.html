@@ -20,7 +20,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Field</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.field" [readonly]="readonly">
+            <document-path [(value)]="block.field" [readonly]="readonly" [displayTooltip]="true"></document-path>
         </td>
     </tr>
 
@@ -38,14 +38,14 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Name</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.optionName" [readonly]="readonly">
+                <document-path [(value)]="block.optionName" [readonly]="readonly" [displayTooltip]="true"></document-path>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.dropdownGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Value</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.optionValue" [readonly]="readonly">
+                <document-path [(value)]="block.optionValue" [readonly]="readonly" [displayTooltip]="true"></document-path>
             </td>
         </tr>
     </ng-container>
