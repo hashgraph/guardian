@@ -24,7 +24,10 @@ export class TokenService {
         return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/`, data);
     }
 
-    public getTokens(): Observable<ITokenInfo[]> {
+    public getTokens(policyId?: string): Observable<ITokenInfo[]> {
+        if (policyId) {
+            return this.http.get<ITokenInfo[]>(`${this.url}?policy=${policyId}`);
+        }
         return this.http.get<ITokenInfo[]>(`${this.url}`);
     }
 

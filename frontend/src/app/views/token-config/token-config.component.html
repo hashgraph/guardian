@@ -2,8 +2,26 @@
     <ng-container *ngIf="isConfirmed; else elseTemplate">
         <div *ngIf="!tokenId">
             <div class="actions">
-                <button mat-raised-button color="primary" (click)="newToken()" style="margin: 15px; min-width: 100px;" >Create Token</button>
+                <div>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Policy</mat-label>
+                        <mat-select [(value)]="currentPolicy" (selectionChange)="onFilter()">
+                            <mat-option value="">All policies</mat-option>
+                            <mat-option *ngFor="let policy of policies" [value]="policy.id">
+                                <span>{{policy.name}}</span>
+                                <span> ({{policy.id}})</span>
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <div style="text-align: end">
+                    <button mat-raised-button color="primary" (click)="newToken()"
+                        style="margin: 6px 15px 15px 15px; min-width: 100px;">
+                        Create Token
+                    </button>
+                </div>
             </div>
+
             <div class="table-container">
                 <table mat-table [dataSource]="tokens" class="sensors-table">
                     <ng-container matColumnDef="tokenId">
@@ -50,7 +68,12 @@
                     <th mat-header-cell *matHeaderCellDef> Username </th>
                     <td mat-cell *matCellDef="let element">{{element.username}}
                         <div class="table-loader">
-                            <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                            <div class="lds-ellipsis">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
                         </div>
                     </td>
                 </ng-container>
@@ -112,6 +135,7 @@
         <mat-spinner></mat-spinner>
     </div>
     <div *ngIf="loading && taskId" class="loading">
-        <async-progess class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages" (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progess>
+        <async-progess class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
+            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progess>
     </div>
 </div>

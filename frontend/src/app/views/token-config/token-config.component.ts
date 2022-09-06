@@ -8,6 +8,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Token } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
+import { forkJoin } from 'rxjs';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 
 enum OperationMode {
     None, Create, Kyc
@@ -47,6 +49,8 @@ export class TokenConfigComponent implements OnInit {
     expectedTaskMessages: number = 0;
     operationMode: OperationMode = OperationMode.None;
     user: any;
+    currentPolicy: any = '';
+    policies: any[] | null = null;
 
     constructor(
         private auth: AuthService,
@@ -54,6 +58,7 @@ export class TokenConfigComponent implements OnInit {
         private tokenService: TokenService,
         private informService: InformService,
         private taskService: TasksService,
+        private policyEngineService: PolicyEngineService,
         private route: ActivatedRoute,
         private router: Router,
         public dialog: MatDialog) {
@@ -63,13 +68,27 @@ export class TokenConfigComponent implements OnInit {
     ngOnInit() {
         this.tokenId = "";
         this.loading = true;
+        this.currentPolicy = this.route.snapshot.queryParams['policy'];
         this.route.queryParams.subscribe(queryParams => {
             this.loadProfile();
         });
     }
 
+    onFilter() {
+        if (this.currentPolicy) {
+            this.router.navigate(['/tokens'], {
+                queryParams: {
+                    policy: this.currentPolicy
+                }
+            });
+        } else {
+            this.router.navigate(['/tokens']);
+        }
+        this.loadTokens();
+    }
+
     loadTokens() {
-        this.tokenService.getTokens().subscribe((data: any) => {
+        this.tokenService.getTokens(this.currentPolicy).subscribe((data: any) => {
             this.tokens = data.map((e: any) => {
                 return {
                     ...new Token(e),
@@ -108,8 +127,14 @@ export class TokenConfigComponent implements OnInit {
 
     loadProfile() {
         this.loading = true;
-        this.profileService.getProfile().subscribe((profile) => {
+        forkJoin([
+            this.profileService.getProfile(),
+            this.policyEngineService.all(),
+        ]).subscribe((value) => {
+            const profile = value[0];
+            const policies = value[1] || [];
             this.isConfirmed = !!(profile && profile.confirmed);
+            this.policies = policies;
             if (this.isConfirmed) {
                 this.queryChange();
             } else {

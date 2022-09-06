@@ -453,7 +453,6 @@ export async function tokenAPI(
                 reqObj.where.tokenId = { $eq: msg.tokenId }
                 const tokens = await tokenRepository.find(reqObj);
                 return new MessageResponse(tokens);
-
             }
             if (msg.ids) {
                 const reqObj: any = { where: {} as unknown };
