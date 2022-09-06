@@ -17,5 +17,5 @@ export enum MessageAction {
     ChangeMessageStatus = 'change-message-status',
     RevokeDocument = 'revoke-document',
     DeleteDocument = 'delete-document',
-    UseToken = 'use-token'
+    UseToken = 'token-issue'
 }
