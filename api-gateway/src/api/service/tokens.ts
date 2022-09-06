@@ -2,7 +2,7 @@ import { Guardians } from '@helpers/guardians';
 import { permissionHelper } from '@auth/authorization-helper';
 import { Response, Router } from 'express';
 import { IToken, ITokenInfo, UserRole } from '@guardian/interfaces';
-import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
+import { AuthenticatedRequest, Logger } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { findAllEntities } from '@helpers/utils';
 import { TaskManager } from '@helpers/task-manager';
