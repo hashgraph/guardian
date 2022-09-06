@@ -147,6 +147,13 @@
     border-right: 1px solid #dddddd;
 }
 
+.table-container .mat-column-tokens {
+    padding-left: 8px;
+    width: 95px;
+    max-width: 95px;
+    border-right: 1px solid #dddddd;
+}
+
 .table-container .mat-column-schemas {
     padding-left: 8px;
     width: 95px;

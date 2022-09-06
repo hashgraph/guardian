@@ -265,3 +265,38 @@ export interface RegistrationMessageBody extends MessageBody {
      */
     attributes: { [x: string]: string } | undefined;
 }
+
+/**
+ * Token message body
+ */
+export interface TokenMessageBody extends MessageBody {
+    /**
+     * Token id
+     */
+    tokenId: string;
+
+    /**
+     * Token name
+     */
+    tokenName: string;
+
+    /**
+     * Token symbol
+     */
+    tokenSymbol: string;
+
+    /**
+     * Token type
+     */
+    tokenType: string;
+
+    /**
+     * Token decimals
+     */
+    decimals: string;
+
+    /**
+     * Owner
+     */
+    owner: string;
+}

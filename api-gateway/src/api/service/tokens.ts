@@ -1,8 +1,8 @@
 import { Guardians } from '@helpers/guardians';
 import { permissionHelper } from '@auth/authorization-helper';
 import { Response, Router } from 'express';
-import { ITokenInfo, UserRole } from '@guardian/interfaces';
-import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
+import { IToken, ITokenInfo, UserRole } from '@guardian/interfaces';
+import { AuthenticatedRequest, Logger } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { findAllEntities } from '@helpers/utils';
 import { TaskManager } from '@helpers/task-manager';
@@ -15,37 +15,70 @@ export const tokenAPI = Router();
 /**
  * Connect policies to tokens
  * @param tokens
- * @param user
+ * @param policies
+ * @param policyId
  */
-async function setTokensPolicies(tokens: any[], user: IAuthUser) {
+function setTokensPolicies<T>(tokens: any[], policies: any[], policyId?: any, notEmpty?: boolean): T[] {
     if (!tokens) {
-        return;
+        return [];
     }
-    const engineService = new PolicyEngine();
-
-    let result: any;
-    if (user.role === UserRole.STANDARD_REGISTRY) {
-        result = await engineService.getPolicies({ filters: { owner: user.did } });
-    } else {
-        result = await engineService.getPolicies({ filters: { status: 'PUBLISH' } });
+    for (const policyObject of policies) {
+        policyObject.tokenIds = findAllEntities(policyObject.config, 'tokenId');
     }
-    const { policies } = result;
-
     for (const token of tokens) {
-        const tokenPolicies = [];
+        token.policies = [];
+        token.policyIds = [];
         for (const policyObject of policies) {
-            const tokenIds = findAllEntities(policyObject.config, 'tokenId');
-            if (tokenIds.includes(token.tokenId)) {
-                tokenPolicies.push(`${policyObject.name} (${policyObject.version || 'DRAFT'})`);
+            if (policyObject.tokenIds.includes(token.tokenId)) {
+                token.policies.push(`${policyObject.name} (${policyObject.version || 'DRAFT'})`);
+                token.policyIds.push(policyObject.id.toString());
             }
         }
-        token.policies = tokenPolicies;
     }
+    if (policyId) {
+        tokens = tokens.filter(t => t.policyIds.includes(policyId));
+    }
+    if (notEmpty) {
+        tokens = tokens.filter(t => !!t.policyIds.length);
+    }
+    return tokens;
+
 }
+
+tokenAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY, UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const guardians = new Guardians();
+        const engineService = new PolicyEngine();
+
+        const user = req.user;
+        const policyId = req.query?.policy;
+
+        let tokens: IToken[];
+        if (user.role === UserRole.STANDARD_REGISTRY) {
+            tokens = await guardians.getTokens({ did: user.did });
+            const { policies } = await engineService.getPolicies({ filters: { owner: user.did } });
+            tokens = setTokensPolicies(tokens, policies, policyId, false);
+        } else if (user.did) {
+            tokens = await guardians.getAssociatedTokens(user.did);
+            const { policies } = await engineService.getPolicies({
+                filters: {
+                    status: 'PUBLISH',
+                    owner: user.parent
+                }
+            });
+            tokens = setTokensPolicies(tokens, policies, policyId, true);
+        }
+        res.status(200).json(tokens);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: error.code || 500, message: error.message });
+    }
+});
 
 tokenAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
+        const engineService = new PolicyEngine();
         const user = req.user;
 
         if (!user.did) {
@@ -58,13 +91,10 @@ tokenAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Aut
             owner: user.did
         }));
 
-        tokens = await guardians.getTokens({
-            did: user.did
-        });
+        tokens = await guardians.getTokens({ did: user.did });
+        const { policies } = await engineService.getPolicies({ filters: { owner: user.did } });
+        tokens = setTokensPolicies(tokens, policies);
 
-        tokens = tokens || [];
-
-        await setTokensPolicies(tokens, user);
         res.status(201).json(tokens);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
@@ -93,28 +123,6 @@ tokenAPI.post('/push/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req
     });
 
     res.status(201).send({ taskId, expectation });
-});
-
-tokenAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY, UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {
-    try {
-        const guardians = new Guardians();
-        const user = req.user;
-        let tokens = [];
-
-        if (user.role === UserRole.STANDARD_REGISTRY) {
-            tokens = await guardians.getTokens({
-                did: user.did
-            });
-        } else if (user.did) {
-            tokens = await guardians.getAssociatedTokens(user.did);
-        }
-        tokens = tokens || [];
-        await setTokensPolicies(tokens, user);
-        res.status(200).json(tokens);
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: error.code || 500, message: error.message });
-    }
 });
 
 tokenAPI.put('/:tokenId/associate', permissionHelper(UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {

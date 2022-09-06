@@ -235,17 +235,30 @@ a {
 }
 
 .actions {
-    position: relative;
-    z-index: 1;
-    margin-left: 35px;
+    display: grid;
+    grid-template-columns: 300px auto;
+    padding: 14px 14px 14px 14px;
+    border-bottom: 1px solid #eee;
+    margin: 0;
+    height: 92px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .actions ::ng-deep button.mat-raised-button.mat-primary {
     margin: 12px 10px 0 10px;
 }
 
+.actions mat-form-field {
+    height: 60px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 500px;
+    margin: 0;
+}
+
 .table-container {
-    height: calc(100vh - var(--header-height) - 77px);
+    height: calc(100vh - var(--header-height) - 100px);
     overflow-y: auto;
     position: relative;
     z-index: 0;

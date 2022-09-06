@@ -29,6 +29,7 @@
     flex-direction: column;
     height: 60%;
     font-size: xx-large;
+    background: #fff;
 }
 
 .info-message {
