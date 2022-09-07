@@ -762,11 +762,14 @@ export class PolicyUtils {
     /**
      * Get all standard registry accounts
      */
-    public static async getAllStandardRegistryAccounts(ref: AnyBlockType): Promise<any[]> {
+    public static async getAllStandardRegistryAccounts(ref: AnyBlockType, countResult: boolean): Promise<any[] | number> {
         if (ref.dryRun) {
-            return [];
+            return (countResult) ? 0 : [];
         } else {
-            return await PolicyUtils.users.getAllStandardRegistryAccounts() as any[];
+            if (countResult) {
+                return (await PolicyUtils.users.getAllStandardRegistryAccounts()).length;
+            }
+            return await PolicyUtils.users.getAllStandardRegistryAccounts() as any;
         }
     }
 

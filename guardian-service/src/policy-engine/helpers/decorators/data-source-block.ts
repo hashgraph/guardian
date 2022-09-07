@@ -63,9 +63,10 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * Get global sources
              * @param user
              * @param paginationData
+             * @param countResult
              * @protected
              */
-            protected async getGlobalSources(user: IPolicyUser, paginationData: any) {
+            protected async getGlobalSources(user: IPolicyUser, paginationData: any, countResult?: boolean) {
                 const dynFilters = {};
                 for (const child of this.children) {
                     if (child.blockClassName === 'DataSourceAddon') {
@@ -74,7 +75,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                         }
                     }
                 }
-                return await this.getSources(user, dynFilters, paginationData);
+                return await this.getSources(user, dynFilters, paginationData, countResult);
             }
 
             /**
@@ -82,22 +83,62 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param globalFilters
              * @param paginationData
+             * @param countResult
              * @protected
              */
-            protected async getSources(user: IPolicyUser, globalFilters: any, paginationData: any): Promise<any[]> {
-                let data = [];
-                for (const child of this.children) {
-                    if (child.blockClassName === 'SourceAddon') {
-                        const childData = await child.getFromSource(user, globalFilters);
-                        for (const item of childData) {
-                            data.push(item);
-                        }
-                    }
+            protected async getSources(user: IPolicyUser, globalFilters: any, paginationData: any, countResult: boolean = false): Promise<any[] | number> {
+                const data = [];
+                let totalCount = 0;
+                // let currentPosition = 0;
+
+                const resultsCountArray = [];
+                const sourceAddons = this.children.filter(c => c.blockClassName === 'SourceAddon');
+
+                for (const addon of sourceAddons) {
+                    const resultCount = await addon.getFromSource(user, globalFilters, true);
+                    totalCount += resultCount;
+                    resultsCountArray.push(resultCount);
                 }
-                if (paginationData) {
+
+                if (countResult) {
+                    return totalCount;
+                }
+
+                for (let i = 0; i < resultsCountArray.length; i++) {
+                    const currentSource = sourceAddons[i];
+
+                    // If pagination block is not set
+                    if (!paginationData) {
+                        for (const item of await currentSource.getFromSource(user, globalFilters, false, null)) {
+                            (data as any[]).push(item);
+                        }
+                        continue;
+                    }
+
+                    let skip: number;
+                    let limit: number;
+
                     const start = paginationData.page * paginationData.itemsPerPage;
                     const end = start + paginationData.itemsPerPage;
-                    data = data.slice(start, end);
+
+                    const previousCount = resultsCountArray.slice(0, i).reduce((partialSum, a) => partialSum + a, 0);
+
+                    if (end <= previousCount) {
+                        continue;
+                    }
+
+                    skip = Math.max(start - previousCount, 0);
+                    limit =  paginationData.itemsPerPage - Math.min((previousCount - start), 0);
+
+                    const childData = await currentSource.getFromSource(user, globalFilters, false, {
+                        offset: skip,
+                        limit
+                    });
+
+                    for (const item of childData) {
+                        data.push(item);
+                        // currentPosition++;
+                    }
                 }
                 return data;
             }
