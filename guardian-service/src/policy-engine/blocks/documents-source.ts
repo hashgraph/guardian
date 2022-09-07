@@ -69,6 +69,7 @@ export class InterfaceDocumentsSource {
             blocks: filters,
             commonAddons
         }, ref.options.uiMetaData);
+
     }
 
     /**
