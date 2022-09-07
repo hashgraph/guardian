@@ -89,7 +89,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
             protected async getSources(user: IPolicyUser, globalFilters: any, paginationData: any, countResult: boolean = false): Promise<any[] | number> {
                 const data = [];
                 let totalCount = 0;
-                let currentPosition = 0;
+                // let currentPosition = 0;
 
                 const resultsCountArray = [];
                 const sourceAddons = this.children.filter(c => c.blockClassName === 'SourceAddon');
@@ -118,12 +118,10 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                     let skip: number;
                     let limit: number;
 
-
                     const start = paginationData.page * paginationData.itemsPerPage;
                     const end = start + paginationData.itemsPerPage;
 
                     const previousCount = resultsCountArray.slice(0, i).reduce((partialSum, a) => partialSum + a, 0);
-
 
                     if (end <= previousCount) {
                         continue;
@@ -139,7 +137,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
 
                     for (const item of childData) {
                         data.push(item);
-                        currentPosition++;
+                        // currentPosition++;
                     }
                 }
                 return data;
