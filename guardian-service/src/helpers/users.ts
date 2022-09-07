@@ -162,7 +162,7 @@ export class Users extends ServiceRequestsBase {
     /**
      * Get all standard registry accounts
      */
-    public async getAllStandardRegistryAccounts() {
+    public async getAllStandardRegistryAccounts(): Promise<unknown[]> {
         return await this.request(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS);
     }
 
