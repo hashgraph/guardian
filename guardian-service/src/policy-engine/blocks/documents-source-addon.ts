@@ -99,9 +99,9 @@ export class DocumentsSourceAddon {
         if (ref.options.orderDirection) {
             otherOptions.orderBy = {};
             if (ref.options.orderField) {
-                otherOptions.orderBy[ref.options.orderField] = ref.options.createdOrderDirection;
+                otherOptions.orderBy[ref.options.orderField] = ref.options.orderDirection;
             } else {
-                otherOptions.orderBy.createDate = ref.options.createdOrderDirection;
+                otherOptions.orderBy.createDate = ref.options.orderDirection;
             }
         }
 
