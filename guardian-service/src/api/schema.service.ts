@@ -722,7 +722,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             const schemaObject = msg as ISchema;
             SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
             await createSchema(schemaObject, schemaObject.owner, emptyNotifier());
-            const schemas = await DatabaseServer.getSchemas();
+            const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
             return new MessageResponse(schemas);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -772,7 +772,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 await DatabaseServer.updateSchema(item.id, item);
                 await updateSchemaDefs(item.document.$id);
             }
-            const schemas = await DatabaseServer.getSchemas();
+            const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
             return new MessageResponse(schemas);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -925,7 +925,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             if (msg && msg.id) {
                 await deleteSchema(msg.id, emptyNotifier());
             }
-            const schemas = await DatabaseServer.getSchemas();
+            const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
             return new MessageResponse(schemas);
         } catch (error) {
             return new MessageError(error);

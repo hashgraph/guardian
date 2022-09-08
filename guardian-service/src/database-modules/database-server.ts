@@ -892,8 +892,8 @@ export class DatabaseServer {
      * Get schemas
      * @param filters
      */
-    public static async getSchemas(filters?: any): Promise<SchemaCollection[]> {
-        return await new DataBaseHelper(SchemaCollection).find(filters);
+    public static async getSchemas(filters?: any, options?:any): Promise<SchemaCollection[]> {
+        return await new DataBaseHelper(SchemaCollection).find(filters, options);
     }
 
     /**
