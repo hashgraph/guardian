@@ -54,6 +54,7 @@ export class TreeFlatOverview {
     expandDelay = 1000;
     validateDrop = false;
     isCollapseAll = true;
+    eventsDisabled = false;
 
     public readonly context: ElementRef;
 
@@ -68,7 +69,9 @@ export class TreeFlatOverview {
         this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
         this.treeControl.expansionModel.changed.subscribe(e => {
             this.isCollapseAll = !e.source.selected.length;
-            this.change.emit();
+            if (!this.eventsDisabled) {
+                this.change.emit();
+            }
         })
     }
 
@@ -179,7 +182,9 @@ export class TreeFlatOverview {
         // rebuild tree with mutated data
         // this.rebuildTreeForData(changedData);
         this.reorder.emit(changedData);
-        this.change.emit();
+        if (!this.eventsDisabled) {
+            this.change.emit();
+        }
     }
 
     setErrors(errors: any) {
@@ -259,6 +264,7 @@ export class TreeFlatOverview {
      */
 
     rebuildTreeForData(data: BlockNode[]) {
+        this.eventsDisabled = true;
         this.blocks = data;
         this.root = data[0];
         this.dataSource.data = data;
@@ -277,7 +283,10 @@ export class TreeFlatOverview {
         } else {
             this.currentBlock = this.root;
         }
-
+        setTimeout(() => {
+            this.eventsDisabled = false;
+            this.change.emit();
+        }, 100);
     }
 
     getName(node: FlatBlockNode) {
@@ -297,7 +306,9 @@ export class TreeFlatOverview {
         event.stopPropagation();
         this.currentBlock = node.node;
         this.select.emit(this.currentBlock);
-        this.change.emit();
+        if (!this.eventsDisabled) {
+            this.change.emit();
+        };
         return false;
     }
 
@@ -305,7 +316,9 @@ export class TreeFlatOverview {
         event.preventDefault();
         event.stopPropagation();
         this.delete.emit(block.node);
-        this.change.emit();
+        if (!this.eventsDisabled) {
+            this.change.emit();
+        };
         return false;
     }
 
