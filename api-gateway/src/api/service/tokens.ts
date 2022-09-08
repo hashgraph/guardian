@@ -53,7 +53,7 @@ tokenAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY, UserRole.USER), a
         const user = req.user;
         const policyId = req.query?.policy;
 
-        let tokens: IToken[];
+        let tokens: IToken[] = [];
         if (user.role === UserRole.STANDARD_REGISTRY) {
             tokens = await guardians.getTokens({ did: user.did });
             const { policies } = await engineService.getPolicies({ filters: { owner: user.did } });
