@@ -100,9 +100,32 @@ export class DatabaseServer {
     }
 
     /**
+     * Overriding the count method
+     * @param entityClass
+     * @param filters
+     * @param options
+     */
+    private async count<T extends BaseEntity>(entityClass: new () => T, filters: any, options?: any): Promise<number> {
+        if (this.dryRun) {
+            const _filters: any = { ...filters };
+            if (_filters.where) {
+                _filters.where.dryRunId = this.dryRun;
+                _filters.where.dryRunClass = this.classMap.get(entityClass);
+            } else {
+                _filters.dryRunId = this.dryRun;
+                _filters.dryRunClass = this.classMap.get(entityClass);
+            }
+            return await new DataBaseHelper(DryRun).count(_filters, options);
+        } else {
+            return await new DataBaseHelper(entityClass).count(filters, options);
+        }
+    }
+
+    /**
      * Overriding the find method
      * @param entityClass
      * @param filters
+     * @param options
      */
     private async find<T extends BaseEntity>(entityClass: new () => T, filters: any, options?: any): Promise<T[]> {
         if (this.dryRun) {
@@ -515,10 +538,14 @@ export class DatabaseServer {
     /**
      * Get Vc Documents
      * @param filters
-     *
+     * @param options
+     * @param countResult
      * @virtual
      */
-    public async getVcDocuments(filters: any, options?: any): Promise<VcDocumentCollection[]> {
+    public async getVcDocuments(filters: any, options?: any, countResult?: boolean): Promise<VcDocumentCollection[] | number> {
+        if (countResult) {
+            return await this.count(VcDocumentCollection, filters, options);
+        }
         return await this.find(VcDocumentCollection, filters, options);
     }
 
@@ -526,10 +553,14 @@ export class DatabaseServer {
      * Get Vp Documents
      * @param filters
      *
+     * @param options
+     * @param countResult
      * @virtual
      */
-    public async getVpDocuments(filters: any, options?: any): Promise<VpDocumentCollection[]> {
-        console.log('VpDocumentCollection', filters, options)
+    public async getVpDocuments(filters: any, options?: any, countResult?: boolean): Promise<VpDocumentCollection[] | number> {
+        if (countResult) {
+            return await this.count(VpDocumentCollection, filters, options);
+        }
         return await this.find(VpDocumentCollection, filters, options);
     }
 
@@ -537,19 +568,28 @@ export class DatabaseServer {
      * Get Did Documents
      * @param filters
      *
+     * @param options
+     * @param countResult
      * @virtual
      */
-    public async getDidDocuments(filters: any, options?: any): Promise<DidDocumentCollection[]> {
+    public async getDidDocuments(filters: any, options?: any, countResult?: boolean): Promise<DidDocumentCollection[] | number> {
+        if (countResult) {
+            return await this.count(DidDocumentCollection, filters, options);
+        }
         return await this.find(DidDocumentCollection, filters, options);
     }
 
     /**
      * Get Approval Documents
      * @param filters
-     *
+     * @param options
+     * @param countResult
      * @virtual
      */
-    public async getApprovalDocuments(filters: any, options?: any): Promise<ApprovalDocumentCollection[]> {
+    public async getApprovalDocuments(filters: any, options?: any, countResult?: boolean): Promise<ApprovalDocumentCollection[] | number> {
+        if (countResult) {
+            return await this.count(ApprovalDocumentCollection, filters, options);
+        }
         return await this.find(ApprovalDocumentCollection, filters, options);
     }
 

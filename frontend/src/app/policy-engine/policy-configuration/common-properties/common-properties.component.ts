@@ -238,7 +238,10 @@ export class CommonPropertiesComponent implements OnInit {
             block.children.forEach(child => this.onChildrenApply(child, currentBlock));
         }
         if (block !== currentBlock && currentBlock.permissions) {
-            block.permissions = currentBlock.permissions.slice();
+            block.silentlySetPermissions(currentBlock.permissions.slice());
+        }
+        if (block === currentBlock) {
+            this.policy.emitUpdate();
         }
     }
 }

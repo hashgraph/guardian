@@ -41,11 +41,7 @@ export class EventsOverview {
             this.setContext(this.context);
         }
         if (changes.active) {
-            if (this.active !== 'None') {
-                this.render()
-            } else {
-                this.refreshCanvas();
-            }
+            this.render();
         }
     }
 
@@ -68,7 +64,12 @@ export class EventsOverview {
     }
 
     public render(): void {
-        if (this.active === 'None' || !this._canvas || !this._context) {
+        if (!this._canvas || !this._context) {
+            return;
+        }
+        if (this.active === 'None') {
+            this.renderData([]);
+            this.renderLine();
             return;
         }
         const boxCanvas = this.refreshCanvas();
