@@ -16,6 +16,8 @@ Logs: "http://localhost:3000/api/v1/logs",
 LogsAttributes: "http://localhost:3000/api/v1/logs/attributes/",
 //Schemas
 Schemas:"http://localhost:3000/api/v1/schemas/",
+SchemasSystem:"http://localhost:3000/api/v1/schemas/system/",
+SchemasSystemEntity:"http://localhost:3000/api/v1/schemas/system/entity/",
 //TrustChains
 Trustchains:"http://localhost:3000/api/v1/trustchains",
 //Settings

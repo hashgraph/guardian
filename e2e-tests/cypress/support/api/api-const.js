@@ -11,5 +11,7 @@ export const METHOD = {
     UNAUTHORIZED: 401,
     FORBIDDEN: 403,
     NOT_FOUND: 404,
+    SUCCESS: 201,
+    ERROR: 500,
   };
   
