@@ -25,6 +25,7 @@ export class CommonPropertiesComponent implements OnInit {
 
     @Output() onInit = new EventEmitter();
 
+    loading: boolean = true;
     propHidden: any = {
         about: true,
         metaData: false,
@@ -33,7 +34,7 @@ export class CommonPropertiesComponent implements OnInit {
     };
 
     block!: PolicyBlockModel;
-    about!: IBlockAbout;
+    about!: IBlockAbout | undefined;
     errorActions = [
         {
             label: 'No action',
@@ -56,7 +57,7 @@ export class CommonPropertiesComponent implements OnInit {
     inputEvents: any[] = [];
     outputEvents: any[] = [];
     defaultEvent: boolean = false;
-    customProperties?: any[];
+    customProperties!: any[] | undefined;
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -177,6 +178,9 @@ export class CommonPropertiesComponent implements OnInit {
         if (!this.configContainer) {
             return;
         }
+
+        this.about = undefined;
+        this.customProperties = undefined;
         setTimeout(() => {
             this.block = block;
             if (!this.block.properties.onErrorAction) {
@@ -184,9 +188,19 @@ export class CommonPropertiesComponent implements OnInit {
             }
             this.configContainer.clear();
             const factory: any = this.registeredBlocks.getProperties(block.blockType);
+            const customProperties = this.registeredBlocks.getCustomProperties(block.blockType);
             this.about = this.registeredBlocks.bindAbout(block.blockType, block);
-            this.customProperties = this.registeredBlocks.getCustomProperties(block.blockType);
-            if (factory) {
+            this.loadFactory(factory, customProperties);
+        }, 10);
+    }
+
+    private loadFactory(factory: any, customProperties: any) {
+        if (factory) {
+            this.loading = true;
+            setTimeout(() => {
+                if (customProperties) {
+                    this.customProperties = customProperties;
+                }
                 let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
                 let componentRef: any = this.configContainer.createComponent(componentFactory);
                 componentRef.instance.policy = this.policy;
@@ -194,11 +208,23 @@ export class CommonPropertiesComponent implements OnInit {
                 componentRef.instance.schemas = this.schemas;
                 componentRef.instance.tokens = this.tokens;
                 componentRef.instance.readonly = this.readonly;
-            }
-        })
+                setTimeout(() => {
+                    this.loading = false;
+                }, 200);
+            }, 20);
+        } else if (customProperties) {
+            this.loading = true;
+            setTimeout(() => {
+                this.customProperties = customProperties;
+                setTimeout(() => {
+                    this.loading = false;
+                }, 200);
+            }, 20);
+        }
     }
 
     onSave() {
+        debugger;
         if (this.block) {
             this.block.emitUpdate();
         }

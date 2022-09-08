@@ -1,0 +1,42 @@
+<div *ngIf="loading" class="loading">
+    <mat-spinner></mat-spinner>
+</div>
+
+<div class="content">
+    <div *ngIf="confirmationStatus">
+        <div class="status status-{{confirmationStatus}}" [matMenuTriggerFor]="menu1">
+            {{confirmationStatus}}
+        </div>
+        <mat-menu #menu1="matMenu">
+            <div *ngFor="let doc of documents" class="documents">
+                <div class="doc-did" [title]="doc.did">{{doc.did}}</div>
+                <div class="doc-status status-{{doc.status}}">{{doc.status}}</div>
+            </div>
+        </mat-menu>
+    </div>
+    <div *ngIf="!confirmationStatus && documentStatus === 'NEW'">
+        <div class="btn-option btn-SIGN" (click)="onSelect('SIGNED')">
+            Sign
+        </div>
+        <div class="btn-option btn-DECLINE" (click)="onSelect('DECLINED')">
+            Decline
+        </div>
+    </div>
+    <div *ngIf="!confirmationStatus && documentStatus !== 'NEW'">
+        <div class="progress" (click)="onDetails()" [matMenuTriggerFor]="menu2">
+            <div class="signed" [style.width.%]="signed">
+                <span *ngIf="signed>12" class="p-value">{{signedCount}}</span>
+            </div>
+            <div class="declined" [style.width.%]="declined">
+                <span *ngIf="declined>12" class="p-value">{{declinedCount}}</span>
+            </div>
+            <div class="threshold" [style.left.%]="threshold"></div>
+        </div>
+        <mat-menu #menu2="matMenu">
+            <div *ngFor="let doc of documents" class="documents">
+                <div class="doc-did" [title]="doc.did">{{doc.did}}</div>
+                <div class="doc-status status-{{doc.status}}">{{doc.status}}</div>
+            </div>
+        </mat-menu>
+    </div>
+</div>

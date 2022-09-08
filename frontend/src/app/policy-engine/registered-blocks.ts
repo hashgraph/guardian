@@ -48,6 +48,7 @@ import { ChildrenType } from "./structures/types/children-type.type";
 import { ControlType } from "./structures/types/control-type.type";
 import { BlockAbout } from "./structures/block-about";
 import { IBlockSetting } from "./structures/interfaces/block-setting.interface";
+import { MultiSigBlockComponent } from "./policy-viewer/blocks/multi-sig-block/multi-sig-block.component";
 
 @Injectable()
 export class RegisteredBlocks {
@@ -244,16 +245,7 @@ export class RegisteredBlocks {
             header: BlockHeaders.UIComponents,
             factory: DocumentsSourceBlockComponent,
             property: DocumentSourceComponent,
-            allowedChildren: [{
-                type: BlockType.FiltersAddon,
-                group: BlockGroup.UnGrouped
-            }, {
-                type: BlockType.DocumentsSourceAddon,
-                group: BlockGroup.UnGrouped
-            }, {
-                type: BlockType.PaginationAddon,
-                group: BlockGroup.UnGrouped
-            }]
+            allowedChildren: allowedChildrenStepContainerBlocks
         });
         this.registerBlock({
             type: BlockType.Request,
@@ -270,7 +262,15 @@ export class RegisteredBlocks {
                 group: BlockGroup.UnGrouped
             }]
         });
-
+        this.registerBlock({
+            type: BlockType.MultiSigBlock,
+            icon: 'done_all',
+            group: BlockGroup.Documents,
+            header: BlockHeaders.UIComponents,
+            factory: MultiSigBlockComponent,
+            property: null,
+        });
+        
         // Documents, Server Blocks
         this.registerBlock({
             type: BlockType.SendToGuardian,
@@ -327,14 +327,6 @@ export class RegisteredBlocks {
                 type: BlockType.DocumentsSourceAddon,
                 group: BlockGroup.UnGrouped
             }]
-        });
-        this.registerBlock({
-            type: BlockType.MultiSigBlock,
-            icon: 'send',
-            group: BlockGroup.Documents,
-            header: BlockHeaders.ServerBlocks,
-            factory: null,
-            property: null,
         });
 
         // Documents, Addons

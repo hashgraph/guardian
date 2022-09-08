@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
@@ -9,10 +9,8 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
 @Component({
     selector: 'send-config',
     templateUrl: './send-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './send-config.component.css'
-    ]
+    styleUrls: ['./send-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class SendConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;

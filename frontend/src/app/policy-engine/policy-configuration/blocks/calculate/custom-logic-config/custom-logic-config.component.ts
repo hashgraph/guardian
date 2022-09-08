@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 import { MatDialog } from '@angular/material/dialog';
 import { CodeEditorDialogComponent } from '../../../../helpers/code-editor-dialog/code-editor-dialog.component';
@@ -6,12 +6,10 @@ import { Schema, Token, SchemaField } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 
 @Component({
-  selector: 'app-custom-logic-config',
-  templateUrl: './custom-logic-config.component.html',
-  styleUrls: [
-      './../../../common-properties/common-properties.component.css',
-      './custom-logic-config.component.css'
-  ]
+    selector: 'app-custom-logic-config',
+    templateUrl: './custom-logic-config.component.html',
+    styleUrls: ['./custom-logic-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class CustomLogicConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;

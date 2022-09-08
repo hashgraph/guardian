@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 
@@ -8,10 +8,8 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/
 @Component({
     selector: 'group-manager-config',
     templateUrl: './group-manager-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './group-manager-config.component.css'
-    ]
+    styleUrls: ['./group-manager-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class GroupManagerConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;

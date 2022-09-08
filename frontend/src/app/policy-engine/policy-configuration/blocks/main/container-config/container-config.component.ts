@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
@@ -9,10 +9,8 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
 @Component({
     selector: 'container-config',
     templateUrl: './container-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './container-config.component.css'
-    ]
+    styleUrls: ['./container-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class ContainerConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;
@@ -43,7 +41,7 @@ export class ContainerConfigComponent implements OnInit {
     load(block: PolicyBlockModel) {
         this.block = block.properties;
         this.block.uiMetaData = this.block.uiMetaData || {}
-        this.block.uiMetaData.type =  this.block.uiMetaData.type || 'blank';
+        this.block.uiMetaData.type = this.block.uiMetaData.type || 'blank';
     }
 
     onHide(item: any, prop: any) {

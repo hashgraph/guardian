@@ -307,7 +307,7 @@ export interface IPolicyBlock {
     addTargetLink(link: any): void;
 
     /**
-     * Run block acrions
+     * Run block action
      * @param event
      */
     runAction(event: IPolicyEvent<any>): Promise<any>;
@@ -318,6 +318,16 @@ export interface IPolicyBlock {
      * @param state
      */
     updateDataState(user: IPolicyUser, state: any): boolean;
+
+    /**
+     * Join GET Data
+     * @param {IPolicyDocument | IPolicyDocument[]} data
+     * @param {IPolicyUser} user
+     * @param {AnyBlockType} parent
+     */
+    joinData<T extends IPolicyDocument | IPolicyDocument[]>(
+        data: T, user: IPolicyUser, parent: AnyBlockType
+    ): Promise<T>;
 }
 
 /**

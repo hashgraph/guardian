@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 import { MatDialog } from '@angular/material/dialog';
@@ -11,10 +11,8 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/
 @Component({
     selector: 'timer-config',
     templateUrl: './timer-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './timer-config.component.css'
-    ]
+    styleUrls: ['./timer-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class TimerConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;
@@ -26,7 +24,7 @@ export class TimerConfigComponent implements OnInit {
 
     propHidden: any = {
         main: false,
-        options:false,
+        options: false,
         expressionsGroup: false,
         expressions: {},
     };

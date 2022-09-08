@@ -63,7 +63,12 @@ export class InterfaceDocumentsSource {
             paginationData = await pagination.getState(user);
         }
 
-        const data = await ref.getGlobalSources(user, paginationData);
+        let data = await ref.getGlobalSources(user, paginationData);
+
+        for (const child of ref.children) {
+            data = await child.joinData(data, user, ref);
+        }
+
         return Object.assign({
             data,
             blocks: filters,

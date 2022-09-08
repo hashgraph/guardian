@@ -68,6 +68,8 @@ import { GroupManagerConfigComponent } from './policy-configuration/blocks/main/
 import { GroupManagerBlockComponent } from './policy-viewer/blocks/group-manager-block/group-manager-block.component';
 import { InviteDialogComponent } from './helpers/invite-dialog/invite-dialog.component';
 import { DocumentPath } from './helpers/document-path/document-path.component';
+import { CommonPropertyComponent } from './policy-configuration/common-property/common-property.component';
+import { MultiSigBlockComponent } from './policy-viewer/blocks/multi-sig-block/multi-sig-block.component';
 
 @NgModule({
     declarations: [
@@ -130,7 +132,9 @@ import { DocumentPath } from './helpers/document-path/document-path.component';
         GroupManagerConfigComponent,
         GroupManagerBlockComponent,
         InviteDialogComponent,
-        DocumentPath
+        DocumentPath,
+        CommonPropertyComponent,
+        MultiSigBlockComponent
     ],
     imports: [
         CommonModule,

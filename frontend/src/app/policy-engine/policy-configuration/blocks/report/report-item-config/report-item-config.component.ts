@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Schema, Token } from '@guardian/interfaces';
 import { IconPreviewDialog } from 'src/app/components/icon-preview-dialog/icon-preview-dialog.component';
@@ -13,10 +13,8 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
 @Component({
     selector: 'report-item-config',
     templateUrl: './report-item-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './report-item-config.component.css'
-    ]
+    styleUrls: ['./report-item-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class ReportItemConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;

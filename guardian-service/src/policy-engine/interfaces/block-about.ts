@@ -34,7 +34,9 @@ export enum PropertyType {
 export interface BlockProperties {
     name: string;
     label: string;
+    title: string;
     type: PropertyType;
+    default?: any;
 }
 
 /**
@@ -57,7 +59,10 @@ export interface CheckboxProperties extends BlockProperties {
  */
 export interface SelectProperties extends BlockProperties {
     type: PropertyType.Select;
-
+    items: {
+        label: string,
+        value: string
+    }[]
 }
 
 /**
@@ -73,7 +78,7 @@ export interface MultipleSelectProperties extends BlockProperties {
  */
 export interface GroupProperties extends BlockProperties {
     type: PropertyType.Group;
-    properties?: AnyBlockProperties[];
+    properties: AnyBlockProperties[];
 }
 
 /**
@@ -81,6 +86,10 @@ export interface GroupProperties extends BlockProperties {
  */
 export interface ArrayProperties extends BlockProperties {
     type: PropertyType.Array;
+    items: {
+        label: string,
+        properties: AnyBlockProperties[];
+    }
 }
 
 /**

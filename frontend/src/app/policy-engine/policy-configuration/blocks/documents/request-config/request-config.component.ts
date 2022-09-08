@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
@@ -9,10 +9,8 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
 @Component({
     selector: 'request-config',
     templateUrl: './request-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './request-config.component.css'
-    ]
+    styleUrls: ['./request-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class RequestConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;
@@ -103,12 +101,12 @@ export class RequestConfigComponent implements OnInit {
             }
         }
 
-        const dMap:any = {};
+        const dMap: any = {};
         for (let i = 0; i < this.presetMap.length; i++) {
             const f = this.presetMap[i];
             dMap[f.title] = f.name;
         }
-        for (let i = 0; i <this.block.presetFields.length; i++) {
+        for (let i = 0; i < this.block.presetFields.length; i++) {
             const f = this.block.presetFields[i];
             f.value = dMap[f.title];
         }

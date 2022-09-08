@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
@@ -10,10 +10,8 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
 @Component({
     selector: 'document-viewer-config',
     templateUrl: './document-viewer-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './document-viewer-config.component.css'
-    ]
+    styleUrls: ['./document-viewer-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class DocumentSourceComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;

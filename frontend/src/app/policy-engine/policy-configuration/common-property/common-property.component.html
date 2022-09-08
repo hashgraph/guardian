@@ -1,0 +1,103 @@
+<ng-container *ngIf="property.type === 'Group'">
+    <tr class="propHeader" [attr.collapse]="collapse">
+        <td class="propRowCol" (click)="onHide()"
+            [attr.collapse]="groupCollapse">
+            <mat-icon>
+                expand_more
+            </mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">
+            {{property.label}}
+        </td>
+        <td class="propHeaderCell"></td>
+    </tr>
+
+    <div *ngFor="let p of property.properties" 
+        common-property 
+        class="custom-properties"
+        [data]="group"
+        [property]="p" 
+        [readonly]="readonly"
+        [collapse]="collapse || groupCollapse"
+        (update)="onSave()"
+    ></div>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Array'">
+    <tr class="propHeader" [attr.collapse]="collapse">
+        <td class="propRowCol" (click)="onHide()"
+            [attr.collapse]="groupCollapse">
+            <mat-icon>
+                expand_more
+            </mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">
+            {{property.label}}
+        </td>
+        <td class="propHeaderCell">
+            <div class="propAdd" (click)="addItems()">
+                <mat-icon>add</mat-icon>
+                <span>Add {{property.items.label}}</span>
+            </div>
+        </td>
+    </tr>
+    <ng-container *ngFor="let item of value; let i=index">
+        <tr class="propRow" [attr.collapse]="collapse">
+            <td class="propRowCol" (click)="onHideItem(i)" [attr.collapse]="groupCollapse || itemCollapse[i]">
+                <mat-icon>
+                    expand_more
+                </mat-icon>
+            </td>
+            <td class="propRowCell cellName">
+                {{property.items.label}} {{i}}
+            </td>
+            <td class="propRowCell">
+                <span class="remove-prop" [attr.readonly]="readonly" (click)="removeItems(i)">
+                    <mat-icon>delete</mat-icon>
+                </span>
+            </td>
+        </tr>
+        <div *ngFor="let p of property.items.properties" 
+            common-property 
+            class="custom-properties"
+            [data]="item"
+            [property]="p" 
+            [readonly]="readonly"
+            [collapse]="collapse || groupCollapse || itemCollapse[i]"
+            [offset]="1"
+            (update)="onSave()"
+        ></div>
+    </ng-container>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Input'">
+    <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
+        <td class="propRowCol" [title]="property.title"></td>
+        <td class="propRowCell cellName">{{property.label}}</td>
+        <td class="propRowCell">
+            <input [(ngModel)]="value" [readonly]="readonly" (blur)="onSave()">
+        </td>
+    </tr>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Checkbox'">
+    <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
+        <td class="propRowCol" [title]="property.title"></td>
+        <td class="propRowCell cellName">{{property.label}}</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="value" [readonly]="readonly" (change)="onSave()">
+        </td>
+    </tr>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Select'">
+    <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
+        <td class="propRowCol" [title]="property.title"></td>
+        <td class="propRowCell cellName">{{property.label}}</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="value" [disabled]="readonly" (change)="onSave()">
+                <mat-option *ngFor="let item of property.items" [value]="item.value">{{item.label}}</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+</ng-container>

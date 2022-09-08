@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 /**
@@ -7,10 +7,8 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/
 @Component({
     selector: 'token-action-config',
     templateUrl: './token-action-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './token-action-config.component.css'
-    ]
+    styleUrls: ['./token-action-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class TokenActionConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;

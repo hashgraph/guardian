@@ -14,6 +14,7 @@ import { PolicyRoles as PolicyRolesCollection } from '@entity/policy-roles';
 import { DocumentStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { BaseEntity, DataBaseHelper } from '@guardian/common';
 import { PolicyInvitations } from '@entity/policy-invitations';
+import { MultiDocuments } from '@entity/multi-documents';
 
 /**
  * Database server
@@ -783,6 +784,16 @@ export class DatabaseServer {
     }
 
     /**
+     * Get all policy users
+     * @param policyId
+     *
+     * @virtual
+     */
+    public async getAllUsersByRole(policyId: string, uuid: string, role: string): Promise<PolicyRolesCollection[]> {
+        return await this.find(PolicyRolesCollection, { policyId, uuid, role, active: true });
+    }
+
+    /**
      * Delete user
      * @param group
      *
@@ -828,6 +839,27 @@ export class DatabaseServer {
             return null;
         }
     }
+
+    public async getMultiSigStatus(uuid: string, documentId: string): Promise<MultiDocuments> {
+        return await this.findOne(MultiDocuments, { uuid, documentId, did: null });
+    }
+
+    public async setMultiSigStatus(uuid: string, documentId: string, status: string): Promise<MultiDocuments> {
+        const doc = this.create(MultiDocuments, { uuid, documentId, did: null, status });
+        await this.save(MultiDocuments, doc);
+        return doc;
+    }
+
+    public async setMultiSigDocument(uuid: string, documentId: string, did: string, status: string): Promise<MultiDocuments> {
+        const doc = this.create(MultiDocuments, { uuid, documentId, did, status });
+        await this.save(MultiDocuments, doc);
+        return doc;
+    }
+
+    public async getMultiSigDocuments(uuid: string, documentId: string, did: string): Promise<MultiDocuments[]> {
+        return await this.find(MultiDocuments, { uuid, documentId, did });
+    }
+
 
     //Static
 

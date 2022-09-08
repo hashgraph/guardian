@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token, UserType } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
@@ -10,10 +10,8 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
 @Component({
     selector: 'action-config',
     templateUrl: './action-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './action-config.component.css'
-    ]
+    styleUrls: ['./action-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class ActionConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;

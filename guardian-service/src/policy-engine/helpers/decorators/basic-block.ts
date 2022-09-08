@@ -2,7 +2,7 @@ import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-d
 import { EventConfig } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
 import { ExternalMessageEvents, PolicyRole, PolicyType } from '@guardian/interfaces';
-import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
@@ -356,6 +356,21 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     return await super.refreshAction(event);
                 }
                 this.updateBlock(event.data, event.user, '');
+            }
+
+            /**
+             * Join GET Data
+             * @param {IPolicyDocument | IPolicyDocument[]} data
+             * @param {IPolicyUser} user
+             * @param {AnyBlockType} parent
+             */
+            public async joinData<T extends IPolicyDocument | IPolicyDocument[]>(
+                data: T, user: IPolicyUser, parent: AnyBlockType
+            ): Promise<T> {
+                if (typeof super.joinData === 'function') {
+                    return await super.joinData(data, user, parent);
+                }
+                return data;
             }
 
             /**

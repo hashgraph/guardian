@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
@@ -9,10 +9,8 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
 @Component({
     selector: 'external-data-config',
     templateUrl: './external-data-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './external-data-config.component.css'
-    ]
+    styleUrls: ['./external-data-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class ExternalDataConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;
