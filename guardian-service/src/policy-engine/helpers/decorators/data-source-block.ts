@@ -127,12 +127,16 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                         continue;
                     }
 
+                    if (currentPosition >= paginationData.itemsPerPage) {
+                        break;
+                    }
+
                     skip = Math.max(start - previousCount, 0);
                     limit =  paginationData.itemsPerPage - Math.min((previousCount - start), 0);
 
                     const childData = await currentSource.getFromSource(user, globalFilters, false, {
                         offset: skip,
-                        limit
+                        limit: limit - currentPosition
                     });
 
                     for (const item of childData) {
