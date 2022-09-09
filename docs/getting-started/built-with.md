@@ -8,8 +8,11 @@ The Guardian solution is built with the following major frameworks/libraries.
 * [MongoDB](https://www.mongodb.com/)
 * [Express](https://expressjs.com/)
 * [Nats](https://nats.io/)
-* [TypeORM](https://typeorm.io/)
+* [MikroORM](https://mikro-orm.io/)
 * [W3C VC-JS-HTTP](https://w3c.github.io/vc-data-model/)
+* [Transmute](https://github.com/transmute-industries/verifiable-data/tree/main/packages/vc.js)
+* [MathJS](https://mathjs.org)
+* [Web3.Storage](https://github.com/web3-storage/web3.storage)
 
 **Frontend**
 
