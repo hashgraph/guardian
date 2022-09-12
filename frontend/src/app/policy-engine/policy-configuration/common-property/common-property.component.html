@@ -75,7 +75,7 @@
         <td class="propRowCol" [title]="property.title"></td>
         <td class="propRowCell cellName">{{property.label}}</td>
         <td class="propRowCell">
-            <input [(ngModel)]="value" [readonly]="readonly" (blur)="onSave()">
+            <input class="prop-input" [(ngModel)]="value" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
 </ng-container>
@@ -85,7 +85,7 @@
         <td class="propRowCol" [title]="property.title"></td>
         <td class="propRowCell cellName">{{property.label}}</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="value" [readonly]="readonly" (change)="onSave()">
+            <input class="prop-input" type="checkbox" [(ngModel)]="value" [readonly]="readonly" (change)="onSave()">
         </td>
     </tr>
 </ng-container>

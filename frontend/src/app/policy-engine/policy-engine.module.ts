@@ -69,7 +69,7 @@ import { GroupManagerBlockComponent } from './policy-viewer/blocks/group-manager
 import { InviteDialogComponent } from './helpers/invite-dialog/invite-dialog.component';
 import { DocumentPath } from './helpers/document-path/document-path.component';
 import { CommonPropertyComponent } from './policy-configuration/common-property/common-property.component';
-import { MultiSigBlockComponent } from './policy-viewer/blocks/multi-sig-block/multi-sig-block.component';
+import { MultiSignBlockComponent } from './policy-viewer/blocks/multi-sign-block/multi-sign-block.component';
 
 @NgModule({
     declarations: [
@@ -134,7 +134,7 @@ import { MultiSigBlockComponent } from './policy-viewer/blocks/multi-sig-block/m
         InviteDialogComponent,
         DocumentPath,
         CommonPropertyComponent,
-        MultiSigBlockComponent
+        MultiSignBlockComponent
     ],
     imports: [
         CommonModule,

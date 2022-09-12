@@ -224,7 +224,6 @@ export class CommonPropertiesComponent implements OnInit {
     }
 
     onSave() {
-        debugger;
         if (this.block) {
             this.block.emitUpdate();
         }

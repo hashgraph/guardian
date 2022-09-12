@@ -25,6 +25,10 @@ export interface IPolicyUser {
      * User DID
      */
     readonly virtual?: boolean;
+    /**
+     * username
+     */
+    readonly username?: string;
 }
 
 /**
@@ -51,6 +55,10 @@ export class PolicyUser implements IPolicyUser {
      * User DID
      */
     public virtual?: boolean;
+    /**
+     * username
+     */
+    public username?: string;
 
     constructor(did: string, virtual: boolean = false) {
         this.id = did;
@@ -94,6 +102,7 @@ export class PolicyUser implements IPolicyUser {
         if (user) {
             this.did = user.did;
             this.virtual = true;
+            this.username = user.username;
         }
         return this;
     }
@@ -106,5 +115,14 @@ export class PolicyUser implements IPolicyUser {
     public static create(group: PolicyRoles, virtual: boolean = false): PolicyUser {
         const user = new PolicyUser(group.did, virtual);
         return user.setGroup({ role: group.role, uuid: group.uuid });
+    }
+
+    /**
+     * Set username
+     * @param username
+     */
+    public setUsername(username: string): PolicyUser {
+        this.username = username;
+        return this;
     }
 }

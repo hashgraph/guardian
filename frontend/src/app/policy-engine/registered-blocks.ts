@@ -48,7 +48,7 @@ import { ChildrenType } from "./structures/types/children-type.type";
 import { ControlType } from "./structures/types/control-type.type";
 import { BlockAbout } from "./structures/block-about";
 import { IBlockSetting } from "./structures/interfaces/block-setting.interface";
-import { MultiSigBlockComponent } from "./policy-viewer/blocks/multi-sig-block/multi-sig-block.component";
+import { MultiSignBlockComponent } from "./policy-viewer/blocks/multi-sign-block/multi-sign-block.component";
 
 @Injectable()
 export class RegisteredBlocks {
@@ -113,7 +113,7 @@ export class RegisteredBlocks {
             { type: BlockType.TokenActionBlock },
             { type: BlockType.TokenConfirmationBlock },
             { type: BlockType.DocumentValidatorBlock },
-            { type: BlockType.MultiSigBlock }
+            { type: BlockType.MultiSignBlock }
         ];
 
         // Main, UI Components
@@ -263,11 +263,11 @@ export class RegisteredBlocks {
             }]
         });
         this.registerBlock({
-            type: BlockType.MultiSigBlock,
+            type: BlockType.MultiSignBlock,
             icon: 'done_all',
             group: BlockGroup.Documents,
             header: BlockHeaders.UIComponents,
-            factory: MultiSigBlockComponent,
+            factory: MultiSignBlockComponent,
             property: null,
         });
         

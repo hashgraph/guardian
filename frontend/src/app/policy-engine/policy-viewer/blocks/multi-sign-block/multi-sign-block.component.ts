@@ -4,14 +4,14 @@ import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 
 /**
- * Component for display block of 'multiSigBlock' types.
+ * Component for display block of 'multiSignBlock' types.
  */
 @Component({
-    selector: 'app-multi-sig-block',
-    templateUrl: './multi-sig-block.component.html',
-    styleUrls: ['./multi-sig-block.component.css']
+    selector: 'app-multi-sign-block',
+    templateUrl: './multi-sign-block.component.html',
+    styleUrls: ['./multi-sign-block.component.css']
 })
-export class MultiSigBlockComponent implements OnInit {
+export class MultiSignBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
@@ -31,6 +31,8 @@ export class MultiSigBlockComponent implements OnInit {
     threshold: any;
     declinedCount: any;
     signedCount: any;
+    signedMax: any;
+    declinedMax: any;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -81,26 +83,27 @@ export class MultiSigBlockComponent implements OnInit {
         if (data) {
             this.data = data.data;
             this.status = data.status || {};
-
             this.confirmationStatus = this.status.confirmationStatus;
             this.documentStatus = this.status.documentStatus;
             this.total = this.status.total;
             this.documents = this.status.data || [];
-
-            if(this.total) {
-                this.declined = (this.status.declined / this.total) * 100;
-                this.signed = (this.status.signed / this.total) * 100;
-                this.declinedCount = this.status.declined;
-                this.signedCount = this.status.signed;
+            if (this.total) {
+                this.declined = this.status.declinedPercent;
+                this.signed = this.status.signedPercent;
+                this.declinedCount = this.status.declinedCount;
+                this.signedCount = this.status.signedCount;
                 this.threshold = this.status.threshold;
+                this.signedMax = this.status.signedThreshold;
+                this.declinedMax = this.status.declinedThreshold;
             } else {
                 this.declined = 0;
                 this.signed = 0;
                 this.declinedCount = 0;
                 this.signedCount = 0;
                 this.threshold = 50;
+                this.signedMax = 0;
+                this.declinedMax = 0;
             }
-
             this.isActive = true;
         } else {
             this.isActive = false;
@@ -109,7 +112,13 @@ export class MultiSigBlockComponent implements OnInit {
 
     onSelect(status: any) {
         this.loading = true;
-        this.policyEngineService.setBlockData(this.id, this.policyId, { document: this.data, status }).subscribe(() => {
+        const data = {
+            document: {
+                id: this.data.id
+            },
+            status
+        }
+        this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
             this.loading = false;
         }, (e) => {
             console.error(e.error);
@@ -119,5 +128,12 @@ export class MultiSigBlockComponent implements OnInit {
 
     onDetails() {
 
+    }
+
+    onClickMenu(event:any) {
+        if(event.stopPropagation) {
+            event.stopPropagation();
+        }
+        return false;
     }
 }

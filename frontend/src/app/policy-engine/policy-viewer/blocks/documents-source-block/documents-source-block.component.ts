@@ -205,6 +205,32 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
+    getIssuer(row: any, field: any) {
+        try {
+            if (field.content) {
+                return field.content;
+            }
+            if (field.names) {
+                let d = row[field.names[0]];
+                for (let i = 1; i < field.names.length; i++) {
+                    const name = field.names[i];
+                    d = d[name];
+                }
+                if (typeof d === 'object') {
+                    return d.id;
+                }
+                return d;
+            } else {
+                if (typeof row[field.name] === 'object') {
+                    return row[field.name].id;
+                }
+                return row[field.name];
+            }
+        } catch (error) {
+            return "";
+        }
+    }
+
     getGroup(row: any, field: any): any | null {
         const items = this.fieldMap[field.title];
         if (items) {

@@ -260,7 +260,7 @@
     display: block;
 }
 
-.grid-setting::ng-deep .properties input {
+.grid-setting::ng-deep .properties .prop-input {
     width: 325px;
 }
 

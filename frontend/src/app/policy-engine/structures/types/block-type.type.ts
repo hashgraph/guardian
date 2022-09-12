@@ -30,5 +30,5 @@ export enum BlockType {
     DocumentValidatorBlock = 'documentValidatorBlock',
     TokenConfirmationBlock = 'tokenConfirmationBlock',
     GroupManagerBlock = 'groupManagerBlock',
-    MultiSigBlock = 'multiSigBlock'
+    MultiSignBlock = 'multiSignBlock'
 }

@@ -4,7 +4,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Cyclic</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.cyclic" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.cyclic" [readonly]="readonly">
         </td>
     </tr>
 
@@ -19,7 +19,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">

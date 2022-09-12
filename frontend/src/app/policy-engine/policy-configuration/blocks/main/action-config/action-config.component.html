@@ -23,7 +23,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
         </td>
     </tr>
 
@@ -32,7 +32,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Field</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.field" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="block.field" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -62,7 +62,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Option Tag</td>
                 <td class="propRowCell">
-                    <input [(ngModel)]="option.tag" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="option.tag" [readonly]="readonly">
                 </td>
             </tr>
             <tr class="propRow subRow-2"
@@ -70,7 +70,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Name</td>
                 <td class="propRowCell">
-                    <input [(ngModel)]="option.name" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="option.name" [readonly]="readonly">
                 </td>
             </tr>
             <tr class="propRow subRow-2"
@@ -78,7 +78,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Value</td>
                 <td class="propRowCell">
-                    <input [(ngModel)]="option.value" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="option.value" [readonly]="readonly">
                 </td>
             </tr>
             <tr class="propRow subRow-2"
@@ -97,7 +97,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">UI Class</td>
                 <td class="propRowCell">
-                    <input [(ngModel)]="option.uiClass" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="option.uiClass" [readonly]="readonly">
                 </td>
             </tr>
         </ng-container>
@@ -108,7 +108,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Button Content</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.uiMetaData.content" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="block.uiMetaData.content" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -124,21 +124,21 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Name</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.name" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="block.name" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Value</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.value" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="block.value" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Field</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.field" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="block.field" [readonly]="readonly">
             </td>
         </tr>
     </ng-container>
@@ -148,7 +148,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Button Content</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.uiMetaData.content" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="block.uiMetaData.content" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -176,7 +176,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Target Url</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.targetUrl" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="block.targetUrl" [readonly]="readonly">
             </td>
         </tr>
     </ng-container>

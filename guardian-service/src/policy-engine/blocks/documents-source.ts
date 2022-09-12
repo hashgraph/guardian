@@ -63,7 +63,7 @@ export class InterfaceDocumentsSource {
             paginationData = await pagination.getState(user);
         }
 
-        let data = await ref.getGlobalSources(user, paginationData);
+        let data = await ref.getGlobalSources(user, paginationData) as any[];
 
         for (const child of ref.children) {
             data = await child.joinData(data, user, ref);

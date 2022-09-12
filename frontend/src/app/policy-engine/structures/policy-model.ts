@@ -869,7 +869,8 @@ export class PolicyModel {
         const e = new PolicyGroupModel({
             name: '',
             creator: '',
-            members: []
+            members: [],
+            groupRelationshipType: GroupRelationshipType.Multiple
         }, this);
         this.addGroup(e);
     }

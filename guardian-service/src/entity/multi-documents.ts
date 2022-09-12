@@ -1,5 +1,6 @@
 import { Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
+import { IVC } from '@guardian/interfaces';
 
 /**
  * MultiDocuments collection
@@ -19,10 +20,22 @@ export class MultiDocuments extends BaseEntity {
     documentId?: string;
 
     /**
+     * User Id
+     */
+    @Property({ nullable: true })
+    userId?: string;
+
+    /**
      * (User DID)
      */
     @Property({ nullable: true })
     did?: string;
+
+    /**
+     * username
+     */
+    @Property({ nullable: true })
+    username?: string;
 
     /**
      * Created at
@@ -35,4 +48,10 @@ export class MultiDocuments extends BaseEntity {
      */
     @Property({ nullable: true })
     status?: string;
+
+    /**
+     * Document instance
+     */
+    @Property({ nullable: true })
+    document?: IVC;
 }

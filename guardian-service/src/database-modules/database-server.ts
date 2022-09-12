@@ -11,7 +11,7 @@ import { Token as TokenCollection } from '@entity/token';
 import { Topic as TopicCollection } from '@entity/topic';
 import { DryRun } from '@entity/dry-run';
 import { PolicyRoles as PolicyRolesCollection } from '@entity/policy-roles';
-import { DocumentStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
+import { DocumentStatus, IVC, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { BaseEntity, DataBaseHelper } from '@guardian/common';
 import { PolicyInvitations } from '@entity/policy-invitations';
 import { MultiDocuments } from '@entity/multi-documents';
@@ -49,6 +49,7 @@ export class DatabaseServer {
         this.classMap.set(DryRun, 'DryRun');
         this.classMap.set(PolicyRolesCollection, 'PolicyRolesCollection');
         this.classMap.set(PolicyInvitations, 'PolicyInvitations');
+        this.classMap.set(MultiDocuments, 'MultiDocuments');
     }
 
     /**
@@ -880,24 +881,52 @@ export class DatabaseServer {
         }
     }
 
-    public async getMultiSigStatus(uuid: string, documentId: string): Promise<MultiDocuments> {
-        return await this.findOne(MultiDocuments, { uuid, documentId, did: null });
+    public async getMultiSigStatus(uuid: string, documentId: string, userId: string = 'Group'): Promise<MultiDocuments> {
+        return await this.findOne(MultiDocuments, { uuid, documentId, userId });
     }
 
     public async setMultiSigStatus(uuid: string, documentId: string, status: string): Promise<MultiDocuments> {
-        const doc = this.create(MultiDocuments, { uuid, documentId, did: null, status });
+        const doc = this.create(MultiDocuments, {
+            uuid,
+            documentId,
+            userId: 'Group',
+            did: null,
+            username: null,
+            status,
+            document: null
+        });
         await this.save(MultiDocuments, doc);
         return doc;
     }
 
-    public async setMultiSigDocument(uuid: string, documentId: string, did: string, status: string): Promise<MultiDocuments> {
-        const doc = this.create(MultiDocuments, { uuid, documentId, did, status });
+    public async setMultiSigDocument(
+        uuid: string,
+        documentId: string,
+        user: any,
+        status: string,
+        document: IVC
+    ): Promise<MultiDocuments> {
+        const doc = this.create(MultiDocuments, {
+            uuid,
+            documentId,
+            status,
+            document,
+            userId: user.id,
+            did: user.did,
+            username: user.username
+        });
         await this.save(MultiDocuments, doc);
         return doc;
     }
 
-    public async getMultiSigDocuments(uuid: string, documentId: string, did: string): Promise<MultiDocuments[]> {
-        return await this.find(MultiDocuments, { uuid, documentId, did });
+    public async getMultiSigDocuments(uuid: string, documentId: string): Promise<MultiDocuments[]> {
+        return await this.find(MultiDocuments, {
+            where: {
+                uuid: { $eq: uuid },
+                documentId: { $eq: documentId },
+                userId: { $ne: 'Group' }
+            }
+        });
     }
 
 
@@ -932,7 +961,7 @@ export class DatabaseServer {
      * Get schemas
      * @param filters
      */
-    public static async getSchemas(filters?: any, options?:any): Promise<SchemaCollection[]> {
+    public static async getSchemas(filters?: any, options?: any): Promise<SchemaCollection[]> {
         return await new DataBaseHelper(SchemaCollection).find(filters, options);
     }
 

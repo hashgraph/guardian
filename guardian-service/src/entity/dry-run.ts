@@ -433,6 +433,12 @@ export class DryRun extends BaseEntity {
     username?: string;
 
     /**
+     * User Id
+     */
+    @Property({ nullable: true })
+    userId?: string;
+
+    /**
      * hederaAccountId
      */
     @Property({ nullable: true })
