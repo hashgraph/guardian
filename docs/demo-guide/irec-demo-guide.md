@@ -13,15 +13,15 @@ This folder contains a sample file that is referenced in the Demo Guide
 
 3\. You will now be prompted to configure your Standard Registry account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the details of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../.gitbook/assets/Verra\_2.2.png)
+![](../.gitbook/assets/iREC\_4.2.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
 
 ```
 iREC 1 : 1661166202.802071003
-iREC 2 : 1661167347.064745885
-iREC 3 : 1661372984.332898003
-iREC 4 : 1661373147.975461003
+iREC 2 : 1662640724.951854568
+iREC 3 : 1662641840.731000003
+iREC 4 : 1662642008.325450377
 ```
 
 ![](../.gitbook/assets/iREC3\_new\_1.png)
@@ -40,7 +40,7 @@ Once Policy is imported successfully, click on "Publish" button to publish the p
 
 ![](../.gitbook/assets/iREC3\_new\_3.png)
 
-<figure><img src="../.gitbook/assets/image (7) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (7) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../.gitbook/assets/image (6) (2).png" alt=""><figcaption></figcaption></figure>
 
@@ -86,7 +86,7 @@ For now, we will be adding it manually, but in future, we will be automating the
 
 After submitting the data, the Registrant is waiting for approval from Standard Registry.
 
-<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (15).png" alt=""><figcaption></figcaption></figure>
 
 13\. Now, we logout from Registrant and log back as Standard Registry, we navigate to Issue Requests tab in Policies and once we are ready to approve the document, you can click on Approve button.
 
