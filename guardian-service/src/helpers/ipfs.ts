@@ -1,6 +1,5 @@
 import { MessageBrokerChannel } from '@guardian/common';
-import { MessageAPI, IFileResponse, WorkerTaskType } from '@guardian/interfaces';
-import { IPFSTaskManager } from './ipfs-task-manager';
+import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 import { Workers } from '@helpers/workers';
 
 /**
