@@ -93,7 +93,7 @@
         <div class="enum-edit-button" [ngClass]="{ 'enum-edit-button-only': !this.field.controlEnum.value.length }"
             (click)="onEditEnum()">
             <mat-icon>edit</mat-icon>
-            <span style="white-space: nowrap;">Edit values</span>
+            <span class="enum-edit-button-label">Edit values</span>
         </div>
     </div>
     <div *ngIf="loading" class="loading">

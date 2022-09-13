@@ -19,7 +19,7 @@ import { FileDragNDropComponent } from '../components/file-drag-n-drop/file-drag
 import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
 import { SwitchButton } from '../components/switch-button/switch-button.component';
 import { CommonComponentsModule } from '../common-components.module';
-import { EnumRemoteData } from './enum-remote-data/enum-remote-data.component';
+import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.component';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 
 @NgModule({
@@ -37,7 +37,7 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
         FileDragNDropComponent,
         SchemaFieldConfigurationComponent,
         SwitchButton,
-        EnumRemoteData
+        EnumEditorDialog
     ],
     imports: [
         CommonModule,

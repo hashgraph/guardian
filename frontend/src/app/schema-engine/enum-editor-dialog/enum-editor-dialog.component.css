@@ -25,6 +25,7 @@
 
 .enum-import-button {
     margin-top: 5px;
+    min-width: 170px;
 }
 
 .loading {
@@ -34,7 +35,7 @@
 }
 
 :host .g-dialog-actions-btn {
-    min-width: 150px !important;
+    min-width: 170px !important;
 }
 
 .enum-load-to-ipfs {
@@ -44,5 +45,6 @@
 .enum-label {
     color: var(--primary-color);
     font-size: 20px;
-    letter-spacing: 1.5px;
+    font-size: 20px;
+    font-weight: 500;
 }

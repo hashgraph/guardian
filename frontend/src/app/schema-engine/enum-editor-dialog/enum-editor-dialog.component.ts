@@ -6,11 +6,11 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
  * Dialog allowing you to select a file and load schemas.
  */
 @Component({
-    selector: 'enum-remote-data',
-    templateUrl: './enum-remote-data.component.html',
-    styleUrls: ['./enum-remote-data.component.css']
+    selector: 'enum-editor-dialog',
+    templateUrl: './enum-editor-dialog.component.html',
+    styleUrls: ['./enum-editor-dialog.component.css']
 })
-export class EnumRemoteData implements AfterContentInit {
+export class EnumEditorDialog implements AfterContentInit {
     enumValue!: string;
 
     codeMirrorOptions: any = {
@@ -31,7 +31,7 @@ export class EnumRemoteData implements AfterContentInit {
 
 
     constructor(
-        public dialogRef: MatDialogRef<EnumRemoteData>,
+        public dialogRef: MatDialogRef<EnumEditorDialog>,
         @Inject(MAT_DIALOG_DATA) public data: {
             enumValue: string[]
         }

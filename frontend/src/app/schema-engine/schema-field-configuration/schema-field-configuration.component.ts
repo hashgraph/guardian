@@ -16,7 +16,7 @@ import { UnitSystem } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { API_IPFS_GATEWAY_URL } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
-import { EnumRemoteData } from '../enum-remote-data/enum-remote-data.component';
+import { EnumEditorDialog } from '../enum-editor-dialog/enum-editor-dialog.component';
 import { FieldControl } from "../field-control";
 
 /**
@@ -119,7 +119,7 @@ export class SchemaFieldConfigurationComponent implements OnInit {
     }
 
     onEditEnum() {
-        const dialogRef = this.dialog.open(EnumRemoteData, {
+        const dialogRef = this.dialog.open(EnumEditorDialog, {
             panelClass: 'g-dialog',
             width: "700px",
             data: {
