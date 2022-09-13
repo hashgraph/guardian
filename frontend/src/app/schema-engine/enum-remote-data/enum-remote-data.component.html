@@ -1,0 +1,40 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" mat-dialog-close>
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div class="g-dialog-title">
+            Enum data
+        </div>
+        <div class="g-dialog-actions">
+            <div class="g-dialog-actions-btn" [mat-dialog-close]="{enumValue,loadToIpfs:loadToIpfs&&loadToIpfsValue}">
+                OK
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body enum-input-container">
+        <div class="enum-import-container">
+            <mat-form-field class="enum-import-url" appearance="outline">
+                <mat-label>URL</mat-label>
+                <input matInput [formControl]="urlControl" placeholder="example.com">
+            </mat-form-field>
+            <button mat-raised-button color="primary" class="enum-import-button" (click)="onImportByUrl()"
+                [disabled]="urlControl.value && !urlControl.valid">Import by URL</button>
+            <button mat-raised-button color="primary" class="enum-import-button" (click)="onImportByFile()">
+                Import by file
+            </button>
+        </div>
+        <div class="enum-label"><b>Enum</b></div>
+        <mat-checkbox labelPosition="before" *ngIf="loadToIpfs" class="enum-load-to-ipfs" [(ngModel)]="loadToIpfsValue"
+            color="primary">
+            Will data be loaded to IPFS? (There are more than 5 options)
+        </mat-checkbox>
+        <div id="text-editor" class="text-editor" *ngIf="!loading">
+            <ngx-codemirror (ngModelChange)="checkLoadIpfsVisible($event)" *ngIf="initDialog"
+                [options]="codeMirrorOptions" [(ngModel)]="enumValue"></ngx-codemirror>
+        </div>
+        <mat-spinner *ngIf="loading" class="loading"></mat-spinner>
+    </div>
+</div>
