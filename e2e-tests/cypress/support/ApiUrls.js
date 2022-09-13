@@ -18,6 +18,10 @@ LogsAttributes: "http://localhost:3000/api/v1/logs/attributes/",
 Schemas:"http://localhost:3000/api/v1/schemas/",
 SchemasSystem:"http://localhost:3000/api/v1/schemas/system/",
 SchemasSystemEntity:"http://localhost:3000/api/v1/schemas/system/entity/",
+SchemaImportMsgPreview: "http://localhost:3000/api/v1/schemas/import/message/preview",
+SchemaImportFilePreview: "http://localhost:3000/api/v1/schemas/import/file/preview",
+SchemaImport: "http://localhost:3000/api/v1/schemas/import/",
+SchemasType:"http://localhost:3000/api/v1/schemas/type",
 //TrustChains
 Trustchains:"http://localhost:3000/api/v1/trustchains",
 //Settings
