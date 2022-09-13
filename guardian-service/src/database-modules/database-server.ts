@@ -881,10 +881,43 @@ export class DatabaseServer {
         }
     }
 
-    public async getMultiSigStatus(uuid: string, documentId: string, userId: string = 'Group'): Promise<MultiDocuments> {
+    /**
+     * Get MultiSign Status by document or user
+     * @param uuid
+     * @param documentId
+     * @param userId
+     *
+     * @virtual
+     */
+    public async getMultiSignStatus(uuid: string, documentId: string, userId: string = 'Group'): Promise<MultiDocuments> {
         return await this.findOne(MultiDocuments, { uuid, documentId, userId });
     }
 
+    /**
+     * Get MultiSign Statuses
+     * @param uuid
+     * @param documentId
+     *
+     * @virtual
+     */
+    public async getMultiSignDocuments(uuid: string, documentId: string): Promise<MultiDocuments[]> {
+        return await this.find(MultiDocuments, {
+            where: {
+                uuid: { $eq: uuid },
+                documentId: { $eq: documentId },
+                userId: { $ne: 'Group' }
+            }
+        });
+    }
+
+    /**
+     * Set MultiSign Status by document
+     * @param uuid
+     * @param documentId
+     * @param status
+     *
+     * @virtual
+     */
     public async setMultiSigStatus(uuid: string, documentId: string, status: string): Promise<MultiDocuments> {
         const doc = this.create(MultiDocuments, {
             uuid,
@@ -899,6 +932,16 @@ export class DatabaseServer {
         return doc;
     }
 
+    /**
+     * Set MultiSign Status by user
+     * @param uuid
+     * @param documentId
+     * @param user
+     * @param status
+     * @param document
+     *
+     * @virtual
+     */
     public async setMultiSigDocument(
         uuid: string,
         documentId: string,
@@ -918,17 +961,6 @@ export class DatabaseServer {
         await this.save(MultiDocuments, doc);
         return doc;
     }
-
-    public async getMultiSigDocuments(uuid: string, documentId: string): Promise<MultiDocuments[]> {
-        return await this.find(MultiDocuments, {
-            where: {
-                uuid: { $eq: uuid },
-                documentId: { $eq: documentId },
-                userId: { $ne: 'Group' }
-            }
-        });
-    }
-
 
     //Static
 

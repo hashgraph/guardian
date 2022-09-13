@@ -364,9 +364,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param {IPolicyUser} user
              * @param {AnyBlockType} parent
              */
-            public async joinData<T extends IPolicyDocument | IPolicyDocument[]>(
-                data: T, user: IPolicyUser, parent: AnyBlockType
-            ): Promise<T> {
+            public async joinData<U extends IPolicyDocument | IPolicyDocument[]>(
+                data: U, user: IPolicyUser, parent: AnyBlockType
+            ): Promise<U> {
                 if (typeof super.joinData === 'function') {
                     return await super.joinData(data, user, parent);
                 }

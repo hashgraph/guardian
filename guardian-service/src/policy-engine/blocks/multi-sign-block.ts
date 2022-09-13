@@ -1,4 +1,4 @@
-import { ActionCallback, BasicBlock, EventBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
@@ -12,6 +12,9 @@ import { Inject } from '@helpers/decorators/inject';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { MessageAction, MessageServer, VcDocument, VPMessage } from '@hedera-modules';
 
+/**
+ * Sign Status
+ */
 enum DocumentStatus {
     NEW = 'NEW',
     SIGNED = 'SIGNED',
@@ -120,17 +123,16 @@ export class MultiSignBlock {
         }
 
         const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);
-        const confirmationStatus = await ref.databaseServer.getMultiSigStatus(ref.uuid, documentId);
+        const confirmationStatus = await ref.databaseServer.getMultiSignStatus(ref.uuid, documentId);
         console.log('1', confirmationStatus)
         if (confirmationStatus) {
             throw new BlockActionError('The document has already been signed', ref.blockType, ref.uuid);
         }
-        const documentStatus = await ref.databaseServer.getMultiSigStatus(ref.uuid, documentId, user.id);
+        const documentStatus = await ref.databaseServer.getMultiSignStatus(ref.uuid, documentId, user.id);
         console.log('2', documentStatus)
         if (documentStatus) {
             throw new BlockActionError('The document has already been signed', ref.blockType, ref.uuid);
         }
-
 
         const root = await PolicyUtils.getHederaAccount(ref, user.did);
         const groupContext = await PolicyUtils.getGroupContext(ref, user);
@@ -151,7 +153,7 @@ export class MultiSignBlock {
             newVC.toJsonTree()
         );
 
-        const data = await ref.databaseServer.getMultiSigDocuments(ref.uuid, documentId);
+        const data = await ref.databaseServer.getMultiSignDocuments(ref.uuid, documentId);
         let signed = 0;
         let declined = 0;
         for (const u of data) {
@@ -197,11 +199,17 @@ export class MultiSignBlock {
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
     }
 
+    /**
+     * Get Document Status
+     * @param {IPolicyDocument} document
+     * @param {IPolicyUser} user
+     */
     private async getDocumentStatus(document: IPolicyDocument, user: IPolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        let confirmationDocument = await ref.databaseServer.getMultiSigStatus(ref.uuid, document.id);
-        let data: any[] = await ref.databaseServer.getMultiSigDocuments(ref.uuid, document.id);
-        let users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);
+        const confirmationDocument = await ref.databaseServer.getMultiSignStatus(ref.uuid, document.id);
+        const data: any[] = await ref.databaseServer.getMultiSignDocuments(ref.uuid, document.id);
+        const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);
+
         let signed = 0;
         let declined = 0;
         let documentStatus = DocumentStatus.NEW;
@@ -247,7 +255,7 @@ export class MultiSignBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        return;
     }
 
     /**
@@ -257,6 +265,18 @@ export class MultiSignBlock {
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
+            if (!ref.options.threshold) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "threshold" does not set');
+            } else {
+                try {
+                    const t = parseFloat(ref.options.threshold);
+                    if (t < 0 || t > 100) {
+                        resultsContainer.addBlockError(ref.uuid, '"threshold" value must be between 0 and 100');
+                    }
+                } catch (error) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "threshold" must be a number');
+                }
+            }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
