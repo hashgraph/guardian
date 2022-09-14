@@ -64,6 +64,14 @@
                         </mat-radio-group>
                     </div>
 
+                    <mat-form-field *ngIf="isEnum(item)" class="required-form-field" appearance="outline">
+                        <mat-select [formControlName]="item.name">
+                            <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue">
+                                {{enumValue}}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
                     <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
                 </div>
             </div>
@@ -165,6 +173,14 @@
                                     </mat-radio-button>
                                 </mat-radio-group>
                             </div>
+
+                            <mat-form-field *ngIf="isEnum(item)" class="required-form-field" appearance="outline">
+                                <mat-select [formControl]="listItem.control">
+                                    <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue">
+                                        {{enumValue}}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
 
                             <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
                         </div>

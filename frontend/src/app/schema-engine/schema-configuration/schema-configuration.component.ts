@@ -25,6 +25,7 @@ import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 import { ConditionControl } from '../condition-control';
 import { FieldControl } from '../field-control';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { IPFSService } from 'src/app/services/ipfs.service';
 
 /**
  * Schemas constructor
@@ -75,7 +76,8 @@ export class SchemaConfigurationComponent implements OnInit {
     };
 
     constructor(
-        private fb: FormBuilder
+        private fb: FormBuilder,
+        private ipfs: IPFSService
     ) {
 
         this.defaultFieldsMap = {};
@@ -388,8 +390,13 @@ export class SchemaConfigurationComponent implements OnInit {
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
             const option = this.schemaTypeMap[key];
-            if (field.customType && option.customType === field.customType) {
-                return key;
+            if (field.customType) {
+                if (option.customType === field.customType) {
+                    return key;
+                }
+                else {
+                    continue;
+                }    
             }
 
             if (option.type === field.type) {
@@ -494,7 +501,9 @@ export class SchemaConfigurationComponent implements OnInit {
             typeIndex,
             required,
             isArray,
-            unit
+            unit,
+            remoteLink,
+            enumArray
         } = fieldConfig.getValue(data);
         const type = this.schemaTypeMap[typeIndex];
         return {
@@ -511,6 +520,12 @@ export class SchemaConfigurationComponent implements OnInit {
             unitSystem: type.unitSystem,
             customType: type.customType,
             readOnly: false,
+            remoteLink: type.customType === 'enum'
+                ? remoteLink
+                : undefined,
+            enum: type.customType === 'enum' && !remoteLink
+                ? enumArray
+                : undefined
         }
     }
 
