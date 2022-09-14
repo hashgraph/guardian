@@ -62,7 +62,7 @@ export class MultiSignBlock {
 
     /**
      * Join GET Data
-     * @param {IPolicyDocument | IPolicyDocument[]} data
+     * @param {IPolicyDocument | IPolicyDocument[]} documents
      * @param {IPolicyUser} user
      * @param {AnyBlockType} parent
      */
