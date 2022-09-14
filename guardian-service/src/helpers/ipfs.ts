@@ -61,10 +61,7 @@ export class IPFS {
         if (!res) {
             throw new Error('Invalid response');
         }
-        if (res.error) {
-            throw new Error(res.error);
-        }
-        return res.body;
+        return res;
     }
 
     /**
