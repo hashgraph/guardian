@@ -81,4 +81,14 @@ export interface SchemaField {
      * Full field path
      */
     path?: string;
+
+    /**
+     * Remote link
+     */
+    remoteLink?: string;
+
+    /**
+     * Enum values
+     */
+    enum?: string[];
 }

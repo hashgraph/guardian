@@ -42,16 +42,16 @@ export class SchemaHelper {
         field.title = _property.title || name;
         field.description = _property.description || name;
         field.isArray = _property.type === SchemaDataTypes.array;
-        if (field.isArray) {
-            _property = _property.items;
-        }
-        field.isRef = !!_property.$ref;
         const {
             unit,
             unitSystem,
             customType,
             orderPosition
         } = SchemaHelper.parseFieldComment(_property.$comment);
+        if (field.isArray) {
+            _property = _property.items;
+        }
+        field.isRef = !!(_property.$ref && !_property.type);
         if (field.isRef) {
             field.type = _property.$ref;
             const { type } = SchemaHelper.parseRef(field.type);
@@ -66,6 +66,8 @@ export class SchemaHelper {
             field.unit = unit ? String(unit) : null;
             field.unitSystem = unitSystem ? String(unitSystem) : null;
             field.customType = customType ? String(customType) : null;
+            field.enum = _property.enum;
+            field.remoteLink = _property.$ref;
         }
         field.readOnly = !!(_property.readOnly || readonly);
         field.required = required;
@@ -98,7 +100,12 @@ export class SchemaHelper {
             item.$ref = field.type;
         } else {
             item.type = field.type;
-
+            if (field.remoteLink) {
+                item.$ref = field.remoteLink;
+            }
+            if (field.enum) {
+                item.enum = field.enum;
+            }
             if (field.format) {
                 item.format = field.format;
             }
