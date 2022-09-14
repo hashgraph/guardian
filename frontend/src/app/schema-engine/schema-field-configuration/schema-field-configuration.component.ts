@@ -63,26 +63,36 @@ export class SchemaFieldConfigurationComponent implements OnInit {
         }
     }
 
+    updateControlEnum(values: string[]) {
+        if (!values) {
+            return;
+        }
+
+        this.field.controlEnum.clear();
+        values.forEach((item: any) => {
+            this.field.controlEnum.push(new FormControl(item));
+        });
+
+        this.keywords = [];
+        if (values && values.length) {
+            for (let i = 0; i < values.length && i < 5; i++) {
+                this.keywords.push(values[i]);
+            }
+        }
+    }
+
     loadRemoteEnumData(link:string) {
         this.loading = true;
         fetch(link)
             .then(r=> r.json())
             .then((res: any) => {
-                this.loading = false;
-                if (!res || !res.enum) {
+                if (!res) {
                     return;
                 }
-                this.field.controlEnum.reset();
-                res.enum?.forEach((item: any) => {
-                    this.field.controlEnum.push(new FormControl(item));
-                });
-                const enumValues = this.field.controlEnum.value
-                if (enumValues && enumValues.length) {
-                    for (let i=0;i<enumValues.length && i<5; i++) {
-                        this.keywords.push(enumValues[i]);
-                    }
-                }
-            });
+                this.updateControlEnum(res.enum);
+            })
+            .catch((err) => this.errorHandler(err.message, 'Can not load remote enum data'))
+            .finally(() => this.loading = false);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -109,6 +119,7 @@ export class SchemaFieldConfigurationComponent implements OnInit {
             this.field.controlArray.enable();
         }
         this.unit = event == UnitSystem.Prefix || event == UnitSystem.Postfix;
+
         this.enum = (item && item.name || event) === 'Enum';
         if (this.enum) {
             this.field.controlEnum.setValidators([Validators.required]);
@@ -123,32 +134,30 @@ export class SchemaFieldConfigurationComponent implements OnInit {
             panelClass: 'g-dialog',
             width: "700px",
             data: {
-                enumValue: this.field.controlEnum.value
+                enumValue: this.field.controlEnum.value,
+                errorHandler: this.errorHandler.bind(this)
             }
         });
-        dialogRef.afterClosed().subscribe(res => {
+        dialogRef.afterClosed().subscribe((res: { enumValue: string, loadToIpfs: boolean }) => {
             if (!res) {
                 return;
             }
             this.field.controlRemoteLink.patchValue("");
-            this.field.controlEnum.clear();
 
-            [...new Set(res.enumValue.split('\n'))].forEach((item: any) => {
-                this.field.controlEnum.push(new FormControl(item.trim()));
-            });
+            const uniqueTrimmedEnumValues: string[] = [
+                ...new Set(
+                    res.enumValue
+                        .split('\n')
+                        .map(item => item.trim())
+                )
+            ] as string[];
 
-            this.keywords = [];
-            const enumValues = this.field.controlEnum.value;
-            for (let i = 0; i < enumValues.length && i < 5; i++) {
-                this.keywords.push(enumValues[i]);
-            }
-
-            if (res.loadToIpfs && enumValues.length > 5) {
-                this.field.controlEnum.clear()
+            if (res.loadToIpfs && uniqueTrimmedEnumValues.length > 5) {
+                this.field.controlEnum.clear();
                 this.loading = true;
                 this.ipfs.addFile(new Blob([
                     JSON.stringify({
-                        enum: [...new Set(enumValues)]
+                        enum: uniqueTrimmedEnumValues
                     })
                 ])).subscribe(cid => {
                     this.loading = false;
@@ -157,17 +166,21 @@ export class SchemaFieldConfigurationComponent implements OnInit {
                     this.loadRemoteEnumData(link);
                 }, (err) => { 
                     this.loading = false;
-                    this.toastr.error(err.message, 'Enum data can not be loaded to IPFS', {
-                        timeOut: 30000,
-                        closeButton: true,
-                        positionClass: 'toast-bottom-right',
-                        enableHtml: true
-                    });
-                    enumValues.forEach((item: any) => {
-                        this.field.controlEnum.push(new FormControl(item.trim()));
-                    });
+                    this.errorHandler(err.message, 'Enum data can not be loaded to IPFS');
+                    this.updateControlEnum(uniqueTrimmedEnumValues);
                 });
+            } else {
+                this.updateControlEnum(uniqueTrimmedEnumValues);
             }
+        });
+    }
+
+    private errorHandler(errorMessage: string, errorHeader: string): void {
+        this.toastr.error(errorMessage, errorHeader, {
+            timeOut: 30000,
+            closeButton: true,
+            positionClass: 'toast-bottom-right',
+            enableHtml: true
         });
     }
 }

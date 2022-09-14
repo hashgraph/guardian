@@ -29,15 +29,18 @@ export class EnumEditorDialog implements AfterContentInit {
         Validators.pattern(/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/)
     ]);
 
+    errorHandler!: Function;
 
     constructor(
         public dialogRef: MatDialogRef<EnumEditorDialog>,
         @Inject(MAT_DIALOG_DATA) public data: {
-            enumValue: string[]
+            enumValue: string[],
+            errorHandler: Function
         }
     ) {
         this.enumValue = data.enumValue?.join('\n') || "FIRST_OPTION\nSECOND_OPTION\nTHIRD_OPTION";
         this.loadToIpfs = data.enumValue.length > 5;
+        this.errorHandler = data.errorHandler;
     }
 
     ngOnInit() {
@@ -80,16 +83,20 @@ export class EnumEditorDialog implements AfterContentInit {
     onImportByUrl() {
         this.loading = true;
         fetch(this.urlControl.value)
-            .then(res => {
-                if (res.status == 200) {
-                    return res.text();
-                }
-                return new Promise((resolve) => resolve(""));
-            })
+            .then(res => res.text())
             .then((jsontext: any) => {
-                this.enumValue = jsontext;
+                try {
+                    const parsedText = JSON.parse(jsontext);
+                    this.enumValue = parsedText && parsedText.enum?.join('\n') || "";
+                } catch {
+                    this.enumValue = jsontext;
+                }
             })
-            .catch(() => { this.loading = false })
+            .catch((err) => {
+                if(this.errorHandler) {
+                    this.errorHandler(err.message, 'Can not import by URL');
+                }
+             })
             .finally(() => { this.loading = false });
     }
 

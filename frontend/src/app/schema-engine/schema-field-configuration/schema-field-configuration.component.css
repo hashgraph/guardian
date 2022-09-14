@@ -225,17 +225,14 @@
 .enum-form-field .mat-chip-value {
     max-width: 95px;
     min-width: 95px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
 :host ::ng-deep .enum-options-container .mat-form-field-infix {
-    padding: 6px 0;
+    padding: 10px 0;
 }
 
 :host ::ng-deep .enum-form-field mat-chip-list .mat-chip-list-wrapper {
-    overflow-x: scroll;
+    overflow-x: hidden;
     flex-wrap: unset;
 }
 
