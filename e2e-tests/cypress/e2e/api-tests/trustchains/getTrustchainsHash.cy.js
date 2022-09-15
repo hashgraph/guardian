@@ -32,7 +32,7 @@ context("Trustchains", () => {
       })
 
 
-      it('should return a list of all VP documents', () => {
+      it('should builds and returns a trustchain, from the VP to the root VC document', () => {
         cy.get('@requestToken').then((response) => {
           const accessToken = 'bearer ' + response.body.accessToken
           cy.request({
@@ -43,8 +43,22 @@ context("Trustchains", () => {
             }
           })
             .then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body[0]).to.have.property("hash");
+              expect(response.status).to.eq(200);
+
+              let hash = response.body[0].hash;
+
+              cy.request({
+                method: 'GET',
+                url: API.Trustchains + hash,
+                headers: {
+                  authorization: accessToken
+                }
+              })
+                .then((response) => {
+                  expect(response.status).to.eq(200);
+                })
+          
+        
             })
         })
       })

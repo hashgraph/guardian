@@ -23,7 +23,7 @@ SchemaImportFilePreview: "http://localhost:3000/api/v1/schemas/import/file/previ
 SchemaImport: "http://localhost:3000/api/v1/schemas/import/",
 SchemasType:"http://localhost:3000/api/v1/schemas/type",
 //TrustChains
-Trustchains:"http://localhost:3000/api/v1/trustchains",
+Trustchains:"http://localhost:3000/api/v1/trustchains/",
 //Settings
 SettingsEnv:"http://localhost:3000/api/v1/settings/environment",
 };
