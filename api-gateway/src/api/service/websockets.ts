@@ -54,10 +54,12 @@ export class WebSocketsService {
     private registerMessageHandler(): void {
         this.channel.response<IUpdateBlockMessage, any>('update-block', async (msg) => {
             this.wss.clients.forEach((client: any) => {
-                this.send(client, {
-                    type: 'update-event',
-                    data: msg.uuid
-                });
+                if (this.checkUserByDid(client, msg)) {
+                    this.send(client, {
+                        type: 'update-event',
+                        data: msg.uuid
+                    });
+                }
             });
             return new MessageResponse({})
         });
@@ -228,7 +230,13 @@ export class WebSocketsService {
      * @private
      */
     private checkUserByDid(client: any, msg: any): boolean {
-        return client && client.user && msg && msg.user && (client.user.did === msg.user.did);
+        if(client && client.user) {
+            if(msg && msg.user) {
+                return (client.user.did === msg.user.did || msg.user.virtual);
+            }
+            return true;
+        }
+        return false;
     }
 
     /**

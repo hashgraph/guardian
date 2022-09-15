@@ -344,12 +344,12 @@
                                             {{item.sourceTag}}
                                         </span>
                                     </mat-select-trigger>
-                                    <mat-option *ngFor="let item of policy.allBlocks" [value]="item">
+                                    <mat-option *ngFor="let block of policy.allBlocks" [value]="block">
                                         <div class="block-name">
                                             <div class="block-icon">
-                                                <mat-icon>{{getIcon(item)}}</mat-icon>
+                                                <mat-icon>{{getIcon(block)}}</mat-icon>
                                             </div>
-                                            {{item.tag}}
+                                            {{block.tag}}
                                         </div>
                                     </mat-option>
                                 </mat-select>
@@ -379,12 +379,12 @@
                                             {{item.targetTag}}
                                         </span>
                                     </mat-select-trigger>
-                                    <mat-option *ngFor="let item of policy.allBlocks" [value]="item">
+                                    <mat-option *ngFor="let block of policy.allBlocks" [value]="block">
                                         <div class="block-name">
                                             <div class="block-icon">
-                                                <mat-icon>{{getIcon(item)}}</mat-icon>
+                                                <mat-icon>{{getIcon(block)}}</mat-icon>
                                             </div>
-                                            {{item.tag}}
+                                            {{block.tag}}
                                         </div>
                                     </mat-option>
                                 </mat-select>

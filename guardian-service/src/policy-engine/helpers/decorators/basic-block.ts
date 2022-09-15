@@ -383,16 +383,22 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 await this.saveState();
                 const users: { [x: string]: IPolicyUser } = {};
                 if (!this.options.followUser) {
-                    const allUsers = await this.databaseServer.getAllPolicyUsers(this.policyId);
-                    for (const userRole of allUsers) {
-                        if (this.permissions.includes(userRole.role)) {
-                            users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
-                        } else if (this.permissions.includes('ANY_ROLE')) {
-                            users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
+                    if (this.dryRun) {
+                        const user = await DatabaseServer.getVirtualUser(this.policyId);
+                        const group = await this.databaseServer.getActiveGroupByUser(this.policyId, user?.did);
+                        users[user?.did] = PolicyUser.create(group, !!this.dryRun);
+                    } else {
+                        const allUsers = await this.databaseServer.getAllPolicyUsers(this.policyId);
+                        for (const userRole of allUsers) {
+                            if (this.permissions.includes(userRole.role)) {
+                                users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
+                            } else if (this.permissions.includes('ANY_ROLE')) {
+                                users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
+                            }
                         }
-                    }
-                    if (this.permissions.includes('OWNER') || this.permissions.includes('ANY_ROLE')) {
-                        users[this.policyOwner] = new PolicyUser(this.policyOwner);
+                        if (this.permissions.includes('OWNER') || this.permissions.includes('ANY_ROLE')) {
+                            users[this.policyOwner] = new PolicyUser(this.policyOwner);
+                        }
                     }
                 } else {
                     users[user.did] = user;

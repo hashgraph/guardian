@@ -798,6 +798,20 @@ export class DatabaseServer {
     }
 
     /**
+     * Get Active Group By User
+     * @param policyId
+     * @param did
+     *
+     * @virtual
+     */
+     public async getActiveGroupByUser(policyId: string, did: string): Promise<PolicyRolesCollection> {
+        if (!did) {
+            return null;
+        }
+        return await this.findOne(PolicyRolesCollection, { policyId, did , active: true });
+    }
+
+    /**
      * Get members
      *
      * @param group

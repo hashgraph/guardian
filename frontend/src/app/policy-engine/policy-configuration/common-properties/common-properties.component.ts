@@ -1,5 +1,6 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
 import { BlockErrorActions, GenerateUUIDv4, Schema, Token } from '@guardian/interfaces';
+import { ReplaySubject } from 'rxjs';
 import { RegisteredBlocks } from '../../registered-blocks';
 import { IBlockAbout } from "../../structures/interfaces/block-about.interface";
 import { PolicyBlockModel, PolicyEventModel, PolicyModel } from '../../structures/policy-model';
@@ -58,7 +59,7 @@ export class CommonPropertiesComponent implements OnInit {
     outputEvents: any[] = [];
     defaultEvent: boolean = false;
     customProperties!: any[] | undefined;
-
+    
     constructor(
         public registeredBlocks: RegisteredBlocks,
         private componentFactoryResolver: ComponentFactoryResolver
