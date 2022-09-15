@@ -104,7 +104,7 @@
             </td>
             <td class="propRowCell cellName">Field {{i}}</td>
             <td class="propRowCell">
-                <span *ngIf="field.field&&field.type&&field.value">
+                <span *ngIf="field.field&&field.type&&field.value" class="not-editable-text">
                     {{field.field}} {{field.type}} {{field.value}}
                 </span>
             </td>
@@ -125,7 +125,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Field</td>
             <td class="propRowCell">
-                <input [(ngModel)]="field.field" [readonly]="readonly">
+                <document-path [(value)]="field.field" [readonly]="readonly"></document-path>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">

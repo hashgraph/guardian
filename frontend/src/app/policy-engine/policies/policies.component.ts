@@ -95,6 +95,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             'roles',
             'topic',
             'version',
+            'tokens',
             'schemas',
             'operation',
             'open',

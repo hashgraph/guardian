@@ -10,5 +10,5 @@ export enum MessageType {
     Schema = 'Schema',
     Topic = 'Topic',
     StandardRegistry = 'Standard Registry',
-    // DynamicTopic = 'Dynamic-Topic',
+    Token = 'Token'
 }

@@ -10,6 +10,7 @@ import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@
 })
 export class DocumentPath {
     @Input('value') value!: string;
+    @Input('displayTooltip') displayTooltip!: boolean;
     @Output('valueChange') valueChange = new EventEmitter<string>();
 
     @Input('readonly') readonly!: boolean;

@@ -29,8 +29,10 @@ export class DocumentsSourceAddon {
      * Get data from source
      * @param user
      * @param globalFilters
+     * @param countResult
+     * @param otherOptions
      */
-    async getFromSource(user: IPolicyUser, globalFilters: any) {
+    async getFromSource(user: IPolicyUser, globalFilters: any, countResult?: boolean, otherOptions?: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const filters: any = {};
@@ -91,63 +93,67 @@ export class DocumentsSourceAddon {
             Object.assign(filters, globalFilters);
         }
 
-        const otherOptions: any = {};
+        if (!otherOptions) {
+            otherOptions = {};
+        }
         if (ref.options.orderDirection) {
             otherOptions.orderBy = {};
             if (ref.options.orderField) {
-                otherOptions.orderBy[ref.options.orderField] = ref.options.createdOrderDirection;
+                otherOptions.orderBy[ref.options.orderField] = ref.options.orderDirection;
             } else {
-                otherOptions.orderBy.createDate = ref.options.createdOrderDirection;
+                otherOptions.orderBy.createDate = ref.options.orderDirection;
             }
         }
 
-        let data: IPolicyDocument[];
+        let data: IPolicyDocument[] | number;
         switch (ref.options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
-                data = await ref.databaseServer.getVcDocuments(filters, otherOptions);
+                data = await ref.databaseServer.getVcDocuments(filters, otherOptions, countResult);
                 break;
             case 'did-documents':
-                data = await ref.databaseServer.getDidDocuments(filters, otherOptions);
+                data = await ref.databaseServer.getDidDocuments(filters, otherOptions, countResult);
                 break;
             case 'vp-documents':
                 filters.policyId = ref.policyId;
-                data = await ref.databaseServer.getVpDocuments(filters, otherOptions);
+                data = await ref.databaseServer.getVpDocuments(filters, otherOptions, countResult);
                 break;
             case 'standard-registries':
-                data = await PolicyUtils.getAllStandardRegistryAccounts(ref);
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult);
                 break;
             case 'approve':
                 filters.policyId = ref.policyId;
-                data = await ref.databaseServer.getApprovalDocuments(filters, otherOptions);
+                data = await ref.databaseServer.getApprovalDocuments(filters, otherOptions, countResult);
                 break;
             case 'source':
-                data = [];
+                data = (countResult) ? [] : 0;
                 break;
             // @deprecated 2022-10-01
             case 'root-authorities':
-                data = await PolicyUtils.getAllStandardRegistryAccounts(ref);
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult);
                 break;
             default:
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
 
-        for (const dataItem of data) {
-            if (ref.options.viewHistory) {
+        if(!countResult) {
+            for (const dataItem of data as IPolicyDocument[]) {
+                if (ref.options.viewHistory) {
 
-                dataItem.history = (await ref.databaseServer.getDocumentStates({
-                    documentId: dataItem.id
-                }, {
-                    orderBy: { 'created': 'DESC' }
-                })).map(item => {
-                    return {
-                        status: item.status,
-                        created: new Date(item.created).toLocaleString(),
-                        reason: item.reason
-                    }
-                });
+                    dataItem.history = (await ref.databaseServer.getDocumentStates({
+                        documentId: dataItem.id
+                    }, {
+                        orderBy: {'created': 'DESC'}
+                    })).map(item => {
+                        return {
+                            status: item.status,
+                            created: new Date(item.created).toLocaleString(),
+                            reason: item.reason
+                        }
+                    });
+                }
+                dataItem.__sourceTag__ = ref.tag;
             }
-            dataItem.__sourceTag__ = ref.tag;
         }
 
         return data;

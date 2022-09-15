@@ -9,5 +9,6 @@
         <option value="option." title="option.">Attributes</option>
     </select>
     <div></div>
-    <input [(ngModel)]="endPath" [readonly]="readonly" (input)="onInput()">
+    <input [(ngModel)]="endPath" [readonly]="readonly" class="input-end" (input)="onInput()">
+    <mat-icon [matTooltip]="value" *ngIf="displayTooltip" matTooltipPosition="above" class="input-end-tooltip">more_horiz</mat-icon>
 </div>

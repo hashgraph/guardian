@@ -159,6 +159,17 @@ function onlyUnique(value: any, index: any, self: any): boolean {
 }
 
 /**
+ * Check circular dependency in schema
+ * @param schema Schema
+ * @returns Does circular dependency exists
+ */
+function checkForCircularDependency(schema: ISchema) {
+    return schema.document?.$defs && schema.document.$id
+        ? Object.keys(schema.document.$defs).includes(schema.document.$id)
+        : false;
+}
+
+/**
  * Increment schema version
  * @param iri
  * @param owner
@@ -200,6 +211,9 @@ export async function incrementSchemaVersion(iri: string, owner: string): Promis
  * @param owner
  */
 async function createSchema(newSchema: ISchema, owner: string, notifier: INotifier): Promise<SchemaCollection> {
+    if (checkForCircularDependency(newSchema)) {
+        throw new Error(`There is circular dependency in schema: ${newSchema.iri}`);
+    }
     delete newSchema.id;
     delete newSchema._id;
     const users = new Users();
@@ -298,19 +312,25 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
     }
 
     notifier.info(`Found ${files.length} schemas`);
-    let num: number = 0;
-    const createdSchemas = [];
     for (const file of files) {
         file.document = replaceValueRecursive(file.document, uuidMap);
         file.context = replaceValueRecursive(file.context, uuidMap);
         SchemaHelper.setVersion(file, '', '');
-        createdSchemas.push(await createSchema(file, owner, emptyNotifier()));
-        num++;
-        notifier.info(`Schema ${num} (${file.name || '-'}) created`);
     }
 
-    for (const createdSchema of createdSchemas) {
-        await updateSchemaDocument(createdSchema, createdSchemas);
+    const parsedSchemas = files.map(item => new Schema(item, true));
+    const updatedSchemasMap = {};
+    for (const file of files) {
+        fixSchemaDefsOnImport(file.iri, parsedSchemas, updatedSchemasMap);
+    }
+
+    let num: number = 0;
+    for (const file of files) {
+        const parsedSchema = updatedSchemasMap[file.iri];
+        file.document = parsedSchema.document;
+        await createSchema(file, owner, emptyNotifier());
+        num++;
+        notifier.info(`Schema ${num} (${file.name || '-'}) created`);
     }
 
     const schemasMap = [];
@@ -339,6 +359,9 @@ export async function publishSchema(
     messageServer: MessageServer,
     type?: MessageAction
 ): Promise<SchemaCollection> {
+    if (checkForCircularDependency(item)) {
+        throw new Error(`There is circular dependency in schema: ${item.iri}`);
+    }
     const itemDocument = item.document;
     const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
     item.context = schemasToContext([...defsArray, itemDocument]);
@@ -404,6 +427,8 @@ async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
     if (!schemaDocument) {
         return;
     }
+
+    const schemaDefs = schema.document.$defs;
     delete schemaDocument.$defs;
 
     const filters = {};
@@ -416,6 +441,11 @@ async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
             rSchema.document = JSON.parse(document);
         }
         rSchema.document.$defs[schemaId] = schemaDocument;
+        if (schemaDefs) {
+            for (const def of Object.keys(schemaDefs)) {
+                rSchema.document.$defs[def] = schemaDefs[def];
+            }
+        }
     }
     await DatabaseServer.updateSchemas(relatedSchemas);
 }
@@ -424,11 +454,11 @@ async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
  * Update schema document
  * @param schemaId Schema Identifier
  */
-async function updateSchemaDocument(schema: SchemaCollection, allSchemas?: SchemaCollection[]): Promise<void> {
+async function updateSchemaDocument(schema: SchemaCollection): Promise<void> {
     if (!schema) {
         throw new Error(`There is no schema to update document`);
     }
-    const allSchemasInTopic = allSchemas || await DatabaseServer.getSchemas({
+    const allSchemasInTopic = await DatabaseServer.getSchemas({
         topicId: schema.topicId,
     });
 
@@ -441,12 +471,37 @@ async function updateSchemaDocument(schema: SchemaCollection, allSchemas?: Schem
 }
 
 /**
+ * Fixing defs in importing schemas
+ * @param iri Schema iri
+ * @param schemas Schemas
+ * @param map Map of updated schemas
+ */
+function fixSchemaDefsOnImport(iri: string, schemas: Schema[], map: any) {
+    if (map[iri]) {
+        return;
+    }
+    const schema = schemas.find(s => s.iri === iri);
+    if (!schema) {
+        throw new Error(`Schema ${schema.iri} doesn't exist`);
+    }
+    for (const field of schema.fields) {
+        if (field.isRef) {
+            fixSchemaDefsOnImport(field.type, schemas, map);
+        }
+    }
+    schema.update(schema.fields, schema.conditions);
+    schema.updateRefs(schemas);
+    map[iri] = schema;
+}
+
+/**
  * Publishing schemas in defs
  * @param defs Definitions
  * @param version Version
  * @param owner Owner
+ * @param root HederaAccount
  */
-export async function publishDefsSchemas(defs: any, version: string, owner: string) {
+export async function publishDefsSchemas(defs: any, version: string, owner: string, root: any) {
     if (!defs) {
         return;
     }
@@ -458,7 +513,7 @@ export async function publishDefsSchemas(defs: any, version: string, owner: stri
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
             schema = await incrementSchemaVersion(schema.iri, owner);
-            await findAndPublishSchema(schema.id, schema.version, owner, emptyNotifier());
+            await findAndPublishSchema(schema.id, schema.version, owner, root, emptyNotifier());
         }
     }
 }
@@ -468,9 +523,16 @@ export async function publishDefsSchemas(defs: any, version: string, owner: stri
  * @param id
  * @param version
  * @param owner
+ * @param root
  * @param notifier
  */
-export async function findAndPublishSchema(id: string, version: string, owner: string, notifier: INotifier): Promise<SchemaCollection> {
+export async function findAndPublishSchema(
+    id: string,
+    version: string,
+    owner: string,
+    root: any,
+    notifier: INotifier
+): Promise<SchemaCollection> {
     notifier.start('Load schema');
 
     let item = await DatabaseServer.getSchema(id);
@@ -489,12 +551,9 @@ export async function findAndPublishSchema(id: string, version: string, owner: s
 
     notifier.completedAndStart('Publishing related schemas');
     const oldSchemaId = item.document?.$id;
-    await publishDefsSchemas(item.document?.$defs, version, owner);
+    await publishDefsSchemas(item.document?.$defs, version, root, owner);
     item = await DatabaseServer.getSchema(id);
 
-    notifier.completedAndStart('Resolve Hedera account');
-    const users = new Users();
-    const root = await users.getHederaAccount(owner);
     notifier.completedAndStart('Resolve topic');
     const topic = await DatabaseServer.getTopicById(item.topicId);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
@@ -700,6 +759,9 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             const id = msg.id as string;
             const item = await DatabaseServer.getSchema(id);
             if (item) {
+                if (checkForCircularDependency(item)) {
+                    throw new Error(`There is circular dependency in schema: ${item.iri}`);
+                }
                 item.name = msg.name;
                 item.description = msg.description;
                 item.entity = msg.entity;
@@ -817,7 +879,9 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             }
 
             const { id, version, owner } = msg;
-            const item = await findAndPublishSchema(id, version, owner, emptyNotifier());
+            const users = new Users();
+            const root = await users.getHederaAccount(owner);
+            const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
             return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -835,7 +899,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                     notifier.error('Invalid id');
                 }
 
-                const item = await findAndPublishSchema(id, version, owner, notifier);
+                notifier.completedAndStart('Resolve Hedera account');
+                const users = new Users();
+                const root = await users.getHederaAccount(owner);
+                const item = await findAndPublishSchema(id, version, owner, root, notifier);
                 notifier.result(item.id);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);

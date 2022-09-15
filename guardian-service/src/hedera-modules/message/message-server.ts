@@ -88,7 +88,7 @@ export class MessageServer {
             await TransactionLogger.virtualFileLog(this.dryRun, file, result);
             return result
         }
-        return IPFS.addFileAsync(file);
+        return IPFS.addFile(file);
     }
 
     /**
@@ -102,7 +102,7 @@ export class MessageServer {
         if (this.dryRun) {
             throw new Error('Unable to get virtual file');
         }
-        return IPFS.getFileAsync(cid, responseType);
+        return await IPFS.getFile(cid, responseType);
     }
 
     /**

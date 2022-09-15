@@ -14,6 +14,7 @@ import { DocumentLoader } from '../document-loader/document-loader';
 import { SchemaLoader, SchemaLoaderFunction } from '../document-loader/schema-loader';
 import { DidRootKey } from './did-document';
 import { Issuer } from './issuer';
+import axios from 'axios';
 
 /**
  * Suite interface
@@ -235,12 +236,14 @@ export class VCJS {
             throw new Error('Schema not found');
         }
 
-        const ajv = new Ajv();
+        const ajv = new Ajv({
+            loadSchema: this.loadSchema
+        });
         addFormats(ajv);
 
         this.prepareSchema(schema);
 
-        const validate = ajv.compile(schema);
+        const validate = await ajv.compileAsync(schema);
         const valid = validate(vc);
 
         return new CheckResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
@@ -369,12 +372,14 @@ export class VCJS {
             throw new Error('Schema not found');
         }
 
-        const ajv = new Ajv();
+        const ajv = new Ajv({
+            loadSchema: this.loadSchema
+        });
         addFormats(ajv);
 
         this.prepareSchema(schema);
 
-        const validate = ajv.compile(schema);
+        const validate = await ajv.compileAsync(schema);
 
         const valid = validate(subject);
 
@@ -412,5 +417,19 @@ export class VCJS {
             subject['@context'] = [`schema#${subject.type}`];
         }
         return subject;
+    }
+
+    /**
+     * Load schema by URI
+     * @param uri URI
+     * @returns Schema
+     */
+    public async loadSchema(uri) {
+        try {
+            const response = await axios.get(uri);
+            return response.data;
+        } catch (err) {
+            throw new Error('Can not resolve reference: ' + uri);
+        }
     }
 }

@@ -1,4 +1,5 @@
 import {
+    FormArray,
     FormControl,
     FormGroup, ValidationErrors, ValidatorFn, Validators
 } from '@angular/forms';
@@ -21,6 +22,8 @@ export class FieldControl {
     public controlRequired: FormControl;
     public controlArray: FormControl;
     public controlUnit: FormControl;
+    public controlRemoteLink: FormControl;
+    public controlEnum: FormArray;
     private readonly _defaultFieldMap!: any;
     private _entityType!: FormControl;
 
@@ -50,6 +53,11 @@ export class FieldControl {
             this.controlRequired = new FormControl(field.required);
             this.controlArray = new FormControl(field.isArray);
             this.controlUnit = new FormControl(field.unit);
+            this.controlRemoteLink = new FormControl(field.remoteLink);
+            this.controlEnum = new FormArray([]);
+            field.enum?.forEach(item => {
+                this.controlEnum.push(new FormControl(item))
+            });
         } else {
             this.controlKey = new FormControl(name || this.name, [
                 Validators.required, 
@@ -65,6 +73,8 @@ export class FieldControl {
             this.controlRequired = new FormControl(false);
             this.controlArray = new FormControl(false);
             this.controlUnit = new FormControl('');
+            this.controlRemoteLink = new FormControl('');
+            this.controlEnum = new FormArray([]);
         }
         this._entityType.valueChanges
             .pipe(takeUntil(destroyEvent))
@@ -114,6 +124,8 @@ export class FieldControl {
             fieldRequired: this.controlRequired,
             fieldArray: this.controlArray,
             fieldUnit: this.controlUnit,
+            controlRemoteLink: this.controlRemoteLink,
+            controlEnum: this.controlEnum
         });
     }
 
@@ -127,6 +139,8 @@ export class FieldControl {
             const required = group.fieldRequired;
             const isArray = group.fieldArray;
             const unit = group.fieldUnit;
+            const remoteLink = group.controlRemoteLink;
+            const enumArray = group.controlEnum;
             return {
                 key,
                 title,
@@ -134,7 +148,9 @@ export class FieldControl {
                 typeIndex,
                 required,
                 isArray,
-                unit
+                unit,
+                remoteLink,
+                enumArray
             };
         } else {
             return null;
