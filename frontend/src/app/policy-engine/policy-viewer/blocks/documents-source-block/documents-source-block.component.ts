@@ -129,6 +129,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.columns = this.fields.map(f => f.index);
             this.columns.unshift('history');
             this.documents = data.data || [];
+            this.sortHistory(this.documents);
             this.isActive = true;
             const sortingField = this.fields.find(item => item.name === data.orderField);
             this.sortOptions.active = sortingField && sortingField.index || '';
@@ -149,6 +150,21 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.isActive = false;
             this.addons = [];
             this.paginationAddon = null;
+        }
+    }
+
+    sortHistory(documents: any) {
+        if (!documents) {
+            return;
+        }
+        for (const doc of documents) {
+            if (doc.history) {
+                doc.history.sort(function (a: any, b: any) {
+                    const aDate = new Date(a.created as string);
+                    const bDate = new Date(b.created as string);
+                    return bDate.getTime() - aDate.getTime();
+                });
+            }
         }
     }
 

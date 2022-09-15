@@ -116,7 +116,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 const filters = [];
                 const sourceAddons = this.children.filter(c => c.blockClassName === 'SourceAddon');
                 for (const addon of sourceAddons) {
-                    const blockFilter = await addon.getFromSourceFilters(user, globalFilters, true);
+                    const blockFilter = await addon.getFromSourceFilters(user, globalFilters);
                     if (!blockFilter) {
                         continue;
                     }
