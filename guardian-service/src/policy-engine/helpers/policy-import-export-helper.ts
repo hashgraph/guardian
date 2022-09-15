@@ -6,18 +6,18 @@ import {
     SchemaFields
 } from '@helpers/utils';
 import JSZip from 'jszip';
-import { getMongoRepository } from 'typeorm';
 import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
 import { SchemaEntity, TopicType, GenerateUUIDv4 } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
-import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage } from '@hedera-modules';
+import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage, TopicHelper } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 import { importSchemaByFiles, publishSystemSchema } from '@api/schema.service';
-import { TopicHelper } from '@helpers/topic-helper';
 import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
-import { PolicyUtils } from './utils';
+import { INotifier } from '@helpers/notifier';
+import { DatabaseServer } from '@database-modules';
+import { DataBaseHelper } from '@guardian/common';
 
 /**
  * Policy import export helper
@@ -38,16 +38,16 @@ export class PolicyImportExportHelper {
         const policyObject = { ...policy };
         const topicId = policyObject.topicId;
 
+        delete policyObject._id;
         delete policyObject.id;
         delete policyObject.messageId;
-        delete policyObject.registeredUsers;
         delete policyObject.status;
         delete policyObject.topicId;
 
         const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
 
-        const tokens = await getMongoRepository(Token).find({ where: { tokenId: { $in: tokenIds } } });
-        const schemas = await getMongoRepository(Schema).find({
+        const tokens = await new DataBaseHelper(Token).find({ where: { tokenId: { $in: tokenIds } } });
+        const schemas = await new DataBaseHelper(Schema).find({
             topicId,
             readonly: false
         });
@@ -67,6 +67,7 @@ export class PolicyImportExportHelper {
         zip.folder('schemas')
         for (const schema of schemas) {
             const item = { ...schema };
+            delete item._id;
             delete item.id;
             delete item.status;
             delete item.readonly;
@@ -111,51 +112,69 @@ export class PolicyImportExportHelper {
      * @returns Array of schemas
      */
     static async getSystemSchemas(): Promise<Schema[]> {
-         const schemas = await Promise.all([
-            PolicyUtils.getSystemSchema(SchemaEntity.POLICY),
-            PolicyUtils.getSystemSchema(SchemaEntity.MINT_TOKEN),
-            PolicyUtils.getSystemSchema(SchemaEntity.MINT_NFTOKEN),
-            PolicyUtils.getSystemSchema(SchemaEntity.WIPE_TOKEN)
+        const schemas = await Promise.all([
+            DatabaseServer.getSystemSchema(SchemaEntity.POLICY),
+            DatabaseServer.getSystemSchema(SchemaEntity.MINT_TOKEN),
+            DatabaseServer.getSystemSchema(SchemaEntity.MINT_NFTOKEN),
+            DatabaseServer.getSystemSchema(SchemaEntity.WIPE_TOKEN),
+            DatabaseServer.getSystemSchema(SchemaEntity.ISSUER),
+            DatabaseServer.getSystemSchema(SchemaEntity.USER_ROLE)
         ]);
 
-         for (const schema of schemas) {
-             if (!schema) {
-                 throw new Error('One of system schemas is not exist');
-             }
-         }
-
+        for (const schema of schemas) {
+            if (!schema) {
+                throw new Error('One of system schemas is not exist');
+            }
+        }
         return schemas;
     }
 
     /**
      * Import policy
-     * @param policyToImport Policy json
-     * @param policyOwner Policy owner
+     * @param policyToImport
+     * @param policyOwner
+     * @param versionOfTopicId
+     * @param notifier
+     * @param additionalPolicyConfig
      *
      * @returns Policies by owner
      */
-    static async importPolicy(policyToImport: any, policyOwner: string, versionOfTopicId?: any): Promise<Policy> {
+    static async importPolicy(
+        policyToImport: any,
+        policyOwner: string,
+        versionOfTopicId: string,
+        notifier: INotifier,
+        additionalPolicyConfig?: Partial<Policy>
+    ): Promise<Policy> {
         const { policy, tokens, schemas } = policyToImport;
 
+        delete policy._id;
         delete policy.id;
         delete policy.messageId;
         delete policy.version;
         delete policy.previousVersion;
-        delete policy.registeredUsers;
-        policy.policyTag = 'Tag_' + Date.now();
+        policy.policyTag = additionalPolicyConfig?.policyTag || 'Tag_' + Date.now();
         policy.uuid = GenerateUUIDv4();
         policy.creator = policyOwner;
         policy.owner = policyOwner;
         policy.status = 'DRAFT';
+        policy.instanceTopicId = null;
+        policy.name = additionalPolicyConfig?.name || policy.name;
+        policy.topicDescription = additionalPolicyConfig?.topicDescription || policy.topicDescription;
+        policy.description = additionalPolicyConfig?.description || policy.description;
 
         const users = new Users();
+        notifier.start('Resolve Hedera account');
         const root = await users.getHederaAccount(policyOwner);
-
-        const parent = await getMongoRepository(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
+        notifier.completedAndStart('Resolve topic');
+        const parent = await new DataBaseHelper(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
-        const topicRow = versionOfTopicId
-            ? await getMongoRepository(Topic).findOne({ topicId: versionOfTopicId })
-            : await topicHelper.create({
+
+        let topicRow: Topic;
+        if (versionOfTopicId) {
+            topicRow = await new DataBaseHelper(Topic).findOne({ topicId: versionOfTopicId })
+        } else {
+            topicRow = await topicHelper.create({
                 type: TopicType.PolicyTopic,
                 name: policy.name || TopicType.PolicyTopic,
                 description: policy.topicDescription || TopicType.PolicyTopic,
@@ -163,36 +182,47 @@ export class PolicyImportExportHelper {
                 policyId: null,
                 policyUUID: null
             });
+            topicRow = await new DataBaseHelper(Topic).save(topicRow);
+        }
 
+        notifier.completed();
         policy.topicId = topicRow.topicId;
-
+        notifier.start('Publish Policy in Hedera');
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
         const message = new PolicyMessage(MessageType.Policy, MessageAction.CreatePolicy);
         message.setDocument(policy);
         const messageStatus = await messageServer
             .setTopicObject(parent)
             .sendMessage(message);
-
+        notifier.completedAndStart('Link topic and policy');
         await topicHelper.twoWayLink(topicRow, parent, messageStatus.getId());
-
+        notifier.completedAndStart('Publishing schemas');
         const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
-
+        notifier.info(`Found ${systemSchemas.length} schemas`);
+        let num: number = 0;
         for (const schema of systemSchemas) {
             messageServer.setTopicObject(topicRow);
+            let name: string;
             if(schema) {
                 schema.creator = policyOwner;
                 schema.owner = policyOwner;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
-                const newItem = getMongoRepository(Schema).create(item);
-                await getMongoRepository(Schema).save(newItem);
+                const newItem = new DataBaseHelper(Schema).create(item);
+                await new DataBaseHelper(Schema).save(item);
+                name = newItem.name;
             }
+            num++;
+            notifier.info(`Schema ${num} (${name || '-'}) published`);
         }
+
+        notifier.completed();
 
         // Import Tokens
         if (tokens) {
+            notifier.start('Import tokens');
             const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
-            const tokenRepository = getMongoRepository(Token);
+            const tokenRepository = new DataBaseHelper(Token);
             for (const token of tokens) {
                 const tokenName = token.tokenName;
                 const tokenSymbol = token.tokenSymbol;
@@ -240,22 +270,25 @@ export class PolicyImportExportHelper {
                 await tokenRepository.save(tokenObject);
                 replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenId);
             }
+            notifier.completed();
         }
 
         // Import Schemas
-        const schemasMap = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId);
+        const schemasMap = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId, notifier);
 
+        notifier.start('Saving in DB');
         // Replace id
         await PolicyImportExportHelper.replaceConfig(policy, schemasMap);
 
         // Save
-        const model = getMongoRepository(Policy).create(policy as Policy);
-        const result = await getMongoRepository(Policy).save(model);
+        const model = new DataBaseHelper(Policy).create(policy as Policy);
+        const result = await new DataBaseHelper(Policy).save(model);
 
         topicRow.policyId = result.id.toString();
         topicRow.policyUUID = result.uuid;
-        await getMongoRepository(Topic).update(topicRow.id, topicRow);
+        await new DataBaseHelper(Topic).update(topicRow);
 
+        notifier.completed();
         return result;
     }
 
@@ -265,7 +298,7 @@ export class PolicyImportExportHelper {
      * @param schemasMap
      */
     static async replaceConfig(policy: Policy, schemasMap: any) {
-        if (await getMongoRepository(Policy).findOne({ name: policy.name })) {
+        if (await new DataBaseHelper(Policy).findOne({ name: policy.name })) {
             policy.name = policy.name + '_' + Date.now();
         }
 

@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const moduleAlias = require("module-alias");
 moduleAlias.addAliases({
   "@api": process.cwd() + '/dist' + "/api",
@@ -7,7 +10,8 @@ moduleAlias.addAliases({
   "@auth": process.cwd() + '/dist' +  "/auth",
   "@policy-engine": process.cwd() + '/dist' +  "/policy-engine",
   "@hedera-modules": process.cwd() + '/dist' +  "/hedera-modules/index",
-  "@document-loader": process.cwd() + '/dist' +  "/document-loader"
+  "@document-loader": process.cwd() + '/dist' +  "/document-loader",
+  "@database-modules": process.cwd() + '/dist' + "/database-modules"
 });
 const rewire = require("rewire");
 
@@ -45,8 +49,8 @@ class MockUsers {
 
     async getHederaAccount() {
         return {
-            hederaAccountId: '0.0.1548173',
-            hederaAccountKey: '302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc',
+            hederaAccountId: process.env.OPERATOR_ID,
+            hederaAccountKey: process.env.OPERATOR_KEY,
             did: 'did:hedera:testnet:Eyxtt46P5NGRoAJ1KdNaR6BP4PEbwDSDXpDncAApGpB3;hedera:testnet:fid=0.0.34052923',
         }
     }
@@ -67,7 +71,7 @@ function getMongoRepositoryMock(entity) {
                     description: "iRec Policy",
                     owner: "did:hedera:testnet:9ZJXR58X9XQUgwiuxQQiTUt5yY2vX2Tw5Uph4xXsnkfM;hedera:testnet:tid=0.0.34194893",
                     type: "POLICY_TOPIC",
-                    key: "302e020100300506032b657004220420abb61fea5149a3fc2ea64f851a8546f6d773fef29a0197f8300919168dbe0258",
+                    key: "...",
                     policyId: "625d4f6d08f7f0692daad6a4",
                     policyUUID: "55ea39f6-4021-4c6d-8a75-dd24e1c7e0a5"
                 })

@@ -101,7 +101,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
-
     async setData(data: any) {
         if (data) {
             const fields: any[] = data.fields || [];
@@ -146,15 +145,10 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     async getBindBlock(element: any) {
         return new Promise<any>(async (resolve, reject) => {
-            this.policyEngineService.getGetIdByName(element.bindBlock, this.policyId).subscribe(({ id }: any) => {
-                this.policyEngineService.getBlockData(id, this.policyId).subscribe((data: any) => {
-                    if(data) {
-                        data.id = id;
-                    }
-                    resolve(data);
-                }, (e) => {
-                    reject();
-                });
+            this.policyEngineService.getBlockDataByName(element.bindBlock, this.policyId).subscribe((data: any) => {
+                resolve(data);
+            }, (e) => {
+                reject();
             });
         });
     }

@@ -3,14 +3,10 @@ import { ActionCallback, ValidatorBlock } from '@policy-engine/helpers/decorator
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { Schema as SchemaCollection } from '@entity/schema';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { getMongoRepository } from 'typeorm';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 
 /**
  * Document Validator
@@ -36,24 +32,27 @@ import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
     }
 })
 export class DocumentValidatorBlock {
-    /**
-     * Run block logic
-     * @param event
-     */
-    public async run(event: IPolicyEvent<any>): Promise<boolean> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
 
-        let document = event?.data?.data;
+    /**
+     * Validate Document
+     * @param ref
+     * @param event
+     * @param document
+     */
+    private async validateDocument(
+        ref: IPolicyValidatorBlock,
+        event: IPolicyEvent<IPolicyEventState>,
+        document: IPolicyDocument
+    ): Promise<boolean> {
+        const documentRef = PolicyUtils.getDocumentRef(document);
 
         if (!document) {
             return false;
         }
 
-        const documentRef = PolicyUtils.getDocumentRef(document);
-
         if (ref.options.documentType === 'related-vc-document') {
             if (documentRef) {
-                document = await getMongoRepository(VcDocumentCollection).findOne({
+                document = await ref.databaseServer.getVcDocument({
                     where: {
                         'policyId': { $eq: ref.policyId },
                         'document.credentialSubject.id': { $eq: documentRef }
@@ -66,7 +65,7 @@ export class DocumentValidatorBlock {
 
         if (ref.options.documentType === 'related-vp-document') {
             if (documentRef) {
-                document = await getMongoRepository(VpDocumentCollection).findOne({
+                document = await ref.databaseServer.getVpDocument({
                     where: {
                         'policyId': ref.policyId,
                         'document.verifiableCredential.credentialSubject.id': { $eq: documentRef }
@@ -101,23 +100,32 @@ export class DocumentValidatorBlock {
             }
         }
 
+        const userDID = event?.user?.did;
+        const userGroup = event?.user?.group;
+
         if (ref.options.checkOwnerDocument) {
-            if (document.owner !== event?.user?.did) {
+            if (document.owner !== userDID) {
                 return false;
             }
         }
-
+        if (ref.options.checkOwnerByGroupDocument) {
+            if (document.group !== userGroup) {
+                return false;
+            }
+        }
         if (ref.options.checkAssignDocument) {
-            if (document.assign !== event?.user?.did) {
+            if (document.assignedTo !== userDID) {
+                return false;
+            }
+        }
+        if (ref.options.checkAssignByGroupDocument) {
+            if (document.assignedToGroup !== userGroup) {
                 return false;
             }
         }
 
         if (ref.options.schema) {
-            const schema = await getMongoRepository(SchemaCollection).findOne({
-                iri: ref.options.schema,
-                topicId: ref.topicId
-            });
+            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
             if (!PolicyUtils.checkDocumentSchema(document, schema)) {
                 return false;
             }
@@ -135,6 +143,31 @@ export class DocumentValidatorBlock {
     }
 
     /**
+     * Run block logic
+     * @param event
+     */
+    public async run(event: IPolicyEvent<IPolicyEventState>): Promise<boolean> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
+
+        const document = event?.data?.data;
+
+        if (!document) {
+            return false;
+        }
+
+        if (Array.isArray(document)) {
+            for (const doc of document) {
+                if (!(await this.validateDocument(ref, event, doc))) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return await this.validateDocument(ref, event, document);
+        }
+    }
+
+    /**
      * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
@@ -143,7 +176,7 @@ export class DocumentValidatorBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     @CatchErrors()
-    async runAction(event: IPolicyEvent<any>): Promise<void> {
+    async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
         ref.log(`runAction`);
 
@@ -178,10 +211,7 @@ export class DocumentValidatorBlock {
                     resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                     return;
                 }
-                const schema = await getMongoRepository(SchemaCollection).findOne({
-                    iri: ref.options.schema,
-                    topicId: ref.topicId
-                });
+                const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
                 if (!schema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                     return;
@@ -192,7 +222,7 @@ export class DocumentValidatorBlock {
                 resultsContainer.addBlockError(ref.uuid, `conditions option must be an array`);
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

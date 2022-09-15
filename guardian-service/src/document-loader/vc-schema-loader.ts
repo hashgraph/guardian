@@ -1,5 +1,5 @@
 import { Schema } from '@entity/schema';
-import { getMongoRepository } from 'typeorm';
+import { DataBaseHelper } from '@guardian/common';
 import { ISchema } from '@guardian/interfaces';
 import { SchemaLoader } from '@hedera-modules';
 
@@ -25,12 +25,12 @@ export class VCSchemaLoader extends SchemaLoader {
         }
         if (Array.isArray(context)) {
             for (const element of context) {
-                if (element.startsWith(this.context)) {
+                if (element.startsWith(this.context) || element.startsWith('schema#')) {
                     return true;
                 }
             }
         } else {
-            return context && context.startsWith(this.context);
+            return context && (context.startsWith(this.context) || context.startsWith('schema#'));
         }
         return false;
     }
@@ -42,29 +42,21 @@ export class VCSchemaLoader extends SchemaLoader {
      * @param type
      */
     public async get(context: string | string[], iri: string, type: string): Promise<any> {
-        let schemas: ISchema[];
-        if (typeof context === 'string') {
-            schemas = await this.loadSchemaContexts([context]);
-        } else {
-            schemas = await this.loadSchemaContexts(context);
-        }
-
-        if (!schemas) {
-            throw new Error('Schema not found');
-        }
-
         const _iri = '#' + iri;
-        for (const schema of schemas) {
-            if (schema.iri === _iri) {
-                if (!schema.document) {
-                    throw new Error('Document not found');
-                }
-                const document = schema.document;
-                return this.vcSchema(document);
-            }
+        const _context = Array.isArray(context) ? context : [context];
+        const schemas = await this.loadSchemaContexts(_context, _iri);
+
+        if (!schemas || !schemas.length) {
+            throw new Error(`Schema not found: ${_context.join(',')}, ${_iri}`);
         }
 
-        throw new Error('IRI Schema not found');
+        const schema = schemas[0];
+
+        if (!schema.document) {
+            throw new Error('Document not found');
+        }
+        const document = schema.document;
+        return this.vcSchema(document);
     }
 
     /**
@@ -72,15 +64,22 @@ export class VCSchemaLoader extends SchemaLoader {
      * @param context
      * @private
      */
-    private async loadSchemaContexts(context: string[]): Promise<ISchema[]> {
+    private async loadSchemaContexts(context: string[], iri: string): Promise<ISchema[]> {
         try {
-            if (!context) {
-                return null;
+            if (context && context.length) {
+                for (const c of context) {
+                    if (c.startsWith('schema#')) {
+                        return await new DataBaseHelper(Schema).find({ iri });
+                    }
+                }
+                return await new DataBaseHelper(Schema).find({
+                    where: {
+                        contextURL: { $in: context },
+                        iri: { $eq: iri },
+                    }
+                });
             }
-            const schema = await getMongoRepository(Schema).find({
-                where: { contextURL: { $in: context } }
-            });
-            return schema
+            return null;
         }
         catch (error) {
             return null;
@@ -138,7 +137,11 @@ export class VCSchemaLoader extends SchemaLoader {
                                 'id': {
                                     'type': 'string',
                                 },
+                                'group': {
+                                    'type': 'string',
+                                },
                             },
+                            'required': ['id'],
                         },
                     ],
                 },

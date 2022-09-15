@@ -7,13 +7,16 @@
     "@auth": "dist/auth",
     "@policy-engine": "dist/policy-engine",
     "@hedera-modules": "dist/hedera-modules/index",
-    "@document-loader": "dist/document-loader"
+    "@document-loader": "dist/document-loader",
+    "@database-modules": "dist/database-modules/index"
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.3.0",
-    "@guardian/interfaces": "^2.3.0",
+    "@guardian/common": "^2.4.1",
+    "@guardian/interfaces": "^2.4.1",
     "@hashgraph/sdk": "^2.15.0",
+    "@mikro-orm/core": "^5.3.0",
+    "@mikro-orm/mongodb": "^5.3.0",
     "@transmute/credentials-context": "^0.7.0-unstable.60",
     "@transmute/did-context": "^0.7.0-unstable.60",
     "@transmute/ed25519-signature-2018": "^0.7.0-unstable.60",
@@ -32,12 +35,11 @@
     "express": "^4.17.1",
     "fs-extra": "^10.0.0",
     "jszip": "^3.7.1",
+    "lodash.get": "^4.4.2",
     "mathjs": "^10.1.0",
     "module-alias": "^2.2.2",
     "moment": "^2.29.1",
-    "mongodb": "4.2.1",
-    "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.2.41"
+    "reflect-metadata": "^0.1.13"
   },
   "description": "",
   "devDependencies": {
@@ -69,8 +71,9 @@
     "lint": "tslint --config ../tslint.json --project .",
     "start": "node dist/index.js",
     "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/guardian-service.xml",
+    "test:local": "mocha tests/**/*.test.js",
     "test:network": "mocha tests/network-tests/**/*.test.js",
     "test:stability": "mocha tests/stability.test.js"
   },
-  "version": "2.3.0"
+  "version": "2.4.1"
 }

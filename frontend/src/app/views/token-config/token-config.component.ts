@@ -6,6 +6,12 @@ import { TokenService } from '../../services/token.service';
 import { TokenDialog } from '../../components/token-dialog/token-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Token } from '@guardian/interfaces';
+import { InformService } from 'src/app/services/inform.service';
+import { TasksService } from 'src/app/services/tasks.service';
+
+enum OperationMode {
+    None, Create, Kyc
+}
 
 /**
  * Page for creating tokens.
@@ -37,10 +43,17 @@ export class TokenConfigComponent implements OnInit {
         'refresh',
     ];
 
+    taskId: string | undefined = undefined;
+    expectedTaskMessages: number = 0;
+    operationMode: OperationMode = OperationMode.None;
+    user: any;
+
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
         private tokenService: TokenService,
+        private informService: InformService,
+        private taskService: TasksService,
         private route: ActivatedRoute,
         private router: Router,
         public dialog: MatDialog) {
@@ -52,6 +65,21 @@ export class TokenConfigComponent implements OnInit {
         this.loading = true;
         this.route.queryParams.subscribe(queryParams => {
             this.loadProfile();
+        });
+    }
+
+    loadTokens() {
+        this.tokenService.getTokens().subscribe((data: any) => {
+            this.tokens = data.map((e: any) => {
+                return {
+                    ...new Token(e),
+                    policies: e.policies
+                }
+            });
+            this.loading = false;
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
         });
     }
 
@@ -74,18 +102,7 @@ export class TokenConfigComponent implements OnInit {
                 this.loading = false;
             });
         } else {
-            this.tokenService.getTokens().subscribe((data: any) => {
-                this.tokens = data.map((e: any) => {
-                    return {
-                        ...new Token(e),
-                        policies: e.policies
-                    }
-                });
-                this.loading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.loadTokens();
         }
     }
 
@@ -113,20 +130,47 @@ export class TokenConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.tokenService.create(result).subscribe((data) => {
-                    this.tokens = data.map((e: any) => {
-                        return {
-                            ...new Token(e),
-                            policies: e.policies
-                        }
-                    });
-                    this.loading = false;
+                this.tokenService.pushCreate(result).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
+                    this.operationMode = OperationMode.Create;
                 }, (e) => {
                     console.error(e.error);
                     this.loading = false;
                 });
             }
         });
+    }
+
+    onAsyncError(error: any) {
+        this.informService.processAsyncError(error);
+        this.loading = false;
+        this.taskId = undefined;
+    }
+
+    onAsyncCompleted() {
+        if (this.taskId) {
+            const taskId = this.taskId;
+            const operationMode = this.operationMode;
+            this.taskId = undefined;
+            this.operationMode = OperationMode.None;
+            switch (operationMode) {
+                case OperationMode.Create:
+                    this.loadTokens();
+                    break;
+                case OperationMode.Kyc:
+                    this.taskService.get(taskId).subscribe((task) => {
+                        this.loading = false;
+                        const { result } = task;
+                        this.refreshUser(this.user, result);
+                        this.user = null;
+                    });
+                    break;
+                default:
+                    console.log('Unsupported operation mode');
+            }
+        }
     }
 
     refreshUser(user: any, res: any) {
@@ -186,9 +230,12 @@ export class TokenConfigComponent implements OnInit {
 
     kyc(user: any, grantKYC: boolean) {
         this.loading = true;
-        this.tokenService.kyc(this.tokenId, user.username, grantKYC).subscribe((res) => {
-            this.refreshUser(user, res);
-            this.loading = false;
+        this.tokenService.pushKyc(this.tokenId, user.username, grantKYC).subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.operationMode = OperationMode.Kyc;
+            this.user = user;
         }, (e) => {
             console.error(e.error);
             this.loading = false;

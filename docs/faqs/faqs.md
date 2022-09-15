@@ -36,7 +36,7 @@ iREC Policy 2 is the up-to-date version of iREC Policy
 
 You can visit : http://localhost:3000/mrv-sender/
 
-**10.  how I can avoid the field name being "off by one" ?**
+**10. how I can avoid the field name being "off by one" ?**
 
 Add an additional short name to the description in the schema configurator. If short name is not set then install field1...N.
 
@@ -50,7 +50,7 @@ Both are for reporting data, both are producing VCs at the ‘exit.’ 1. reques
 
 **13. Why do I get the error INSUFFICENT\_TX\_FEE?**
 
-The fee in the transaction is too small and needs to be increased**.**
+The fee in the transaction is too small and needs to be increased\*\*.\*\*
 
 **14. How are we linking topics to stored ipfs data after mongodb goes away? Is there somewhere I can read this?**
 
@@ -58,7 +58,7 @@ MongoDB does not go away, we will keep the local DB for drafts etc. Hedera messa
 
 **15. Is MRV an existing data architecture used in I-REC or Carbon Offset standards?**
 
-A standard registry is an organization that establishes science-based standards for measuring, reporting, and verifying (MRV) ecological benefit claims and issues value in the form of credit for claims that meet the standard set. A standard registry also authorizes validation and verification bodies (VVBs) to collect and process claims based on the established standard. The creation of scientific-based standards for MRV is a rigorous discipline that requires independence from commercial influence in the pursuit of accurate accounting of benefit or emissions claims. In this case iREC is a standards registry, however oftentimes folks implement the iREC standard in a voluntary way and leverage iREC certification for sign off. Some markets, like Dubai, make it a compliance standard**.**
+A standard registry is an organization that establishes science-based standards for measuring, reporting, and verifying (MRV) ecological benefit claims and issues value in the form of credit for claims that meet the standard set. A standard registry also authorizes validation and verification bodies (VVBs) to collect and process claims based on the established standard. The creation of scientific-based standards for MRV is a rigorous discipline that requires independence from commercial influence in the pursuit of accurate accounting of benefit or emissions claims. In this case iREC is a standards registry, however oftentimes folks implement the iREC standard in a voluntary way and leverage iREC certification for sign off. Some markets, like Dubai, make it a compliance standard\*\*.\*\*
 
 **16. How Guardian uses IPFS for Verifiable Presentation (VP) storage?**
 
@@ -82,7 +82,7 @@ PAYER 0.0.34194892
 MEMO 1649942508.776446488
 ```
 
-Take the MEMO value (which is the Hedera message timestamp) and add it to the URL after the `/messages/`  to get a message from a Hedera Mirror Node.\
+Take the MEMO value (which is the Hedera message timestamp) and add it to the URL after the `/messages/` to get a message from a Hedera Mirror Node.\
 In our case it will be [https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1649942508.776446488](https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1649942508.776446488)\
 You will get a message content:
 
@@ -108,7 +108,7 @@ You will get a message content:
 }
 ```
 
-Take the  `message` attribute value and parse it to a JSON representation:\
+Take the `message` attribute value and parse it to a JSON representation:\
 `JSON.parse(atob(message)) // JSON.parse(atob(eyJpZCI6IjEzN.........WFuaDZ2eWEifQ==))`\
 You will have a JSON similar to that one:
 
@@ -127,7 +127,7 @@ You will have a JSON similar to that one:
 }
 ```
 
-Take the  `url` attribute value and paste it to a browser:\
+Take the `url` attribute value and paste it to a browser:\
 [https://ipfs.io/ipfs/bafkreia5i3brumci35s733q4gua363ihxrisr6nziaf7h7hgxhyanh6vya](https://ipfs.io/ipfs/bafkreia5i3brumci35s733q4gua363ihxrisr6nziaf7h7hgxhyanh6vya)\
 You’ll have a VP of this token.
 
@@ -232,7 +232,7 @@ You’ll have a VP of this token.
 
 **18. The VCs that are generated as part of the Guardian workflow, have you found any use cases where the status of the VC might change? For example, is there ever a time where a VC might be revoked or expires? If so, does the status get updated on the ledger?**
 
-there are many use-cases where the VCs and various other artefacts produced in the course of the policy functioning of the guardian might need to be revoked. One of the obvious examples of such situation is malfunctioning sensor generating invalid MRV data. But there are many others**.**
+there are many use-cases where the VCs and various other artefacts produced in the course of the policy functioning of the guardian might need to be revoked. One of the obvious examples of such situation is malfunctioning sensor generating invalid MRV data. But there are many others\*\*.\*\*
 
 **19. Is it possible to see a Guardian-minted token's value in hbar as well as its associated CO2e? If so, where does this information come from/how can we access it?**
 
@@ -241,3 +241,17 @@ The value of the token in hbar (or USD) will be set by the market, and thus exte
 **20. What is the semantic of the DID in the message? Is it that the standard registry signs VCs etc with the corresponding private key?**
 
 DID is the the DID of the RA, i.e. is a globally unique reference linking to a DID document which is the identity - all VCs issued to or by an entity would then be ‘bound’ to this DID as per the ‘self-sovereign identity’ architecture.
+
+**21. How to identify data on Hedera after submitting data using sendToGuardianBlock?**
+
+When sending messages to the header, the Message Id and Topic Id are written to the database You can view them using the messageId and topicId fields&#x20;
+
+All messages in the topic can be viewed at the link https://testnet.dragonglass.me/hedera/topics/{topicId}&#x20;
+
+for example**:**
+
+https://testnet.dragonglass.me/hedera/topics/0.0.47802089&#x20;
+
+Unfortunately, dragonglass does not have a search by messageId, but messages can be obtained using mirrornode&#x20;
+
+for example https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1659539040.128851003

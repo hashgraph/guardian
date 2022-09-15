@@ -6,138 +6,139 @@ import {
     SchemaStatus,
     GenerateUUIDv4
 } from '@guardian/interfaces';
-import { AfterLoad, BeforeInsert, Column, CreateDateColumn, Entity, ObjectIdColumn } from 'typeorm';
+import {
+    Entity,
+    Property,
+    Enum,
+    BeforeCreate,
+    OnLoad
+} from '@mikro-orm/core';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * Schema collection
  */
 @Entity()
-export class Schema implements ISchema {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
-
+export class Schema extends BaseEntity implements ISchema {
     /**
      * Schema uuid
      */
-    @Column()
-    uuid: string;
+    @Property({ nullable: true })
+    uuid?: string;
 
     /**
      * Schema hash
      */
-    @Column()
-    hash: string;
+    @Property({ nullable: true })
+    hash?: string;
 
     /**
      * Schema name
      */
-    @Column()
-    name: string;
+    @Property({ nullable: true })
+    name?: string;
 
     /**
      * Schema description
      */
-    @Column()
-    description: string;
+    @Property({ nullable: true })
+    description?: string;
 
     /**
      * Schema entity
      */
-    @Column()
-    entity: SchemaEntity;
+    @Enum({ nullable: true })
+    entity?: SchemaEntity;
 
     /**
      * Schema status
      */
-    @Column()
-    status: SchemaStatus;
+    @Enum({ nullable: true })
+    status?: SchemaStatus;
 
     /**
      * Schema instance
      */
-    @Column()
-    document: ISchemaDocument;
+    @Property({ nullable: true })
+    document?: ISchemaDocument;
 
     /**
      * Context
      */
-    @Column()
-    context: any;
+    @Property({ nullable: true })
+    context?: any;
 
     /**
      * Version
      */
-    @Column()
-    version: string;
+    @Property({ nullable: true })
+    version?: string;
 
     /**
      * Creator
      */
-    @Column()
-    creator: string;
+    @Property({ nullable: true })
+    creator?: string;
 
     /**
      * Owner
      */
-    @Column()
-    owner: string;
+    @Property({ nullable: true })
+    owner?: string;
 
     /**
      * Topic id
      */
-    @Column()
-    topicId: string;
+    @Property({ nullable: true })
+    topicId?: string;
 
     /**
      * Message id
      */
-    @Column()
-    messageId: string;
+    @Property({ nullable: true })
+    messageId?: string;
 
     /**
      * Document URL
      */
-    @Column()
-    documentURL: string;
+    @Property({ nullable: true })
+    documentURL?: string;
 
     /**
      * Context URL
      */
-    @Column()
-    contextURL: string;
+    @Property({ nullable: true })
+    contextURL?: string;
 
     /**
      * IRI
      */
-    @Column()
-    iri: string;
+    @Property({ nullable: true })
+    iri?: string;
 
     /**
      * Created at
      */
-    @CreateDateColumn()
-    createDate: Date;
+    @Property()
+    createDate: Date = new Date();
 
     /**
      * Readonly flag
      */
-    @Column()
-    readonly: boolean;
+    @Property({ nullable: true })
+    readonly?: boolean;
 
     /**
      * Is system schema
      */
-    @Column()
-    system: boolean;
+    @Property({ nullable: true })
+    system?: boolean;
 
     /**
      * Is active
      */
-    @Column()
-    active: boolean;
+    @Property({ nullable: true })
+    active?: boolean;
 
     /**
      * Virtual column.
@@ -147,7 +148,7 @@ export class Schema implements ISchema {
     /**
      * Schema defaults
      */
-    @BeforeInsert()
+    @BeforeCreate()
     setDefaults() {
         this.entity = this.entity || SchemaEntity.NONE;
         this.status = this.status || SchemaStatus.DRAFT;
@@ -164,7 +165,7 @@ export class Schema implements ISchema {
     /**
      * Set schema category
      */
-    @AfterLoad()
+    @OnLoad()
     defineLabel() {
         this.category = this.readonly
             ? SchemaCategory.SYSTEM

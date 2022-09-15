@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const {
     HederaSDKHelper
 } = require('../../../guardian-service/dist/hedera-modules/hedera-sdk-helper');
@@ -18,8 +21,8 @@ describe('Hedera SDK Helper', function () {
     let sdk, accountId, accountKey, tokenId, account2Id, account2Key, token2Id, nft;
 
     const initialBalance = 5;
-    const OPERATOR_ID = '0.0.1548173';
-    const OPERATOR_KEY = '302e020100300506032b657004220420e749aa65835ce90cab1cfb7f0fa11038e867e74946abca993f543cf9509c8edc';
+    const OPERATOR_ID = process.env.OPERATOR_ID;
+    const OPERATOR_KEY = process.env.OPERATOR_KEY;
 
     this.timeout(60 * transactionTimeout);
 
@@ -293,7 +296,7 @@ describe('Hedera SDK Helper', function () {
         if (!account2Id) assert.fail('Account not created');
         if (!token2Id) assert.fail('Token not created');
         if (!nft) assert.fail('Token not minted');
-        
+
         let status;
         status = await sdk.transferNFT(
             token2Id,
@@ -329,7 +332,7 @@ describe('Hedera SDK Helper', function () {
 
     it('Test SDK newTopic', async function () {
         this.timeout(2 * transactionTimeout);
-        
+
         if (!accountId) assert.fail('Account not created');
         const id = await sdk.newTopic(accountKey, accountKey,'Memo');
         assert.exists(id);

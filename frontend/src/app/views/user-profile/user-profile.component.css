@@ -40,6 +40,11 @@ form {
     align-content: center;
 }
 
+.loading-progress {
+    width: 80%;
+    height: 80%;
+}
+
 .random-icon {
     width: 45px;
     height: 45px;

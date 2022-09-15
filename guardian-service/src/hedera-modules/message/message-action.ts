@@ -6,11 +6,15 @@ export enum MessageAction {
     CreateVC = 'create-vc-document',
     CreatePolicy = 'create-policy',
     PublishPolicy = 'publish-policy',
+    DeletePolicy = 'delete-policy',
     CreateSchema = 'create-schema',
     PublishSchema = 'publish-schema',
     DeleteSchema = 'delete-schema',
     CreateTopic = 'create-topic',
     CreateVP = 'create-vp-document',
     PublishSystemSchema = 'publish-system-schema',
-    Init = 'Initialization'
+    Init = 'Initialization',
+    ChangeMessageStatus = 'change-message-status',
+    RevokeDocument = 'revoke-document',
+    DeleteDocument = 'delete-document'
 }

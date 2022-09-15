@@ -1,8 +1,8 @@
 import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
 import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
-import { IAuthUser } from '@guardian/common';
 import { IPolicyBlock, IPolicyContainerBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Container block decorator
@@ -25,7 +25,7 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param data
              * @param target
              */
-            async changeStep(user: IAuthUser, data: any, target: IPolicyBlock) {
+            async changeStep(user: IPolicyUser, data: any, target: IPolicyBlock) {
                 let result: any;
                 if (typeof super.changeStep === 'function') {
                     result = super.changeStep(user, data, target);
@@ -37,16 +37,15 @@ export function ContainerBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * Get block data
              * @param user
              */
-            async getData(user: IAuthUser | null): Promise<any> {
+            async getData(user: IPolicyUser | null): Promise<any> {
                 let data = {}
                 if (super.getData) {
                     data = await super.getData(user);
                 }
 
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyContainerBlock>(this);
-                const currentRole = await PolicyComponentsUtils.GetUserRole(ref.policyId, user);
                 const children = ref.children.map(child => {
-                    if (child.defaultActive && PolicyComponentsUtils.CheckPermission(child, user, currentRole)) {
+                    if (child.defaultActive && child.isActive(user) && child.hasPermission(user.role, user)) {
                         return {
                             uiMetaData: child.options.uiMetaData,
                             content: child.blockType,

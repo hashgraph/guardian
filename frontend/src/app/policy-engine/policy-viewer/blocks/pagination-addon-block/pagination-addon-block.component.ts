@@ -53,7 +53,7 @@ export class PaginationAddonBlockComponent implements OnInit {
     }
 
     onUpdate(id: string): void {
-        if (this.id == id) {
+        if (this.id === id) {
             this.loadData();
         }
     }

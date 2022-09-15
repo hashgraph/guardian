@@ -1,19 +1,11 @@
 import { SourceAddon } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
-import { Inject } from '@helpers/decorators/inject';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
-import { Users } from '@helpers/users';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
-import { getMongoRepository } from 'typeorm';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
-import { Schema as SchemaCollection } from '@entity/schema';
-import { DidDocument as DidDocumentCollection } from '@entity/did-document';
-import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
-import { DocumentState } from '@entity/document-state';
+import { IPolicyAddonBlock, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IAuthUser } from '@guardian/common';
+import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Documents source addon
@@ -34,18 +26,11 @@ import { IAuthUser } from '@guardian/common';
 })
 export class DocumentsSourceAddon {
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
      * Get data from source
      * @param user
      * @param globalFilters
      */
-    async getFromSource(user: IAuthUser, globalFilters: any) {
+    async getFromSource(user: IPolicyUser, globalFilters: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const filters: any = {};
@@ -56,9 +41,14 @@ export class DocumentsSourceAddon {
         if (ref.options.onlyOwnDocuments) {
             filters.owner = user.did;
         }
-
+        if (ref.options.onlyOwnByGroupDocuments) {
+            filters.group = user.group;
+        }
         if (ref.options.onlyAssignDocuments) {
-            filters.assign = user.did;
+            filters.assignedTo = user.did;
+        }
+        if (ref.options.onlyAssignByGroupDocuments) {
+            filters.assignedToGroup = user.group;
         }
 
         if (ref.options.schema) {
@@ -92,7 +82,7 @@ export class DocumentsSourceAddon {
         }
 
         const dynFilters = {};
-        for (const [key, value] of Object.entries(ref.getFilters(user))) {
+        for (const [key, value] of Object.entries(await ref.getFilters(user))) {
             dynFilters[key] = { $eq: value };
         }
 
@@ -101,58 +91,54 @@ export class DocumentsSourceAddon {
             Object.assign(filters, globalFilters);
         }
 
-        const filtersWithOrder: any = { where: filters };
+        const otherOptions: any = {};
         if (ref.options.orderDirection) {
-            filtersWithOrder.order = {};
+            otherOptions.orderBy = {};
             if (ref.options.orderField) {
-                filtersWithOrder.order[ref.options.orderField] = ref.options.createdOrderDirection;
+                otherOptions.orderBy[ref.options.orderField] = ref.options.createdOrderDirection;
             } else {
-                filtersWithOrder.order.createDate = ref.options.createdOrderDirection;
+                otherOptions.orderBy.createDate = ref.options.createdOrderDirection;
             }
-
         }
 
-        let data: any[];
+        let data: IPolicyDocument[];
         switch (ref.options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
-                data = await getMongoRepository(VcDocumentCollection).find(filtersWithOrder);
+                data = await ref.databaseServer.getVcDocuments(filters, otherOptions);
                 break;
             case 'did-documents':
-                data = await getMongoRepository(DidDocumentCollection).find(filtersWithOrder);
+                data = await ref.databaseServer.getDidDocuments(filters, otherOptions);
                 break;
             case 'vp-documents':
                 filters.policyId = ref.policyId;
-                data = await getMongoRepository(VpDocumentCollection).find(filtersWithOrder);
+                data = await ref.databaseServer.getVpDocuments(filters, otherOptions);
                 break;
             case 'standard-registries':
-                data = await this.users.getAllStandardRegistryAccounts() as IAuthUser[];
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref);
                 break;
             case 'approve':
                 filters.policyId = ref.policyId;
-                data = await getMongoRepository(ApprovalDocumentCollection).find(filtersWithOrder);
+                data = await ref.databaseServer.getApprovalDocuments(filters, otherOptions);
                 break;
             case 'source':
                 data = [];
                 break;
             // @deprecated 2022-10-01
             case 'root-authorities':
-                data = await this.users.getAllStandardRegistryAccounts() as IAuthUser[];
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref);
                 break;
             default:
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
 
-        const documentState = getMongoRepository(DocumentState);
         for (const dataItem of data) {
             if (ref.options.viewHistory) {
-                dataItem.history = (await documentState.find({
-                    where: {
-                        documentId: dataItem.id
-                    },
-                    order: {
-                        'created': 'DESC'
-                    }
+
+                dataItem.history = (await ref.databaseServer.getDocumentStates({
+                    documentId: dataItem.id
+                }, {
+                    orderBy: { 'created': 'DESC' }
                 })).map(item => {
                     return {
                         status: item.status,
@@ -192,17 +178,14 @@ export class DocumentsSourceAddon {
                     resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
                     return;
                 }
-                const schema = await getMongoRepository(SchemaCollection).findOne({
-                    iri: ref.options.schema,
-                    topicId: ref.topicId
-                });
+                const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
                 if (!schema) {
                     resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                     return;
                 }
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

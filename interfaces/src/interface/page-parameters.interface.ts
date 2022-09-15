@@ -5,9 +5,9 @@ export interface IPageParameters {
     /**
      * Number of items to skip
      */
-    skip?: number;
+    offset?: number;
     /**
      * Number of items to take
      */
-    take?: number;
+    limit?: number;
 }

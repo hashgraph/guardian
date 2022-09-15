@@ -79,6 +79,7 @@
                         </td>
                     </tr>
                 </ng-container>
+
                 <ng-container *ngIf="type == 'Role'">
                     <!-- Roles  -->
                     <tr class="propHeader">
@@ -106,6 +107,82 @@
                             </td>
                         </tr>
                     </ng-container>
+                </ng-container>
+                <ng-container *ngIf="type == 'Groups'">
+                    <!-- Groups  -->
+                    <ng-container *ngFor="let item of policyGroups; let i=index">
+                        <tr class="propHeader">
+                            <td class="propRowCol" (click)="onHide(propHidden.groupsGroup, i)"
+                                [attr.collapse]="propHidden.groupsGroup[i]">
+                                <mat-icon>expand_more</mat-icon>
+                            </td>
+                            <td class="propHeaderCell cellName">Group</td>
+                            <td class="propHeaderCell">
+                                <div>{{item.name}}</div>
+                                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveGroup(item)">
+                                    <mat-icon>delete</mat-icon>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Name</td>
+                            <td class="propRowCell remove-cell">
+                                <input [(ngModel)]="item.name" [readonly]="readonly" (input)="onEditGroup(item)">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Creator role</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [(ngModel)]="item.creator" [disabled]="readonly" (selectionChange)="onEditGroup(item)">
+                                    <mat-option *ngFor="let item of policy.policyRoles" [value]="item.name">{{item.name}}
+                                    </mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Members roles</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [(ngModel)]="item.members" multiple [disabled]="readonly" (selectionChange)="onEditGroup(item)">
+                                    <mat-option *ngFor="let item of policy.policyRoles" [value]="item.name">{{item.name}}
+                                    </mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Relationship Type</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [(ngModel)]="item.groupRelationshipType" [disabled]="readonly" (valueChange)="onEditGroup(item)">
+                                    <mat-option value="Single">Single</mat-option>
+                                    <mat-option value="Multiple">Multiple</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Access Type</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [(ngModel)]="item.groupAccessType" [disabled]="readonly" (valueChange)="onEditGroup(item)">
+                                    <mat-option value="Private">Private</mat-option>
+                                    <mat-option value="Global">Global</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <tr class="propRow" style="height: 26px;">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName"></td>
+                        <td class="propRowCell"></td>
+                    </tr>
+                    <div class="propBottom">
+                        <div class="propAdd" (click)="addGroup()">
+                            <mat-icon>add</mat-icon>
+                            <span>Add Group</span>
+                        </div>
+                    </div>
                 </ng-container>
                 <ng-container *ngIf="type == 'Topics'">
                     <!-- Topics  -->
@@ -153,6 +230,23 @@
                             <td class="propRowCell cellName">Static</td>
                             <td class="propRowCell remove-cell">
                                 <input type="checkbox" [(ngModel)]="item.static" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Memo Parameters Object</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select [(ngModel)]="item.memoObj" [disabled]="readonly">
+                                    <mat-option value="topic">Topic Config</mat-option>
+                                    <mat-option value="doc">Document</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Memo</td>
+                            <td class="propRowCell remove-cell">
+                                <input [(ngModel)]="item.memo" [readonly]="readonly">
                             </td>
                         </tr>
                     </ng-container>

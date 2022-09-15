@@ -1,110 +1,123 @@
-import { DocumentSignature, DocumentStatus } from '@guardian/interfaces';
-import {Column, Entity, ObjectIdColumn} from 'typeorm';
+import { DocumentSignature, DocumentStatus, IVC } from '@guardian/interfaces';
+import { Entity, Property, Enum } from '@mikro-orm/core';
+import { BaseEntity } from '@guardian/common';
 
 /**
  * Documents for aggregate collection
  */
 @Entity()
-export class AggregateVC {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
-
+export class AggregateVC extends BaseEntity {
     /**
      * Document owner
      */
-    @Column()
-    owner: string;
+    @Property({ nullable: true })
+    owner?: string;
 
     /**
      * Document assign
      */
-    @Column()
-    assign: string;
+    @Property({ nullable: true })
+    assignedTo?: string;
 
     /**
      * Document hash
      */
-    @Column()
-    hash: string;
+    @Property({ nullable: true })
+    hash?: string;
 
     /**
      * Document instance
      */
-    @Column()
-    document: any;
+    @Property({ nullable: true })
+    document?: IVC;
 
     /**
      * Document hedera status
      */
-    @Column()
-    hederaStatus: DocumentStatus;
+    @Enum({ nullable: true })
+    hederaStatus?: DocumentStatus;
 
     /**
      * Document signature
      */
-    @Column()
-    signature: DocumentSignature;
+    @Enum({ nullable: true })
+    signature?: DocumentSignature;
 
     /**
      * Document processing status
      */
-    @Column()
-    processingStatus: string;
+    @Property({ nullable: true })
+    processingStatus?: string;
 
     /**
      * Document type
      */
-    @Column()
-    type: string;
+    @Property({ nullable: true })
+    type?: string;
 
     /**
      * Document policy id
      */
-    @Column()
-    policyId: string;
+    @Property({ nullable: true })
+    policyId?: string;
 
     /**
      * Document block id
      */
-    @Column()
-    blockId: string;
+    @Property({ nullable: true })
+    blockId?: string;
 
     /**
      * Document tag
      */
-    @Column()
-    tag: string;
+    @Property({ nullable: true })
+    tag?: string;
 
     /**
      * Document option
      */
-    @Column()
-    option: any;
+    @Property({ nullable: true })
+    option?: any;
 
     /**
      * Document schema
      */
-    @Column()
-    schema: string;
+    @Property({ nullable: true })
+    schema?: string;
 
     /**
      * Document message id
      */
-    @Column()
-    messageId: string;
+    @Property({ nullable: true })
+    messageId?: string;
 
     /**
      * Topic id
      */
-    @Column()
-    topicId: string;
+    @Property({ nullable: true })
+    topicId?: string;
 
     /**
      * Relationships
      */
-    @Column()
-    relationships: string[];
+    @Property({ nullable: true })
+    relationships?: string[];
+
+    /**
+     * Comment
+     */
+    @Property({ nullable: true })
+    comment?: string;
+
+    /**
+     * Hedera Accounts
+     */
+    @Property({ nullable: true })
+    accounts?: any;
+
+    /**
+     * User group
+     */
+    @Property({ nullable: true })
+    group?: any;
 }

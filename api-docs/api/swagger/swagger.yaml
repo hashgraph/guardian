@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: "Guardian"
   description: "The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation."
-  version: "2.3.0"
+  version: "2.4.1"
   contact:
     name: "API developer"
     url: "https://envisionblockchain.com"
@@ -504,6 +504,9 @@ components:
         operatorKey:
           type: string
         nftApiKey:
+          deprecated: true
+          type: string
+        ipfsStorageApiKey:
           type: string
     LogFilters:
       type: object
@@ -540,11 +543,40 @@ components:
           type: array
           items:
             type: string
+    Task:
+      type: object
+      properties:
+        taskId:
+          type: string
+        expectation:
+          type: number
+    TaskStatus:
+      type: object
+      properties:
+        date:
+          type: string
+        name:
+          type: string
+        statuses:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              message:
+                type: string
+        result:
+          type: object
+        error:
+          type: object
 tags:
   - name: "accounts"
     description: "Operations related to Guardian users"
   - name: "profiles"
     description: "Hedera profile related operations"
+  - name: "schema"
+    description: "Single schema operations"
   - name: "schemas"
     description: "Operations with data schemas"
   - name: "tokens"
@@ -563,6 +595,8 @@ tags:
     description: "Settings operations"
   - name: "logs"
     description: "Logs operations"
+  - name: "tasks"
+    description: "Task Status"
 paths:
   /accounts:
     get:
@@ -854,25 +888,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /schemas:
-    post:
-      deprecated: true
+  /profiles/push/{username}:
+    put:
       tags:
-        - schemas
-      description: Creates new schema. Only users with the Standard Registry role are allowed to make the request.
+        - profiles
+      description: Sets Hedera credentials for the user
       security:
-      - bearerAuth: []
-      summary: Create new schema.
+        - bearerAuth: []
+      summary: Sets Hedera credentials for the user
+      parameters:
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: The name of the user for whom to update the information.
       requestBody:
-        description: Object that contains a valid schema.
+        description: Object that contains the Hedera account data.
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Schema"
+              $ref: "#/components/schemas/User"
       responses:
-        201:
+        200:
           description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -883,6 +927,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+  /schemas:
     get:
       tags:
         - schemas
@@ -922,6 +968,39 @@ paths:
               schema:
                 type: array
                 items:
+                  $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schema/{schemaId}:
+    get:
+      tags:
+        - schema
+      description: Returns schema by schema ID.
+      security:
+      - bearerAuth: []
+      summary: Returns schema by schema ID.
+      parameters:
+        - in: path
+          name: schemaId
+          schema:
+            type: string
+          required: true
+          description: Schema ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
                   $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
@@ -1034,6 +1113,50 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /schemas/push/{topicId}:
+    post:
+      tags:
+        - schemas
+      description: Creates new schema. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Create new schema.
+      parameters:
+        - in: path
+          name: topicId
+          schema:
+            type: string
+          required: true
+          description: Topic ID.
+          examples:
+            topicId:
+              summary: Example of a Topic ID
+              value: 0.0.00000001
+      requestBody:
+        description: Object that contains a valid schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Schema"
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /schemas/{schemaId}/publish:
     put:
       tags:
@@ -1068,6 +1191,49 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schemas/push/{schemaId}/publish:
+    put:
+      tags:
+        - schemas
+      description: Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic.
+      parameters:
+        - in: path
+          name: schemaId
+          schema:
+            type: string
+          required: true
+          description: Schema ID.
+      requestBody:
+        description: Object that contains policy version.
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -1154,82 +1320,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /schemas/import/file:
-    post:
-      deprecated: true
-      tags:
-        - schemas
-      description: Imports new schema from a zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
-      security:
-      - bearerAuth: []
-      summary: Imports new schema from a zip file.
-      requestBody:
-        description: A zip file containing schema to be imported.
-        content:
-          binary/octet-stream:
-            schema:
-              type: string
-              format: binary
-        required: true
-      responses:
-        201:
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /schemas/import/message:
-    post:
-      deprecated: true
-      tags:
-        - schemas
-      description: Imports new schema from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
-      security:
-      - bearerAuth: []
-      summary: Imports new schema from IPFS.
-      requestBody:
-        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                messageId:
-                  type: string
-      responses:
-        201:
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
   /schemas/{topicId}/import/file:
     post:
       tags:
@@ -1266,6 +1356,51 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schemas/push/{topicId}/import/file:
+    post:
+      tags:
+        - schemas
+      description: Imports new schema from a zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Imports new schema from a zip file.
+      requestBody:
+        description: A zip file containing schema to be imported.
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
+        required: true
+      parameters:
+        - in: path
+          name: topicId
+          schema:
+            type: string
+          required: true
+          description: Topic ID.
+          examples:
+            topicId:
+              summary: Example of a Topic ID
+              value: 0.0.00000001
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -1326,6 +1461,53 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /schemas/push/{topicId}/import/message:
+    post:
+      tags:
+        - schemas
+      description: Imports new schema from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Imports new schema from IPFS.
+      requestBody:
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageId:
+                  type: string
+      parameters:
+        - in: path
+          name: topicId
+          schema:
+            type: string
+          required: true
+          description: Topic ID.
+          examples:
+            topicId:
+              summary: Example of a Topic ID
+              value: 0.0.00000001
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /schemas/import/message/preview:
     post:
       tags:
@@ -1353,6 +1535,42 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Schema'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schemas/push/import/message/preview:
+    post:
+      tags:
+        - schemas
+      description: Previews the schema from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Schema preview from IPFS.
+      requestBody:
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageId:
+                  type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -1461,6 +1679,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /schemas/type/{type}:
     get:
       tags:
@@ -1816,6 +2035,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /tokens/push:
+    post:
+      tags:
+        - tokens
+      description: Creates a new token. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Creates a new token.
+      requestBody:
+        description: Object that contains token information.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Token"
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /tokens/{tokenId}/{username}/info:
     get:
       tags:
@@ -1889,6 +2141,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /tokens/push/{tokenId}/associate:
+    put:
+      tags:
+        - tokens
+      description: Associates the user with the provided Hedera token. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Associates the user with the provided Hedera token.
+      parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: string
+          required: true
+          description: Token ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /tokens/{tokenId}/dissociate:
     put:
       tags:
@@ -1907,6 +2192,39 @@ paths:
       responses:
         200:
           description: Successful operation.
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /tokens/push/{tokenId}/dissociate:
+    put:
+      tags:
+        - tokens
+      description: Disassociates the user with the provided Hedera token. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Disassociates the user with the provided Hedera token.
+      parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: string
+          required: true
+          description: Token ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -1963,6 +2281,45 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /tokens/push/{tokenId}/{username}/grantKyc:
+    put:
+      tags:
+        - tokens
+      description: Sets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Sets the KYC flag for the user.
+      parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: string
+          required: true
+          description: Token ID.
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /tokens/{tokenId}/{username}/revokeKyc:
     put:
       tags:
@@ -1997,6 +2354,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /tokens/push/{tokenId}/{username}/revokeKyc:
+    put:
+      tags:
+        - tokens
+      description: Unsets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Unsets the KYC flag for the user.
+      parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: string
+          required: true
+          description: Token ID.
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -2245,6 +2641,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /policies/push:
+    post:
+      tags:
+        - policies
+      description: Creates a new policy. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Creates a new policy.
+      requestBody:
+        description: Object that contains policy configuration.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyConfig'
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /policies/{policyId}:
     get:
       tags:
@@ -2366,6 +2795,49 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /policies/push/{policyId}/publish:
+    put:
+      tags:
+        - policies
+      description: Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      requestBody:
+        description: Object that contains policy version.
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                properties:
+                  policyVersion:
+                    type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /policies/validate:
     post:
       tags:
@@ -2388,6 +2860,91 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ValidatePolicy'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/{policyId}/groups:
+    get:
+      tags:
+        - policies
+      description: Returns a list of groups the user is a member of.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Selected policy ID.
+      summary: Returns a list of groups the user is a member of.
+      security:
+      - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    uuid:
+                      type: string
+                    role:
+                      type: string
+                    groupLabel:
+                      type: string
+                    groupName:
+                      type: string
+                    active:
+                      type: boolean
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - policies
+      description: Makes the selected group active. if UUID is not set then returns the user to the default state.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Selected policy ID.
+      summary: Makes the selected group active.
+      requestBody:
+        description: Selected group.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                uuid:
+                  type: string
+      security:
+      - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation.
         401:
           description: Unauthorized.
         403:
@@ -2667,6 +3224,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /policies/push/import/message:
+    post:
+      tags:
+        - policies
+      description: Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Imports new policy and all associated artifacts from IPFS into the local DB.
+      requestBody:
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the Policy.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageId:
+                  type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /policies/import/file:
     post:
       tags:
@@ -2702,6 +3295,40 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/PolicyConfig'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/push/import/file:
+    post:
+      tags:
+        - policies
+      description: Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.
+      requestBody:
+        description: A zip file that contains the policy and associated schemas and VCs to be imported.
+        required: true
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -2749,6 +3376,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /policies/push/import/message/preview:
+    post:
+      tags:
+        - policies
+      description: Previews the policy from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Previews the policy from IPFS without loading it into the local DB.
+      requestBody:
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the policy.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageId:
+                  type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /policies/import/file/preview:
     post:
       tags:
@@ -2772,6 +3435,430 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PreviewPolicy'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/{policyId}/dry-run:
+    put:
+      tags:
+        - policies
+      description: Run policy without making any persistent changes or executing transaction. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Dry Run policy.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishPolicy'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/{policyId}/draft:
+    put:
+      tags:
+        - policies
+      description: Return policy to editing. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Return policy to editing.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishPolicy'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/{policyId}/dry-run/users:
+    get:
+      tags:
+        - policies
+      description: Returns all virtual users. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Returns all virtual users.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                    did:
+                      type: string
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/{policyId}/dry-run/user:
+    post:
+      tags:
+        - policies
+      description: Create a new virtual account. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Create a new virtual account.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                    did:
+                      type: string
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/{policyId}/dry-run/login:
+    post:
+      tags:
+        - policies
+      description: Logs virtual user into the system. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Logs virtual user into the system.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      requestBody:
+        description: Virtual user
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                did:
+                  type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                    did:
+                      type: string
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/{policyId}/dry-run/restart:
+    post:
+      tags:
+        - policies
+      description: Restarts the execution of the policy. Clear data in database. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Restarts the execution of the policy.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      responses:
+        200:
+          description: Successful operation.
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/{policyId}/dry-run/transactions:
+    get:
+      tags:
+        - policies
+      description: Returns lists of virtual transactions. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Returns lists of virtual transactions.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    createDate:
+                      type: string
+                    type:
+                      type: string
+                    hederaAccountId:
+                      type: string
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/{policyId}/dry-run/artifacts:
+    get:
+      tags:
+        - policies
+      description: Returns lists of virtual artifacts. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Returns lists of virtual artifacts.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    createDate:
+                      type: string
+                    type:
+                      type: string
+                    owner:
+                      type: string
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/{policyId}/dry-run/ipfs:
+    get:
+      tags:
+        - policies
+      description: Returns lists of virtual artifacts. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Returns lists of virtual artifacts.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    createDate:
+                      type: string
+                    documentURL:
+                      type: string
+                    document:
+                      type: object
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /policies/{policyId}/tag/{tag}/blocks:
+    post:
+      tags:
+        - policies
+      description: Requests block data by tag. Only users with a role that described in block are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Requests block data.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+        - in: path
+          name: tag
+          schema:
+            type: string
+          required: true
+          description: Tag from the selected policy.
+      requestBody:
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyBlockData'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - policies
+      description: Sends data to the specified block.
+      security:
+        - bearerAuth: []
+      summary: Sends data to the specified block.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+        - in: path
+          name: tag
+          schema:
+            type: string
+          required: true
+          description: Tag from the selected policy.
+      responses:
+        200:
+          description: Successful operation.
         401:
           description: Unauthorized.
         403:
@@ -2865,6 +3952,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HederaAccount'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /demo/push/randomKey:
+    get:
+      tags:
+        - demo
+      description: Generates a new Hedera account with a random private key.
+      security:
+        - bearerAuth: []
+      summary: Generates a new Hedera account with a random private key.
+      responses:
+        200:
+          description:
         401:
           description: Unauthorized.
         403:
@@ -3044,6 +4153,39 @@ paths:
                 type: array
                 items:
                   type: string
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /tasks/{taskId}:
+    get:
+      tags:
+        - tasks
+      description: Returns task statuses by Id.
+      security:
+        - bearerAuth: []
+      summary: Returns task statuses.
+      parameters:
+        - in: path
+          name: taskId
+          schema:
+            type: string
+          required: true
+          description: Task ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskStatus'
         401:
           description: Unauthorized.
         403:

@@ -1,20 +1,16 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
-import { Inject } from '@helpers/decorators/inject';
-import { getMongoRepository } from 'typeorm';
-import { Policy } from '@entity/policy';
-import { Users } from '@helpers/users';
-import { KeyType, Wallet } from '@helpers/wallet';
+import { KeyType } from '@helpers/wallet';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { UserType, Schema } from '@guardian/interfaces';
-import { Schema as SchemaEntity } from '@entity/schema'
 import { findOptions } from '@policy-engine/helpers/find-options';
-import { IPolicyAddonBlock, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyAddonBlock, IPolicyDocument, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { DidDocumentBase } from '@hedera-modules';
 import { PrivateKey } from '@hashgraph/sdk';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { IAuthUser } from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
+import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyUtils } from '@policy-engine/helpers/utils';
 
 /**
  * Document action clock with UI
@@ -39,24 +35,10 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 })
 export class InterfaceDocumentActionBlock {
     /**
-     * Users helper
-     * @private
-     */
-    @Inject()
-    private readonly users: Users;
-
-    /**
-     * Wallet helper
-     * @private
-     */
-    @Inject()
-    private readonly wallet: Wallet;
-
-    /**
      * Get block data
      * @param user
      */
-    async getData(user: IAuthUser): Promise<any> {
+    async getData(user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const data: any = {
@@ -91,7 +73,7 @@ export class InterfaceDocumentActionBlock {
      * @param user
      * @param document
      */
-    async setData(user: IAuthUser, document: any): Promise<any> {
+    async setData(user: IPolicyUser, document: IPolicyDocument): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
         const state: any = { data: document };
@@ -99,32 +81,32 @@ export class InterfaceDocumentActionBlock {
         if (ref.options.type === 'selector') {
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
             if (option) {
-                const ownerDid = option.user === UserType.CURRENT
-                    ? user.did
-                    : document.owner;
-                const owner = await this.users.getUserById(ownerDid);
-                ref.triggerEvents(option.tag, owner, state);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, state);
+                const newUser = option.user === UserType.CURRENT
+                    ? user
+                    : PolicyUtils.getDocumentOwner(ref, document);
+                ref.triggerEvents(option.tag, newUser, state);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
             }
             return;
         }
 
         if (ref.options.type === 'dropdown') {
-            const owner = await this.users.getUserById(document.owner);
-            ref.triggerEvents(PolicyOutputEventType.DropdownEvent, owner, state);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, owner, state);
+            const newUser = PolicyUtils.getDocumentOwner(ref, document);
+            ref.triggerEvents(PolicyOutputEventType.DropdownEvent, newUser, state);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
             return;
         }
 
         if (ref.options.type === 'download') {
             const sensorDid = document.document.credentialSubject[0].id;
-            const policy = await getMongoRepository(Policy).findOne(ref.policyId);
-            const userFull = await this.users.getUserById(document.owner);
-            const hederaAccountId = userFull.hederaAccountId;
-            const userDID = userFull.did;
-            const hederaAccountKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-            const sensorKey = await this.wallet.getKey(userFull.walletToken, KeyType.KEY, sensorDid);
-            const schemaObject = await getMongoRepository(SchemaEntity).findOne({ iri: ref.options.schema });
+            const policy = await ref.databaseServer.getPolicy(ref.policyId);
+
+            const userDID = document.owner;
+            const hederaAccount = await PolicyUtils.getHederaAccount(ref, userDID);
+            const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
+            const hederaAccountId = hederaAccount.hederaAccountId;
+            const hederaAccountKey = hederaAccount.hederaAccountKey;
+            const schemaObject = await ref.databaseServer.getSchemaByIRI(ref.options.schema);
             const schema = new Schema(schemaObject);
             const didDocument = DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));
             return {
@@ -145,7 +127,8 @@ export class InterfaceDocumentActionBlock {
                     },
                     'didDocument': didDocument.getPrivateDidDocument(),
                     'policyId': ref.policyId,
-                    'policyTag': policy.policyTag
+                    'policyTag': policy.policyTag,
+                    'ref': sensorDid
                 }
             }
         }
@@ -205,7 +188,7 @@ export class InterfaceDocumentActionBlock {
                             break;
                         }
 
-                        const schema = await getMongoRepository(SchemaEntity).findOne({ iri: ref.options.schema });
+                        const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema);
                         if (!schema) {
                             resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
                             break;
@@ -228,7 +211,7 @@ export class InterfaceDocumentActionBlock {
                 }
             }
         } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${error.message}`);
+            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 

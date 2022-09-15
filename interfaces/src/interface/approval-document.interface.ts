@@ -11,23 +11,23 @@ export interface IApprovalDocument {
     /**
      * Document owner
      */
-    owner: string;
+    owner?: string;
     /**
      * Document approver
      */
-    approver: string;
+    approver?: string;
     /**
      * Document instance
      */
-    document: any;
+    document?: any;
     /**
      * Document policy id
      */
-    policyId: string;
+    policyId?: string;
     /**
      * Document type
      */
-    type: SchemaEntity;
+    type?: SchemaEntity;
     /**
      * Date of creation
      */
@@ -39,5 +39,5 @@ export interface IApprovalDocument {
     /**
      * Option
      */
-    option: any;
+    option?: any;
 }

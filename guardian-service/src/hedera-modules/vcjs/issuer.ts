@@ -7,23 +7,23 @@ export class Issuer {
      */
     public static readonly ID = 'id';
     /**
-     * NAME
+     * GROUP
      */
-    public static readonly NAME = 'name';
+    public static readonly GROUP = 'group';
     /**
      * ID
      * @protected
      */
     protected id: string;
     /**
-     * Name
+     * Group
      * @protected
      */
-    protected name: string;
+    protected group: string;
 
-    constructor(id: string, name?: string) {
+    constructor(id: string, group?: string) {
         this.id = id;
-        this.name = name || null;
+        this.group = group || null;
     }
 
     /**
@@ -34,20 +34,20 @@ export class Issuer {
     }
 
     /**
-     * Get name
+     * Get group
      */
-    public getName(): string {
-        return this.name;
+    public getGroup(): string {
+        return this.group;
     }
 
     /**
      * To JSON tree
      */
     public toJsonTree(): any {
-        if (this.name) {
+        if (this.group) {
             const rootObject = {};
             rootObject[Issuer.ID] = this.id;
-            rootObject[Issuer.NAME] = this.name;
+            rootObject[Issuer.GROUP] = this.group;
             return rootObject;
         }
         return this.id;
@@ -63,14 +63,14 @@ export class Issuer {
         }
 
         let id: string;
-        let name: string;
+        let group: string;
         if (typeof root === 'string') {
             id = root;
         } else {
             id = root[Issuer.ID];
-            name = root[Issuer.NAME];
+            group = root[Issuer.GROUP];
         }
-        return new Issuer(id, name);
+        return new Issuer(id, group);
     }
 
     /**

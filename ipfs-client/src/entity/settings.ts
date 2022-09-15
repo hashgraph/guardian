@@ -1,27 +1,22 @@
-import { Column, Entity, ObjectIdColumn } from 'typeorm';
+import { BaseEntity } from '@guardian/common';
+import { Entity, Property, Unique } from '@mikro-orm/core';
 
 /**
  * Service settings
  */
 @Entity()
-export class Settings {
-    /**
-     * Entity id
-     */
-    @ObjectIdColumn()
-    id: string;
+@Unique({ properties: ['name'], options: { partialFilterExpression: { name: { $type: 'string' }}}})
+export class Settings extends BaseEntity {
 
     /**
      * Setting name
      */
-    @Column({
-        unique: true
-    })
-    name: string;
+    @Property({ nullable: true })
+    name?: string;
 
     /**
      * Setting value
      */
-    @Column()
-    value: string;
+    @Property({ nullable: true })
+    value?: string;
 }

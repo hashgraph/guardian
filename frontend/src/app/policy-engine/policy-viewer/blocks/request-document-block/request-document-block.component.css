@@ -37,7 +37,7 @@
     z-index: 99;
     top: 0;
     left: 0;
-    bottom: 70px;
+    bottom: 62px;
     right: 0;
     display: flex;
     align-items: center;
@@ -72,7 +72,7 @@
 }
 
 .schema-form {
-    max-height: 50vh;
+    max-height: calc(100vh - 580px);
     overflow: auto;
     margin-bottom: 24px;
     padding: 40px 40px 0px 40px;

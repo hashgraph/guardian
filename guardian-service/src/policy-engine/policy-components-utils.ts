@@ -8,15 +8,15 @@ import {
     EventCallback,
     PolicyOutputEventType
 } from '@policy-engine/interfaces';
-import { PolicyRole, GenerateUUIDv4 } from '@guardian/interfaces';
-import { IAuthUser } from '@guardian/common';
-import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
-import { getMongoRepository } from 'typeorm';
+import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
+import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInstance, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { Policy } from '@entity/policy';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
 import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
 import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
 import { GetBlockAbout } from '@policy-engine/blocks';
+import { DatabaseServer } from '@database-modules';
+import { IPolicyUser } from './policy-user';
 
 /**
  * Policy action map type
@@ -30,36 +30,53 @@ export class PolicyComponentsUtils {
     /**
      * Block update function
      */
-    public static BlockUpdateFn: (uuid: string, state: any, user: IAuthUser, tag?: string) => Promise<void>;
+    public static BlockUpdateFn: (uuid: string, state: any, user: IPolicyUser, tag?: string) => Promise<void>;
     /**
      * Block error function
      */
-    public static BlockErrorFn: (blockType: string, message: any, user: IAuthUser) => Promise<void>;
+    public static BlockErrorFn: (blockType: string, message: any, user: IPolicyUser) => Promise<void>;
     /**
      * Update user info function
      */
-    public static UpdateUserInfoFn: (user: IAuthUser, policy: Policy) => Promise<void>;
+    public static UpdateUserInfoFn: (user: IPolicyUser, policy: Policy) => Promise<void>;
 
     /**
+     * Block ID list
+     * policyId -> Blocks
+     * @private
+     */
+    private static readonly BlockIdListByPolicyId: Map<string, string[]> = new Map();
+    /**
      * External data blocks map
+     * Block UUID -> Block component
      * @private
      */
     private static readonly ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
     /**
-     * UUID -> block map
+     * Block map
+     * Block UUID -> Block component
      * @private
      */
-    private static readonly BlockByUUIDMap: PolicyBlockMap = new Map();
+    private static readonly BlockByBlockId: PolicyBlockMap = new Map();
     /**
-     * Block tag -> UUID map
+     * Block tag map
+     * policyId -> Block tag -> Block UUID
      * @private
      */
-    private static readonly BlockUUIDByTagMap: Map<string, PolicyTagMap> = new Map();
+    private static readonly TagMapByPolicyId: Map<string, PolicyTagMap> = new Map();
     /**
      * Policy actions map
+     * policyId -> blockId -> EventName -> Function
      * @private
      */
-    private static readonly PolicyAction: Map<string, PolicyActionMap> = new Map();
+    private static readonly ActionMapByPolicyId: Map<string, PolicyActionMap> = new Map();
+
+    /**
+     * Policy Instance map
+     * policyId -> PolicyInstance
+     * @private
+     */
+    private static readonly PolicyById: Map<string, IPolicyInstance> = new Map();
 
     /**
      * Log events
@@ -79,27 +96,27 @@ export class PolicyComponentsUtils {
      * @param fn
      * @constructor
      */
-    public static RegisterAction(target: any, eventType: PolicyInputEventType, fn: EventCallback<any>): void {
+    public static RegisterAction(target: IPolicyBlock, eventType: PolicyInputEventType, fn: EventCallback<any>): void {
         const policyId = target.policyId;
-        const targetId = target.uuid;
+        const blockUUID = target.uuid;
 
-        let policyMap: PolicyActionMap;
-        if (PolicyComponentsUtils.PolicyAction.has(policyId)) {
-            policyMap = PolicyComponentsUtils.PolicyAction.get(policyId);
+        let actionMap: PolicyActionMap;
+        if (PolicyComponentsUtils.ActionMapByPolicyId.has(policyId)) {
+            actionMap = PolicyComponentsUtils.ActionMapByPolicyId.get(policyId);
         } else {
-            policyMap = new Map();
-            PolicyComponentsUtils.PolicyAction.set(policyId, policyMap);
+            actionMap = new Map();
+            PolicyComponentsUtils.ActionMapByPolicyId.set(policyId, actionMap);
         }
 
-        let targetMap: Map<PolicyInputEventType, EventCallback<any>>;
-        if (policyMap.has(targetId)) {
-            targetMap = policyMap.get(targetId);
+        let callbackMap: Map<PolicyInputEventType, EventCallback<any>>;
+        if (actionMap.has(blockUUID)) {
+            callbackMap = actionMap.get(blockUUID);
         } else {
-            targetMap = new Map();
-            policyMap.set(targetId, targetMap);
+            callbackMap = new Map();
+            actionMap.set(blockUUID, callbackMap);
         }
 
-        targetMap.set(eventType, fn);
+        callbackMap.set(eventType, fn);
     }
 
     /**
@@ -121,8 +138,8 @@ export class PolicyComponentsUtils {
         if (!source || !target) {
             return null;
         }
-        if (PolicyComponentsUtils.PolicyAction.has(source.policyId)) {
-            const policyMap = PolicyComponentsUtils.PolicyAction.get(source.policyId);
+        if (PolicyComponentsUtils.ActionMapByPolicyId.has(source.policyId)) {
+            const policyMap = PolicyComponentsUtils.ActionMapByPolicyId.get(source.policyId);
             if (policyMap.has(target.uuid)) {
                 const blockMap = policyMap.get(target.uuid);
                 if (blockMap.has(input)) {
@@ -171,7 +188,7 @@ export class PolicyComponentsUtils {
         let uuid: string;
         do {
             uuid = GenerateUUIDv4();
-        } while (PolicyComponentsUtils.BlockByUUIDMap.has(uuid));
+        } while (PolicyComponentsUtils.BlockByBlockId.has(uuid));
         return uuid;
     }
 
@@ -182,14 +199,24 @@ export class PolicyComponentsUtils {
      * @constructor
      */
     private static RegisterComponent(policyId: string, component: IPolicyBlock): void {
-        PolicyComponentsUtils.BlockByUUIDMap.set(component.uuid, component);
+        PolicyComponentsUtils.BlockByBlockId.set(component.uuid, component);
         let tagMap: PolicyTagMap;
-        if (!PolicyComponentsUtils.BlockUUIDByTagMap.has(policyId)) {
+        if (!PolicyComponentsUtils.TagMapByPolicyId.has(policyId)) {
             tagMap = new Map();
-            PolicyComponentsUtils.BlockUUIDByTagMap.set(policyId, tagMap);
+            PolicyComponentsUtils.TagMapByPolicyId.set(policyId, tagMap);
         } else {
-            tagMap = PolicyComponentsUtils.BlockUUIDByTagMap.get(policyId);
+            tagMap = PolicyComponentsUtils.TagMapByPolicyId.get(policyId);
         }
+
+        let blockList: string[];
+        if (!PolicyComponentsUtils.BlockIdListByPolicyId.has(policyId)) {
+            blockList = [];
+            PolicyComponentsUtils.BlockIdListByPolicyId.set(policyId, blockList);
+        } else {
+            blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        }
+        blockList.push(component.uuid);
+
         if (component.tag) {
             if (tagMap.has(component.tag)) {
                 throw new Error(`Block with tag ${component.tag} already exist`);
@@ -236,9 +263,8 @@ export class PolicyComponentsUtils {
             options._parent,
             GetOtherOptions(options as PolicyBlockFullArgumentList)
         );
-        blockInstance.setPolicyId(policyId);
+        blockInstance.setPolicyInstance(policyId, policy);
         blockInstance.setPolicyOwner(policy.owner);
-        blockInstance.setPolicyInstance(policy);
         blockInstance.setTopicId(policy.topicId);
 
         allInstances.push(blockInstance);
@@ -276,6 +302,25 @@ export class PolicyComponentsUtils {
     }
 
     /**
+     * Register policy instance
+     *
+     * @param policyId
+     * @param policy
+     * @constructor
+     */
+    public static async RegisterPolicyInstance(policyId: string, policy: Policy) {
+        const dryRun = policy.status === PolicyType.DRY_RUN ? policyId : null;
+        const databaseServer = new DatabaseServer(dryRun);
+        const policyInstance = {
+            policyId,
+            dryRun,
+            databaseServer,
+            isMultipleGroup: !!(policy.policyGroups?.length)
+        }
+        PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
+    }
+
+    /**
      * Register block instances tree
      * @param allInstances
      * @constructor
@@ -296,6 +341,34 @@ export class PolicyComponentsUtils {
             await PolicyComponentsUtils.RegisterDefaultEvent(instance);
             await PolicyComponentsUtils.RegisterCustomEvent(instance);
         }
+    }
+
+    /**
+     * Unregister blocks
+     * @param policyId
+     * @constructor
+     */
+    public static async UnregisterBlocks(policyId: string) {
+        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        for (const uuid of blockList) {
+            const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
+            if (component) {
+                component.destroy();
+            }
+            PolicyComponentsUtils.ExternalDataBlocks.delete(uuid);
+            PolicyComponentsUtils.BlockByBlockId.delete(uuid);
+        }
+        PolicyComponentsUtils.TagMapByPolicyId.delete(policyId);
+        PolicyComponentsUtils.ActionMapByPolicyId.delete(policyId);
+    }
+
+    /**
+     * Unregister blocks
+     * @param policyId
+     * @constructor
+     */
+    public static async UnregisterPolicy(policyId: string) {
+        PolicyComponentsUtils.PolicyById.delete(policyId);
     }
 
     /**
@@ -339,14 +412,14 @@ export class PolicyComponentsUtils {
         for (const event of instance.events) {
             if (!event.disabled) {
                 if (event.source === instance.tag) {
-                    const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
+                    const target = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.target);
                     PolicyComponentsUtils.RegisterLink(instance, event.output, target, event.input, event.actor);
                 } else if (event.target === instance.tag) {
-                    const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.source);
+                    const source = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.source);
                     PolicyComponentsUtils.RegisterLink(source, event.output, instance, event.input, event.actor);
                 } else {
-                    const target = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.target);
-                    const source = PolicyComponentsUtils.GetBlockByTag(instance.policyId, event.source);
+                    const target = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.target);
+                    const source = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.source);
                     PolicyComponentsUtils.RegisterLink(source, event.output, target, event.input, event.actor);
                 }
             }
@@ -358,11 +431,16 @@ export class PolicyComponentsUtils {
      * @param data
      */
     public static async ReceiveExternalData(data: any): Promise<void> {
-        for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
-            const policy = await getMongoRepository(Policy).findOne({ policyTag: data.policyTag });
-            if (policy.id.toString() === (block as any).policyId) {
-                await (block as any).receiveData(data);
+        const policy = await DatabaseServer.getPolicyByTag(data?.policyTag);
+        if (policy) {
+            const policyId = policy.id.toString();
+            for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
+                if (block.policyId === policyId) {
+                    await (block as any).receiveData(data);
+                }
             }
+        } else {
+            console.log(`ExternalData: policy not found (${data?.policyTag})`);
         }
     }
 
@@ -371,18 +449,7 @@ export class PolicyComponentsUtils {
      * @param uuid
      */
     public static IfUUIDRegistered(uuid: string): boolean {
-        return PolicyComponentsUtils.BlockByUUIDMap.has(uuid);
-    }
-
-    /**
-     * Check if user role has permission for block
-     * @param uuid
-     * @param role
-     * @param user
-     */
-    public static IfHasPermission(uuid: string, role: PolicyRole, user: IAuthUser | null): boolean {
-        const block = PolicyComponentsUtils.BlockByUUIDMap.get(uuid);
-        return block.hasPermission(role, user);
+        return PolicyComponentsUtils.BlockByBlockId.has(uuid);
     }
 
     /**
@@ -390,7 +457,7 @@ export class PolicyComponentsUtils {
      * @param uuid
      */
     public static GetBlockByUUID<T extends (IPolicyInterfaceBlock | IPolicyBlock)>(uuid: string): T {
-        return PolicyComponentsUtils.BlockByUUIDMap.get(uuid) as T;
+        return PolicyComponentsUtils.BlockByBlockId.get(uuid) as T;
     }
 
     /**
@@ -398,15 +465,27 @@ export class PolicyComponentsUtils {
      * @param policyId
      * @param tag
      */
-    public static GetBlockByTag(policyId: string, tag: string): IPolicyBlock {
-        return PolicyComponentsUtils.BlockByUUIDMap.get(PolicyComponentsUtils.BlockUUIDByTagMap.get(policyId).get(tag));
+    public static GetBlockByTag<T extends (IPolicyInterfaceBlock | IPolicyBlock)>(policyId: string, tag: string): T {
+        const uuid = PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(tag);
+        return PolicyComponentsUtils.BlockByBlockId.get(uuid) as T;
+    }
+
+    /**
+     * Get block instance by tag
+     * @param policyId
+     */
+    public static GetPolicyInstance(policyId: string): IPolicyInstance {
+        if (!PolicyComponentsUtils.PolicyById.has(policyId)) {
+            throw new Error('The policy does not exist');
+        }
+        return PolicyComponentsUtils.PolicyById.get(policyId);
     }
 
     /**
      * Return block state fields
      * @param target
      */
-    public static GetStateFields(target): any {
+    public static GetStateFields(target: any): any {
         return target[STATE_KEY];
     }
 
@@ -434,114 +513,79 @@ export class PolicyComponentsUtils {
     }
 
     /**
-     * Check Permission
-     * @param block
+     * Get Policy Groups
+     * @param policy
      * @param user
-     * @param userRole
      */
-    public static CheckPermission(block: AnyBlockType, user: IAuthUser, userRole: PolicyRole): boolean {
-        if (block) {
-            return (block.isActive(user) && PolicyComponentsUtils.IfHasPermission(block.uuid, userRole, user));
-        } else {
-            return false;
-        }
+    public static async GetGroups(policy: IPolicyInstance, user: IPolicyUser): Promise<any[]> {
+        return await policy.databaseServer.getGroupsByUser(policy.policyId, user.did, {
+            fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active']
+        });
     }
 
     /**
-     * Check Permission Tree
-     * @param block
+     * Select Policy Group
+     * @param policy
      * @param user
-     * @param userRole
+     * @param uuid
      */
-    public static CheckPermissionTree(block: AnyBlockType, user: IAuthUser, userRole: PolicyRole): boolean {
-        if (PolicyComponentsUtils.CheckPermission(block, user, userRole)) {
-            if (block.parent) {
-                return PolicyComponentsUtils.CheckPermissionTree(block.parent, user, userRole);
-            } else {
-                return true;
+    public static async SelectGroup(policy: IPolicyInstance, user: IPolicyUser, uuid: string): Promise<void> {
+        await policy.databaseServer.setActiveGroup(policy.policyId, user.did, uuid);
+    }
+
+    /**
+     * Get Policy Full Info
+     * @param policy
+     * @param did
+     */
+    public static async GetPolicyInfo(policy: Policy, did: string): Promise<Policy> {
+        const result: any = policy;
+        if (policy && did) {
+            result.userRoles = [];
+            result.userGroups = [];
+            result.userRole = null;
+            result.userGroup = null;
+
+            const policyId = policy.id.toString();
+            if (policy.status === PolicyType.DRY_RUN) {
+                const activeUser = await DatabaseServer.getVirtualUser(policyId);
+                if (activeUser) {
+                    did = activeUser.did;
+                }
             }
+
+            if (policy.owner === did) {
+                result.userRoles.push('Administrator');
+                result.userRole = 'Administrator';
+            }
+
+            const dryRun = policy.status === PolicyType.DRY_RUN ? policyId : null;
+            const db = new DatabaseServer(dryRun);
+            const groups = await db.getGroupsByUser(policyId, did, {
+                fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active']
+            });
+            for (const group of groups) {
+                if (group.active !== false) {
+                    result.userRoles.push(group.role);
+                    result.userRole = group.role;
+                    result.userGroup = group;
+                }
+            }
+
+            result.userGroups = groups;
         } else {
-            return false;
-        }
-    }
-
-    /**
-     * Get User Role
-     * @param policyId
-     * @param user
-     */
-    public static async GetUserRole(policyId: string, user: IAuthUser): Promise<PolicyRole> {
-        const currentPolicy = await getMongoRepository(Policy).findOne(policyId);
-
-        if (user && currentPolicy && typeof currentPolicy.registeredUsers === 'object') {
-            return currentPolicy.registeredUsers[user.did];
+            result.userRoles = ['No role'];
+            result.userGroups = [];
+            result.userRole = 'No role';
+            result.userGroup = null;
         }
 
-        return null;
-    }
-
-    /**
-     * Set User Role
-     * @param policyId
-     * @param user
-     * @param role
-     */
-    public static async SetUserRole(policyId: string, user: IAuthUser, role: PolicyRole): Promise<Policy> {
-        const currentPolicy = await getMongoRepository(Policy).findOne(policyId);
-
-        if (typeof currentPolicy.registeredUsers !== 'object') {
-            currentPolicy.registeredUsers = {};
+        if (!result.userRole) {
+            result.userRoles = ['No role'];
+            result.userRole = 'No role';
         }
-
-        currentPolicy.registeredUsers[user?.did] = role;
-
-        const result = await getMongoRepository(Policy).save(currentPolicy);
 
         return result;
     }
 
-    /**
-     * Get User Role List
-     * @param policy
-     * @param did
-     */
-    public static GetUserRoleList(policy: Policy, did: string): PolicyRole[] {
-        const userRoles: string[] = [];
-        if (policy && did) {
-            if (policy.owner === did) {
-                userRoles.push('Administrator');
-            }
-            if (policy.registeredUsers && policy.registeredUsers[did]) {
-                userRoles.push(policy.registeredUsers[did]);
-            }
-        }
-        if (!userRoles.length) {
-            userRoles.push('The user does not have a role');
-        }
-        return userRoles;
-    }
-
-    /**
-     * Get User Role By Policy
-     * @param policy
-     * @param user
-     */
-    public static GetUserRoleByPolicy(policy: Policy, user: IAuthUser): PolicyRole {
-        if (user && policy && typeof policy.registeredUsers === 'object') {
-            return policy.registeredUsers[user.did];
-        }
-        return null;
-    }
-
-    /**
-     * Get All Registered Users
-     * @param policyId
-     */
-    public static async GetAllRegisteredUsers(policyId: string): Promise<[string, string][]> {
-        const policy = await getMongoRepository(Policy).findOne(policyId);
-        if (policy && typeof policy.registeredUsers === 'object') {
-            return Object.entries(policy.registeredUsers)
-        }
-        return [];
-    }
 }
