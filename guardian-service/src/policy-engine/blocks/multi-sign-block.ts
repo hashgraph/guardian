@@ -168,6 +168,13 @@ export class MultiSignBlock {
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
     }
 
+    /**
+     * Check threshold
+     * @param users
+     * @param sourceDoc
+     * @param documentId
+     * @param currentUser
+     */
     private async updateThreshold(
         users: PolicyRoles[],
         sourceDoc: VcDocumentCollection,
@@ -282,6 +289,10 @@ export class MultiSignBlock {
         return result;
     }
 
+    /**
+     * Remove User Event
+     * @param {IPolicyUser} user
+     */
     private async onRemoveUser(user: IPolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (user) {

@@ -964,7 +964,7 @@ export class DatabaseServer {
                 document: null,
                 userId: 'Group',
                 did: null,
-                group: group,
+                group,
                 username: null
             });
             await this.save(MultiDocuments, item);
