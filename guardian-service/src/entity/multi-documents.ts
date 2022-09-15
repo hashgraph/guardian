@@ -38,6 +38,12 @@ export class MultiDocuments extends BaseEntity {
     username?: string;
 
     /**
+     * group
+     */
+    @Property({ nullable: true })
+    group?: string;
+
+    /**
      * Created at
      */
     @Property()

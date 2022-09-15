@@ -218,7 +218,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public async beforeInit(): Promise<void> {
                 if (typeof super.beforeInit === 'function') {
-                    super.beforeInit();
+                    await super.beforeInit();
                 }
             }
 
@@ -229,7 +229,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 await this.restoreState();
 
                 if (typeof super.afterInit === 'function') {
-                    super.afterInit();
+                    await super.afterInit();
                 }
             }
 
@@ -659,6 +659,25 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             protected warn(message: string) {
                 this.logger.warn(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
+            }
+
+            /**
+             * Add Internal Event Listener
+             * @param type
+             * @protected
+             */
+            protected addInternalListener(type: string, callback: Function) {
+                PolicyComponentsUtils.AddInternalListener(type, this.policyId, callback);
+            }
+
+            /**
+             * Trigger Internal Event
+             * @param type
+             * @param data
+             * @protected
+             */
+            protected triggerInternalEvent(type: string, data: any) {
+                PolicyComponentsUtils.TriggerInternalEvent(type, this.policyId, data);
             }
         };
     };

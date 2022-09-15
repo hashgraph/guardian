@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApplicationStates } from '@guardian/interfaces';
-import { Observable, of } from 'rxjs';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 
 /**
@@ -14,11 +14,22 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 export class ServiceStatusComponent implements OnInit {
 
     servicesStates: any[] = [];
+    last?: any;
 
     constructor(
-        private wsService: WebSocketService
+        private wsService: WebSocketService,
+        private route: ActivatedRoute,
+        private router: Router
     ) {
         this.servicesStates = this.wsService.getServicesStatesArray();
+        this.last = this.route?.snapshot?.queryParams?.last;
+        try {
+            if (this.last) {
+                this.last = atob(this.last);
+            }
+        } catch (error) {
+            this.last = null;
+        }
     }
 
     getLoadingServices() {
@@ -33,5 +44,11 @@ export class ServiceStatusComponent implements OnInit {
         return serviceStates.map((item: any) => item.serviceName).join(', ');
     }
 
-    ngOnInit() { }
+    ngOnInit() {
+
+    }
+
+    onBack() {
+        window.location.href = this.last;
+    }
 }

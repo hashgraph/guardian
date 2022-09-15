@@ -11,6 +11,8 @@ import { VcHelper } from '@helpers/vc-helper';
 import { Inject } from '@helpers/decorators/inject';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { MessageAction, MessageServer, VcDocument, VPMessage } from '@hedera-modules';
+import { PolicyRoles } from '@entity/policy-roles';
+import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 
 /**
  * Sign Status
@@ -46,7 +48,7 @@ enum DocumentStatus {
         properties: [{
             name: 'threshold',
             label: 'Threshold (%)',
-            title: 'Threshold',
+            title: 'Number of signatures required to move to the next step, as a percentage of the total number of users in the group.',
             type: PropertyType.Input,
             default: '50'
         }]
@@ -59,6 +61,14 @@ export class MultiSignBlock {
      */
     @Inject()
     private readonly vcHelper: VcHelper;
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        ref.addInternalListener('remove-user', this.onRemoveUser.bind(this));
+    }
 
     /**
      * Join GET Data
@@ -111,32 +121,31 @@ export class MultiSignBlock {
      * @param blockData
      */
     async setData(user: IPolicyUser, blockData: any): Promise<any> {
-        console.log('11');
-
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const { status, document } = blockData;
         const documentId = document.id;
-        const vc = await ref.databaseServer.getVcDocument(documentId);
+        const sourceDoc = await ref.databaseServer.getVcDocument(documentId);
 
-        if (!vc) {
+        if (!sourceDoc) {
             throw new BlockActionError(`Invalid document`, ref.blockType, ref.uuid);
         }
 
-        const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);
         const confirmationStatus = await ref.databaseServer.getMultiSignStatus(ref.uuid, documentId);
-        console.log('1', confirmationStatus)
         if (confirmationStatus) {
-            throw new BlockActionError('The document has already been signed', ref.blockType, ref.uuid);
+            if (confirmationStatus.status !== DocumentStatus.NEW) {
+                throw new BlockActionError('The document has already been signed', ref.blockType, ref.uuid);
+            }
+        } else {
+            await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, user.group, DocumentStatus.NEW);
         }
         const documentStatus = await ref.databaseServer.getMultiSignStatus(ref.uuid, documentId, user.id);
-        console.log('2', documentStatus)
         if (documentStatus) {
             throw new BlockActionError('The document has already been signed', ref.blockType, ref.uuid);
         }
 
         const root = await PolicyUtils.getHederaAccount(ref, user.did);
         const groupContext = await PolicyUtils.getGroupContext(ref, user);
-        const vcDocument = vc.document;
+        const vcDocument = sourceDoc.document;
         const credentialSubject = vcDocument.credentialSubject[0];
         const newVC = await this.vcHelper.createVC(
             root.did,
@@ -153,7 +162,21 @@ export class MultiSignBlock {
             newVC.toJsonTree()
         );
 
-        const data = await ref.databaseServer.getMultiSignDocuments(ref.uuid, documentId);
+        const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);
+        await this.updateThreshold(users, sourceDoc, documentId, user);
+
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+    }
+
+    private async updateThreshold(
+        users: PolicyRoles[],
+        sourceDoc: VcDocumentCollection,
+        documentId: string,
+        currentUser: IPolicyUser
+    ) {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const data = await ref.databaseServer.getMultiSignDocuments(ref.uuid, documentId, currentUser.group);
+
         let signed = 0;
         let declined = 0;
         for (const u of data) {
@@ -166,37 +189,47 @@ export class MultiSignBlock {
 
         const signedThreshold = Math.ceil(users.length * ref.options.threshold / 100);
         const declinedThreshold = Math.ceil(users.length * (100 - ref.options.threshold) / 100);
+
         if (signed >= signedThreshold) {
+            const docOwner = PolicyUtils.getDocumentOwner(ref, sourceDoc);
+            const policyOwnerAccount = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+            const documentOwnerAccount = await PolicyUtils.getHederaAccount(ref, docOwner.did);
+
             const vcs = data.map(e => VcDocument.fromJsonTree(e.document));
             const vp = await this.vcHelper.createVP(
-                root.did,
-                root.hederaAccountKey,
+                policyOwnerAccount.did,
+                policyOwnerAccount.hederaAccountKey,
                 vcs,
                 GenerateUUIDv4()
             );
+
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
-            vpMessage.setRelationships(vc.messageId ? [vc.messageId] : []);
-            const topic = await PolicyUtils.getTopicById(ref, vc.topicId);
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
+            vpMessage.setRelationships(sourceDoc.messageId ? [sourceDoc.messageId] : []);
+            const topic = await PolicyUtils.getTopicById(ref, sourceDoc.topicId);
+            const messageServer = new MessageServer(
+                documentOwnerAccount.hederaAccountId,
+                documentOwnerAccount.hederaAccountKey,
+                ref.dryRun
+            );
+
             const vpMessageResult = await messageServer
                 .setTopicObject(topic)
                 .sendMessage(vpMessage);
             const vpMessageId = vpMessageResult.getId();
-            const vpDocument = PolicyUtils.createVP(ref, user, vp);
+            const vpDocument = PolicyUtils.createVP(ref, docOwner, vp);
             vpDocument.type = DataTypes.MULTI_SIGN;
             vpDocument.messageId = vpMessageId;
             vpDocument.topicId = vpMessageResult.getTopicId();
             await ref.databaseServer.saveVP(vpDocument);
 
-            await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, DocumentStatus.SIGNED);
-            ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, user, { data: vc });
-        } else if (declined > declinedThreshold) {
-            await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, DocumentStatus.DECLINED);
-            ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, user, { data: vc });
-        }
+            await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.SIGNED);
 
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+            ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, currentUser, { data: sourceDoc });
+        } else if (declined > declinedThreshold) {
+            await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.DECLINED);
+            ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, currentUser, { data: sourceDoc });
+        }
     }
 
     /**
@@ -207,14 +240,13 @@ export class MultiSignBlock {
     private async getDocumentStatus(document: IPolicyDocument, user: IPolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const confirmationDocument = await ref.databaseServer.getMultiSignStatus(ref.uuid, document.id);
-        const data: any[] = await ref.databaseServer.getMultiSignDocuments(ref.uuid, document.id);
+        const data: any[] = await ref.databaseServer.getMultiSignDocuments(ref.uuid, document.id, user.group);
         const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);
 
         let signed = 0;
         let declined = 0;
         let documentStatus = DocumentStatus.NEW;
         for (const u of data) {
-            console.log(u.userId, user.id)
             if (u.userId === user.id) {
                 documentStatus = u.status;
             }
@@ -226,7 +258,11 @@ export class MultiSignBlock {
             }
         }
 
-        const confirmationStatus = confirmationDocument ? confirmationDocument.status : null;
+        let confirmationStatus: string = null;
+        if (confirmationDocument && confirmationDocument.status !== DocumentStatus.NEW) {
+            confirmationStatus = confirmationDocument.status;
+        }
+
         const threshold = ref.options.threshold;
         const total = users.length;
         const result = {
@@ -244,6 +280,20 @@ export class MultiSignBlock {
         }
 
         return result;
+    }
+
+    private async onRemoveUser(user: IPolicyUser) {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        if (user) {
+            const users = await ref.databaseServer.getAllUsersByRole(ref.policyId, user.group, user.role);
+            const documents = await ref.databaseServer.getMultiSignDocumentsByGroup(ref.uuid, user.group);
+            for (const document of documents) {
+                const documentId = document.documentId;
+                const vc = await ref.databaseServer.getVcDocument(documentId);
+                await this.updateThreshold(users, vc, documentId, user);
+            }
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, null);
+        }
     }
 
     /**

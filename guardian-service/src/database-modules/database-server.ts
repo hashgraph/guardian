@@ -897,15 +897,35 @@ export class DatabaseServer {
      * Get MultiSign Statuses
      * @param uuid
      * @param documentId
+     * @param group
      *
      * @virtual
      */
-    public async getMultiSignDocuments(uuid: string, documentId: string): Promise<MultiDocuments[]> {
+    public async getMultiSignDocuments(uuid: string, documentId: string, group: string): Promise<MultiDocuments[]> {
         return await this.find(MultiDocuments, {
             where: {
                 uuid: { $eq: uuid },
                 documentId: { $eq: documentId },
+                group: { $eq: group },
                 userId: { $ne: 'Group' }
+            }
+        });
+    }
+
+    /**
+     * Get MultiSign Statuses by group
+     * @param uuid
+     * @param group
+     *
+     * @virtual
+     */
+    public async getMultiSignDocumentsByGroup(uuid: string, group: string): Promise<MultiDocuments[]> {
+        return await this.find(MultiDocuments, {
+            where: {
+                uuid: { $eq: uuid },
+                group: { $eq: group },
+                userId: { $eq: 'Group' },
+                status: { $eq: 'NEW' }
             }
         });
     }
@@ -914,22 +934,42 @@ export class DatabaseServer {
      * Set MultiSign Status by document
      * @param uuid
      * @param documentId
+     * @param group
      * @param status
      *
      * @virtual
      */
-    public async setMultiSigStatus(uuid: string, documentId: string, status: string): Promise<MultiDocuments> {
-        const doc = this.create(MultiDocuments, {
-            uuid,
-            documentId,
-            userId: 'Group',
-            did: null,
-            username: null,
-            status,
-            document: null
+    public async setMultiSigStatus(
+        uuid: string,
+        documentId: string,
+        group: string,
+        status: string
+    ): Promise<MultiDocuments> {
+        let item = await this.findOne(MultiDocuments, {
+            where: {
+                uuid: { $eq: uuid },
+                documentId: { $eq: documentId },
+                group: { $eq: group },
+                userId: { $eq: 'Group' }
+            }
         });
-        await this.save(MultiDocuments, doc);
-        return doc;
+        if (item) {
+            item.status = status;
+            await this.update(MultiDocuments, item.id, item);
+        } else {
+            item = this.create(MultiDocuments, {
+                uuid,
+                documentId,
+                status,
+                document: null,
+                userId: 'Group',
+                did: null,
+                group: group,
+                username: null
+            });
+            await this.save(MultiDocuments, item);
+        }
+        return item;
     }
 
     /**
@@ -956,6 +996,7 @@ export class DatabaseServer {
             document,
             userId: user.id,
             did: user.did,
+            group: user.group,
             username: user.username
         });
         await this.save(MultiDocuments, doc);

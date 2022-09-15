@@ -100,19 +100,7 @@
                 <mat-icon class="icon-link">add_link</mat-icon> Bind Group
             </td>
             <td class="propRowCell">
-                <mat-select [(value)]="field.bindGroup" [disabled]="readonly">
-                    <mat-select-trigger>
-                        <span class="custom">{{field?.bindGroup}}</span>
-                    </mat-select-trigger>
-                    <mat-option *ngFor="let item of allBlocks" [value]="item.value">
-                        <div class="block-name">
-                            <div class="block-icon">
-                                <mat-icon>{{item.icon}}</mat-icon>
-                            </div>
-                            {{item.name}}
-                        </div>
-                    </mat-option>
-                </mat-select>
+                <select-block [(value)]="field.bindGroup" [readonly]="readonly" [blocks]="allBlocks"></select-block>
             </td>
         </tr>
         <ng-container *ngIf="field.type=='button'">
@@ -141,21 +129,8 @@
                         Bind Block
                     </td>
                     <td class="propRowCell">
-                        <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
-                            <mat-select-trigger>
-                                <span class="custom">
-                                    {{field?.bindBlock}}
-                                </span>
-                            </mat-select-trigger>
-                            <mat-option *ngFor="let item of allBlocks" [value]="item.value">
-                                <div class="block-name">
-                                    <div class="block-icon">
-                                        <mat-icon>{{item.icon}}</mat-icon>
-                                    </div>
-                                    {{item.name}}
-                                </div>
-                            </mat-option>
-                        </mat-select>
+                        <select-block [(value)]="field.bindBlock" [readonly]="readonly" [blocks]="allBlocks">
+                        </select-block>
                     </td>
                 </tr>
             </ng-container>
@@ -190,21 +165,8 @@
                         Bind Block
                     </td>
                     <td class="propRowCell">
-                        <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
-                            <mat-select-trigger>
-                                <span class="custom">
-                                    {{field?.bindBlock}}
-                                </span>
-                            </mat-select-trigger>
-                            <mat-option *ngFor="let item of allBlocks" [value]="item.value">
-                                <div class="block-name">
-                                    <div class="block-icon">
-                                        <mat-icon>{{item.icon}}</mat-icon>
-                                    </div>
-                                    {{item.name}}
-                                </div>
-                            </mat-option>
-                        </mat-select>
+                        <select-block [(value)]="field.bindBlock" [readonly]="readonly" [blocks]="allBlocks">
+                        </select-block>
                     </td>
                 </tr>
             </ng-container>
@@ -219,19 +181,7 @@
                     Bind Block
                 </td>
                 <td class="propRowCell">
-                    <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
-                        <mat-select-trigger>
-                            <span class="custom">{{field?.bindBlock}}</span>
-                        </mat-select-trigger>
-                        <mat-option *ngFor="let item of allBlocks" [value]="item.value">
-                            <div class="block-name">
-                                <div class="block-icon">
-                                    <mat-icon>{{item.icon}}</mat-icon>
-                                </div>
-                                {{item.name}}
-                            </div>
-                        </mat-option>
-                    </mat-select>
+                    <select-block [(value)]="field.bindBlock" [readonly]="readonly" [blocks]="allBlocks"></select-block>
                 </td>
             </tr>
         </ng-container>

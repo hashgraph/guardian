@@ -328,6 +328,19 @@ export interface IPolicyBlock {
     joinData<T extends IPolicyDocument | IPolicyDocument[]>(
         data: T, user: IPolicyUser, parent: AnyBlockType
     ): Promise<T>;
+
+    /**
+     * Add Internal Event Listener
+     * @param type
+     */
+    addInternalListener(type: string, callback: Function): void;
+
+    /**
+     * Trigger Internal Event
+     * @param type
+     * @param data
+     */
+    triggerInternalEvent(type: string, data: any): void;
 }
 
 /**

@@ -70,6 +70,7 @@ import { InviteDialogComponent } from './helpers/invite-dialog/invite-dialog.com
 import { DocumentPath } from './helpers/document-path/document-path.component';
 import { CommonPropertyComponent } from './policy-configuration/common-property/common-property.component';
 import { MultiSignBlockComponent } from './policy-viewer/blocks/multi-sign-block/multi-sign-block.component';
+import { SelectBlock } from './helpers/select-block/select-block.component';
 
 @NgModule({
     declarations: [
@@ -134,7 +135,8 @@ import { MultiSignBlockComponent } from './policy-viewer/blocks/multi-sign-block
         InviteDialogComponent,
         DocumentPath,
         CommonPropertyComponent,
-        MultiSignBlockComponent
+        MultiSignBlockComponent,
+        SelectBlock
     ],
     imports: [
         CommonModule,

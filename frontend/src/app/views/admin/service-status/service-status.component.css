@@ -40,3 +40,13 @@
 .a, a:visited {
     color: blue;
 }
+
+.back {
+    color: rgb(0, 0, 238);
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 20px;
+    height: 20px;
+    padding: 6px;
+    margin-top: 20px;
+}
