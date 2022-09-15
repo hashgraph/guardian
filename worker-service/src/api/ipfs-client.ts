@@ -56,7 +56,7 @@ export class IpfsClient {
      * @param cid
      */
     public async getFile(cid: string): Promise<any> {
-        const fileRes = await axios.get(`${this.IPFS_PUBLIC_GATEWAY}/${cid}`, { responseType: 'arraybuffer', timeout: parseInt(process.env.IPFS_TIMEOUT, 10) / 1000 || 120000 });
+        const fileRes = await axios.get(`${this.IPFS_PUBLIC_GATEWAY}/${cid}`, { responseType: 'arraybuffer', timeout: parseInt(process.env.IPFS_TIMEOUT, 10) * 1000 || 120000 });
         return fileRes.data;
     }
 }
