@@ -43,6 +43,11 @@ export class DocumentsSourceBlockComponent implements OnInit {
     commonAddons: any[];
     paginationAddon: any;
     statusDetailed: any;
+    sortOptions: any = {
+        active: '',
+        direction: ''
+    };
+    enableSorting: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -125,6 +130,10 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.columns.unshift('history');
             this.documents = data.data || [];
             this.isActive = true;
+            const sortingField = this.fields.find(item => item.name === data.orderField);
+            this.sortOptions.active = sortingField && sortingField.index || '';
+            this.sortOptions.direction = data.orderDirection || '';
+            this.enableSorting = data.enableSorting;
             this.insert = data.insert;
             this.addons = data.blocks || [];
             this.commonAddons = data.commonAddons;
@@ -277,5 +286,16 @@ export class DocumentsSourceBlockComponent implements OnInit {
             console.error(e.error);
             this.loading = false;
         });
+    }
+
+    onSortChange(event: any) {
+        const field = this.fields.find(item => item.index === event.active);
+        if (!field || !field.name) {
+            return;
+        }
+        this.policyEngineService.setBlockData(this.id, this.policyId, {
+            orderField: field.name,
+            orderDirection: event.direction
+        }).subscribe();
     }
 }

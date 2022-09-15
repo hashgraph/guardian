@@ -79,6 +79,53 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
+             * Get global sources
+             * @param user
+             * @param paginationData
+             * @param countResult
+             * @protected
+             */
+             protected async getGlobalSourcesFilters(user: IPolicyUser) {
+                const dynFilters = [];
+                for (const child of this.children) {
+                    if (child.blockClassName === 'DataSourceAddon') {
+                        for (const [key, value] of Object.entries(await child.getFilters(user))) {
+                            dynFilters.push({ $eq: [value, `\$${key}`] });
+                        }
+                    }
+                }
+                return await this.getSourcesFilters(user, dynFilters);
+            }
+
+            /**
+             * Get sources filters
+             * @param user
+             * @param globalFilters
+             * @returns Sources filters
+             */
+            protected async getSourcesFilters(user: IPolicyUser, globalFilters: any): Promise<{
+                /**
+                 * Filters
+                 */
+                filters: any[],
+                /**
+                 * Data type
+                 */
+                dataType: number
+            }> {
+                const filters = [];
+                const sourceAddons = this.children.filter(c => c.blockClassName === 'SourceAddon');
+                for (const addon of sourceAddons) {
+                    const blockFilter = await addon.getFromSourceFilters(user, globalFilters, true);
+                    if (!blockFilter) {
+                        continue;
+                    }
+                    filters.push(blockFilter);
+                }
+                return {filters, dataType: sourceAddons[0].options.dataType};
+            }
+
+            /**
              * Get sources
              * @param user
              * @param globalFilters
