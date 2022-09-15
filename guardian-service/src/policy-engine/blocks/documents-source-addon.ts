@@ -257,6 +257,7 @@ export class DocumentsSourceAddon {
             filters.push(...globalFilters);
         }
 
+        this.prepareFilters(filters);
         const blockFilter: any = {
             $set: {
                 __sourceTag__: {
@@ -300,6 +301,44 @@ export class DocumentsSourceAddon {
         }
 
         return blockFilter;
+    }
+
+    /**
+     * Prepare arrays filters for aggregation
+     * @param filters Filters
+     */
+    private prepareFilters(filters: any[]) {
+        for (const filter of filters) {
+            const filterKey = Object.keys(filter)[0];
+            if (!filterKey) {
+                continue;
+            }
+
+            const filterValue = filter[filterKey];
+            if (Array.isArray(filterValue)) {
+                const fieldName = filterValue[1];
+                if (typeof fieldName !== 'string') {
+                    continue;
+                }
+
+                const fieldPathArray = fieldName.split('.');
+                const arrayIndexes = fieldPathArray.filter(item => Number.isInteger(+item));
+
+                if (!arrayIndexes.length) {
+                    continue;
+                }
+
+                const pathWithoutIndexes = fieldPathArray
+                    .filter(item => !arrayIndexes.includes(item))
+                    .join('.');
+                let newFilter: any = { $arrayElemAt: [pathWithoutIndexes, +arrayIndexes[0]] };
+                arrayIndexes.shift();
+                for (const arrayIndex of arrayIndexes) {
+                    newFilter = { $arrayElemAt: [newFilter, +arrayIndex] };
+                }
+                filterValue[1] = newFilter;
+            }
+        }
     }
 
     /**
