@@ -34,21 +34,21 @@ export class InterfaceDocumentsSource {
      * Block state field
      * @private
      */
-     @StateField()
-     private state;
+    @StateField()
+    private state;
 
-     constructor() {
-         if (!this.state) {
-             this.state = {};
-         }
-     }
+    constructor() {
+        if (!this.state) {
+            this.state = {};
+        }
+    }
 
     /**
      * Set block data
      * @param user
      * @param data
      */
-     public async setData(user: IPolicyUser, data: any): Promise<void> {
+    public async setData(user: IPolicyUser, data: any): Promise<void> {
         const oldState = this.state || {};
         oldState[user.id] = data;
         this.state = oldState;
@@ -94,9 +94,9 @@ export class InterfaceDocumentsSource {
         const sortState = this.state[user.id] || {};
         let data: any = ref.options.uiMetaData.enableSorting
             ? await this.getDataByAggregationFilters(ref, user, sortState, paginationData)
-            :await ref.getGlobalSources(user, paginationData);
+            : await ref.getGlobalSources(user, paginationData);
 
-	for (const child of ref.children) {
+        for (const child of ref.children) {
             data = await child.joinData(data, user, ref);
         }
 
@@ -159,7 +159,7 @@ export class InterfaceDocumentsSource {
 
         if (sortState.orderField && sortState.orderDirection) {
             const sortObject = {};
-            switch(sortState.orderDirection) {
+            switch (sortState.orderDirection) {
                 case 'asc':
                     sortObject[sortState.orderField] = 1;
                     break;
@@ -167,7 +167,7 @@ export class InterfaceDocumentsSource {
                     sortObject[sortState.orderField] = -1;
                     break;
                 default:
-                    sortObject[sortState.orderField]= 1;
+                    sortObject[sortState.orderField] = 1;
                     break;
             }
             aggregation.push({
@@ -179,9 +179,9 @@ export class InterfaceDocumentsSource {
             aggregation.push({
                 $skip: paginationData.itemsPerPage * paginationData.page
             },
-            {
-                $limit: paginationData.itemsPerPage
-            })
+                {
+                    $limit: paginationData.itemsPerPage
+                })
         }
 
         switch (filtersAndDataType.dataType) {

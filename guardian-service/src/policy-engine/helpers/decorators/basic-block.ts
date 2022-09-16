@@ -384,9 +384,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 const users: { [x: string]: IPolicyUser } = {};
                 if (!this.options.followUser) {
                     if (this.dryRun) {
-                        const user = await DatabaseServer.getVirtualUser(this.policyId);
-                        const group = await this.databaseServer.getActiveGroupByUser(this.policyId, user?.did);
-                        users[user?.did] = PolicyUser.create(group, !!this.dryRun);
+                        const virtualUser = await DatabaseServer.getVirtualUser(this.policyId);
+                        const group = await this.databaseServer.getActiveGroupByUser(this.policyId, virtualUser?.did);
+                        users[virtualUser?.did] = PolicyUser.create(group, !!this.dryRun);
                     } else {
                         const allUsers = await this.databaseServer.getAllPolicyUsers(this.policyId);
                         for (const userRole of allUsers) {

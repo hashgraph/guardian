@@ -287,6 +287,11 @@
 .grid-setting::ng-deep .readonly-prop {
     padding-left: 2px;
     color: rgba(0, 0, 0, .45);
+    max-width: 328px;
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .grid-setting::ng-deep .remove-prop {
