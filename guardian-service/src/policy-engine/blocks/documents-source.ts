@@ -209,7 +209,7 @@ export class InterfaceDocumentsSource {
                         }
                     }
                 }
-                if (ref.options.uiMetaData.enableOrder) {
+                if (ref.options.uiMetaData.enableSorting) {
                     const sourceAddons = ref.getCommonAddons().filter(addon => {
                         return addon.blockType === 'documentsSourceAddon';
                     });
