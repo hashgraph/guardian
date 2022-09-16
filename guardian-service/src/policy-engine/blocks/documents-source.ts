@@ -155,7 +155,7 @@ export class InterfaceDocumentsSource {
 
         if (sortState.orderField && sortState.orderDirection) {
             const sortObject = {};
-            switch(sortState.orderDirection) {
+            switch (sortState.orderDirection.toLowerCase()) {
                 case 'asc':
                     sortObject[sortState.orderField] = 1;
                     break;

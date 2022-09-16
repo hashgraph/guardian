@@ -133,7 +133,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.isActive = true;
             const sortingField = this.fields.find(item => item.name === data.orderField);
             this.sortOptions.active = sortingField && sortingField.index || '';
-            this.sortOptions.direction = data.orderDirection || '';
+            this.sortOptions.direction = data.orderDirection && data.orderDirection.toLowerCase() || '';
             this.enableSorting = data.enableSorting;
             this.insert = data.insert;
             this.addons = data.blocks || [];
