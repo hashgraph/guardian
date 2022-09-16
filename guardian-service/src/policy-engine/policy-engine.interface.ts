@@ -436,6 +436,21 @@ export interface IPolicySourceBlock extends IPolicyBlock {
     getChildFiltersAddons(): IPolicyBlock[];
 
     /**
+     * Get filters from sources
+     * @param user Policy user
+     */
+    getGlobalSourcesFilters(user: IPolicyUser): Promise<{
+        /**
+         * Sources filters
+         */
+        filters: any,
+        /**
+         * Source data type
+         */
+        dataType: string
+    }>;
+
+    /**
      * Get filter addons
      */
     getFiltersAddons(): IPolicyBlock[];

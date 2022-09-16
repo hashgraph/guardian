@@ -34,6 +34,19 @@ export function SourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
+             * Get filters from source
+             * @param user Policy user
+             * @param globalFilters Global filters
+             * @returns Filters
+             */
+            public getFromSourceFilters(user: IPolicyUser, globalFilters: any): any {
+                if (typeof super.getFromSourceFilters === 'function') {
+                    return super.getFromSourceFilters(user, globalFilters);
+                }
+                return null;
+            }
+
+            /**
              * Get addons
              * @protected
              */

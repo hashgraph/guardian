@@ -61,6 +61,14 @@ export class DatabaseServer {
     }
 
     /**
+     * Get Dry Run id
+     * @returns Dry Run id
+     */
+    public getDryRun(): string {
+        return this.dryRun;
+    }
+
+    /**
      * Clear Dry Run table
      */
     public async clearDryRun(): Promise<void> {
@@ -141,6 +149,20 @@ export class DatabaseServer {
             return (await new DataBaseHelper(DryRun).find(_filters, options)) as any;
         } else {
             return await new DataBaseHelper(entityClass).find(filters, options);
+        }
+    }
+
+    /**
+     * Find data by aggregation
+     * @param entityClass Entity class
+     * @param aggregation Aggragation filter
+     * @returns
+     */
+    private async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: any[]): Promise<T[]> {
+        if (this.dryRun) {
+            return await new DataBaseHelper(DryRun).aggregate(aggregation);
+        } else {
+            return await new DataBaseHelper(entityClass).aggregate(aggregation);
         }
     }
 
@@ -534,6 +556,52 @@ export class DatabaseServer {
      */
     public async getApprovalDocument(filters: any): Promise<ApprovalDocumentCollection> {
         return await this.findOne(ApprovalDocumentCollection, filters);
+    }
+
+    /**
+     * Get Vc Documents
+     * @param filters
+     * @param options
+     * @param countResult
+     * @virtual
+     */
+    public async getVcDocumentsByAggregation(aggregation: any[]): Promise<VcDocumentCollection[]> {
+        return await this.aggregate(VcDocumentCollection, aggregation);
+    }
+
+    /**
+     * Get Vp Documents
+     * @param filters
+     *
+     * @param options
+     * @param countResult
+     * @virtual
+     */
+    public async getVpDocumentsByAggregation(aggregation: any[]): Promise<VpDocumentCollection[]> {
+        return await this.aggregate(VpDocumentCollection, aggregation);
+    }
+
+    /**
+     * Get Did Documents
+     * @param filters
+     *
+     * @param options
+     * @param countResult
+     * @virtual
+     */
+    public async getDidDocumentsByAggregation(aggregation: any[]): Promise<DidDocumentCollection[]> {
+        return await this.aggregate(DidDocumentCollection, aggregation);
+    }
+
+    /**
+     * Get Approval Documents
+     * @param filters
+     * @param countResult
+     * @param options
+     * @virtual
+     */
+    public async getApprovalDocumentsByAggregation(aggregation: any[]): Promise<ApprovalDocumentCollection[]> {
+        return await this.aggregate(ApprovalDocumentCollection, aggregation);
     }
 
     /**
