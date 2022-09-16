@@ -1,0 +1,13 @@
+<mat-select [(value)]="value" [disabled]="readonly">
+    <mat-select-trigger>
+        <span class="custom">{{value}}</span>
+    </mat-select-trigger>
+    <mat-option *ngFor="let item of data" [value]="item.value" (onSelectionChange)="onChange()">
+        <div class="block-name">
+            <div class="block-icon">
+                <mat-icon>{{item.icon}}</mat-icon>
+            </div>
+            {{item.name}}
+        </div>
+    </mat-option>
+</mat-select>

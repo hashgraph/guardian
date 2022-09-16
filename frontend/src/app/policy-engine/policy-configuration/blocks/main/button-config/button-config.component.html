@@ -44,7 +44,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Button Tag</td>
                 <td class="propRowCell">
-                    <input [(ngModel)]="button.tag" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="button.tag" [readonly]="readonly">
                 </td>
             </tr>
             <ng-template [ngIf]="button.type === 'selector-dialog'">
@@ -53,7 +53,7 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Dialog Title</td>
                     <td class="propRowCell">
-                        <input [(ngModel)]="button.title" [readonly]="readonly">
+                        <input class="prop-input" [(ngModel)]="button.title" [readonly]="readonly">
                     </td>
                 </tr>
                 <tr class="propRow subRow-2"
@@ -61,7 +61,7 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Dialog Description</td>
                     <td class="propRowCell">
-                        <input [(ngModel)]="button.description" [readonly]="readonly">
+                        <input class="prop-input" [(ngModel)]="button.description" [readonly]="readonly">
                     </td>
                 </tr>
             </ng-template>
@@ -70,7 +70,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Button Name</td>
                 <td class="propRowCell">
-                    <input [(ngModel)]="button.name" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="button.name" [readonly]="readonly">
                 </td>
             </tr>
             <tr class="propRow subRow-2" [attr.collapse]="propHidden.metaData">
@@ -85,7 +85,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Value</td>
                 <td class="propRowCell">
-                    <input [(ngModel)]="button.value" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="button.value" [readonly]="readonly">
                 </td>
             </tr>
             <tr class="propRow subRow-2"
@@ -93,7 +93,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">UI Class</td>
                 <td class="propRowCell">
-                    <input [(ngModel)]="button.uiClass" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="button.uiClass" [readonly]="readonly">
                 </td>
             </tr>
 
@@ -153,7 +153,7 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Value</td>
                     <td class="propRowCell">
-                        <input [(ngModel)]="filter.value" [readonly]="readonly">
+                        <input class="prop-input" [(ngModel)]="filter.value" [readonly]="readonly">
                     </td>
                 </tr>
             </ng-container>

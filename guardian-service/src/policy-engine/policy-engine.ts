@@ -94,6 +94,8 @@ export class PolicyEngine {
             } else {
                 throw new Error(`Forbidden`);
             }
+        } else {
+            userFull.setUsername(regUser.username);
         }
         const groups = await policy.databaseServer.getGroupsByUser(policy.policyId, userFull.did);
         for (const group of groups) {

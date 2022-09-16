@@ -20,7 +20,8 @@ export enum DataTypes {
     REPORT = 'report',
     MINT = 'mint',
     RETIREMENT = 'retirement',
-    USER_ROLE = 'user-role'
+    USER_ROLE = 'user-role',
+    MULTI_SIGN = 'MULTI_SIGN'
 }
 
 /**

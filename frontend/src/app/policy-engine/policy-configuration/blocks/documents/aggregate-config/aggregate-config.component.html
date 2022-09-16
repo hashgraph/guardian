@@ -24,7 +24,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Empty Data</td>
             <td class="propRowCell">
-                <input type="checkbox" [(ngModel)]="block.emptyData" [readonly]="readonly">
+                <input class="prop-input" type="checkbox" [(ngModel)]="block.emptyData" [readonly]="readonly">
             </td>
         </tr>
     </ng-container>
@@ -66,7 +66,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Variable Name</td>
                 <td class="propRowCell">
-                    <input [(ngModel)]="expression.name" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="expression.name" [readonly]="readonly">
                 </td>
             </tr>
             <tr class="propRow subRow"
@@ -74,7 +74,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Variable Value</td>
                 <td class="propRowCell">
-                    <input [(ngModel)]="expression.value" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="expression.value" [readonly]="readonly">
                 </td>
             </tr>
         </ng-container>
@@ -83,7 +83,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Condition</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.condition" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="block.condition" [readonly]="readonly">
             </td>
         </tr>
     </ng-container>

@@ -1,0 +1,87 @@
+<div *ngIf="loading" class="loading">
+    <mat-spinner></mat-spinner>
+</div>
+
+<div class="content">
+    <div *ngIf="confirmationStatus">
+        <div class="status status-{{confirmationStatus}}" [matMenuTriggerFor]="menu1">
+            {{confirmationStatus}}
+        </div>
+        <mat-menu #menu1="matMenu">
+            <div (click)="onClickMenu($event)">
+                <div *ngFor="let doc of documents" class="documents">
+                    <div class="doc-did" [title]="doc.did">{{doc.username}}</div>
+                    <div class="doc-status status-{{doc.status}}">{{doc.status}}</div>
+                </div>
+            </div>
+        </mat-menu>
+    </div>
+    <div *ngIf="!confirmationStatus && documentStatus === 'NEW'">
+        <div class="btn-option btn-SIGN" (click)="onSelect('SIGNED')">
+            Sign
+        </div>
+        <div class="btn-option btn-DECLINE" (click)="onSelect('DECLINED')">
+            Decline
+        </div>
+    </div>
+    <div *ngIf="!confirmationStatus && documentStatus !== 'NEW'">
+        <div class="progress-container" 
+            matTooltip="Click here to see more details" 
+            matTooltipPosition="above" 
+            matTooltipClass="helpText"
+            (click)="onDetails()" 
+            [matMenuTriggerFor]="menu2"
+        >
+            <div class="progress">
+                <div class="signed" [style.width.%]="signed">
+                    <span *ngIf="signed>12" class="p-value">{{signedCount}}</span>
+                </div>
+                <div class="declined" [style.width.%]="declined">
+                    <span *ngIf="declined>12" class="p-value">{{declinedCount}}</span>
+                </div>
+                <div class="threshold" [style.left.%]="threshold"></div>
+            </div>
+            <div class="icon-details">
+                <mat-icon>info_outline</mat-icon>
+            </div>
+        </div>
+        <mat-menu #menu2="matMenu">
+            <div (click)="onClickMenu($event)">
+                <div>
+                    <div class="details">Required number of signatures</div>
+                    <div class="result">
+                        <div class="result-status status-SIGNED">Signed:</div>
+                        <div class="result-progress">
+                            <div>0</div>
+                            <div class="result-progress-bar">
+                                <div class="result-progress-signed" [style.width.%]="signedCount/signedMax*100">
+                                    {{signedCount}}
+                                </div>
+                            </div>
+                            <div>{{signedMax}}</div>
+                        </div>
+                    </div>
+                    <div class="result">
+                        <div class="result-status status-DECLINED">Declined:</div>
+                        <div class="result-progress">
+                            <div>0</div>
+                            <div class="result-progress-bar">
+                                <div class="result-progress-declined" [style.width.%]="declinedCount/declinedMax*100">
+                                    {{declinedCount}}
+                                </div>
+                            </div>
+                            <div>{{declinedMax}}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="details">Details</div>
+                <div style="max-height: 150px;overflow: auto">
+                    <div *ngFor="let doc of documents" class="documents">
+                        <div class="doc-did" [title]="doc.did">{{doc.username}}</div>
+                        <div class="doc-status status-{{doc.status}}">{{doc.status}}</div>
+                    </div>
+                </div>
+            </div>
+        </mat-menu>
+    </div>
+</div>
