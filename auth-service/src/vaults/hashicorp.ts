@@ -48,7 +48,11 @@ export class HashicorpVault implements IVault{
     public async init(): Promise<IVault> {
         const {initialized} = await this.vault.initialized();
         if (!initialized) {
-            await this.vault.init({ secret_shares: 1, secret_threshold: 1 });
+            const {keys, root_token} = await this.vault.init({ secret_shares: 1, secret_threshold: 1 });
+            this.vault.token = root_token;
+            console.info('Root Token', root_token);
+            this.vault.unseal({ secret_shares: 1, key: keys[0] });
+
         }
 
         return this;
