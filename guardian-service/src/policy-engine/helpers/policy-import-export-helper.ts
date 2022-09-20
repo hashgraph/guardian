@@ -155,7 +155,7 @@ export class PolicyImportExportHelper {
         delete policy.version;
         delete policy.previousVersion;
         delete policy.createDate;
-        
+
         policy.policyTag = additionalPolicyConfig?.policyTag || 'Tag_' + Date.now();
         policy.uuid = GenerateUUIDv4();
         policy.creator = policyOwner;
