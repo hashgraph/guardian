@@ -19,7 +19,7 @@ describe('Tests', async function () {
         this.timeout(10000000000);
         const pathArray = [
             [path.resolve(path.join('..', 'logger-service')), {}],
-            [path.resolve(path.join('..', 'worker-service')), {}],
+            [path.resolve(path.join('..', 'worker-service')), {IPFS_STORAGE_API_KEY: process.env.IPFS_STORAGE_API_KEY}],
             [path.resolve(path.join('..', 'auth-service')), {}],
             [path.resolve(path.join('..', 'ipfs-client')), {IPFS_STORAGE_API_KEY: process.env.IPFS_STORAGE_API_KEY}],
             [path.resolve(path.join('..', 'guardian-service')), {OPERATOR_ID: process.env.OPERATOR_ID, OPERATOR_KEY: process.env.OPERATOR_KEY}],
