@@ -1,6 +1,5 @@
 import { IVault } from './vault.interface';
 
-
 /**
  * Vault service factory
  * @param constructor Vault service constructor

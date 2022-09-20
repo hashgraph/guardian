@@ -4,7 +4,7 @@ import {
     MessageError,
     Logger,
 } from '@guardian/common';
-import { WalletEvents, IGetKeyMessage, ISetKeyMessage, IWalletAccount, IGetKeyResponse } from '@guardian/interfaces';
+import { WalletEvents, IGetKeyMessage, ISetKeyMessage, IGetKeyResponse } from '@guardian/interfaces';
 import { IVault } from '../vaults';
 
 /**

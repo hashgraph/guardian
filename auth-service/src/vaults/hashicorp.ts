@@ -11,7 +11,7 @@ export class HashicorpVault implements IVault{
      * Vault options
      * @private
      */
-    private options: NodeVault.VaultOptions = {
+    private readonly options: NodeVault.VaultOptions = {
         apiVersion: 'v1',
         endpoint: process.env.HASHICORP_ADDRESS,
         token: process.env.HASHICORP_TOKEN,
