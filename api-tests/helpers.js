@@ -5,6 +5,11 @@ let tokens = [
 ];
 
 async function GenerateTokens() {
+    console.log({HASHICORP_ADDRESS: `http://localhost:${process.env.HASHICORP_PORT}`});
+    const r = await axios.get(`http://localhost:${process.env.HASHICORP_PORT}`);
+    console.log(r);
+
+
     tokens = [];
     let result;
     result = await axios.post(
