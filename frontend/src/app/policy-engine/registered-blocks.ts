@@ -245,7 +245,9 @@ export class RegisteredBlocks {
             header: BlockHeaders.UIComponents,
             factory: DocumentsSourceBlockComponent,
             property: DocumentSourceComponent,
-            allowedChildren: allowedChildrenStepContainerBlocks
+            allowedChildren: [...allowedChildrenStepContainerBlocks, {
+                type: BlockType.PaginationAddon
+            }]
         });
         this.registerBlock({
             type: BlockType.Request,
@@ -270,7 +272,7 @@ export class RegisteredBlocks {
             factory: MultiSignBlockComponent,
             property: null,
         });
-        
+
         // Documents, Server Blocks
         this.registerBlock({
             type: BlockType.SendToGuardian,

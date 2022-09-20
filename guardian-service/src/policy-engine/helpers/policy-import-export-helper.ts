@@ -43,6 +43,7 @@ export class PolicyImportExportHelper {
         delete policyObject.messageId;
         delete policyObject.status;
         delete policyObject.topicId;
+        delete policyObject.createDate;
 
         const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
 
@@ -153,6 +154,8 @@ export class PolicyImportExportHelper {
         delete policy.messageId;
         delete policy.version;
         delete policy.previousVersion;
+        delete policy.createDate;
+        
         policy.policyTag = additionalPolicyConfig?.policyTag || 'Tag_' + Date.now();
         policy.uuid = GenerateUUIDv4();
         policy.creator = policyOwner;

@@ -794,13 +794,14 @@ export class PolicyUtils {
                     }
                 });
             } else if (typeof (refId) === 'object') {
-                if (refId.id) {
-                    documentRef = await ref.databaseServer.getVcDocument(refId.id);
+                const objectId = refId.id || refId._id;
+                if (objectId) {
+                    documentRef = await ref.databaseServer.getVcDocument(objectId);
                     if (documentRef && documentRef.policyId !== policyId) {
                         documentRef = null;
                     }
                 } else {
-                    const id = PolicyUtils.getSubjectId(documentRef);
+                    const id = PolicyUtils.getSubjectId(refId);
                     documentRef = await ref.databaseServer.getVcDocument({
                         where: {
                             'policyId': { $eq: policyId },
