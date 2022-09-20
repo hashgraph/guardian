@@ -77,7 +77,7 @@ jobs:
           OPERATOR_KEY: ${{ secrets.OPERATOR_KEY }}
           IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
           HASHICORP_HOST: hashicorpvault
-          HASHICORP_PORT: ${{ job.services.vault.ports[8200] }}
+          HASHICORP_PORT: ${{ job.services.hashicorpvault.ports[8200] }}
       - name: Publish API Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
