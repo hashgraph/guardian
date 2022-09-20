@@ -7,6 +7,14 @@ jobs:
       matrix:
         node-version: [16.x]
         mongodb-version: [4.4]
+    services:
+      vault:
+        image: vault
+        env:
+          VAULT_SERVER: "http://0.0.0.0:8200"
+          VAULT_DEV_ROOT_TOKEN_ID: "1234"
+        ports:
+          - 8200:8200
     steps:
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
