@@ -558,9 +558,7 @@ export class DatabaseServer {
 
     /**
      * Get Vc Documents
-     * @param filters
-     * @param options
-     * @param countResult
+     * @param aggregation
      * @virtual
      */
     public async getVcDocumentsByAggregation(aggregation: any[]): Promise<VcDocumentCollection[]> {
@@ -569,10 +567,7 @@ export class DatabaseServer {
 
     /**
      * Get Vp Documents
-     * @param filters
-     *
-     * @param options
-     * @param countResult
+     * @param aggregation
      * @virtual
      */
     public async getVpDocumentsByAggregation(aggregation: any[]): Promise<VpDocumentCollection[]> {
@@ -581,10 +576,7 @@ export class DatabaseServer {
 
     /**
      * Get Did Documents
-     * @param filters
-     *
-     * @param options
-     * @param countResult
+     * @param aggregation
      * @virtual
      */
     public async getDidDocumentsByAggregation(aggregation: any[]): Promise<DidDocumentCollection[]> {
@@ -593,9 +585,7 @@ export class DatabaseServer {
 
     /**
      * Get Approval Documents
-     * @param filters
-     * @param countResult
-     * @param options
+     * @param aggregation
      * @virtual
      */
     public async getApprovalDocumentsByAggregation(aggregation: any[]): Promise<ApprovalDocumentCollection[]> {

@@ -251,7 +251,7 @@ export class Worker {
 
         this.currentTaskId = task.id;
 
-        this.logger.info(`Task started: ${this.currentTaskId}`, [this._channelName]);
+        this.logger.info(`Task started: ${task.id}, ${task.type}`, [this._channelName]);
 
         const result = await this.processTaskWithTimeout(task);
 
