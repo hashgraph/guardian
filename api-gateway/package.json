@@ -8,8 +8,8 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.4.1",
-    "@guardian/interfaces": "^2.4.1",
+    "@guardian/common": "^2.4.2",
+    "@guardian/interfaces": "^2.4.2",
     "dotenv": "^16.0.0",
     "express": "^4.17.1",
     "jszip": "^3.7.1",
@@ -49,5 +49,5 @@
     "start": "node dist/index.js",
     "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
   },
-  "version": "2.4.1"
+  "version": "2.4.2"
 }

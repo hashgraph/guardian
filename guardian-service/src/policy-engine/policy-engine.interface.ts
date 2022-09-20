@@ -413,6 +413,21 @@ export interface IPolicySourceBlock extends IPolicyBlock {
     getChildFiltersAddons(): IPolicyBlock[];
 
     /**
+     * Get filters from sources
+     * @param user Policy user
+     */
+    getGlobalSourcesFilters(user: IPolicyUser): Promise<{
+        /**
+         * Sources filters
+         */
+        filters: any,
+        /**
+         * Source data type
+         */
+        dataType: string
+    }>;
+
+    /**
      * Get filter addons
      */
     getFiltersAddons(): IPolicyBlock[];
@@ -422,15 +437,17 @@ export interface IPolicySourceBlock extends IPolicyBlock {
      * @param user
      * @param globalFilters
      * @param paginationData
+     * @param countResult
      */
-    getSources(user: IPolicyUser, globalFilters: any, paginationData: any): Promise<any[]>;
+    getSources(user: IPolicyUser, globalFilters: any, paginationData: any, countResult?: boolean): Promise<any[] | number>;
 
     /**
      * Get global sources
      * @param user
      * @param paginationData
+     * @param countResult
      */
-    getGlobalSources(user: IPolicyUser, paginationData: any): Promise<any[]>;
+    getGlobalSources(user: IPolicyUser, paginationData: any, countResult?: boolean): Promise<any[] | number>;
 
     /**
      * Get common addons
@@ -473,8 +490,10 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * Get from source
      * @param user
      * @param globalFilters
+     * @param countResult
+     * @param otherOptions
      */
-    getFromSource(user: IPolicyUser, globalFilters: any): any;
+    getFromSource(user: IPolicyUser, globalFilters: any, countResult?: boolean, otherOptions?: any): any;
 
     /**
      * Get filters

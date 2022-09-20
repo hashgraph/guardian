@@ -23,12 +23,27 @@ export function SourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * Get from source
              * @param user
              * @param globalFilters
+             * @param countResult
+             * @param otherOptions
              */
-            public getFromSource(user: IPolicyUser, globalFilters: any): any[] {
+            public getFromSource(user: IPolicyUser, globalFilters: any, countResult?: boolean, otherOptions?: any): any[] | number {
                 if (typeof super.getFromSource === 'function') {
-                    return super.getFromSource(user, globalFilters);
+                    return super.getFromSource(user, globalFilters, countResult, otherOptions);
                 }
-                return [];
+                return (countResult) ? 0 : [];
+            }
+
+            /**
+             * Get filters from source
+             * @param user Policy user
+             * @param globalFilters Global filters
+             * @returns Filters
+             */
+            public getFromSourceFilters(user: IPolicyUser, globalFilters: any): any {
+                if (typeof super.getFromSourceFilters === 'function') {
+                    return super.getFromSourceFilters(user, globalFilters);
+                }
+                return null;
             }
 
             /**

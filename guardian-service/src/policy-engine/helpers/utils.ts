@@ -762,11 +762,14 @@ export class PolicyUtils {
     /**
      * Get all standard registry accounts
      */
-    public static async getAllStandardRegistryAccounts(ref: AnyBlockType): Promise<any[]> {
+    public static async getAllStandardRegistryAccounts(ref: AnyBlockType, countResult: boolean): Promise<any[] | number> {
         if (ref.dryRun) {
-            return [];
+            return (countResult) ? 0 : [];
         } else {
-            return await PolicyUtils.users.getAllStandardRegistryAccounts() as any[];
+            if (countResult) {
+                return (await PolicyUtils.users.getAllStandardRegistryAccounts()).length;
+            }
+            return await PolicyUtils.users.getAllStandardRegistryAccounts() as any;
         }
     }
 
@@ -790,13 +793,14 @@ export class PolicyUtils {
                     }
                 });
             } else if (typeof (refId) === 'object') {
-                if (refId.id) {
-                    documentRef = await ref.databaseServer.getVcDocument(refId.id);
+                const objectId = refId.id || refId._id;
+                if (objectId) {
+                    documentRef = await ref.databaseServer.getVcDocument(objectId);
                     if (documentRef && documentRef.policyId !== policyId) {
                         documentRef = null;
                     }
                 } else {
-                    const id = PolicyUtils.getSubjectId(documentRef);
+                    const id = PolicyUtils.getSubjectId(refId);
                     documentRef = await ref.databaseServer.getVcDocument({
                         where: {
                             'policyId': { $eq: policyId },

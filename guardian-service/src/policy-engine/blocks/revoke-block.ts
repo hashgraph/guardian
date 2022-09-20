@@ -111,9 +111,9 @@ export class RevokeBlock {
                 messageId: 'ASC'
             }
         }
-        const vcDocuments: any[] = await ref.databaseServer.getVcDocuments(filters, otherOptions);
-        const vpDocuments: any[] = await ref.databaseServer.getVpDocuments(filters, otherOptions);
-        const didDocuments: any[] = await ref.databaseServer.getDidDocuments(filters, otherOptions);
+        const vcDocuments: any[] = await ref.databaseServer.getVcDocuments(filters, otherOptions) as any[];
+        const vpDocuments: any[] = await ref.databaseServer.getVpDocuments(filters, otherOptions) as any[];
+        const didDocuments: any[] = await ref.databaseServer.getDidDocuments(filters, otherOptions) as any[];
         return vcDocuments.concat(vpDocuments).concat(didDocuments);
     }
 

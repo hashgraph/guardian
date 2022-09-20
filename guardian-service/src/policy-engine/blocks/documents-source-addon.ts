@@ -1,4 +1,4 @@
-import { SourceAddon } from '@policy-engine/helpers/decorators';
+import { SourceAddon, StateField } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
@@ -26,11 +26,40 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 })
 export class DocumentsSourceAddon {
     /**
+     * Block state field
+     * @private
+     */
+     @StateField()
+     private state;
+
+     constructor() {
+         if (!this.state) {
+             this.state = {};
+         }
+     }
+
+    /**
+     * Set block data
+     * @param user
+     * @param data
+     */
+    public async setData(user: IPolicyUser, data: any): Promise<void> {
+        const oldState = this.state || {};
+        oldState[user.id] = data;
+        this.state = oldState;
+
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag);
+    }
+
+    /**
      * Get data from source
      * @param user
      * @param globalFilters
+     * @param countResult
+     * @param otherOptions
      */
-    async getFromSource(user: IPolicyUser, globalFilters: any) {
+    async getFromSource(user: IPolicyUser, globalFilters: any, countResult?: boolean, otherOptions?: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const filters: any = {};
@@ -91,66 +120,225 @@ export class DocumentsSourceAddon {
             Object.assign(filters, globalFilters);
         }
 
-        const otherOptions: any = {};
-        if (ref.options.orderDirection) {
+        if (!otherOptions) {
+            otherOptions = {};
+        }
+
+        const stateData = this.state[user.id];
+        if (stateData && stateData.orderDirection) {
+            otherOptions.orderBy = {};
+            if (stateData.orderField) {
+                otherOptions.orderBy[stateData.orderField] = stateData.orderDirection;
+            } else {
+                otherOptions.orderBy.createDate = stateData.orderDirection;
+            }
+        } else if (ref.options.orderDirection) {
             otherOptions.orderBy = {};
             if (ref.options.orderField) {
-                otherOptions.orderBy[ref.options.orderField] = ref.options.createdOrderDirection;
+                otherOptions.orderBy[ref.options.orderField] = ref.options.orderDirection;
             } else {
-                otherOptions.orderBy.createDate = ref.options.createdOrderDirection;
+                otherOptions.orderBy.createDate = ref.options.orderDirection;
             }
         }
 
-        let data: IPolicyDocument[];
+        let data: IPolicyDocument[] | number;
         switch (ref.options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
-                data = await ref.databaseServer.getVcDocuments(filters, otherOptions);
+                data = await ref.databaseServer.getVcDocuments(filters, otherOptions, countResult);
                 break;
             case 'did-documents':
-                data = await ref.databaseServer.getDidDocuments(filters, otherOptions);
+                data = await ref.databaseServer.getDidDocuments(filters, otherOptions, countResult);
                 break;
             case 'vp-documents':
                 filters.policyId = ref.policyId;
-                data = await ref.databaseServer.getVpDocuments(filters, otherOptions);
+                data = await ref.databaseServer.getVpDocuments(filters, otherOptions, countResult);
                 break;
             case 'standard-registries':
-                data = await PolicyUtils.getAllStandardRegistryAccounts(ref);
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult);
                 break;
             case 'approve':
                 filters.policyId = ref.policyId;
-                data = await ref.databaseServer.getApprovalDocuments(filters, otherOptions);
+                data = await ref.databaseServer.getApprovalDocuments(filters, otherOptions, countResult);
                 break;
             case 'source':
-                data = [];
+                data = (countResult) ? [] : 0;
                 break;
             // @deprecated 2022-10-01
             case 'root-authorities':
-                data = await PolicyUtils.getAllStandardRegistryAccounts(ref);
+                data = await PolicyUtils.getAllStandardRegistryAccounts(ref, countResult);
                 break;
             default:
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
 
-        for (const dataItem of data) {
-            if (ref.options.viewHistory) {
+        if(!countResult) {
+            for (const dataItem of data as IPolicyDocument[]) {
+                if (ref.options.viewHistory) {
 
-                dataItem.history = (await ref.databaseServer.getDocumentStates({
-                    documentId: dataItem.id
-                }, {
-                    orderBy: { 'created': 'DESC' }
-                })).map(item => {
-                    return {
-                        status: item.status,
-                        created: new Date(item.created).toLocaleString(),
-                        reason: item.reason
-                    }
-                });
+                    dataItem.history = (await ref.databaseServer.getDocumentStates({
+                        documentId: dataItem.id
+                    }, {
+                        orderBy: {'created': 'DESC'}
+                    })).map(item => {
+                        return {
+                            status: item.status,
+                            created: new Date(item.created).toLocaleString(),
+                            reason: item.reason
+                        }
+                    });
+                }
+                dataItem.__sourceTag__ = ref.tag;
             }
-            dataItem.__sourceTag__ = ref.tag;
         }
 
         return data;
+    }
+
+    /**
+     * Get filters from source
+     * @param user Policy user
+     * @param globalFilters Global filters
+     * @returns Aggregation filter
+     */
+    async getFromSourceFilters(user: IPolicyUser, globalFilters: any) {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+
+        const filters: any = [];
+        if (!Array.isArray(ref.options.filters)) {
+            throw new BlockActionError('filters option must be an array', ref.blockType, ref.uuid);
+        }
+
+        if (ref.options.onlyOwnDocuments) {
+            filters.push({ $eq: [user.did, '$owner'] });
+        }
+        if (ref.options.onlyOwnByGroupDocuments) {
+            filters.push({ $eq: [user.group, '$group'] });
+        }
+        if (ref.options.onlyAssignDocuments) {
+            filters.push({ $eq: [user.did, '$assignedTo'] });
+        }
+        if (ref.options.onlyAssignByGroupDocuments) {
+            filters.push({ $eq: [user.group, '$assignedToGroup'] });
+        }
+
+        if (ref.options.schema) {
+            filters.push({ $eq: [ref.options.schema, '$schema'] });
+        }
+
+        for (const filter of ref.options.filters) {
+            switch (filter.type) {
+                case 'equal':
+                    filters.push({ $eq: [filter.value, `\$${filter.field}`] });
+                    break;
+
+                case 'not_equal':
+                    filters.push({ $ne: [filter.value, `\$${filter.field}`] });
+                    break;
+
+                case 'in':
+                    filters.push({ $in: [`\$${filter.field}`, filter.value.split(',')] });
+                    break;
+
+                case 'not_in':
+                    filters.push({ $nin: [`\$${filter.field}`, filter.value.split(',')] });
+                    break;
+
+                default:
+                    throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
+            }
+        }
+
+        for (const [key, value] of Object.entries(await ref.getFilters(user))) {
+            filters.push({ $eq: [value, `\$${key}`] });
+        }
+
+        if (globalFilters) {
+            filters.push(...globalFilters);
+        }
+
+        this.prepareFilters(filters);
+        const blockFilter: any = {
+            $set: {
+                __sourceTag__: {
+                    $cond: {
+                        if: {
+                            $and: [
+                                ...filters,
+                                {
+                                    $or: [
+                                        { $eq: [null, '$__sourceTag__'] },
+                                        { $not: '$__sourceTag__' }
+                                    ]
+                                }
+                            ]
+                        },
+                        then: ref.tag,
+                        else: '$__sourceTag__'
+                    }
+                }
+            }
+        };
+
+        if (ref.options.viewHistory) {
+            blockFilter.$set.historyDocumentId = {
+                $cond: {
+                    if: {
+                        '$and': [
+                            ...filters,
+                            {
+                                $or: [
+                                    { $eq: [null, '$historyDocumentId'] },
+                                    { $not: '$historyDocumentId' }
+                                ]
+                            }
+                        ]
+                    },
+                    then: { $toString: '$_id' },
+                    else: '$historyDocumentId'
+                }
+            };
+        }
+
+        return blockFilter;
+    }
+
+    /**
+     * Prepare arrays filters for aggregation
+     * @param filters Filters
+     */
+    private prepareFilters(filters: any[]) {
+        for (const filter of filters) {
+            const filterKey = Object.keys(filter)[0];
+            if (!filterKey) {
+                continue;
+            }
+
+            const filterValue = filter[filterKey];
+            if (Array.isArray(filterValue)) {
+                const fieldName = filterValue[1];
+                if (typeof fieldName !== 'string') {
+                    continue;
+                }
+
+                const fieldPathArray = fieldName.split('.');
+                const arrayIndexes = fieldPathArray.filter(item => Number.isInteger(+item));
+
+                if (!arrayIndexes.length) {
+                    continue;
+                }
+
+                const pathWithoutIndexes = fieldPathArray
+                    .filter(item => !arrayIndexes.includes(item))
+                    .join('.');
+                let newFilter: any = { $arrayElemAt: [pathWithoutIndexes, +arrayIndexes[0]] };
+                arrayIndexes.shift();
+                for (const arrayIndex of arrayIndexes) {
+                    newFilter = { $arrayElemAt: [newFilter, +arrayIndex] };
+                }
+                filterValue[1] = newFilter;
+            }
+        }
     }
 
     /**

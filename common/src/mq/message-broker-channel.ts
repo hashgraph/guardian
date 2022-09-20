@@ -57,21 +57,20 @@ export class MessageBrokerChannel {
         const sub = this.channel.subscribe(target, { queue: process.env.SERVICE_CHANNEL });
         const fn = async (_sub: Subscription) => {
             for await (const m of _sub) {
-                const payload = JSON.parse(StringCodec().decode(m.data));
+                const messageId = m.headers.get('messageId');
 
                 let responseMessage: IMessageResponse<TResponse>;
                 try {
+                    const payload = JSON.parse(StringCodec().decode(m.data));
                     responseMessage = await handleFunc(payload);
                 } catch (error) {
                     responseMessage = new MessageError(error, error.code);
                 }
 
-                const messageId = m.headers.get('messageId');
-
                 const head = headers();
                 head.append('messageId', messageId);
 
-                this.channel.publish('response-message', StringCodec().encode(JSON.stringify(responseMessage)), {headers: head});
+                this.channel.publish('response-message', StringCodec().encode(JSON.stringify(responseMessage)), { headers: head });
 
                 m.respond(new Uint8Array(0));
             }
@@ -90,7 +89,7 @@ export class MessageBrokerChannel {
      * @param timeout timeout in milliseconds, this will overwrite default env var MQ_TIMEOUT varlue @default 30000
      * @returns MessageResponse or Error response
      */
-    public async request<T, TResponse>(eventType: string, payload: T, timeout?: number): Promise<IMessageResponse<TResponse>> {
+    public request<T, TResponse>(eventType: string, payload: T, timeout?: number): Promise<IMessageResponse<TResponse>> {
         try {
             const messageId = GenerateUUIDv4();
             const head = headers();
@@ -110,29 +109,40 @@ export class MessageBrokerChannel {
                     stringPayload = '{}';
             }
 
-            // NOTE: If get NATS TIMEOUT error to quckly resolve just uncomment next line.
-            // And then, implement async processing of operation.
-            // const msg = await this.channel.request(eventType, StringCodec().encode(stringPayload), { timeout: 300000 });
-            await this.channel.request(eventType, StringCodec().encode(stringPayload), {
-                timeout: timeout || MQ_TIMEOUT,
-                headers: head
-            });
-
-            return new Promise((resolve) => {
+            return new Promise<IMessageResponse<TResponse>>((resolve, reject) => {
                 reqMap.set(messageId, (data) => {
                     resolve(data);
                     reqMap.delete(messageId);
                 });
-            });
+                this.channel.request(eventType, StringCodec().encode(stringPayload), {
+                    timeout: timeout || MQ_TIMEOUT,
+                    headers: head
+                }).then(() => { return; }, (error) => {
+                    reqMap.delete(messageId);
 
+                    // Nats no subscribe error
+                    if (error.code === '503') {
+                        console.warn('No listener for message event type =  %s', eventType);
+                        resolve(null);
+                        return;
+                    }
+                    console.error(error.message, error.stack, error);
+
+                    reject(error);
+                });
+            });
         } catch (error) {
-            // Nats no subscribe error
-            if (error.code === '503') {
-                console.warn('No listener for message event type =  %s', eventType);
-                return;
-            }
-            console.error(error.message, error.stack, error);
-            throw error;
+            return new Promise<IMessageResponse<TResponse>>((resolve, reject) => {
+                // Nats no subscribe error
+                if (error.code === '503') {
+                    console.warn('No listener for message event type =  %s', eventType);
+                    resolve(null);
+                    return;
+                }
+
+                console.error(error.message, error.stack, error);
+                reject(error);
+            });
         }
     }
 
@@ -151,7 +161,7 @@ export class MessageBrokerChannel {
             head.append('messageId', messageId);
 
             const sc = JSONCodec();
-            this.channel.publish(eventType, sc.encode(data), {headers: head});
+            this.channel.publish(eventType, sc.encode(data), { headers: head });
         } catch (e) {
 
             console.error(e.message, e.stack, e);
