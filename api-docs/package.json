@@ -1,6 +1,6 @@
 {
   "name": "api-docs",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "description": "Swagger Documentation",
   "main": "dist/index.js",
   "scripts": {
