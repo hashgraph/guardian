@@ -5,6 +5,7 @@ import { ApplicationState, MessageBrokerChannel, Logger, DB_DI, Migration, COMMO
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
+import { HashicorpVault, InitializeVault } from './vaults';
 
 Promise.all([
     Migration({
@@ -22,17 +23,19 @@ Promise.all([
         ensureIndexes: true
     }),
     MessageBrokerChannel.connect('LOGGER_SERVICE'),
-]).then(async ([_, db, cn]) => {
+    InitializeVault(HashicorpVault)
+]).then(async ([_, db, cn, vault]) => {
     DB_DI.orm = db;
     const state = new ApplicationState('AUTH_SERVICE');
     const channel = new MessageBrokerChannel(cn, 'auth-service');
+
     state.setChannel(channel);
     state.updateState(ApplicationStates.INITIALIZING);
     await fixtures();
 
     new Logger().setChannel(channel);
     new AccountService(channel).registerListeners();
-    new WalletService(channel).registerListeners();
+    new WalletService(channel, vault).registerListeners();
 
     state.updateState(ApplicationStates.READY);
     new Logger().info('auth service started', ['AUTH_SERVICE']);
