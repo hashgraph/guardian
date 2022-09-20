@@ -47,13 +47,6 @@ services:
     build:
       context: .
       dockerfile: ./worker-service/Dockerfile
-    ports:
-      - "5001:5001"
-      - "5002:5002"
-      - "4001:4001"
-      - "4002:4002"
-      - "8080:8080"
-      - "8081:8081"
     depends_on:
       - ipfs-client
     environment:
@@ -63,13 +56,6 @@ services:
     build:
       context: .
       dockerfile: ./worker-service/Dockerfile
-    ports:
-      - "5001:5001"
-      - "5002:5002"
-      - "4001:4001"
-      - "4002:4002"
-      - "8080:8080"
-      - "8081:8081"
     depends_on:
       - ipfs-client
     environment:
