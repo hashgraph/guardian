@@ -2,6 +2,7 @@ import NodeVault from 'node-vault';
 import { IVault } from './vault.interface';
 import assert from 'assert';
 import crypto from 'crypto';
+import { Logger } from '@guardian/common';
 
 /**
  * HashiCorp vault helper
@@ -15,6 +16,7 @@ export class HashicorpVault implements IVault{
         apiVersion: 'v1',
         endpoint: process.env.HASHICORP_ADDRESS,
         token: process.env.HASHICORP_TOKEN,
+        namespace: process.env.HASHICORP_NAMESPACE
     }
 
     /**
@@ -23,11 +25,18 @@ export class HashicorpVault implements IVault{
      */
     private readonly vault: NodeVault.client;
 
+    /**
+     * Logger instance
+     * @private
+     */
+    // private readonly logger: Logger;
+
     constructor() {
         assert(process.env.HASHICORP_ADDRESS, 'HASHICORP_ADDRESS environment variable is not set');
         assert(process.env.HASHICORP_TOKEN, 'HASHICORP_TOKEN environment variable is not set');
 
         this.vault = NodeVault(this.options);
+        // this.logger = new Logger();
     }
 
     /**
@@ -46,13 +55,17 @@ export class HashicorpVault implements IVault{
      * @private
      */
     public async init(): Promise<IVault> {
-        const {initialized} = await this.vault.initialized();
-        if (!initialized) {
-            const {keys, root_token} = await this.vault.init({ secret_shares: 1, secret_threshold: 1 });
-            this.vault.token = root_token;
-            console.info('Root Token', root_token);
-            this.vault.unseal({ secret_shares: 1, key: keys[0] });
+        try {
+            const {initialized} = await this.vault.initialized();
+            if (!initialized) {
+                const {keys, root_token} = await this.vault.init({secret_shares: 1, secret_threshold: 1});
+                this.vault.token = root_token;
+                console.info('Root Token', root_token);
+                await this.vault.unseal({secret_shares: 1, key: keys[0]});
 
+            }
+        } catch (e) {
+            console.warn(e.message);
         }
 
         return this;
