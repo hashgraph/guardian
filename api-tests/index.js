@@ -20,7 +20,7 @@ describe('Tests', async function () {
         const pathArray = [
             [path.resolve(path.join('..', 'logger-service')), {}],
             [path.resolve(path.join('..', 'worker-service')), {IPFS_STORAGE_API_KEY: process.env.IPFS_STORAGE_API_KEY}],
-            [path.resolve(path.join('..', 'auth-service')), {HASHICORP_TOKEN: 'http://vault:8200}'],
+            [path.resolve(path.join('..', 'auth-service')), {HASHICORP_TOKEN: 'http://vault:8200}'}],
             [path.resolve(path.join('..', 'ipfs-client')), {IPFS_STORAGE_API_KEY: process.env.IPFS_STORAGE_API_KEY}],
             [path.resolve(path.join('..', 'guardian-service')), {OPERATOR_ID: process.env.OPERATOR_ID, OPERATOR_KEY: process.env.OPERATOR_KEY}],
             [path.resolve(path.join('..', 'api-gateway')), {}]
