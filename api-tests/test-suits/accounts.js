@@ -160,10 +160,11 @@ function Accounts() {
         delete result.data.id;
         delete result.data._id;
         delete result.data.parent;
+        delete result.data.walletToken
         assert.deepEqual(result.data, {
             username: 'apiTest',
             did: null,
-            role: 'USER'
+            role: 'USER',
         })
     });
 }
