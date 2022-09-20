@@ -22,7 +22,7 @@ This block is responsible for adding configurations on calculating the amount of
 | Account Id (Field) | The value from this field is used as the ID of the account under which the action is performed when ‘Account Type’ is set to ‘Custom’. |
 | Memo               | The value in this filed is used to customize the Memo field name.                                                                      |
 
-<figure><img src="../.gitbook/assets/image (31).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (31) (2).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Notes:**

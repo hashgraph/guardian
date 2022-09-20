@@ -96,7 +96,7 @@ We also have a filter, where by default, all the Schemas of Policies are shown. 
 
 Policy Schema can also be created by clicking on the New button.
 
-![](<../.gitbook/assets/image (21).png>)
+![](<../.gitbook/assets/image (21) (1).png>)
 
 Once the New button is clicked, we get a dialog box that asks for the following information:\
 1\. Schema Name
@@ -117,7 +117,7 @@ To import the Schema, click on the Import button.
 
 Once the Import button is clicked, we get two options: Import from file and Import from IPFS
 
-![](<../.gitbook/assets/image (29).png>)
+![](<../.gitbook/assets/image (29) (2).png>)
 
 Import from file: You can select the required Schema .schema file from your local machine. Sample iREC Schema (iREC Schema.zip) is provided in the link: [https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
 
