@@ -11,9 +11,7 @@ This block provides a way to specify multiple signators for a single VC document
 | defaultActive    | Shows whether this block is active at this time and whether it needs to be shown.                                                                              | Checked or unchecked.                                                                 |        |
 | On errors        | Called if the system error has occurs in the Block                                                                                                             | <p></p><ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul> |        |
 | Stop Propagation | End processing here, don't pass control to the next block.                                                                                                     | Checked or unchecked.                                                                 |        |
-| Threshold (%)    | proportion of signators which are required to sign the document to achieve quorum for it to transition to ‘signed’ status. Must be a number between 0 and 100. | 1-100                                                                                 |        |
-
-
+| Threshold (%)    | Proportion Of signators which are required to sign the document to achieve quorum for it to transition to ‘signed’ status. Must be a number between 0 and 100. | 0-100                                                                                 |        |
 
 {% hint style="info" %}
 **Note:** The system assigns ‘not signed’ status to the document when 100 – threshold percentage of users indicated rejection status.
@@ -54,26 +52,31 @@ This block provides a way to specify multiple signators for a single VC document
 						did – did and username of the user which took the decision
 						status – the decision of the user, the value space is: SIGNED/DECLINED
 		                 }
-		       ] – array of the decisions for each user
-		declinedCount: - number of users who declined signing the document
-		declinedPercent: - percentage of users who declined signing the document
-		declinedThreshold: - threshold number of users who need to decline signing the document to reach the final decision
-		documentStatus: - status of the document for the current users, null if the user has not made a selection to sign or decline
-		signedCount: - number of users who signed the document
-		signedPercent: - percentage of users who signed the document
-		signedThreshold: - threshold number of users who need to sign the document to reach the final decision
-		threshold: threshold in percentage terms
-		total: total number of users in the signing group
-	}
+		       ] 
+	         }
 }
 
 ```
 
+#### Array of the decisions for each user can be as follows:
+
+| Type of Decision  | Description                                                                                                |
+| ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| declinedCount     | number of users who declined signing the document                                                          |
+| declinedPercent   | percentage of users who declined need signing the document                                                 |
+| declinedThreshold | threshold number of users who need to decline signing the document to reach the final decision             |
+| documentStatus    | status of the document for the current users, null if the user has not made a selection to sign or decline |
+| signedCount       | number of users who have signed the document                                                               |
+| signedPercent     | percentage of users who have signed the document                                                           |
+| signedThreshold   | threshold number of users who need to sign the document to reach the final decision                        |
+| threshold         | threshold in terms of percentage                                                                           |
+| total             | total number of users in the signing group                                                                 |
+
 ### 4. Example
 
-#### 4.1 Important
+#### 4.1 Important Points
 
-4.1.1 multiSignBlock must be used in Blocks
+4.1.1 multiSignBlock must be used with Groups.
 
 <figure><img src="../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
 
@@ -87,7 +90,7 @@ This block provides a way to specify multiple signators for a single VC document
 
 We have an option of Signing/ Declining the document by clicking on "Sign" or "Decline" button for the document as shown below:
 
-<figure><img src="../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (20).png" alt=""><figcaption></figcaption></figure>
 
 #### 5.2 Threshold Display
 
