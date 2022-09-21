@@ -80,8 +80,12 @@ export interface IActiveTask {
      */
     task: ITask;
     /**
+     * Number of repetitions
+     */
+    number: number;
+    /**
      * Ready callback
      * @param data
      */
-    callback:  (data: any, error: any) => void;
+    callback: (data: any, error: any) => void;
 }

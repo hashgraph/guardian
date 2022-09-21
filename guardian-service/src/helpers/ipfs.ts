@@ -49,14 +49,14 @@ export class IPFS {
         url: string
     }> {
         const res = await new Workers().addTask({
-        type: WorkerTaskType.ADD_FILE,
-        data: {
-            target: [IPFS.target, MessageAPI.IPFS_ADD_FILE].join('.'),
-            payload: {
-                content: Buffer.from(file).toString('base64')
+            type: WorkerTaskType.ADD_FILE,
+            data: {
+                target: [IPFS.target, MessageAPI.IPFS_ADD_FILE].join('.'),
+                payload: {
+                    content: Buffer.from(file).toString('base64')
+                }
             }
-        }
-    }, 10);
+        }, 10);
 
         if (!res) {
             throw new Error('Invalid response');

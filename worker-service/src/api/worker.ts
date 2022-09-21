@@ -171,47 +171,47 @@ export class Worker {
         try {
             switch (task.type) {
                 case WorkerTaskType.ADD_FILE: {
-                        let fileContent = Buffer.from(task.data.payload.content, 'base64');
-                        const data = await this.channel.request<any, any>(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT, task.data.payload);
-                        if (data && data.body) {
-                            fileContent = Buffer.from(data.body, 'base64')
-                        }
-                        const blob: any = new Blob([fileContent]);
-                        const r = await this.ipfsClient.addFiile(blob);
-                        this.channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
-                        result.data = r;
+                    let fileContent = Buffer.from(task.data.payload.content, 'base64');
+                    const data = await this.channel.request<any, any>(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT, task.data.payload);
+                    if (data && data.body) {
+                        fileContent = Buffer.from(data.body, 'base64')
                     }
+                    const blob: any = new Blob([fileContent]);
+                    const r = await this.ipfsClient.addFiile(blob);
+                    this.channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
+                    result.data = r;
+                }
                     break;
 
                 case WorkerTaskType.GET_FILE: {
-                        if (!task.data.payload|| !task.data.payload.cid || !task.data.payload.responseType) {
-                            result.error = 'Invalid CID';
-                        } else {
-                            let fileContent = await this.ipfsClient.getFile(task.data.payload.cid);
-                            if (fileContent instanceof Buffer) {
-                                const data = await this.channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, {
-                                    responseType: !task.data.payload.responseType,
-                                    content: fileContent.toString('base64'),
-                                });
-                                if (data && data.body) {
-                                    fileContent = Buffer.from(data.body, 'base64')
-                                }
-                            }
-
-                            switch (task.data.payload.responseType) {
-                                case 'str':
-                                    result.data = Buffer.from(fileContent, 'binary').toString();
-                                    break;
-
-                                case 'json':
-                                    result.data = Buffer.from(fileContent, 'binary').toJSON();
-                                    break;
-
-                                default:
-                                    result.data = fileContent
+                    if (!task.data.payload || !task.data.payload.cid || !task.data.payload.responseType) {
+                        result.error = 'Invalid CID';
+                    } else {
+                        let fileContent = await this.ipfsClient.getFile(task.data.payload.cid);
+                        if (fileContent instanceof Buffer) {
+                            const data = await this.channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, {
+                                responseType: !task.data.payload.responseType,
+                                content: fileContent.toString('base64'),
+                            });
+                            if (data && data.body) {
+                                fileContent = Buffer.from(data.body, 'base64')
                             }
                         }
+
+                        switch (task.data.payload.responseType) {
+                            case 'str':
+                                result.data = Buffer.from(fileContent, 'binary').toString();
+                                break;
+
+                            case 'json':
+                                result.data = Buffer.from(fileContent, 'binary').toJSON();
+                                break;
+
+                            default:
+                                result.data = fileContent
+                        }
                     }
+                }
                     break;
 
                 case WorkerTaskType.SEND_HEDERA:
@@ -256,7 +256,7 @@ export class Worker {
                 if (e) {
                     error.error = e.message || e;
                 }
-                reject(error);
+                resolve(error);
             }
         })
     }

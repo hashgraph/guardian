@@ -26,6 +26,12 @@ export class Workers extends ServiceRequestsBase {
     private readonly queue: ITask[] = [];
 
     /**
+     * Max Repetitions
+     * @private
+     */
+    private readonly maxRepetitions = 100;
+
+    /**
      * Add task
      * @param task
      */
@@ -34,23 +40,31 @@ export class Workers extends ServiceRequestsBase {
         task.id = taskId;
         task.priority = priority;
         this.queue.push(task);
-        this.channel.publish(WorkerEvents.QUEUE_UPDATED, null)
-
-        return new Promise((resolve, reject) => {
+        const result = new Promise((resolve, reject) => {
             this.tasksCallbacks.set(taskId, {
                 task,
+                number: 0,
                 callback: (data, error) => {
                     if (error) {
+                        if (this.tasksCallbacks.has(taskId)) {
+                            const callback = this.tasksCallbacks.get(taskId);
+                            callback.number++;
+                            if (callback.number > this.maxRepetitions) {
+                                this.tasksCallbacks.delete(taskId);
+                                reject(error);
+                                return;
+                            }
+                        }
                         this.queue.push(task);
-                        reject(error);
                     } else {
+                        this.tasksCallbacks.delete(taskId);
                         resolve(data);
                     }
-                    this.tasksCallbacks.delete(taskId);
                 }
             });
         });
-
+        this.channel.publish(WorkerEvents.QUEUE_UPDATED, null);
+        return result;
     }
 
     /**
@@ -66,14 +80,12 @@ export class Workers extends ServiceRequestsBase {
             }
             const item = this.queue[itemIndex];
             this.queue.splice(itemIndex, 1);
-
             return new MessageResponse(item || null);
         });
 
         this.channel.response(WorkerEvents.TASK_COMPLETE, async (msg: any) => {
             const activeTask = this.tasksCallbacks.get(msg.id);
             activeTask.callback(msg.data, msg.error);
-            this.tasksCallbacks.delete(msg.id);
             return new MessageResponse(null);
         });
     }
