@@ -83,7 +83,7 @@ export function initNotifier(channel: MessageBrokerChannel, taskId: string): INo
                     currentStep = nextStep;
                     await sendStatuses({ message: oldStep, type: StatusType.COMPLETED }, { message: currentStep, type: StatusType.PROCESSING });
                 } else {
-                    this.start(nextStep);
+                    notifier.start(nextStep);
                 }
             },
             info: async (message: string) => {
