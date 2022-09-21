@@ -5,7 +5,7 @@ import { ApplicationState, MessageBrokerChannel, Logger, DB_DI, Migration, COMMO
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { HashicorpVault, InitializeVault } from './vaults';
+import { Hashicorp, InitializeVault } from './vaults';
 
 Promise.all([
     Migration({
@@ -23,7 +23,7 @@ Promise.all([
         ensureIndexes: true
     }),
     MessageBrokerChannel.connect('LOGGER_SERVICE'),
-    InitializeVault(HashicorpVault)
+    InitializeVault(process.env.VAULT_PROVIDER)
 ]).then(async ([_, db, cn, vault]) => {
     DB_DI.orm = db;
     const state = new ApplicationState('AUTH_SERVICE');

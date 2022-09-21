@@ -1,13 +1,12 @@
 import NodeVault from 'node-vault';
-import { IVault } from './vault.interface';
+import { IVault } from '../vault.interface';
 import assert from 'assert';
 import crypto from 'crypto';
-import { Logger } from '@guardian/common';
 
 /**
  * HashiCorp vault helper
  */
-export class HashicorpVault implements IVault{
+export class Hashicorp implements IVault{
     /**
      * Vault options
      * @private
@@ -77,7 +76,7 @@ export class HashicorpVault implements IVault{
      * @param type
      * @param key
      */
-    public async getKey(token: string, type: string, key: string): Promise<any> {
+    public async getKey(token: string, type: string, key: string): Promise<string> {
         const result = await this.vault.read(`secret/data/${this.generateKeyName(token, type, key)}`);
         return result.data.data.privateKey;
     }
