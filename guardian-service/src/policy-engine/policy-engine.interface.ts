@@ -683,6 +683,10 @@ export interface IPolicyDocument {
      */
     assignedTo?: string;
     /**
+     * Assigned To
+     */
+    assignedToGroup?: string;
+    /**
      * Message Id
      */
     messageId?: string,

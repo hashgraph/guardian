@@ -21,6 +21,12 @@ export class VcDocument extends BaseEntity implements IVCDocument {
     assignedTo?: string;
 
     /**
+     * Assign
+     */
+    @Property({ nullable: true })
+    assignedToGroup?: string;
+
+    /**
      * Document hash
      */
     @Property({ nullable: true })

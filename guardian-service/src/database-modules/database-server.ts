@@ -385,6 +385,7 @@ export class DatabaseServer {
             item.owner = row.owner;
             item.group = row.group;
             item.assignedTo = row.assignedTo;
+            item.assignedToGroup = row.assignedToGroup;
             item.option = row.option;
             item.schema = row.schema;
             item.hederaStatus = row.hederaStatus;
