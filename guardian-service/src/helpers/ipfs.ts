@@ -57,7 +57,6 @@ export class IPFS {
                 }
             }
         }, 10);
-
         if (!res) {
             throw new Error('Invalid response');
         }
@@ -81,9 +80,6 @@ export class IPFS {
         if (!res) {
             throw new Error('Invalid response');
         }
-        if (res.error) {
-            throw new Error(res.error);
-        }
-        return res.data;
+        return res;
     }
 }
