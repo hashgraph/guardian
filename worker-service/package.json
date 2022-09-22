@@ -12,12 +12,12 @@
     "@transmute/security-context": "^0.7.0-unstable.60",
     "@transmute/vc.js": "^0.7.0-unstable.60",
     "axios": "^0.25.0",
+    "axios-retry": "^3.2.4",
+    "cross-blob": "^2.0.1",
     "dotenv": "^16.0.0",
     "module-alias": "^2.2.2",
     "reflect-metadata": "^0.1.13",
-    "web3.storage": "^4.3.0",
-    "axios-retry": "^3.2.4",
-    "cross-blob": "^2.0.1"
+    "web3.storage": "^4.3.0"
   },
   "description": "",
   "devDependencies": {

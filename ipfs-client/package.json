@@ -6,8 +6,6 @@
   "dependencies": {
     "@guardian/common": "^2.4.1",
     "@guardian/interfaces": "^2.4.1",
-    "@mikro-orm/core": "^5.3.0",
-    "@mikro-orm/mongodb": "^5.3.0",
     "@web-std/fetch": "3.0.0",
     "axios": "^0.26.1",
     "axios-retry": "^3.2.4",

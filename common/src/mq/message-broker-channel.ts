@@ -117,7 +117,7 @@ export class MessageBrokerChannel {
                 this.channel.request(eventType, StringCodec().encode(stringPayload), {
                     timeout: timeout || MQ_TIMEOUT,
                     headers: head
-                }).then(() => {}, (error) => {
+                }).then(() => null, (error) => {
                     reqMap.delete(messageId);
 
                     // Nats no subscribe error

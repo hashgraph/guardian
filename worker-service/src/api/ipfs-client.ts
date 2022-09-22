@@ -1,8 +1,6 @@
 import { Web3Storage } from 'web3.storage';
 import Blob from 'cross-blob';
 import axios from 'axios';
-import { ExternalMessageEvents } from '@guardian/interfaces';
-import { MessageResponse } from '@guardian/common';
 
 /**
  * AddFileResult
