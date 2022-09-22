@@ -12,11 +12,11 @@ context("Schemas", () => {
                 authorization,
             },
             body: {
-                messageId: "1662457320.812975073",
+                messageId: "1663856382.530222947",
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body[0]).to.have.property("uuid");
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.SUCCESS);
+            expect(response.body).to.not.be.oneOf([null, ""]);
         });
     });
 });

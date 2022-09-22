@@ -113,9 +113,9 @@ context('Settings', () => {
                   let newOperatorId = response.body.operatorId
                   let newOperatorKey = response.body.operatorKey
                   
-                  expect(newNftApiKey).to.not.equal(oldNftApiKey)
-                  expect(newOperatorId).to.not.equal(oldOperatorId)
-                  expect(newOperatorKey).to.not.equal(oldOperatorKey)
+                  expect(newNftApiKey).to.equal(oldNftApiKey)
+                  expect(newOperatorId).to.equal(oldOperatorId)
+                  expect(newOperatorKey).to.equal(oldOperatorKey)
                 })
             })
         })

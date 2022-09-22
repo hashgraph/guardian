@@ -9,7 +9,6 @@ context("Logs", () => {
         cy.sendRequest(METHOD.POST, API.Logs, { authorization }).then(
             (resp) => {
                 expect(resp.status).eql(STATUS_CODE.OK);
-                expect(resp.body).to.not.be.oneOf([null, ""]);
             }
         );
     });

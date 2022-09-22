@@ -32,19 +32,20 @@ context("Schemas", () => {
                 expect(schemaUd).to.equal(schemaUUID);
                 let schemaId = response.body.at(-1).id;
 
-                const versionNum = "1." + Math.floor(Math.random() * 999);
-
-                expect(response.status).eql(STATUS_CODE.SUCCESS);
-
-                //Delete schema
+                const versionNum = ("1." + Math.floor(Math.random() * 999))
+                //Publish schema
                 cy.request({
-                    method: "DELETE",
-                    url: API.Schemas + schemaId,
+                    method: "PUT",
+                    url: API.Schemas + schemaId + "/publish",
                     headers: { authorization },
+                    body: {
+                        version: versionNum,
+                    },
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                 });
             });
         });
     });
+    
 });
