@@ -5,7 +5,7 @@ import { ApplicationState, MessageBrokerChannel, Logger, DB_DI, Migration, COMMO
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { Hashicorp, InitializeVault } from './vaults';
+import { InitializeVault } from './vaults';
 
 Promise.all([
     Migration({

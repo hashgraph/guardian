@@ -32,7 +32,13 @@ export class Worker {
      * Logger instance
      * @private
      */
-    private logger: Logger;
+    private readonly logger: Logger;
+
+    /**
+     * Ipfs client
+     * @private
+     */
+    private readonly ipfsClient: IpfsClient;
 
     /**
      * Current task ID
@@ -50,12 +56,6 @@ export class Worker {
      * @private
      */
     private _isInUse: boolean = false;
-
-    /**
-     * Ipfs client
-     * @private
-     */
-    private ipfsClient: IpfsClient;
 
     /**
      * Worker in use getter
