@@ -254,7 +254,7 @@ export class VCJS {
      *
      * @param {HcsVcDocument<VcSubject>} vcDocument - VC Document
      *
-     * @returns {boolean} - is verified
+     * @returns {Promise<boolean>} - is verified
      */
     public async verifyVC(vcDocument: VcDocument | any): Promise<boolean> {
         let vc: IVC;
