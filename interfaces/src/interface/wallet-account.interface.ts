@@ -3,10 +3,6 @@
  */
 export interface IWalletAccount {
     /**
-     * ID
-     */
-    id: string;
-    /**
      * Token
      */
     token?: string;

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { CommonSettings } from '@guardian/interfaces';
 import { SettingsService } from 'src/app/services/settings.service';
 
@@ -10,9 +10,18 @@ import { SettingsService } from 'src/app/services/settings.service';
 })
 export class SettingsViewComponent implements OnInit {
   dataForm = this.fb.group({
-      operatorId: [''],
-      operatorKey: [''],
-      ipfsStorageApiKey: ['']
+      operatorId: ['', Validators.compose([
+          Validators.required,
+          Validators.pattern(/^\d+\.\d+\.\d+$/)
+      ])],
+      operatorKey: ['', Validators.compose([
+          Validators.required,
+          Validators.minLength(5)
+      ])],
+      ipfsStorageApiKey: ['', Validators.compose([
+          Validators.required,
+          Validators.minLength(5)
+      ])]
   });
   isLoading: boolean = true;
 
