@@ -4,42 +4,32 @@ import API from "../../../support/ApiUrls";
 context("Tokens", () => {
 
     before(() => {
-        const authorization = Cypress.env("authorization");
-
-        let username = "Installer";
-
-        cy.sendRequest(
-            METHOD.POST,
-            API.AccountsLogin,
-            { authorization },
-            {
-                username: username,
-                password: "test",
-            }
-        )
-            .as("requestToken")
-            .then((response) => {
-                const accessToken = Cypress.env("authorization");
-
-                cy.sendRequest(METHOD.GET, API.Profiles + username, {
-                    accessToken,
-                }).then((response) => {
-                    cy.request({
-                        method: "GET",
-                        url: Cypress.env("api_server") + "profiles/" + username,
-                        headers: {
-                            authorization: accessToken,
-                        },
-                    }).then((response) => {
-                        response.body.accessToken = accessToken;
-                        cy.writeFile(
-                            "cypress/fixtures/Installer.json",
-                            JSON.stringify(response.body)
-                        );
-                    });
-                });
-            });
-    });
+        let username = 'Installer'
+        cy.request({
+          method: 'POST',
+          url: Cypress.env('api_server') + 'accounts/login',
+          body: {
+            username: username,
+            password: 'test'
+          }
+        }).as('requestToken')
+          .then((response) => {
+            const accessToken = 'bearer ' + response.body.accessToken
+            //Checking if StandardRegisty already has hedera credentials
+            cy.request({
+              method: 'GET',
+              url: Cypress.env('api_server') + 'profiles/' + username,
+              headers: {
+                authorization: accessToken
+              }
+            })
+              .then((response) => {
+                  response.body.accessToken = accessToken
+                  cy.writeFile("cypress/fixtures/Installer.json", JSON.stringify(response.body))
+                
+              })
+          })
+      })
 
     it("should be able to dissociate and associate token", () => {
         cy.get("@requestToken").then((response) => {

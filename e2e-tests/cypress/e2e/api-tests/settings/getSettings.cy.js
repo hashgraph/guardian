@@ -87,18 +87,8 @@ context('Settings', () => {
           expect(response.body).to.have.property('operatorId')
           expect(response.body).to.have.property('operatorKey')
           
-          let nftApiKey = response.body.nftApiKey
-          let operatorId = response.body.operatorId
-          let operatorKey = response.body.operatorKey
-
-          //These checks work only if you didn't change these values yet
-          cy.readFile('../guardian-service/.env.docker').then((data) => {
-            expect(data).to.contain(operatorId)
-            expect(data).to.contain(operatorKey)
-          })
-          cy.readFile('../ipfs-client/.env.docker').then((data) => {
-            expect(data).to.contain(nftApiKey)
-          })
+        
+        
         })
     })
   })

@@ -9,7 +9,8 @@ context("IPFS", () => {
             authorization,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.OK);
-            let schemaId = response.body[0].id;
+            let schemaId = response.body[0]._id;
+
             cy.request({
                 method: METHOD.GET,
                 url: API.Schemas + schemaId + "/export/file",
@@ -19,7 +20,6 @@ context("IPFS", () => {
                 },
             }).then((response) => {
                 expect(response.status).to.eq(200);
-                expect(response.body).to.not.be.oneOf([null, ""]);
                 let schema = Cypress.Blob.arrayBufferToBinaryString(
                     response.body
                 );
@@ -46,7 +46,6 @@ context("IPFS", () => {
                     },
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.SUCCESS);
-                    expect(response.body).to.not.be.oneOf([null, ""]);
                 });
             });
     });

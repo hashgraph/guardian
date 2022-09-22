@@ -8,9 +8,9 @@ context("Tokens", () => {
         cy.sendRequest(METHOD.GET, API.ListOfTokens, { authorization }).then(
             (resp) => {
                 expect(resp.status).eql(STATUS_CODE.OK);
-                expect(resp.body[0]).to.have.property("id");
-                expect(resp.body[1]).to.have.property("tokenId");
-                expect(resp.body[2]).to.have.property("tokenName");
+                expect(resp.body[0]).to.have.property("_id");
+                expect(resp.body[0]).to.have.property("tokenId");
+                expect(resp.body[0]).to.have.property("tokenName");
             }
         );
     });
