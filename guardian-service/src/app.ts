@@ -26,7 +26,7 @@ import {
     DataBaseHelper,
     DB_DI,
     Migration,
-    COMMON_CONNECTION_CONFIG
+    COMMON_CONNECTION_CONFIG, SettingsContainer
 } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import {
@@ -69,24 +69,21 @@ Promise.all([
     new Logger().setChannel(channel);
     const state = new ApplicationState('GUARDIAN_SERVICE');
     state.setChannel(channel);
+    const settingsContainer = new SettingsContainer();
+    settingsContainer.setChannel(channel);
+    await settingsContainer.init('OPERATOR_ID', 'OPERATOR_KEY');
+
+    const {OPERATOR_ID, OPERATOR_KEY} = settingsContainer.settings;
 
     // Check configuration
-    if (!process.env.OPERATOR_ID || process.env.OPERATOR_ID.length < 5) {
-        await new Logger().error('You need to fill OPERATOR_ID field in .env file', ['GUARDIAN_SERVICE']);
-        throw new Error('You need to fill OPERATOR_ID field in .env file');
-    }
-    if (!process.env.OPERATOR_KEY || process.env.OPERATOR_KEY.length < 5) {
-        await new Logger().error('You need to fill OPERATOR_KEY field in .env file', ['GUARDIAN_SERVICE']);
-        throw new Error('You need to fill OPERATOR_KEY field in .env file');
-    }
     try {
-        AccountId.fromString(process.env.OPERATOR_ID);
+        AccountId.fromString(OPERATOR_ID);
     } catch (error) {
-        await new Logger().error('OPERATOR_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        throw new Error('OPERATOR_ID field in .env file: ' + error.message);
+        await new Logger().error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
+        throw new Error('OPERATOR_ID field in settings: ' + error.message);
     }
     try {
-        PrivateKey.fromString(process.env.OPERATOR_KEY);
+        PrivateKey.fromString(OPERATOR_KEY);
     } catch (error) {
         await new Logger().error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
         throw new Error('OPERATOR_KEY field in .env file: ' + error.message);
@@ -142,8 +139,8 @@ Promise.all([
     HederaSDKHelper.setTransactionResponseCallback(updateUserBalance(channel));
 
     if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
-        const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);
-        const topicId = await client.newTopic(process.env.OPERATOR_KEY, null, TopicMemo.getGlobalTopicMemo());
+        const client = new HederaSDKHelper(OPERATOR_ID, OPERATOR_KEY);
+        const topicId = await client.newTopic(OPERATOR_KEY, null, TopicMemo.getGlobalTopicMemo());
         process.env.INITIALIZATION_TOPIC_ID = topicId;
     }
 

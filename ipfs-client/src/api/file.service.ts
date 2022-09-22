@@ -2,7 +2,6 @@ import { Web3Storage } from 'web3.storage';
 import Blob from 'cross-blob';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
-import { Settings } from '../entity/settings';
 import {
     MessageAPI,
     ExternalMessageEvents,
@@ -13,7 +12,13 @@ import {
     IFileResponse,
     GenerateUUIDv4
 } from '@guardian/interfaces';
-import { MessageBrokerChannel, MessageError, MessageResponse, Logger, DataBaseHelper } from '@guardian/common';
+import {
+    MessageBrokerChannel,
+    MessageError,
+    MessageResponse,
+    Logger,
+    SettingsContainer
+} from '@guardian/common';
 
 /**
  * Public gateway
@@ -29,7 +34,6 @@ export const IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
 export async function fileAPI(
     channel: MessageBrokerChannel,
     client: Web3Storage,
-    settingsRepository: DataBaseHelper<Settings>
 ): Promise<void> {
     /**
      * Add file and return hash
@@ -194,14 +198,11 @@ export async function fileAPI(
      */
     channel.response<CommonSettings, any>(MessageAPI.UPDATE_SETTINGS, async (settings) => {
         try {
-            const ipfsStorageApiKey = {
-                name: 'IPFS_STORAGE_API_KEY',
-                value: settings.nftApiKey || settings.ipfsStorageApiKey
-            };
-            await settingsRepository.save(ipfsStorageApiKey, {
-                name: 'IPFS_STORAGE_API_KEY'
-            });
-            client = new Web3Storage({ token: settings.nftApiKey || settings.ipfsStorageApiKey } as any);
+            const settingsContainer = new SettingsContainer();
+            await settingsContainer.updateSetting('IPFS_STORAGE_API_KEY', settings.nftApiKey || settings.ipfsStorageApiKey);
+            const { IPFS_STORAGE_API_KEY } = settingsContainer.settings;
+
+            client = new Web3Storage({ token: IPFS_STORAGE_API_KEY } as any);
             return new MessageResponse({});
         }
         catch (error) {
@@ -216,12 +217,13 @@ export async function fileAPI(
      * @return {any} - settings
      */
     channel.response<any, IIpfsSettingsResponse>(MessageAPI.GET_SETTINGS, async (_) => {
-        const ipfsStorageApiKey = await settingsRepository.findOne({
-            name: 'IPFS_STORAGE_API_KEY'
-        });
+        // const {IPFS_STORAGE_API_KEY} = new SettingsContainer().settings;
+
         return new MessageResponse({
-            nftApiKey: ipfsStorageApiKey?.value || process.env.IPFS_STORAGE_API_KEY,
-            ipfsStorageApiKey: ipfsStorageApiKey?.value || process.env.IPFS_STORAGE_API_KEY
+            // nftApiKey: IPFS_STORAGE_API_KEY,
+            nftApiKey: '',
+            // ipfsStorageApiKey: IPFS_STORAGE_API_KEY
+            ipfsStorageApiKey: ''
         });
     })
 }

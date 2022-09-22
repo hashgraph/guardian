@@ -3,17 +3,17 @@
     <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
         <mat-form-field class="submit-field" appearance="outline">
             <mat-label>OPERATOR ID:</mat-label>
-            <input matInput type="text" formControlName="operatorId">
+            <input matInput name="OPERATOR_ID" type="text" formControlName="operatorId">
         </mat-form-field>
 
         <mat-form-field class="submit-field" appearance="outline">
             <mat-label>OPERATOR KEY:</mat-label>
-            <input matInput type="text" formControlName="operatorKey">
+            <input matInput name="OPERATOR_KEY" type="password" placeholder="Enter secret key" formControlName="operatorKey">
         </mat-form-field>
 
         <mat-form-field class="submit-field" appearance="outline">
             <mat-label>IPFS STORAGE API KEY:</mat-label>
-            <input matInput type="text" formControlName="ipfsStorageApiKey">
+            <input matInput name="IPFS_STORAGE_API_KEY" type="password" placeholder="Enter secret key" formControlName="ipfsStorageApiKey">
         </mat-form-field>
 
         <button mat-raised-button color="primary" type="submit" class="submit-button"

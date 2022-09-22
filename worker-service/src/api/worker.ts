@@ -1,4 +1,4 @@
-import { Logger, MessageBrokerChannel } from '@guardian/common';
+import { Logger, MessageBrokerChannel, SettingsContainer } from '@guardian/common';
 import {
     ExternalMessageEvents,
     ITask,
@@ -100,8 +100,11 @@ export class Worker {
     constructor(
         private readonly channel: MessageBrokerChannel
     ) {
+        const { IPFS_STORAGE_API_KEY } = new SettingsContainer().settings;
+
         this.logger = new Logger();
-        this.ipfsClient = new IpfsClient(process.env.IPFS_STORAGE_API_KEY);
+        this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
+
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
         this.taskTimeout = parseInt(process.env.TASK_TIMEOUT, 10) * 1000; // env in seconds

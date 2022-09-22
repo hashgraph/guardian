@@ -8,7 +8,7 @@ export interface IVault {
      * @param type
      * @param key
      */
-    getKey: (token: string, type: string, key: string) => Promise<any>;
+    getKey: (token: string, type: string, key: string) => Promise<string>;
     /**
      * Set key
      * @param token
@@ -17,6 +17,19 @@ export interface IVault {
      * @param value
      */
     setKey: (token: string, type: string, key: string, value: string) => Promise<void>;
+
+    /**
+     * Get global application key
+     * @param type
+     */
+    getGlobalApplicationKey: (type: string) => Promise<string>;
+
+    /**
+     * Set global application key
+     * @param type
+     * @param key
+     */
+    setGlobalApplicationKey: (type: string, key: string) => Promise<void>;
 
     /**
      * Initiate vault connection

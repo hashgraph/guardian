@@ -95,4 +95,31 @@ export class Hashicorp implements IVault{
             }
         })
     }
+
+    /**
+     * Get global application key
+     * @param type
+     */
+    async getGlobalApplicationKey(type: string): Promise<string> {
+        try {
+            const result = await this.vault.read(`secret/data/${type}`);
+            return result.data.data.settingKey;
+        } catch (e) {
+            console.warn(e.message);
+            return undefined;
+        }
+    }
+
+    /**
+     * Set global application key
+     * @param type
+     * @param key
+     */
+    async setGlobalApplicationKey(type: string, key: string): Promise<void> {
+        await this.vault.write(`secret/data/${type}`, {
+            data: {
+                settingKey: key
+            }
+        })
+    }
 }

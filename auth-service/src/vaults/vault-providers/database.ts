@@ -21,7 +21,7 @@ export class Database implements IVault {
      */
     async getKey(token: string, type: string, key: string): Promise<string> {
         const item = await new DataBaseHelper(WalletAccount).findOne({ token, type: type + '|' + key });
-        return item.key
+        return item?.key
     }
 
     /**
@@ -38,5 +38,28 @@ export class Database implements IVault {
             key: value
         });
         await new DataBaseHelper(WalletAccount).save(walletAcc);
+    }
+
+    /**
+     * Get global application key
+     * @param type
+     */
+    async getGlobalApplicationKey(type: string): Promise<string> {
+        const item = await new DataBaseHelper(WalletAccount).findOne({ type });
+        return item?.key;
+    }
+
+    /**
+     * Set global application key
+     * @param type
+     * @param key
+     */
+    async setGlobalApplicationKey(type: string, key: string): Promise<void> {
+        let setting: WalletAccount = await new DataBaseHelper(WalletAccount).findOne({ type });
+        if (!setting) {
+            setting = new DataBaseHelper(WalletAccount).create({ type, key });
+        }
+        setting.key = key;
+        await new DataBaseHelper(WalletAccount).save(setting);
     }
 }
