@@ -1,4 +1,4 @@
-import { Logger, MessageBrokerChannel } from '@guardian/common';
+import { Logger, MessageBrokerChannel, SettingsContainer } from '@guardian/common';
 import {
     ExternalMessageEvents,
     ITask,
@@ -32,7 +32,13 @@ export class Worker {
      * Logger instance
      * @private
      */
-    private logger: Logger;
+    private readonly logger: Logger;
+
+    /**
+     * Ipfs client
+     * @private
+     */
+    private readonly ipfsClient: IpfsClient;
 
     /**
      * Current task ID
@@ -50,12 +56,6 @@ export class Worker {
      * @private
      */
     private _isInUse: boolean = false;
-
-    /**
-     * Ipfs client
-     * @private
-     */
-    private ipfsClient: IpfsClient;
 
     /**
      * Worker in use getter
@@ -100,8 +100,11 @@ export class Worker {
     constructor(
         private readonly channel: MessageBrokerChannel
     ) {
+        const { IPFS_STORAGE_API_KEY } = new SettingsContainer().settings;
+
         this.logger = new Logger();
-        this.ipfsClient = new IpfsClient(process.env.IPFS_STORAGE_API_KEY);
+        this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
+
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
         this.taskTimeout = parseInt(process.env.TASK_TIMEOUT, 10) * 1000; // env in seconds
@@ -171,47 +174,47 @@ export class Worker {
         try {
             switch (task.type) {
                 case WorkerTaskType.ADD_FILE: {
-                        let fileContent = Buffer.from(task.data.payload.content, 'base64');
-                        const data = await this.channel.request<any, any>(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT, task.data.payload);
-                        if (data && data.body) {
-                            fileContent = Buffer.from(data.body, 'base64')
-                        }
-                        const blob: any = new Blob([fileContent]);
-                        const r = await this.ipfsClient.addFiile(blob);
-                        this.channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
-                        result.data = r;
+                    let fileContent = Buffer.from(task.data.payload.content, 'base64');
+                    const data = await this.channel.request<any, any>(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT, task.data.payload);
+                    if (data && data.body) {
+                        fileContent = Buffer.from(data.body, 'base64')
                     }
+                    const blob: any = new Blob([fileContent]);
+                    const r = await this.ipfsClient.addFiile(blob);
+                    this.channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
+                    result.data = r;
+                }
                     break;
 
                 case WorkerTaskType.GET_FILE: {
-                        if (!task.data.payload|| !task.data.payload.cid || !task.data.payload.responseType) {
-                            result.error = 'Invalid CID';
-                        } else {
-                            let fileContent = await this.ipfsClient.getFile(task.data.payload.cid);
-                            if (fileContent instanceof Buffer) {
-                                const data = await this.channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, {
-                                    responseType: !task.data.payload.responseType,
-                                    content: fileContent.toString('base64'),
-                                });
-                                if (data && data.body) {
-                                    fileContent = Buffer.from(data.body, 'base64')
-                                }
-                            }
-
-                            switch (task.data.payload.responseType) {
-                                case 'str':
-                                    result.data = Buffer.from(fileContent, 'binary').toString();
-                                    break;
-
-                                case 'json':
-                                    result.data = Buffer.from(fileContent, 'binary').toJSON();
-                                    break;
-
-                                default:
-                                    result.data = fileContent
+                    if (!task.data.payload || !task.data.payload.cid || !task.data.payload.responseType) {
+                        result.error = 'Invalid CID';
+                    } else {
+                        let fileContent = await this.ipfsClient.getFile(task.data.payload.cid);
+                        if (fileContent instanceof Buffer) {
+                            const data = await this.channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, {
+                                responseType: !task.data.payload.responseType,
+                                content: fileContent.toString('base64'),
+                            });
+                            if (data && data.body) {
+                                fileContent = Buffer.from(data.body, 'base64')
                             }
                         }
+
+                        switch (task.data.payload.responseType) {
+                            case 'str':
+                                result.data = Buffer.from(fileContent, 'binary').toString();
+                                break;
+
+                            case 'json':
+                                result.data = Buffer.from(fileContent, 'binary').toJSON();
+                                break;
+
+                            default:
+                                result.data = fileContent
+                        }
                     }
+                }
                     break;
 
                 case WorkerTaskType.SEND_HEDERA:
@@ -256,7 +259,7 @@ export class Worker {
                 if (e) {
                     error.error = e.message || e;
                 }
-                reject(error);
+                resolve(error);
             }
         })
     }
@@ -299,7 +302,7 @@ export class Worker {
 
         this.currentTaskId = task.id;
 
-        this.logger.info(`Task started: ${this.currentTaskId}`, [this._channelName]);
+        this.logger.info(`Task started: ${task.id}, ${task.type}`, [this._channelName]);
 
         const result = await this.processTaskWithTimeout(task);
 

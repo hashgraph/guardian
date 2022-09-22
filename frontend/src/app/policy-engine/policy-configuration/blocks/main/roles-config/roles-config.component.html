@@ -29,14 +29,14 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Description</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.uiMetaData.description" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="block.uiMetaData.description" [readonly]="readonly">
         </td>
     </tr>
 </table>

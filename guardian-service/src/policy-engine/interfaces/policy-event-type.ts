@@ -20,7 +20,9 @@ export enum PolicyOutputEventType {
     DropdownEvent = 'DropdownEvent',
     Confirm = 'Confirm',
     CreateGroup = 'CreateGroup',
-    JoinGroup = 'JoinGroup'
+    JoinGroup = 'JoinGroup',
+    SignatureQuorumReachedEvent= 'SignatureQuorumReachedEvent',
+    SignatureSetInsufficientEvent= 'SignatureSetInsufficientEvent'
 }
 
 /**

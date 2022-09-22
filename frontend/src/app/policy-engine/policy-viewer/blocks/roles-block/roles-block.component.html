@@ -32,7 +32,7 @@
                                     <mat-option *ngFor="let group of groups" [value]="group">{{group}}</mat-option>
                                 </mat-select>
                             </mat-form-field>
-                            <mat-form-field appearance="outline">
+                            <mat-form-field *ngIf="ifPrivateGroup()" appearance="outline">
                                 <mat-label>Group Label</mat-label>
                                 <input matInput formControlName="groupLabel">
                             </mat-form-field>

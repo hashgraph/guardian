@@ -35,3 +35,28 @@ export interface IGetKeyResponse {
      */
     key: string;
 }
+
+/**
+ * Set global application key interface
+ */
+export interface ISetGlobalApplicationKey {
+    /**
+     * Key type
+     */
+    type: string;
+
+    /**
+     * Key value
+     */
+    key: string
+}
+
+/**
+ * Set global application key interface
+ */
+export interface IGetGlobalApplicationKey {
+    /**
+     * Key
+     */
+    type: string;
+}

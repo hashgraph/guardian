@@ -307,7 +307,7 @@ export interface IPolicyBlock {
     addTargetLink(link: any): void;
 
     /**
-     * Run block acrions
+     * Run block action
      * @param event
      */
     runAction(event: IPolicyEvent<any>): Promise<any>;
@@ -318,6 +318,29 @@ export interface IPolicyBlock {
      * @param state
      */
     updateDataState(user: IPolicyUser, state: any): boolean;
+
+    /**
+     * Join GET Data
+     * @param {IPolicyDocument | IPolicyDocument[]} data
+     * @param {IPolicyUser} user
+     * @param {AnyBlockType} parent
+     */
+    joinData<T extends IPolicyDocument | IPolicyDocument[]>(
+        data: T, user: IPolicyUser, parent: AnyBlockType
+    ): Promise<T>;
+
+    /**
+     * Add Internal Event Listener
+     * @param type
+     */
+    addInternalListener(type: string, callback: Function): void;
+
+    /**
+     * Trigger Internal Event
+     * @param type
+     * @param data
+     */
+    triggerInternalEvent(type: string, data: any): void;
 }
 
 /**
@@ -411,6 +434,21 @@ export interface IPolicySourceBlock extends IPolicyBlock {
      * Get child filter addons
      */
     getChildFiltersAddons(): IPolicyBlock[];
+
+    /**
+     * Get filters from sources
+     * @param user Policy user
+     */
+    getGlobalSourcesFilters(user: IPolicyUser): Promise<{
+        /**
+         * Sources filters
+         */
+        filters: any,
+        /**
+         * Source data type
+         */
+        dataType: string
+    }>;
 
     /**
      * Get filter addons
@@ -644,6 +682,10 @@ export interface IPolicyDocument {
      * Assigned To
      */
     assignedTo?: string;
+    /**
+     * Assigned To
+     */
+    assignedToGroup?: string;
     /**
      * Message Id
      */

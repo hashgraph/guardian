@@ -9,7 +9,10 @@
         </div>
     </div>
     <div *ngIf="fields && documents">
-        <table mat-table [dataSource]="documents" class="table" multiTemplateDataRows>
+        <table mat-table [dataSource]="documents" class="table" multiTemplateDataRows matSort
+            (matSortChange)="onSortChange($event)" [matSortDirection]="sortOptions.direction"
+            [matSortActive]="this.sortOptions.active"
+            [matSortDisabled]="!enableSorting">
             <ng-container [matColumnDef]="'history'">
                 <th mat-header-cell *matHeaderCellDef>
                     History
@@ -22,15 +25,29 @@
             </ng-container>
 
             <ng-container *ngFor="let field of fields" [matColumnDef]="field.index">
-                <th mat-header-cell *matHeaderCellDef>
-                    {{field.title}}
-                    <help-icon *ngIf="field.tooltip" [text]="field.tooltip"></help-icon>
-                </th>
+                <ng-container *ngIf="field.name; then sortingColumn else notSortingColumn">
+                </ng-container>
+                <ng-template #sortingColumn>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                        {{field.title}}
+                        <help-icon *ngIf="field.tooltip" [text]="field.tooltip"></help-icon>
+                    </th>
+                </ng-template>
+                
+                <ng-template #notSortingColumn>
+                    <th mat-header-cell *matHeaderCellDef>
+                        {{field.title}}
+                        <help-icon *ngIf="field.tooltip" [text]="field.tooltip"></help-icon>
+                    </th>
+                </ng-template>
                 <td mat-cell *matCellDef="let element" let>
                     <div [style.width]="field.width">
                         <div *ngIf="getGroup(element, field) as option">
                             <span *ngIf="option.type=='text'" class="text" [title]="getText(element, option)">
                                 {{getText(element, option)}}
+                            </span>
+                            <span *ngIf="option.type=='issuer'" class="text" [title]="getText(element, option)">
+                                {{getIssuer(element, option)}}
                             </span>
                             <span *ngIf="option.type=='button'" class="col-btn" (click)="$event.stopImmediatePropagation();">
                                 <div class="btn-field {{option.uiClass}}" (click)="onButton($event, element, option)">

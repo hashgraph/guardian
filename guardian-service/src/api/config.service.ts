@@ -6,7 +6,7 @@ import {
     MessageResponse,
     MessageError,
     Logger,
-    DataBaseHelper
+    DataBaseHelper, SettingsContainer
 } from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
 import { Environment } from '@hedera-modules';
@@ -31,23 +31,12 @@ export async function configAPI(
      * Update settings
      *
      */
-    ApiResponse(channel, MessageAPI.UPDATE_SETTINGS, async (msg) => {
+    ApiResponse(channel, MessageAPI.UPDATE_SETTINGS, async (settings: CommonSettings) => {
         try {
-            const settings = msg as CommonSettings;
-            const opId = {
-                name: 'OPERATOR_ID',
-                value: settings.operatorId
-            };
-            await settingsRepository.save(opId, {
-                name: 'OPERATOR_ID'
-            });
-            const opKey = {
-                name: 'OPERATOR_KEY',
-                value: settings.operatorKey
-            };
-            await settingsRepository.save(opKey, {
-                name: 'OPERATOR_KEY'
-            });
+            const settingsContainer = new SettingsContainer();
+            await settingsContainer.updateSetting('OPERATOR_ID', settings.operatorId);
+            await settingsContainer.updateSetting('OPERATOR_KEY', settings.operatorKey)
+
             return new MessageResponse(null);
         }
         catch (error) {
@@ -61,15 +50,13 @@ export async function configAPI(
      */
     ApiResponse(channel, MessageAPI.GET_SETTINGS, async (msg) => {
         try {
-            const operatorId = await settingsRepository.findOne({
-                name: 'OPERATOR_ID'
-            });
-            const operatorKey = await settingsRepository.findOne({
-                name: 'OPERATOR_KEY'
-            });
+            const settingsContainer = new SettingsContainer();
+            const { OPERATOR_ID } = settingsContainer.settings;
+
             return new MessageResponse({
-                operatorId: operatorId?.value || process.env.OPERATOR_ID,
-                operatorKey: operatorKey?.value || process.env.OPERATOR_KEY
+                operatorId: OPERATOR_ID,
+                // operatorKey: OPERATOR_KEY
+                operatorKey: ''
             });
         }
         catch (error) {

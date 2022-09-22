@@ -4,7 +4,7 @@ import { IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { PolicyRoles } from '@entity/policy-roles';
 import { MessageServer, MessageStatus } from '@hedera-modules';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -99,6 +99,12 @@ export class GroupManagerBlock {
             } else {
                 throw new Error(`Permission denied`);
             }
+        } else if(member.groupAccessType === GroupAccessType.Global) {
+            if (ref.options.canDelete === 'all' || member.owner === user.did) {
+                await ref.databaseServer.deleteGroup(member);
+            } else {
+                throw new Error(`Permission denied`);
+            }
         } else {
             throw new Error(`Invalid Group type`);
         }
@@ -113,6 +119,8 @@ export class GroupManagerBlock {
                 .setTopicObject(topic)
                 .sendMessage(message, false);
         }
+
+        ref.triggerInternalEvent('remove-user', (new PolicyUser(did, !!ref.dryRun)).setGroup(member));
     }
 
     /**

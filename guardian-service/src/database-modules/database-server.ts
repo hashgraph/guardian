@@ -11,9 +11,10 @@ import { Token as TokenCollection } from '@entity/token';
 import { Topic as TopicCollection } from '@entity/topic';
 import { DryRun } from '@entity/dry-run';
 import { PolicyRoles as PolicyRolesCollection } from '@entity/policy-roles';
-import { DocumentStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
+import { DocumentStatus, IVC, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { BaseEntity, DataBaseHelper } from '@guardian/common';
 import { PolicyInvitations } from '@entity/policy-invitations';
+import { MultiDocuments } from '@entity/multi-documents';
 
 /**
  * Database server
@@ -48,6 +49,7 @@ export class DatabaseServer {
         this.classMap.set(DryRun, 'DryRun');
         this.classMap.set(PolicyRolesCollection, 'PolicyRolesCollection');
         this.classMap.set(PolicyInvitations, 'PolicyInvitations');
+        this.classMap.set(MultiDocuments, 'MultiDocuments');
     }
 
     /**
@@ -56,6 +58,14 @@ export class DatabaseServer {
      */
     public setDryRun(id: string): void {
         this.dryRun = id;
+    }
+
+    /**
+     * Get Dry Run id
+     * @returns Dry Run id
+     */
+    public getDryRun(): string {
+        return this.dryRun;
     }
 
     /**
@@ -139,6 +149,20 @@ export class DatabaseServer {
             return (await new DataBaseHelper(DryRun).find(_filters, options)) as any;
         } else {
             return await new DataBaseHelper(entityClass).find(filters, options);
+        }
+    }
+
+    /**
+     * Find data by aggregation
+     * @param entityClass Entity class
+     * @param aggregation Aggragation filter
+     * @returns
+     */
+    private async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: any[]): Promise<T[]> {
+        if (this.dryRun) {
+            return await new DataBaseHelper(DryRun).aggregate(aggregation);
+        } else {
+            return await new DataBaseHelper(entityClass).aggregate(aggregation);
         }
     }
 
@@ -361,6 +385,7 @@ export class DatabaseServer {
             item.owner = row.owner;
             item.group = row.group;
             item.assignedTo = row.assignedTo;
+            item.assignedToGroup = row.assignedToGroup;
             item.option = row.option;
             item.schema = row.schema;
             item.hederaStatus = row.hederaStatus;
@@ -532,6 +557,42 @@ export class DatabaseServer {
      */
     public async getApprovalDocument(filters: any): Promise<ApprovalDocumentCollection> {
         return await this.findOne(ApprovalDocumentCollection, filters);
+    }
+
+    /**
+     * Get Vc Documents
+     * @param aggregation
+     * @virtual
+     */
+    public async getVcDocumentsByAggregation(aggregation: any[]): Promise<VcDocumentCollection[]> {
+        return await this.aggregate(VcDocumentCollection, aggregation);
+    }
+
+    /**
+     * Get Vp Documents
+     * @param aggregation
+     * @virtual
+     */
+    public async getVpDocumentsByAggregation(aggregation: any[]): Promise<VpDocumentCollection[]> {
+        return await this.aggregate(VpDocumentCollection, aggregation);
+    }
+
+    /**
+     * Get Did Documents
+     * @param aggregation
+     * @virtual
+     */
+    public async getDidDocumentsByAggregation(aggregation: any[]): Promise<DidDocumentCollection[]> {
+        return await this.aggregate(DidDocumentCollection, aggregation);
+    }
+
+    /**
+     * Get Approval Documents
+     * @param aggregation
+     * @virtual
+     */
+    public async getApprovalDocumentsByAggregation(aggregation: any[]): Promise<ApprovalDocumentCollection[]> {
+        return await this.aggregate(ApprovalDocumentCollection, aggregation);
     }
 
     /**
@@ -796,6 +857,20 @@ export class DatabaseServer {
     }
 
     /**
+     * Get Active Group By User
+     * @param policyId
+     * @param did
+     *
+     * @virtual
+     */
+     public async getActiveGroupByUser(policyId: string, did: string): Promise<PolicyRolesCollection> {
+        if (!did) {
+            return null;
+        }
+        return await this.findOne(PolicyRolesCollection, { policyId, did , active: true });
+    }
+
+    /**
      * Get members
      *
      * @param group
@@ -820,6 +895,16 @@ export class DatabaseServer {
      */
     public async getAllPolicyUsers(policyId: string): Promise<PolicyRolesCollection[]> {
         return await this.find(PolicyRolesCollection, { policyId, active: true });
+    }
+
+    /**
+     * Get all policy users
+     * @param policyId
+     *
+     * @virtual
+     */
+    public async getAllUsersByRole(policyId: string, uuid: string, role: string): Promise<PolicyRolesCollection[]> {
+        return await this.find(PolicyRolesCollection, { policyId, uuid, role, active: true });
     }
 
     /**
@@ -869,6 +954,128 @@ export class DatabaseServer {
         }
     }
 
+    /**
+     * Get MultiSign Status by document or user
+     * @param uuid
+     * @param documentId
+     * @param userId
+     *
+     * @virtual
+     */
+    public async getMultiSignStatus(uuid: string, documentId: string, userId: string = 'Group'): Promise<MultiDocuments> {
+        return await this.findOne(MultiDocuments, { uuid, documentId, userId });
+    }
+
+    /**
+     * Get MultiSign Statuses
+     * @param uuid
+     * @param documentId
+     * @param group
+     *
+     * @virtual
+     */
+    public async getMultiSignDocuments(uuid: string, documentId: string, group: string): Promise<MultiDocuments[]> {
+        return await this.find(MultiDocuments, {
+            where: {
+                uuid: { $eq: uuid },
+                documentId: { $eq: documentId },
+                group: { $eq: group },
+                userId: { $ne: 'Group' }
+            }
+        });
+    }
+
+    /**
+     * Get MultiSign Statuses by group
+     * @param uuid
+     * @param group
+     *
+     * @virtual
+     */
+    public async getMultiSignDocumentsByGroup(uuid: string, group: string): Promise<MultiDocuments[]> {
+        return await this.find(MultiDocuments, {
+            where: {
+                uuid: { $eq: uuid },
+                group: { $eq: group },
+                userId: { $eq: 'Group' },
+                status: { $eq: 'NEW' }
+            }
+        });
+    }
+
+    /**
+     * Set MultiSign Status by document
+     * @param uuid
+     * @param documentId
+     * @param group
+     * @param status
+     *
+     * @virtual
+     */
+    public async setMultiSigStatus(
+        uuid: string,
+        documentId: string,
+        group: string,
+        status: string
+    ): Promise<MultiDocuments> {
+        let item = await this.findOne(MultiDocuments, {
+            where: {
+                uuid: { $eq: uuid },
+                documentId: { $eq: documentId },
+                group: { $eq: group },
+                userId: { $eq: 'Group' }
+            }
+        });
+        if (item) {
+            item.status = status;
+            await this.update(MultiDocuments, item.id, item);
+        } else {
+            item = this.create(MultiDocuments, {
+                uuid,
+                documentId,
+                status,
+                document: null,
+                userId: 'Group',
+                did: null,
+                group,
+                username: null
+            });
+            await this.save(MultiDocuments, item);
+        }
+        return item;
+    }
+
+    /**
+     * Set MultiSign Status by user
+     * @param uuid
+     * @param documentId
+     * @param user
+     * @param status
+     * @param document
+     *
+     * @virtual
+     */
+    public async setMultiSigDocument(
+        uuid: string,
+        documentId: string,
+        user: any,
+        status: string,
+        document: IVC
+    ): Promise<MultiDocuments> {
+        const doc = this.create(MultiDocuments, {
+            uuid,
+            documentId,
+            status,
+            document,
+            userId: user.id,
+            did: user.did,
+            group: user.group,
+            username: user.username
+        });
+        await this.save(MultiDocuments, doc);
+        return doc;
+    }
+
     //Static
 
     /**
@@ -900,8 +1107,8 @@ export class DatabaseServer {
      * Get schemas
      * @param filters
      */
-    public static async getSchemas(filters?: any): Promise<SchemaCollection[]> {
-        return await new DataBaseHelper(SchemaCollection).find(filters);
+    public static async getSchemas(filters?: any, options?: any): Promise<SchemaCollection[]> {
+        return await new DataBaseHelper(SchemaCollection).find(filters, options);
     }
 
     /**

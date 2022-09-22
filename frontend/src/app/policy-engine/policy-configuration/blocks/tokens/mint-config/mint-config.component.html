@@ -20,7 +20,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Rule</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.rule" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="block.rule" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -37,7 +37,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Account Id (Field)</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.accountId" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="block.accountId" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -45,7 +45,7 @@
         <td class="propRowCell cellName">Memo</td>
         <td class="propRowCell">
             <span class="mint-memo-prefix" matTooltip="VP message identifier">**********.*********</span>
-            <input class="mint-memo-input" [(ngModel)]="block.memo" [readonly]="readonly">
+            <input class="prop-input" class="mint-memo-input" [(ngModel)]="block.memo" [readonly]="readonly">
         </td>
     </tr>
 </table>

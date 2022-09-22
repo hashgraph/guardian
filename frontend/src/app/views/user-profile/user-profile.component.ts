@@ -12,6 +12,7 @@ import { SchemaService } from 'src/app/services/schema.service';
 import { HeaderPropsService } from 'src/app/services/header-props.service';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 enum OperationMode {
     None, Generate, SetProfile, Associate
@@ -79,6 +80,7 @@ export class UserProfileComponent implements OnInit {
         private schemaService: SchemaService,
         private informService: InformService,
         private taskService: TasksService,
+        private webSocketService: WebSocketService,
         private fb: FormBuilder,
         public dialog: MatDialog,
         private headerProps: HeaderPropsService) {
@@ -296,7 +298,7 @@ export class UserProfileComponent implements OnInit {
             switch (operationMode) {
                 case OperationMode.Generate:
                     this.taskService.get(taskId).subscribe((task) => {
-                        const { id, key} = task.result;
+                        const { id, key } = task.result;
                         value.id = id;
                         value.key = key;
                         this.hederaForm.setValue(value);
@@ -304,6 +306,9 @@ export class UserProfileComponent implements OnInit {
                     });
                     break;
                 case OperationMode.SetProfile:
+                    this.webSocketService.updateProfile();
+                    this.loadDate();
+                    break;
                 case OperationMode.Associate:
                     this.loadDate();
                     break;

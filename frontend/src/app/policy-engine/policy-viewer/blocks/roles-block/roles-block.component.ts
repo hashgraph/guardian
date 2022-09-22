@@ -28,6 +28,7 @@ export class RolesBlockComponent implements OnInit {
     description?: any;
     roleForm: FormGroup;
     type: any = 'new';
+    groupMap: any;
 
     params: any;
     inviteRole: string = '';
@@ -98,6 +99,8 @@ export class RolesBlockComponent implements OnInit {
 
             this.groups = data.groups;
             this.roles = data.roles;
+            this.groupMap = data.groupMap || {};
+
             this.title = uiMetaData.title;
             this.description = uiMetaData.description;
             this.isGroup = !!(this.groups && this.groups.length);
@@ -113,7 +116,7 @@ export class RolesBlockComponent implements OnInit {
             } else {
                 this.roleForm = this.fb.group({
                     roleOrGroup: ['', Validators.required],
-                    groupLabel: this.isGroup ? ['', Validators.required] : [''],
+                    groupLabel: [''],
                     invitation: [''],
                 });
             }
@@ -157,7 +160,7 @@ export class RolesBlockComponent implements OnInit {
         if (this.type === 'new') {
             this.roleForm = this.fb.group({
                 roleOrGroup: ['', Validators.required],
-                groupLabel: this.isGroup ? ['', Validators.required] : [''],
+                groupLabel: [''],
                 invitation: [''],
             });
         } else {
@@ -189,5 +192,12 @@ export class RolesBlockComponent implements OnInit {
                 this.groupLabel = '';
             }
         }
+    }
+
+    ifPrivateGroup() {
+        if (this.groupMap && this.groupMap[this.roleForm.value.roleOrGroup]) {
+            return this.groupMap[this.roleForm.value.roleOrGroup].groupAccessType === 'Private';
+        }
+        return false;
     }
 }

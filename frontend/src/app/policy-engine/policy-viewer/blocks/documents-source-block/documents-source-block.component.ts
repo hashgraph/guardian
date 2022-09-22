@@ -17,9 +17,9 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
     styleUrls: ['./documents-source-block.component.css'],
     animations: [
         trigger('statusExpand', [
-          state('collapsed', style({height: '0px', minHeight: '0'})),
-          state('expanded', style({height: '*'})),
-          transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+            state('collapsed', style({ height: '0px', minHeight: '0' })),
+            state('expanded', style({ height: '*' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ]
 })
@@ -43,6 +43,11 @@ export class DocumentsSourceBlockComponent implements OnInit {
     commonAddons: any[];
     paginationAddon: any;
     statusDetailed: any;
+    sortOptions: any = {
+        active: '',
+        direction: ''
+    };
+    enableSorting: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -124,7 +129,12 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.columns = this.fields.map(f => f.index);
             this.columns.unshift('history');
             this.documents = data.data || [];
+            this.sortHistory(this.documents);
             this.isActive = true;
+            const sortingField = this.fields.find(item => item.name === data.orderField);
+            this.sortOptions.active = sortingField && sortingField.index || '';
+            this.sortOptions.direction = data.orderDirection && data.orderDirection.toLowerCase() || '';
+            this.enableSorting = data.enableSorting;
             this.insert = data.insert;
             this.addons = data.blocks || [];
             this.commonAddons = data.commonAddons;
@@ -140,6 +150,21 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.isActive = false;
             this.addons = [];
             this.paginationAddon = null;
+        }
+    }
+
+    sortHistory(documents: any) {
+        if (!documents) {
+            return;
+        }
+        for (const doc of documents) {
+            if (doc.history) {
+                doc.history.sort(function (a: any, b: any) {
+                    const aDate = new Date(a.created as string);
+                    const bDate = new Date(b.created as string);
+                    return bDate.getTime() - aDate.getTime();
+                });
+            }
         }
     }
 
@@ -205,6 +230,32 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
+    getIssuer(row: any, field: any) {
+        try {
+            if (field.content) {
+                return field.content;
+            }
+            if (field.names) {
+                let d = row[field.names[0]];
+                for (let i = 1; i < field.names.length; i++) {
+                    const name = field.names[i];
+                    d = d[name];
+                }
+                if (typeof d === 'object') {
+                    return d.id;
+                }
+                return d;
+            } else {
+                if (typeof row[field.name] === 'object') {
+                    return row[field.name].id;
+                }
+                return row[field.name];
+            }
+        } catch (error) {
+            return "";
+        }
+    }
+
     getGroup(row: any, field: any): any | null {
         const items = this.fieldMap[field.title];
         if (items) {
@@ -235,9 +286,15 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     getConfig(row: any, field: any, block: any) {
-        const config = { ...block };
-        config.data = row;
-        return config;
+        if (row.blocks && row.blocks[block.id]) {
+            const config = row.blocks[block.id];
+            config.data = row;
+            return config;
+        } else {
+            const config = { ...block };
+            config.data = row;
+            return config;
+        }
     }
 
     onButton(event: MouseEvent, row: any, field: any) {
@@ -277,5 +334,16 @@ export class DocumentsSourceBlockComponent implements OnInit {
             console.error(e.error);
             this.loading = false;
         });
+    }
+
+    onSortChange(event: any) {
+        const field = this.fields.find(item => item.index === event.active);
+        if (!field || !field.name) {
+            return;
+        }
+        this.policyEngineService.setBlockData(this.id, this.policyId, {
+            orderField: field.name,
+            orderDirection: event.direction
+        }).subscribe();
     }
 }

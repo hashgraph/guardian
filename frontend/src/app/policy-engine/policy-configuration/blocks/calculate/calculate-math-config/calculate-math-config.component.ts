@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -8,10 +8,8 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-mode
 @Component({
     selector: 'calculate-math-config',
     templateUrl: './calculate-math-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './calculate-math-config.component.css'
-    ]
+    styleUrls: ['./calculate-math-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class CalculateMathConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;
@@ -56,7 +54,7 @@ export class CalculateMathConfigComponent implements OnInit {
         })
     }
 
-    onRemoveEquation(i:number) {
+    onRemoveEquation(i: number) {
         this.block.equations.splice(i, 1);
     }
 }

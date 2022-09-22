@@ -143,9 +143,9 @@ export class WebSocketService {
             this.sendingEvent = true;
             this.socket?.next(data);
             setTimeout(() => {
-                    this.sendingEvent = false;
-                    resolve();
-                },
+                this.sendingEvent = false;
+                resolve();
+            },
                 100
             );
         })
@@ -183,7 +183,8 @@ export class WebSocketService {
                     this.updateStatus(event.data);
                     const allStatesReady = !this.serviesStates.find((item: any) => item.state !== ApplicationStates.READY)
                     if (!allStatesReady) {
-                        this.router.navigate(['/status']);
+                        const last = location.pathname === '/status' ? null : btoa(location.href);
+                        this.router.navigate(['/status'], { queryParams: { last } });
                     }
                     this.servicesReady.next(allStatesReady);
                     break;

@@ -4,28 +4,21 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.title" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="block.title" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Description</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.description" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="block.description" [readonly]="readonly">
         </td>
     </tr>
-    <!-- <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Icon</td>
-        <td class="propRowCell">
-            <input [(ngModel)]="block.icon" [readonly]="readonly">
-        </td>
-    </tr> -->
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Visible</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.visible" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.visible" [readonly]="readonly">
         </td>
     </tr>
 
@@ -45,8 +38,8 @@
         <td class="propRowCell cellName">Icon</td>
         <td class="propRowCell" >
             <div class="icon-container">
-                <input [(ngModel)]="block.icon" [readonly]="readonly" class="icon-input">
-                <input type="file" class="file-input" accept="image/*"
+                <input class="prop-input" [(ngModel)]="block.icon" [readonly]="readonly" class="icon-input">
+                <input class="prop-input" type="file" class="file-input" accept="image/*"
                     (change)="onFileSelected($event, block)" #fileUpload>
                 <ng-container [ngSwitch]="fileLoading" *ngIf="block.iconType === 'custom' && !readonly">
                     <div *ngSwitchCase="true" >
@@ -131,7 +124,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Value</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.filters[i].value" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="block.filters[i].value" [readonly]="readonly">
             </td>
         </tr>
     </ng-container>
@@ -167,7 +160,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Name</td>
             <td class="propRowCell">
-                <input [(ngModel)]="block.variables[i].name" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="block.variables[i].name" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.variableGroup || propHidden.variables[i]">

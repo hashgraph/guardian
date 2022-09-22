@@ -79,6 +79,13 @@ export class PolicyComponentsUtils {
     private static readonly PolicyById: Map<string, IPolicyInstance> = new Map();
 
     /**
+     * Policy Internal Events
+     * policyId -> eventType -> callback
+     * @private
+     */
+    private static readonly InternalListeners: Map<string, Map<string, Function[]>> = new Map();
+
+    /**
      * Log events
      * @param text
      * @private
@@ -360,6 +367,7 @@ export class PolicyComponentsUtils {
         }
         PolicyComponentsUtils.TagMapByPolicyId.delete(policyId);
         PolicyComponentsUtils.ActionMapByPolicyId.delete(policyId);
+        PolicyComponentsUtils.InternalListeners.delete(policyId);
     }
 
     /**
@@ -588,4 +596,38 @@ export class PolicyComponentsUtils {
         return result;
     }
 
+    /**
+     * Add Internal Event Listener
+     * @param type
+     */
+    public static AddInternalListener(type: string, policyId: string, callback: Function) {
+        let policyMap = PolicyComponentsUtils.InternalListeners.get(policyId);
+        if (!policyMap) {
+            policyMap = new Map();
+            PolicyComponentsUtils.InternalListeners.set(policyId, policyMap);
+        }
+        let listeners = policyMap.get(type);
+        if (!listeners) {
+            listeners = [];
+            policyMap.set(type, listeners);
+        }
+        listeners.push(callback);
+    }
+
+    /**
+     * Trigger Internal Event
+     * @param type
+     * @param data
+     */
+    public static async TriggerInternalEvent(type: string, policyId: string, data: any): Promise<void> {
+        const policyMap = PolicyComponentsUtils.InternalListeners.get(policyId);
+        if (policyMap) {
+            const listeners = policyMap.get(type);
+            if (listeners) {
+                for (const callback of listeners) {
+                    await callback(data);
+                }
+            }
+        }
+    }
 }

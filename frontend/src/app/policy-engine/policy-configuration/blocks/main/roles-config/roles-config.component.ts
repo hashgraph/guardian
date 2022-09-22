@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -8,10 +8,8 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-mode
 @Component({
     selector: 'roles-config',
     templateUrl: './roles-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './roles-config.component.css'
-    ]
+    styleUrls: ['./roles-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class RolesConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;

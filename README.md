@@ -78,7 +78,17 @@ If you build with docker [MongoDB](https://www.mongodb.com), [NodeJS](https://no
    ```plaintext
    IPFS_STORAGE_API_KEY=""
    ```
+   in `worker-service/.env`:
 
+   ```plaintext
+   IPFS_STORAGE_API_KEY=""
+   ```
+  in `worker-service/.env.docker`:
+
+   ```plaintext
+   IPFS_STORAGE_API_KEY=""
+   ```
+  
 4. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
    ```shell

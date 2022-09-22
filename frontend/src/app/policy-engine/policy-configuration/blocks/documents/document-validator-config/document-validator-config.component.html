@@ -29,28 +29,28 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Check Owned by User</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.checkOwnerDocument" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.checkOwnerDocument" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Check Owned by Group</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.checkOwnerByGroupDocument" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.checkOwnerByGroupDocument" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Check Assigned to User</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.checkAssignDocument" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.checkAssignDocument" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Check Assigned to Group</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.checkAssignByGroupDocument" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.checkAssignByGroupDocument" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propHeader">
@@ -99,14 +99,14 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Field</td>
             <td class="propRowCell">
-                <input [(ngModel)]="condition.field" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="condition.field" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Value</td>
             <td class="propRowCell">
-                <input [(ngModel)]="condition.value" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="condition.value" [readonly]="readonly">
             </td>
         </tr>
     </ng-container>

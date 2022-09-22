@@ -1,16 +1,14 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 /**
  * Settings for block of 'mintDocument' and 'wipeDocument' types.
  */
 @Component({
     selector: 'mint-config',
     templateUrl: './mint-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './mint-config.component.css'
-    ]
+    styleUrls: ['./mint-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class MintConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;
