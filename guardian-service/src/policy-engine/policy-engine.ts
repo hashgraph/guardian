@@ -7,7 +7,8 @@ import {
     Schema,
     UserRole,
     IUser,
-    PolicyType
+    PolicyType,
+    IRootConfig
 } from '@guardian/interfaces';
 import {
     IAuthUser,
@@ -293,7 +294,7 @@ export class PolicyEngine {
      * @param root
      * @param notifier
      */
-    public async publishSchemas(model: Policy, owner: string, root: any, notifier: INotifier): Promise<Policy> {
+    public async publishSchemas(model: Policy, owner: string, root: IRootConfig, notifier: INotifier): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
         notifier.info(`Found ${schemas.length} schemas`);
         const schemaIRIs = schemas.map(s => s.iri);
@@ -657,7 +658,7 @@ export class PolicyEngine {
     public async importPolicyMessage(
         messageId: string,
         owner: string,
-        hederaAccount: any,
+        hederaAccount: IRootConfig,
         versionOfTopicId: string,
         notifier: INotifier
     ): Promise<Policy> {

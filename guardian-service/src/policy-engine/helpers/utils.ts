@@ -3,7 +3,7 @@ import { Topic } from '@entity/topic';
 import { HederaSDKHelper, HederaUtils, VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
-import { DidDocumentStatus, DocumentSignature, DocumentStatus, ExternalMessageEvents, Schema, SchemaEntity, TopicType } from '@guardian/interfaces';
+import { DidDocumentStatus, DocumentSignature, DocumentStatus, ExternalMessageEvents, IRootConfig, Schema, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { ExternalEventChannel, IAuthUser } from '@guardian/common';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { TopicId } from '@hashgraph/sdk';
@@ -203,7 +203,7 @@ export class PolicyUtils {
         ref: AnyBlockType,
         token: Token,
         tokenValue: number,
-        root: any,
+        root: IRootConfig,
         targetAccount: string,
         uuid: string,
         transactionMemo: string
@@ -275,7 +275,7 @@ export class PolicyUtils {
         ref: AnyBlockType,
         token: Token,
         tokenValue: number,
-        root: any,
+        root: IRootConfig,
         targetAccount: string,
         uuid: string
     ): Promise<void> {
@@ -536,7 +536,7 @@ export class PolicyUtils {
     public static async getOrCreateTopic(
         ref: AnyBlockType,
         topicName: string,
-        root: any,
+        root: IRootConfig,
         user: any,
         memoObj?: any
     ): Promise<Topic> {

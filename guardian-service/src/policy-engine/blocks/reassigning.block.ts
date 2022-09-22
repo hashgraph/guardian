@@ -8,6 +8,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@poli
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IRootConfig } from '@guardian/interfaces';
 
 /**
  * Reassigning block
@@ -59,7 +60,7 @@ export class ReassigningBlock {
         const vcDocument = document.document;
         const owner: IPolicyUser = PolicyUtils.getDocumentOwner(ref, document);
 
-        let root: any;
+        let root: IRootConfig;
         let groupContext: any;
         if (ref.options.issuer === 'owner') {
             root = await PolicyUtils.getHederaAccount(ref, document.owner);

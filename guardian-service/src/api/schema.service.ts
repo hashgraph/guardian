@@ -7,7 +7,10 @@ import {
     SchemaStatus,
     TopicType,
     SchemaHelper,
-    ModelHelper, GenerateUUIDv4, Schema,
+    ModelHelper,
+    GenerateUUIDv4,
+    Schema,
+    IRootConfig,
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
@@ -501,7 +504,7 @@ function fixSchemaDefsOnImport(iri: string, schemas: Schema[], map: any) {
  * @param owner Owner
  * @param root HederaAccount
  */
-export async function publishDefsSchemas(defs: any, version: string, owner: string, root: any) {
+export async function publishDefsSchemas(defs: any, owner: string, root: IRootConfig) {
     if (!defs) {
         return;
     }
@@ -512,6 +515,7 @@ export async function publishDefsSchemas(defs: any, version: string, owner: stri
             'document.$id': schemaId
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
+            console.log(schema.iri, schema.owner, owner);
             schema = await incrementSchemaVersion(schema.iri, owner);
             await findAndPublishSchema(schema.id, schema.version, owner, root, emptyNotifier());
         }
@@ -530,7 +534,7 @@ export async function findAndPublishSchema(
     id: string,
     version: string,
     owner: string,
-    root: any,
+    root: IRootConfig,
     notifier: INotifier
 ): Promise<SchemaCollection> {
     notifier.start('Load schema');
@@ -551,7 +555,7 @@ export async function findAndPublishSchema(
 
     notifier.completedAndStart('Publishing related schemas');
     const oldSchemaId = item.document?.$id;
-    await publishDefsSchemas(item.document?.$defs, version, root, owner);
+    await publishDefsSchemas(item.document?.$defs, owner, root);
     item = await DatabaseServer.getSchema(id);
 
     notifier.completedAndStart('Resolve topic');

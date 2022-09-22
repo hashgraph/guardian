@@ -5,7 +5,7 @@ export interface IRootConfig {
     /**
      * ID
      */
-    id: string;
+    id?: string;
     /**
      * Hedera account id
      */

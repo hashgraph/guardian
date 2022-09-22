@@ -1,5 +1,5 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { AuthEvents, UserRole } from '@guardian/interfaces';
+import { AuthEvents, IRootConfig, UserRole } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/service-requests-base';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Inject } from '@helpers/decorators/inject';
@@ -177,20 +177,7 @@ export class Users extends ServiceRequestsBase {
      * Get hedera account
      * @param did
      */
-    public async getHederaAccount(did: string): Promise<{
-        /**
-         * Account id
-         */
-        hederaAccountId: string;
-        /**
-         * Account key
-         */
-        hederaAccountKey: string;
-        /**
-         * DID
-         */
-        did: string;
-    }> {
+    public async getHederaAccount(did: string): Promise<IRootConfig> {
         if (!did) {
             throw new Error('Invalid DID');
         }
