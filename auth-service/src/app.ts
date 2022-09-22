@@ -6,6 +6,7 @@ import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { InitializeVault } from './vaults';
+import { ImportKeysFromDatabase } from '@helpers/import-keys-from-database';
 
 Promise.all([
     Migration({
@@ -36,6 +37,10 @@ Promise.all([
     new Logger().setChannel(channel);
     new AccountService(channel).registerListeners();
     new WalletService(channel, vault).registerListeners();
+
+    if (process.env.IMPORT_KEYS_FROM_DB) {
+        await ImportKeysFromDatabase(vault);
+    }
 
     state.updateState(ApplicationStates.READY);
     new Logger().info('auth service started', ['AUTH_SERVICE']);
