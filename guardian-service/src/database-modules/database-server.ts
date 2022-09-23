@@ -160,6 +160,14 @@ export class DatabaseServer {
      */
     private async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: any[]): Promise<T[]> {
         if (this.dryRun) {
+            if (Array.isArray(aggregation)) {
+                aggregation.push({
+                    $match: {
+                        dryRunId: this.dryRun,
+                        dryRunClass: this.classMap.get(entityClass)
+                    }
+                })
+            }
             return await new DataBaseHelper(DryRun).aggregate(aggregation);
         } else {
             return await new DataBaseHelper(entityClass).aggregate(aggregation);
