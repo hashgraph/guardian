@@ -408,6 +408,10 @@ export class PolicyRolesBlock {
         } else {
             throw new BlockActionError('Invalid role', ref.blockType, ref.uuid);
         }
+        const ifUserGroup = await ref.databaseServer.checkUserInGroup(group);
+        if (ifUserGroup) {
+            throw new BlockActionError('You are already a member of the group', ref.blockType, ref.uuid);
+        }
 
         group.messageId = await this.createVC(ref, user, group);
 

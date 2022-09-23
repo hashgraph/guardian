@@ -842,6 +842,21 @@ export class DatabaseServer {
     }
 
     /**
+     * Check User In Group
+     * @param group
+     *
+     * @virtual
+     */
+    public async checkUserInGroup(group: any): Promise<PolicyRolesCollection> {
+        return await this.findOne(PolicyRolesCollection, {
+            policyId: group.policyId,
+            did: group.did,
+            owner: group.owner,
+            uuid: group.uuid
+        });
+    }
+
+    /**
      * Get Groups By User
      * @param policyId
      * @param did
@@ -863,11 +878,11 @@ export class DatabaseServer {
      *
      * @virtual
      */
-     public async getActiveGroupByUser(policyId: string, did: string): Promise<PolicyRolesCollection> {
+    public async getActiveGroupByUser(policyId: string, did: string): Promise<PolicyRolesCollection> {
         if (!did) {
             return null;
         }
-        return await this.findOne(PolicyRolesCollection, { policyId, did , active: true });
+        return await this.findOne(PolicyRolesCollection, { policyId, did, active: true });
     }
 
     /**
@@ -904,7 +919,7 @@ export class DatabaseServer {
      * @virtual
      */
     public async getAllUsersByRole(policyId: string, uuid: string, role: string): Promise<PolicyRolesCollection[]> {
-        return await this.find(PolicyRolesCollection, { policyId, uuid, role, active: true });
+        return await this.find(PolicyRolesCollection, { policyId, uuid, role });
     }
 
     /**
