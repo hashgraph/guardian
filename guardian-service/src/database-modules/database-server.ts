@@ -525,6 +525,18 @@ export class DatabaseServer {
     }
 
     /**
+     * Remove Aggregate Document
+     * @param hash
+     * @param blockId
+     *
+     * @virtual
+     */
+    public async removeAggregateDocument(hash: string, blockId: string): Promise<void> {
+        const item = await this.find(AggregateVC, { blockId, hash });
+        await this.remove(AggregateVC, item);
+    }
+
+    /**
      * Create Aggregate Documents
      * @param item
      * @param blockId
@@ -871,11 +883,11 @@ export class DatabaseServer {
      *
      * @virtual
      */
-     public async getActiveGroupByUser(policyId: string, did: string): Promise<PolicyRolesCollection> {
+    public async getActiveGroupByUser(policyId: string, did: string): Promise<PolicyRolesCollection> {
         if (!did) {
             return null;
         }
-        return await this.findOne(PolicyRolesCollection, { policyId, did , active: true });
+        return await this.findOne(PolicyRolesCollection, { policyId, did, active: true });
     }
 
     /**

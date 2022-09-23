@@ -101,7 +101,7 @@ export class CustomLogicBlock {
                     const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
                     const context = SchemaHelper.getContext(outputSchema);
                     const relationships = documents.filter(d => !!d.messageId).map(d => d.messageId);
-                    let accounts = documents.reduce((a: any, b: any) => Object.assign(a, b.accounts), {});
+                    const accounts = documents.reduce((a: any, b: any) => Object.assign(a, b.accounts), {});
                     const VCHelper = new VcHelper();
 
                     const processing = async (document) => {
