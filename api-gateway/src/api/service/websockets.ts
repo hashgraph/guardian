@@ -120,7 +120,6 @@ export class WebSocketsService {
      */
     private registerConnection(): void {
         this.wss.on('connection', async (ws: any, req: IncomingMessage) => {
-            ws.user = await this.getUserByUrl(req.url);
             ws.on('message', async (data: Buffer) => {
                 const message = data.toString();
                 if (message === 'ping') {
@@ -130,6 +129,7 @@ export class WebSocketsService {
                     this.wsResponse(ws, message);
                 }
             });
+            ws.user = await this.getUserByUrl(req.url);
         });
     }
 

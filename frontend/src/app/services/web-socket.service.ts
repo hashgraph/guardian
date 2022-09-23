@@ -115,9 +115,8 @@ export class WebSocketService {
                     this.reconnect();
                 }
             });
+        this.send('SET_ACCESS_TOKEN', this.auth.getAccessToken());
         this.heartbeat();
-        await this.send('SET_ACCESS_TOKEN', this.auth.getAccessToken());
-        await this.send(MessageAPI.GET_STATUS, null);
     }
 
     private heartbeat() {
