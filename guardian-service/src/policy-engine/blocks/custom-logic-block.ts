@@ -79,17 +79,30 @@ export class CustomLogicBlock {
 
             const done = async (result) => {
                 try {
-                    const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+                    const owner = PolicyUtils.getDocumentOwner(ref, documents[0]);
+                    let root;
+                    switch(ref.options.documentSigner) {
+                        case 'owner':
+                            root = await PolicyUtils.getHederaAccount(ref, owner.did);
+                            break;
+                        case 'issuer':
+                            const issuer = PolicyUtils.getDocumentIssuer(documents[0].document);
+                            root = await PolicyUtils.getHederaAccount(ref, issuer);
+                            break;
+                        default:
+                            root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+                            break;
+                    }
                     const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
                     const context = SchemaHelper.getContext(outputSchema);
                     const relationships = documents.filter(d => !!d.messageId).map(d => d.messageId);
+                    let accounts = documents.reduce((a: any, b: any) => Object.assign(a, b.accounts), {});
                     const VCHelper = new VcHelper();
-                    const owner = PolicyUtils.getDocumentOwner(ref, documents[0]);
 
                     const processing = async (document) => {
 
                         const newVC = await VCHelper.createVC(
-                            ref.policyOwner,
+                            root.did,
                             root.hederaAccountKey,
                             {
                                 ...context,
@@ -102,6 +115,7 @@ export class CustomLogicBlock {
                         item.type = outputSchema.iri;
                         item.schema = outputSchema.iri;
                         item.relationships = relationships.length ? relationships : null;
+                        item.accounts = Object.keys(accounts).length ? accounts : null;;
                         return item;
                     }
 
