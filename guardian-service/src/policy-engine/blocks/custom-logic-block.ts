@@ -3,12 +3,15 @@ import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { VcHelper } from '@helpers/vc-helper';
-import { SchemaHelper } from '@guardian/interfaces';
+import { GenerateUUIDv4, SchemaHelper } from '@guardian/interfaces';
 import * as mathjs from 'mathjs';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-modules';
+import { KeyType } from '@helpers/wallet';
+import { BlockActionError } from '@policy-engine/errors';
 
 /**
  * Custom logic block
@@ -70,6 +73,7 @@ export class CustomLogicBlock {
     execute(state: IPolicyEventState, user: IPolicyUser): Promise<any> {
         return new Promise((resolve, reject) => {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
+            const idType = ref.options.idType;
             let documents: IPolicyDocument[] = null;
             if (Array.isArray(state.data)) {
                 documents = state.data;
@@ -80,6 +84,7 @@ export class CustomLogicBlock {
             const done = async (result) => {
                 try {
                     const owner = PolicyUtils.getDocumentOwner(ref, documents[0]);
+                    const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
                     let root;
                     switch(ref.options.documentSigner) {
                         case 'owner':
@@ -101,14 +106,23 @@ export class CustomLogicBlock {
 
                     const processing = async (document) => {
 
+                        const vcSubject = {
+                            id: idType === 'DOCUMENT' 
+                                ? documents[0].document.id 
+                                : await this.generateId(
+                                    idType, user, hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey
+                                ),
+                            ...context,
+                            ...document,
+                            policyId: ref.policyId
+                        };
+                        if (ref.dryRun) {
+                            VCHelper.addDryRunContext(vcSubject);
+                        }
                         const newVC = await VCHelper.createVC(
                             root.did,
                             root.hederaAccountKey,
-                            {
-                                ...context,
-                                ...document,
-                                policyId: ref.policyId
-                            }
+                            vcSubject
                         );
 
                         const item = PolicyUtils.createVC(ref, owner, newVC);
@@ -139,5 +153,53 @@ export class CustomLogicBlock {
             const func = Function(`const [done, user, documents, mathjs] = arguments; ${ref.options.expression}`);
             func.apply(documents, [done, user, documents, mathjs]);
         });
+    }
+
+    /**
+     * Generate id
+     * @param idType
+     * @param user
+     * @param userHederaAccount
+     * @param userHederaKey
+     */
+     async generateId(idType: string, user: IPolicyUser, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        try {
+            if (idType === 'UUID') {
+                return GenerateUUIDv4();
+            }
+            if (idType === 'DID') {
+                const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);
+
+                const didObject = DIDDocument.create(null, topic.topicId);
+                const did = didObject.getDid();
+                const key = didObject.getPrivateKeyString();
+                const document = didObject.getDocument();
+
+                const message = new DIDMessage(MessageAction.CreateDID);
+                message.setDocument(didObject);
+
+                const client = new MessageServer(userHederaAccount, userHederaKey, ref.dryRun);
+                const messageResult = await client
+                    .setTopicObject(topic)
+                    .sendMessage(message);
+
+                const item = PolicyUtils.createDID(ref, user, did, document);
+                item.messageId = messageResult.getId();
+                item.topicId = messageResult.getTopicId();
+
+                await ref.databaseServer.saveDid(item);
+
+                await PolicyUtils.setAccountKey(ref, user.did, KeyType.KEY, did, key);
+                return did;
+            }
+            if (idType === 'OWNER') {
+                return user.did;
+            }
+            return undefined;
+        } catch (error) {
+            ref.error(`generateId: ${idType} : ${PolicyUtils.getErrorMessage(error)}`);
+            throw new BlockActionError(error, ref.blockType, ref.uuid);
+        }
     }
 }

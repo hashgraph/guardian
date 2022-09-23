@@ -39,6 +39,7 @@ export class CustomLogicConfigComponent implements OnInit {
         this.block.uiMetaData = this.block.uiMetaData || {}
         this.block.expression = this.block.expression || ''
         this.block.documentSigner = this.block.documentSigner || '';
+        this.block.idType = this.block.idType || '';
     }
 
     editExpression($event: MouseEvent) {
