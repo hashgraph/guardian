@@ -4,10 +4,10 @@ import API from "../../../support/ApiUrls";
 context("Tokens", () => {
     const authorization = Cypress.env("authorization");
 
-    it("post for creating new token", () => {
+    it("push post for creating new token", () => {
         cy.request({
             method: "POST",
-            url: API.ListOfTokens,
+            url: API.ListOfTokens + "push",
             headers: { authorization },
             body: {
                 "changeSupply": true,

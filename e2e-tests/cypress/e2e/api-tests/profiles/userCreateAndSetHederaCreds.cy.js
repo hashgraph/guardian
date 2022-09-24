@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
-import { ids } from "../../../fixtures/hederaAccounts.json"
-import { did } from "../../../fixtures/StandardRegistryData.json";
+// import { ids } from "../../../fixtures/hederaAccounts.json"
+// import { did } from "../../../fixtures/StandardRegistryData.json";
 
 context('Profiles', () => {
 
@@ -38,38 +38,38 @@ context('Profiles', () => {
           .then((response) => {
             //Searching for not used hedera credentials for new user
 
-            for (let item of ids) {
-              if (item.used === false) {
-                let hederaCreds = item
-                let accessToken = 'bearer ' + response.body.accessToken
-                cy.request({
-                  method: 'PUT',
-                  url: Cypress.env('api_server') + 'profiles/' + username,
-                  headers: {
-                    authorization: accessToken
-                  },
-                  body: {
-                    hederaAccountId: hederaCreds.hederaAccountId,
-                    hederaAccountKey: hederaCreds.hederaAccountKey,
-                    parent: did
-                  },
-                  timeout: 200000
-                })
-                  .then((response) => {
-                    cy.readFile("cypress/fixtures/hederaAccounts.json").then((data) => {
-                      //update info about used hedera credentials in the file
-                      for (let item of data.ids) {
-                        if (item.hederaAccountId === hederaCreds.hederaAccountId) {
-                          item.used = true
-                          break;
-                        }
-                      }
-                      cy.writeFile("cypress/fixtures/hederaAccounts.json", JSON.stringify(data))
-                    })
-                  })
-                break;
-              }
-            }
+            // for (let item of ids) {
+            //   if (item.used === false) {
+            //     let hederaCreds = item
+            //     let accessToken = 'bearer ' + response.body.accessToken
+            //     cy.request({
+            //       method: 'PUT',
+            //       url: Cypress.env('api_server') + 'profiles/' + username,
+            //       headers: {
+            //         authorization: accessToken
+            //       },
+            //       body: {
+            //         hederaAccountId: hederaCreds.hederaAccountId,
+            //         hederaAccountKey: hederaCreds.hederaAccountKey,
+            //         parent: did
+            //       },
+            //       timeout: 200000
+            //     })
+                  // .then((response) => {
+                  //   cy.readFile("cypress/fixtures/hederaAccounts.json").then((data) => {
+                  //     //update info about used hedera credentials in the file
+                  //     for (let item of data.ids) {
+                  //       if (item.hederaAccountId === hederaCreds.hederaAccountId) {
+                  //         item.used = true
+                  //         break;
+                  //       }
+                  //     }
+                      // cy.writeFile("cypress/fixtures/hederaAccounts.json", JSON.stringify(data))
+                //     })
+                //   })
+                // break;
+            //   }
+            // }
           })
       })
   })
