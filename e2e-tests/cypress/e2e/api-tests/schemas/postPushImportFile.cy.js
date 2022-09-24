@@ -32,7 +32,7 @@ context("Schemas", () => {
         });
     });
 
-    it("import the schema file", () => {
+    it("should push import the schema file", () => {
         cy.sendRequest(METHOD.GET, API.Schemas, { authorization }).then(
             (resp) => {
                 const topicUid = resp.body[0].topicId;
@@ -42,7 +42,7 @@ context("Schemas", () => {
                     .then((file) => {
                         cy.request({
                             method: METHOD.POST,
-                            url: API.Schemas + topicUid + "/import/file",
+                            url: API.Schemas + "push/"+ topicUid + "/import/file",
                             body: file,
                             headers: {
                                 "content-type": "binary/octet-stream",
@@ -56,5 +56,4 @@ context("Schemas", () => {
             }
         );
     });
-
 });

@@ -1,5 +1,3 @@
-
-
 context("Policies", () => {
     const authorization = Cypress.env("authorization");
 
