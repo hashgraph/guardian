@@ -195,7 +195,7 @@ export class MultiSignBlock {
         }
 
         const signedThreshold = Math.ceil(users.length * ref.options.threshold / 100);
-        const declinedThreshold = Math.ceil(users.length * (100 - ref.options.threshold) / 100);
+        const declinedThreshold = Math.round(users.length - signedThreshold + 1);
 
         if (signed >= signedThreshold) {
             const docOwner = PolicyUtils.getDocumentOwner(ref, sourceDoc);
@@ -233,7 +233,7 @@ export class MultiSignBlock {
             await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.SIGNED);
 
             ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, currentUser, { data: sourceDoc });
-        } else if (declined > declinedThreshold) {
+        } else if (declined >= declinedThreshold) {
             await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.DECLINED);
             ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, currentUser, { data: sourceDoc });
         }
@@ -272,6 +272,8 @@ export class MultiSignBlock {
 
         const threshold = ref.options.threshold;
         const total = users.length;
+        const signedThreshold = Math.ceil(users.length * threshold / 100);
+        const declinedThreshold = Math.round(users.length - signedThreshold + 1);
         const result = {
             documentStatus,
             confirmationStatus,
@@ -282,8 +284,8 @@ export class MultiSignBlock {
             declinedCount: declined,
             declinedPercent: (declined / total) * 100,
             threshold,
-            signedThreshold: Math.ceil(total * threshold / 100),
-            declinedThreshold: Math.ceil(total * (100 - threshold) / 100)
+            signedThreshold,
+            declinedThreshold
         }
 
         return result;
