@@ -43,7 +43,8 @@
     "dev:docker": "nodemon .",
     "dev": "tsc -w",
     "lint": "tslint --config ../tslint.json --project .",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml"
   },
   "version": "2.4.1"
 }
