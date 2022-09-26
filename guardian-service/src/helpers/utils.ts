@@ -1,4 +1,10 @@
 import { IVC, IVCDocument, GenerateUUIDv4 } from '@guardian/interfaces';
+import { Client } from '@hashgraph/sdk';
+
+/**
+ * Transaction response callback
+ */
+let TransactionResponseCallback: Function;
 
 /**
  * Schema fields array
@@ -157,4 +163,26 @@ export function replaceValueRecursive(document: any, replaceMap: Map<string, str
         str = str.replace(new RegExp(oldVal, 'g'), newVal);
     }
     return JSON.parse(str);
+}
+
+/**
+ * Set transaction response callback
+ * @param fn
+ */
+export function SetTransactionResponseCallback(fn: Function) {
+    if (TransactionResponseCallback) {
+        throw new Error('Transaction response callback was set before');
+    }
+    TransactionResponseCallback = fn;
+}
+
+/**
+ * Transaction response
+ * @param client
+ * @private
+ */
+export function TransactionResponse(client: Client) {
+    if (TransactionResponseCallback) {
+        TransactionResponseCallback(client);
+    }
 }

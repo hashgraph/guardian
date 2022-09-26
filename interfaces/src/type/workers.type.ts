@@ -4,7 +4,21 @@
 export enum WorkerTaskType {
     GET_FILE = 'get-file',
     ADD_FILE = 'add-file',
-    SEND_HEDERA = 'send-hedera'
+    SEND_HEDERA = 'send-hedera',
+    GENERATE_DEMO_KEY = 'generate-demo-key',
+    GET_USER_BALANCE = 'get-user-balance',
+    GET_ACCOUNT_INFO = 'get-account-info',
+    CREATE_TOKEN = 'create-token',
+    NEW_TOKEN = 'new-token',
+    ASSOCIATE_TOKEN = 'associate-token',
+    GRANT_KYC_TOKEN = 'grant-kyc-token',
+    FREEZE_TOKEN = 'freeze-token',
+    MINT_TOKEN = 'mint-token',
+    WIPE_TOKEN = 'wipe-token',
+    NEW_TOPIC = 'new-topic',
+    CHECK_ACCOUNT = 'check-account',
+    GET_TOPIC_MESSAGE = 'get-topic-message',
+    GET_TOPIC_MESSAGES = 'get-topic-messages'
 }
 
 /**

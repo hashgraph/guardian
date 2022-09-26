@@ -1,17 +1,18 @@
 import { Settings } from '@entity/settings';
-import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import { Policy } from '@entity/policy';
 import {
-    MessageBrokerChannel,
-    MessageResponse,
-    MessageError,
+    DataBaseHelper,
     Logger,
-    DataBaseHelper
+    MessageBrokerChannel,
+    MessageError,
+    MessageResponse,
+    SettingsContainer
 } from '@guardian/common';
-import { MessageAPI } from '@guardian/interfaces';
+import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
+import { Workers } from '@helpers/workers';
 
 /**
  * Demo key
@@ -35,14 +36,9 @@ interface DemoKey {
  */
 async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier): Promise<DemoKey> {
     notifier.start('Resolve settings');
-    const operatorId = await settingsRepository.findOne({
-        name: 'OPERATOR_ID'
-    });
-    const operatorKey = await settingsRepository.findOne({
-        name: 'OPERATOR_KEY'
-    });
-    const OPERATOR_ID = operatorId?.value || process.env.OPERATOR_ID;
-    const OPERATOR_KEY = operatorKey?.value || process.env.OPERATOR_KEY;
+
+    const settingsContainer = new SettingsContainer();
+    const {OPERATOR_ID, OPERATOR_KEY} = settingsContainer.settings;
     let initialBalance: number = null;
     try {
         if (role === 'STANDARD_REGISTRY') {
@@ -54,13 +50,17 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
         initialBalance = null;
     }
     notifier.completedAndStart('Creating account in Hedera');
-    const client = new HederaSDKHelper(OPERATOR_ID, OPERATOR_KEY);
-    const treasury = await client.newAccount(initialBalance);
 
-    const result = {
-        id: treasury.id.toString(),
-        key: treasury.key.toString()
-    };
+    const workers = new Workers();
+    const result = await workers.addTask({
+        type: WorkerTaskType.GENERATE_DEMO_KEY,
+        data: {
+            operatorId: OPERATOR_ID,
+            operatorKey: OPERATOR_KEY,
+            initialBalance
+        }
+    }, 1);
+
     notifier.completed();
     return result;
 }

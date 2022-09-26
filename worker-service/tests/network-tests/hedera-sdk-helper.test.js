@@ -3,10 +3,10 @@ dotenv.config();
 
 const {
     HederaSDKHelper
-} = require('../../../guardian-service/dist/hedera-modules/hedera-sdk-helper');
+} = require('../../dist/api/helpers/hedera-sdk-helper');
 const {
     HederaUtils
-} = require('../../../guardian-service/dist/hedera-modules/utils');
+} = require('../../dist/api/helpers/utils');
 
 const { Client, AccountBalanceQuery } = require('@hashgraph/sdk');
 const { expect, assert } = require('chai');

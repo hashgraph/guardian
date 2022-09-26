@@ -85,6 +85,9 @@ jobs:
           pushd guardian-service
           npm run test
           popd
+          pushd worker-service
+          npm run test
+          popd
         env:
           CI: true
           OPERATOR_ID: ${{ secrets.OPERATOR_ID }}

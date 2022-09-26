@@ -65,7 +65,7 @@ export interface IUpdateUserBalanceMessage {
     /**
      * User for update
      */
-    user: {
+    user?: {
         /**
          * Username
          */
@@ -75,4 +75,8 @@ export interface IUpdateUserBalanceMessage {
          */
         did: string
     };
+    /**
+     * Operator account ID
+     */
+    operatorAccountId?: string;
 }

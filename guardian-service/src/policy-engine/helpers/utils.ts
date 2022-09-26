@@ -1,9 +1,19 @@
 import { Token } from '@entity/token';
 import { Topic } from '@entity/topic';
-import { HederaSDKHelper, HederaUtils, VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument } from '@hedera-modules';
+import { VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
-import { DidDocumentStatus, DocumentSignature, DocumentStatus, ExternalMessageEvents, IRootConfig, Schema, SchemaEntity, TopicType } from '@guardian/interfaces';
+import {
+    DidDocumentStatus,
+    DocumentSignature,
+    DocumentStatus,
+    ExternalMessageEvents,
+    IRootConfig,
+    Schema,
+    SchemaEntity,
+    TopicType,
+    WorkerTaskType
+} from '@guardian/interfaces';
 import { ExternalEventChannel, IAuthUser } from '@guardian/common';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { TopicId } from '@hashgraph/sdk';
@@ -11,6 +21,7 @@ import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { Workers } from '@helpers/workers';
 
 /**
  * Data types
@@ -211,54 +222,22 @@ export class PolicyUtils {
         const mintId = Date.now();
         ref.log(`Mint(${mintId}): Start (Count: ${tokenValue})`);
 
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
-        const tokenId = token.tokenId;
-        const supplyKey = token.supplyKey;
-        const adminId = token.adminId;
-        const adminKey = token.adminKey;
-
-        if (token.tokenType === 'non-fungible') {
-            const metaData = HederaUtils.decode(uuid);
-            const data = new Array<Uint8Array>(Math.floor(tokenValue));
-            data.fill(metaData);
-            const serials: number[] = [];
-            const dataChunk = PolicyUtils.splitChunk(data, 10);
-            for (let i = 0; i < dataChunk.length; i++) {
-                const element = dataChunk[i];
-                if (i % 100 === 0) {
-                    ref.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
-                }
-                try {
-                    const newSerials = await client.mintNFT(tokenId, supplyKey, element, transactionMemo);
-                    for (const serial of newSerials) {
-                        serials.push(serial)
-                    }
-                } catch (error) {
-                    ref.error(`Mint(${mintId}): Mint Error (${error.message})`);
-                }
+        const workers = new Workers();
+        await workers.addTask({
+            type: WorkerTaskType.MINT_TOKEN,
+            data: {
+                hederaAccountId: root.hederaAccountId,
+                hederaAccountKey: root.hederaAccountKey,
+                token,
+                dryRun: ref.dryRun,
+                tokenValue,
+                transactionMemo,
+                uuid,
+                targetAccount, mintId
             }
+        }, 1);
 
-            ref.log(`Mint(${mintId}): Minted (Count: ${serials.length})`);
-            ref.log(`Mint(${mintId}): Transfer ${adminId} -> ${targetAccount} `);
-
-            const serialsChunk = PolicyUtils.splitChunk(serials, 10);
-            for (let i = 0; i < serialsChunk.length; i++) {
-                const element = serialsChunk[i];
-                if (i % 100 === 0) {
-                    ref.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`);
-                }
-                try {
-                    await client.transferNFT(tokenId, targetAccount, adminId, adminKey, element, transactionMemo);
-                } catch (error) {
-                    ref.error(`Mint(${mintId}): Transfer Error (${error.message})`);
-                }
-            }
-        } else {
-            await client.mint(tokenId, supplyKey, tokenValue, transactionMemo);
-            await client.transfer(tokenId, targetAccount, adminId, adminKey, tokenValue, transactionMemo);
-        }
-
-        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: transactionMemo });
+        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId: token.tokenId, tokenValue, memo: transactionMemo });
 
         ref.log(`Mint(${mintId}): End`);
     }
@@ -279,15 +258,19 @@ export class PolicyUtils {
         targetAccount: string,
         uuid: string
     ): Promise<void> {
-        const tokenId = token.tokenId;
-        const wipeKey = token.wipeKey;
-
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
-        if (token.tokenType === 'non-fungible') {
-            throw Error('unsupported operation');
-        } else {
-            await client.wipe(tokenId, targetAccount, wipeKey, tokenValue, uuid);
-        }
+        const workers = new Workers();
+        await workers.addTask({
+            type: WorkerTaskType.WIPE_TOKEN,
+            data: {
+                hederaAccountId: root.hederaAccountId,
+                hederaAccountKey: root.hederaAccountKey,
+                dryRun: ref.dryRun,
+                token,
+                targetAccount,
+                tokenValue,
+                uuid
+            }
+        }, 1);
     }
 
     /**
@@ -432,11 +415,17 @@ export class PolicyUtils {
      * @param user
      */
     public static async associate(ref: AnyBlockType, token: Token, user: IHederaAccount): Promise<boolean> {
-        const client = new HederaSDKHelper(user.hederaAccountId, user.hederaAccountKey, ref.dryRun);
-        if (!user.hederaAccountKey) {
-            throw new Error('Invalid Account Key');
-        }
-        return await client.associate(token.tokenId, user.hederaAccountId, user.hederaAccountKey);
+        const workers = new Workers();
+        return await workers.addTask({
+            type: WorkerTaskType.ASSOCIATE_TOKEN,
+            data: {
+                tokenId: token.tokenId,
+                userID: user.hederaAccountId,
+                userKey: user.hederaAccountKey,
+                associate: true,
+                dryRun: ref.dryRun
+            }
+        }, 1);
     }
 
     /**
@@ -445,11 +434,17 @@ export class PolicyUtils {
      * @param user
      */
     public static async dissociate(ref: AnyBlockType, token: Token, user: IHederaAccount): Promise<boolean> {
-        const client = new HederaSDKHelper(user.hederaAccountId, user.hederaAccountKey, ref.dryRun);
-        if (!user.hederaAccountKey) {
-            throw new Error('Invalid Account Key');
-        }
-        return await client.dissociate(token.tokenId, user.hederaAccountId, user.hederaAccountKey);
+        const workers = new Workers();
+        return await workers.addTask({
+            type: WorkerTaskType.ASSOCIATE_TOKEN,
+            data: {
+                tokenId: token.tokenId,
+                userID: user.hederaAccountId,
+                userKey: user.hederaAccountKey,
+                associate: false,
+                dryRun: ref.dryRun
+            }
+        }, 1);
     }
 
     /**
@@ -464,8 +459,18 @@ export class PolicyUtils {
         user: IHederaAccount,
         root: IHederaAccount
     ): Promise<boolean> {
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
-        return await client.freeze(token.tokenId, user.hederaAccountId, token.freezeKey);
+        const workers = new Workers();
+        return await workers.addTask({
+            type: WorkerTaskType.FREEZE_TOKEN,
+            data: {
+                hederaAccountId: root.hederaAccountId,
+                hederaAccountKey: root.hederaAccountKey,
+                freezeKey: token.freezeKey,
+                tokenId: token.tokenId,
+                freeze: true,
+                dryRun: ref.dryRun
+            }
+        }, 1);
     }
 
     /**
@@ -480,8 +485,18 @@ export class PolicyUtils {
         user: IHederaAccount,
         root: IHederaAccount
     ): Promise<boolean> {
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
-        return await client.unfreeze(token.tokenId, user.hederaAccountId, token.freezeKey);
+        const workers = new Workers();
+        return await workers.addTask({
+            type: WorkerTaskType.FREEZE_TOKEN,
+            data: {
+                hederaAccountId: root.hederaAccountId,
+                hederaAccountKey: root.hederaAccountKey,
+                freezeKey: token.freezeKey,
+                tokenId: token.tokenId,
+                freeze: false,
+                dryRun: ref.dryRun
+            }
+        }, 1);
     }
 
     /**
@@ -496,8 +511,19 @@ export class PolicyUtils {
         user: IHederaAccount,
         root: IHederaAccount
     ): Promise<boolean> {
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
-        return await client.grantKyc(token.tokenId, user.hederaAccountId, token.kycKey);
+        const workers = new Workers();
+        return await workers.addTask({
+            type: WorkerTaskType.GRANT_KYC_TOKEN,
+            data: {
+                hederaAccountId: root.hederaAccountId,
+                hederaAccountKey: root.hederaAccountKey,
+                userHederaAccountId: user.hederaAccountId,
+                tokenId: token.tokenId,
+                kycKey: token.kycKey,
+                grant: true,
+                dryRun: ref.dryRun
+            }
+        }, 1);
     }
 
     /**
@@ -512,18 +538,33 @@ export class PolicyUtils {
         user: IHederaAccount,
         root: IHederaAccount
     ): Promise<boolean> {
-        const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
-        return await client.revokeKyc(token.tokenId, user.hederaAccountId, token.kycKey);
+        const workers = new Workers();
+        return await workers.addTask({
+            type: WorkerTaskType.GRANT_KYC_TOKEN,
+            data: {
+                hederaAccountId: root.hederaAccountId,
+                hederaAccountKey: root.hederaAccountKey,
+                userHederaAccountId: user.hederaAccountId,
+                tokenId: token.tokenId,
+                kycKey: token.kycKey,
+                grant: false,
+                dryRun: ref.dryRun
+            }
+        }, 1);
     }
 
     /**
      * revokeKyc
      * @param account
      */
-    public static checkAccountId(account: IHederaAccount): void {
-        if (!account || !HederaSDKHelper.checkAccount(account.hederaAccountId)) {
-            throw new Error('Invalid Account');
-        }
+    public static async checkAccountId(account: IHederaAccount): Promise<void> {
+        const workers = new Workers();
+        return await workers.addTask({
+            type: WorkerTaskType.CHECK_ACCOUNT,
+            data: {
+                hederaAccountId: account.hederaAccountId,
+            }
+        }, 1);
     }
 
     /**

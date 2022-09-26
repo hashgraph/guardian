@@ -8,9 +8,9 @@ import {
 import JSZip from 'jszip';
 import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
-import { SchemaEntity, TopicType, GenerateUUIDv4 } from '@guardian/interfaces';
+import { SchemaEntity, TopicType, GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
-import { HederaSDKHelper, MessageAction, MessageServer, MessageType, PolicyMessage, TopicHelper } from '@hedera-modules';
+import { MessageAction, MessageServer, MessageType, PolicyMessage, TopicHelper } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 import { importSchemaByFiles, publishSystemSchema } from '@api/schema.service';
 import { PrivateKey } from '@hashgraph/sdk';
@@ -18,6 +18,7 @@ import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
 import { DatabaseServer } from '@database-modules';
 import { DataBaseHelper } from '@guardian/common';
+import { Workers } from '@helpers/workers';
 
 /**
  * Policy import export helper
@@ -223,7 +224,6 @@ export class PolicyImportExportHelper {
         // Import Tokens
         if (tokens) {
             notifier.start('Import tokens');
-            const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
             const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
             const tokenRepository = new DataBaseHelper(Token);
             for (const token of tokens) {
@@ -233,28 +233,32 @@ export class PolicyImportExportHelper {
                 const nft = tokenType === 'non-fungible';
                 const decimals = nft ? 0 : token.decimals;
                 const initialSupply = nft ? 0 : token.initialSupply;
-                const adminKey = token.adminKey ? rootHederaAccountKey : null;
-                const kycKey = token.kycKey ? rootHederaAccountKey : null;
-                const freezeKey = token.freezeKey ? rootHederaAccountKey : null;
-                const wipeKey = token.wipeKey ? rootHederaAccountKey : null;
-                const supplyKey = token.supplyKey ? rootHederaAccountKey : null;
-                const tokenId = await client.newToken(
-                    tokenName,
-                    tokenSymbol,
-                    nft,
-                    decimals,
-                    initialSupply,
-                    '',
-                    {
-                        id: root.hederaAccountId,
-                        key: rootHederaAccountKey
-                    },
-                    adminKey,
-                    kycKey,
-                    freezeKey,
-                    wipeKey,
-                    supplyKey,
-                );
+                const adminKey = token.adminKey ? rootHederaAccountKey.toString() : null;
+                const kycKey = token.kycKey ? rootHederaAccountKey.toString() : null;
+                const freezeKey = token.freezeKey ? rootHederaAccountKey.toString() : null;
+                const wipeKey = token.wipeKey ? rootHederaAccountKey.toString() : null;
+                const supplyKey = token.supplyKey ? rootHederaAccountKey.toString() : null;
+
+                const workers = new Workers();
+                const tokenId = await workers.addTask({
+                    type: WorkerTaskType.NEW_TOKEN,
+                    data: {
+                        operatorId: root.hederaAccountId,
+                        operatorKey: root.hederaAccountKey,
+                        tokenName,
+                        tokenSymbol,
+                        nft,
+                        decimals,
+                        initialSupply,
+                        tokenMemo: '',
+                        adminKey,
+                        kycKey,
+                        freezeKey,
+                        wipeKey,
+                        supplyKey,
+                    }
+                }, 1);
+
                 const tokenObject = tokenRepository.create({
                     tokenId,
                     tokenName,
