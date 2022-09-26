@@ -13,7 +13,6 @@ import {
 } from '@guardian/common';
 import {
     DIDDocument,
-    HederaSDKHelper
 } from '@hedera-modules'
 import { IPolicyBlock, IPolicyInterfaceBlock } from './policy-engine.interface';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
@@ -25,6 +24,7 @@ import { DatabaseServer } from '@database-modules';
 import { IPolicyUser } from './policy-user';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from './policy-engine';
+import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
 /**
  * Policy engine service
@@ -805,7 +805,14 @@ export class PolicyEngineService {
                 }
 
                 const topic = await DatabaseServer.getTopicByType(did, TopicType.UserTopic);
-                const treasury = await HederaSDKHelper.createVirtualAccount()
+
+                const newPrivateKey = PrivateKey.generate();
+                const newAccountId = new AccountId(Date.now());
+                const treasury = {
+                    id: newAccountId,
+                    key: newPrivateKey
+                };
+
                 const didObject = DIDDocument.create(treasury.key, topic.topicId);
                 const userDID = didObject.getDid();
 

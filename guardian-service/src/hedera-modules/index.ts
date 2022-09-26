@@ -1,4 +1,4 @@
-export { HederaSDKHelper } from './hedera-sdk-helper';
+// export { HederaSDKHelper } from './hedera-sdk-helper';
 export { timeout } from './utils';
 export { Message, MessageStatus } from './message/message';
 export { HederaUtils } from './utils';

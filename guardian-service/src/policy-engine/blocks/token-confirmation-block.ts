@@ -127,7 +127,7 @@ export class TokenConfirmationBlock {
 
         const token = await this.getToken();
 
-        PolicyUtils.checkAccountId(account);
+        await PolicyUtils.checkAccountId(account);
 
         switch (ref.options.action) {
             case 'associate': {

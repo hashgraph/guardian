@@ -74,7 +74,7 @@ export class TokenActionBlock {
             }
         }
 
-        PolicyUtils.checkAccountId(account);
+        await PolicyUtils.checkAccountId(account);
 
         switch (ref.options.action) {
             case 'associate': {

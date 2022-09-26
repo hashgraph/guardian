@@ -91,15 +91,24 @@ export class WebSocketsService {
             return new MessageResponse({});
         });
 
-        this.channel.response<IUpdateUserBalanceMessage, any>('update-user-balance', async (msg) => {
-            this.wss.clients.forEach((client: any) => {
-                if (this.checkUserByName(client, msg)) {
-                    this.send(client, {
-                        type: 'PROFILE_BALANCE',
-                        data: msg
+        this.channel.response<IUpdateUserBalanceMessage, any>('update-user-balance',  async (msg) => {
+            this.wss.clients.forEach(client => {
+                new Users().getUserByAccount(msg.operatorAccountId).then(user => {{
+                    Object.assign(msg, {
+                        user: user ? {
+                            username: user.username,
+                            did: user.did
+                        } : null
                     });
-                }
+                    if (this.checkUserByName(client, msg)) {
+                        this.send(client, {
+                            type: 'PROFILE_BALANCE',
+                            data: msg
+                        });
+                    }
+                }});
             });
+
             return new MessageResponse({});
         });
 

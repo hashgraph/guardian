@@ -1,7 +1,7 @@
 import { configAPI } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
 import { loaderAPI } from '@api/loader.service';
-import { profileAPI, updateUserBalance } from '@api/profile.service';
+import { profileAPI } from '@api/profile.service';
 import { schemaAPI, setDefaultSchema } from '@api/schema.service';
 import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
@@ -28,10 +28,9 @@ import {
     Migration,
     COMMON_CONNECTION_CONFIG, SettingsContainer
 } from '@guardian/common';
-import { ApplicationStates } from '@guardian/interfaces';
+import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import {
     Environment,
-    HederaSDKHelper,
     MessageServer,
     TopicMemo,
     TransactionLogger,
@@ -43,6 +42,7 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { DatabaseServer } from '@database-modules';
 import { ipfsAPI } from '@api/ipfs.service';
 import { Workers } from '@helpers/workers';
+import { SetTransactionResponseCallback } from '@helpers/utils';
 
 Promise.all([
     Migration({
@@ -136,13 +136,7 @@ Promise.all([
         await DatabaseServer.setVirtualTransaction(id, type, operatorId);
     });
 
-    HederaSDKHelper.setTransactionResponseCallback(updateUserBalance(channel));
-
-    if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
-        const client = new HederaSDKHelper(OPERATOR_ID, OPERATOR_KEY);
-        const topicId = await client.newTopic(OPERATOR_KEY, null, TopicMemo.getGlobalTopicMemo());
-        process.env.INITIALIZATION_TOPIC_ID = topicId;
-    }
+    // SetTransactionResponseCallback(updateUserBalance(channel));
 
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
@@ -152,6 +146,18 @@ Promise.all([
     const workersHelper = new Workers();
     workersHelper.setChannel(channel);
     workersHelper.initListeners();
+
+    if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
+        process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addTask({
+            type: WorkerTaskType.NEW_TOPIC,
+            data: {
+                hederaAccountId: OPERATOR_ID,
+                hederaAccountKey: OPERATOR_KEY,
+                dryRun: false,
+                topicMemo: TopicMemo.getGlobalTopicMemo()
+            }
+        }, 1);
+    }
 
     const policyGenerator = new BlockTreeGenerator();
     const policyService = new PolicyEngineService(channel, apiGatewayChannel);

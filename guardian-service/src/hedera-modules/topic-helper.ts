@@ -1,7 +1,8 @@
-import { TopicType } from '@guardian/interfaces';
-import { HederaSDKHelper, MessageAction, MessageServer, TopicMessage } from '@hedera-modules';
+import { TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { MessageAction, MessageServer, TopicMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 import { TopicMemo } from './memo-mappings/topic-memo';
+import { Workers } from '@helpers/workers';
 
 /**
  * Topic Helper
@@ -86,12 +87,18 @@ export class TopicHelper {
             memoObj?: any
         }
     ): Promise<Topic> {
-        const client = new HederaSDKHelper(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
-        const topicId = await client.newTopic(
-            this.hederaAccountKey,
-            this.hederaAccountKey,
-            TopicMemo.parseMemo(true, config.memo, config.memoObj) || TopicMemo.getTopicMemo(config)
-        );
+
+        const workers = new Workers();
+        const topicId = await workers.addTask({
+            type: WorkerTaskType.NEW_TOPIC,
+            data: {
+                hederaAccountId: this.hederaAccountId,
+                hederaAccountKey: this.hederaAccountKey,
+                dryRun: this.dryRun,
+                topicMemo: TopicMemo.parseMemo(true, config.memo, config.memoObj) || TopicMemo.getTopicMemo(config)
+            }
+        }, 1);
+
         return {
             topicId,
             name: config.name,

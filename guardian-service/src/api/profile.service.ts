@@ -6,7 +6,7 @@ import {
     SchemaEntity,
     SchemaHelper,
     TopicType,
-    UserRole
+    UserRole, WorkerTaskType
 } from '@guardian/interfaces';
 import { VcHelper } from '@helpers/vc-helper';
 import { KeyType, Wallet } from '@helpers/wallet';
@@ -14,7 +14,6 @@ import { Users } from '@helpers/users';
 import {
     DIDDocument,
     DIDMessage,
-    HederaSDKHelper,
     MessageAction,
     MessageServer,
     RegistrationMessage,
@@ -36,6 +35,7 @@ import {
 import { publishSystemSchema } from './schema.service';
 import { Settings } from '@entity/settings';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
+import { Workers } from '@helpers/workers';
 
 /**
  * Get global topic
@@ -60,29 +60,29 @@ async function getGlobalTopic(): Promise<Topic | null> {
     }
 }
 
-/**
- * Update user balance
- * @param channel
- */
-export function updateUserBalance(channel: MessageBrokerChannel) {
-    return async (client: any) => {
-        try {
-            const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
-            const users = new Users();
-            const user: any = await users.getUserByAccount(client.operatorAccountId.toString());
-            await channel.request(['api-gateway', 'update-user-balance'].join('.'), {
-                balance,
-                unit: 'Hbar',
-                user: user ? {
-                    username: user.username,
-                    did: user.did
-                } : null
-            });
-        } catch (error) {
-            await new Logger().info(error.message, ['GUARDIAN_SERVICE', 'TransactionResponse']);
-        }
-    }
-}
+// /**
+//  * Update user balance
+//  * @param channel
+//  */
+// export function updateUserBalance(channel: MessageBrokerChannel) {
+//     return async (client: any) => {
+//         try {
+//             const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
+//             const users = new Users();
+//             const user: any = await users.getUserByAccount(client.operatorAccountId.toString());
+//             await channel.request(['api-gateway', 'update-user-balance'].join('.'), {
+//                 balance,
+//                 unit: 'Hbar',
+//                 user: user ? {
+//                     username: user.username,
+//                     did: user.did
+//                 } : null
+//             });
+//         } catch (error) {
+//             await new Logger().info(error.message, ['GUARDIAN_SERVICE', 'TransactionResponse']);
+//         }
+//     }
+// }
 
 /**
  * Set up user profile
@@ -345,6 +345,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
             const { username } = msg;
             const wallet = new Wallet();
             const users = new Users();
+            const workers = new Workers();
             const user = await users.getUser(username);
 
             if (!user) {
@@ -356,8 +357,13 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
             }
 
             const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-            const client = HederaSDKHelper.client(user.hederaAccountId, key);
-            const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
+            const balance = await workers.addTask({
+                type: WorkerTaskType.GET_USER_BALANCE,
+                data: {
+                    hederaAccountId: user.hederaAccountId,
+                    hederaAccountKey: key
+                }
+            }, 1);
             return new MessageResponse({
                 balance,
                 unit: 'Hbar',
@@ -379,6 +385,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
 
             const wallet = new Wallet();
             const users = new Users();
+            const workers = new Workers();
 
             const user = await users.getUser(username);
 
@@ -391,8 +398,14 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
             }
 
             const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-            const client = new HederaSDKHelper(user.hederaAccountId, key);
-            const balance = await client.balance(user.hederaAccountId);
+            const balance = await workers.addTask({
+                type: WorkerTaskType.GET_USER_BALANCE,
+                data: {
+                    hederaAccountId: user.hederaAccountId,
+                    hederaAccountKey: key
+                }
+            }, 1);
+
             return new MessageResponse(balance);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
