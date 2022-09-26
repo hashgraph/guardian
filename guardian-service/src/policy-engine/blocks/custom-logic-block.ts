@@ -107,8 +107,8 @@ export class CustomLogicBlock {
                     const processing = async (document) => {
 
                         const vcSubject = {
-                            id: idType === 'DOCUMENT' 
-                                ? documents[0].document.id 
+                            id: idType === 'DOCUMENT'
+                                ? documents[0].document.id
                                 : await this.generateId(
                                     idType, user, hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey
                                 ),

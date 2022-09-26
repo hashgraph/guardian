@@ -21,6 +21,13 @@
             <input class="prop-input" type="checkbox" [(ngModel)]="block.visible" [readonly]="readonly">
         </td>
     </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Multiple</td>
+        <td class="propRowCell">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.multiple" [readonly]="readonly" (change)="onMultipleChange()">
+        </td>
+    </tr>
 
     <tr class="propRow">
         <td class="propRowCol"></td>
@@ -61,6 +68,65 @@
         </td>
     </tr>
 
+    <ng-template [ngIf]="block.multiple">
+        <tr class="propHeader">
+            <td class="propRowCol" (click)="onHide(propHidden, 'dynamicFilterGroup')" [attr.collapse]="propHidden.dynamicFilterGroup">
+                <mat-icon>expand_more</mat-icon>
+            </td>
+            <td class="propHeaderCell cellName">Dynamic Filters</td>
+            <td class="propHeaderCell">
+                <div class="propAdd" (click)="addDynamicFilter()">
+                    <mat-icon>add</mat-icon>
+                    <span>Add Dynamic Filter</span>
+                </div>
+            </td>
+        </tr>
+        <ng-container *ngFor="let item of block.dynamicFilters; let i=index">
+            <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup">
+                <td class="propRowCol" (click)="onHide(propHidden.dynamicFilters, i)" [attr.collapse]="propHidden.dynamicFilters[i]">
+                    <mat-icon>
+                        expand_more
+                    </mat-icon>
+                </td>
+                <td class="propRowCell cellName">Dynamic Filter {{i}}</td>
+                <td class="propRowCell">
+                    <span *ngIf="block.dynamicFilters[i].field&&block.dynamicFilters[i].type&&block.dynamicFilters[i].nextItemField" class="not-editable-text">
+                        {{block.dynamicFilters[i].nextItemField}} {{block.dynamicFilters[i].type}} {{block.dynamicFilters[i].field}}
+                    </span>
+                    <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveFilter(i)">
+                        <mat-icon>delete</mat-icon>
+                    </span>
+                </td>
+            </tr>
+
+            <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">Type</td>
+                <td class="propRowCell">
+                    <mat-select [(value)]="block.dynamicFilters[i].type" [disabled]="readonly">
+                        <mat-option value="equal">Equal</mat-option>
+                        <mat-option value="not_equal">Not Equal</mat-option>
+                        <mat-option value="in">In</mat-option>
+                        <mat-option value="not_in">Not In</mat-option>
+                    </mat-select>
+                </td>
+            </tr>
+            <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">Field Path</td>
+                <td class="propRowCell">
+                    <document-path [(value)]="block.dynamicFilters[i].field" [readonly]="readonly"></document-path>
+                </td>
+            </tr>
+            <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">Next Item Field Path</td>
+                <td class="propRowCell">
+                    <document-path [(value)]="block.dynamicFilters[i].nextItemField" [readonly]="readonly"></document-path>
+                </td>
+            </tr>
+        </ng-container>
+    </ng-template>
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'filterGroup')" [attr.collapse]="propHidden.filterGroup">
             <mat-icon>expand_more</mat-icon>

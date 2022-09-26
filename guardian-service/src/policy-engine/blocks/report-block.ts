@@ -75,12 +75,18 @@ export class ReportBlock {
      * @param documents
      * @param map
      */
-    async itemUserMap(documents: IReportItem[], map) {
+    async itemUserMap(documents: any[], map) {
         if (!documents) {
             return;
         }
         for (const element of documents) {
-            element.username = await this.getUserName(element.username, map);
+            if (element.multiple) {
+                for (const document of element.document) {
+                    document.username = await this.getUserName(document.username, map);
+                }
+            } else {
+                element.username = await this.getUserName(element.username, map);
+            }
             await this.itemUserMap(element.documents, map);
         }
     }

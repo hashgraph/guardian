@@ -134,7 +134,7 @@ a[disabled="true"]{
     user-select: none;
     cursor: pointer;
     height: 220px;
-    margin-top: 80px;
+    margin-top: 50px;
 }
 
 .scroll-right:hover {
@@ -151,12 +151,13 @@ a[disabled="true"]{
     flex-direction: column;
     align-content: center;
     align-items: center; */
-    margin-top: 60px;
+    margin-top: 30px;
     margin-left: 00px;
     margin-right: 20px;
-    padding-top: 20px;
+    padding-top: 35px;
     white-space: nowrap;
     overflow-x: auto;
+    padding-bottom: 5px;
 }
 
 .chain-item {
@@ -420,4 +421,75 @@ a.open-vp {
     position: absolute;
     left: 16px;
     top: 37px;
+}
+
+.multiple-documents-container {
+    position: relative;
+    display: inline-block;
+}
+
+.multiple-documents-container .chain-item
+{
+    transition: transform 1s ease;
+}
+
+.active-multiple-document {
+    transform: translate(0,0);
+    z-index: 3;
+}
+
+.second-multiple-document {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 2;
+    transform: translate(-12px, -15px);
+}
+
+.third-multiple-document {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 1;
+    transform: translate(-22px, -30px);
+}
+
+.hide-multiple-document {
+    display: none;
+}
+
+.multiple-documents-count { 
+    position: absolute;
+    right: 42px;
+    bottom: 12px;
+    font-size: 18px;
+    color: #707070;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.multiple-documents-count mat-icon {
+    cursor: pointer;
+}
+
+.item-relationships-icon {
+    position: absolute;
+    z-index: 3;
+    transform: rotate(180deg);
+    width: 35px;
+    height: 35px;
+    background: white;
+    font-size: 35px;
+    left: -17px;
+    bottom: 45%;
+    border-radius: 5px 5px 5px 20px;
+}
+
+.item-relationships-delimiter {
+    height: 100%;
+    width: 20px;
+    position: absolute;
+    left: -36px;
+    top: -5px;
 }
