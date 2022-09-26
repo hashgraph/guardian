@@ -514,6 +514,32 @@ export class Worker {
                     break;
                 }
 
+                case WorkerTaskType.GET_TOPIC_MESSAGE: {
+                    const {
+                        operatorId,
+                        operatorKey,
+                        dryRun,
+                        timeStamp
+                    } = task.data;
+                    const client = new HederaSDKHelper(operatorId, operatorKey , dryRun);
+                    result.data =  await client.getTopicMessage(timeStamp);
+
+                    break;
+                }
+
+                case WorkerTaskType.GET_TOPIC_MESSAGES: {
+                    const {
+                        operatorId,
+                        operatorKey,
+                        dryRun,
+                        topic
+                    } = task.data;
+                    const client = new HederaSDKHelper(operatorId, operatorKey , dryRun);
+                    result.data = await client.getTopicMessages(topic);
+
+                    break;
+                }
+
                 case WorkerTaskType.CHECK_ACCOUNT: {
                     const {hederaAccountId} = task.data;
                     result.data = !HederaSDKHelper.checkAccount(hederaAccountId);

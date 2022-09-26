@@ -1,7 +1,5 @@
-// export { HederaSDKHelper } from './hedera-sdk-helper';
 export { timeout } from './utils';
 export { Message, MessageStatus } from './message/message';
-export { HederaUtils } from './utils';
 export { VcDocument } from './vcjs/vc-document';
 export { VcSubject } from './vcjs/vc-subject';
 export { VpDocument } from './vcjs/vp-document';

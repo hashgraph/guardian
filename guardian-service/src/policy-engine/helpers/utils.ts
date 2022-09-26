@@ -1,6 +1,6 @@
 import { Token } from '@entity/token';
 import { Topic } from '@entity/topic';
-import { HederaUtils, VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument } from '@hedera-modules';
+import { VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import {

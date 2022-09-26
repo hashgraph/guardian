@@ -42,7 +42,6 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { DatabaseServer } from '@database-modules';
 import { ipfsAPI } from '@api/ipfs.service';
 import { Workers } from '@helpers/workers';
-import { SetTransactionResponseCallback } from '@helpers/utils';
 
 Promise.all([
     Migration({
