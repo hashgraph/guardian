@@ -238,7 +238,11 @@ export class ReportBlockComponent implements OnInit {
     }
 
     dynamicSortItems(item?: any, activeDocument?: any) {
-        if (!item || !this.documents || !activeDocument || !item.dynamicFilters) {
+        if (!item 
+            || !this.documents 
+            || !activeDocument 
+            || !item.dynamicFilters
+            || !item.dynamicFilters.length) {
             return;
         }
         const itemIndex = this.documents.indexOf(item);
@@ -270,35 +274,43 @@ export class ReportBlockComponent implements OnInit {
         }
     }
 
+    private arrayShuffle(array: any[]) {
+        array.sort(() => Math.random() - 0.5);
+    }
+
     onMultipleDocumentClick(activeDocument?: any, item?: any) {
         if (!item || !item.multiple || !activeDocument) {
             return;
         }
         const itemDocuments = item.document;
+        const oldActiveDocument = itemDocuments.find((item: any) => item.index === 0);
         itemDocuments.forEach((element: any) => {
             element.index = undefined;
             element.color = undefined;
         });
-
+        this.arrayShuffle(this.colorPresets);
+        item.colors = item.colors || [...this.colorPresets];
         activeDocument.index = 0;
         const indexDocument = itemDocuments.indexOf(activeDocument);
-        const firstDocumentColorIndex = indexDocument % this.colorPresets.length;
-        activeDocument.color = this.colorPresets[firstDocumentColorIndex];
         if (itemDocuments.length > 1) {
+            const firstDocumentColorIndex = indexDocument % item.colors.length;
+            activeDocument.color = item.colors[firstDocumentColorIndex];
             const secondDocumentIndex = (indexDocument + 1) % itemDocuments.length;
-            const secondDocumentColorIndex = secondDocumentIndex % this.colorPresets.length;
+            const secondDocumentColorIndex = secondDocumentIndex % item.colors.length;
             itemDocuments[secondDocumentIndex].index = 1;
-            itemDocuments[secondDocumentIndex].color = this.colorPresets[secondDocumentColorIndex];
+            itemDocuments[secondDocumentIndex].color = item.colors[secondDocumentColorIndex];
         }
         if (itemDocuments.length > 2) {
             const thirdDocumentIndex = (indexDocument + 2) % itemDocuments.length;
-            const thirdDocumentColorIndex = thirdDocumentIndex % this.colorPresets.length;
+            const thirdDocumentColorIndex = thirdDocumentIndex % item.colors.length;
             itemDocuments[thirdDocumentIndex].index = 2;
-            itemDocuments[thirdDocumentIndex].color = this.colorPresets[thirdDocumentColorIndex];
+            itemDocuments[thirdDocumentIndex].color = item.colors[thirdDocumentColorIndex];
         }
-
         item.activeDocumentIndex = item.document.indexOf(activeDocument) + 1;
-        this.dynamicSortItems(item, activeDocument);
+        
+        if (oldActiveDocument !== activeDocument) {
+            this.dynamicSortItems(item, activeDocument);
+        }
     }
 
     onNextDocumentClick(event: any, item: any, document: any) {

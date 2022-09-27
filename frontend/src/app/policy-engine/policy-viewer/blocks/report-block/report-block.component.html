@@ -110,12 +110,12 @@
                         <div class="multiple-documents-container">
                             <div style="display: inline-block;" *ngFor="let document of item.document"
                                 (click)="onMultipleDocumentClick(document, item)">
-                                <div class="item-relationships-delimiter" *ngIf="document.index === 0 && item.dynamicFilters.length" [ngStyle]="{
+                                <div class="item-relationships-delimiter" *ngIf="document.index === 0 && item.dynamicFilters.length && item.document.length > 1" [ngStyle]="{
                                     'border-right': '2px solid ' + document.color,
                                     'border-top': '2px solid ' + document.color,
                                     'border-bottom': '2px solid ' + document.color
                                 }"></div>
-                                <mat-icon *ngIf="document.index === 0 && item.dynamicFilters.length"
+                                <mat-icon *ngIf="document.index === 0 && item.dynamicFilters.length && item.document.length > 1"
                                     class="item-relationships-icon material-icons-outlined" [ngStyle]="{
                                     'color': document.color
                                 }">account_tree</mat-icon>
