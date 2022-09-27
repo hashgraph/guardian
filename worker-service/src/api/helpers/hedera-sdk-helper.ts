@@ -31,7 +31,6 @@ import {
 import { timeout } from './utils';
 import axios from 'axios';
 import { Environment } from './environment';
-import { TransactionLogger } from './transaction-logger';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import Long from 'long';
 
@@ -39,9 +38,38 @@ export const MAX_FEE = 10;
 export const INITIAL_BALANCE = 30;
 
 /**
+ * Transaction event logger data
+ */
+export interface ITransactionLoggerData {
+    /**
+     * Transaction log event type
+     */
+    type: string;
+
+    /**
+     * Transaction log event data
+     */
+    data: unknown;
+}
+
+/**
  * Contains methods to simplify work with hashgraph sdk
  */
 export class HederaSDKHelper {
+    /**
+     * Send transaction log message
+     * @private
+     */
+    private static sendTransactionLogMessage: (data: ITransactionLoggerData) => Promise<void>
+
+    /**
+     * Set transaction log function
+     * @param fn
+     */
+    public static setTransactionLogSender(fn: (data: ITransactionLoggerData) => Promise<void>): void {
+        HederaSDKHelper.sendTransactionLogMessage = fn;
+    }
+
     /**
      * Client
      * @private
@@ -82,7 +110,14 @@ export class HederaSDKHelper {
      * @private
      */
     private async transactionStartLog(id: string, transactionName: string): Promise<void> {
-        await TransactionLogger.transactionLog(id, this.client.operatorAccountId, transactionName);
+        await HederaSDKHelper.sendTransactionLogMessage({
+            type: 'start-log',
+            data: {
+                id,
+                operatorAccountId: this.client.operatorAccountId?.toString(),
+                transactionName
+            }
+        });
     }
 
     /**
@@ -94,7 +129,16 @@ export class HederaSDKHelper {
      * @private
      */
     private async transactionEndLog(id: string, transactionName: string, transaction?: Transaction, metadata?: any): Promise<void> {
-        await TransactionLogger.transactionLog(id, this.client.operatorAccountId, transactionName, transaction, metadata);
+        await HederaSDKHelper.sendTransactionLogMessage({
+            type: 'end-log',
+            data: {
+                id,
+                operatorAccountId: this.client.operatorAccountId?.toString(),
+                transactionName,
+                transaction,
+                metadata
+            }
+        });
     }
 
     /**
@@ -106,7 +150,16 @@ export class HederaSDKHelper {
      * @private
      */
     private async transactionErrorLog(id: string, transactionName: string, transaction: Transaction, error: Error): Promise<void> {
-        await TransactionLogger.transactionErrorLog(id, this.client.operatorAccountId, transactionName, transaction, error.message);
+        await HederaSDKHelper.sendTransactionLogMessage({
+            type: 'error-log',
+            data: {
+                id,
+                operatorAccountId: this.client.operatorAccountId?.toString(),
+                transactionName,
+                transaction,
+                error: error.message
+            }
+        });
     }
 
     /**
@@ -117,7 +170,14 @@ export class HederaSDKHelper {
      * @private
      */
     private async virtualTransactionLog(id: string, type: string, client: Client): Promise<void> {
-        await TransactionLogger.virtualTransactionLog(id, type, client.operatorAccountId?.toString());
+        await HederaSDKHelper.sendTransactionLogMessage({
+            type: 'virtual-function-log',
+            data: {
+                id,
+                operatorAccountId: this.client.operatorAccountId?.toString(),
+                type
+            }
+        });
     }
 
     /**
