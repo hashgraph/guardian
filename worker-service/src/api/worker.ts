@@ -400,12 +400,10 @@ export class Worker {
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
 
                     if (grant) {
-                        await client.grantKyc(tokenId, userHederaAccountId, kycKey);
+                        result.data = await client.grantKyc(tokenId, userHederaAccountId, kycKey);
                     } else {
-                        await client.revokeKyc(tokenId, userHederaAccountId, kycKey);
+                        result.data = await client.revokeKyc(tokenId, userHederaAccountId, kycKey);
                     }
-
-                    result.data = await client.accountInfo(userHederaAccountId);
 
                     break;
                 }
@@ -414,11 +412,10 @@ export class Worker {
                     const {hederaAccountId, hederaAccountKey, freezeKey, freeze, tokenId, dryRun} = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
                     if (freeze) {
-                        await client.freeze(tokenId, hederaAccountId, freezeKey);
+                        result.data = await client.freeze(tokenId, hederaAccountId, freezeKey);
                     } else {
-                        await client.unfreeze(tokenId, hederaAccountId, freezeKey);
+                        result.data = await client.unfreeze(tokenId, hederaAccountId, freezeKey);
                     }
-                    result.data = await client.accountInfo(hederaAccountId)
 
                     break;
                 }
