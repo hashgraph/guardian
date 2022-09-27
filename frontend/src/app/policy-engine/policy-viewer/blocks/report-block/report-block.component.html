@@ -110,22 +110,18 @@
                         <div class="multiple-documents-container">
                             <div style="display: inline-block;" *ngFor="let document of item.document"
                                 (click)="onMultipleDocumentClick(document, item)">
-                                <div class="item-relationships-delimiter" *ngIf="document.index === 0 && item.dynamicFilters.length && item.document.length > 1" [ngStyle]="{
-                                    'border-right': '2px solid ' + document.color,
-                                    'border-top': '2px solid ' + document.color,
-                                    'border-bottom': '2px solid ' + document.color
+                                <div class="item-relationships-delimiter" [ngStyle]="{
+                                    'opacity': document.index === 0 && item.dynamicFilters.length && item.document.length > 1 ? 1 : 0,
+                                    'transform': document.index === 0 && item.dynamicFilters.length && item.document.length > 1 ? 'scale(1, 1) translate(0, 0)' : 'scale(1, 0) translate(20px, 0)'
                                 }"></div>
                                 <mat-icon *ngIf="document.index === 0 && item.dynamicFilters.length && item.document.length > 1"
-                                    class="item-relationships-icon material-icons-outlined" [ngStyle]="{
-                                    'color': document.color
-                                }">account_tree</mat-icon>
+                                    class="item-relationships-icon material-icons-outlined">account_tree</mat-icon>
                                 <div class="chain-item item-type-{{item.type}}" [ngClass]="{
-                                    'active-multiple-document': document.index === 0,
+                                    'active-multiple-document': document.index === 0 && item.document.length > 1,
                                     'second-multiple-document': document.index === 1,
                                     'third-multiple-document': document.index === 2,
-                                    'hide-multiple-document': item.multiple && (document.index === undefined || document.index === null)
-                                }" [ngStyle]="{
-                                    'border': '2px solid ' + document.color
+                                    'hide-multiple-document': item.multiple && (document.index === undefined || document.index === null),
+                                    'single-multiple-document': item.document.length === 1
                                 }">
                                     <div class="chain-title">
                                         <ng-container [ngSwitch]="item.iconType" *ngIf="item.icon">
