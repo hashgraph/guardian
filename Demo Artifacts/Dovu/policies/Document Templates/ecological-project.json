@@ -1,0 +1,17 @@
+{
+  "document": {
+    "field0": "Unique Identifier",
+    "field1": "Name",
+    "field2": "Description",
+    "field3": "Owner(s)",
+    "field4": "Ecological Project Info - Link to Project Data",
+    "field5": "Ecological Project Info - Country: The host country for the project",
+    "field6": "Ecological Project Info - Project Scale: One from the list of - Micro, Small, Medium, or Large",
+    "field7": "Modular Benefit Project - Unique identifier ",
+    "field8": "Modular Benefit Project - Geographic Location",
+    "field9": "Modular Benefit Project - Targeted Benefit Type",
+    "field10": "Modular Benefit Project - Developer(s)",
+    "field11": "Modular Benefit Project - Sponsor(s)",
+    "field12": "Modular Benefit Project - Claim Tokens"
+  }
+}
