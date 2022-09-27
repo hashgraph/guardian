@@ -2,7 +2,7 @@ import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-d
 import { EventConfig } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
 import { ExternalMessageEvents, PolicyRole, PolicyType } from '@guardian/interfaces';
-import { AnyBlockType, IPolicyBlock, ISerializedBlock, } from '../../policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
@@ -218,7 +218,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public async beforeInit(): Promise<void> {
                 if (typeof super.beforeInit === 'function') {
-                    super.beforeInit();
+                    await super.beforeInit();
                 }
             }
 
@@ -229,7 +229,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 await this.restoreState();
 
                 if (typeof super.afterInit === 'function') {
-                    super.afterInit();
+                    await super.afterInit();
                 }
             }
 
@@ -359,6 +359,21 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
+             * Join GET Data
+             * @param {IPolicyDocument | IPolicyDocument[]} data
+             * @param {IPolicyUser} user
+             * @param {AnyBlockType} parent
+             */
+            public async joinData<U extends IPolicyDocument | IPolicyDocument[]>(
+                data: U, user: IPolicyUser, parent: AnyBlockType
+            ): Promise<U> {
+                if (typeof super.joinData === 'function') {
+                    return await super.joinData(data, user, parent);
+                }
+                return data;
+            }
+
+            /**
              * Update block
              * @param state
              * @param user
@@ -368,16 +383,23 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 await this.saveState();
                 const users: { [x: string]: IPolicyUser } = {};
                 if (!this.options.followUser) {
-                    const allUsers = await this.databaseServer.getAllPolicyUsers(this.policyId);
-                    for (const userRole of allUsers) {
-                        if (this.permissions.includes(userRole.role)) {
-                            users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
-                        } else if (this.permissions.includes('ANY_ROLE')) {
-                            users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
+                    if (this.dryRun) {
+                        const virtualUser = await DatabaseServer.getVirtualUser(this.policyId);
+                        const group = await this.databaseServer.getActiveGroupByUser(this.policyId, virtualUser?.did);
+                        users[virtualUser?.did] = (new PolicyUser(virtualUser?.did, !!this.dryRun))
+                            .setGroup(group);
+                    } else {
+                        const allUsers = await this.databaseServer.getAllPolicyUsers(this.policyId);
+                        for (const userRole of allUsers) {
+                            if (this.permissions.includes(userRole.role)) {
+                                users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
+                            } else if (this.permissions.includes('ANY_ROLE')) {
+                                users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
+                            }
                         }
-                    }
-                    if (this.permissions.includes('OWNER') || this.permissions.includes('ANY_ROLE')) {
-                        users[this.policyOwner] = new PolicyUser(this.policyOwner);
+                        if (this.permissions.includes('OWNER') || this.permissions.includes('ANY_ROLE')) {
+                            users[this.policyOwner] = new PolicyUser(this.policyOwner);
+                        }
                     }
                 } else {
                     users[user.did] = user;
@@ -644,6 +666,25 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             protected warn(message: string) {
                 this.logger.warn(message, ['GUARDIAN_SERVICE', this.uuid, this.blockType, this.tag, this.policyId]);
+            }
+
+            /**
+             * Add Internal Event Listener
+             * @param type
+             * @protected
+             */
+            protected addInternalListener(type: string, callback: Function) {
+                PolicyComponentsUtils.AddInternalListener(type, this.policyId, callback);
+            }
+
+            /**
+             * Trigger Internal Event
+             * @param type
+             * @param data
+             * @protected
+             */
+            protected triggerInternalEvent(type: string, data: any) {
+                PolicyComponentsUtils.TriggerInternalEvent(type, this.policyId, data);
             }
         };
     };

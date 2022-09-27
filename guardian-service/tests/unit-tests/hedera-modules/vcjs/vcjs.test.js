@@ -541,8 +541,7 @@ describe('VCJS', function () {
         const testVc = await vcjs.createVC(
             createdDidDocument.getDid(), 
             createdDidDocument.getPrivateKey(),
-            vcValueToCreate,
-            schema
+            vcValueToCreate
         )
         assert.exists(testVc);
         assert.isTrue(await vcjs.verifyVC(actualVcDocument.document));

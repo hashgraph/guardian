@@ -15,7 +15,9 @@ import {
     Transaction,
     TransferTransaction
 } from '@hashgraph/sdk';
-import { HederaSDKHelper } from './hedera-sdk-helper';
+import { WorkerTaskType } from '@guardian/interfaces';
+import { Workers } from '@helpers/workers';
+import { SettingsContainer } from '@guardian/common';
 
 /**
  * Transaction log level
@@ -172,8 +174,16 @@ export class TransactionLogger {
 
             if (TransactionLogger.logLvl === TransactionLogLvl.DEBUG) {
                 try {
-                    const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);
-                    const balance = await client.balance(operatorAccountId);
+                    const settingsContainer = new SettingsContainer();
+                    const {OPERATOR_ID, OPERATOR_KEY} = settingsContainer.settings;
+                    const workers = new Workers();
+                    const balance = await workers.addTask({
+                        type: WorkerTaskType.GET_USER_BALANCE,
+                        data: {
+                            hederaAccountId: OPERATOR_ID,
+                            hederaAccountKey: OPERATOR_KEY
+                        }
+                    }, 1);
                     attr.push(balance);
                 } catch (error) {
                     attr.push(null);

@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { PolicyModel, PolicyGroupModel, PolicyRoleModel, PolicyTopicModel } from '../../policy-model';
+import { PolicyModel, PolicyGroupModel, PolicyRoleModel, PolicyTopicModel } from '../../structures/policy-model';
 
 /**
  * Settings for policy.

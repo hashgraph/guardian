@@ -19,9 +19,9 @@ This folder contains a sample file that is referenced in the Demo Guide
 
 ```
 iREC 1 : 1661166202.802071003
-iREC 2 : 1661167347.064745885
-iREC 3 : 1661372984.332898003
-iREC 4 : 1661373147.975461003
+iREC 2 : 1662640724.951854568
+iREC 3 : 1662641840.731000003
+iREC 4 : 1662642008.325450377
 ```
 
 ![](../.gitbook/assets/iREC3\_new\_1.png)

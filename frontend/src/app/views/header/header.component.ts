@@ -118,10 +118,11 @@ export class HeaderComponent implements OnInit {
         this.ws = this.webSocketService.profileSubscribe((event) => {
             if (event.type === 'PROFILE_BALANCE') {
                 if (event.data && event.data.balance) {
-                    this.balance = `${event.data.balance.toFixed(3)} ${event.data.unit}`;
-                    if (event.data.balance > 100) {
+                    const b = parseFloat(event.data.balance);
+                    this.balance = `${b.toFixed(3)} ${event.data.unit}`;
+                    if (b > 100) {
                         this.balanceType = 'normal';
-                    } else if (event.data.balance > 20) {
+                    } else if (b > 20) {
                         this.balanceType = 'warn';
                     } else {
                         this.balanceType = 'error';
@@ -156,10 +157,11 @@ export class HeaderComponent implements OnInit {
     getBallance() {
         this.auth.balance().subscribe((balance: any) => {
             if (balance && balance.balance) {
-                this.balance = `${balance.balance.toFixed(3)} ${balance.unit}`;
-                if (balance.balance > 100) {
+                const b = parseFloat(balance.balance);
+                this.balance = `${b.toFixed(3)} ${balance.unit}`;
+                if (b > 100) {
                     this.balanceType = 'normal';
-                } else if (balance.balance > 20) {
+                } else if (b > 20) {
                     this.balanceType = 'warn';
                 } else {
                     this.balanceType = 'error';

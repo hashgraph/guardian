@@ -28,10 +28,19 @@
                         <dragonglass type="topics" [params]="element.topicId">{{element.topicId}}</dragonglass>
                     </td>
                 </ng-container>
+                <ng-container matColumnDef="tokens">
+                    <th mat-header-cell *matHeaderCellDef> Tokens </th>
+                    <td mat-cell *matCellDef="let element">
+                        <a [routerLink]="['/tokens']" [queryParams]="{ policy: element.id }"> 
+                            Tokens
+                        </a>
+                    </td>
+                </ng-container>
                 <ng-container matColumnDef="schemas">
                     <th mat-header-cell *matHeaderCellDef> Schemas </th>
                     <td mat-cell *matCellDef="let element">
-                        <a [routerLink]="['/schemas']" [queryParams]="{ topic: element.topicId }"> Schemas
+                        <a [routerLink]="['/schemas']" [queryParams]="{ topic: element.topicId }"> 
+                            Schemas
                         </a>
                     </td>
                 </ng-container>

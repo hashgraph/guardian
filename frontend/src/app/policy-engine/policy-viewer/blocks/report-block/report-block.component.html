@@ -43,7 +43,7 @@
                 <div *ngIf="mintDocument" class="vp-section">
                     <div class="vp-section-header">
                         Token & Issuer
-                        <a class="open-vp" (click)="openJsonDocument(mintDocument)">VC Files</a>
+                        <a class="open-vp" (click)="openJsonDocument(mintDocument)">VC File</a>
                     </div>
                     <div class="vp-table">
                         <div class="vp-field">
@@ -64,7 +64,7 @@
                 <div *ngIf="policyDocument" class="vp-section">
                     <div class="vp-section-header">
                         Policy Overview
-                        <a class="open-vp" (click)="openVCDocument(policyDocument)">VC Files</a>
+                        <a class="open-vp" (click)="openVCDocument(policyDocument)">VC File</a>
                     </div>
                     <div class="vp-table">
                         <div class="vp-field">
@@ -107,39 +107,61 @@
                 </div>
                 <div class="chain-container" (wheel)="onWheel($event)" #scrollContainer>
                     <ng-container *ngFor="let item of documents">
-                        <div class="chain-item item-type-{{item.type}}">
-                            <div class="chain-title">
-                                <ng-container [ngSwitch]="item.iconType" *ngIf="item.icon">
-                                    <mat-icon *ngSwitchCase="'common'">{{item.icon}}</mat-icon>
-                                    <img *ngSwitchCase="'custom'" [src]="item.icon" class="item-image"/>
-                                </ng-container>
-                                
-                                {{item.title}}
-                            </div>
-                            <div *ngIf="item.document && item.document.comment" class="revoke-container">
-                                <mat-icon class="revoke-icon">warning</mat-icon>
-                                <b>Revoked with reason: "{{item.document.comment}}"</b>
-                            </div>
-                            <div class="chain-id">
-                                {{item.description}}
-                            </div>
-                            <div *ngIf="item.username" class="parties">
-                                <div class="parties-label">Parties:</div>
-                                <div class="parties-value">
-                                    <div class="partie">
-                                        {{item.username}}
+                        <div class="multiple-documents-container">
+                            <div style="display: inline-block;" *ngFor="let document of item.document"
+                                (click)="onMultipleDocumentClick(document, item)">
+                                <div class="item-relationships-delimiter" [ngStyle]="{
+                                    'opacity': document.index === 0 && item.dynamicFilters.length && item.document.length > 1 ? 1 : 0,
+                                    'transform': document.index === 0 && item.dynamicFilters.length && item.document.length > 1 ? 'scale(1, 1) translate(0, 0)' : 'scale(1, 0) translate(20px, 0)'
+                                }"></div>
+                                <mat-icon *ngIf="document.index === 0 && item.dynamicFilters.length && item.document.length > 1"
+                                    class="item-relationships-icon material-icons-outlined">account_tree</mat-icon>
+                                <div class="chain-item item-type-{{item.type}}" [ngClass]="{
+                                    'active-multiple-document': document.index === 0 && item.document.length > 1,
+                                    'second-multiple-document': document.index === 1,
+                                    'third-multiple-document': document.index === 2,
+                                    'hide-multiple-document': item.multiple && (document.index === undefined || document.index === null),
+                                    'single-multiple-document': item.document.length === 1
+                                }">
+                                    <div class="chain-title">
+                                        <ng-container [ngSwitch]="item.iconType" *ngIf="item.icon">
+                                            <mat-icon *ngSwitchCase="'common'">{{item.icon}}</mat-icon>
+                                            <img *ngSwitchCase="'custom'" [src]="item.icon" class="item-image" />
+                                        </ng-container>
+                                        {{item.title}}
+                                    </div>
+                                    <div *ngIf="document.document && document.document.comment" class="revoke-container">
+                                        <mat-icon class="revoke-icon">warning</mat-icon>
+                                        <b>Revoked with reason: "{{document.document.comment}}"</b>
+                                    </div>
+                                    <div class="chain-id">
+                                        {{item.description}}
+                                    </div>
+                                    <div *ngIf="document.username" class="parties">
+                                        <div class="parties-label">Parties:</div>
+                                        <div class="parties-value">
+                                            <div class="partie">
+                                                {{document.username}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="nested-documents">
+                                        <ng-container *ngFor="let link of item.documents">
+                                            <a class="nested-documents-value" (click)="openVCDocument(link)" [title]="link.description">
+                                                {{link.title}}
+                                            </a>
+                                        </ng-container>
+                                    </div>
+                                    <div *ngIf="document.document" class="chain-document">
+                                        <a (click)="openVCDocument(item, document.document.document)">VC File</a>
+                                    </div>
+                                    <div class="multiple-documents-count"
+                                        *ngIf="item.activeDocumentIndex && item.document && item.document.length > 1">
+                                        <mat-icon (click)="onPrevDocumentClick($event, item, document)">chevron_left</mat-icon>
+                                        {{item.activeDocumentIndex}} in {{item.document.length}}
+                                        <mat-icon (click)="onNextDocumentClick($event, item, document)">chevron_right</mat-icon>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="nested-documents">
-                                <ng-container *ngFor="let link of item.documents">
-                                    <a class="nested-documents-value" (click)="openVCDocument(link)" [title]="link.description">
-                                        {{link.title}}
-                                    </a>
-                                </ng-container>
-                            </div>
-                            <div *ngIf="item.document" class="chain-document">
-                                <a (click)="openVCDocument(item)">VC Files</a>
                             </div>
                         </div>
                     </ng-container>

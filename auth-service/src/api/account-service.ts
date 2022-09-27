@@ -71,6 +71,7 @@ export class AccountService {
                     username,
                     password: passwordDigest,
                     role,
+                    walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
                     parent: null,
                     did: null
                 });

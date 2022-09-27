@@ -194,18 +194,6 @@ export class RevokeBlock {
                 return;
             }
 
-            if (!ref.options.uiMetaData.name) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "Button Name" does not set');
-            }
-
-            if (!ref.options.uiMetaData.title) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "Title" does not set');
-            }
-
-            if (!ref.options.uiMetaData.description) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "Description" does not set');
-            }
-
             if (ref.options.uiMetaData.updatePrevDoc && !ref.options.uiMetaData.prevDocStatus) {
                 resultsContainer.addBlockError(ref.uuid, 'Option "Status Value" does not set');
             }

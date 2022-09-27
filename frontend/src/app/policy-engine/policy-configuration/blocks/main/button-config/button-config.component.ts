@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token, UserType } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
@@ -10,10 +10,8 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
 @Component({
     selector: 'button-config',
     templateUrl: './button-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './button-config.component.css'
-    ]
+    styleUrls: ['./button-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class ButtonConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;
@@ -62,7 +60,7 @@ export class ButtonConfigComponent implements OnInit {
             type: 'selector',
             filters: []
         })
-        this.propHidden.buttons[this.block.uiMetaData.buttons.length-1] = {};
+        this.propHidden.buttons[this.block.uiMetaData.buttons.length - 1] = {};
     }
 
     getIcon(block: any) {

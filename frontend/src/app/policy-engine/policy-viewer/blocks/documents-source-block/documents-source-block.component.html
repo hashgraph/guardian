@@ -46,6 +46,9 @@
                             <span *ngIf="option.type=='text'" class="text" [title]="getText(element, option)">
                                 {{getText(element, option)}}
                             </span>
+                            <span *ngIf="option.type=='issuer'" class="text" [title]="getText(element, option)">
+                                {{getIssuer(element, option)}}
+                            </span>
                             <span *ngIf="option.type=='button'" class="col-btn" (click)="$event.stopImmediatePropagation();">
                                 <div class="btn-field {{option.uiClass}}" (click)="onButton($event, element, option)">
                                     {{getText(element, option)}}</div>

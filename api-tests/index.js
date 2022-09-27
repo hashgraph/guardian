@@ -4,15 +4,12 @@ dotenv.config();
 const { spawn } = require('child_process');
 const kill = require('tree-kill');
 const path = require('path');
-const fs = require('fs');
 
 const { sleep, GenerateTokens } = require("./helpers");
 
 const { Accounts } = require("./test-suits/accounts");
 const { Profiles } = require("./test-suits/profiles");
-const { Schemas } = require("./test-suits/schemas");
 const { Trustchains } = require("./test-suits/trustchains");
-const { Policies } = require("./test-suits/policies");
 
 
 const processes = [];
@@ -22,8 +19,8 @@ describe('Tests', async function () {
         this.timeout(10000000000);
         const pathArray = [
             [path.resolve(path.join('..', 'logger-service')), {}],
-            [path.resolve(path.join('..', 'worker-service')), {}],
-            [path.resolve(path.join('..', 'auth-service')), {}],
+            [path.resolve(path.join('..', 'worker-service')), {IPFS_STORAGE_API_KEY: process.env.IPFS_STORAGE_API_KEY}],
+            [path.resolve(path.join('..', 'auth-service')), {HASHICORP_ADDRESS: `http://${process.env.HASHICORP_HOST}:${process.env.HASHICORP_PORT}`}],
             [path.resolve(path.join('..', 'ipfs-client')), {IPFS_STORAGE_API_KEY: process.env.IPFS_STORAGE_API_KEY}],
             [path.resolve(path.join('..', 'guardian-service')), {OPERATOR_ID: process.env.OPERATOR_ID, OPERATOR_KEY: process.env.OPERATOR_KEY}],
             [path.resolve(path.join('..', 'api-gateway')), {}]

@@ -22,7 +22,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Account Id (Field)</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.accountId" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="block.accountId" [readonly]="readonly">
         </td>
     </tr>
     <tr *ngIf="block.accountType!=='custom'" class="propRow" [attr.collapse]="propHidden.main">

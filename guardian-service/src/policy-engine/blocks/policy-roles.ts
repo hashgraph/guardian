@@ -356,9 +356,22 @@ export class PolicyRolesBlock {
      */
     async getData(user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const roles: string[] = Array.isArray(ref.options.roles) ? ref.options.roles : [];
+        const groups: string[] = Array.isArray(ref.options.groups) ? ref.options.groups : [];
+        const policyGroups: IGroupConfig[] = ref.policyInstance.policyGroups || [];
+        const groupMap = {};
+        for (const item of policyGroups) {
+            if (groups.indexOf(item.name) > -1) {
+                groupMap[item.name] = {
+                    groupAccessType: item.groupAccessType,
+                    groupRelationshipType: item.groupRelationshipType
+                };
+            }
+        }
         return {
-            roles: Array.isArray(ref.options.roles) ? ref.options.roles : [],
-            groups: Array.isArray(ref.options.groups) ? ref.options.groups : [],
+            roles,
+            groups,
+            groupMap,
             isMultipleGroups: ref.isMultipleGroups,
             uiMetaData: ref.options.uiMetaData
         }
@@ -394,6 +407,10 @@ export class PolicyRolesBlock {
             group = await this.getGroupByConfig(ref, did, username, groupConfig);
         } else {
             throw new BlockActionError('Invalid role', ref.blockType, ref.uuid);
+        }
+        const ifUserGroup = await ref.databaseServer.checkUserInGroup(group);
+        if (ifUserGroup) {
+            throw new BlockActionError('You are already a member of the group', ref.blockType, ref.uuid);
         }
 
         group.messageId = await this.createVC(ref, user, group);

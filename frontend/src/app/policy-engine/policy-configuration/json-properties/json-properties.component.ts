@@ -2,7 +2,7 @@ import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Outpu
 import { Schema, Token } from '@guardian/interfaces';
 import { RegisteredBlocks } from '../../registered-blocks';
 import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
-import { PolicyBlockModel } from '../../policy-model';
+import { PolicyBlockModel } from '../../structures/policy-model';
 
 /**
  * Settings for all blocks.

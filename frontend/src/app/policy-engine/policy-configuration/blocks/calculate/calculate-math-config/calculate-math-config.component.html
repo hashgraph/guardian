@@ -33,14 +33,14 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Variable</td>
             <td class="propRowCell">
-                <input [(ngModel)]="equation.variable" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="equation.variable" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.equationsGroup || propHidden.equations[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Formula</td>
             <td class="propRowCell">
-                <input [(ngModel)]="equation.formula" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="equation.formula" [readonly]="readonly">
             </td>
         </tr>
     </ng-container>

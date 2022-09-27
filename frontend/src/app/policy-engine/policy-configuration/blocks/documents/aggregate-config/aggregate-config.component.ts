@@ -1,9 +1,9 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 import { MatDialog } from '@angular/material/dialog';
 import { CronConfigDialog } from '../../../../helpers/cron-config-dialog/cron-config-dialog.component';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-model';
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 
 /**
  * Settings for block of 'aggregateDocument' type.
@@ -11,10 +11,8 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/policy-mode
 @Component({
     selector: 'aggregate-config',
     templateUrl: './aggregate-config.component.html',
-    styleUrls: [
-        './../../../common-properties/common-properties.component.css',
-        './aggregate-config.component.css'
-    ]
+    styleUrls: ['./aggregate-config.component.css'],
+    encapsulation: ViewEncapsulation.Emulated
 })
 export class AggregateConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;

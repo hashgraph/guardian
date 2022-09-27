@@ -54,10 +54,12 @@ export class WebSocketsService {
     private registerMessageHandler(): void {
         this.channel.response<IUpdateBlockMessage, any>('update-block', async (msg) => {
             this.wss.clients.forEach((client: any) => {
-                this.send(client, {
-                    type: 'update-event',
-                    data: msg.uuid
-                });
+                if (this.checkUserByDid(client, msg)) {
+                    this.send(client, {
+                        type: 'update-event',
+                        data: msg.uuid
+                    });
+                }
             });
             return new MessageResponse({})
         });
@@ -89,15 +91,24 @@ export class WebSocketsService {
             return new MessageResponse({});
         });
 
-        this.channel.response<IUpdateUserBalanceMessage, any>('update-user-balance', async (msg) => {
-            this.wss.clients.forEach((client: any) => {
-                if (this.checkUserByName(client, msg)) {
-                    this.send(client, {
-                        type: 'PROFILE_BALANCE',
-                        data: msg
+        this.channel.response<IUpdateUserBalanceMessage, any>('update-user-balance',  async (msg) => {
+            this.wss.clients.forEach(client => {
+                new Users().getUserByAccount(msg.operatorAccountId).then(user => {{
+                    Object.assign(msg, {
+                        user: user ? {
+                            username: user.username,
+                            did: user.did
+                        } : null
                     });
-                }
+                    if (this.checkUserByName(client, msg)) {
+                        this.send(client, {
+                            type: 'PROFILE_BALANCE',
+                            data: msg
+                        });
+                    }
+                }});
             });
+
             return new MessageResponse({});
         });
 
@@ -118,7 +129,6 @@ export class WebSocketsService {
      */
     private registerConnection(): void {
         this.wss.on('connection', async (ws: any, req: IncomingMessage) => {
-            ws.user = await this.getUserByUrl(req.url);
             ws.on('message', async (data: Buffer) => {
                 const message = data.toString();
                 if (message === 'ping') {
@@ -128,6 +138,7 @@ export class WebSocketsService {
                     this.wsResponse(ws, message);
                 }
             });
+            ws.user = await this.getUserByUrl(req.url);
         });
     }
 
@@ -228,7 +239,13 @@ export class WebSocketsService {
      * @private
      */
     private checkUserByDid(client: any, msg: any): boolean {
-        return client && client.user && msg && msg.user && (client.user.did === msg.user.did);
+        if(client && client.user) {
+            if(msg && msg.user) {
+                return (client.user.did === msg.user.did || msg.user.virtual);
+            }
+            return true;
+        }
+        return false;
     }
 
     /**

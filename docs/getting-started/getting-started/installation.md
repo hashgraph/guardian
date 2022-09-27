@@ -43,6 +43,18 @@ or in `ipfs-client/.env.docker`:
 IPFS_STORAGE_API_KEY=""
 ```
 
+in `worker-service/ .env`:
+
+```
+IPFS_STORAGE_API_KEY=""
+```
+
+or in `worker-service/ .env.docker`:
+
+```
+IPFS_STORAGE_API_KEY=""
+```
+
 4\. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
 ```

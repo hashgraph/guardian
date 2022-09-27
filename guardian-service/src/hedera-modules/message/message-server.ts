@@ -5,7 +5,6 @@ import {
 } from '@hashgraph/sdk';
 import { IPFS } from '@helpers/ipfs';
 import { Message } from './message';
-import { HederaSDKHelper } from '../hedera-sdk-helper';
 import { MessageType } from './message-type';
 import { VCMessage } from './vc-message';
 import { DIDMessage } from './did-message';
@@ -25,13 +24,6 @@ import { MessageMemo } from '../memo-mappings/message-memo';
  * Message server
  */
 export class MessageServer {
-
-    /**
-     * Client
-     * @private
-     */
-    private readonly client: HederaSDKHelper;
-
     /**
      * Submit key
      * @private
@@ -69,7 +61,6 @@ export class MessageServer {
         this.clientOptions = {operatorId, operatorKey, dryRun};
 
         this.dryRun = dryRun || null;
-        this.client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
     }
 
     /**
@@ -88,7 +79,7 @@ export class MessageServer {
             await TransactionLogger.virtualFileLog(this.dryRun, file, result);
             return result
         }
-        return IPFS.addFileAsync(file);
+        return IPFS.addFile(file);
     }
 
     /**
@@ -102,7 +93,7 @@ export class MessageServer {
         if (this.dryRun) {
             throw new Error('Unable to get virtual file');
         }
-        return IPFS.getFileAsync(cid, responseType);
+        return await IPFS.getFile(cid, responseType);
     }
 
     /**
@@ -295,7 +286,19 @@ export class MessageServer {
      * @private
      */
     private async getTopicMessage<T extends Message>(timeStamp: string, type?: MessageType): Promise<T> {
-        const { topicId, message } = await this.client.getTopicMessage(timeStamp);
+        const {operatorId, operatorKey, dryRun} = this.clientOptions;
+
+        const workers = new Workers();
+        const { topicId, message } = await workers.addTask({
+            type: WorkerTaskType.GET_TOPIC_MESSAGE,
+            data: {
+                operatorId,
+                operatorKey,
+                dryRun,
+                timeStamp
+            }
+        }, 1);
+
         new Logger().info(`getTopicMessage, ${timeStamp}, ${topicId}, ${message}`, ['GUARDIAN_SERVICE']);
         const result = MessageServer.fromMessage<T>(message, type);
         result.setId(timeStamp);
@@ -311,8 +314,20 @@ export class MessageServer {
      * @private
      */
     private async getTopicMessages(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<Message[]> {
+        const {operatorId, operatorKey, dryRun} = this.clientOptions;
+
         const topic = topicId.toString();
-        const messages = await this.client.getTopicMessages(topic);
+        const workers = new Workers();
+        const messages = await workers.addTask({
+            type: WorkerTaskType.GET_TOPIC_MESSAGES,
+            data: {
+                operatorId,
+                operatorKey,
+                dryRun,
+                topic
+            }
+        }, 1);
+
         new Logger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
         const result: Message[] = [];
         for (const message of messages) {
@@ -423,7 +438,18 @@ export class MessageServer {
     public async findTopic(messageId: string): Promise<string> {
         try {
             if (messageId) {
-                const { topicId } = await this.client.getTopicMessage(messageId);
+                const {operatorId, operatorKey, dryRun} = this.clientOptions;
+
+                const workers = new Workers();
+                const { topicId } = await workers.addTask({
+                    type: WorkerTaskType.GET_TOPIC_MESSAGE,
+                    data: {
+                        operatorId,
+                        operatorKey,
+                        dryRun,
+                        timeStamp: messageId
+                    }
+                }, 1);
                 return topicId;
             }
             return null;

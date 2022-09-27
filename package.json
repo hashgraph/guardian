@@ -14,5 +14,6 @@
     "mrv-sender",
     "worker-service"
   ],
-  "version": "2.4.2"
+  "version": "2.5.0-prerelease",
+  "stableVersion": "2.4.2"
 }

@@ -1,6 +1,6 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
-import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { DocumentSignature, GenerateUUIDv4, IRootConfig, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
@@ -46,7 +46,7 @@ export class RetirementBlock {
      * @param ref
      * @private
      */
-    private async createWipeVC(root: any, token: any, data: any, ref: AnyBlockType): Promise<VcDocument> {
+    private async createWipeVC(root: IRootConfig, token: any, data: any, ref: AnyBlockType): Promise<VcDocument> {
         const vcHelper = new VcHelper();
         const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.WIPE_TOKEN);
         const amount = data as string;
@@ -67,7 +67,7 @@ export class RetirementBlock {
      * @param vcs
      * @private
      */
-    private async createVP(root: any, uuid: string, vcs: VcDocument[]) {
+    private async createVP(root: IRootConfig, uuid: string, vcs: VcDocument[]) {
         const vcHelper = new VcHelper();
         const vp = await vcHelper.createVP(
             root.did,
@@ -93,7 +93,7 @@ export class RetirementBlock {
         documents: VcDocument[],
         relationships: string[],
         topicId: string,
-        root: any,
+        root: IRootConfig,
         user: IPolicyUser,
         targetAccountId: string
     ): Promise<any> {

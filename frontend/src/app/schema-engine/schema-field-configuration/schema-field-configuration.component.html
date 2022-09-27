@@ -78,4 +78,25 @@
             Allow multiple answers
         </mat-checkbox>
     </div>
+    <div *ngIf="enum && !loading" class="enum-options-container">
+        <mat-form-field *ngIf="this.field.controlEnum.value.length" appearance="outline" class="enum-form-field">
+            <mat-label>Enum data</mat-label>
+            <mat-chip-list #chipList aria-label="Enum values">
+                <mat-chip *ngFor="let keyword of keywords" class="mat-chip-value">
+                    <div class="mat-chip-value-label">{{keyword}}</div>
+                </mat-chip>
+                <mat-chip *ngIf="keywords.length < this.field.controlEnum.value.length">
+                    ...
+                </mat-chip>
+            </mat-chip-list>
+        </mat-form-field>
+        <div class="enum-edit-button" [ngClass]="{ 'enum-edit-button-only': !this.field.controlEnum.value.length }"
+            (click)="onEditEnum()">
+            <mat-icon>edit</mat-icon>
+            <span class="enum-edit-button-label">Edit values</span>
+        </div>
+    </div>
+    <div *ngIf="loading" class="loading">
+        <mat-spinner [diameter]="65"></mat-spinner>
+    </div>
 </div>

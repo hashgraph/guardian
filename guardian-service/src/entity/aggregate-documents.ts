@@ -20,6 +20,12 @@ export class AggregateVC extends BaseEntity {
     assignedTo?: string;
 
     /**
+     * Document assign
+     */
+    @Property({ nullable: true })
+    assignedToGroup?: string;
+
+    /**
      * Document hash
      */
     @Property({ nullable: true })

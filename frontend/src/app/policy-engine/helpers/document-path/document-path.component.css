@@ -3,8 +3,16 @@
     overflow: hidden;
     padding: 2px;
     display: grid;
-    grid-template-columns: 130px 8px 190px;
+    grid-template-columns: 130px 8px 1fr fit-content(24px);
 }
 
 .select {
+}
+
+.input-end {
+    min-width: 0;
+}
+
+.input-end-tooltip {
+    margin-left: 2px;
 }

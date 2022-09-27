@@ -9,6 +9,7 @@
 .content {
     position: relative;
     height: var(--header-height);
+    user-select: none;
 }
 
 .content.header .mat-toolbar.mat-primary {

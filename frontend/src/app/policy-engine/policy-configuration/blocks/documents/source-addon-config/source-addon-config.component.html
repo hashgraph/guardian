@@ -30,28 +30,28 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Owned by User</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.onlyOwnDocuments" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.onlyOwnDocuments" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Owned by Group</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.onlyOwnByGroupDocuments" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.onlyOwnByGroupDocuments" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Assigned to User</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.onlyAssignDocuments" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.onlyAssignDocuments" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Assigned to Group</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.onlyAssignByGroupDocuments" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.onlyAssignByGroupDocuments" [readonly]="readonly">
         </td>
     </tr>
 
@@ -59,14 +59,14 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">View History</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.viewHistory" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.viewHistory" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Order Field</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.orderField" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="block.orderField" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow">
@@ -104,7 +104,7 @@
             </td>
             <td class="propRowCell cellName">Field {{i}}</td>
             <td class="propRowCell">
-                <span *ngIf="field.field&&field.type&&field.value">
+                <span *ngIf="field.field&&field.type&&field.value" class="not-editable-text">
                     {{field.field}} {{field.type}} {{field.value}}
                 </span>
             </td>
@@ -125,14 +125,14 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Field</td>
             <td class="propRowCell">
-                <input [(ngModel)]="field.field" [readonly]="readonly">
+                <document-path [(value)]="field.field" [readonly]="readonly"></document-path>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Value</td>
             <td class="propRowCell">
-                <input [(ngModel)]="field.value" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.value" [readonly]="readonly">
             </td>
         </tr>
     </ng-container>

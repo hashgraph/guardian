@@ -69,6 +69,12 @@ jobs:
           pushd guardian-service
           npm run lint
           popd
+          pushd worker-service
+          npm run lint
+          popd
+          pushd ipfs-client
+          npm run lint
+          popd
           pushd api-gateway
           npm run lint
           popd
@@ -77,6 +83,9 @@ jobs:
       - name: Test
         run: |
           pushd guardian-service
+          npm run test
+          popd
+          pushd worker-service
           npm run test
           popd
         env:

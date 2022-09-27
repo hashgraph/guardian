@@ -1,0 +1,10 @@
+.mat-option-link {
+    color: #6166ff;
+}
+
+.mat-option-link mat-icon {
+    margin-right: 2px;
+    top: -2px;
+    left: -4px;
+    position: relative;
+}

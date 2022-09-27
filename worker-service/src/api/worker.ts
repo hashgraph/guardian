@@ -1,6 +1,6 @@
-import { Logger, MessageBrokerChannel } from '@guardian/common';
+import { Logger, MessageBrokerChannel, SettingsContainer } from '@guardian/common';
 import {
-    IAddFileMessage,
+    ExternalMessageEvents,
     ITask,
     ITaskResult,
     IWorkerRequest,
@@ -9,6 +9,26 @@ import {
 } from '@guardian/interfaces';
 import { HederaSDKHelper } from './helpers/hedera-sdk-helper';
 import { Environment } from './helpers/environment';
+import { IpfsClient } from './ipfs-client';
+import Blob from 'cross-blob';
+import { HederaUtils } from './helpers/utils';
+import { PrivateKey } from '@hashgraph/sdk';
+
+/**
+ * Split chunk
+ * @param array
+ * @param chunk
+ * @return
+ */
+function splitChunk<T>(array: T[], chunk: number): T[][] {
+    const res: T[][] = [];
+    let i: number;
+    let j: number;
+    for (i = 0, j = array.length; i < j; i += chunk) {
+        res.push(array.slice(i, i + chunk));
+    }
+    return res;
+}
 
 /**
  * Sleep helper
@@ -30,7 +50,13 @@ export class Worker {
      * Logger instance
      * @private
      */
-    private logger: Logger;
+    private readonly logger: Logger;
+
+    /**
+     * Ipfs client
+     * @private
+     */
+    private readonly ipfsClient: IpfsClient;
 
     /**
      * Current task ID
@@ -92,7 +118,11 @@ export class Worker {
     constructor(
         private readonly channel: MessageBrokerChannel
     ) {
+        const { IPFS_STORAGE_API_KEY } = new SettingsContainer().settings;
+
         this.logger = new Logger();
+        this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
+
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
         this.taskTimeout = parseInt(process.env.TASK_TIMEOUT, 10) * 1000; // env in seconds
@@ -116,6 +146,19 @@ export class Worker {
                 this.updateEventReceived = true;
             }
         });
+
+        HederaSDKHelper.setTransactionResponseCallback(async (client: any) => {
+            try {
+                const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
+                await this.channel.request(['api-gateway', 'update-user-balance'].join('.'), {
+                    balance,
+                    unit: 'Hbar',
+                    operatorAccountId: client.operatorAccountId.toString()
+                });
+            } catch (error) {
+                throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
+            }
+        })
     }
 
     /**
@@ -161,20 +204,345 @@ export class Worker {
 
         try {
             switch (task.type) {
-                case WorkerTaskType.GET_FILE:
-                case WorkerTaskType.ADD_FILE:
-                    result.data = await this.channel.request<IAddFileMessage, any>(task.data.target, task.data.payload);
+                case WorkerTaskType.ADD_FILE: {
+                    let fileContent = Buffer.from(task.data.payload.content, 'base64');
+                    const data = await this.channel.request<any, any>(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT, task.data.payload);
+                    if (data && data.body) {
+                        fileContent = Buffer.from(data.body, 'base64')
+                    }
+                    const blob: any = new Blob([fileContent]);
+                    const r = await this.ipfsClient.addFiile(blob);
+                    this.channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
+                    result.data = r;
                     break;
+                }
 
-                case WorkerTaskType.SEND_HEDERA:
+                case WorkerTaskType.GET_FILE: {
+                    if (!task.data.payload || !task.data.payload.cid || !task.data.payload.responseType) {
+                        result.error = 'Invalid CID';
+                    } else {
+                        let fileContent = await this.ipfsClient.getFile(task.data.payload.cid);
+                        if (fileContent instanceof Buffer) {
+                            const data = await this.channel.request<any, any>(ExternalMessageEvents.IPFS_AFTER_READ_CONTENT, {
+                                responseType: !task.data.payload.responseType,
+                                content: fileContent.toString('base64'),
+                            });
+                            if (data && data.body) {
+                                fileContent = Buffer.from(data.body, 'base64')
+                            }
+                        }
+
+                        switch (task.data.payload.responseType) {
+                            case 'str':
+                                result.data = Buffer.from(fileContent, 'binary').toString();
+                                break;
+
+                            case 'json':
+                                result.data = Buffer.from(fileContent, 'binary').toJSON();
+                                break;
+
+                            default:
+                                result.data = fileContent
+                        }
+                    }
+                    break;
+                }
+
+                case WorkerTaskType.SEND_HEDERA: {
                     Environment.setNetwork(task.data.network);
                     Environment.setLocalNodeAddress(task.data.localNodeAddress);
                     Environment.setLocalNodeProtocol(task.data.localNodeProtocol);
-                    const { operatorId, operatorKey, dryRun } = task.data.clientOptions;
+                    const {operatorId, operatorKey, dryRun} = task.data.clientOptions;
                     const client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
-                    const { topicId, buffer, submitKey, memo } = task.data;
+                    const {topicId, buffer, submitKey, memo} = task.data;
                     result.data = await client.submitMessage(topicId, buffer, submitKey, memo);
                     break;
+                }
+
+                case WorkerTaskType.GENERATE_DEMO_KEY: {
+                    const {operatorId, operatorKey, initialBalance} = task.data;
+                    const client = new HederaSDKHelper(operatorId, operatorKey);
+                    const treasury = await client.newAccount(initialBalance);
+                    result.data = {
+                        id: treasury.id.toString(),
+                        key: treasury.key.toString()
+                    };
+                    break;
+                }
+
+                case WorkerTaskType.GET_USER_BALANCE: {
+                    const {hederaAccountId, hederaAccountKey} = task.data;
+                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey);
+                    result.data = await client.balance(hederaAccountId);
+
+                    break;
+                }
+
+                case WorkerTaskType.GET_ACCOUNT_INFO: {
+                    const {userID, userKey, hederaAccountId} = task.data;
+                    const client = new HederaSDKHelper(userID, userKey);
+                    result.data = await client.accountInfo(hederaAccountId);
+
+                    break;
+                }
+
+                case WorkerTaskType.CREATE_TOKEN: {
+                    const {
+                        operatorId,
+                        operatorKey,
+                        changeSupply,
+                        decimals,
+                        enableAdmin,
+                        enableFreeze,
+                        enableKYC,
+                        enableWipe,
+                        initialSupply,
+                        tokenName,
+                        tokenSymbol,
+                        tokenType} = task.data;
+                    const client = new HederaSDKHelper(operatorId, operatorKey);
+                    const treasury = client.newTreasury(operatorId, operatorKey);
+                    const treasuryId = treasury.id;
+                    const treasuryKey = treasury.key;
+                    const adminKey = enableAdmin ? treasuryKey : null;
+                    const kycKey = enableKYC ? treasuryKey : null;
+                    const freezeKey = enableFreeze ? treasuryKey : null;
+                    const wipeKey = enableWipe ? treasuryKey : null;
+                    const supplyKey = changeSupply ? treasuryKey : null;
+                    const nft = tokenType === 'non-fungible';
+                    const _decimals = nft ? 0 : decimals;
+                    const _initialSupply = nft ? 0 : initialSupply;
+                    const tokenId = await client.newToken(
+                        tokenName,
+                        tokenSymbol,
+                        nft,
+                        _decimals,
+                        _initialSupply,
+                        '',
+                        treasury,
+                        adminKey,
+                        kycKey,
+                        freezeKey,
+                        wipeKey,
+                        supplyKey,
+                    );
+
+                    result.data = {
+                        tokenId,
+                        tokenName,
+                        tokenSymbol,
+                        tokenType,
+                        decimals: _decimals,
+                        initialSupply: _initialSupply,
+                        adminId: treasuryId ? treasuryId.toString() : null,
+                        adminKey: adminKey ? adminKey.toString() : null,
+                        kycKey: kycKey ? kycKey.toString() : null,
+                        freezeKey: freezeKey ? freezeKey.toString() : null,
+                        wipeKey: wipeKey ? wipeKey.toString() : null,
+                        supplyKey: supplyKey ? supplyKey.toString() : null
+                    }
+
+                    break;
+                }
+
+                case WorkerTaskType.NEW_TOKEN: {
+                    const {
+                        operatorId,
+                        operatorKey,
+                        tokenName,
+                        tokenSymbol,
+                        nft,
+                        decimals,
+                        initialSupply,
+                        tokenMemo,
+                        adminKey,
+                        kycKey,
+                        freezeKey,
+                        wipeKey,
+                        supplyKey,
+                    } = task.data;
+                    const client = new HederaSDKHelper(operatorId, operatorKey);
+                    result.data = await client.newToken(
+                        tokenName,
+                        tokenSymbol,
+                        nft,
+                        decimals,
+                        initialSupply,
+                        tokenMemo,
+                        {
+                            id: operatorId,
+                            key: PrivateKey.fromString(operatorKey)
+                        },
+                        PrivateKey.fromString(adminKey),
+                        PrivateKey.fromString(kycKey),
+                        PrivateKey.fromString(freezeKey),
+                        PrivateKey.fromString(wipeKey),
+                        PrivateKey.fromString(supplyKey),
+                    );
+
+                    break;
+                }
+
+                case WorkerTaskType.ASSOCIATE_TOKEN: {
+                    const {userID, userKey, associate, tokenId, dryRun} = task.data;
+                    const client = new HederaSDKHelper(userID, userKey, dryRun);
+                    if (associate) {
+                        result.data = await client.associate(tokenId, userID, userKey);
+                    } else {
+                        result.data = await client.dissociate(tokenId, userID, userKey);
+                    }
+
+                    break;
+                }
+
+                case WorkerTaskType.GRANT_KYC_TOKEN: {
+                    const {hederaAccountId, hederaAccountKey, userHederaAccountId, tokenId, kycKey, grant, dryRun} = task.data;
+                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
+
+                    if (grant) {
+                        result.data = await client.grantKyc(tokenId, userHederaAccountId, kycKey);
+                    } else {
+                        result.data = await client.revokeKyc(tokenId, userHederaAccountId, kycKey);
+                    }
+
+                    break;
+                }
+
+                case WorkerTaskType.FREEZE_TOKEN: {
+                    const {hederaAccountId, hederaAccountKey, freezeKey, freeze, tokenId, dryRun} = task.data;
+                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
+                    if (freeze) {
+                        result.data = await client.freeze(tokenId, hederaAccountId, freezeKey);
+                    } else {
+                        result.data = await client.unfreeze(tokenId, hederaAccountId, freezeKey);
+                    }
+
+                    break;
+                }
+
+                case WorkerTaskType.MINT_TOKEN: {
+                    const {hederaAccountId, hederaAccountKey, token, tokenValue, dryRun, transactionMemo, uuid, targetAccount, mintId} = task.data;
+
+                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
+                    const tokenId = token.tokenId;
+                    const supplyKey = token.supplyKey;
+                    const adminId = token.adminId;
+                    const adminKey = token.adminKey;
+
+                    if (token.tokenType === 'non-fungible') {
+                        const metaData = HederaUtils.decode(uuid);
+                        const data = new Array<Uint8Array>(Math.floor(tokenValue));
+                        data.fill(metaData);
+                        const serials: number[] = [];
+                        const dataChunk = splitChunk(data, 10);
+                        for (let i = 0; i < dataChunk.length; i++) {
+                            const element = dataChunk[i];
+                            if (i % 100 === 0) {
+                                console.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
+                            }
+                            try {
+                                const newSerials = await client.mintNFT(tokenId, supplyKey, element, transactionMemo);
+                                for (const serial of newSerials) {
+                                    serials.push(serial)
+                                }
+                            } catch (error) {
+                                console.error(`Mint(${mintId}): Mint Error (${error.message})`);
+                            }
+                        }
+
+                        console.log(`Mint(${mintId}): Minted (Count: ${serials.length})`);
+                        console.log(`Mint(${mintId}): Transfer ${adminId} -> ${targetAccount} `);
+
+                        const serialsChunk = splitChunk(serials, 10);
+                        for (let i = 0; i < serialsChunk.length; i++) {
+                            const element = serialsChunk[i];
+                            if (i % 100 === 0) {
+                                console.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`);
+                            }
+                            try {
+                                await client.transferNFT(tokenId, targetAccount, adminId, adminKey, element, transactionMemo);
+                            } catch (error) {
+                                console.error(`Mint(${mintId}): Transfer Error (${error.message})`);
+                            }
+                        }
+                    } else {
+                        await client.mint(tokenId, supplyKey, tokenValue, transactionMemo);
+                        await client.transfer(tokenId, targetAccount, adminId, adminKey, tokenValue, transactionMemo);
+                    }
+
+                    result.data = {}
+
+                    break;
+                }
+
+                case WorkerTaskType.WIPE_TOKEN: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        targetAccount,
+                        tokenValue,
+                        dryRun,
+                        token,
+                        uuid
+                    } = task.data;
+
+                    const tokenId = token.tokenId;
+                    const wipeKey = token.wipeKey;
+
+                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey , dryRun);
+                    if (token.tokenType === 'non-fungible') {
+                        result.error = 'unsupported operation';
+                    } else {
+                        await client.wipe(tokenId, targetAccount, wipeKey, tokenValue, uuid);
+                        result.data = {}
+                    }
+                    break;
+                }
+
+                case WorkerTaskType.NEW_TOPIC: {
+                    const {hederaAccountId, hederaAccountKey , dryRun, topicMemo} = task.data;
+                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey , dryRun);
+                    result.data = await client.newTopic(
+                        hederaAccountKey,
+                        hederaAccountKey,
+                        topicMemo
+                    );
+
+                    break;
+                }
+
+                case WorkerTaskType.GET_TOPIC_MESSAGE: {
+                    const {
+                        operatorId,
+                        operatorKey,
+                        dryRun,
+                        timeStamp
+                    } = task.data;
+                    const client = new HederaSDKHelper(operatorId, operatorKey , dryRun);
+                    result.data =  await client.getTopicMessage(timeStamp);
+
+                    break;
+                }
+
+                case WorkerTaskType.GET_TOPIC_MESSAGES: {
+                    const {
+                        operatorId,
+                        operatorKey,
+                        dryRun,
+                        topic
+                    } = task.data;
+                    const client = new HederaSDKHelper(operatorId, operatorKey , dryRun);
+                    result.data = await client.getTopicMessages(topic);
+
+                    break;
+                }
+
+                case WorkerTaskType.CHECK_ACCOUNT: {
+                    const {hederaAccountId} = task.data;
+                    result.data = !HederaSDKHelper.checkAccount(hederaAccountId);
+
+                    break;
+                }
 
                 default:
                     result.error = 'unknown task'
@@ -208,7 +576,7 @@ export class Worker {
                 if (e) {
                     error.error = e.message || e;
                 }
-                reject(error);
+                resolve(error);
             }
         })
     }
@@ -255,9 +623,14 @@ export class Worker {
 
         const result = await this.processTaskWithTimeout(task);
 
-        await this.request(WorkerEvents.TASK_COMPLETE, result);
+        try {
+            await this.request(WorkerEvents.TASK_COMPLETE, result);
+            this.logger.info(`Task completed: ${this.currentTaskId}`, [this._channelName]);
+        } catch (error) {
+            this.logger.error(error.message, [this._channelName]);
+            this.clearState();
 
-        this.logger.info(`Task completed: ${this.currentTaskId}`, [this._channelName]);
+        }
 
         this.getItem().then();
     }

@@ -189,7 +189,17 @@ export class SchemaFormComponent implements OnInit {
         if (!field.isArray && !field.isRef) {
             item.fileUploading = false;
             const validators = this.getValidators(item);
-            item.control = new FormControl(item.preset || "", validators);
+            item.control = new FormControl(item.preset === null || item.preset === undefined ? "" : item.preset, validators);
+            if (field.remoteLink) {
+                fetch(field.remoteLink)
+                    .then(r => r.json())
+                    .then((res: any) => {
+                        item.enumValues = res.enum;
+                    });
+            }
+            if (field.enum) {
+                item.enumValues = field.enum;
+            }
             this.postFormat(item, item.control);
         }
 
@@ -204,6 +214,16 @@ export class SchemaFormComponent implements OnInit {
         if (field.isArray && !field.isRef) {
             item.control = new FormArray([]);
             item.list = [];
+            if (field.remoteLink) {
+                fetch(field.remoteLink)
+                    .then(r => r.json())
+                    .then((res: any) => {
+                        item.enumValues = res.enum;
+                    });
+            }
+            if (field.enum) {
+                item.enumValues = field.enum;
+            }
             if (item.preset && item.preset.length) {
                 for (let index = 0; index < item.preset.length; index++) {
                     const preset = item.preset[index];
@@ -260,7 +280,7 @@ export class SchemaFormComponent implements OnInit {
         } else {
             listItem.fileUploading = false;
             const validators = this.getValidators(item);
-            listItem.control = new FormControl(preset || "", validators);
+            listItem.control = new FormControl(preset === null || preset === undefined ? "" : preset, validators);
             this.postFormat(item, listItem.control);
         }
 
@@ -280,7 +300,7 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (item.format === 'email') {
-            validators.push(Validators.pattern(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/));
+            validators.push(Validators.email);
         }
 
         if (item.type === 'number') {
@@ -558,8 +578,12 @@ export class SchemaFormComponent implements OnInit {
                 item.format !== 'date' &&
                 item.format !== 'time' &&
                 item.format !== 'date-time'
-            )
+            ) && !item.remoteLink && !item.enum
         );
+    }
+
+    isEnum(item: SchemaField) {
+        return item.remoteLink || item.enum;
     }
 
     isPrefix(item: SchemaField): boolean {

@@ -7,7 +7,8 @@ export enum PolicyInputEventType {
     StopTimerEvent = 'StopTimerEvent',
     RefreshEvent = 'RefreshEvent',
     RunEvent = 'RunEvent',
-    ReleaseEvent = 'ReleaseEvent'
+    ReleaseEvent = 'ReleaseEvent',
+    PopEvent = 'PopEvent'
 }
 
 /**
@@ -20,7 +21,9 @@ export enum PolicyOutputEventType {
     DropdownEvent = 'DropdownEvent',
     Confirm = 'Confirm',
     CreateGroup = 'CreateGroup',
-    JoinGroup = 'JoinGroup'
+    JoinGroup = 'JoinGroup',
+    SignatureQuorumReachedEvent= 'SignatureQuorumReachedEvent',
+    SignatureSetInsufficientEvent= 'SignatureSetInsufficientEvent'
 }
 
 /**

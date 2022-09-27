@@ -515,12 +515,16 @@ export class PolicyBlockModel {
     }
 
     public set permissions(value: string[]) {
+        this.silentlySetPermissions(value);
+        this.changed = true;
+    }
+
+    public silentlySetPermissions(value: string[]) {
         if (Array.isArray(value)) {
             this.properties.permissions = value;
         } else {
             this.properties.permissions = [];
         }
-        this.changed = true;
     }
 
     public get children(): PolicyBlockModel[] {
@@ -865,7 +869,8 @@ export class PolicyModel {
         const e = new PolicyGroupModel({
             name: '',
             creator: '',
-            members: []
+            members: [],
+            groupRelationshipType: GroupRelationshipType.Multiple
         }, this);
         this.addGroup(e);
     }

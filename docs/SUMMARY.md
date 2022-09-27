@@ -95,6 +95,7 @@
 * [mintDocumentBlock](available-policy-workflow-blocks/mintdocumentblock.md)
 * [Events](available-policy-workflow-blocks/events.md)
 * [groupManagerBlock](available-policy-workflow-blocks/groupmanagerblock.md)
+* [multiSignBlock](available-policy-workflow-blocks/multisignblock.md)
 
 ## Policy Workflow Creation using the Guardian User Interface
 

@@ -82,6 +82,14 @@ export class FieldTypesDictionary {
             format: undefined,
             pattern: '^((https):\/\/)?ipfs.io\/ipfs\/.+',
             isRef: false
+        },
+        {
+            name: 'Enum',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            customType: 'enum'
         }
     ];
 

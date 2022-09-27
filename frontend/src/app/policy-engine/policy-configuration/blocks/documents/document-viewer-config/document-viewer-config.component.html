@@ -11,7 +11,14 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Enable common sorting</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.uiMetaData.enableSorting" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -43,7 +50,7 @@
                 </mat-icon>
             </td>
             <td class="propRowCell cellName">Field {{i}}</td>
-            <td class="propRowCell">
+            <td class="propRowCell not-editable-text">
                 {{field.name}}
             </td>
         </tr>
@@ -60,6 +67,7 @@
             <td class="propRowCell">
                 <mat-select [(value)]="field.type" (selectionChange)="onSelectFieldType(field)" [disabled]="readonly">
                     <mat-option value="text">TEXT</mat-option>
+                    <mat-option value="issuer">Issuer</mat-option>
                     <mat-option value="button">BUTTON</mat-option>
                     <mat-option value="block">BLOCK</mat-option>
                 </mat-select>
@@ -69,35 +77,35 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Title</td>
             <td class="propRowCell">
-                <input [(ngModel)]="field.title" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.title" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Tooltip</td>
             <td class="propRowCell">
-                <input [(ngModel)]="field.tooltip" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.tooltip" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Cell Content</td>
             <td class="propRowCell">
-                <input [(ngModel)]="field.content" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.content" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">UI Class</td>
             <td class="propRowCell">
-                <input [(ngModel)]="field.uiClass" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.uiClass" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">width</td>
             <td class="propRowCell">
-                <input [(ngModel)]="field.width" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.width" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
@@ -106,19 +114,7 @@
                 <mat-icon class="icon-link">add_link</mat-icon> Bind Group
             </td>
             <td class="propRowCell">
-                <mat-select [(value)]="field.bindGroup" [disabled]="readonly">
-                    <mat-select-trigger>
-                        <span class="custom">{{field?.bindGroup}}</span>
-                    </mat-select-trigger>
-                    <mat-option *ngFor="let item of allBlocks" [value]="item.value">
-                        <div class="block-name">
-                            <div class="block-icon">
-                                <mat-icon>{{item.icon}}</mat-icon>
-                            </div>
-                            {{item.name}}
-                        </div>
-                    </mat-option>
-                </mat-select>
+                <select-block [(value)]="field.bindGroup" [readonly]="readonly" [blocks]="allBlocks"></select-block>
             </td>
         </tr>
         <ng-container *ngIf="field.type=='button'">
@@ -147,21 +143,8 @@
                         Bind Block
                     </td>
                     <td class="propRowCell">
-                        <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
-                            <mat-select-trigger>
-                                <span class="custom">
-                                    {{field?.bindBlock}}
-                                </span>
-                            </mat-select-trigger>
-                            <mat-option *ngFor="let item of allBlocks" [value]="item.value">
-                                <div class="block-name">
-                                    <div class="block-icon">
-                                        <mat-icon>{{item.icon}}</mat-icon>
-                                    </div>
-                                    {{item.name}}
-                                </div>
-                            </mat-option>
-                        </mat-select>
+                        <select-block [(value)]="field.bindBlock" [readonly]="readonly" [blocks]="allBlocks">
+                        </select-block>
                     </td>
                 </tr>
             </ng-container>
@@ -170,21 +153,21 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Dialog Type</td>
                     <td class="propRowCell">
-                        <input [(ngModel)]="field.dialogType" [readonly]="readonly">
+                        <input class="prop-input" [(ngModel)]="field.dialogType" [readonly]="readonly">
                     </td>
                 </tr>
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Dialog Content</td>
                     <td class="propRowCell">
-                        <input [(ngModel)]="field.dialogContent" [readonly]="readonly">
+                        <input class="prop-input" [(ngModel)]="field.dialogContent" [readonly]="readonly">
                     </td>
                 </tr>
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Dialog Class</td>
                     <td class="propRowCell">
-                        <input [(ngModel)]="field.dialogClass" [readonly]="readonly">
+                        <input class="prop-input" [(ngModel)]="field.dialogClass" [readonly]="readonly">
                     </td>
                 </tr>
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
@@ -196,21 +179,8 @@
                         Bind Block
                     </td>
                     <td class="propRowCell">
-                        <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
-                            <mat-select-trigger>
-                                <span class="custom">
-                                    {{field?.bindBlock}}
-                                </span>
-                            </mat-select-trigger>
-                            <mat-option *ngFor="let item of allBlocks" [value]="item.value">
-                                <div class="block-name">
-                                    <div class="block-icon">
-                                        <mat-icon>{{item.icon}}</mat-icon>
-                                    </div>
-                                    {{item.name}}
-                                </div>
-                            </mat-option>
-                        </mat-select>
+                        <select-block [(value)]="field.bindBlock" [readonly]="readonly" [blocks]="allBlocks">
+                        </select-block>
                     </td>
                 </tr>
             </ng-container>
@@ -225,19 +195,7 @@
                     Bind Block
                 </td>
                 <td class="propRowCell">
-                    <mat-select [(value)]="field.bindBlock" [disabled]="readonly">
-                        <mat-select-trigger>
-                            <span class="custom">{{field?.bindBlock}}</span>
-                        </mat-select-trigger>
-                        <mat-option *ngFor="let item of allBlocks" [value]="item.value">
-                            <div class="block-name">
-                                <div class="block-icon">
-                                    <mat-icon>{{item.icon}}</mat-icon>
-                                </div>
-                                {{item.name}}
-                            </div>
-                        </mat-option>
-                    </mat-select>
+                    <select-block [(value)]="field.bindBlock" [readonly]="readonly" [blocks]="allBlocks"></select-block>
                 </td>
             </tr>
         </ng-container>

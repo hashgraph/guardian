@@ -182,3 +182,66 @@
 .error-message {
     color: red;
 }
+
+.enum-options-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.enum-options-container .enum-form-field {
+    flex: 1;
+    pointer-events: none;
+}
+
+.enum-options-container .enum-edit-button-only {
+    flex: 1;
+    padding: 15px 27px;
+}
+
+.enum-edit-button {
+    color: var(--primary-color);
+    padding: 18px 27px;
+    border: 1px solid #e9e9e9;
+    border-radius: 6px;
+    margin-bottom: 11px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    justify-content: center;
+}
+
+.mat-chip-value-label {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.enum-form-field .mat-chip-value {
+    max-width: 95px;
+    min-width: 95px;
+}
+
+:host ::ng-deep .enum-options-container .mat-form-field-infix {
+    padding: 10px 0;
+}
+
+:host ::ng-deep .enum-form-field mat-chip-list .mat-chip-list-wrapper {
+    overflow-x: hidden;
+    flex-wrap: unset;
+}
+
+.loading {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+.enum-edit-button-label {
+    white-space: nowrap;
+}

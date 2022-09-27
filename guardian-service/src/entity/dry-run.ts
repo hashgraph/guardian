@@ -128,6 +128,12 @@ export class DryRun extends BaseEntity {
     assignedTo?: any;
 
     /**
+     * Assign
+     */
+    @Property({ nullable: true })
+    assignedToGroup?: string;
+
+    /**
      * Document hedera status
      */
     @Property({ nullable: true })
@@ -431,6 +437,12 @@ export class DryRun extends BaseEntity {
      */
     @Property({ nullable: true })
     username?: string;
+
+    /**
+     * User Id
+     */
+    @Property({ nullable: true })
+    userId?: string;
 
     /**
      * hederaAccountId

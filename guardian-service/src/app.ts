@@ -1,7 +1,7 @@
 import { configAPI } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
 import { loaderAPI } from '@api/loader.service';
-import { profileAPI, updateUserBalance } from '@api/profile.service';
+import { profileAPI } from '@api/profile.service';
 import { schemaAPI, setDefaultSchema } from '@api/schema.service';
 import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
@@ -26,12 +26,11 @@ import {
     DataBaseHelper,
     DB_DI,
     Migration,
-    COMMON_CONNECTION_CONFIG
+    COMMON_CONNECTION_CONFIG, SettingsContainer, MessageResponse
 } from '@guardian/common';
-import { ApplicationStates } from '@guardian/interfaces';
+import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import {
     Environment,
-    HederaSDKHelper,
     MessageServer,
     TopicMemo,
     TransactionLogger,
@@ -69,24 +68,21 @@ Promise.all([
     new Logger().setChannel(channel);
     const state = new ApplicationState('GUARDIAN_SERVICE');
     state.setChannel(channel);
+    const settingsContainer = new SettingsContainer();
+    settingsContainer.setChannel(channel);
+    await settingsContainer.init('OPERATOR_ID', 'OPERATOR_KEY');
+
+    const {OPERATOR_ID, OPERATOR_KEY} = settingsContainer.settings;
 
     // Check configuration
-    if (!process.env.OPERATOR_ID || process.env.OPERATOR_ID.length < 5) {
-        await new Logger().error('You need to fill OPERATOR_ID field in .env file', ['GUARDIAN_SERVICE']);
-        throw new Error('You need to fill OPERATOR_ID field in .env file');
-    }
-    if (!process.env.OPERATOR_KEY || process.env.OPERATOR_KEY.length < 5) {
-        await new Logger().error('You need to fill OPERATOR_KEY field in .env file', ['GUARDIAN_SERVICE']);
-        throw new Error('You need to fill OPERATOR_KEY field in .env file');
-    }
     try {
-        AccountId.fromString(process.env.OPERATOR_ID);
+        AccountId.fromString(OPERATOR_ID);
     } catch (error) {
-        await new Logger().error('OPERATOR_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        throw new Error('OPERATOR_ID field in .env file: ' + error.message);
+        await new Logger().error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
+        throw new Error('OPERATOR_ID field in settings: ' + error.message);
     }
     try {
-        PrivateKey.fromString(process.env.OPERATOR_KEY);
+        PrivateKey.fromString(OPERATOR_KEY);
     } catch (error) {
         await new Logger().error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
         throw new Error('OPERATOR_KEY field in .env file: ' + error.message);
@@ -115,6 +111,7 @@ Promise.all([
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
+
     TransactionLogger.setLogLevel(process.env.LOG_LEVEL as TransactionLogLvl);
     TransactionLogger.setLogFunction((types: string[], date: string, duration: string, name: string, attr?: string[]) => {
         const log = new Logger();
@@ -139,13 +136,42 @@ Promise.all([
         await DatabaseServer.setVirtualTransaction(id, type, operatorId);
     });
 
-    HederaSDKHelper.setTransactionResponseCallback(updateUserBalance(channel));
+    channel.response('guardians.transaction-log-event', async (data: any) => {
+        console.log(data);
 
-    if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
-        const client = new HederaSDKHelper(process.env.OPERATOR_ID, process.env.OPERATOR_KEY);
-        const topicId = await client.newTopic(process.env.OPERATOR_KEY, null, TopicMemo.getGlobalTopicMemo());
-        process.env.INITIALIZATION_TOPIC_ID = topicId;
-    }
+        setImmediate(async () => {
+            switch (data.type) {
+                case 'start-log': {
+                    const {id, operatorAccountId, transactionName} = data.data;
+                    await TransactionLogger.transactionLog(id, operatorAccountId, transactionName);
+                    break;
+                }
+
+                case 'end-log': {
+                    const {id, operatorAccountId, transactionName, transaction, metadata} = data.data;
+                    await TransactionLogger.transactionLog(id, operatorAccountId, transactionName, transaction, metadata);
+                    break;
+                }
+
+                case 'error-log': {
+                    const {id, operatorAccountId, transactionName, transaction, error} = data.data;
+                    await TransactionLogger.transactionErrorLog(id, operatorAccountId, transactionName, transaction, error);
+                    break;
+                }
+
+                case 'virtual-function-log': {
+                    const {id, operatorAccountId, type} = data.data;
+                    await TransactionLogger.virtualTransactionLog(id, type, operatorAccountId);
+                    break;
+                }
+
+                default:
+                    throw new Error('Unknown transaction log event type');
+            }
+        })
+
+        return new MessageResponse({});
+    });
 
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
@@ -155,6 +181,18 @@ Promise.all([
     const workersHelper = new Workers();
     workersHelper.setChannel(channel);
     workersHelper.initListeners();
+
+    if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
+        process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addTask({
+            type: WorkerTaskType.NEW_TOPIC,
+            data: {
+                hederaAccountId: OPERATOR_ID,
+                hederaAccountKey: OPERATOR_KEY,
+                dryRun: false,
+                topicMemo: TopicMemo.getGlobalTopicMemo()
+            }
+        }, 1);
+    }
 
     const policyGenerator = new BlockTreeGenerator();
     const policyService = new PolicyEngineService(channel, apiGatewayChannel);

@@ -24,5 +24,6 @@
     "lint": "tslint --config ../tslint.json --project .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "2.4.2"
+  "version": "2.5.0-prerelease",
+  "stableVersion": "2.4.2"
 }

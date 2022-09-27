@@ -49,18 +49,29 @@ There are different types of Field Types:
 * Email
 * Image
 * Account
-*   Units of Measure
+* Units of Measure
+  * Prefix
+  * Postfix
+* Enum
 
-    * Prefix
-    * Postfix
-
-    Each of the above field types can be marked as either Marked or optional by checking the Required Field checkbox.
+Each of the above field types can be marked as either Marked or optional by checking the Required Field checkbox.
 
 {% hint style="info" %}
 **Note:**
 
 1. Account field type need to be referred in ‘tokenConfirmationBlock’ and ‘tokenActionBlock’. They can be present both in the parent and child documents.
 2. If there are multiple fields of the ‘Account’ with the same name, then the value from the most immediate scope, i.e. from the current (‘child’) document is used.
+{% endhint %}
+
+{% hint style="info" %}
+**Note: Important points to be noted when "Enum" type is selected:**
+
+1. Enum values can be added by editing or by importing it from link or from file.
+2. If we are importing files by URL. The response should be ({"enum": \["Option1", "Option2", "Option3"]}) or has same format such as importing file (Options separated by new line symbol).&#x20;
+
+Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm](https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm)
+
+3\. If we put more than five options, it will be automatically loaded to IPFS.
 {% endhint %}
 
 Once the above details are added, click on the Create button.
@@ -85,7 +96,7 @@ We also have a filter, where by default, all the Schemas of Policies are shown. 
 
 Policy Schema can also be created by clicking on the New button.
 
-![](<../.gitbook/assets/image (21).png>)
+![](<../.gitbook/assets/image (21) (1).png>)
 
 Once the New button is clicked, we get a dialog box that asks for the following information:\
 1\. Schema Name
@@ -106,7 +117,7 @@ To import the Schema, click on the Import button.
 
 Once the Import button is clicked, we get two options: Import from file and Import from IPFS
 
-![](<../.gitbook/assets/image (29).png>)
+![](<../.gitbook/assets/image (29) (2).png>)
 
 Import from file: You can select the required Schema .schema file from your local machine. Sample iREC Schema (iREC Schema.zip) is provided in the link: [https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
 

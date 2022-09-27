@@ -17,9 +17,9 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
     styleUrls: ['./documents-source-block.component.css'],
     animations: [
         trigger('statusExpand', [
-          state('collapsed', style({height: '0px', minHeight: '0'})),
-          state('expanded', style({height: '*'})),
-          transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+            state('collapsed', style({ height: '0px', minHeight: '0' })),
+            state('expanded', style({ height: '*' })),
+            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ]
 })
@@ -230,6 +230,32 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
+    getIssuer(row: any, field: any) {
+        try {
+            if (field.content) {
+                return field.content;
+            }
+            if (field.names) {
+                let d = row[field.names[0]];
+                for (let i = 1; i < field.names.length; i++) {
+                    const name = field.names[i];
+                    d = d[name];
+                }
+                if (typeof d === 'object') {
+                    return d.id;
+                }
+                return d;
+            } else {
+                if (typeof row[field.name] === 'object') {
+                    return row[field.name].id;
+                }
+                return row[field.name];
+            }
+        } catch (error) {
+            return "";
+        }
+    }
+
     getGroup(row: any, field: any): any | null {
         const items = this.fieldMap[field.title];
         if (items) {
@@ -260,9 +286,15 @@ export class DocumentsSourceBlockComponent implements OnInit {
     }
 
     getConfig(row: any, field: any, block: any) {
-        const config = { ...block };
-        config.data = row;
-        return config;
+        if (row.blocks && row.blocks[block.id]) {
+            const config = row.blocks[block.id];
+            config.data = row;
+            return config;
+        } else {
+            const config = { ...block };
+            config.data = row;
+            return config;
+        }
     }
 
     onButton(event: MouseEvent, row: any, field: any) {

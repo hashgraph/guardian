@@ -23,3 +23,7 @@ textarea {
     text-align: center;
     cursor: pointer;
 }
+
+:host ::ng-deep .cdk-drop-list-dragging *:not(.cdk-drag-placeholder) {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

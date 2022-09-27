@@ -76,14 +76,14 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Entity Type</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.entityType" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="block.entityType" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Force New Document</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.forceNew" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.forceNew" [readonly]="readonly">
         </td>
     </tr>
 
@@ -91,7 +91,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Memo</td>
         <td class="propRowCell">
-            <input [(ngModel)]="block.memo" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="block.memo" [readonly]="readonly">
         </td>
     </tr>
 
@@ -117,7 +117,7 @@
                 </mat-icon>
             </td>
             <td class="propRowCell cellName">Option {{i}}</td>
-            <td class="propRowCell">
+            <td class="propRowCell not-editable-text">
                 {{option.name}}
                 <span *ngIf="option.value">: {{option.value}}</span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="removeOption(i)">
@@ -129,14 +129,14 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Name</td>
             <td class="propRowCell">
-                <input [(ngModel)]="option.name" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="option.name" [readonly]="readonly">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.optionGroup || propHidden.options[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Value</td>
             <td class="propRowCell">
-                <input [(ngModel)]="option.value" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="option.value" [readonly]="readonly">
             </td>
         </tr>
     </ng-container>
