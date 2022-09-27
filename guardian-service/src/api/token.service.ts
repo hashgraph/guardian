@@ -103,32 +103,6 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
     }, 1);
     tokenData.owner = root.did;
 
-    // const client = new HederaSDKHelper(root.hederaAccountId, root.hederaAccountKey);
-    // const treasury = client.newTreasury(root.hederaAccountId, root.hederaAccountKey);
-    // const treasuryId = treasury.id;
-    // const treasuryKey = treasury.key;
-    // const adminKey = enableAdmin ? treasuryKey : null;
-    // const kycKey = enableKYC ? treasuryKey : null;
-    // const freezeKey = enableFreeze ? treasuryKey : null;
-    // const wipeKey = enableWipe ? treasuryKey : null;
-    // const supplyKey = changeSupply ? treasuryKey : null;
-    // const nft = tokenType === 'non-fungible';
-    // const _decimals = nft ? 0 : decimals;
-    // const _initialSupply = nft ? 0 : initialSupply;
-    // const tokenId = await client.newToken(
-    //     tokenName,
-    //     tokenSymbol,
-    //     nft,
-    //     _decimals,
-    //     _initialSupply,
-    //     '',
-    //     treasury,
-    //     adminKey,
-    //     kycKey,
-    //     freezeKey,
-    //     wipeKey,
-    //     supplyKey,
-    // );
     notifier.completedAndStart('Save token in DB');
     const tokenObject = tokenRepository.create(tokenData);
     const result = await tokenRepository.save(tokenObject);
@@ -213,7 +187,7 @@ async function grantKycToken(tokenId, username, owner, grant, tokenRepository: D
 
     notifier.completedAndStart(grant ? 'Grant KYC' : 'Revoke KYC');
     const workers = new Workers();
-    const info = await workers.addTask({
+    await workers.addTask({
         type: WorkerTaskType.GRANT_KYC_TOKEN,
         data: {
             hederaAccountId: root.hederaAccountId,
@@ -223,7 +197,16 @@ async function grantKycToken(tokenId, username, owner, grant, tokenRepository: D
             kycKey: token.kycKey,
             grant
         }
-    }, 1);
+    }, 20);
+
+    const info = await workers.addTask({
+        type: WorkerTaskType.GET_ACCOUNT_INFO,
+        data: {
+            userID: root.hederaAccountId,
+            userKey: root.hederaAccountKey,
+            hederaAccountId: user.hederaAccountId,
+        }
+    }, 20);
 
     const result = getTokenInfo(info, { tokenId });
     notifier.completed();
@@ -308,7 +291,7 @@ export async function tokenAPI(
             const root = await users.getHederaAccount(owner);
 
             const workers = new Workers();
-            const info = await workers.addTask({
+            await workers.addTask({
                 type: WorkerTaskType.FREEZE_TOKEN,
                 data: {
                     hederaAccountId: root.hederaAccountId,
@@ -318,6 +301,15 @@ export async function tokenAPI(
                     freeze
                 }
             }, 1);
+
+            const info = await workers.addTask({
+                type: WorkerTaskType.GET_ACCOUNT_INFO,
+                data: {
+                    userID: root.hederaAccountId,
+                    userKey: root.hederaAccountKey,
+                    hederaAccountId: user.hederaAccountId,
+                }
+            }, 20);
 
             const result = getTokenInfo(info, { tokenId });
             return new MessageResponse(result);
