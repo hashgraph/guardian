@@ -4,8 +4,8 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.4.1",
-    "@guardian/interfaces": "^2.4.1",
+    "@guardian/common": "^2.5.0-prerelease",
+    "@guardian/interfaces": "^2.5.0-prerelease",
     "@web-std/fetch": "3.0.0",
     "axios": "^0.26.1",
     "axios-retry": "^3.2.4",
@@ -44,5 +44,6 @@
     "test": "mocha tests/**/*.test.js  --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ipfs-client.xml",
     "watch": "nodemon src/index.ts"
   },
-  "version": "2.4.1"
+  "version": "2.5.0-prerelease",
+  "stableVersion": "2.4.2"
 }
