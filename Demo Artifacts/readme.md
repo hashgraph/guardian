@@ -4,6 +4,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
 
 1. IREC - Envision
 2. Verra Redd - Envision
+3. DOVU Template Methodologies - DOVU
 
 [IREC](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts/iREC)
 
@@ -22,3 +23,5 @@ This policy supports the tokenization of carbon offsets, specifically Verified C
 IREC Demo : https://docs.hedera.com/guardian-dev/demo-guide/irec-demo-guide
 
 Verra REDD Demo : https://docs.hedera.com/guardian-dev/demo-guide/verra-redd+-demo-guide
+
+DOVU Guardian Policies: https://github.com/dovuofficial/guardian-policies/
