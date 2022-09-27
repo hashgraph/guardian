@@ -141,6 +141,8 @@ export class CalculateContainerBlock {
         item.type = outputSchema.iri;
         item.schema = outputSchema.iri;
         item.relationships = relationships.length ? relationships : null;
+        const accounts = isArray ? documents.reduce((a: any, b: any) => Object.assign(a, b.accounts), {}) : documents.accounts;
+        item.accounts = accounts && Object.keys(accounts).length ? accounts : null;
         // -->
 
         return item;

@@ -31,7 +31,7 @@ export class ReportBlockComponent implements OnInit {
     vcDocument: IVCReport | undefined;
     mintDocument: ITokenReport | undefined;
     policyDocument: IPolicyReport | undefined;
-    documents: IReportItem[] | undefined;
+    documents: any;
     policyCreatorDocument: IReportItem | undefined;
     searchForm = this.fb.group({
         value: ['', Validators.required],
@@ -135,18 +135,31 @@ export class ReportBlockComponent implements OnInit {
         if (this.policyCreatorDocument) {
             this.documents.push(this.policyCreatorDocument);
         }
-        this.documents = this.documents.filter(e=>e.visible);
+        this.documents = this.documents.filter((e: any)=>e.visible);
         this.documents = this.documents.reverse();
+        this.documents.forEach((reportItem: any) => {
+            if (!Array.isArray(reportItem.document) && reportItem.document) {
+                reportItem.document = [{
+                    document: reportItem.document,
+                    tag: reportItem.tag,
+                    issuer: reportItem.issuer,
+                    username: reportItem.username,
+                }];
+            }
+            if (reportItem.multiple && reportItem.document[0]) {
+                this.onMultipleDocumentClick(reportItem.document[0], reportItem);
+            }
+        });
         this.loading = false;
     }
 
 
-    openVCDocument(item: IVCReport | ITokenReport | IPolicyReport | IReportItem) {
+    openVCDocument(item: IVCReport | ITokenReport | IPolicyReport | IReportItem, document?: any) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {
                 viewDocument: true,
-                document: item.document.document,
+                document: document || item.document.document,
                 title: item.type,
                 type: 'VC'
             }
@@ -214,5 +227,87 @@ export class ReportBlockComponent implements OnInit {
             console.error(e.error);
             this.loading = false;
         });
+    }
+
+    dynamicSortItems(item?: any, activeDocument?: any) {
+        if (!item 
+            || !this.documents 
+            || !activeDocument 
+            || !item.dynamicFilters
+            || !item.dynamicFilters.length) {
+            return;
+        }
+        const itemIndex = this.documents.indexOf(item);
+        const prevReportItem = this.documents[itemIndex - 1];
+        if (!prevReportItem) {
+            return;
+        }
+        prevReportItem.allDocuments = prevReportItem.allDocuments || JSON.parse(JSON.stringify(prevReportItem.document));
+        for (const dynamicFilter of item.dynamicFilters) {
+            this.applyFilters(prevReportItem, activeDocument, dynamicFilter.field, dynamicFilter.nextItemField, dynamicFilter.type);
+        }
+        this.onMultipleDocumentClick(prevReportItem.document[0], prevReportItem);
+    }
+
+    applyFilters(reportItemToSort: any, activeDocument: any, field: string, nextItemField: string, type: string) {
+        switch (type) {
+            case 'equal':
+                reportItemToSort.document = reportItemToSort.allDocuments.filter((item: any) => item.document[nextItemField] === activeDocument.document[field]);
+                break;
+            case 'not_equal':
+                reportItemToSort.document = reportItemToSort.allDocuments.filter((item: any) => item.document[nextItemField] !== activeDocument.document[field]);
+                break;
+            case 'in':
+                reportItemToSort.document = reportItemToSort.allDocuments.filter((item: any) => activeDocument.document[field].includes(item.document[nextItemField]));
+                break;
+            case 'not_in':
+                reportItemToSort.document = reportItemToSort.allDocuments.filter((item: any) => !activeDocument.document[field].includes(item.document[nextItemField]));
+                break;
+        }
+    }
+
+    onMultipleDocumentClick(activeDocument?: any, item?: any) {
+        if (!item || !item.multiple || !activeDocument) {
+            return;
+        }
+
+        const itemDocuments = item.document;
+        const oldActiveDocument = itemDocuments.find((item: any) => item.index === 0);
+        if (oldActiveDocument == activeDocument) {
+            return;
+        }
+
+        itemDocuments.forEach((element: any) => {
+            element.index = undefined;
+            element.color = undefined;
+        });
+        activeDocument.index = 0;
+        const indexDocument = itemDocuments.indexOf(activeDocument);
+        if (itemDocuments.length > 1) {
+            const secondDocumentIndex = (indexDocument + 1) % itemDocuments.length;
+            itemDocuments[secondDocumentIndex].index = 1;
+        }
+        if (itemDocuments.length > 2) {
+            const thirdDocumentIndex = (indexDocument + 2) % itemDocuments.length;
+            itemDocuments[thirdDocumentIndex].index = 2;
+        }
+        item.activeDocumentIndex = item.document.indexOf(activeDocument) + 1;
+        this.dynamicSortItems(item, activeDocument);
+    }
+
+    onNextDocumentClick(event: any, item: any, document: any) {
+        event.stopPropagation();
+        const itemDocuments = item.document;
+        const indexDocument = itemDocuments.indexOf(document);
+        const secondDocumentIndex = (indexDocument + 1) % itemDocuments.length;
+        this.onMultipleDocumentClick(itemDocuments[secondDocumentIndex], item);
+    }
+
+    onPrevDocumentClick(event: any, item: any, document: any) {
+        event.stopPropagation();
+        const itemDocuments = item.document;
+        const indexDocument = itemDocuments.indexOf(document);
+        const secondDocumentIndex = (indexDocument - 1) < 0 ? itemDocuments.length + (indexDocument - 1) : (indexDocument - 1);
+        this.onMultipleDocumentClick(itemDocuments[secondDocumentIndex], item);
     }
 }

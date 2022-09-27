@@ -160,6 +160,14 @@ export class DatabaseServer {
      */
     private async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: any[]): Promise<T[]> {
         if (this.dryRun) {
+            if (Array.isArray(aggregation)) {
+                aggregation.push({
+                    $match: {
+                        dryRunId: this.dryRun,
+                        dryRunClass: this.classMap.get(entityClass)
+                    }
+                })
+            }
             return await new DataBaseHelper(DryRun).aggregate(aggregation);
         } else {
             return await new DataBaseHelper(entityClass).aggregate(aggregation);
@@ -514,6 +522,18 @@ export class DatabaseServer {
      */
     public async removeAggregateDocuments(removeMsp: AggregateVC[]): Promise<void> {
         await this.remove(AggregateVC, removeMsp);
+    }
+
+    /**
+     * Remove Aggregate Document
+     * @param hash
+     * @param blockId
+     *
+     * @virtual
+     */
+    public async removeAggregateDocument(hash: string, blockId: string): Promise<void> {
+        const item = await this.find(AggregateVC, { blockId, hash });
+        await this.remove(AggregateVC, item);
     }
 
     /**

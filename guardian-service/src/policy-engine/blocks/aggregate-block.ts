@@ -24,6 +24,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
         children: ChildrenType.None,
         control: ControlType.Server,
         input: [
+            PolicyInputEventType.PopEvent,
             PolicyInputEventType.RunEvent,
             PolicyInputEventType.TimerEvent,
         ],
@@ -35,6 +36,36 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
     }
 })
 export class AggregateBlock {
+    /**
+     * Tick cron
+     * @event PolicyEventType.PopEvent
+     * @param {IPolicyEvent} event
+     */
+    @ActionCallback({
+        type: PolicyInputEventType.PopEvent
+    })
+    public async onPopEvent(event: IPolicyEvent<IPolicyEventState>) {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
+        if (Array.isArray(docs)) {
+            for (const doc of docs) {
+                await this.popDocuments(ref, doc);
+            }
+        } else {
+            await this.popDocuments(ref, docs);
+        }
+    }
+
+    /**
+     * Pop documents
+     * @param ref
+     * @param doc
+     */
+    async popDocuments(ref: AnyBlockType, doc: IPolicyDocument): Promise<void> {
+        const hash = doc.hash;
+        await ref.databaseServer.removeAggregateDocument(hash, ref.uuid);
+    }
+
     /**
      * Tick cron
      * @event PolicyEventType.TimerEvent

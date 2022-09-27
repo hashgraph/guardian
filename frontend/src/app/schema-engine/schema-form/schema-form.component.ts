@@ -189,7 +189,7 @@ export class SchemaFormComponent implements OnInit {
         if (!field.isArray && !field.isRef) {
             item.fileUploading = false;
             const validators = this.getValidators(item);
-            item.control = new FormControl(item.preset || "", validators);
+            item.control = new FormControl(item.preset === null || item.preset === undefined ? "" : item.preset, validators);
             if (field.remoteLink) {
                 fetch(field.remoteLink)
                     .then(r => r.json())
@@ -280,7 +280,7 @@ export class SchemaFormComponent implements OnInit {
         } else {
             listItem.fileUploading = false;
             const validators = this.getValidators(item);
-            listItem.control = new FormControl(preset || "", validators);
+            listItem.control = new FormControl(preset === null || preset === undefined ? "" : preset, validators);
             this.postFormat(item, listItem.control);
         }
 

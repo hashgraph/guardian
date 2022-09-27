@@ -37,19 +37,8 @@ export class ReportItemBlock {
         const description = ref.options.description;
         const visible = ref.options.visible;
         const iconType = ref.options.iconType;
-        const item: IReportItem = {
-            type: 'VC',
-            icon,
-            title,
-            description,
-            visible,
-            tag: null,
-            issuer: null,
-            username: null,
-            document: null,
-            iconType
-        }
-        resultFields.push(item);
+        const multiple = ref.options.multiple;
+        const dynamicFilters = ref.options.dynamicFilters;
 
         const filtersToVc:any = {};
         if (ref.options.filters) {
@@ -93,17 +82,53 @@ export class ReportItemBlock {
         }
         filtersToVc.policyId = { $eq: ref.policyId };
 
-        const vcDocument = await ref.databaseServer.getVcDocument(filtersToVc);
+        const item: any = {
+            type: 'VC',
+            icon,
+            title,
+            description,
+            visible,
+            iconType,
+            multiple,
+            dynamicFilters
+        }
+        resultFields.push(item);
 
-        if (vcDocument) {
-            item.tag = vcDocument.tag;
-            item.issuer = getVCIssuer(vcDocument);
-            item.username = getVCIssuer(vcDocument);
-            item.document = vcDocument;
+        const vcDocuments: any = multiple
+            ? await ref.databaseServer.getVcDocuments(filtersToVc)
+            : [await ref.databaseServer.getVcDocument(filtersToVc)];
 
-            if (ref.options.variables) {
-                for (const variable of ref.options.variables) {
-                    variables[variable.name] = findOptions(vcDocument, variable.value);
+        for (const vcDocument of vcDocuments) {
+            if (vcDocument) {
+                if (multiple) {
+                    item.document = item.document || [];
+                    item.document.push({
+                        tag: vcDocument.tag,
+                        issuer: getVCIssuer(vcDocument),
+                        username: getVCIssuer(vcDocument),
+                        document: vcDocument
+                    });
+                } else {
+                    item.tag = vcDocument.tag;
+                    item.issuer = getVCIssuer(vcDocument);
+                    item.username = getVCIssuer(vcDocument);
+                    item.document = vcDocument;
+                }
+
+                if (ref.options.variables) {
+                    for (const variable of ref.options.variables) {
+                        const findOptionsResult = findOptions(vcDocument, variable.value);
+                        if (multiple) {
+                            variables[variable.name] = variables[variable.name] || []
+                            if (Array.isArray(findOptionsResult)) {
+                                variables[variable.name].push(...findOptionsResult);
+                            } else {
+                                variables[variable.name].push(findOptionsResult);
+                            }
+                        } else {
+                            variables[variable.name] = findOptionsResult;
+                        }
+                    }
                 }
             }
         }

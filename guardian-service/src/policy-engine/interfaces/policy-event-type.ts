@@ -7,7 +7,8 @@ export enum PolicyInputEventType {
     StopTimerEvent = 'StopTimerEvent',
     RefreshEvent = 'RefreshEvent',
     RunEvent = 'RunEvent',
-    ReleaseEvent = 'ReleaseEvent'
+    ReleaseEvent = 'ReleaseEvent',
+    PopEvent = 'PopEvent'
 }
 
 /**

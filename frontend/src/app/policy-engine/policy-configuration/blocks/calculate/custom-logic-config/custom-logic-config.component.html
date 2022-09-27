@@ -14,6 +14,32 @@
         </td>
     </tr>
 
+    <tr class="propRow" [attr.readonly]="readonly" *ngIf="block">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Document Signer</td>
+        <td class="propRowCell remove-cell">
+            <mat-select [(ngModel)]="block.documentSigner" [disabled]="readonly">
+                <mat-option value="">Policy Owner</mat-option>
+                <mat-option value="owner">First Document Owner</mat-option>
+                <mat-option value="issuer">First Document Issuer</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Id Type</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.idType" [disabled]="readonly">
+                <mat-option value=""></mat-option>
+                <mat-option value="DID">DID (New DID)</mat-option>
+                <mat-option value="UUID">UUID (New UUID)</mat-option>
+                <mat-option value="OWNER">Owner (Owner DID)</mat-option>
+                <mat-option value="DOCUMENT">From First Document Id</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
     <tr class="propRow" >
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Expression</td>
