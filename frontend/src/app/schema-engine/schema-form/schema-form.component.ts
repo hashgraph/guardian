@@ -300,7 +300,7 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (item.format === 'email') {
-            validators.push(Validators.pattern(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/));
+            validators.push(Validators.email);
         }
 
         if (item.type === 'number') {
