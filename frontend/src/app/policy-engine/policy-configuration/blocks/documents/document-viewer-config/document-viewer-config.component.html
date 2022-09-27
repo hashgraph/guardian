@@ -21,6 +21,13 @@
             <input type="checkbox" [(ngModel)]="block.uiMetaData.enableSorting" [readonly]="readonly">
         </td>
     </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Enable common sorting</td>
+        <td class="propRowCell">
+            <input type="checkbox" [(ngModel)]="block.uiMetaData.enableSorting" [readonly]="readonly">
+        </td>
+    </tr>
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'fieldsGroup')" [attr.collapse]="propHidden.fieldsGroup">
             <mat-icon>

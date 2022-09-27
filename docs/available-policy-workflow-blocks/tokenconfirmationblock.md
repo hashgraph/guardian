@@ -43,4 +43,3 @@ The user need to input the private key for the account to enable Guardian to per
 {% endhint %}
 
 ![](<../.gitbook/assets/image (17) (2).png>)
-
