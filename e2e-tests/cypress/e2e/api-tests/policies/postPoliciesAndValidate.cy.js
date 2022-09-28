@@ -1,4 +1,4 @@
-context("Policies", () => {
+context(" Policies", () => {
     const authorization = Cypress.env("authorization");
 
     // it("should create a new policy", () => {

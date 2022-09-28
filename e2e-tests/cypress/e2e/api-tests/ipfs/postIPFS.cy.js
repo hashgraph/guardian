@@ -9,7 +9,7 @@ context("IPFS", () => {
             authorization,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.OK);
-            let schemaId = response.body[0]._id;
+            let schemaId = response.body[0].id;
 
             cy.request({
                 method: METHOD.GET,
