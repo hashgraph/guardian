@@ -6,11 +6,10 @@ This is a place for guardian automation tests
 - [Usage](#usage)
 
 ## Usage of cypress.env
-In this file a user need to add own `authorization` key which is `access_key` which assign to a RootAuthority after registartation
+In this file a user need to add own `authorization` key which is `access_key` which assign to a RootAuthority after registartation (bearerAuth)
 
 ## Installation
-- To run e2e tests for the Guardian use branch `https://github.com/hashgraph/guardian/tree/automation-api-tests/e2e-tests`
-- Then install Cypress running `npm install cypress --save-dev`
+- Install Cypress running `npm install cypress --save-dev`
 - Then for the first time run `npx cypress open`. Cypress dashboard which give an access to pick a test and run it from dashboard
 - To run tests from terminal use `npx cypress run` which will run all tests
 - For single test use `npx cypress run --spec path/to/file.spec.js`
