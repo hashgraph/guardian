@@ -5,7 +5,7 @@ context("Policy - Import", () => {
         cy.request({
             method: "POST",
             url: `${Cypress.env("api_server")}policies/push/import/message`,
-            body: { messageId: Cypress.env("irec_policy") },
+            body: {  "messageId":"1650282926.728623821" },
             headers: {
                 authorization,
             },

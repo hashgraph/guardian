@@ -19,5 +19,3 @@ In this file a user need to add own `authorization` key which is `access_key` wh
 `npx cypress open` - to open the Cypress Dashboard
 `npx cypress run` - to run the Cypress tests
 
-
-npm install uuidv4

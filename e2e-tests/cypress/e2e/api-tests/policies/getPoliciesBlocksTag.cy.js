@@ -1,35 +1,35 @@
 context("Policies", () => {
     const authorization = Cypress.env("authorization");
 
-    it("check returns of the blocks", () => {
-        cy.request({
+    it("should sends data to the specified block.", () => {
+        const urlPolicies = {
             method: "GET",
             url: Cypress.env("api_server") + "policies",
             headers: {
                 authorization,
             },
-        }).then((response) => {
+        };
+
+        cy.request(urlPolicies).should((response) => {
             expect(response.status).to.eq(200);
             const policyId = response.body[0].id;
-            const blockId = response.body[0].uuid;
+            const tag = response.body[0].config.children[0].tag;
 
-            
-            cy.request({
-                method: "POST",
+            const url = {
+                method: "GET",
                 url:
                     Cypress.env("api_server") +
                     "policies/" +
                     policyId +
-                    "/blocks/" +
-                    blockId,
+                    "/tag/" +
+                    tag + "/blocks",
                 headers: {
                     authorization,
                 },
-                body: {}
-            }).then((response) => {
-                expect(response.status).to.eq(500);
+            };
+            cy.request(url).should((response) => {
+                expect(response.status).to.eq(200);
             });
         });
     });
 });
-
