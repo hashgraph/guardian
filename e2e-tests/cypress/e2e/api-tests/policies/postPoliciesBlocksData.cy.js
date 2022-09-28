@@ -14,21 +14,22 @@ context("Policies", () => {
             const blockId = response.body[0].uuid;
 
             
-            // cy.request({
-            //     method: "POST",
-            //     url:
-            //         Cypress.env("api_server") +
-            //         "policies/" +
-            //         policyId +
-            //         "/blocks/" +
-            //         blockId,
-            //     headers: {
-            //         authorization,
-            //     },
-            //     body: {}
-            // }).then((response) => {
-            //     expect(response.status).to.eq(500);
-            // });
+            cy.request({
+                method: "POST",
+                url:
+                    Cypress.env("api_server") +
+                    "policies/" +
+                    policyId +
+                    "/blocks/" +
+                    blockId,
+                headers: {
+                    authorization,
+                },
+                body: {}
+            }).then((response) => {
+                expect(response.status).to.eq(500);
+            });
         });
     });
 });
+

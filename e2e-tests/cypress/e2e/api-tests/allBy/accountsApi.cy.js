@@ -1,0 +1,7 @@
+import '../accounts/getAccounts.cy'
+import '../accounts/getBalance.cy'
+import '../accounts/getRootAuthorities.cy'
+import '../accounts/getSession.cy'
+import '../accounts/getStandartReg.cy'
+import '../accounts/postLogin.cy'
+import '../accounts/postRegister.cy'
