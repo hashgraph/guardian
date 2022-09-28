@@ -15,15 +15,17 @@ As the initial step in IREC Policy involve creation of following Schemas: iRec r
 
 **IREC Schema and Policy Versions and their IPFS timestamps:**
 
-| Version | IPFS Timestamp | Schema/Policy File Link |
-|---|---|---:|
-| iREC Schema | 1644847084.945541771 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Schema/iREC%20Schema.schema) |
-| Inverter Schema | 1644847093.979895804 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Schema/Inverter.schema) |
-| MRV Schema | 1644847107.415192828 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Schema/MRV.schema) |
-| iREC 1 | 1661166202.802071003 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Policies/iRec%20Policy.policy) |
-| iREC 2 | 1662640724.951854568 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Policies/iRec%20Policy%202.policy) |
-| iREC 3 | 1662641840.731000003 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Policies/IRec%20Policy%203.policy) |
-| iREC 4 | 1662642008.325450377 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Policies/IRec%20Policy%204.policy) |
+| Version | IPFS Timestamp | Differences | Schema/Policy File Link |
+|---|---|---|---:|
+| iREC Schema | 1644847084.945541771 | - |[Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Schema/iREC%20Schema.schema) |
+| Inverter Schema | 1644847093.979895804 | -| [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Schema/Inverter.schema) |
+| MRV Schema | 1644847107.415192828 |- | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Schema/MRV.schema) |
+| iREC 1 | 1661166202.802071003 | iRec policy with external MRV sender | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Policies/iRec%20Policy.policy) |
+| iREC 2 | 1662640724.951854568 | Implementation of iRec(E) without MRV sender | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Policies/iRec%20Policy%202.policy) |
+| iREC 3 | 1662641840.731000003 | iRec 2 Policy + revoke actions (Added: Revoke Block, Button Block) | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Policies/IRec%20Policy%203.policy) |
+| iREC 4 | 1662642008.325450377 | iRec 3 Policy + auto associate and grant KYC token actions (Added: Token Action Block, Token Confirmation Block) | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Policies/IRec%20Policy%204.policy) |
+| iREC policy 5 group | 1663850151.496004277 | Demonstrates the usage of the new concepts of common groups and multi-signature approvals. Document approval responsibilities are given to the new 'Approver' role, which belongs to a group. Users can become members of the group without the invite, and thereby become approvers. | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Policies/IRec%20Policy%205%20group%20(1663850151.496004277).policy) |
+
 
 For complete User Guide and API Flow for executing IREC Policy, please refer to :
 
