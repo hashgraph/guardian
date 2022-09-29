@@ -23,7 +23,7 @@ This policy supports the tokenization of carbon offsets, specifically Verified C
 
 **Description**: 
 
-This policy supports the estimation, calculation, and tokenization of GHG emissions resulting from remote work. This policy can be used as a stand-alone methodology, or a methodology to estimate organizational Scope 3 GHG emissions from remote work to be incorporated into organizational GHG inventories in alignment the GHG Protocol Corporate Standard and/or the GHG Protocol Scope 3 Standard. To support integration with the GHG Protocol Policies, both location and market-based emissions are calculated. 
+This policy supports the estimation, calculation, and tokenization of GHG emissions resulting from remote work. This policy can be used as a stand-alone methodology, or a methodology to estimate organizational Scope 3 GHG emissions from remote work to be incorporated into organizational GHG inventories in alignment the GHG Protocol Corporate Standard and/or the GHG Protocol Scope 3 Standard. To support integration with the GHG Protocol Policies, both location and market-based emissions are calculated. For more info, please check : [Remote Workflow ReadMe](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/GHG%20Methodology/Remote%20WorkFlow%20Policy/readme.md)
 
 **For complete flow documentation, please refer to :**
 
