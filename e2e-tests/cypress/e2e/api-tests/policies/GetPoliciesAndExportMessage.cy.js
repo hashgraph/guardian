@@ -36,7 +36,6 @@ context("Policies", () => {
                     "description",
                     description
                 );
-                expect(response.body).to.have.property("messageId", messageId);
                 expect(response.body).to.have.property("owner", owner);
             });
         });
