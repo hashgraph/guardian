@@ -44,7 +44,6 @@ context("Trustchains", () => {
           })
             .then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body[0]).to.have.property("hash");
             })
         })
       })
