@@ -14,7 +14,6 @@ context("Policies", () => {
             expect(response.status).to.eq(200);
             const policyId = response.body.at(-1).id;
             const name = response.body.at(-1).name;
-            const version = response.body.at(-1).version;
             const messageId = response.body.at(-1).messageId;
             const owner = response.body.at(-1).owner;
             const description = response.body.at(-1).description;
@@ -37,7 +36,6 @@ context("Policies", () => {
                     "description",
                     description
                 );
-                expect(response.body).to.have.property("version", version);
                 expect(response.body).to.have.property("messageId", messageId);
                 expect(response.body).to.have.property("owner", owner);
             });
