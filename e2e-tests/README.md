@@ -1,27 +1,35 @@
-# Guardian-automation
+# Guardian test automation
 
 ## Description
-This is a place for guardian automation tests
+The /e2e-tests folder comprises guardian Cypress test automation framework and automated UI and API tests
+- [Software requirements](#software-requirements)
 - [Installation](#installation)
+- [Configuration](#configuration)
 - [Usage](#usage)
 
-## Configuration 
-In cypress.env file a user need to add own `authorization` key which is `access_key` which assign to a RootAuthority after registartation (bearerAuth)
+## Software requirements
+- Node.js 12 or 14 and above
+- Follow steps from the [README](https://github.com/hashgraph/guardian/blob/main/README.md) to install and deploy Guardian application
 
 ## Installation
 
-Run the following command to install Cypress: 
-`npm install cypress --save-dev`
-Once Cypress has been installed, you can run it using the following command:
-`npx cypress open`
-Cypress dashboard which give an access to pick a test and run it from dashboard
+From /e2e-tests folder run the following command to install Cypress: 
 
+`npm install cypress --save-dev`
+
+## Configuration 
+In cypress.env.json file update `authorization` key with `access_key` value which will be assigned to the RootAuthority after registartation (bearerAuth)
 
 ## Usage
 
-From Cypress Dashboard
-`npx cypress open` - to open the Cypress Dashboard
+To run a specific test from UI you can open Cypress dashboard by running the following command:
 
-From terminal
-- To run tests from terminal use `npx cypress run` which will run all tests
-- For single test use `npx cypress run --spec path/to/file.cy.js`
+`npx cypress open`
+
+To run all tests sequentially use:
+
+`npx cypress run`
+
+For a single test use:
+
+`npx cypress run --spec path/to/file.cy.js`
