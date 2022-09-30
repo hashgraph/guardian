@@ -701,7 +701,7 @@ capacity
 
 ![](../.gitbook/assets/Sensor.png)
 
-<figure><img src="../.gitbook/assets/API_10 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/API_10 (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 3.4 Refresh the Blocks
 

@@ -71,12 +71,13 @@ Input Events are received and processed by the egress interface of the ‘Target
 
 **All Blocks:**
 
-* RunEvent  - triggers the execution of the main logic of the block.
+* RunEvent - triggers the execution of the main logic of the block.
 * RefreshEvent - triggers the refresh of the block (in the UI it re-draws the component)
 
 **aggregateDocumentBlock:**
 
 * TimerEvent - triggers the execution of the time(period)-activated aggregation logic, and passes the aggregated data further
+* PopEvent - removes the document from the aggregation.&#x20;
 
 ![](../.gitbook/assets/Events\_12.png)
 

@@ -197,7 +197,7 @@ async function grantKycToken(tokenId, username, owner, grant, tokenRepository: D
             kycKey: token.kycKey,
             grant
         }
-    }, 20);
+    }, 10);
 
     const info = await workers.addTask({
         type: WorkerTaskType.GET_ACCOUNT_INFO,
@@ -206,7 +206,7 @@ async function grantKycToken(tokenId, username, owner, grant, tokenRepository: D
             userKey: root.hederaAccountKey,
             hederaAccountId: user.hederaAccountId,
         }
-    }, 20);
+    }, 10);
 
     const result = getTokenInfo(info, { tokenId });
     notifier.completed();
@@ -309,7 +309,7 @@ export async function tokenAPI(
                     userKey: root.hederaAccountKey,
                     hederaAccountId: user.hederaAccountId,
                 }
-            }, 20);
+            }, 10);
 
             const result = getTokenInfo(info, { tokenId });
             return new MessageResponse(result);

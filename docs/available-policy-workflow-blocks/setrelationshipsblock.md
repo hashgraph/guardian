@@ -11,3 +11,5 @@ This block contains DocumentsSourceAddOn and **set relationships** for input doc
 | defaultActive    | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                                                                 |        |
 | On errors        | Called if the system error has occurs in the Block                                | <p></p><ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul> |        |
 | stop Propagation | End processing here, don't pass control to the next block.                        | Checked or unchecked.                                                                 |        |
+| Include Accounts | Merges all the accounts from the documents                                        | Checked or unchecked.                                                                 |        |
+| Change Owner     | It takes owner from first document                                                | Checked or unchecked.                                                                 |        |

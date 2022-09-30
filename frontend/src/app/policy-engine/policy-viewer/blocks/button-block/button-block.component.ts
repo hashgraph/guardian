@@ -39,9 +39,13 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         if (!this.buttons) {
             return;
         }
+
+        let visible = true;
         for (let i = 0; i < this.buttons.length; i++) {
-            let button = this.buttons[i];
-            button.visible = this.checkVisible(button);
+            visible = visible && this.checkVisible(this.buttons[i]);
+        }
+        for (let i = 0; i < this.buttons.length; i++) {
+            this.buttons[i].visible = visible;
         }
         this.cdref.detectChanges();
     }

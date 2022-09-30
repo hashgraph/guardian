@@ -10,7 +10,7 @@ Guardian is a modular open-source solution that includes best-in-class identity 
 
 ## Discovering ESG assets on Hedera
 
-As identified in Hedera Improvement Proposal 19 (HIP-19), each entity on the Hedera network may contain a specific identifier in the memo field for discoverability. Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. In the memo field of newly minted tokens, you will find a [Verifiable Link](https://github.com/InterWorkAlliance/Sustainability/blob/main/vem/supply/verification.md) which will allow users to discover the published standard the token is following and the entire history of the ESG asset and corresponding data to be publicly discoverable. This is further defined in [Hedera Improvement Proposal 28 (HIP-28)](https://hips.hedera.com/hip/hip-28).
+As identified in Hedera Improvement Proposal 19 (HIP-19), each entity on the Hedera network may contain a specific identifier in the memo field for discoverability. Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. In the memo field of each token mint transaction you will find a unique Hedera message timestamp. This message contains the url of the Verifiable Presentation (VP) associated with the token. The VP can serve as a starting point from which you can traverse the entire sequence of documents produced by Guardian policy workflow, which led to the creation of the token. Please see p.17 in the FAQ for more information. This is further defined in [Hedera Improvement Proposal 28 (HIP-28)](https://hips.hedera.com/hip/hip-28).
 
 ([back to top](#readme))
 
@@ -279,6 +279,37 @@ Install, configure and start all the prerequisites, then build and start each co
    * Remove `INITIALIZATION_TOPIC_ID` as the topic will be created automatically.
    * Set `LOCALNODE_PROTOCOL` to `http` or `https` accordingly with your local node configuration (it uses HTTP by default).
 
+## Configuring Hashicorp Vault
+1. Configure .env/.env.docker files in auth-service folder
+
+    ```
+    VAULT_PROVIDER = "hashicorp"
+   ```
+ 
+    Note: VAULT_PROVIDER can be set to "database" or "hashicorp" to select Database instance or a hashicorp vault instance correspondingly.
+    
+   If the VAULT_PROVIDER value is set to "hashicorp" the following 3 parameters should be configured in auth-service folder.   
+   
+   1. HASHICORP_ADDRESS : http://localhost:8200 for using local vault. For remote vault, we need to use the value from the configuration settings of    Hashicorp vault service.
+   2. HASHICORP_TOKEN : the token from the Hashicorp vault.
+   3. HASHICORP_WORKSPACE : this is only needed when we are using cloud vault for Hashicorp. Default value is "admin".
+
+2. Hashicorp should be configured with the created Key-Value storage, named "secret" by default, with the settingKey=<value> records for the following keys:
+    1. OPERATOR_ID
+    2. OPERATOR_KEY
+    3. IPFS_STORAGE_API_KEY
+    
+    Note: These records in vault will be created automatically if there are environment variables with the matching names.
+    
+ **How to import existing user keys from DB into the vault:**
+ 
+ During Guardian services initialization, we need to set the following configuration settings in **auth-service** folder:
+ 
+  ```
+    IMPORT_KEYS_FROM_DB = 1
+    VAULT_PROVIDER = "hashicorp"
+   ```
+ 
 ## Local development using Docker
 
 1. create .env file at the root level and update all variable requires for docker
