@@ -1,0 +1,12 @@
+{
+  "policyId": "6335b8957c86bfe9d76fc70c",
+  "policyUuid": "1f8bf7ba-9f6c-47eb-9b9c-a7a670dc3f90",
+  "createDate": "2022-09-29T15:24:05.943Z",
+  "creator": "did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY;hedera:testnet:tid=0.0.48475858",
+  "description": "iRec Description",
+  "messageId": "1664465082.620045003",
+  "name": "iRec_5_1664465045941",
+  "owner": "did:hedera:testnet:AGGRsWENUUAqhusdGrfX6R5TuEU8MU56XDyorH2MKZyY;hedera:testnet:tid=0.0.48475858",
+  "policyTag": "Tag_1664465001063",
+  "version": "1.2.5"
+}
