@@ -96,6 +96,7 @@
 * [Events](available-policy-workflow-blocks/events.md)
 * [groupManagerBlock](available-policy-workflow-blocks/groupmanagerblock.md)
 * [multiSignBlock](available-policy-workflow-blocks/multisignblock.md)
+* [customLogicBlock](available-policy-workflow-blocks/customlogicblock.md)
 
 ## Policy Workflow Creation using the Guardian User Interface
 
@@ -230,6 +231,10 @@
 * [Returning Logs](logs-apis/returning-logs.md)
 * [Returning Log Attributes](logs-apis/returning-log-attributes.md)
 
+## Multi - User Roles
+
+* [Roles and Groups](multi-user-roles/roles-and-groups.md)
+
 ## Dry Run APIs
 
 * [Running Policy without making any changes](dry-run-apis/running-policy-without-making-any-changes.md)
@@ -241,6 +246,10 @@
 * [Returns List of Artifacts](dry-run-apis/returns-list-of-artifacts.md)
 * [Returns List of IPFS Files](dry-run-apis/returns-list-of-ipfs-files.md)
 * [Returning Policy to Editing](dry-run-apis/returning-policy-to-editing.md)
+
+## API Automation Testing
+
+* [How to perform API Automation Testing](api-automation-testing/how-to-perform-api-automation-testing.md)
 
 ## External APIs
 
@@ -273,7 +282,3 @@
 ## Task APIs
 
 * [Returning Task Statuses](task-apis/returning-task-statuses.md)
-
-## Multi - User Roles
-
-* [Roles and Groups](multi-user-roles/roles-and-groups.md)
