@@ -2,18 +2,19 @@
 
 This folder contains a sample file that is referenced in the Demo Guide
 
-1. New iREC Policy (`IRec Policy 4.policy`[)](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
+1. New iREC Policy (`IRec Policy 5 group (1663850151.496004277).policy`[)](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
 
 1.The Guardian reference implementation comes with two predefined users:
 
 1. Standard Registry
 2. Participant
+3. Approver
 
 2\. After running the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000/). Typically, the way we start the reference implementation demonstration is by logging in as Standard Registry. Click the Demo Admin Panel drop-down located in the upper right-hand corner of the login screen and select Standard Registry user.
 
 3\. You will now be prompted to configure your Standard Registry account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the details of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../.gitbook/assets/Verra\_2.2.png)
+![](../.gitbook/assets/iREC\_4.2.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
 
@@ -22,11 +23,12 @@ iREC 1 : 1661166202.802071003
 iREC 2 : 1662640724.951854568
 iREC 3 : 1662641840.731000003
 iREC 4 : 1662642008.325450377
+iREC 5 : 1663850151.496004277
 ```
 
 ![](../.gitbook/assets/iREC3\_new\_1.png)
 
-Once clicked on OK, we have an option to Preview the Policy before importing it.&#x20;
+Once clicked on OK, we have an option to Preview the Policy before importing it.
 
 <figure><img src="../.gitbook/assets/image (8) (2).png" alt=""><figcaption></figcaption></figure>
 
@@ -40,7 +42,7 @@ Once Policy is imported successfully, click on "Publish" button to publish the p
 
 ![](../.gitbook/assets/iREC3\_new\_3.png)
 
-<figure><img src="../.gitbook/assets/image (7) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (7) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../.gitbook/assets/image (6) (2).png" alt=""><figcaption></figcaption></figure>
 
@@ -86,7 +88,7 @@ For now, we will be adding it manually, but in future, we will be automating the
 
 After submitting the data, the Registrant is waiting for approval from Standard Registry.
 
-<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (15).png" alt=""><figcaption></figcaption></figure>
 
 13\. Now, we logout from Registrant and log back as Standard Registry, we navigate to Issue Requests tab in Policies and once we are ready to approve the document, you can click on Approve button.
 
