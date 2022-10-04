@@ -5,15 +5,15 @@ context("Schemas", () => {
     const authorization = Cypress.env("authorization");
     const schemaUUID = "0000b23a-b1ea-408f-a573-6d8bd1a2060a";
 
-    it("create new schema", () => {
-        cy.sendRequest(METHOD.GET, API.Schemas, {
+    before(() => {
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, {
             authorization,
         }).then((resp) => {
-            const topicUid = resp.body[0].topicId;
+            const topicUid = resp.body.at(-1).topicId;
             //Create new schema
             cy.request({
                 method: "POST",
-                url: API.Schemas + topicUid,
+                url: Cypress.env("api_server") + API.Schemas + topicUid,
                 headers: { authorization },
                 body: {
                     uuid: schemaUUID,
@@ -28,22 +28,31 @@ context("Schemas", () => {
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
-                let schemaUd = response.body.at(-1).uuid;
-                expect(schemaUd).to.equal(schemaUUID);
-                let schemaId = response.body.at(-1).id;
+            });
+        });
+    });
+ 
 
-                const versionNum = "1." + Math.floor(Math.random() * 999);
+    it("delete new schema", () => {
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, {
+            authorization,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            let schemaUd = response.body.at(-1).uuid;
+            expect(schemaUd).to.equal(schemaUUID);
+            let schemaId = response.body.at(-1).id;
 
-                expect(response.status).eql(STATUS_CODE.SUCCESS);
+            const versionNum = "1." + Math.floor(Math.random() * 999);
 
-                //Delete schema
-                cy.request({
-                    method: "DELETE",
-                    url: API.Schemas + schemaId,
-                    headers: { authorization },
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                });
+            expect(response.status).eql(STATUS_CODE.OK);
+
+            //Delete schema
+            cy.request({
+                method: "DELETE",
+                url: Cypress.env("api_server") + API.Schemas + schemaId,
+                headers: { authorization },
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
             });
         });
     });

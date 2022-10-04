@@ -37,7 +37,7 @@ context("Trustchains", () => {
           const accessToken = 'bearer ' + response.body.accessToken
           cy.request({
             method: 'GET',
-            url: API.Trustchains,
+            url: Cypress.env("api_server") + API.Trustchains,
             headers: {
               authorization: accessToken
             }
@@ -49,7 +49,7 @@ context("Trustchains", () => {
 
               cy.request({
                 method: 'GET',
-                url: API.Trustchains + hash,
+                url: Cypress.env("api_server") + API.Trustchains + hash,
                 headers: {
                   authorization: accessToken
                 }

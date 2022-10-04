@@ -6,7 +6,7 @@ context('Accounts', () => {
   const authorization = Cypress.env('authorization');
 
   it('Requests current Hedera account balance', () => {
-    cy.sendRequest(METHOD.GET, API.Balance, {authorization,}).then((resp) => {
+    cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Balance, {authorization,}).then((resp) => {
       expect(resp.status).eql(STATUS_CODE.OK);
       expect(resp.body).to.have.property('balance')
       expect(resp.body).to.have.property('unit')

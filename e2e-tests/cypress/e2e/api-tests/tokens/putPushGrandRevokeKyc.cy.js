@@ -1,4 +1,4 @@
-/// <reference types="cypress" />
+
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
@@ -7,7 +7,7 @@ context("Tokens", () => {
     const user = Cypress.env("root_user");
 
     it("push sets the KYC flag for the user", () => {
-        cy.sendRequest(METHOD.GET, API.ListOfTokens, { authorization }).then(
+        cy.sendRequest(METHOD.GET,Cypress.env("api_server") + API.ListOfTokens, { authorization }).then(
             (resp) => {
                 expect(resp.status).eql(STATUS_CODE.OK);
 
@@ -15,7 +15,7 @@ context("Tokens", () => {
 
                 cy.sendRequest(
                     METHOD.PUT,
-                    API.ListOfTokens +
+                    Cypress.env("api_server") + API.ListOfTokens +
                         "push/" +
                         tokenId +
                         "/" +
@@ -30,7 +30,7 @@ context("Tokens", () => {
     });
 
     it("push unsets the KYC flag for the user", () => {
-        cy.sendRequest(METHOD.GET, API.ListOfTokens, { authorization }).then(
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.ListOfTokens, { authorization }).then(
             (resp) => {
                 expect(resp.status).eql(STATUS_CODE.OK);
 
@@ -38,7 +38,7 @@ context("Tokens", () => {
 
                 cy.sendRequest(
                     METHOD.PUT,
-                    API.ListOfTokens +
+                    Cypress.env("api_server") + API.ListOfTokens +
                         "push/" +
                         tokenId +
                         "/" +

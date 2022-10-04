@@ -4,8 +4,8 @@ import API from "../../../support/ApiUrls";
 context("IPFS", () => {
     const authorization = Cypress.env("authorization");
 
-    before(() => {
-        cy.sendRequest(METHOD.GET, API.Schemas, {
+    it("import the schema file", () => {
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, {
             authorization,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.OK);
@@ -13,7 +13,7 @@ context("IPFS", () => {
 
             cy.request({
                 method: METHOD.GET,
-                url: API.Schemas + schemaId + "/export/file",
+                url: Cypress.env("api_server") + API.Schemas + schemaId + "/export/file",
                 encoding: null,
                 headers: {
                     authorization,
@@ -32,21 +32,22 @@ context("IPFS", () => {
         });
     });
 
-    it("import the schema file", () => {
-        cy.fixture("exportedSchema.schema", "binary")
-            .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-            .then((file) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.IPFSFile,
-                    body: file,
-                    headers: {
-                        "content-type": "binary/octet-stream",
-                        authorization,
-                    },
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.SUCCESS);
-                });
-            });
-    });
+    // it("import the schema file", () => {
+    //     cy.fixture("exportedSchema.schema", "binary")
+    //         .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+    //         .then((file) => {
+    //             cy.request({
+    //                 method: METHOD.POST,
+    //                 url: Cypress.env("api_server") + API.IPFSFile,
+    //                 body: file,
+    //                 headers: {
+    //                     "content-type": "binary/octet-stream",
+    //                     authorization,
+    //                 },
+    //                 timeout: 200000
+    //             }).then((response) => {
+    //                 expect(response.status).eql(STATUS_CODE.SUCCESS);
+    //             });
+    //         });
+    // });
 });

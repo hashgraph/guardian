@@ -14,7 +14,7 @@ context("Schemas", () => {
             "MINT_NFTOKEN",
         ];
         let randomItem = items[Math.floor(Math.random() * items.length)];
-        cy.sendRequest(METHOD.GET, API.SchemasSystemEntity + randomItem, {
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.SchemasSystemEntity + randomItem, {
             authorization,
         }).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.OK);

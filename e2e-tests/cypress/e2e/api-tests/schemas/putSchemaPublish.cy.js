@@ -5,15 +5,15 @@ context("Schemas", () => {
     const authorization = Cypress.env("authorization");
     const schemaUUID = "0000b23a-b1ea-408f-a573-6d8bd1a2060a";
 
-    it("create new schema", () => {
-        cy.sendRequest(METHOD.GET, API.Schemas, {
+    before(() => {
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, {
             authorization,
         }).then((resp) => {
-            const topicUid = resp.body[0].topicId;
+            const topicUid = resp.body.at(-1).topicId;
             //Create new schema
             cy.request({
                 method: "POST",
-                url: API.Schemas + topicUid,
+                url: Cypress.env("api_server") + API.Schemas + topicUid,
                 headers: { authorization },
                 body: {
                     uuid: schemaUUID,
@@ -28,24 +28,35 @@ context("Schemas", () => {
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
-                let schemaUd = response.body.at(-1).uuid;
-                expect(schemaUd).to.equal(schemaUUID);
-                let schemaId = response.body.at(-1).id;
-
-                const versionNum = ("1." + Math.floor(Math.random() * 999))
-                //Publish schema
-                cy.request({
-                    method: "PUT",
-                    url: API.Schemas + schemaId + "/publish",
-                    headers: { authorization },
-                    body: {
-                        version: versionNum,
-                    },
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                });
             });
         });
     });
-    
+
+    it("create new schema", () => {
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, {
+            authorization,
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            let schemaUd = response.body.at(-1).uuid;
+            expect(schemaUd).to.equal(schemaUUID);
+            let schemaId = response.body.at(-1).id;
+
+            const versionNum = "1." + Math.floor(Math.random() * 999);
+            //Publish schema
+            cy.request({
+                method: "PUT",
+                url:
+                    Cypress.env("api_server") +
+                    API.Schemas +
+                    schemaId +
+                    "/publish",
+                headers: { authorization },
+                body: {
+                    version: versionNum,
+                },
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+            });
+        });
+    });
 });

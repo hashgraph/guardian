@@ -13,7 +13,7 @@ context("External", () => {
 
             cy.request({
                 method: METHOD.POST,
-                url: API.External,
+                url: Cypress.env("api_server") + API.External,
                 body: {
                     owner: owner,
                     policyTag: policyTag,

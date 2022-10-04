@@ -1,4 +1,3 @@
-/// <reference types="cypress" />
 
 context('Profiles',() => {
     const authorization = Cypress.env('authorization');

@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 context('Accounts', () => {
 
       it('register a new user and login with it', () => {

@@ -19,6 +19,7 @@ From /e2e-tests folder run the following command to install Cypress:
 
 ## Configuration 
 In cypress.env.json file update `authorization` key with `access_key` value which will be assigned to the RootAuthority after registartation (bearerAuth)
+If you manually built every component in guardian, set the propper url to `api-server` key.
 
 ## Usage
 
