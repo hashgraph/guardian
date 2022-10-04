@@ -10,6 +10,7 @@ import {
 } from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
 import { Environment } from '@hedera-modules';
+import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
 /**
  * Connecting to the message broker methods of working with root address book.
@@ -34,9 +35,20 @@ export async function configAPI(
     ApiResponse(channel, MessageAPI.UPDATE_SETTINGS, async (settings: CommonSettings) => {
         try {
             const settingsContainer = new SettingsContainer();
+            try {
+                AccountId.fromString(settings.operatorId);
+            } catch (error) {
+                await new Logger().error('OPERATOR_ID: ' + error.message, ['GUARDIAN_SERVICE']);
+                throw new Error('OPERATOR_ID: ' + error.message);
+            }
+            try {
+                PrivateKey.fromString(settings.operatorKey);
+            } catch (error) {
+                await new Logger().error('OPERATOR_KEY: ' + error.message, ['GUARDIAN_SERVICE']);
+                throw new Error('OPERATOR_KEY: ' + error.message);
+            }
             await settingsContainer.updateSetting('OPERATOR_ID', settings.operatorId);
             await settingsContainer.updateSetting('OPERATOR_KEY', settings.operatorKey)
-
             return new MessageResponse(null);
         }
         catch (error) {

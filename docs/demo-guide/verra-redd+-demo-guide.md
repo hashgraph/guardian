@@ -17,13 +17,14 @@ This folder contains a sample file that is referenced in the Demo Usage Guide
 
 3\. You'll now be prompted to configure your Verra account. Enter the details and then press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../.gitbook/assets/iREC\_4.2.png)
+![](../.gitbook/assets/Verra\_2.2.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the import button and enter the one of the following Hedera message IDs:
 
 ```
 REDD 1.1.0 = 1661883705.247269744
 REDD 2.2.2 = 1661882417.772439852
+Verra REDD Policy 3 groups (1663846582.307635866).policy
 ```
 
 ![](../.gitbook/assets/verra\_new\_1.png)
@@ -36,7 +37,7 @@ Once Policy is imported successfully, click on "Publish" button to publish the p
 
 6\. Now, we can click on the Policies tab. This is where the specific actions required by the Policy Workflow will be found. We can click Open button to the right of the Verra Policy, the Verra created.
 
-![](<../.gitbook/assets/verra\_new\_2.1 (1).png>)
+![](../.gitbook/assets/verra\_new\_2.1.png)
 
 7\. This is where the custom user will be able to assign the role that was created by Verra during the workflow creation process. In our case, we created the custom role of VVB so the user will need to select the VVB role from the drop down.
 

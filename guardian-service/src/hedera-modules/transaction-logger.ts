@@ -1,23 +1,7 @@
-import {
-    AccountCreateTransaction,
-    AccountId,
-    TokenAssociateTransaction,
-    TokenCreateTransaction,
-    TokenDissociateTransaction,
-    TokenFreezeTransaction,
-    TokenGrantKycTransaction,
-    TokenMintTransaction,
-    TokenRevokeKycTransaction,
-    TokenUnfreezeTransaction,
-    TokenWipeTransaction,
-    TopicCreateTransaction,
-    TopicMessageSubmitTransaction,
-    Transaction,
-    TransferTransaction
-} from '@hashgraph/sdk';
 import { WorkerTaskType } from '@guardian/interfaces';
 import { Workers } from '@helpers/workers';
-import { SettingsContainer } from '@guardian/common';
+import { Logger, MessageResponse, SettingsContainer } from '@guardian/common';
+import { DatabaseServer } from '@database-modules';
 
 /**
  * Transaction log level
@@ -111,20 +95,6 @@ export class TransactionLogger {
     }
 
     /**
-     * String size
-     * @param text
-     * @private
-     */
-    private static stringSize(text: string | Uint8Array): number {
-        if (typeof text === 'string') {
-            const array = Buffer.from(text, 'utf8');
-            return array.length;
-        } else {
-            return text.length;
-        }
-    }
-
-    /**
      * Message log
      * @param id
      * @param name
@@ -154,11 +124,15 @@ export class TransactionLogger {
      * @param id
      * @param operatorAccountId
      * @param transactionName
-     * @param transaction
+     * @param completed
      * @param metadata
      */
     public static async transactionLog(
-        id: string, operatorAccountId: AccountId, transactionName: string, transaction?: Transaction, metadata?: any
+        id: string,
+        operatorAccountId: string,
+        transactionName: string,
+        completed: boolean = false,
+        metadata: string = ''
     ): Promise<void> {
         try {
             if (TransactionLogger.logLvl === TransactionLogLvl.NONE) {
@@ -169,13 +143,12 @@ export class TransactionLogger {
             TransactionLogger.map[id] = time;
 
             const account = operatorAccountId.toString();
-            const data = TransactionLogger.getTransactionData(transactionName, transaction, metadata);
-            const attr = [id, account, data];
+            const attr = [id, account, metadata];
 
             if (TransactionLogger.logLvl === TransactionLogLvl.DEBUG) {
                 try {
                     const settingsContainer = new SettingsContainer();
-                    const {OPERATOR_ID, OPERATOR_KEY} = settingsContainer.settings;
+                    const { OPERATOR_ID, OPERATOR_KEY } = settingsContainer.settings;
                     const workers = new Workers();
                     const balance = await workers.addTask({
                         type: WorkerTaskType.GET_USER_BALANCE,
@@ -190,7 +163,7 @@ export class TransactionLogger {
                 }
             }
 
-            if (transaction) {
+            if (completed) {
                 const duration = time - start;
                 TransactionLogger.log(['TRANSACTION', 'COMPLETION'], duration, transactionName, attr);
             } else {
@@ -202,135 +175,6 @@ export class TransactionLogger {
     }
 
     /**
-     * Get transaction data
-     * @param transactionName
-     * @param transaction
-     * @param metadata
-     * @private
-     */
-    private static getTransactionData(transactionName: string, transaction: Transaction, metadata?: any): string {
-        let data = '';
-        if (!transaction) {
-            return data;
-        }
-        if (transactionName === 'TokenCreateTransaction') {
-            const t = transaction as TokenCreateTransaction;
-            data += 'payer sigs: 1; ';
-            data += `admin keys: ${t.adminKey ? 1 : 0}; `;
-            data += `KYC keys: ${t.kycKey ? 1 : 0}; `;
-            data += `wipe keys: ${t.wipeKey ? 1 : 0}; `;
-            data += `pause keys: ${t.pauseKey ? 1 : 0}; `;
-            data += `supply keys: ${t.supplyKey ? 1 : 0}; `;
-            data += `freeze keys: ${t.freezeKey ? 1 : 0}; `;
-            data += `token name size: ${TransactionLogger.stringSize(t.tokenName)}; `;
-            data += `token symbol size: ${TransactionLogger.stringSize(t.tokenSymbol)}; `;
-            data += `token memo size: ${TransactionLogger.stringSize(t.tokenMemo)}; `;
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'TokenAssociateTransaction') {
-            const t = transaction as TokenAssociateTransaction;
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += 'tokens associated: 1; ';
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'TokenDissociateTransaction') {
-            const t = transaction as TokenDissociateTransaction;
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += 'tokens dissociated: 1; ';
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'TokenFreezeTransaction') {
-            const t = transaction as TokenFreezeTransaction;
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'TokenUnfreezeTransaction') {
-            const t = transaction as TokenUnfreezeTransaction;
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'TokenGrantKycTransaction') {
-            const t = transaction as TokenGrantKycTransaction;
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'TokenRevokeKycTransaction') {
-            const t = transaction as TokenRevokeKycTransaction;
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'TokenMintTransaction') {
-            const t = transaction as TokenMintTransaction;
-            data += 'Fungible Token; ';
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'TokenMintNFTTransaction') {
-            transactionName = 'TokenMintTransaction';
-            const t = transaction as TokenMintTransaction;
-            data += 'Non-Fungible Token; ';
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += `of NFTs minted: ${t.metadata.length};`;
-            data += `bytes of metadata per NFT: ${t.metadata[0].length};`;
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'TokenWipeTransaction') {
-            const t = transaction as TokenWipeTransaction;
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'TransferTransaction') {
-            const t = transaction as TransferTransaction;
-            data += 'Fungible Token; ';
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += `amount: ${metadata}; `;
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'NFTTransferTransaction') {
-            transactionName = 'TransferTransaction';
-            const t = transaction as TransferTransaction;
-            data += 'Non-Fungible Token; ';
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += `of NFTs transferred: ${metadata.length}; `;
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'AccountCreateTransaction') {
-            const t = transaction as AccountCreateTransaction;
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'TopicCreateTransaction') {
-            const t = transaction as TopicCreateTransaction;
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += `admin keys: ${t.adminKey ? 1 : 0}; `;
-            data += `submit keys: ${t.submitKey ? 1 : 0}; `;
-            data += `topic memo size: ${TransactionLogger.stringSize(t.topicMemo)}; `;
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        if (transactionName === 'TopicMessageSubmitTransaction') {
-            const t = transaction as TopicMessageSubmitTransaction;
-            data += 'payer sigs: 1; ';
-            data += 'total sigs: 1; ';
-            data += `message size: ${TransactionLogger.stringSize(t.message)}; `;
-            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
-        }
-        return data;
-    }
-
-    /**
      * Transaction error log
      * @param id
      * @param operatorAccountId
@@ -339,7 +183,10 @@ export class TransactionLogger {
      * @param message
      */
     public static async transactionErrorLog(
-        id: string, operatorAccountId: AccountId, transactionName: string, transaction: Transaction, message: string
+        id: string,
+        operatorAccountId: string,
+        transactionName: string,
+        message: string
     ): Promise<void> {
         try {
             const account = operatorAccountId.toString();
@@ -355,7 +202,7 @@ export class TransactionLogger {
      * @param id
      * @param file
      */
-    public static async virtualFileLog(id:string, file: ArrayBuffer, url:any): Promise<void> {
+    public static async virtualFileLog(id: string, file: ArrayBuffer, url: any): Promise<void> {
         const date = (new Date()).toISOString();
         if (TransactionLogger.virtualFileCallback) {
             TransactionLogger.virtualFileCallback(date, id, file, url);
@@ -373,5 +220,74 @@ export class TransactionLogger {
         if (TransactionLogger.virtualTransactionCallback) {
             TransactionLogger.virtualTransactionCallback(date, id, type, operatorId);
         }
+    }
+
+    public static workerSubscribe(channel: any): void {
+        channel.response('guardians.transaction-log-event', async (data: any) => {
+            setImmediate(async () => {
+                switch (data.type) {
+                    case 'start-log': {
+                        const { id, operatorAccountId, transactionName } = data.data;
+                        await TransactionLogger.transactionLog(id, operatorAccountId, transactionName);
+                        break;
+                    }
+
+                    case 'end-log': {
+                        const { id, operatorAccountId, transactionName } = data.data;
+                        const metadata = data.metadata;
+                        await TransactionLogger.transactionLog(id, operatorAccountId, transactionName, true, metadata);
+                        break;
+                    }
+
+                    case 'error-log': {
+                        const { id, operatorAccountId, transactionName } = data.data;
+                        const metadata = data.metadata;
+                        const error = data.error;
+
+                        await TransactionLogger.transactionErrorLog(id, operatorAccountId, transactionName, error);
+                        break;
+                    }
+
+                    case 'virtual-function-log': {
+                        const { id, operatorAccountId, transactionName } = data.data;
+
+
+                        await TransactionLogger.virtualTransactionLog(id, transactionName, operatorAccountId);
+                        break;
+                    }
+
+                    default:
+                        throw new Error('Unknown transaction log event type');
+                }
+            })
+
+            return new MessageResponse({});
+        });
+    }
+
+    public static init(channel: any, lvl: TransactionLogLvl): void {
+        TransactionLogger.setLogLevel(lvl);
+        TransactionLogger.setLogFunction((types: string[], date: string, duration: string, name: string, attr?: string[]) => {
+            const log = new Logger();
+            const attributes = [
+                ...types,
+                date,
+                duration,
+                name,
+                ...attr
+            ]
+            if (types[1] === 'ERROR') {
+                log.error(name, attributes, 4);
+            } else {
+                log.info(name, attributes, 4);
+            }
+        });
+        TransactionLogger.setVirtualFileFunction(async (date: string, id: string, file: ArrayBuffer, url: any) => {
+            await DatabaseServer.setVirtualFile(id, file, url);
+        });
+        TransactionLogger.setVirtualTransactionFunction(async (date: string, id: string, type: string, operatorId?: string) => {
+            await DatabaseServer.setVirtualTransaction(id, type, operatorId);
+        });
+        TransactionLogger.workerSubscribe(channel);
     }
 }

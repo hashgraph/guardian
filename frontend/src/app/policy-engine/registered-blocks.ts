@@ -245,9 +245,13 @@ export class RegisteredBlocks {
             header: BlockHeaders.UIComponents,
             factory: DocumentsSourceBlockComponent,
             property: DocumentSourceComponent,
-            allowedChildren: [...allowedChildrenStepContainerBlocks, {
-                type: BlockType.PaginationAddon
-            }]
+            allowedChildren: [
+                ...allowedChildrenStepContainerBlocks, {
+                    type: BlockType.PaginationAddon
+                }, {
+                    type: BlockType.DocumentsSourceAddon
+                }
+            ]
         });
         this.registerBlock({
             type: BlockType.Request,
