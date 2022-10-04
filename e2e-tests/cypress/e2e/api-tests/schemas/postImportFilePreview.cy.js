@@ -5,15 +5,23 @@ context("Schemas", () => {
     const authorization = Cypress.env("authorization");
 
     before(() => {
-        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, {
-            authorization,
+        cy.request({
+            method: METHOD.GET,
+            url: Cypress.env("api_server") + API.Schemas,
+            headers: {
+                authorization,
+            },
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.OK);
             let schemaId = response.body[0].id;
 
             cy.request({
                 method: METHOD.GET,
-                url: Cypress.env("api_server") + API.Schemas + schemaId + "/export/file",
+                url:
+                    Cypress.env("api_server") +
+                    API.Schemas +
+                    schemaId +
+                    "/export/file",
                 encoding: null,
                 headers: {
                     authorization,
@@ -34,20 +42,21 @@ context("Schemas", () => {
     });
 
     it("previews the schema from a file", () => {
-        cy.fixture('exportedSchema.schema', 'binary').then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-        .then((file) => {
-        cy.request({
-            method: METHOD.POST,
-            url: Cypress.env("api_server") +  API.SchemaImportFilePreview,
-            body: file,
-            headers: {
-                'content-type': 'binary/octet-stream',
-                authorization
-              },
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.OK);
-
-        });
+        cy.fixture("exportedSchema.schema", "binary")
+            .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+            .then((file) => {
+                cy.request({
+                    method: METHOD.POST,
+                    url:
+                        Cypress.env("api_server") + API.SchemaImportFilePreview,
+                    body: file,
+                    headers: {
+                        "content-type": "binary/octet-stream",
+                        authorization,
+                    },
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
+                });
+            });
     });
-});
 });

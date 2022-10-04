@@ -5,13 +5,17 @@ context("Tokens", () => {
     const authorization = Cypress.env("authorization");
 
     it("get all tokens", () => {
-        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.ListOfTokens, { authorization }).then(
-            (resp) => {
-                expect(resp.status).eql(STATUS_CODE.OK);
-                expect(resp.body[0]).to.have.property("_id");
-                expect(resp.body[0]).to.have.property("tokenId");
-                expect(resp.body[0]).to.have.property("tokenName");
-            }
-        );
+        cy.request({
+            method: METHOD.GET,
+            url: Cypress.env("api_server") + API.ListOfTokens,
+            headers: {
+                authorization,
+            },
+        }).then((resp) => {
+            expect(resp.status).eql(STATUS_CODE.OK);
+            expect(resp.body[0]).to.have.property("_id");
+            expect(resp.body[0]).to.have.property("tokenId");
+            expect(resp.body[0]).to.have.property("tokenName");
+        });
     });
 });

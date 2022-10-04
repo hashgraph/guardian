@@ -26,8 +26,12 @@ context("Schemas", () => {
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.SUCCESS);
 
-            cy.sendRequest(METHOD.GET,Cypress.env("api_server") + API.SchemasSystem + username, {
-                authorization,
+            cy.request({
+                method: METHOD.GET,
+                url: Cypress.env("api_server") + API.SchemasSystem + username,
+                headers: {
+                    authorization,
+                },
             }).then((resp) => {
                 expect(resp.status).eql(STATUS_CODE.OK);
                 expect(resp.body[0]).to.have.property("uuid");
@@ -55,16 +59,19 @@ context("Schemas", () => {
                 // }).then((resp) => {
                 //     expect(resp.status).eql(STATUS_CODE.OK);
 
-                    //Delete schema
-                    cy.request({
-                        method: "DELETE",
-                        url: Cypress.env("api_server") + API.SchemasSystem + schemaId,
-                        headers: { authorization },
-                    }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.OK);
-                    });
+                //Delete schema
+                cy.request({
+                    method: "DELETE",
+                    url:
+                        Cypress.env("api_server") +
+                        API.SchemasSystem +
+                        schemaId,
+                    headers: { authorization },
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
                 });
             });
         });
     });
+});
 // });

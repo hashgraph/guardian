@@ -5,8 +5,12 @@ context("Schema", () => {
     const authorization = Cypress.env("authorization");
 
     it("return schema files", () => {
-        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, {
-            authorization,
+        cy.request({
+            method: METHOD.GET,
+            url:  Cypress.env("api_server") + API.Schemas, 
+            headers: {
+                authorization,
+            },
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.OK);
             let schemaId = response.body[0].id;

@@ -6,8 +6,12 @@ context("Schemas", () => {
     const schemaUUID = "0000b23a-b1ea-408f-a573-6d8bd1a2060a";
 
     before(() => {
-        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, {
-            authorization,
+        cy.request({
+            method: METHOD.GET,
+            url: Cypress.env("api_server") + API.Schemas,
+            headers: {
+                authorization,
+            },
         }).then((resp) => {
             const topicUid = resp.body.at(-1).topicId;
             //Create new schema
@@ -31,11 +35,14 @@ context("Schemas", () => {
             });
         });
     });
- 
 
     it("delete new schema", () => {
-        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, {
-            authorization,
+        cy.request({
+            method: METHOD.GET,
+            url: Cypress.env("api_server") + API.Schemas,
+            headers: {
+                authorization,
+            },
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.OK);
             let schemaUd = response.body.at(-1).uuid;

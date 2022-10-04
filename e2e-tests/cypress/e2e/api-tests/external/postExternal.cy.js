@@ -5,8 +5,12 @@ context("External", () => {
     const authorization = Cypress.env("authorization");
 
     it("shold sends data from an external source", () => {
-        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + "policies", {
-            authorization,
+        cy.request({
+            method: METHOD.GET,
+            url: Cypress.env("api_server") + "policies",
+            headers: {
+                authorization,
+            },
         }).then((resp) => {
             const policyTag = resp.body[0].policyTag;
             const owner = resp.body[0].owner;
