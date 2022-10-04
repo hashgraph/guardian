@@ -7,7 +7,7 @@ context("Tokens", () => {
     it("post for creating new token", () => {
         cy.request({
             method: "POST",
-            url: API.ListOfTokens,
+            url: Cypress.env("api_server") + API.ListOfTokens,
             headers: { authorization },
             body: {
                 "changeSupply": true,

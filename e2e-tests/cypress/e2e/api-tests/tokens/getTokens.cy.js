@@ -5,7 +5,7 @@ context("Tokens", () => {
     const authorization = Cypress.env("authorization");
 
     it("get all tokens", () => {
-        cy.sendRequest(METHOD.GET, API.ListOfTokens, { authorization }).then(
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.ListOfTokens, { authorization }).then(
             (resp) => {
                 expect(resp.status).eql(STATUS_CODE.OK);
                 expect(resp.body[0]).to.have.property("_id");

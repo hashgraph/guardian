@@ -5,7 +5,7 @@ context("Schemas", () => {
     const authorization = Cypress.env("authorization");
 
     before(() => {
-        cy.sendRequest(METHOD.GET, API.Schemas, {
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, {
             authorization,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.OK);
@@ -13,7 +13,7 @@ context("Schemas", () => {
 
             cy.request({
                 method: METHOD.GET,
-                url: API.Schemas + schemaId + "/export/file",
+                url: Cypress.env("api_server") + API.Schemas + schemaId + "/export/file",
                 encoding: null,
                 headers: {
                     authorization,
@@ -38,7 +38,7 @@ context("Schemas", () => {
         .then((file) => {
         cy.request({
             method: METHOD.POST,
-            url: API.SchemaImportFilePreview,
+            url: Cypress.env("api_server") +  API.SchemaImportFilePreview,
             body: file,
             headers: {
                 'content-type': 'binary/octet-stream',

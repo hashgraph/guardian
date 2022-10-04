@@ -1,4 +1,3 @@
-/// <reference types="cypress"/>
 
 context('Settings', () => {
 
@@ -96,7 +95,7 @@ context('Settings', () => {
             body: {
               nftApiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEMxZGY5YTQyMjhjMEZENEMwQmIzN0Q4QTlCNGRhNzIxNmFBYzQyMEMiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY1ODMxMjA3NTEyMywibmFtZSI6IlRlc3QifQ.0nnjEpX0U7O0j954WdNE4J48XV6zdJqOKLR8zv7xbYI',
               operatorId: '0.0.47715985',
-              operatorKey: '302a300506032b65700321002040f5152b9a73d2035daca493755d42798f821f08e9ee00d98f8cfa5c0b2997'
+              operatorKey: '302e020100300506032b657004220420aaf0eac4a188e5d7eb3897866d2b33e51ab5d7e7bfc251d736f2037a4b2075e8'
             }
           })
             .then((response) => {

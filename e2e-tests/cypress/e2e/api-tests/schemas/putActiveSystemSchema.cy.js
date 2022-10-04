@@ -10,7 +10,7 @@ context("Schemas", () => {
                 //Create new schema
                 cy.request({
                     method: "POST",
-                    url: API.SchemasSystem + username,
+                    url: Cypress.env("api_server") + API.SchemasSystem + username,
                     headers: { authorization },
                     body: {
                         uuid: schemaUUID,
@@ -26,7 +26,7 @@ context("Schemas", () => {
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.SUCCESS);
         
-        cy.sendRequest(METHOD.GET, API.SchemasSystem + username, {
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.SchemasSystem + username, {
             authorization,
         }).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.OK);
@@ -38,7 +38,7 @@ context("Schemas", () => {
 
             cy.request({
                 method: "PUT",
-                url: API.SchemasSystem + schemaId + "/active",
+                url: Cypress.env("api_server") + API.SchemasSystem + schemaId + "/active",
                 headers: { authorization },
                 body: {
                     version: versionNum,

@@ -6,10 +6,10 @@ context("Schemas", () => {
 
     it("get all schemas by topicid", () => {
     
-            cy.sendRequest(METHOD.GET, API.Schemas, { authorization }).then(
+            cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, { authorization }).then(
                 (resp) => {
                     const topicUid = resp.body[0].topicId;
-                    cy.sendRequest(METHOD.GET, API.Schemas + topicUid, { authorization },
+                    cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas + topicUid, { authorization },
                         ).then(
                         (resp) => {
                             expect(resp.status).eql(STATUS_CODE.OK);

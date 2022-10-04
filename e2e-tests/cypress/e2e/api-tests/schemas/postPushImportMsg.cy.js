@@ -5,12 +5,12 @@ context("Schemas", () => {
     const authorization = Cypress.env("authorization");
 
     it("should push import new schema from IPFS into the local DB", () => {
-        cy.sendRequest(METHOD.GET, API.Schemas, { authorization }).then(
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, { authorization }).then(
             (resp) => {
                 const topicUid = resp.body[0].topicId;
                 cy.request({
                     method: METHOD.POST,
-                    url: API.Schemas + "push/" + topicUid + "/import/message",
+                    url: Cypress.env("api_server") + API.Schemas + "push/" + topicUid + "/import/message",
                     headers: {
                         authorization,
                     },

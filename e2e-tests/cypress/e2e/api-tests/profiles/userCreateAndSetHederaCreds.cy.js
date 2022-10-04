@@ -1,4 +1,3 @@
-/// <reference types="cypress" />
 
 // import { ids } from "../../../fixtures/hederaAccounts.json"
 // import { did } from "../../../fixtures/StandardRegistryData.json";

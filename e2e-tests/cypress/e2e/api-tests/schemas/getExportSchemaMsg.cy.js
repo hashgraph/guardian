@@ -5,7 +5,7 @@ context("Schema", () => {
     const authorization = Cypress.env("authorization");
 
     it("return schema message", () => {
-        cy.sendRequest(METHOD.GET, API.Schemas, {
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, {
             authorization,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.OK);
@@ -13,7 +13,7 @@ context("Schema", () => {
 
             cy.request({
                 method: METHOD.GET,
-                url: API.Schemas + schemaId + "/export/message",
+                url:Cypress.env("api_server") +  API.Schemas + schemaId + "/export/message",
                 encoding: null,
                 headers: {
                     authorization,

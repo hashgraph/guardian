@@ -8,7 +8,7 @@ context("Schemas", () => {
         const usernames = ["Installer", "StandartRegistry"];
         let randomUserName =
             usernames[Math.floor(Math.random() * usernames.length)];
-        cy.sendRequest(METHOD.GET, API.SchemasSystem + randomUserName, {
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.SchemasSystem + randomUserName, {
             authorization,
         }).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.OK);

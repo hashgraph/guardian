@@ -6,14 +6,14 @@ context("Schemas", () => {
     const schemaUUID = "0000b23a-b1ea-408f-a573-6d8bd1a2060a";
 
     it("should push to create new schema", () => {
-        cy.sendRequest(METHOD.GET, API.Schemas, {
+        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.Schemas, {
             authorization,
         }).then((resp) => {
             const topicUid = resp.body[0].topicId;
             //Create new schema
             cy.request({
                 method: "POST",
-                url: API.Schemas + topicUid,
+                url: Cypress.env("api_server") + API.Schemas + topicUid,
                 headers: { authorization },
                 body: {
                     uuid: schemaUUID,
@@ -36,7 +36,7 @@ context("Schemas", () => {
                 //Publish schema
                 cy.request({
                     method: "PUT",
-                    url: API.Schemas + "push/" + schemaId + "/publish",
+                    url: Cypress.env("api_server") + API.Schemas + "push/" + schemaId + "/publish",
                     headers: { authorization },
                     body: {
                         version: versionNum,
