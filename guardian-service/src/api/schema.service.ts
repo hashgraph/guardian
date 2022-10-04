@@ -854,6 +854,8 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 otherOptions.orderBy = { createDate: 'DESC' };
                 otherOptions.limit = _pageSize;
                 otherOptions.offset = _pageIndex * _pageSize;
+            } else {
+                otherOptions.limit = 100;
             }
 
             const [schemas, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
