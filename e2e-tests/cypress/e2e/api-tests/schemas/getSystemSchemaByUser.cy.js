@@ -8,8 +8,12 @@ context("Schemas", () => {
         const usernames = ["Installer", "StandartRegistry"];
         let randomUserName =
             usernames[Math.floor(Math.random() * usernames.length)];
-        cy.sendRequest(METHOD.GET, Cypress.env("api_server") + API.SchemasSystem + randomUserName, {
-            authorization,
+        cy.request({
+            method: METHOD.GET,
+            url: Cypress.env("api_server") + API.SchemasSystem + randomUserName,
+            headers: {
+                authorization,
+            },
         }).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.OK);
             expect(resp.body[0]).to.have.property("uuid");
