@@ -33,6 +33,7 @@ import axios from 'axios';
 import { Environment } from './environment';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import Long from 'long';
+import { TransactionLogger } from './transaction-logger';
 
 export const MAX_FEE = 10;
 export const INITIAL_BALANCE = 30;
@@ -50,6 +51,14 @@ export interface ITransactionLoggerData {
      * Transaction log event data
      */
     data: unknown;
+    /**
+     * Transaction metadata
+     */
+    metadata?: string,
+    /**
+     * Transaction error
+     */
+    error?: string,
 }
 
 /**
@@ -113,11 +122,7 @@ export class HederaSDKHelper {
         if (HederaSDKHelper.sendTransactionLogMessage) {
             await HederaSDKHelper.sendTransactionLogMessage({
                 type: 'start-log',
-                data: {
-                    id,
-                    operatorAccountId: this.client.operatorAccountId?.toString(),
-                    transactionName
-                }
+                data: TransactionLogger.getTransactionData(id, this.client, transactionName),
             });
         }
     }
@@ -134,13 +139,8 @@ export class HederaSDKHelper {
         if (HederaSDKHelper.sendTransactionLogMessage) {
             await HederaSDKHelper.sendTransactionLogMessage({
                 type: 'end-log',
-                data: {
-                    id,
-                    operatorAccountId: this.client.operatorAccountId?.toString(),
-                    transactionName,
-                    transaction,
-                    metadata
-                }
+                data: TransactionLogger.getTransactionData(id, this.client, transactionName),
+                metadata: TransactionLogger.getTransactionMetadata(transactionName, transaction, metadata),
             });
         }
     }
@@ -157,13 +157,9 @@ export class HederaSDKHelper {
         if (HederaSDKHelper.sendTransactionLogMessage) {
             await HederaSDKHelper.sendTransactionLogMessage({
                 type: 'error-log',
-                data: {
-                    id,
-                    operatorAccountId: this.client.operatorAccountId?.toString(),
-                    transactionName,
-                    transaction,
-                    error: error.message
-                }
+                data: TransactionLogger.getTransactionData(id, this.client, transactionName),
+                metadata: TransactionLogger.getTransactionMetadata(transactionName, transaction),
+                error: typeof error === 'string' ? error : error.message
             });
         }
     }
@@ -171,19 +167,14 @@ export class HederaSDKHelper {
     /**
      * Save Virtual Transaction log
      * @param id
-     * @param type
-     * @param client
+     * @param transactionName
      * @private
      */
-    private async virtualTransactionLog(id: string, type: string, client: Client): Promise<void> {
+    private async virtualTransactionLog(id: string, transactionName: string): Promise<void> {
         if (HederaSDKHelper.sendTransactionLogMessage) {
             await HederaSDKHelper.sendTransactionLogMessage({
                 type: 'virtual-function-log',
-                data: {
-                    id,
-                    operatorAccountId: this.client.operatorAccountId?.toString(),
-                    type
-                }
+                data: TransactionLogger.getTransactionData(id, this.client, transactionName),
             });
         }
     }
@@ -860,7 +851,7 @@ export class HederaSDKHelper {
         client: Client, transaction: Transaction, type: string, metadata?: any
     ): Promise<TransactionReceipt> {
         if (this.dryRun) {
-            await this.virtualTransactionLog(this.dryRun, type, client);
+            await this.virtualTransactionLog(this.dryRun, type);
             return {
                 status: Status.Success,
                 topicId: new TokenId(Date.now()),
@@ -896,7 +887,7 @@ export class HederaSDKHelper {
         client: Client, transaction: Transaction, type: string, metadata?: any
     ): Promise<TransactionRecord> {
         if (this.dryRun) {
-            await this.virtualTransactionLog(this.dryRun, type, client);
+            await this.virtualTransactionLog(this.dryRun, type);
             return {
                 consensusTimestamp: Timestamp.fromDate(Date.now())
             } as any

@@ -72,7 +72,7 @@ Promise.all([
     settingsContainer.setChannel(channel);
     await settingsContainer.init('OPERATOR_ID', 'OPERATOR_KEY');
 
-    const {OPERATOR_ID, OPERATOR_KEY} = settingsContainer.settings;
+    const { OPERATOR_ID, OPERATOR_KEY } = settingsContainer.settings;
 
     // Check configuration
     try {
@@ -111,67 +111,7 @@ Promise.all([
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
-
-    TransactionLogger.setLogLevel(process.env.LOG_LEVEL as TransactionLogLvl);
-    TransactionLogger.setLogFunction((types: string[], date: string, duration: string, name: string, attr?: string[]) => {
-        const log = new Logger();
-        const attributes = [
-            ...types,
-            date,
-            duration,
-            name,
-            ...attr
-        ]
-        if (types[1] === 'ERROR') {
-            log.error(name, attributes, 4);
-        } else {
-            log.info(name, attributes, 4);
-        }
-    });
-    TransactionLogger.setVirtualFileFunction(async (date: string, id: string, file: ArrayBuffer, url:any) => {
-        await DatabaseServer.setVirtualFile(id, file, url);
-    });
-
-    TransactionLogger.setVirtualTransactionFunction(async (date: string, id: string, type: string, operatorId?: string) => {
-        await DatabaseServer.setVirtualTransaction(id, type, operatorId);
-    });
-
-    channel.response('guardians.transaction-log-event', async (data: any) => {
-        console.log(data);
-
-        setImmediate(async () => {
-            switch (data.type) {
-                case 'start-log': {
-                    const {id, operatorAccountId, transactionName} = data.data;
-                    await TransactionLogger.transactionLog(id, operatorAccountId, transactionName);
-                    break;
-                }
-
-                case 'end-log': {
-                    const {id, operatorAccountId, transactionName, transaction, metadata} = data.data;
-                    await TransactionLogger.transactionLog(id, operatorAccountId, transactionName, transaction, metadata);
-                    break;
-                }
-
-                case 'error-log': {
-                    const {id, operatorAccountId, transactionName, transaction, error} = data.data;
-                    await TransactionLogger.transactionErrorLog(id, operatorAccountId, transactionName, transaction, error);
-                    break;
-                }
-
-                case 'virtual-function-log': {
-                    const {id, operatorAccountId, type} = data.data;
-                    await TransactionLogger.virtualTransactionLog(id, type, operatorAccountId);
-                    break;
-                }
-
-                default:
-                    throw new Error('Unknown transaction log event type');
-            }
-        })
-
-        return new MessageResponse({});
-    });
+    TransactionLogger.init(channel, process.env.LOG_LEVEL as TransactionLogLvl);
 
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
