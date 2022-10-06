@@ -263,6 +263,9 @@
                                 [readonly]="readonly" [tokens]="tokens" type="Events">
                             </common-properties>
                         </ng-container>
+                        <ng-container *ngIf="propTab=='Artifacts'">
+                            <artifact-properties [readonly]="readonly" [policyId]="policyId" [block]="currentBlock"></artifact-properties>
+                        </ng-container>
                     </div>
                 </div>
                 <div class="group-tab">
@@ -274,6 +277,9 @@
                     </div>
                     <div class="group-tab-item" [attr.active]="propTab=='Events'" (click)="propTab='Events'">
                         Events
+                    </div>
+                    <div class="group-tab-item" [attr.active]="propTab=='Artifacts'" (click)="propTab='Artifacts'">
+                        Artifacts
                     </div>
                 </div>
             </div>

@@ -42,6 +42,7 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { DatabaseServer } from '@database-modules';
 import { ipfsAPI } from '@api/ipfs.service';
 import { Workers } from '@helpers/workers';
+import { artifactAPI } from '@api/artifact.service';
 
 Promise.all([
     Migration({
@@ -217,6 +218,7 @@ Promise.all([
     await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await demoAPI(channel, apiGatewayChannel, settingsRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
+    await artifactAPI(channel);
     await setDefaultSchema();
 
     await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'));

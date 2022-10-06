@@ -1,0 +1,22 @@
+<div class="artifact-container">
+    <div *ngIf="this.currentBlock.artifacts.length > 0" class="artifact-list" cdkDropList
+        [cdkDropListData]="this.currentBlock.artifacts" (cdkDropListDropped)="changeArtifactPosition($event)"
+        [cdkDropListDisabled]="readonly">
+        <div class="artifact-row" *ngFor="let artifact of this.currentBlock.artifacts; let i = index;" cdkDrag>
+            <mat-icon>drag_handle</mat-icon>{{artifact.name}} ({{artifact.type}})
+            <span class="remove-prop" [attr.readonly]="readonly" (click)="removeArtifact(artifact)">
+                <mat-icon>delete</mat-icon>
+            </span>
+        </div>
+    </div>
+    <button mat-button class="add-artifact-button" [matMenuTriggerFor]="menu">
+        <mat-icon>add</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+        <ng-container *ngFor="let artifact of policyArtifacts">
+            <button mat-menu-item (click)="addArtifact(artifact)" [disabled]="readonly">
+                {{artifact.name}} ({{artifact.type}})
+            </button>
+        </ng-container>
+    </mat-menu>
+</div>

@@ -3,7 +3,7 @@ import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { VcHelper } from '@helpers/vc-helper';
-import { GenerateUUIDv4, SchemaHelper } from '@guardian/interfaces';
+import { ArtifactType, GenerateUUIDv4, SchemaHelper } from '@guardian/interfaces';
 import * as mathjs from 'mathjs';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
@@ -12,6 +12,7 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-modules';
 import { KeyType } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
+import { DatabaseServer } from '@database-modules';
 
 /**
  * Custom logic block
@@ -71,7 +72,7 @@ export class CustomLogicBlock {
      * @param user
      */
     execute(state: IPolicyEventState, user: IPolicyUser): Promise<any> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
             const idType = ref.options.idType;
             let documents: IPolicyDocument[] = null;
@@ -150,8 +151,20 @@ export class CustomLogicBlock {
                 }
             }
 
-            const func = Function(`const [done, user, documents, mathjs] = arguments; ${ref.options.expression}`);
-            func.apply(documents, [done, user, documents, mathjs]);
+            const execCodeArtifacts = ref.options.artifacts.filter(artifact => artifact.type === ArtifactType.EXECUTABLE_CODE);
+            let execCode = '';
+            for (const execCodeArtifact of execCodeArtifacts) {
+                execCode += (await DatabaseServer.getArtifactFileByUUID(execCodeArtifact.uuid)).toString();
+            }
+            const func = Function(`const [done, user, documents, mathjs, artifacts] = arguments;${execCode}${ref.options.expression}`);
+
+            const artifacts = [];
+            const jsonArtifacts = ref.options.artifacts.filter(artifact => artifact.type === ArtifactType.JSON);
+            for (const jsonArtifact of jsonArtifacts) {
+
+                artifacts.push(JSON.parse((await DatabaseServer.getArtifactFileByUUID(jsonArtifact.uuid)).toString()));
+            }
+            func.apply(documents, [done, user, documents, mathjs, artifacts]);
         });
     }
 
