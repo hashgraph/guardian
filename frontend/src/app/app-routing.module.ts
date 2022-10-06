@@ -22,6 +22,7 @@ import { ServiceStatusComponent } from './views/admin/service-status/service-sta
 import { InfoComponent } from './components/info/info/info.component';
 import { WebSocketService } from './services/web-socket.service';
 import { PoliciesComponent } from './policy-engine/policies/policies.component';
+import { ArtifactConfigComponent } from './artifact-engine/artifact-config/artifact-config.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -147,6 +148,7 @@ const routes: Routes = [
     { path: 'config', component: RootConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'tokens', component: TokenConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'schemas', component: SchemaConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'artifacts', component: ArtifactConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     {
         path: 'admin', component: AdminHeaderComponent, canActivate: [StandardRegistryGuard], canActivateChild: [StandardRegistryGuard],
         children: [

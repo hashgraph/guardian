@@ -15,6 +15,9 @@ import { DocumentStatus, IVC, SchemaEntity, TopicType } from '@guardian/interfac
 import { BaseEntity, DataBaseHelper } from '@guardian/common';
 import { PolicyInvitations } from '@entity/policy-invitations';
 import { MultiDocuments } from '@entity/multi-documents';
+import { Artifact as ArtifactCollection } from '@entity/artifact';
+import { ArtifactChunk as ArtifactChunkCollection } from '@entity/artifact-chunk';
+import { Binary } from 'bson';
 
 /**
  * Database server
@@ -31,6 +34,11 @@ export class DatabaseServer {
      * @private
      */
     private readonly classMap: Map<any, string> = new Map();
+
+    /**
+     * Max Document Size ~ 16 MB
+     */
+    private static readonly MAX_DOCUMENT_SIZE = 16000000;
 
     constructor(dryRun: string = null) {
         this.dryRun = dryRun || null;
@@ -1684,5 +1692,89 @@ export class DatabaseServer {
      */
     public static async getTokens(filters?: any): Promise<TokenCollection[]> {
         return await new DataBaseHelper(TokenCollection).find(filters);
+    }
+
+    /**
+     * Save Artifact
+     * @param artifact Artifact
+     * @returns Saved Artifact
+     */
+    public static async saveArtifact(artifact: ArtifactCollection): Promise<ArtifactCollection> {
+        return await new DataBaseHelper(ArtifactCollection).save(artifact);
+    }
+
+    /**
+     * Get Artifact
+     * @param filters Filters
+     * @returns Artifact
+     */
+    public static async getArtifact(filters?: any): Promise<ArtifactCollection> {
+        return await new DataBaseHelper(ArtifactCollection).findOne(filters);
+    }
+
+    /**
+     * Get Artifacts
+     * @param filters Filters
+     * @param options Options
+     * @returns Artifacts
+     */
+    public static async getArtifacts(filters?: any, options?: any): Promise<ArtifactCollection[]> {
+        return await new DataBaseHelper(ArtifactCollection).find(filters, options);
+    }
+
+    /**
+     * Get Artifacts
+     * @param filters Filters
+     * @param options Options
+     * @returns Artifacts
+     */
+     public static async getArtifactsAndCount(filters?: any, options?: any): Promise<[ArtifactCollection[], number]> {
+        return await new DataBaseHelper(ArtifactCollection).findAndCount(filters, options);
+    }
+
+    /**
+     * Remove Artifact
+     * @param artifact Artifact
+     */
+    public static async removeArtifact(artifact?: ArtifactCollection): Promise<void> {
+        await new DataBaseHelper(ArtifactCollection).remove(artifact)
+        await new DataBaseHelper(ArtifactChunkCollection).delete({
+            uuid: artifact.uuid
+        });
+    }
+
+    /**
+     * Save Artifact File
+     * @param uuid File UUID
+     * @param data Data
+     */
+    public static async saveArtifactFile(uuid: string, data: Buffer): Promise<void> {
+        let offset = 0;
+        let fileNumber = 1;
+        while (offset < data.length) {
+            await new DataBaseHelper(ArtifactChunkCollection).save({
+                uuid,
+                number: fileNumber,
+                data: new Binary(data.subarray(offset, offset + DatabaseServer.MAX_DOCUMENT_SIZE > data.length ? data.length : offset + DatabaseServer.MAX_DOCUMENT_SIZE))
+            });
+            offset = offset + DatabaseServer.MAX_DOCUMENT_SIZE;
+            fileNumber++;
+        }
+    }
+
+    /**
+     * Get Artifact File By UUID
+     * @param uuid File UUID
+     * @returns Buffer
+     */
+    public static async getArtifactFileByUUID(uuid: string): Promise<Buffer> {
+        const artifactChunks = (await new DataBaseHelper(ArtifactChunkCollection).find({
+            uuid
+        }, {
+            orderBy: {
+                number: 'ASC'
+            }
+        })).map(item => item.data.buffer);
+        return artifactChunks.length > 0 ? Buffer.concat(artifactChunks) : Buffer.from('');
     }
 }

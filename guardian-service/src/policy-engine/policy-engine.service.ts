@@ -640,7 +640,13 @@ export class PolicyEngineService {
                     throw new Error(`Cannot export policy ${policyId}`);
                 }
                 const zip = await PolicyImportExportHelper.generateZipFile(policy);
-                const file = await zip.generateAsync({ type: 'arraybuffer' });
+                const file = await zip.generateAsync({
+                    type: 'arraybuffer',
+                    compression:'DEFLATE',
+                    compressionOptions: {
+                        level: 3,
+                    },
+                });
                 console.log('File size: ' + file.byteLength);
                 return new BinaryMessageResponse(file);
             } catch (error) {
@@ -694,7 +700,7 @@ export class PolicyEngineService {
                 }
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const did = await this.getUserDid(user.username);
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
+                const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data), true);
                 await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, emptyNotifier());
                 const policies = await DatabaseServer.getListOfPolicies({ owner: did });
                 return new MessageResponse(policies);
@@ -716,7 +722,7 @@ export class PolicyEngineService {
                     new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                     const did = await this.getUserDid(user.username);
                     notifier.start('File parsing');
-                    const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
+                    const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data), true);
                     notifier.completed();
                     const policy = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, notifier);
                     notifier.result(policy.id);
