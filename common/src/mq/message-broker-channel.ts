@@ -4,8 +4,12 @@ import { IMessageResponse, MessageError } from '../models/message-response';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 const MQ_TIMEOUT = 300000;
-
+/**
+ * Message Chunk Size ~ 1 MB
+ */
+const MQ_MESSAGE_CHUNK = 1000000;
 const reqMap = new Map<string, any>();
+const chunkMap = new Map<string, any>();
 
 /**
  * Message broker channel
@@ -22,11 +26,18 @@ export class MessageBrokerChannel {
                     return;
                 }
                 const messageId = m.headers.get('messageId');
-                if (reqMap.has(messageId)) {
-                    const dataObj = JSON.parse(StringCodec().decode(m.data));
+                if (chunkMap.has(messageId)) {
+                    chunkMap.get(messageId).push(m.data);
+                } else {
+                    chunkMap.set(messageId, [m.data]);
+                }
+                if (reqMap.has(messageId) && m.headers.get('chunk') === m.headers.get('chunks')) {
+                    const chunksArray = chunkMap.get(messageId);
+                    const dataObj = JSON.parse(Buffer.concat(chunksArray).toString());
                     const func = reqMap.get(messageId);
-
                     func(dataObj);
+                } else {
+                    continue;
                 }
             }
         }
@@ -58,10 +69,22 @@ export class MessageBrokerChannel {
         const fn = async (_sub: Subscription) => {
             for await (const m of _sub) {
                 const messageId = m.headers.get('messageId');
+                if (chunkMap.has(messageId)) {
+                    chunkMap.get(messageId).push(m.data);
+                } else {
+                    chunkMap.set(messageId, [m.data]);
+                }
+                let payload: any = {};
+                if (m.headers.get('chunk') === m.headers.get('chunks')) {
+                    const chunksArray = chunkMap.get(messageId);
+                    payload = JSON.parse(Buffer.concat(chunksArray).toString());
+                    chunkMap.delete(messageId);
+                } else {
+                    continue;
+                }
 
                 let responseMessage: IMessageResponse<TResponse>;
                 try {
-                    const payload = JSON.parse(StringCodec().decode(m.data));
                     responseMessage = await handleFunc(payload);
                 } catch (error) {
                     responseMessage = new MessageError(error, error.code);
@@ -70,7 +93,22 @@ export class MessageBrokerChannel {
                 const head = headers();
                 head.append('messageId', messageId);
 
-                this.channel.publish('response-message', StringCodec().encode(JSON.stringify(responseMessage)), { headers: head });
+                const payloadBuffer = Buffer.from(JSON.stringify(responseMessage));
+                let offset = 0;
+                const chunks: Buffer[] = [];
+                while(offset < payloadBuffer.length) {
+                    chunks.push(
+                        payloadBuffer.subarray(offset, offset + MQ_MESSAGE_CHUNK > payloadBuffer.length ? payloadBuffer.length : offset + MQ_MESSAGE_CHUNK)
+                    );
+                    offset = offset + MQ_MESSAGE_CHUNK;
+                }
+
+                head.set('chunks', chunks.length.toString());
+                for (let i = 0; i < chunks.length; i++) {
+                    const chunk = chunks[i];
+                    head.set('chunk', (i+1).toString());
+                    this.channel.publish('response-message', chunk, { headers: head });
+                }
 
                 m.respond(new Uint8Array(0));
             }
@@ -114,12 +152,35 @@ export class MessageBrokerChannel {
                     resolve(data);
                     reqMap.delete(messageId);
                 });
-                this.channel.request(eventType, StringCodec().encode(stringPayload), {
+
+                const payloadBuffer = Buffer.from(stringPayload);
+                let offset = 0;
+                const chunks: Buffer[] = [];
+                while(offset < payloadBuffer.length) {
+                    chunks.push(
+                        payloadBuffer.subarray(offset, offset + MQ_MESSAGE_CHUNK > payloadBuffer.length ? payloadBuffer.length : offset + MQ_MESSAGE_CHUNK)
+                    );
+                    offset = offset + MQ_MESSAGE_CHUNK;
+                }
+
+                head.set('chunks', chunks.length.toString());
+                for (let i = 0; i < chunks.length - 1; i++) {
+                    const chunk = chunks[i];
+                    head.set('chunk', (i+1).toString());
+                    this.channel.request(eventType, chunk, {
+                        timeout: timeout || MQ_TIMEOUT,
+                        headers: head
+                    });
+                }
+
+                head.set('chunk', (chunks.length).toString());
+                const lastChunk = chunks[chunks.length - 1];
+                this.channel.request(eventType, lastChunk, {
                     timeout: timeout || MQ_TIMEOUT,
                     headers: head
                 }).then(() => null, (error) => {
                     reqMap.delete(messageId);
-
+                    chunkMap.delete(messageId);
                     // Nats no subscribe error
                     if (error.code === '503') {
                         console.warn('No listener for message event type =  %s', eventType);
