@@ -119,7 +119,7 @@ export class PolicyImportExportHelper {
 
         const artifactsMetaDataFile = await (Object.entries(content.files)
             .find(file => file[0] === 'artifacts/metadata.json'));
-        const artifactsMetaDataString = artifactsMetaDataFile && await artifactsMetaDataFile[1].async('string') || '{}'
+        const artifactsMetaDataString = artifactsMetaDataFile && await artifactsMetaDataFile[1].async('string') || '[]';
         const artifactsMetaData = JSON.parse(artifactsMetaDataString);
         const artifacts = includeArtifactsData ? await Promise.all(Object.entries(content.files)
             .filter(file => !file[1].dir)

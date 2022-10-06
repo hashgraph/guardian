@@ -151,7 +151,7 @@ export class CustomLogicBlock {
                 }
             }
 
-            const execCodeArtifacts = ref.options.artifacts.filter(artifact => artifact.type === ArtifactType.EXECUTABLE_CODE);
+            const execCodeArtifacts = ref.options.artifacts?.filter(artifact => artifact.type === ArtifactType.EXECUTABLE_CODE) || [];
             let execCode = '';
             for (const execCodeArtifact of execCodeArtifacts) {
                 execCode += (await DatabaseServer.getArtifactFileByUUID(execCodeArtifact.uuid)).toString();
@@ -159,7 +159,7 @@ export class CustomLogicBlock {
             const func = Function(`const [done, user, documents, mathjs, artifacts] = arguments;${execCode}${ref.options.expression}`);
 
             const artifacts = [];
-            const jsonArtifacts = ref.options.artifacts.filter(artifact => artifact.type === ArtifactType.JSON);
+            const jsonArtifacts = ref.options.artifacts?.filter(artifact => artifact.type === ArtifactType.JSON) || [];
             for (const jsonArtifact of jsonArtifacts) {
 
                 artifacts.push(JSON.parse((await DatabaseServer.getArtifactFileByUUID(jsonArtifact.uuid)).toString()));
