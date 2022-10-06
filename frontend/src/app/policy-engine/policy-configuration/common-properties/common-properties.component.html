@@ -125,7 +125,7 @@
                     </td>
                 </tr>
 
-                <tr class="propRow">
+                <tr class="propRow" [attr.collapse]="propHidden.metaData">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Stop Propagation</td>
                     <td class="propRowCell">
@@ -183,9 +183,9 @@
                         <td class="propHeaderCell cellName">Properties</td>
                         <td class="propHeaderCell"></td>
                     </tr>
-                    <div *ngFor="let property of customProperties" class="custom-properties" common-property
+                    <div *ngFor="let property of customProperties" common-property class="custom-properties"
                         [data]="block.properties" [property]="property" [readonly]="readonly"
-                        [collapse]="propHidden.customProperties" (update)="onSave()">
+                        [collapse]="propHidden.customProperties" [schemas]="schemas" (update)="onSave()">
                     </div>
                 </ng-container>
             </table>

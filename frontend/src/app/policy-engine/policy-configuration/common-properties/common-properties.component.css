@@ -133,6 +133,10 @@
 }
 
 .grid-setting::ng-deep .table-body .cellName {
+    line-height: 24px;
+}
+
+.grid-setting::ng-deep .table-body .cellName {
     height: 24px;
 }
 
@@ -153,6 +157,22 @@
 
 .grid-setting::ng-deep .subRow-4 .cellName {
     padding-left: 80px;
+    width: 85px;
+}
+
+.grid-setting::ng-deep .subRow .cellName span {
+    width: 135px;
+}
+
+.grid-setting::ng-deep .subRow-2 .cellName {
+    width: 115px;
+}
+
+.grid-setting::ng-deep .subRow-3 .cellName {
+    width: 95px;
+}
+
+.grid-setting::ng-deep .subRow-4 .cellName {
     width: 85px;
 }
 
@@ -475,4 +495,8 @@
     top: -2px;
     left: -4px;
     position: relative;
+}
+
+.ns {
+    user-select: none;
 }

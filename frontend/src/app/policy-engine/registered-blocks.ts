@@ -430,6 +430,9 @@ export class RegisteredBlocks {
             allowedChildren: [{
                 type: BlockType.CalculateMathAddon,
                 group: BlockGroup.UnGrouped,
+            },{
+                type: BlockType.CalculateMathVariables,
+                group: BlockGroup.UnGrouped,
             }]
         });
         this.registerBlock({
@@ -449,6 +452,14 @@ export class RegisteredBlocks {
             header: BlockHeaders.Addons,
             factory: null,
             property: CalculateMathConfigComponent,
+        });
+        this.registerBlock({
+            type: BlockType.CalculateMathVariables,
+            icon: '123',
+            group: BlockGroup.Calculate,
+            header: BlockHeaders.Addons,
+            factory: null,
+            property: null,
         });
 
         // Report, UIComponents
