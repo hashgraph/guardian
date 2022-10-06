@@ -37,7 +37,7 @@ export async function artifactAPI(
             await DatabaseServer.saveArtifactFile(artifact.uuid, Buffer.from(msg.artifact.data));
             return new MessageResponse(artifact);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE0']);
+            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
             return new MessageError(error.message);
         }
     });
@@ -65,6 +65,8 @@ export async function artifactAPI(
                 otherOptions.orderBy = { createDate: 'DESC' };
                 otherOptions.limit = _pageSize;
                 otherOptions.offset = _pageIndex * _pageSize;
+            } else {
+                otherOptions.limit = 100;
             }
 
             const [artifacts, count] = await DatabaseServer.getArtifactsAndCount(filter, otherOptions);

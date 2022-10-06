@@ -17,7 +17,7 @@ export class ArtifactService {
         for (const file of files) {
             formData.append('artifacts', file);
         }
-        return this.http.post<string>(`${this.url}`, formData, {
+        return this.http.post<string>(`${this.url}/${policyId}`, formData, {
             params: {
                 policyId
             }

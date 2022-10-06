@@ -1,7 +1,7 @@
 import { ArtifactType } from '../type/artifact.type';
 
 /**
- * Schema interface
+ * Artifact interface
  */
 export interface IArtifact {
     /**

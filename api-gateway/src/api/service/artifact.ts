@@ -28,16 +28,16 @@ artifactAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: A
     }
 });
 
-artifactAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+artifactAPI.post('/:policyId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardian = new Guardians();
         const policyEngine = new PolicyEngine();
-        if (!req.query.policyId) {
+        if (!req.params.policyId) {
             throw new Error('Invalid Policy Identitifer');
         }
         const policy = await policyEngine.getPolicy({
             filters: {
-                id: req.query.policyId,
+                id: req.params.policyId,
                 owner: req.user.did
             }
         });
@@ -54,7 +54,7 @@ artifactAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: 
             if (!artifact) {
                 continue;
             }
-            uploadedArtifacts.push(await guardian.uploadArtifact(artifact, req.user.did, req.query.policyId as string));
+            uploadedArtifacts.push(await guardian.uploadArtifact(artifact, req.user.did, req.params.policyId as string));
         }
         res.status(201).json(uploadedArtifacts);
     } catch (error) {

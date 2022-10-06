@@ -1718,7 +1718,7 @@ export class DatabaseServer {
      * @param uuid File UUID
      * @returns Buffer
      */
-    public static async getArtifactFileByUUID(uuid: string): Promise<Buffer | null> {
+    public static async getArtifactFileByUUID(uuid: string): Promise<Buffer> {
         const artifactChunks = (await new DataBaseHelper(ArtifactChunkCollection).find({
             uuid
         }, {
@@ -1726,6 +1726,6 @@ export class DatabaseServer {
                 number: 'ASC'
             }
         })).map(item => item.data.buffer);
-        return artifactChunks.length > 0 ? Buffer.concat(artifactChunks) : null;
+        return artifactChunks.length > 0 ? Buffer.concat(artifactChunks) : Buffer.from('');
     }
 }
