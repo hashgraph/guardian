@@ -25,6 +25,7 @@ import { IPolicyUser } from './policy-user';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from './policy-engine';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { findAllEntities } from '@helpers/utils';
 
 /**
  * Policy engine service
@@ -185,6 +186,33 @@ export class PolicyEngineService {
             }
 
             return new MessageResponse(result);
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.GET_TOKENS_MAP, async (msg) => {
+            try {
+                const { owner, status } = msg;
+                const filters: any = {};
+                if (owner) {
+                    filters.owner = owner;
+                }
+                if (status) {
+                    filters.status = status;
+                }
+                const policies = await DatabaseServer.getPolicies(filters);
+                const map: any = [];
+                for (const policyObject of policies) {
+                    const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
+                    map.push({
+                        tokenIds,
+                        name: policyObject.name,
+                        version: policyObject.version,
+                        id: policyObject.id
+                    });
+                }
+                return new MessageResponse(map);
+            } catch (error) {
+                return new MessageError(error);
+            }
         });
 
         this.channel.response<any, any>(PolicyEngineEvents.GET_POLICIES, async (msg) => {
