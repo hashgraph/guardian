@@ -13,9 +13,6 @@ context("Accounts", () => {
             },
         }).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body).to.have.property("balance");
-            expect(resp.body).to.have.property("unit");
-            expect(resp.body).to.have.property("user");
         });
     });
 });
