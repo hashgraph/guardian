@@ -15,7 +15,6 @@ context("Accounts", () => {
             },
         }).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body).to.not.be.oneOf([null, ""]);
         });
     });
 });

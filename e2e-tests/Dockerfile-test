@@ -1,0 +1,11 @@
+FROM cypress/base as base
+ENV CYPRESS_HOME /guardian/e2e-tests
+WORKDIR ${CYPRESS_HOME}
+
+FROM base
+COPY . ${CYPRESS_HOME}
+
+EXPOSE 3000
+
+RUN npm ci
+RUN ls

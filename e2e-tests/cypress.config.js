@@ -1,4 +1,7 @@
-module.exports = {
+const { defineConfig } = require('cypress')
+
+
+module.exports = defineConfig({
   video: false,
   watchForFileChanges: false,
   e2e: {
@@ -8,4 +11,4 @@ module.exports = {
       return require('./cypress/plugins/index.js')(on, config)
     },
   },
-}
+})

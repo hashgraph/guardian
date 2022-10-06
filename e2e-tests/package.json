@@ -4,7 +4,7 @@
   "description": "This a place for quardian e2e automation test suite",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npx cypress run",
     "e2e": "cypress run"
   },
   "keywords": [

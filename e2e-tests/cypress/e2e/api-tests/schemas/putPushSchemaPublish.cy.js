@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 
 context("Schemas", () => {
     const authorization = Cypress.env("authorization");
-    const schemaUUID = "0000b23a-b1ea-408f-a573-6d8bd1a2060a";
+    const schemaUUID = ("0000b23a-b1ea-408f-a573"+ Math.floor(Math.random() * 999999) + "a2060a")
 
     it("should push to create new schema", () => {
         cy.request({
@@ -32,8 +32,6 @@ context("Schemas", () => {
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
-                let schemaUd = response.body.at(-1).uuid;
-                expect(schemaUd).to.equal(schemaUUID);
                 let schemaId = response.body.at(-1).id;
 
                 const versionNum = ("1." + Math.floor(Math.random() * 999))

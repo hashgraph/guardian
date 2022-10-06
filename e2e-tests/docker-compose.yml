@@ -1,0 +1,18 @@
+version: "3.3"
+services:
+  cypress-container:
+    build:
+      context: .
+      dockerfile: Dockerfile-test
+    image: cypress-build
+
+  cypress-tests:
+    image: cypress-build
+    depends_on:
+      - cypress-container
+    environment:
+      - GIT_BRANCH=${GIT_BRANCH}
+      - PORT=3000
+      - CYPRESS_baseUrl=http://localhost:3000
+    network_mode: "host"
+    command: ./entrypoint.sh

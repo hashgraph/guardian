@@ -4,6 +4,22 @@ import API from "../../../support/ApiUrls";
 context("External", () => {
     const authorization = Cypress.env("authorization");
 
+
+    before(() => {
+        cy.request({
+            method: "POST",
+            url: `${Cypress.env("api_server")}policies/import/message`,
+            body: { messageId: "1650282926.728623821" },
+            headers: {
+                authorization,
+            },
+            timeout: 180000,
+        }).then((response) => {
+            expect(response.status).to.eq(201);
+        });
+    });
+
+    
     it("shold sends data from an external source", () => {
         cy.request({
             method: METHOD.GET,
