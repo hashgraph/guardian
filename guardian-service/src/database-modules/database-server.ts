@@ -1268,6 +1268,33 @@ export class DatabaseServer {
     }
 
     /**
+     * Get policies
+     * @param filters
+     */
+    public static async getListOfPolicies(filters?: any): Promise<Policy[]> {
+        const options: any = {
+            fields: [
+                'id',
+                'uuid',
+                'name',
+                'version',
+                'previousVersion',
+                'description',
+                'status',
+                'creator',
+                'owner',
+                'topicId',
+                'policyTag',
+                'messageId',
+                'codeVersion',
+                'createDate'
+            ],
+            limit: 100
+        }
+        return await new DataBaseHelper(Policy).find(filters, options);
+    }
+
+    /**
      * Get policy by id
      * @param policyId
      */
