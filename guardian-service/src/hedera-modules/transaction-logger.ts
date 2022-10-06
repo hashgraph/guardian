@@ -222,6 +222,10 @@ export class TransactionLogger {
         }
     }
 
+    /**
+     * Worker Subscribe
+     * @param channel
+     */
     public static workerSubscribe(channel: any): void {
         channel.response('guardians.transaction-log-event', async (data: any) => {
             setImmediate(async () => {
@@ -241,7 +245,6 @@ export class TransactionLogger {
 
                     case 'error-log': {
                         const { id, operatorAccountId, transactionName } = data.data;
-                        const metadata = data.metadata;
                         const error = data.error;
 
                         await TransactionLogger.transactionErrorLog(id, operatorAccountId, transactionName, error);
@@ -250,7 +253,6 @@ export class TransactionLogger {
 
                     case 'virtual-function-log': {
                         const { id, operatorAccountId, transactionName } = data.data;
-
 
                         await TransactionLogger.virtualTransactionLog(id, transactionName, operatorAccountId);
                         break;
@@ -265,6 +267,10 @@ export class TransactionLogger {
         });
     }
 
+    /**
+     * Init logger
+     * @param channel
+     */
     public static init(channel: any, lvl: TransactionLogLvl): void {
         TransactionLogger.setLogLevel(lvl);
         TransactionLogger.setLogFunction((types: string[], date: string, duration: string, name: string, attr?: string[]) => {

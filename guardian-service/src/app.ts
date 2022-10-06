@@ -26,7 +26,8 @@ import {
     DataBaseHelper,
     DB_DI,
     Migration,
-    COMMON_CONNECTION_CONFIG, SettingsContainer, MessageResponse
+    COMMON_CONNECTION_CONFIG,
+    SettingsContainer
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import {
@@ -39,7 +40,6 @@ import {
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { DatabaseServer } from '@database-modules';
 import { ipfsAPI } from '@api/ipfs.service';
 import { Workers } from '@helpers/workers';
 

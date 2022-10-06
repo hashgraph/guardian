@@ -1448,7 +1448,13 @@ export class DatabaseServer {
             dryRunClass: 'VirtualUsers',
             active: true
         }, {
-            fields: ['did', 'username', 'hederaAccountId', 'active']
+            fields: [
+                'id',
+                'did',
+                'username',
+                'hederaAccountId',
+                'active'
+            ]
         });
     }
 
@@ -1463,7 +1469,13 @@ export class DatabaseServer {
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers'
         }, {
-            fields: ['did', 'username', 'hederaAccountId', 'active']
+            fields: [
+                'id',
+                'did',
+                'username',
+                'hederaAccountId',
+                'active'
+            ]
         })) as any;
     }
 
@@ -1525,10 +1537,20 @@ export class DatabaseServer {
             };
         } else if (type === 'transactions') {
             filters.where.dryRunClass = { $eq: 'Transactions' };
-            otherOptions.fields = ['createDate', 'type', 'hederaAccountId'];
+            otherOptions.fields = [
+                'id',
+                'createDate',
+                'type',
+                'hederaAccountId'
+            ];
         } else if (type === 'ipfs') {
             filters.where.dryRunClass = { $eq: 'Files' };
-            otherOptions.fields = ['createDate', 'document', 'documentURL'];
+            otherOptions.fields = [
+                'id',
+                'createDate',
+                'document',
+                'documentURL'
+            ];
         }
         return await new DataBaseHelper(DryRun).findAndCount(filters, otherOptions);
     }

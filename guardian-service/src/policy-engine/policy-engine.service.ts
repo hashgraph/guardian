@@ -192,7 +192,24 @@ export class PolicyEngineService {
                 const { filters, pageIndex, pageSize, userDid } = msg;
                 const filter: any = { ...filters };
 
-                const otherOptions: any = {};
+                const otherOptions: any = {
+                    fields: [
+                        'id',
+                        'uuid',
+                        'name',
+                        'version',
+                        'previousVersion',
+                        'description',
+                        'status',
+                        'creator',
+                        'owner',
+                        'topicId',
+                        'policyTag',
+                        'messageId',
+                        'codeVersion',
+                        'createDate'
+                    ]
+                };
                 const _pageSize = parseInt(pageSize, 10);
                 const _pageIndex = parseInt(pageIndex, 10);
                 if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {

@@ -79,7 +79,7 @@ export class SchemaConfigComponent implements OnInit {
         public dialog: MatDialog) {
         this.policies = null;
         this.pageIndex = 0;
-        this.pageSize = 100;
+        this.pageSize = 20;
         this.policyNameByTopic = {};
     }
 
@@ -121,7 +121,7 @@ export class SchemaConfigComponent implements OnInit {
             }
 
             this.pageIndex = 0;
-            this.pageSize = 100;
+            this.pageSize = 20;
             this.loadSchemas();
         }, (error) => {
             this.loading = false;
