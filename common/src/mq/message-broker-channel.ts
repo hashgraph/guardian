@@ -10,7 +10,6 @@ const MQ_TIMEOUT = 300000;
 const MQ_MESSAGE_CHUNK = 1000000;
 const reqMap = new Map<string, any>();
 const chunkMap = new Map<string, any>();
-
 /**
  * Message broker channel
  */
@@ -23,17 +22,33 @@ export class MessageBrokerChannel {
             for await (const m of _sub) {
                 if (!m.headers) {
                     console.error('No headers');
-                    return;
+                    continue;
                 }
+
                 const messageId = m.headers.get('messageId');
+                const chunkNumber = m.headers.get('chunk');
+                const countChunks = m.headers.get('chunks');
+                let requestChunks: any;
                 if (chunkMap.has(messageId)) {
-                    chunkMap.get(messageId).push(m.data);
+                    requestChunks = chunkMap.get(messageId);
+                    requestChunks.push({ data: m.data, index: chunkNumber });
                 } else {
-                    chunkMap.set(messageId, [m.data]);
+                    requestChunks = [{ data: m.data, index: chunkNumber }];
+                    chunkMap.set(messageId, requestChunks);
                 }
-                if (reqMap.has(messageId) && m.headers.get('chunk') === m.headers.get('chunks')) {
-                    const chunksArray = chunkMap.get(messageId);
-                    const dataObj = JSON.parse(Buffer.concat(chunksArray).toString());
+
+                if (requestChunks.length < countChunks) {
+                    continue;
+                } else {
+                    chunkMap.delete(messageId);
+                }
+
+                if (reqMap.has(messageId)) {
+                    const requestChunksSorted = new Array<Buffer>(requestChunks.length);
+                    for (const requestChunk of requestChunks) {
+                        requestChunksSorted[requestChunk.index - 1] = requestChunk.data;
+                    }
+                    const dataObj = JSON.parse(Buffer.concat(requestChunksSorted).toString());
                     const func = reqMap.get(messageId);
                     func(dataObj);
                 } else {
@@ -69,20 +84,32 @@ export class MessageBrokerChannel {
         const fn = async (_sub: Subscription) => {
             for await (const m of _sub) {
                 const messageId = m.headers.get('messageId');
+                const chunkNumber = m.headers.get('chunk');
+                const countChunks = m.headers.get('chunks');
+                let requestChunks: any;
+
                 if (chunkMap.has(messageId)) {
-                    chunkMap.get(messageId).push(m.data);
+                    requestChunks = chunkMap.get(messageId);
+                    requestChunks.push({ data: m.data, index: chunkNumber });
                 } else {
-                    chunkMap.set(messageId, [m.data]);
-                }
-                let payload: any = {};
-                if (m.headers.get('chunk') === m.headers.get('chunks')) {
-                    const chunksArray = chunkMap.get(messageId);
-                    payload = JSON.parse(Buffer.concat(chunksArray).toString());
-                    chunkMap.delete(messageId);
-                } else {
-                    continue;
+                    requestChunks = [{ data: m.data, index: chunkNumber }];
+                    chunkMap.set(messageId, requestChunks);
                 }
 
+                if (requestChunks.length < countChunks) {
+                    m.respond(new Uint8Array(0));
+                    continue;
+                } else {
+                    chunkMap.delete(messageId);
+                    m.respond(new Uint8Array(0));
+                }
+
+                const requestChunksSorted = new Array<Buffer>(requestChunks.length);
+                for (const requestChunk of requestChunks) {
+                    requestChunksSorted[requestChunk.index - 1] = requestChunk.data;
+                }
+
+                const payload = JSON.parse(Buffer.concat(requestChunksSorted).toString());
                 let responseMessage: IMessageResponse<TResponse>;
                 try {
                     responseMessage = await handleFunc(payload);
@@ -109,8 +136,6 @@ export class MessageBrokerChannel {
                     head.set('chunk', (i+1).toString());
                     this.channel.publish('response-message', chunk, { headers: head });
                 }
-
-                m.respond(new Uint8Array(0));
             }
         };
         try {
@@ -164,33 +189,32 @@ export class MessageBrokerChannel {
                 }
 
                 head.set('chunks', chunks.length.toString());
-                for (let i = 0; i < chunks.length - 1; i++) {
+
+                let errorHandler = (error) => {
+                    reqMap.delete(messageId);
+                    // Nats no subscribe error
+                    if (error.code === '503') {
+                        console.warn('No listener for message event type =  %s', eventType);
+                        resolve(null);
+                    } else {
+                        console.error(error.message, error.stack, error);
+                        reject(error);
+                    }
+                };
+
+                for (let i = 0; i < chunks.length; i++) {
                     const chunk = chunks[i];
                     head.set('chunk', (i+1).toString());
                     this.channel.request(eventType, chunk, {
                         timeout: timeout || MQ_TIMEOUT,
                         headers: head
+                    }).then(() => null, (error) => {
+                        if (errorHandler) {
+                            errorHandler(error);
+                            errorHandler = null;
+                        }
                     });
                 }
-
-                head.set('chunk', (chunks.length).toString());
-                const lastChunk = chunks[chunks.length - 1];
-                this.channel.request(eventType, lastChunk, {
-                    timeout: timeout || MQ_TIMEOUT,
-                    headers: head
-                }).then(() => null, (error) => {
-                    reqMap.delete(messageId);
-                    chunkMap.delete(messageId);
-                    // Nats no subscribe error
-                    if (error.code === '503') {
-                        console.warn('No listener for message event type =  %s', eventType);
-                        resolve(null);
-                        return;
-                    }
-                    console.error(error.message, error.stack, error);
-
-                    reject(error);
-                });
             });
         } catch (error) {
             return new Promise<IMessageResponse<TResponse>>((resolve, reject) => {
