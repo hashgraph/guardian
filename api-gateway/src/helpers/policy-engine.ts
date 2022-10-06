@@ -39,6 +39,15 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
+     * Get Tokens Map
+     * @param owner
+     * @param status
+     */
+    public async getTokensMap(owner: string, status?:string): Promise<any> {
+        return await this.request<any>(PolicyEngineEvents.GET_TOKENS_MAP, { owner, status });
+    }
+
+    /**
      * Create policy
      * @param model
      * @param user
@@ -64,7 +73,7 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param user User
      * @param taskId Task identifier
      */
-     public async clonePolicyAsync(policyId, model, user, taskId) {
+    public async clonePolicyAsync(policyId, model, user, taskId) {
         return await this.request(PolicyEngineEvents.CLONE_POLICY_ASYNC, { policyId, model, user, taskId });
     }
 
