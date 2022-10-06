@@ -21,7 +21,6 @@ function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: any, notEmpt
     if (!tokens) {
         return [];
     }
-
     for (const token of tokens) {
         token.policies = [];
         token.policyIds = [];
@@ -57,7 +56,7 @@ tokenAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY, UserRole.USER), a
             tokens = setTokensPolicies(tokens, map, policyId, false);
         } else if (user.did) {
             tokens = await guardians.getAssociatedTokens(user.did);
-            const map = await engineService.getTokensMap(user.did, 'PUBLISH');
+            const map = await engineService.getTokensMap(user.parent, 'PUBLISH');
             tokens = setTokensPolicies(tokens, map, policyId, true);
         }
         res.status(200).json(tokens);
