@@ -1,6 +1,7 @@
 import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces';
 import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
 import * as mathjs from 'mathjs';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Calculate addon
@@ -23,9 +24,9 @@ export function CalculateAddon(options: Partial<PolicyBlockDecoratorOptions>) {
              * Run block logic
              * @param scope
              */
-            public async run(scope: any): Promise<any> {
+            public async run(scope: any, user: IPolicyUser): Promise<any> {
                 if (typeof super.run === 'function') {
-                    return super.run(scope);
+                    return super.run(scope, user);
                 }
                 return scope;
             }
