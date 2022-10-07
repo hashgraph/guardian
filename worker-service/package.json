@@ -44,7 +44,7 @@
     "dev": "tsc -w",
     "lint": "tslint --config ../tslint.json --project .",
     "start": "node dist/index.js",
-    "test": "mocha tests/**/*.test.js"
+    "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit"
   },
   "version": "2.5.1"
 }
