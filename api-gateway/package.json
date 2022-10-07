@@ -10,8 +10,10 @@
   "dependencies": {
     "@guardian/common": "^2.5.1",
     "@guardian/interfaces": "^2.5.1",
+    "@types/express-fileupload": "^1.4.1",
     "dotenv": "^16.0.0",
     "express": "^4.17.1",
+    "express-fileupload": "^1.4.0",
     "jszip": "^3.7.1",
     "module-alias": "^2.2.2",
     "reflect-metadata": "^0.1.13",

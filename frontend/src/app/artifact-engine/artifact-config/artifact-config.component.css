@@ -1,0 +1,140 @@
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.loading-progress {
+    width: 80%;
+    height: 80%;
+}
+
+.not-exist {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: darkgrey;
+}
+
+a {
+    color: rgb(0, 0, 238);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.artifacts-table {
+    width: 100%;
+}
+
+.g-btn {
+    width: 90%;
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: auto 290px;
+    padding: 14px 14px 14px 14px;
+    border-bottom: 1px solid #eee;
+    margin: 0;
+    height: 92px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.actions ::ng-deep button.mat-raised-button.mat-primary {
+    margin: 8px 10px 0 10px;
+}
+
+.actions mat-form-field {
+    height: 60px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+}
+
+.table-container {
+    max-height: calc(100vh - var(--header-height) - 170px);
+    min-height: 100px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 0;
+}
+
+.table-paginator {
+    height: 60px;
+    border-top: 1px solid #eee;
+    margin-top: 5px;
+}
+
+.btn-settings {
+    color: #3f51b5;
+    font-weight: 500;
+    cursor: pointer;
+    padding-top: 2px;
+    padding-left: 24px;
+    position: relative;
+    height: 30px;
+    min-width: 24px;
+    display: inline-block;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+.btn-settings:hover {
+    text-decoration: underline;
+}
+
+.btn-settings mat-icon {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    font-size: 30px;
+}
+
+.btn-settings.btn-publish {
+    color: #4caf50;
+}
+
+.btn-settings.btn-unpublish {
+    color: #f44336;
+}
+
+.btn-settings.btn-delete {
+    color: #f44336;
+}
+
+.btn-settings.btn-delete-des {
+    color: #b5b5b5;
+    cursor: not-allowed;
+}
+
+.artifacts-table .mat-column-delete {
+    width: 50px;
+    max-width: 50px;
+    padding-left: 10px;
+}
+
+.artifacts-table .mat-column-uuid {
+    padding-left: 10px;
+    width: 400px;
+}

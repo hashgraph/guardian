@@ -1,4 +1,5 @@
-import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, PolicyType } from '@guardian/interfaces';
+import { moveItemInArray } from '@angular/cdk/drag-drop';
+import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, PolicyType, IArtifact } from '@guardian/interfaces';
 
 export class PolicyRoleModel {
     private readonly policy: PolicyModel;
@@ -456,6 +457,7 @@ export class PolicyBlockModel {
     private _parent: PolicyBlockModel | null;
     private _children: PolicyBlockModel[];
     private _events: PolicyEventModel[];
+    private _artifacts!: IArtifact[];
 
     public readonly properties: { [name: string]: any };
 
@@ -499,6 +501,8 @@ export class PolicyBlockModel {
                 )
             }
         }
+
+        this._artifacts = block.artifacts || [];
     }
 
     public get tag(): string {
@@ -533,6 +537,10 @@ export class PolicyBlockModel {
 
     public get events(): PolicyEventModel[] {
         return this._events;
+    }
+
+    public get artifacts(): IArtifact[] {
+        return this._artifacts;
     }
 
     public get parent(): PolicyBlockModel | null {
@@ -658,6 +666,24 @@ export class PolicyBlockModel {
         }
     }
 
+    public addArtifact(artifact: IArtifact) {
+        this._artifacts.push(artifact);
+        this._changed = true;
+    }
+
+    public removeArtifact(artifact: IArtifact) {
+        const index = this._artifacts.indexOf(artifact);
+        if (index !== -1) {
+            this._artifacts.splice(index, 1);
+            this._changed = true;
+        }
+    }
+
+    public changeArtifactPosition(prevIndex: number, currentIndex: number) {
+        moveItemInArray(this._artifacts, prevIndex, currentIndex);
+        this._changed = true;
+    }
+
     public emitUpdate() {
         this._changed = false;
         this.policy.emitUpdate();
@@ -670,6 +696,7 @@ export class PolicyBlockModel {
         json.tag = this.tag;
         json.children = [];
         json.events = [];
+        json.artifacts = this.artifacts || [];
 
         for (const block of this.children) {
             json.children.push(block.getJSON());

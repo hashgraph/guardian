@@ -1,0 +1,22 @@
+<div class="content">
+    <h1 mat-dialog-title>
+        Import Artifacts
+    </h1>
+    <div mat-dialog-content>
+        <form>
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>Policy Identifier</mat-label>
+                <mat-select [formControl]="policyId">
+                    <ng-container *ngFor="let policy of policies">
+                        <mat-option value="{{policy.id}}">{{policy.name}}</mat-option>
+                    </ng-container>
+                </mat-select>
+            </mat-form-field>
+            <app-file-drag-n-drop fileExtension="*" [multiple]="true" (onFileLoaded)="importFiles($event)"
+                dropZoneLabel="Import Artifacts"></app-file-drag-n-drop>
+            <div mat-dialog-actions>
+                <button mat-button type="button" [mat-dialog-close]>Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
