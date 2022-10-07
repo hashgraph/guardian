@@ -642,7 +642,7 @@ export class PolicyEngineService {
                 const zip = await PolicyImportExportHelper.generateZipFile(policy);
                 const file = await zip.generateAsync({
                     type: 'arraybuffer',
-                    compression:'DEFLATE',
+                    compression: 'DEFLATE',
                     compressionOptions: {
                         level: 3,
                     },

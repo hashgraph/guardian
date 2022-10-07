@@ -128,7 +128,7 @@ export class CalculateMathVariables {
      * Run logic
      * @param scope
      */
-    public async getFilterValue(scope: any, type: string, value: string): Promise<any> {
+    public getFilterValue(scope: any, type: string, value: string): any {
         if (type === 'var') {
             return scope[value];
         } else {
@@ -198,7 +198,9 @@ export class CalculateMathVariables {
             }
         }
         filters.policyId = ref.policyId;
+
         const data = await ref.databaseServer.getVcDocument(filters);
+
         if (data) {
             for (const variable of ref.options.variables) {
                 scope[variable.name] = PolicyUtils.getObjectValue(data, variable.value);
