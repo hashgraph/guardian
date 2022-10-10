@@ -17,9 +17,9 @@ export interface IVerificationMethod {
     /**
      * Public key
      */
-    publicKeyBase58: string;
+    publicKeyMultibase: string;
     /**
      * Private key
      */
-    privateKeyBase58?: string;
+    privateKeyMultibase?: string;
 }

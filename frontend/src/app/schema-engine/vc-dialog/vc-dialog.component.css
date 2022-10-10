@@ -6,6 +6,7 @@
     word-break: break-all;
     white-space: pre-wrap;
     margin-bottom: 8px;
+    font-family: monospace;
 }
 
 .content {

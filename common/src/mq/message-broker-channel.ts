@@ -25,7 +25,13 @@ export class MessageBrokerChannel {
                     continue;
                 }
 
+                if (!m.headers.has('chunks')) {
+                    console.error('No chunks');
+                    continue;
+                }
+
                 const messageId = m.headers.get('messageId');
+
                 const chunkNumber = m.headers.get('chunk');
                 const countChunks = m.headers.get('chunks');
                 let requestChunks: any;
@@ -83,33 +89,41 @@ export class MessageBrokerChannel {
         const sub = this.channel.subscribe(target, { queue: process.env.SERVICE_CHANNEL });
         const fn = async (_sub: Subscription) => {
             for await (const m of _sub) {
+                let payload: any;
                 const messageId = m.headers.get('messageId');
-                const chunkNumber = m.headers.get('chunk');
-                const countChunks = m.headers.get('chunks');
-                let requestChunks: any;
 
-                if (chunkMap.has(messageId)) {
-                    requestChunks = chunkMap.get(messageId);
-                    requestChunks.push({ data: m.data, index: chunkNumber });
+                if (m.headers.has('chunks')) {
+                    const chunkNumber = m.headers.get('chunk');
+                    const countChunks = m.headers.get('chunks');
+                    let requestChunks: any;
+
+                    if (chunkMap.has(messageId)) {
+                        requestChunks = chunkMap.get(messageId);
+                        requestChunks.push({data: m.data, index: chunkNumber});
+                    } else {
+                        requestChunks = [{data: m.data, index: chunkNumber}];
+                        chunkMap.set(messageId, requestChunks);
+                    }
+
+                    if (requestChunks.length < countChunks) {
+                        m.respond(new Uint8Array(0));
+                        continue;
+                    } else {
+                        chunkMap.delete(messageId);
+                        m.respond(new Uint8Array(0));
+                    }
+
+                    const requestChunksSorted = new Array<Buffer>(requestChunks.length);
+                    for (const requestChunk of requestChunks) {
+                        requestChunksSorted[requestChunk.index - 1] = requestChunk.data;
+                    }
+
+                    payload = JSON.parse(Buffer.concat(requestChunksSorted).toString());
+
                 } else {
-                    requestChunks = [{ data: m.data, index: chunkNumber }];
-                    chunkMap.set(messageId, requestChunks);
+                    payload = JSON.parse(m.data.toString());
                 }
 
-                if (requestChunks.length < countChunks) {
-                    m.respond(new Uint8Array(0));
-                    continue;
-                } else {
-                    chunkMap.delete(messageId);
-                    m.respond(new Uint8Array(0));
-                }
-
-                const requestChunksSorted = new Array<Buffer>(requestChunks.length);
-                for (const requestChunk of requestChunks) {
-                    requestChunksSorted[requestChunk.index - 1] = requestChunk.data;
-                }
-
-                const payload = JSON.parse(Buffer.concat(requestChunksSorted).toString());
                 let responseMessage: IMessageResponse<TResponse>;
                 try {
                     responseMessage = await handleFunc(payload);
@@ -240,7 +254,6 @@ export class MessageBrokerChannel {
     public publish<T>(eventType: string, data: T, allowError = true) {
         try {
             console.log('MQ publish: %s', eventType);
-            console.log(data);
             const messageId = GenerateUUIDv4();
             const head = headers();
             head.append('messageId', messageId);
