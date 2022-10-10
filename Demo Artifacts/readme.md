@@ -6,20 +6,20 @@ This folder contains sub folders for each Methodology and their authors (with ma
 2. Verra Methodology - Verra Redd - Envision
 3. GHG Methodology - Remote Workflow - Envision
 4. DOVU Template Methodologies - DOVU
-5. Nova VER's Renewables - OCI
-6. GHG Scope II - Atma
-7. PET additional Policy - KrypC/GCC
-8. Tymlez
-9. Xange.com
-10. Xange.com
-11. Web3 dMRV DC
-12. Tamuwa VER's
-13. Carbontricity/VN
-14. Evercity
-15. E-Mission
-16. Katalyst
-17. Carbon Captors/Zeru.Earth
-18. RDA - Serapis
+5. Nova VER's Renewables - OCI (Coming soon)
+6. GHG Scope II - Atma (Coming soon)
+7. PET additional Policy - KrypC/GCC (Coming soon)
+8. Tymlez (Coming soon)
+9. Xange.com (Coming soon)
+10. Xange.com (Coming soon)
+11. Web3 dMRV DC (Coming soon)
+12. Tamuwa VER's (Coming soon)
+13. Carbontricity/VN (Coming soon)
+14. Evercity (Coming soon)
+15. E-Mission (Coming soon)
+16. Katalyst (Coming soon)
+17. Carbon Captors/Zeru.Earth (Coming soon)
+18. RDA - Serapis (Coming soon)
 
 [IREC](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts/iREC)
 
