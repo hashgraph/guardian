@@ -24,9 +24,9 @@ import { IPolicyUser } from '@policy-engine/policy-user';
         output: null,
         defaultEvent: false,
         properties: [{
-            name: 'schema',
-            label: 'Schema',
-            title: 'Schema',
+            name: 'sourceSchema',
+            label: 'Source schema',
+            title: 'Source schema',
             type: PropertyType.Schemas
         }, {
             name: 'onlyOwnDocuments',
@@ -49,22 +49,22 @@ import { IPolicyUser } from '@policy-engine/policy-user';
             title: 'Assigned to Group',
             type: PropertyType.Checkbox
         }, {
-            name: 'filters',
-            label: 'Filters',
-            title: 'Filters',
+            name: 'selectors',
+            label: 'Selectors',
+            title: 'Selectors',
             type: PropertyType.Array,
             items: {
-                label: 'Filter',
-                value: '@field @type @value',
+                label: 'Selector',
+                value: '@sourceField @selectorType @comparisonValue',
                 properties: [{
-                    name: 'field',
-                    label: 'Field',
-                    title: 'Field',
+                    name: 'sourceField',
+                    label: 'Source field',
+                    title: 'Source field',
                     type: PropertyType.Path
                 }, {
-                    name: 'type',
-                    label: 'Type',
-                    title: 'Type',
+                    name: 'selectorType',
+                    label: 'Selector type',
+                    title: 'Selector type',
                     type: PropertyType.Select,
                     items: [{
                         label: 'Equal',
@@ -81,14 +81,14 @@ import { IPolicyUser } from '@policy-engine/policy-user';
                     }],
                     default: 'equal'
                 }, {
-                    name: 'value',
-                    label: 'Value',
-                    title: 'Value',
+                    name: 'comparisonValue',
+                    label: 'Comparison value',
+                    title: 'Comparison value',
                     type: PropertyType.Input
                 }, {
-                    name: 'valueType',
-                    label: 'Value Type',
-                    title: 'Value Type',
+                    name: 'comparisonValueType',
+                    label: 'Comparison value type',
+                    title: 'Comparison value type',
                     type: PropertyType.Select,
                     items: [{
                         label: 'Constanta',
@@ -107,14 +107,14 @@ import { IPolicyUser } from '@policy-engine/policy-user';
             type: PropertyType.Array,
             items: {
                 label: 'Variable',
-                value: 'var @name = @value',
+                value: 'var @variableName = @variablePath',
                 properties: [{
-                    name: 'name',
+                    name: 'variableName',
                     label: 'Variable name',
                     title: 'Variable name',
                     type: PropertyType.Input
                 }, {
-                    name: 'value',
+                    name: 'variablePath',
                     label: 'Variable Path',
                     title: 'Variable Path',
                     type: PropertyType.Path
@@ -156,45 +156,45 @@ export class CalculateMathVariables {
         if (ref.options.onlyAssignByGroupDocuments) {
             filters.assignedToGroup = user.group;
         }
-        if (ref.options.schema) {
-            filters.schema = ref.options.schema;
+        if (ref.options.sourceSchema) {
+            filters.schema = ref.options.sourceSchema;
         }
-        if (Array.isArray(ref.options.filters)) {
-            for (const filter of ref.options.filters) {
-                const expr = filters[filter.field] || {};
-                switch (filter.type) {
+        if (Array.isArray(ref.options.selectors)) {
+            for (const selector of ref.options.selectors) {
+                const expr = filters[selector.sourceField] || {};
+                switch (selector.selectorType) {
                     case 'equal':
                         Object.assign(expr, {
-                            $eq: this.getFilterValue(scope, filter.valueType, filter.value)
+                            $eq: this.getFilterValue(scope, selector.comparisonValueType, selector.comparisonValue)
                         })
                         break;
 
                     case 'not_equal':
                         Object.assign(expr, {
-                            $ne: this.getFilterValue(scope, filter.valueType, filter.value)
+                            $ne: this.getFilterValue(scope, selector.comparisonValueType, selector.comparisonValue)
                         });
                         break;
 
                     case 'in':
                         Object.assign(expr, {
-                            $in: filter.value.split(',').map((v: string) => {
-                                return this.getFilterValue(scope, filter.valueType, v);
+                            $in: selector.comparisonValue.split(',').map((v: string) => {
+                                return this.getFilterValue(scope, selector.comparisonValueType, v);
                             })
                         });
                         break;
 
                     case 'not_in':
                         Object.assign(expr, {
-                            $nin: filter.value.split(',').map((v: string) => {
-                                return this.getFilterValue(scope, filter.valueType, v);
+                            $nin: selector.comparisonValue.split(',').map((v: string) => {
+                                return this.getFilterValue(scope, selector.comparisonValueType, v);
                             })
                         });
                         break;
 
                     default:
-                        throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
+                        throw new BlockActionError(`Unknown filter type: ${selector.selectorType}`, ref.blockType, ref.uuid);
                 }
-                filters[filter.field] = expr;
+                filters[selector.sourceField] = expr;
             }
         }
         filters.policyId = ref.policyId;
@@ -203,7 +203,7 @@ export class CalculateMathVariables {
 
         if (data) {
             for (const variable of ref.options.variables) {
-                scope[variable.name] = PolicyUtils.getObjectValue(data, variable.value);
+                scope[variable.variableName] = PolicyUtils.getObjectValue(data, variable.variablePath);
             }
         }
         return scope;
@@ -217,7 +217,7 @@ export class CalculateMathVariables {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
         if (ref.options.variables) {
             for (const variable of ref.options.variables) {
-                variables[variable.name] = variable.value;
+                variables[variable.variableName] = variable.variablePath;
             }
         }
         return variables;
@@ -230,34 +230,34 @@ export class CalculateMathVariables {
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
         try {
-            if (ref.options.filters) {
-                for (const filter of ref.options.filters) {
-                    if (!filter.field) {
-                        resultsContainer.addBlockError(ref.uuid, `Incorrect field: ${filter.field}`);
+            if (ref.options.selectors) {
+                for (const filter of ref.options.selectors) {
+                    if (!filter.sourceField) {
+                        resultsContainer.addBlockError(ref.uuid, `Incorrect Source Field: ${filter.sourceField}`);
                         return;
                     }
-                    if (!filter.value) {
-                        resultsContainer.addBlockError(ref.uuid, `Incorrect filter: ${filter.value}`);
+                    if (!filter.comparisonValue) {
+                        resultsContainer.addBlockError(ref.uuid, `Incorrect filter: ${filter.comparisonValue}`);
                         return;
                     }
                 }
             }
             if (ref.options.variables) {
                 for (const variable of ref.options.variables) {
-                    if (!variable.value) {
-                        resultsContainer.addBlockError(ref.uuid, `Incorrect value: ${variable.value}`);
+                    if (!variable.variablePath) {
+                        resultsContainer.addBlockError(ref.uuid, `Incorrect Variable Path: ${variable.variablePath}`);
                         return;
                     }
                 }
             }
-            if (ref.options.schema) {
-                if (typeof ref.options.schema !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
+            if (ref.options.sourceSchema) {
+                if (typeof ref.options.sourceSchema !== 'string') {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "sourceSchema" must be a string');
                     return;
                 }
-                const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
-                if (!schema) {
-                    resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
+                const sourceSchema = await ref.databaseServer.getSchemaByIRI(ref.options.sourceSchema, ref.topicId);
+                if (!sourceSchema) {
+                    resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.sourceSchema}" does not exist`);
                     return;
                 }
             }
