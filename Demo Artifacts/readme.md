@@ -19,6 +19,11 @@ This folder contains sub folders for each Methodology and their authors (with ma
 15. E-Mission (Coming soon)
 16. Carbon Captors/Zeru.Earth (Coming soon)
 17. RDA - Serapis (Coming soon)
+18. GHGP Corporate Standard (Coming soon)
+19. GHGP Product Standard - Avery Dennison (Coming soon)
+20. EPA CFR 40 p75 (Coming soon)
+21. GHGP Data Center Guidance (Coming soon)
+22. GHG calcs for NFTGrade (Coming soon)
 
 [IREC](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts/iREC)
 
