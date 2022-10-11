@@ -17,9 +17,8 @@ This folder contains sub folders for each Methodology and their authors (with ma
 13. Carbontricity/VN (Coming soon)
 14. Evercity (Coming soon)
 15. E-Mission (Coming soon)
-16. Katalyst (Coming soon)
-17. Carbon Captors/Zeru.Earth (Coming soon)
-18. RDA - Serapis (Coming soon)
+16. Carbon Captors/Zeru.Earth (Coming soon)
+17. RDA - Serapis (Coming soon)
 
 [IREC](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts/iREC)
 
