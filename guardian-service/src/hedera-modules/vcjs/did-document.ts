@@ -4,7 +4,7 @@ import { Hashing } from '../hashing';
 import { IVerificationMethod, IDidDocument } from '@guardian/interfaces';
 
 /**
- * DID roor key
+ * DID root key
  */
 export class DidRootKey {
     /**
@@ -180,6 +180,7 @@ export class DidRootKey {
         result.publicKeyBase58 = null;
         result.privateKeyBase58 = null;
         result.type = DidRootKey.DID_ROOT_KEY_TYPE;
+        console.log(result);
         return result;
     }
 
@@ -295,6 +296,26 @@ export class DidDocumentBase {
      * Assertion method
      */
     public static readonly ASSERTION_METHOD: string = 'assertionMethod';
+    /**
+     * Controller
+     */
+    public static readonly CONTROLLER: string = 'controller';
+    /**
+     * Key agreement
+     */
+    public static readonly KEY_AGREEMENT: string = 'keyAgreement';
+    /**
+     * Capability invocation
+     */
+    public static readonly CAPABILITY_INVOCATION: string = 'capabilityInvocation';
+    /**
+     * Capability delegation
+     */
+    public static readonly CAPABILITY_DELEGATION: string = 'capabilityDelegation';
+    /**
+     * Service
+     */
+    public static readonly SERVICE: string = 'service';
 
     /**
      * DID
@@ -305,7 +326,7 @@ export class DidDocumentBase {
      * Context
      * @private
      */
-    private readonly context: string[];
+    private readonly context: string | string[];
     /**
      * DID root key
      * @private
@@ -313,10 +334,7 @@ export class DidDocumentBase {
     private didRootKey: DidRootKey;
 
     constructor() {
-        this.context = [
-            DidDocumentBase.DID_DOCUMENT_CONTEXT,
-            DidDocumentBase.DID_DOCUMENT_TRANSMUTE_CONTEXT
-        ];
+        this.context = DidDocumentBase.DID_DOCUMENT_CONTEXT;
     }
 
     /**
@@ -324,15 +342,15 @@ export class DidDocumentBase {
      */
     public getDidDocument(): IDidDocument {
         const rootObject: any = {};
-        rootObject[DidDocumentBase.CONTEXT] = [
-            DidDocumentBase.DID_DOCUMENT_CONTEXT,
-            DidDocumentBase.DID_DOCUMENT_TRANSMUTE_CONTEXT
-        ];
+        rootObject[DidDocumentBase.CONTEXT] = this.context;
         rootObject[DidDocumentBase.ID] = this.getId();
+
         rootObject[DidDocumentBase.VERIFICATION_METHOD] = [
             this.didRootKey.getVerificationMethod()
         ];
-        rootObject[DidDocumentBase.AUTHENTICATION] = this.didRootKey.getId();
+        rootObject[DidDocumentBase.AUTHENTICATION] = [
+            this.didRootKey.getId()
+        ];
         rootObject[DidDocumentBase.ASSERTION_METHOD] = [
             this.didRootKey.getMethod()
         ];
@@ -344,15 +362,14 @@ export class DidDocumentBase {
      */
     public getPrivateDidDocument(): IDidDocument {
         const rootObject: any = {};
-        rootObject[DidDocumentBase.CONTEXT] = [
-            DidDocumentBase.DID_DOCUMENT_CONTEXT,
-            DidDocumentBase.DID_DOCUMENT_TRANSMUTE_CONTEXT
-        ];
+        rootObject[DidDocumentBase.CONTEXT] = this.context;
         rootObject[DidDocumentBase.ID] = this.getId();
         rootObject[DidDocumentBase.VERIFICATION_METHOD] = [
             this.didRootKey.getPrivateVerificationMethod()
         ];
-        rootObject[DidDocumentBase.AUTHENTICATION] = this.didRootKey.getId();
+        rootObject[DidDocumentBase.AUTHENTICATION] = [
+            this.didRootKey.getId()
+        ];
         rootObject[DidDocumentBase.ASSERTION_METHOD] = [
             this.didRootKey.getMethod()
         ];
@@ -362,7 +379,7 @@ export class DidDocumentBase {
     /**
      * Get context
      */
-    public getContext(): string[] {
+    public getContext(): string | string[] {
         return this.context;
     }
 
@@ -422,6 +439,10 @@ export class DIDDocument {
      * DID topic id
      */
     public static readonly DID_TOPIC_ID = 'tid';
+    /**
+     * DID topic separator
+     */
+    public static readonly DID_TOPIC_SEPARATOR = '_';
     /**
      * Hedera HCS
      */
@@ -562,11 +583,7 @@ export class DIDDocument {
 
         if (this.topicId) {
             ret = ret +
-                DIDDocument.DID_PARAMETER_SEPARATOR +
-                methodNetwork +
-                DIDDocument.DID_METHOD_SEPARATOR +
-                DIDDocument.DID_TOPIC_ID +
-                DIDDocument.DID_PARAMETER_VALUE_SEPARATOR +
+                DIDDocument.DID_TOPIC_SEPARATOR +
                 this.topicId.toString();
         }
 

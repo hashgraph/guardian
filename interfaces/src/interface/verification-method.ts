@@ -15,11 +15,11 @@ export interface IVerificationMethod {
      */
     controller: string;
     /**
-     * Public key
+     * Public key base58
      */
-    publicKeyBase58: string;
+    publicKeyBase58?: string;
     /**
-     * Private key
+     * Private key base58
      */
     privateKeyBase58?: string;
 }

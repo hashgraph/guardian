@@ -356,6 +356,7 @@ export class PolicyEngine {
      * @param model
      * @param owner
      * @param version
+     * @param notifier
      */
     public async publishPolicy(model: Policy, owner: string, version: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
