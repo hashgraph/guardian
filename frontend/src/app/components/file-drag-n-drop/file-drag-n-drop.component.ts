@@ -21,25 +21,35 @@ export class FileDragNDropComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  public droppedFile(files: NgxFileDropEntry[]) {
+  public async droppedFile(files: NgxFileDropEntry[]) {
     if (files.length > 1) {
       if (!this.multiple) {
         this.toastr.error("Cannot add more than 1 files", "File import error", { positionClass: 'toast-bottom-right' })
         return;
       }
       const filteredFiles = files.filter(file => this.checkFile(file));
-      if (filteredFiles.length > 0) {
-        this.onFileLoaded.emit(filteredFiles.map(file => file.fileEntry));
+      if (!filteredFiles.length) {
+        return;
       }
+      this.onFileLoaded.emit(await Promise.all(filteredFiles.map((file: any) => this.getFileFromFileEntry(file.fileEntry))));
     } else {
         const droppedFile = files[0];
         if (this.checkFile(droppedFile)) {
-          const fileEntry = droppedFile.fileEntry as any;
-          fileEntry.file((file: File) => {
-            this.onFileLoaded.emit(file);
-          });
+          const fileEntry: any = droppedFile.fileEntry;
+          const resultFile = await this.getFileFromFileEntry(fileEntry);
+          this.onFileLoaded.emit(this.multiple ? [resultFile] : resultFile);
         }
     }
+  }
+
+  private getFileFromFileEntry(fileEntry: any): Promise<File> {
+    return new Promise((resolve, reject) => {
+        fileEntry.file((file: any) => {
+          resolve(file);
+        }, (err: any) => {
+          reject(err)
+        });
+    });
   }
 
   private checkFile(droppedFile: NgxFileDropEntry) {
