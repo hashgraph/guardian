@@ -45,18 +45,18 @@ context("Trustchains", () => {
             .then((response) => {
               expect(response.status).to.eq(200);
 
-              let hash = response.body[0].hash;
+              // let hash = response.body[0].hash;
 
-              cy.request({
-                method: 'GET',
-                url: Cypress.env("api_server") + API.Trustchains + hash,
-                headers: {
-                  authorization: accessToken
-                }
-              })
-                .then((response) => {
-                  expect(response.status).to.eq(200);
-                })
+              // cy.request({
+              //   method: 'GET',
+              //   url: Cypress.env("api_server") + API.Trustchains + hash,
+              //   headers: {
+              //     authorization: accessToken
+              //   }
+              // })
+              //   .then((response) => {
+              //     expect(response.status).to.eq(200);
+              //   })
           
         
             })
