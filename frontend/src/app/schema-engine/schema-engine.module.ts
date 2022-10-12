@@ -21,6 +21,8 @@ import { SwitchButton } from '../components/switch-button/switch-button.componen
 import { CommonComponentsModule } from '../common-components.module';
 import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.component';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
+import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module';
+import { ArtifactPropertiesComponent } from '../artifact-engine/artifact-properties/artifact-properties.component';
 
 @NgModule({
     declarations: [
@@ -34,7 +36,6 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
         VCViewerDialog,
         SchemaViewDialog,
         ExportSchemaDialog,
-        FileDragNDropComponent,
         SchemaFieldConfigurationComponent,
         SwitchButton,
         EnumEditorDialog
@@ -48,8 +49,8 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
         NgxMatNativeDateModule,
         NgxMatTimepickerModule,
         ClipboardModule,
-        NgxFileDropModule,
-        CodemirrorModule
+        CodemirrorModule,
+        ArtifactEngineModule
     ],
     exports: [
         SchemaDialog,
@@ -62,7 +63,8 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
         VCViewerDialog,
         ExportSchemaDialog,
         FileDragNDropComponent,
-        SchemaFieldConfigurationComponent
+        SchemaFieldConfigurationComponent,
+        ArtifactPropertiesComponent
     ]
 })
 export class SchemaEngineModule { }

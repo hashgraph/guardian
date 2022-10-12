@@ -2,10 +2,36 @@
 
 This folder contains sub folders for each Methodology and their authors (with many more to be added in the future). Each methodlogy has a corresponding Policy (digital version of a Methodology) and Schema (data definitions within a Policy).
 
+### Climate offsets/removals Policies
+
 1. IREC - Envision
 2. Verra Methodology - Verra Redd - Envision
-3. GHG Methodology - Remote Workflow - Envision
-4. DOVU Template Methodologies - DOVU
+3. DOVU Template Methodologies - DOVU
+4. Nova VER - OCI (Coming soon)
+5. eWaste Policy - KrypC(Coming soon)
+6. TBA-X (Coming soon)
+7. TBA-X (Coming soon)
+8. TBA-D (Coming soon)
+9. Tamuwa VER (Coming soon)
+10. Carbontricity (Coming soon)
+11. VN (Coming soon)
+12. Evercity (Coming soon)
+13. Carbon Captors/Zeru.Earth (Coming soon)
+14. KrypC GCC (Coming soon)
+
+### Emission Policies
+
+1. GHG Methodology - Remote Workflow - Envision
+2. GHGP Product Standard - Avery Dennison (Coming soon)
+3. GHG Scope II - Atma (Coming soon)
+4. Tymlez (Coming soon)
+5. E-Mission (Coming soon)
+6. RDA - Serapis (Coming soon)
+7. GHGP Corporate Standard (Coming soon)
+8. EPA CFR 40 p75 (Coming soon)
+9. GHGP Data Center Guidance (Coming soon)
+10. GHG calcs for NFTGrade (Coming soon)
+
 
 [IREC](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts/iREC)
 

@@ -211,7 +211,7 @@
     </div>
     <div *ngIf="system || (!system && isConfirmed)" class="table-paginator">
         <mat-paginator [length]="schemasCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
-            [pageSizeOptions]="[5, 10, 25, 100]" (page)="onPage($event)" aria-label="Select page">
+            [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
         </mat-paginator>
     </div>
 

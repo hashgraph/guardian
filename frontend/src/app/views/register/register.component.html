@@ -30,16 +30,16 @@
                 Select Account Type
             </div>
             <button mat-button (click)="setRole('STANDARD_REGISTRY')">
-                <span class="role-name">Standard Registry (offset providers)</span>
-                <span class="role-description">For regulating entities to provide Offset credentials.</span>
+                <span class="role-name">Standard Registry</span>
+                <span class="role-description">Creating/importing policies, managing users, managing tokens.</span>
             </button>
             <button mat-button (click)="setRole('USER')">
-                <span class="role-name">User (offset applicants)</span>
-                <span class="role-description">For those applying to show Offsets (Farmers, Green Energy…)</span>
+                <span class="role-name">User</span>
+                <span class="role-description">Applicants creating environmental projects / performing other<br>activities in environmental domain.</span>
             </button>
             <button mat-button (click)="setRole('AUDITOR')">
                 <span class="role-name">Auditor</span>
-                <span class="role-description">Anyone looking to verify an offset.</span>
+                <span class="role-description">Read only access (only relevant to iREC Policies).</span>
             </button>
 
             <button mat-icon-button class="close-button" type="button" (click)="goBack()">

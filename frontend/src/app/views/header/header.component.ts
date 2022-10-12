@@ -72,7 +72,13 @@ export class HeaderComponent implements OnInit {
             name: "Tokens",
             disabled: false,
             link: '/tokens'
-        }, {
+        }, 
+        {
+            name: "Artifacts",
+            disabled: false,
+            link: '/artifacts'
+        },
+        {
             name: "Policies",
             disabled: false,
             link: '/policy-viewer',

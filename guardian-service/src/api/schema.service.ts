@@ -852,7 +852,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             const _pageIndex = parseInt(pageIndex, 10);
             if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
                 otherOptions.orderBy = { createDate: 'DESC' };
-                otherOptions.limit = _pageSize;
+                otherOptions.limit = Math.min(100, _pageSize);
                 otherOptions.offset = _pageIndex * _pageSize;
             } else {
                 otherOptions.limit = 100;
@@ -860,10 +860,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
 
             const [schemas, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
 
-            return new MessageResponse({
-                schemas,
-                count
-            });
+            return new MessageResponse({ schemas, count });
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

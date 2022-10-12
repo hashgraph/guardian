@@ -1,6 +1,5 @@
 import {
     AccountCreateTransaction,
-    AccountId,
     Client,
     TokenAssociateTransaction,
     TokenCreateTransaction,

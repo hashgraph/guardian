@@ -1,6 +1,20 @@
 context("Policies", () => {
     const authorization = Cypress.env("authorization");
 
+    before(() => {
+        cy.request({
+            method: "POST",
+            url: `${Cypress.env("api_server")}policies/import/message`,
+            body: { messageId: "1650282926.728623821" },
+            headers: {
+                authorization,
+            },
+            timeout: 180000,
+        }).then((response) => {
+            expect(response.status).to.eq(201);
+        });
+    });
+    
     it("should sends data to the specified block.", () => {
         const urlPolicies = {
             method: "GET",

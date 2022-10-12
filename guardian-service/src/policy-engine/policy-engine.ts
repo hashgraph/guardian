@@ -11,6 +11,7 @@ import {
     IRootConfig
 } from '@guardian/interfaces';
 import {
+    DataBaseHelper,
     IAuthUser,
     Logger
 } from '@guardian/common';
@@ -37,6 +38,7 @@ import { DatabaseServer } from '@database-modules';
 import { IPolicyUser, PolicyUser } from './policy-user';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from './policy-validation-results-container';
+import { Artifact } from '@entity/artifact';
 
 /**
  * Result of publishing
@@ -270,6 +272,13 @@ export class PolicyEngine {
                 await deleteSchema(schema.id, notifier);
             }
         }
+        notifier.completedAndStart('Delete artifacts');
+        const artifactsToDelete = await new DataBaseHelper(Artifact).find({
+            policyId: policyToDelete.id
+        });
+        for (const artifact of artifactsToDelete) {
+            await DatabaseServer.removeArtifact(artifact);
+        }
 
         notifier.completedAndStart('Publishing delete policy message');
         const topic = await DatabaseServer.getTopicById(policyToDelete.topicId);
@@ -347,6 +356,7 @@ export class PolicyEngine {
      * @param model
      * @param owner
      * @param version
+     * @param notifier
      */
     public async publishPolicy(model: Policy, owner: string, version: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
@@ -367,7 +377,13 @@ export class PolicyEngine {
         notifier.completedAndStart('Generate file');
         this.policyGenerator.regenerateIds(model.config);
         const zip = await PolicyImportExportHelper.generateZipFile(model);
-        const buffer = await zip.generateAsync({ type: 'arraybuffer' });
+        const buffer = await zip.generateAsync({
+            type: 'arraybuffer' ,
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 3
+            }
+        });
 
         notifier.completedAndStart('Token');
         const tokenIds = findAllEntities(model.config, ['tokenId']);
@@ -466,7 +482,13 @@ export class PolicyEngine {
 
         this.policyGenerator.regenerateIds(model.config);
         const zip = await PolicyImportExportHelper.generateZipFile(model);
-        const buffer = await zip.generateAsync({ type: 'arraybuffer' });
+        const buffer = await zip.generateAsync({
+            type: 'arraybuffer' ,
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 3
+            }
+        });
 
         const rootTopic = await topicHelper.create({
             type: TopicType.InstancePolicyTopic,
@@ -673,7 +695,7 @@ export class PolicyEngine {
         }
 
         notifier.completedAndStart('File parsing');
-        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document, true);
         notifier.completed();
         const policy = await PolicyImportExportHelper.importPolicy(policyToImport, owner, versionOfTopicId, notifier);
         return policy;

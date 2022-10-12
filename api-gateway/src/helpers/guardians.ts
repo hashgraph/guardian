@@ -2,6 +2,7 @@ import { Singleton } from '@helpers/decorators/singleton';
 import {
     ApplicationStates,
     CommonSettings,
+    IArtifact,
     IChainItem,
     IDidObject,
     ISchema,
@@ -699,5 +700,54 @@ export class Guardians extends ServiceRequestsBase {
      */
     public async getSchemaByEntity(entity: string): Promise<ISchema> {
         return await this.request<ISchema>(MessageAPI.GET_SYSTEM_SCHEMA, { entity });
+    }
+
+    /**
+     * Upload Policy Artifacts
+     *
+     * @param {any} artifact - Artifact
+     * @param {string} owner - Owner
+     * @param {string} policyId - Policy Identifier
+     *
+     * @returns - Uploaded Artifacts
+     */
+    public async uploadArtifact(artifact: any, owner: string, policyId: string): Promise<IArtifact[]> {
+        return await this.request<any>(MessageAPI.UPLOAD_ARTIFACT, {
+            owner,
+            artifact,
+            policyId
+        });
+    }
+
+    /**
+     * Get Policy Artifacts
+     *
+     * @param {string} owner - Owner
+     * @param {string} policyId - Policy Identifier
+     * @param {string} pageIndex - Page Index
+     * @param {string} pageSize - Page Size
+     *
+     * @returns - Artifact
+     */
+     public async getArtifacts(owner, policyId, pageIndex, pageSize): Promise<any> {
+        return await this.request<any>(MessageAPI.GET_ARTIFACTS, {
+            owner,
+            policyId,
+            pageIndex,
+            pageSize
+        });
+    }
+
+    /**
+     * Delete Artifact
+     * @param artifactId Artifact Identifier
+     * @param owner Owner
+     * @returns Deleted Flag
+     */
+    public async deleteArtifact(artifactId, owner): Promise<boolean> {
+        return await this.request<any>(MessageAPI.DELETE_ARTIFACT, {
+            owner,
+            artifactId
+        });
     }
 }
