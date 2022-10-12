@@ -39,5 +39,6 @@ export enum PolicyEngineEvents {
     GET_INVITE = 'get-invite',
     GET_POLICY_GROUPS = 'get-policy-groups',
     SELECT_POLICY_GROUP = 'select-policy-group',
-    CLONE_POLICY_ASYNC = 'clone-policy-async'
+    CLONE_POLICY_ASYNC = 'clone-policy-async',
+    GET_TOKENS_MAP = 'get-tokens-map',
 }

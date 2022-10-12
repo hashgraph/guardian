@@ -25,6 +25,7 @@ import { IPolicyUser } from './policy-user';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from './policy-engine';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { findAllEntities } from '@helpers/utils';
 
 /**
  * Policy engine service
@@ -187,12 +188,56 @@ export class PolicyEngineService {
             return new MessageResponse(result);
         });
 
+        this.channel.response<any, any>(PolicyEngineEvents.GET_TOKENS_MAP, async (msg) => {
+            try {
+                const { owner, status } = msg;
+                const filters: any = {};
+                if (owner) {
+                    filters.owner = owner;
+                }
+                if (status) {
+                    filters.status = status;
+                }
+                const policies = await DatabaseServer.getPolicies(filters);
+                const map: any = [];
+                for (const policyObject of policies) {
+                    const tokenIds = findAllEntities(policyObject.config, ['tokenId']);
+                    map.push({
+                        tokenIds,
+                        name: policyObject.name,
+                        version: policyObject.version,
+                        id: policyObject.id
+                    });
+                }
+                return new MessageResponse(map);
+            } catch (error) {
+                return new MessageError(error);
+            }
+        });
+
         this.channel.response<any, any>(PolicyEngineEvents.GET_POLICIES, async (msg) => {
             try {
                 const { filters, pageIndex, pageSize, userDid } = msg;
                 const filter: any = { ...filters };
 
-                const otherOptions: any = {};
+                const otherOptions: any = {
+                    fields: [
+                        'id',
+                        'uuid',
+                        'name',
+                        'version',
+                        'previousVersion',
+                        'description',
+                        'status',
+                        'creator',
+                        'owner',
+                        'topicId',
+                        'policyTag',
+                        'messageId',
+                        'codeVersion',
+                        'createDate'
+                    ]
+                };
                 const _pageSize = parseInt(pageSize, 10);
                 const _pageIndex = parseInt(pageIndex, 10);
                 if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
@@ -217,7 +262,8 @@ export class PolicyEngineService {
                 const user = msg.user;
                 const did = await this.getUserDid(user.username);
                 await this.policyEngine.createPolicy(msg.model, did, emptyNotifier());
-                const policies = await DatabaseServer.getPolicies({ owner: did });
+
+                const policies = await DatabaseServer.getListOfPolicies({ owner: did });
                 return new MessageResponse(policies);
             } catch (error) {
                 return new MessageError(error);
@@ -285,7 +331,7 @@ export class PolicyEngineService {
                 const owner = await this.getUserDid(user.username);
 
                 const result = await this.policyEngine.validateAndPublishPolicy(model, policyId, owner, emptyNotifier());
-                const policies = (await DatabaseServer.getPolicies({ owner }));
+                const policies = (await DatabaseServer.getListOfPolicies({ owner }));
 
                 return new MessageResponse({
                     policies,
@@ -351,7 +397,7 @@ export class PolicyEngineService {
                     await this.policyEngine.generateModel(newPolicy.id.toString());
                 }
 
-                const policies = (await DatabaseServer.getPolicies({ owner }));
+                const policies = (await DatabaseServer.getListOfPolicies({ owner }));
 
                 return new MessageResponse({
                     policies,
@@ -395,7 +441,7 @@ export class PolicyEngineService {
                 const databaseServer = new DatabaseServer(model.id.toString());
                 await databaseServer.clearDryRun();
 
-                const policies = (await DatabaseServer.getPolicies({ owner }));
+                const policies = (await DatabaseServer.getListOfPolicies({ owner }));
 
                 return new MessageResponse({
                     policies
@@ -594,7 +640,13 @@ export class PolicyEngineService {
                     throw new Error(`Cannot export policy ${policyId}`);
                 }
                 const zip = await PolicyImportExportHelper.generateZipFile(policy);
-                const file = await zip.generateAsync({ type: 'arraybuffer' });
+                const file = await zip.generateAsync({
+                    type: 'arraybuffer',
+                    compression:'DEFLATE',
+                    compressionOptions: {
+                        level: 3,
+                    },
+                });
                 console.log('File size: ' + file.byteLength);
                 return new BinaryMessageResponse(file);
             } catch (error) {
@@ -648,9 +700,9 @@ export class PolicyEngineService {
                 }
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const did = await this.getUserDid(user.username);
-                const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
+                const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data), true);
                 await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, emptyNotifier());
-                const policies = await DatabaseServer.getPolicies({ owner: did });
+                const policies = await DatabaseServer.getListOfPolicies({ owner: did });
                 return new MessageResponse(policies);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -670,7 +722,7 @@ export class PolicyEngineService {
                     new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                     const did = await this.getUserDid(user.username);
                     notifier.start('File parsing');
-                    const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data));
+                    const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data), true);
                     notifier.completed();
                     const policy = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, notifier);
                     notifier.result(policy.id);
@@ -722,7 +774,7 @@ export class PolicyEngineService {
                 const root = await this.users.getHederaAccount(did);
 
                 await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, emptyNotifier());
-                const policies = await DatabaseServer.getPolicies({ owner: did });
+                const policies = await DatabaseServer.getListOfPolicies({ owner: did });
                 return new MessageResponse(policies);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -886,7 +938,7 @@ export class PolicyEngineService {
                 const newPolicy = await this.policyEngine.dryRunPolicy(model, owner, 'Dry Run');
                 await this.policyEngine.generateModel(newPolicy.id.toString());
 
-                const policies = (await DatabaseServer.getPolicies({ owner }));
+                const policies = (await DatabaseServer.getListOfPolicies({ owner }));
                 return new MessageResponse({
                     policies
                 });

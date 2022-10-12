@@ -14,7 +14,7 @@ This folder contains a sample file that is referenced in the Demo Guide
 
 3\. You will now be prompted to configure your Standard Registry account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the details of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../.gitbook/assets/iREC\_4.2.png)
+![](../.gitbook/assets/Verra\_2.2.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
 
@@ -26,88 +26,124 @@ iREC 4 : 1662642008.325450377
 iREC 5 : 1663850151.496004277
 ```
 
-![](../.gitbook/assets/iREC3\_new\_1.png)
+<figure><img src="../.gitbook/assets/iREC_5.1.png" alt=""><figcaption></figcaption></figure>
 
 Once clicked on OK, we have an option to Preview the Policy before importing it.
 
-<figure><img src="../.gitbook/assets/image (8) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/iREC_5.2.png" alt=""><figcaption></figcaption></figure>
 
-Once Policy is imported successfully, click on "Publish" button to publish the policy.
+Once Policy is imported successfully, you have two options : 1. to publish the policy, 2. To run the policy in Dry Run mode.
 
-<figure><img src="../.gitbook/assets/image (14) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/iREC_5.4.png" alt=""><figcaption></figcaption></figure>
+
+Let's click on Publish button to publish the Policy to Hedera network.
 
 5\. Click on Standard Registry's profile icon and select "Log Out." We will now go back into the Admin Panel. This time we will select Registrant.
 
 6\. Now, we can click on the Policies tab. This is where the specific actions required by the Policy Workflow will be found. We can click the Open button to the right of the iREC Policy, the Standard Registry created. This is where the custom user will be able to assign the role that was created by Standard Registry during the workflow creation process. In our case, we created the custom role of Registrant so the user will need to select the Registrant role from the drop down.
 
-![](../.gitbook/assets/iREC3\_new\_3.png)
+<figure><img src="../.gitbook/assets/iREC_5.5.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (7) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/iREC_5.6.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (6) (2).png" alt=""><figcaption></figcaption></figure>
+7\. Now, we create a group by selecting Registrant in the Dropdown. or we enter an invite link of the group received to join that particular group in the Accept invitation option.&#x20;
 
-After selecting the Registrant role, we will see the form that is based on the imported Policy. This form is a Registrant Application.
+<figure><img src="../.gitbook/assets/iREC_5.7.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (30).png" alt=""><figcaption></figcaption></figure>
+8\. Once Registrant option is selected from the dropdown, we get Group label field enabled. Group label can be given anything of our choice. Here, we are giving as Registrant Group for testing purpose.
 
-Once Submitted, Registrant waits for the approval of the application by Standard Registry.
+<figure><img src="../.gitbook/assets/iREC_5.8.png" alt=""><figcaption></figcaption></figure>
 
-7\. Registrant associates the Token by going to Profile tab and clicking on Associated icon.
+Once, Group label is entered, we click on OK button.
 
-<figure><img src="../.gitbook/assets/image (26).png" alt=""><figcaption></figcaption></figure>
+9\. Now we enter the Registrant Application details and click on Ok.
 
-8\. The next step of our flow is to log out and sign back in as Standard Registry. Navigate to the Policies tab and click the Open button on the far right. Here you will find the approval actions based on our Policy Workflow required by Standard Registry. You will be able to view the Verifiable Credential prior to approval by selecting the View Document link. Once you are ready to approve the document, you can click on the Approve button.
+<figure><img src="../.gitbook/assets/iREC_5.9.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+Once Submitted, Registrant waits for the approval of the application by Approver.
 
-<figure><img src="../.gitbook/assets/image (9) (2).png" alt=""><figcaption></figcaption></figure>
+10\. Next step is logout as Registrant and login as Approver. This can be done by selecting Installer from the Admin panel and then selecting Standard Registry from the dropdown in Profile tab.
 
-9\. After the approval process, Standard Registry grants KYC to the Registrant by going to Tokens tab and clicking on Grant KYC button.
+<figure><img src="../.gitbook/assets/iREC_5.10.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (31) (1) (1).png" alt=""><figcaption></figcaption></figure>
+11\. Once Profile is created, we click on Policies tab and click on Go to view the Policy.
 
-10\. Once the Registrant application is approved by Standard Registry, we log back in as Registrant and register for a new Device for sending MRV Data by clicking on Create New Device
+<figure><img src="../.gitbook/assets/iREC_5.11.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (25).png" alt=""><figcaption></figcaption></figure>
+12\. Same as Registrant, you have an option to create group or accept invitation. But, the only difference over here is you need to select Approvers option in the group dropdown.
 
-Registrant fills out all the Device Registrant details and clicks on OK. Once completed, the Registrant waits for the approval from the Standard Registry.
+<figure><img src="../.gitbook/assets/iREC_5.12.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (13) (1).png" alt=""><figcaption></figcaption></figure>
+13\. Once Approver is created, now we get an option to Sign/Decline the Registrant application.
 
-11\. Now we log out and log back in as Standard Registry. Navigate to Devices tab in the Policy. Device details can be viewed by clicking on View Document. Once you are ready to approve the document, you can click on the Approve button.
+<figure><img src="../.gitbook/assets/iREC_5.13.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+{% hint style="info" %}
+Note: If there are multiple approvers, we would need minimum of 70% consensus to reach the final result for an application.
+{% endhint %}
 
-12\. Once approved, we now log back in as Registrant and navigate to Devices tab and will create Issue request by clicking on Create Issue Request.
+14\. In our demo, I will create 2 more approvers (Approver1 and Approver2) by following the above Step 12.
 
-<figure><img src="../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
+15\. As there are 3 approvers, I would need minimum signatures of 2 approvers to reach the final decision (either signed or declined).
 
-For now, we will be adding it manually, but in future, we will be automating the process by fetching the data from the device.
+16\. When one of the approver, signs or declines the application by clicking on Sign button, we get the progress bar of the result as shown below
 
-<figure><img src="../.gitbook/assets/image (24).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/iREC_5.14.png" alt=""><figcaption></figcaption></figure>
 
-After submitting the data, the Registrant is waiting for approval from Standard Registry.
+{% hint style="info" %}
+To get complete information on the status, we need to click on "i" icon
+{% endhint %}
 
-<figure><img src="../.gitbook/assets/image (15).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/iREC_5.15.png" alt=""><figcaption></figcaption></figure>
 
-13\. Now, we logout from Registrant and log back as Standard Registry, we navigate to Issue Requests tab in Policies and once we are ready to approve the document, you can click on Approve button.
+17\. For demo purpose, we will also sign the above application as an Approver by logging in as an Approver and following the step 15.
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+18\. Once, minimum of 2 approvers sign the application, Registrant application is signed successfully.
 
-14\. Once the token issuance is complete, we log out and log back to Registrant, we will navigate it to Token History tab to check the Token IDs being issued.
+19\. Now, we login back as Registrant and click on Create New Device.
 
-<figure><img src="../.gitbook/assets/image (29) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/iREC_5.16.png" alt=""><figcaption></figcaption></figure>
 
-15\. We can also check Token Balance in the Tokens tab under Profile.
+20\. Device Registration details needs to be filled and submitted.
 
-<figure><img src="../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/iREC_5.17.png" alt=""><figcaption></figcaption></figure>
 
-16\. We can also check Token History by logging back as Standard Registry.
+Once details are submitted, Registrant waits for the approval.
 
-<figure><img src="../.gitbook/assets/image (23) (2).png" alt=""><figcaption></figcaption></figure>
+21\. Now, we login back as Approver1 and approves the device created by Registrant. Device is approved by clicking on Sign button.
 
-We have the option of viewing TrustChain. You can view TrustChain by clicking on View TrustChain button.
+<figure><img src="../.gitbook/assets/iREC_5.18.png" alt=""><figcaption></figcaption></figure>
 
-The Trust Chain view displays essential elements that can be publicly discovered. Elements include token information, Policy information, and all the essential information regarding the Verifiable Credentials that make up the Verifiable Presentation. You will notice "Cards" on the bottom of the screen. Those cards are Verifiable Credentials displayed in chronological order.
+22\. We logout as an Approver1 and login as Approver2 and approve the device by following step 21.
 
-<figure><img src="../.gitbook/assets/image (28).png" alt=""><figcaption></figcaption></figure>
+23\. Once, two approvers approve the device, the device is approved successfully. Now, we log back in as Registrant.
+
+24\. Now, the Registrant creates an Issue Request by clicking on Create Issue Request.
+
+<figure><img src="../.gitbook/assets/iREC_5.19.png" alt=""><figcaption></figcaption></figure>
+
+25\. Issue Request is created by entering the details as shown below.
+
+<figure><img src="../.gitbook/assets/iREC_5.20.png" alt=""><figcaption></figcaption></figure>
+
+26\. Once the Issue Request is submitted, the request status can be checked by clicking on Issue Requests tab. &#x20;
+
+<figure><img src="../.gitbook/assets/iREC_5.21.png" alt=""><figcaption></figcaption></figure>
+
+27\. Now, we login as Approver1 and go to Issue Requests tab and click on Sign button to approve the Issue Request. We can also view the document by clicking on View Document button.
+
+<figure><img src="../.gitbook/assets/iREC_5.22.png" alt=""><figcaption></figcaption></figure>
+
+28\. We will logout as Approver1 and login as Approver2 and follow same steps as Step 27.
+
+29\. Once, Issue Requests is being approved by minimum of 2 approvers, it is approved successfully.
+
+30\. Now we login as Registrant and can check the Token History by clicking on Token History tab.
+
+<figure><img src="../.gitbook/assets/iREC_5.23.png" alt=""><figcaption></figcaption></figure>
+
+31\. To view TrustChain, we logout as Registrant and login as Standard Registry and click on View TrustChain.
+
+<figure><img src="../.gitbook/assets/iREC_5.24.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../.gitbook/assets/iREC_5.25.png" alt=""><figcaption></figcaption></figure>

@@ -1,8 +1,10 @@
 import { Policy } from '@entity/policy';
 import {
     findAllEntities,
+    getArtifactType,
     regenerateIds,
     replaceAllEntities,
+    replaceArtifactProperties,
     SchemaFields
 } from '@helpers/utils';
 import JSZip from 'jszip';
@@ -19,6 +21,7 @@ import { INotifier } from '@helpers/notifier';
 import { DatabaseServer } from '@database-modules';
 import { DataBaseHelper } from '@guardian/common';
 import { Workers } from '@helpers/workers';
+import { Artifact } from '@entity/artifact';
 
 /**
  * Policy import export helper
@@ -55,6 +58,18 @@ export class PolicyImportExportHelper {
         });
 
         const zip = new JSZip();
+        const artifacts = await new DataBaseHelper(Artifact).find({
+            policyId: policy.id
+        })
+        zip.folder('artifacts')
+        for (const artifact of artifacts) {
+            zip.file(`artifacts/${artifact.uuid}`, await DatabaseServer.getArtifactFileByUUID(artifact.uuid));
+        }
+        zip.file(`artifacts/metadata.json`, JSON.stringify(artifacts.map(item => { return {
+            name: item.name,
+            uuid: item.uuid,
+            extention: item.extention
+        }})));
         zip.folder('tokens')
         for (const token of tokens) {
             delete token.adminId;
@@ -85,7 +100,7 @@ export class PolicyImportExportHelper {
      * @param zipFile Zip file
      * @returns Parsed policy
      */
-    static async parseZipFile(zipFile: any): Promise<any> {
+    static async parseZipFile(zipFile: any, includeArtifactsData: boolean = false): Promise<any> {
         const zip = new JSZip();
         const content = await zip.loadAsync(zipFile);
         if (!content.files[PolicyImportExportHelper.policyFileName] || content.files[PolicyImportExportHelper.policyFileName].dir) {
@@ -102,10 +117,28 @@ export class PolicyImportExportHelper {
             .filter(file => /^schem[a,e]s\/.+/.test(file[0]))
             .map(file => file[1].async('string')));
 
+        const artifactsMetaDataFile = await (Object.entries(content.files)
+            .find(file => file[0] === 'artifacts/metadata.json'));
+        const artifactsMetaDataString = artifactsMetaDataFile && await artifactsMetaDataFile[1].async('string') || '[]';
+        const artifactsMetaData = JSON.parse(artifactsMetaDataString);
+        const artifacts = includeArtifactsData ? await Promise.all(Object.entries(content.files)
+            .filter(file => !file[1].dir)
+            .filter(file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json')
+            .map(async file => {
+                const uuid = file[0].split('/')[1];
+                const artifactMetaData = artifactsMetaData.find(item => item.uuid === uuid);
+                return {
+                    name: artifactMetaData.name,
+                    extention: artifactMetaData.extention,
+                    uuid: artifactMetaData.uuid,
+                    data: await file[1].async('nodebuffer')
+                }
+            })) : artifactsMetaDataFile;
+
         const policy = JSON.parse(policyString);
         const tokens = tokensStringArray.map(item => JSON.parse(item));
         const schemas = schemasStringArray.map(item => JSON.parse(item));
-        return { policy, tokens, schemas };
+        return { policy, tokens, schemas, artifacts };
     }
 
     /**
@@ -148,8 +181,7 @@ export class PolicyImportExportHelper {
         notifier: INotifier,
         additionalPolicyConfig?: Partial<Policy>
     ): Promise<Policy> {
-        const { policy, tokens, schemas } = policyToImport;
-
+        const { policy, tokens, schemas, artifacts } = policyToImport;
         delete policy._id;
         delete policy.id;
         delete policy.messageId;
@@ -283,9 +315,23 @@ export class PolicyImportExportHelper {
         // Import Schemas
         const schemasMap = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId, notifier);
 
-        notifier.start('Saving in DB');
+        // Upload Artifacts
+        notifier.start('Upload Artifacts');
+        const artifactsMap = new Map<string,string>();
+        const addedArtifacts = [];
+        for (const artifact of artifacts) {
+            const newArtifactUUID = GenerateUUIDv4();
+            artifactsMap.set(artifact.uuid, newArtifactUUID);
+            artifact.owner = policyOwner;
+            artifact.uuid = newArtifactUUID;
+            artifact.type = getArtifactType(artifact.extention);
+            addedArtifacts.push(await DatabaseServer.saveArtifact(artifact));
+            await DatabaseServer.saveArtifactFile(newArtifactUUID, artifact.data);
+        }
+
+        notifier.completedAndStart('Saving in DB');
         // Replace id
-        await PolicyImportExportHelper.replaceConfig(policy, schemasMap);
+        await PolicyImportExportHelper.replaceConfig(policy, schemasMap, artifactsMap);
 
         // Save
         const model = new DataBaseHelper(Policy).create(policy as Policy);
@@ -294,6 +340,11 @@ export class PolicyImportExportHelper {
         topicRow.policyId = result.id.toString();
         topicRow.policyUUID = result.uuid;
         await new DataBaseHelper(Topic).update(topicRow);
+
+        for (const addedArtifact of addedArtifacts) {
+            addedArtifact.policyId = result.id;
+            await DatabaseServer.saveArtifact(addedArtifact);
+        }
 
         notifier.completed();
         return result;
@@ -304,7 +355,7 @@ export class PolicyImportExportHelper {
      * @param policy
      * @param schemasMap
      */
-    static async replaceConfig(policy: Policy, schemasMap: any) {
+    static async replaceConfig(policy: Policy, schemasMap: any, artifactsMap: any) {
         if (await new DataBaseHelper(Policy).findOne({ name: policy.name })) {
             policy.name = policy.name + '_' + Date.now();
         }
@@ -317,5 +368,7 @@ export class PolicyImportExportHelper {
         policy = PolicyConverterUtils.PolicyConverter(policy);
         policy.codeVersion = PolicyConverterUtils.VERSION;
         regenerateIds(policy.config);
+
+        replaceArtifactProperties(policy.config, 'uuid', artifactsMap);
     }
 }

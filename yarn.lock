@@ -1226,6 +1226,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/busboy@npm:*":
+  version: 1.5.0
+  resolution: "@types/busboy@npm:1.5.0"
+  dependencies:
+    "@types/node": "*"
+  checksum: ffa7bf25c0395f6927526b7d97e70cd2df789e4ca0d231e41855fb08542fa236891ce457d83cc50cac6e5cef6be092ab80597070dcf1413f736462690a23e987
+  languageName: node
+  linkType: hard
+
 "@types/caseless@npm:*":
   version: 0.12.2
   resolution: "@types/caseless@npm:0.12.2"
@@ -1246,6 +1255,16 @@ __metadata:
   version: 1.0.1
   resolution: "@types/deep-equal@npm:1.0.1"
   checksum: 689b5737dd0a37d173d9e1231c07f70a1a9a989087b757422e1d167ec3640fd7eb8a538bd6008b3df400c4c11ed07a6c2a92d9aafc1f98ffaa04731a9442c781
+  languageName: node
+  linkType: hard
+
+"@types/express-fileupload@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@types/express-fileupload@npm:1.4.1"
+  dependencies:
+    "@types/busboy": "*"
+    "@types/express": "*"
+  checksum: 54fff7a11dea74ddc716c0ae610dbf557fa27eb5eb4dff99cd2c88c4722321188342319e77d4df94e801d601d5ccd8287d0c31aea786d652b7760a1e681223b6
   languageName: node
   linkType: hard
 
@@ -1808,6 +1827,7 @@ __metadata:
     "@guardian/common": ^2.5.1
     "@guardian/interfaces": ^2.5.1
     "@types/express": ^4.17.13
+    "@types/express-fileupload": ^1.4.1
     "@types/jszip": ^3.4.1
     "@types/node": ^17.0.13
     "@types/ws": ^8.2.2
@@ -1815,6 +1835,7 @@ __metadata:
     cross-env: ^7.0.3
     dotenv: ^16.0.0
     express: ^4.17.1
+    express-fileupload: ^1.4.0
     jszip: ^3.7.1
     mocha: ^9.2.0
     mocha-junit-reporter: ^2.0.2
@@ -2323,6 +2344,15 @@ __metadata:
   version: 1.0.3
   resolution: "builtins@npm:1.0.3"
   checksum: 47ce94f7eee0e644969da1f1a28e5f29bd2e48b25b2bbb61164c345881086e29464ccb1fb88dbc155ea26e8b1f5fc8a923b26c8c1ed0935b67b644d410674513
+  languageName: node
+  linkType: hard
+
+"busboy@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "busboy@npm:1.6.0"
+  dependencies:
+    streamsearch: ^1.1.0
+  checksum: 32801e2c0164e12106bf236291a00795c3c4e4b709ae02132883fe8478ba2ae23743b11c5735a0aae8afe65ac4b6ca4568b91f0d9fed1fdbc32ede824a73746e
   languageName: node
   linkType: hard
 
@@ -3634,6 +3664,15 @@ __metadata:
   version: 3.3.0
   resolution: "events@npm:3.3.0"
   checksum: f6f487ad2198aa41d878fa31452f1a3c00958f46e9019286ff4787c84aac329332ab45c9cdc8c445928fc6d7ded294b9e005a7fce9426488518017831b272780
+  languageName: node
+  linkType: hard
+
+"express-fileupload@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "express-fileupload@npm:1.4.0"
+  dependencies:
+    busboy: ^1.6.0
+  checksum: 4dad1dab1279eab72412857c3bb6b364f86ae512ac760cb4ae140e7f5793daefd2656c2a7cc60033a476d7267ab9d89ac85b2106ce9d5697ec5d3ba9c315ac6f
   languageName: node
   linkType: hard
 
@@ -8586,6 +8625,13 @@ __metadata:
   version: 6.2.0
   resolution: "streaming-iterables@npm:6.2.0"
   checksum: 1fb3c6833cbb028bf60f0de9b43e54d5940e4702868ad0016567cac7ecf9675572e05af86c723f5e172b57a2c913fea0289be6f44bea7747b71e4a398b7174da
+  languageName: node
+  linkType: hard
+
+"streamsearch@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "streamsearch@npm:1.1.0"
+  checksum: 1cce16cea8405d7a233d32ca5e00a00169cc0e19fbc02aa839959985f267335d435c07f96e5e0edd0eadc6d39c98d5435fb5bbbdefc62c41834eadc5622ad942
   languageName: node
   linkType: hard
 

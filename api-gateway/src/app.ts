@@ -24,6 +24,8 @@ import { MessageBrokerChannel, Logger } from '@guardian/common';
 import { taskAPI } from '@api/service/task';
 import { TaskManager } from '@helpers/task-manager';
 import { singleSchemaRoute } from '@api/service/schema';
+import { artifactAPI } from '@api/service/artifact';
+import fileupload from 'express-fileupload';
 
 const PORT = process.env.PORT || 3002;
 
@@ -34,9 +36,10 @@ Promise.all([
     app.use(express.json());
     app.use(express.raw({
         inflate: true,
-        limit: '4096kb',
+        limit: '1gb',
         type: 'binary/octet-stream'
     }));
+    app.use(fileupload());
     const channel = new MessageBrokerChannel(cn, 'guardian');
     const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
     new Logger().setChannel(channel);
@@ -62,6 +65,7 @@ Promise.all([
     app.use('/schema', authorizationHelper, singleSchemaRoute);
     app.use('/schemas', authorizationHelper, schemaAPI);
     app.use('/tokens', authorizationHelper, tokenAPI);
+    app.use('/artifact', authorizationHelper, artifactAPI);
     app.use('/trustchains/', authorizationHelper, trustchainsAPI);
     app.use('/external/', externalAPI);
     app.use('/demo/', demoAPI);
