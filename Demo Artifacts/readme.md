@@ -7,16 +7,17 @@ This folder contains sub folders for each Methodology and their authors (with ma
 1. IREC - Envision
 2. Verra Methodology - Verra Redd - Envision
 3. DOVU Template Methodologies - DOVU
-4. Nova VER's Renewables - OCI (Coming soon)
-5. eWaste additional Policy - KrypC(Coming soon)
+4. Nova VER - OCI (Coming soon)
+5. eWaste Policy - KrypC(Coming soon)
 6. TBA-X (Coming soon)
 7. TBA-X (Coming soon)
 8. TBA-D (Coming soon)
-9. Tamuwa VER's (Coming soon)
-10. Carbontricity/VN (Coming soon)
-11. Evercity (Coming soon)
-12. Carbon Captors/Zeru.Earth (Coming soon)
-13. KrypC GCC (Coming soon)
+9. Tamuwa VER (Coming soon)
+10. Carbontricity (Coming soon)
+11. VN (Coming soon)
+12. Evercity (Coming soon)
+13. Carbon Captors/Zeru.Earth (Coming soon)
+14. KrypC GCC (Coming soon)
 
 ### Emission Policies
 
