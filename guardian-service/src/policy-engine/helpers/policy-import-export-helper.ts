@@ -65,11 +65,13 @@ export class PolicyImportExportHelper {
         for (const artifact of artifacts) {
             zip.file(`artifacts/${artifact.uuid}`, await DatabaseServer.getArtifactFileByUUID(artifact.uuid));
         }
-        zip.file(`artifacts/metadata.json`, JSON.stringify(artifacts.map(item => { return {
-            name: item.name,
-            uuid: item.uuid,
-            extention: item.extention
-        }})));
+        zip.file(`artifacts/metadata.json`, JSON.stringify(artifacts.map(item => {
+            return {
+                name: item.name,
+                uuid: item.uuid,
+                extention: item.extention
+            }
+        })));
         zip.folder('tokens')
         for (const token of tokens) {
             delete token.adminId;
@@ -180,7 +182,16 @@ export class PolicyImportExportHelper {
         versionOfTopicId: string,
         notifier: INotifier,
         additionalPolicyConfig?: Partial<Policy>
-    ): Promise<Policy> {
+    ): Promise<{
+        /**
+         * New Policy
+         */
+        policy: Policy,
+        /**
+         * Errors
+         */
+        errors: any[]
+    }> {
         const { policy, tokens, schemas, artifacts } = policyToImport;
         delete policy._id;
         delete policy.id;
@@ -239,7 +250,7 @@ export class PolicyImportExportHelper {
         for (const schema of systemSchemas) {
             messageServer.setTopicObject(topicRow);
             let name: string;
-            if(schema) {
+            if (schema) {
                 schema.creator = policyOwner;
                 schema.owner = policyOwner;
                 const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
@@ -313,11 +324,11 @@ export class PolicyImportExportHelper {
         }
 
         // Import Schemas
-        const schemasMap = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId, notifier);
+        const { schemasMap, errors } = await importSchemaByFiles(policyOwner, schemas, topicRow.topicId, notifier);
 
         // Upload Artifacts
         notifier.start('Upload Artifacts');
-        const artifactsMap = new Map<string,string>();
+        const artifactsMap = new Map<string, string>();
         const addedArtifacts = [];
         for (const artifact of artifacts) {
             const newArtifactUUID = GenerateUUIDv4();
@@ -347,7 +358,7 @@ export class PolicyImportExportHelper {
         }
 
         notifier.completed();
-        return result;
+        return { policy: result, errors };
     }
 
     /**
