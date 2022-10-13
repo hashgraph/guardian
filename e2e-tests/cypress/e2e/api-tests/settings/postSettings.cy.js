@@ -83,7 +83,6 @@ context('Settings', () => {
         .then((response) => {
 
           let oldNftApiKey = response.body.nftApiKey
-          let oldOperatorId = response.body.operatorId
           let oldOperatorKey = response.body.operatorKey
 
           cy.request({
@@ -109,11 +108,9 @@ context('Settings', () => {
                 .then((response) => {
 
                   let newNftApiKey = response.body.nftApiKey
-                  let newOperatorId = response.body.operatorId
                   let newOperatorKey = response.body.operatorKey
                   
                   expect(newNftApiKey).to.equal(oldNftApiKey)
-                  expect(newOperatorId).to.equal(oldOperatorId)
                   expect(newOperatorKey).to.equal(oldOperatorKey)
                 })
             })
