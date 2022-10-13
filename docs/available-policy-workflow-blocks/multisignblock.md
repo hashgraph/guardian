@@ -108,4 +108,4 @@ To get detailed information on Signature status, we have an info icon near the t
 
 To get the final Signature Result with detailed information such as which users have Signed / Declined, we need to hover on the Status as shown below:
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (3).png" alt=""><figcaption></figcaption></figure>
