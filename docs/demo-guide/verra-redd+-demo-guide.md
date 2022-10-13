@@ -79,25 +79,37 @@ After creating the group, we will see the New Project button. When we click on t
 
 <figure><img src="../.gitbook/assets/3_12.png" alt=""><figcaption></figcaption></figure>
 
-14\. The next step of our flow is to log out and sign back in as the VVB. Navigate to the Policies tab and click the Open button on the far right. You will be able to see Projects tab, where you can view the Verifiable Credential prior to approval by selecting the View Document link. Once you are ready to approve the project details, you can click on the Validate button.
+14\. The next step of our flow is to log out and sign back in as the VVB. We click on Members tab in the Policy and click on Get Invite button to create an invitation link. This invitation link is created to create VVB member.
 
-![](../.gitbook/assets/verra\_new\_11.png)
+<figure><img src="../.gitbook/assets/3_13.png" alt=""><figcaption></figcaption></figure>
 
-15\. Once the Project is validated, we log out as VVB and login as Project Proponent. Monitoring Report details should be added by clicking on Add Report
+<figure><img src="../.gitbook/assets/3_14.png" alt=""><figcaption></figcaption></figure>
 
-![](../.gitbook/assets/verra\_new\_12.png)
+15\. Now, we create a new user as VVBNew and paste the link under accept invitation section as shown below:
 
-![](../.gitbook/assets/verra\_new\_13.png)
+<figure><img src="../.gitbook/assets/3_15.png" alt=""><figcaption></figcaption></figure>
 
-16\. Now, you log out and login to VVB. You will be able to view the Verifiable Credential by selecting View Document button. Once, you are ready to verify the monitoring report details, you can click on Verify button.
+16\. Once clicked on OK in above screen, we now have an option to sign/ decline the Project. For demo purpose, we click on Sign button to validate the Project.
 
-![](../.gitbook/assets/verra\_new\_14.png)
+<figure><img src="../.gitbook/assets/3_16.png" alt=""><figcaption></figcaption></figure>
 
-17\. Once, Monitoring report is verified, you log out as VVB and login as Verra. Navigate to the Policies tab and click the Open button on the far right. You will be able to see Monitoring Reports tab, where you have an option to click on Mint button.
+{% hint style="info" %}
+Note: If there are more than one VVB, we need atleast 70% consensus to get the finalized decision on the Project to proceed.
+{% endhint %}
 
-![](../.gitbook/assets/verra\_new\_15.png)
+16\. Once the Project is validated, we log out as VVB and login as Project Proponent. Monitoring Report details should be added by clicking on Add Report
 
-17\. Once, Minting process is completed, navigate to the Token History tab, where you have an option of viewing TrustChain. You can view TrustChain by clicking on View TrustChain button.
+<figure><img src="../.gitbook/assets/3_17.png" alt=""><figcaption></figcaption></figure>
+
+17\. Now, you log out and login to VVBNew. You will be able to view the Verifiable Credential by selecting View Document button. Once, you are ready to verify the monitoring report details, you can click on Sign button.
+
+<figure><img src="../.gitbook/assets/3_18.png" alt=""><figcaption></figcaption></figure>
+
+17\. Once, Monitoring report is verified, you log out as VVBNew and login as Standard Registry. Navigate to the Policies tab and click the Open button on the far right. You will be able to see Monitoring Reports tab, where you have an option to click on Mint button.
+
+<figure><img src="../.gitbook/assets/3_19.png" alt=""><figcaption></figcaption></figure>
+
+18\. Once, Minting process is completed, navigate to the Token History tab, where you have an option of viewing TrustChain. You can view TrustChain by clicking on View TrustChain button.
 
 ![](../.gitbook/assets/verra\_new\_16.png)
 
