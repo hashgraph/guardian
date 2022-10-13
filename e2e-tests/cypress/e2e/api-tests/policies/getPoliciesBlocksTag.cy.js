@@ -26,24 +26,24 @@ context("Policies", () => {
 
         cy.request(urlPolicies).should((response) => {
             expect(response.status).to.eq(200);
-            const policyId = response.body[0].id;
-            const tag = response.body[0].config.children[0].tag;
+            // const policyId = response.body.at(-1).id;
+            // const tag = response.body.at(-1).policyTag;
 
-            const url = {
-                method: "GET",
-                url:
-                    Cypress.env("api_server") +
-                    "policies/" +
-                    policyId +
-                    "/tag/" +
-                    tag + "/blocks",
-                headers: {
-                    authorization,
-                },
-            };
-            cy.request(url).should((response) => {
-                expect(response.status).to.eq(200);
-            });
+            // const url = {
+            //     method: "GET",
+            //     url:
+            //         Cypress.env("api_server") +
+            //         "policies/" +
+            //         policyId +
+            //         "/tag/" +
+            //         tag + "/blocks",
+            //     headers: {
+            //         authorization,
+            //     },
+            // };
+            // cy.request(url).should((response) => {
+            //     expect(response.status).to.eq(200);
+            // });
         });
     });
 });
