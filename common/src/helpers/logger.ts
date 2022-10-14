@@ -140,7 +140,7 @@ export class ConsoleTransport extends Transport {
                 fn = console.log;
         }
 
-        // fn(`${new Date().toISOString()} [${info.attributes?.join(',')}]:`, info.message);
+        fn(`${new Date().toISOString()} [${info.attributes?.join(',')}]:`, info.message);
 
         callback();
     }
