@@ -22,12 +22,17 @@ export class Log extends BaseEntity implements ILog {
     /**
      * Datetime
      */
-    @Property()
+    @Property({
+        index: true
+    })
     datetime: Date = new Date();
 
     /**
      * Attributes
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     attributes?: string[];
 }
