@@ -130,7 +130,7 @@ export class Guardians extends ServiceRequestsBase {
      * @param taskId
      */
     public async setTokenAsync(token: IToken | any, owner: any, taskId: string): Promise<any> {
-        return await this.request<any>(MessageAPI.SET_TOKEN_ASYNC, { token, owner, taskId});
+        return await this.request<any>(MessageAPI.SET_TOKEN_ASYNC, { token, owner, taskId });
     }
 
     /**
@@ -467,7 +467,7 @@ export class Guardians extends ServiceRequestsBase {
      * @param {string} topicId
      * @param {string} taskId
      */
-    public async importSchemasByMessagesAsync(messageIds: string[], owner: string, topicId: string, taskId: string ): Promise<any> {
+    public async importSchemasByMessagesAsync(messageIds: string[], owner: string, topicId: string, taskId: string): Promise<any> {
         return await this.request<any>(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, { messageIds, owner, topicId, taskId });
     }
 
@@ -478,10 +478,23 @@ export class Guardians extends ServiceRequestsBase {
      * @param {owner} owner
      * @param {string} topicId
      *
-     * @returns {any[]} - Schema Document
+     * @returns {{ schemasMap: any[], errors: any[] }}
      */
-    public async importSchemasByFile(files: ISchema[], owner: string, topicId: string): Promise<any[]> {
-        return await this.request<any[]>(MessageAPI.IMPORT_SCHEMAS_BY_FILE, { files, owner, topicId });
+    public async importSchemasByFile(
+        files: ISchema[],
+        owner: string,
+        topicId: string
+    ): Promise<{
+        /**
+         * New schema uuid
+         */
+        schemasMap: any[],
+        /**
+         * Errors
+         */
+        errors: any[]
+    }> {
+        return await this.request<any>(MessageAPI.IMPORT_SCHEMAS_BY_FILE, { files, owner, topicId });
     }
 
     /**
@@ -491,7 +504,12 @@ export class Guardians extends ServiceRequestsBase {
      * @param {string} topicId
      * @param {string} taskId
      */
-    public async importSchemasByFileAsync(files: ISchema[], owner: string, topicId: string, taskId: string): Promise<any> {
+    public async importSchemasByFileAsync(
+        files: ISchema[],
+        owner: string,
+        topicId: string,
+        taskId: string
+    ): Promise<any> {
         return await this.request<any>(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, { files, owner, topicId, taskId });
     }
 
@@ -729,7 +747,7 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns - Artifact
      */
-     public async getArtifacts(owner, policyId, pageIndex, pageSize): Promise<any> {
+    public async getArtifacts(owner, policyId, pageIndex, pageSize): Promise<any> {
         return await this.request<any>(MessageAPI.GET_ARTIFACTS, {
             owner,
             policyId,

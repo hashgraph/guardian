@@ -21,13 +21,19 @@ export class BlockState extends BaseEntity {
     /**
      * Policy id
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     policyId?: string;
 
     /**
      * Block id
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     blockId?: string;
 
     /**

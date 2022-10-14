@@ -121,6 +121,10 @@
 .grid-setting::ng-deep .propRow .propRowCell {
     background: #fff;
     position: relative;
+    overflow: hidden;
+    max-width: 333px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .grid-setting::ng-deep .propRow:nth-child(2n) .propRowCell {

@@ -282,3 +282,7 @@
 ## Task APIs
 
 * [Returning Task Statuses](task-apis/returning-task-statuses.md)
+
+## Artifacts Demo
+
+* [How to Import/Delete Artifacts](artifacts-demo/how-to-import-delete-artifacts.md)

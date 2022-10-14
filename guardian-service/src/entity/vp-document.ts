@@ -11,13 +11,19 @@ export class VpDocument extends BaseEntity implements IVPDocument {
     /**
      * Document owner
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     owner?: string;
 
     /**
      * Document hash
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        // index: true
+    })
     hash?: string;
 
     /**
@@ -29,7 +35,9 @@ export class VpDocument extends BaseEntity implements IVPDocument {
     /**
      * Created at
      */
-    @Property()
+    @Property({
+        index: true
+    })
     createDate: Date = new Date();
 
     /**
@@ -59,7 +67,10 @@ export class VpDocument extends BaseEntity implements IVPDocument {
     /**
      * Policy id
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     policyId?: string;
 
     /**

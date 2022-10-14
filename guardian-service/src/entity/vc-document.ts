@@ -11,25 +11,37 @@ export class VcDocument extends BaseEntity implements IVCDocument {
     /**
      * Document owner
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     owner?: string;
 
     /**
      * Assign
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     assignedTo?: string;
 
     /**
      * Assign
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     assignedToGroup?: string;
 
     /**
      * Document hash
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        // index: true
+    })
     hash?: string;
 
     /**
@@ -41,7 +53,9 @@ export class VcDocument extends BaseEntity implements IVCDocument {
     /**
      * Created at
      */
-    @Property()
+    @Property({
+        index: true
+    })
     createDate: Date = new Date();
 
     /**
@@ -77,7 +91,10 @@ export class VcDocument extends BaseEntity implements IVCDocument {
     /**
      * Policy id
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     policyId?: string;
 
     /**
@@ -131,7 +148,10 @@ export class VcDocument extends BaseEntity implements IVCDocument {
     /**
      * User group
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     group?: any
 
     /**

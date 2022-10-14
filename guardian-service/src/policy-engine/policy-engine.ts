@@ -212,8 +212,26 @@ export class PolicyEngine {
 
     /**
      * Clone policy
+     * @param policyId
+     * @param data
+     * @param owner
+     * @param notifier
      */
-    public async clonePolicy(policyId: string, data: any, owner: string, notifier: INotifier): Promise<string> {
+    public async clonePolicy(
+        policyId: string,
+        data: any,
+        owner: string,
+        notifier: INotifier
+    ): Promise<{
+        /**
+         * New Policy
+         */
+        policy: Policy;
+        /**
+         * Errors
+         */
+        errors: any[];
+    }> {
         const logger = new Logger();
         logger.info('Create Policy', ['GUARDIAN_SERVICE']);
 
@@ -238,8 +256,7 @@ export class PolicyEngine {
         const dataToCreate = {
             policy, schemas, tokens
         };
-        const newPolicy = await PolicyImportExportHelper.importPolicy(dataToCreate, owner, null, notifier, data);
-        return newPolicy.id;
+        return await PolicyImportExportHelper.importPolicy(dataToCreate, owner, null, notifier, data);
     }
 
     /**
@@ -356,6 +373,7 @@ export class PolicyEngine {
      * @param model
      * @param owner
      * @param version
+     * @param notifier
      */
     public async publishPolicy(model: Policy, owner: string, version: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
@@ -377,7 +395,7 @@ export class PolicyEngine {
         this.policyGenerator.regenerateIds(model.config);
         const zip = await PolicyImportExportHelper.generateZipFile(model);
         const buffer = await zip.generateAsync({
-            type: 'arraybuffer' ,
+            type: 'arraybuffer',
             compression: 'DEFLATE',
             compressionOptions: {
                 level: 3
@@ -482,7 +500,7 @@ export class PolicyEngine {
         this.policyGenerator.regenerateIds(model.config);
         const zip = await PolicyImportExportHelper.generateZipFile(model);
         const buffer = await zip.generateAsync({
-            type: 'arraybuffer' ,
+            type: 'arraybuffer',
             compression: 'DEFLATE',
             compressionOptions: {
                 level: 3
@@ -671,7 +689,7 @@ export class PolicyEngine {
     /**
      * Import policy by message
      * @param messageId
-     * @param userFull
+     * @param owner
      * @param hederaAccount
      * @param versionOfTopicId
      * @param notifier
@@ -682,7 +700,16 @@ export class PolicyEngine {
         hederaAccount: IRootConfig,
         versionOfTopicId: string,
         notifier: INotifier
-    ): Promise<Policy> {
+    ): Promise<{
+        /**
+         * New Policy
+         */
+        policy: Policy;
+        /**
+         * Errors
+         */
+        errors: any[];
+    }> {
         notifier.start('Load from IPFS');
         const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey);
         const message = await messageServer.getMessage<PolicyMessage>(messageId);
@@ -696,8 +723,7 @@ export class PolicyEngine {
         notifier.completedAndStart('File parsing');
         const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document, true);
         notifier.completed();
-        const policy = await PolicyImportExportHelper.importPolicy(policyToImport, owner, versionOfTopicId, notifier);
-        return policy;
+        return await PolicyImportExportHelper.importPolicy(policyToImport, owner, versionOfTopicId, notifier);
     }
 
     /**
