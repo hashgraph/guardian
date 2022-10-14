@@ -336,7 +336,7 @@ npm run test
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialize Standard Registry by completing the Setup.
 
-![](<../../.gitbook/assets/image (14).png>)
+![](<../../.gitbook/assets/image (23) (1).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
