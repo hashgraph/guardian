@@ -11,9 +11,10 @@ import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@
 export class DocumentPath {
     @Input('value') value!: string;
     @Input('displayTooltip') displayTooltip!: boolean;
-    @Output('valueChange') valueChange = new EventEmitter<string>();
-
     @Input('readonly') readonly!: boolean;
+
+    @Output('valueChange') valueChange = new EventEmitter<string>();
+    @Output('change') change = new EventEmitter<string>();
 
     startPath: string = '';
     endPath: string = '';
@@ -34,6 +35,7 @@ export class DocumentPath {
     onChange() {
         this.value = this.startPath + this.endPath;
         this.valueChange.emit(this.value);
+        this.change.emit(this.value);
     }
 
     ngOnChanges(changes: SimpleChanges) {

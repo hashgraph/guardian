@@ -252,15 +252,15 @@ export class Worker {
                     Environment.setNetwork(task.data.network);
                     Environment.setLocalNodeAddress(task.data.localNodeAddress);
                     Environment.setLocalNodeProtocol(task.data.localNodeProtocol);
-                    const {operatorId, operatorKey, dryRun} = task.data.clientOptions;
+                    const { operatorId, operatorKey, dryRun } = task.data.clientOptions;
                     const client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
-                    const {topicId, buffer, submitKey, memo} = task.data;
+                    const { topicId, buffer, submitKey, memo } = task.data;
                     result.data = await client.submitMessage(topicId, buffer, submitKey, memo);
                     break;
                 }
 
                 case WorkerTaskType.GENERATE_DEMO_KEY: {
-                    const {operatorId, operatorKey, initialBalance} = task.data;
+                    const { operatorId, operatorKey, initialBalance } = task.data;
                     const client = new HederaSDKHelper(operatorId, operatorKey);
                     const treasury = await client.newAccount(initialBalance);
                     result.data = {
@@ -271,7 +271,7 @@ export class Worker {
                 }
 
                 case WorkerTaskType.GET_USER_BALANCE: {
-                    const {hederaAccountId, hederaAccountKey} = task.data;
+                    const { hederaAccountId, hederaAccountKey } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey);
                     result.data = await client.balance(hederaAccountId);
 
@@ -279,7 +279,7 @@ export class Worker {
                 }
 
                 case WorkerTaskType.GET_ACCOUNT_INFO: {
-                    const {userID, userKey, hederaAccountId} = task.data;
+                    const { userID, userKey, hederaAccountId } = task.data;
                     const client = new HederaSDKHelper(userID, userKey);
                     result.data = await client.accountInfo(hederaAccountId);
 
@@ -299,7 +299,7 @@ export class Worker {
                         initialSupply,
                         tokenName,
                         tokenSymbol,
-                        tokenType} = task.data;
+                        tokenType } = task.data;
                     const client = new HederaSDKHelper(operatorId, operatorKey);
                     const treasury = client.newTreasury(operatorId, operatorKey);
                     const treasuryId = treasury.id;
@@ -384,7 +384,7 @@ export class Worker {
                 }
 
                 case WorkerTaskType.ASSOCIATE_TOKEN: {
-                    const {userID, userKey, associate, tokenId, dryRun} = task.data;
+                    const { userID, userKey, associate, tokenId, dryRun } = task.data;
                     const client = new HederaSDKHelper(userID, userKey, dryRun);
                     if (associate) {
                         result.data = await client.associate(tokenId, userID, userKey);
@@ -396,7 +396,7 @@ export class Worker {
                 }
 
                 case WorkerTaskType.GRANT_KYC_TOKEN: {
-                    const {hederaAccountId, hederaAccountKey, userHederaAccountId, tokenId, kycKey, grant, dryRun} = task.data;
+                    const { hederaAccountId, hederaAccountKey, userHederaAccountId, tokenId, kycKey, grant, dryRun } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
 
                     if (grant) {
@@ -409,7 +409,7 @@ export class Worker {
                 }
 
                 case WorkerTaskType.FREEZE_TOKEN: {
-                    const {hederaAccountId, hederaAccountKey, freezeKey, freeze, tokenId, dryRun} = task.data;
+                    const { hederaAccountId, hederaAccountKey, freezeKey, freeze, tokenId, dryRun } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
                     if (freeze) {
                         result.data = await client.freeze(tokenId, hederaAccountId, freezeKey);
@@ -421,7 +421,7 @@ export class Worker {
                 }
 
                 case WorkerTaskType.MINT_TOKEN: {
-                    const {hederaAccountId, hederaAccountKey, token, tokenValue, dryRun, transactionMemo, uuid, targetAccount, mintId} = task.data;
+                    const { hederaAccountId, hederaAccountKey, token, tokenValue, dryRun, transactionMemo, uuid, targetAccount, mintId } = task.data;
 
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
                     const tokenId = token.tokenId;
@@ -489,7 +489,7 @@ export class Worker {
                     const tokenId = token.tokenId;
                     const wipeKey = token.wipeKey;
 
-                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey , dryRun);
+                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
                     if (token.tokenType === 'non-fungible') {
                         result.error = 'unsupported operation';
                     } else {
@@ -500,8 +500,8 @@ export class Worker {
                 }
 
                 case WorkerTaskType.NEW_TOPIC: {
-                    const {hederaAccountId, hederaAccountKey , dryRun, topicMemo} = task.data;
-                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey , dryRun);
+                    const { hederaAccountId, hederaAccountKey, dryRun, topicMemo } = task.data;
+                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
                     result.data = await client.newTopic(
                         hederaAccountKey,
                         hederaAccountKey,
@@ -518,8 +518,8 @@ export class Worker {
                         dryRun,
                         timeStamp
                     } = task.data;
-                    const client = new HederaSDKHelper(operatorId, operatorKey , dryRun);
-                    result.data =  await client.getTopicMessage(timeStamp);
+                    const client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
+                    result.data = await client.getTopicMessage(timeStamp);
 
                     break;
                 }
@@ -531,14 +531,14 @@ export class Worker {
                         dryRun,
                         topic
                     } = task.data;
-                    const client = new HederaSDKHelper(operatorId, operatorKey , dryRun);
+                    const client = new HederaSDKHelper(operatorId, operatorKey, dryRun);
                     result.data = await client.getTopicMessages(topic);
 
                     break;
                 }
 
                 case WorkerTaskType.CHECK_ACCOUNT: {
-                    const {hederaAccountId} = task.data;
+                    const { hederaAccountId } = task.data;
                     result.data = !HederaSDKHelper.checkAccount(hederaAccountId);
 
                     break;
@@ -625,7 +625,11 @@ export class Worker {
 
         try {
             await this.request(WorkerEvents.TASK_COMPLETE, result);
-            this.logger.info(`Task completed: ${this.currentTaskId}`, [this._channelName]);
+            if (result?.error) {
+                this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this._channelName]);
+            } else {
+                this.logger.info(`Task completed: ${this.currentTaskId}`, [this._channelName]);
+            }
         } catch (error) {
             this.logger.error(error.message, [this._channelName]);
             this.clearState();

@@ -31,3 +31,4 @@ export { DocumentValidatorBlock } from './document-validator-block';
 export { TokenConfirmationBlock } from './token-confirmation-block';
 export { GroupManagerBlock } from './group-manager';
 export { MultiSignBlock } from './multi-sign-block';
+export { CalculateMathVariables } from './calculate-math-variables';

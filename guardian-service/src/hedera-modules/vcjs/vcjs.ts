@@ -115,9 +115,7 @@ export class VCJS {
     /**
      * Create Suite by DID
      *
-     * @param {string} id - Root DID
-     * @param {string} did - DID
-     * @param {PrivateKey} privateKey - Private Key
+     * @param {DidRootKey} document - DID document
      *
      * @returns {Ed25519Signature2018} - Ed25519Signature2018
      */
@@ -332,7 +330,7 @@ export class VCJS {
      * Create VP Document
      *
      * @param {string} did - DID
-     * @param {PrivateKey | string} privateKey - Private Key
+     * @param {PrivateKey | string} key - Private Key
      * @param {HcsVcDocument<VcSubject>[]} vcs - VC Documents
      * @param {string} [uuid] - new uuid
      *

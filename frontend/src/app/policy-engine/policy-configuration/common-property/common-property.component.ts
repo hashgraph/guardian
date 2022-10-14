@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Schema } from '@guardian/interfaces';
 
 /**
  * common property
@@ -15,6 +16,7 @@ export class CommonPropertyComponent implements OnInit {
     @Input('readonly') readonly!: boolean;
     @Input('data') data!: any;
     @Input('offset') offset!: number;
+    @Input('schemas') schemas!: Schema[];
 
     @Output('update') update = new EventEmitter();
 
@@ -36,13 +38,14 @@ export class CommonPropertyComponent implements OnInit {
 
     groupCollapse: boolean = false;
     itemCollapse: any = {};
+    needUpdate: boolean = true;
 
     constructor() {
 
     }
 
     ngOnInit(): void {
-
+        this.needUpdate = true;
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -68,6 +71,7 @@ export class CommonPropertyComponent implements OnInit {
     }
 
     onSave() {
+        this.needUpdate = true;
         this.update.emit();
     }
 
@@ -80,6 +84,7 @@ export class CommonPropertyComponent implements OnInit {
     }
 
     addItems() {
+        this.needUpdate = true;
         const item: any = {};
         for (const p of this.property.items.properties) {
             if (p.default) {
@@ -91,7 +96,21 @@ export class CommonPropertyComponent implements OnInit {
     }
 
     removeItems(i: number) {
+        this.needUpdate = true;
         this.value.splice(i, 1);
         this.update.emit();
+    }
+
+    getArrayItemText(config: any, item: any): string {
+        if (this.needUpdate) {
+            let text = config.value;
+            if (text && text.indexOf('@') !== -1) {
+                for (const prop of config.properties) {
+                    text = text.replaceAll('@' + prop.name, item[prop.name] || '');
+                }
+            }
+            config.__value = text;
+        }
+        return config.__value;
     }
 }
