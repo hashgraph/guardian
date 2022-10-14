@@ -1,5 +1,5 @@
 
-context('Policies', () => {
+context('Policies', { tags: '@policies' },() => {
     const authorization = Cypress.env('authorization');
 
     it('check returns of the policy', () => {

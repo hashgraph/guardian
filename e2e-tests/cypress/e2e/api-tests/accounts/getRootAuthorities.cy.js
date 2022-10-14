@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Accounts", () => {
+context("Accounts",  { tags: '@accounts' }, () => {
     const authorization = Cypress.env("authorization");
 
     // TODO:

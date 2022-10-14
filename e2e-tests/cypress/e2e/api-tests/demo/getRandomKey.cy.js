@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Demo", () => {
+context("Demo", { tags: '@demo' }, () => {
     it("should generates a new Hedera account with a random private key", () => {
         cy.request({
             method: METHOD.GET,

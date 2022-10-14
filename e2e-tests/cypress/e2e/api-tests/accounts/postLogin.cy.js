@@ -1,4 +1,4 @@
-context('Accounts', () => {
+context('Accounts',  { tags: '@accounts' }, () => {
 
     it('should be able to login as a StandardRegistry', () => {
         cy.request('POST', (Cypress.env('api_server') + 'accounts/login'), {

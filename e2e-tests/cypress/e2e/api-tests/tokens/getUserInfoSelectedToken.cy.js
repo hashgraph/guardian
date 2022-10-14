@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Tokens", () => {
+context("Tokens", { tags: '@tokens' },() => {
     const authorization = Cypress.env("authorization");
     const user = Cypress.env("root_user");
 

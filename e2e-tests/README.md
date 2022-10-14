@@ -48,6 +48,26 @@ For a single test use:
 
 `npx cypress run --spec path/to/file.cy.js`
 
+### Run by tag
+To run only the specs that have any tests tagged "@tag":
+
+`npx cypress run --env grepTags=@tag,grepFilterSpecs=true`
+
+where @tag can be:
+- accounts - all tests for accounts operations
+- demo - all tests for demo operations
+- external - all tests for external operations
+- ipfs - all tests for ipfs operations
+- logs - - all tests for logs operations
+- policies - all tests for policies operations
+- dry-run - all tests for dry-run operations
+- profilies - all tests for profilies operations
+- schemas - all tests for schemas operations
+- settings - all tests for settings operations
+- tokens - all tests for tokens operations
+- trustchains - all tests for trustchains operations
+
+
 To run all tests sequentially in Docker use:
 
    ```shell

@@ -16,6 +16,7 @@
  * @type {Cypress.PluginConfig}
  */
 // eslint-disable-next-line no-unused-vars
+const selectTestsWithGrep = require('cypress-select-tests/grep')
 module.exports = (on, config) => {
-
-};
+  on('file:preprocessor', selectTestsWithGrep(config))
+}
