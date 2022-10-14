@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Trustchains", () => {
+context("Trustchains", { tags: '@trustchains' },() => {
 
     before(() => {
         let username = 'Auditor'

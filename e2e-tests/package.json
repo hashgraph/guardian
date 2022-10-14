@@ -13,7 +13,9 @@
   ],
   "license": "ISC",
   "devDependencies": {
-    "cypress": "^10.7.0"
+    "cypress": "^10.7.0",
+    "cypress-grep": "^3.0.3",
+    "cypress-select-tests": "^1.7.1"
   },
   "dependencies": {
     "@bahmutov/cy-api": "^2.1.3",

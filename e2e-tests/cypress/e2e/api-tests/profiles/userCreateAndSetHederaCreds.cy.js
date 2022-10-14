@@ -2,7 +2,7 @@
 // import { ids } from "../../../fixtures/hederaAccounts.json"
 // import { did } from "../../../fixtures/StandardRegistryData.json";
 
-context('Profiles', () => {
+context('Profiles', { tags: '@profiles' }, () => {
 
   it('Register a new user, login with it and set hedera credentials for it', () => {
     const userPassword = 'test'

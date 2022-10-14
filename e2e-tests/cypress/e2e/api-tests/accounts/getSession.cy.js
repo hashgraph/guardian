@@ -1,5 +1,5 @@
 
-context('Accounts', () => {
+context('Accounts', { tags: '@accounts' }, () => {
     const authorization = Cypress.env('authorization');
 
       // TODO:

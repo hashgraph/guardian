@@ -1,4 +1,4 @@
-context("Policies", () => {
+context("Policies", { tags: '@policies' },() => {
     const authorization = Cypress.env("authorization");
 
 

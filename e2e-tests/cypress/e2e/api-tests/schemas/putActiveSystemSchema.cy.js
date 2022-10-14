@@ -1,10 +1,10 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Schemas", () => {
+context("Schemas", { tags: '@schemas' }, () => {
     const authorization = Cypress.env("authorization");
     const username = "StandartRegistry";
-    const schemaUUID = "9999b23a-b1ea-408f-a573-6d8bd1a2060a";
+    const schemaUUID = ("0000b23a-b1ea-408f-a573"+ Math.floor(Math.random() * 999999) + "a2060a")
 
     it("Makes the created scheme active", () => {
         //Create new schema

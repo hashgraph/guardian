@@ -1,6 +1,6 @@
-context('Accounts', () => {
+context('Accounts', { tags: '@accounts' }, () => {
 
-      it('register a new user and login with it', () => {
+      it('register a new user and login with it',  () => {
           const name = (Math.floor(Math.random() * 999) + 'test001')
         cy.request('POST', (Cypress.env('api_server') + 'accounts/register'), {
             username: name,

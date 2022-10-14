@@ -1,5 +1,5 @@
 
-context('Settings', () => {
+context('Settings', { tags: '@settings' },() => {
 
   //Checking that file with access token is presented. If it isn't - creating it.
   before(() => {

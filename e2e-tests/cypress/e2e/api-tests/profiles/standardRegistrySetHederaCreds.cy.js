@@ -1,5 +1,5 @@
 
-context('Profiles', () => {
+context('Profiles', { tags: '@profiles' },() => {
 
   it('Get Bearer token and set hedera credentials for StandardRegistry', () => {
     //Getting accessToken for StandardRegistry

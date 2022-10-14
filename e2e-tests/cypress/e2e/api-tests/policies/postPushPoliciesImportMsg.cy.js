@@ -1,4 +1,4 @@
-context("Policy - Import", () => {
+context("Policy - Import", { tags: '@policies' }, () => {
     const authorization = Cypress.env("authorization");
 
     it("push should imports new policy and all associated artifacts from IPFS into the local DB", () => {

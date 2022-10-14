@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("IPFS", () => {
+context("IPFS",  { tags: '@ipfs' }, () => {
     const authorization = Cypress.env("authorization");
 
     it("import the schema file", () => {

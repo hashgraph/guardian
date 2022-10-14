@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Schemas", () => {
+context("Schemas",{ tags: '@schemas' },  () => {
     const authorization = Cypress.env("authorization");
 
     it("push previews the schema from IPFS without loading it into the local DB", () => {

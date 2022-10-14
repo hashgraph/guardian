@@ -17,6 +17,13 @@
 import "./commands";
 import "./api/api-helper";
 
+
+// cypress/support/index.js
+// load and register the grep feature using "require" function
+// https://github.com/cypress-io/cypress-grep
+const registerCypressGrep = require('cypress-grep')
+registerCypressGrep()
+
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 const authorization = Cypress.env("authorization");
@@ -61,5 +68,3 @@ before(() => {
     });
 });
 
-
-//If user does not have a policy import them

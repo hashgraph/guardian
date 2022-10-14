@@ -1,5 +1,5 @@
 
-context('Profiles',() => {
+context('Profiles', { tags: '@profiles' },() => {
     const authorization = Cypress.env('authorization');
 
     it('it returns user account information', () => {

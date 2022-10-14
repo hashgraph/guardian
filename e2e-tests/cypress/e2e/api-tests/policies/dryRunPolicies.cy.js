@@ -1,4 +1,4 @@
-context("Dry Run Policies", () => {
+context("Dry Run Policies",  { tags: '@dry-run' }, () => {
     const authorization = Cypress.env("authorization");
 
     before(() => {
