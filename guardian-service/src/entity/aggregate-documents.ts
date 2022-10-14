@@ -10,7 +10,10 @@ export class AggregateVC extends BaseEntity {
     /**
      * Document owner
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     owner?: string;
 
     /**

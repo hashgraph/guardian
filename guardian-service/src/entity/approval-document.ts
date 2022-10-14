@@ -10,7 +10,10 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
     /**
      * Document owner
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     owner?: string;
 
     /**
@@ -28,7 +31,10 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
     /**
      * Document policy id
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     policyId?: string;
 
     /**
@@ -40,7 +46,9 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
     /**
      * Created at
      */
-    @Property()
+    @Property({
+        index: true
+    })
     createDate: Date = new Date();
 
     /**
