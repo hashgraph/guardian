@@ -28,6 +28,7 @@ import { IPolicyUser } from '@policy-engine/policy-user';
         ],
         output: [
             PolicyOutputEventType.Confirm,
+            PolicyOutputEventType.SkipEvent,
             PolicyOutputEventType.RefreshEvent
         ],
         defaultEvent: false
@@ -98,13 +99,13 @@ export class TokenConfirmationBlock {
 
         if (data.action === 'confirm') {
             await this.confirm(ref, data, blockState);
+            ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
         } else if (data.action === 'skip') {
             await this.skip(ref, data, blockState);
+            ref.triggerEvents(PolicyOutputEventType.SkipEvent, blockState.user, blockState.data);
         } else {
             throw new BlockActionError(`Invalid Action`, ref.blockType, ref.uuid)
         }
-
-        ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data);
     }
 
