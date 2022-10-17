@@ -110,6 +110,7 @@ services:
     depends_on:
       - message-broker
       - logger-service
+      - auth-service
 
   mrv-sender:
     build:
