@@ -27,9 +27,10 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Account Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.accountType" [disabled]="readonly" (selectionChange)="changeAccountType($event.value)">
+            <mat-select [(value)]="block.accountType" [disabled]="readonly" (selectionChange)="changeAccountType()">
                 <mat-option value="default">Default</mat-option>
-                <mat-option value="custom">Custom</mat-option>
+                <mat-option value="custom">Custom Account Field</mat-option>
+                <mat-option value="custom-value">Custom Account Value</mat-option>
             </mat-select>
         </td>
     </tr>
@@ -38,6 +39,13 @@
         <td class="propRowCell cellName">Account Id (Field)</td>
         <td class="propRowCell">
             <input class="prop-input" [(ngModel)]="block.accountId" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr *ngIf="block.accountType==='custom-value'" class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Account Id (Value)</td>
+        <td class="propRowCell">
+            <input class="prop-input" [(ngModel)]="block.accountIdValue" [readonly]="readonly">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">

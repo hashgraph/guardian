@@ -279,8 +279,8 @@ export class Worker {
                 }
 
                 case WorkerTaskType.GET_ACCOUNT_INFO: {
-                    const { userID, userKey, hederaAccountId } = task.data;
-                    const client = new HederaSDKHelper(userID, userKey);
+                    const { userID, userKey, hederaAccountId, dryRun } = task.data;
+                    const client = new HederaSDKHelper(userID, userKey, dryRun);
                     result.data = await client.accountInfo(hederaAccountId);
 
                     break;

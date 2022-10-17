@@ -26,7 +26,8 @@ import { IPolicyUser } from '@policy-engine/policy-user';
         ],
         output: [
             PolicyOutputEventType.RunEvent,
-            PolicyOutputEventType.RefreshEvent
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
     }
@@ -47,7 +48,11 @@ export class TokenActionBlock {
      * @param {IPolicyEvent} event
      */
     @ActionCallback({
-        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
+        ]
     })
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
@@ -76,33 +81,44 @@ export class TokenActionBlock {
 
         await PolicyUtils.checkAccountId(account);
 
+        const policyOwner = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+        const associatedAccountInfo = await PolicyUtils.getHederaAccountInfo(ref, account.hederaAccountId, policyOwner);
+
         switch (ref.options.action) {
             case 'associate': {
-                await PolicyUtils.associate(ref, token, account);
+                if (!associatedAccountInfo[token.tokenId]) {
+                    await PolicyUtils.associate(ref, token, account);
+                }
                 break;
             }
             case 'dissociate': {
-                await PolicyUtils.associate(ref, token, account);
+                if (associatedAccountInfo[token.tokenId]) {
+                    await PolicyUtils.dissociate(ref, token, account);
+                }
                 break;
             }
             case 'freeze': {
-                const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-                await PolicyUtils.freeze(ref, token, account, root);
+                if (associatedAccountInfo[token.tokenId] && associatedAccountInfo[token.tokenId].frozen === false) {
+                    await PolicyUtils.freeze(ref, token, account, policyOwner);
+                }
                 break;
             }
             case 'unfreeze': {
-                const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-                await PolicyUtils.unfreeze(ref, token, account, root);
+                if (associatedAccountInfo[token.tokenId] && associatedAccountInfo[token.tokenId].frozen === true) {
+                    await PolicyUtils.unfreeze(ref, token, account, policyOwner);
+                }
                 break;
             }
             case 'grantKyc': {
-                const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-                await PolicyUtils.grantKyc(ref, token, account, root);
+                if (associatedAccountInfo[token.tokenId] && associatedAccountInfo[token.tokenId].kyc === false) {
+                    await PolicyUtils.grantKyc(ref, token, account, policyOwner);
+                }
                 break;
             }
             case 'revokeKyc': {
-                const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-                await PolicyUtils.revokeKyc(ref, token, account, root);
+                if (associatedAccountInfo[token.tokenId] && associatedAccountInfo[token.tokenId].kyc === true) {
+                    await PolicyUtils.revokeKyc(ref, token, account, policyOwner);
+                }
                 break;
             }
             default:

@@ -1,6 +1,7 @@
 import { BlockErrorActions } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { Logger } from '@guardian/common';
+import { PolicyOutputEventType } from '@policy-engine/interfaces';
 
 /**
  * Catch errors decorator
@@ -12,12 +13,14 @@ export function CatchErrors() {
         descriptor.value = new Proxy(_target[propertyKey], {
             async apply(target: any, thisArg: any, argArray: any[]): Promise<any> {
                 const user = argArray[0].user;
+                const data = argArray[0].data;
                 const f = async () => {
                     try {
                         await target.apply(thisArg, argArray);
                     } catch (error) {
                         await new Logger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId]);
                         PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user);
+                        thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
                         switch (thisArg.options.onErrorAction) {
                             case BlockErrorActions.RETRY: {
                                 setTimeout(f, parseInt(thisArg.options.errorTimeout, 10));

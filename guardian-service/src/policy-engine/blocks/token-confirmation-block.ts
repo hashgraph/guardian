@@ -28,8 +28,8 @@ import { IPolicyUser } from '@policy-engine/policy-user';
         ],
         output: [
             PolicyOutputEventType.Confirm,
-            PolicyOutputEventType.SkipEvent,
-            PolicyOutputEventType.RefreshEvent
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: false
     }
@@ -99,13 +99,13 @@ export class TokenConfirmationBlock {
 
         if (data.action === 'confirm') {
             await this.confirm(ref, data, blockState);
-            ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
         } else if (data.action === 'skip') {
             await this.skip(ref, data, blockState);
-            ref.triggerEvents(PolicyOutputEventType.SkipEvent, blockState.user, blockState.data);
         } else {
             throw new BlockActionError(`Invalid Action`, ref.blockType, ref.uuid)
         }
+
+        ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data);
     }
 
@@ -129,14 +129,20 @@ export class TokenConfirmationBlock {
         const token = await this.getToken();
 
         await PolicyUtils.checkAccountId(account);
+        const policyOwner = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+        const associatedAccountInfo = await PolicyUtils.getHederaAccountInfo(ref, account.hederaAccountId, policyOwner);
 
         switch (ref.options.action) {
             case 'associate': {
-                await PolicyUtils.associate(ref, token, account);
+                if (!associatedAccountInfo[token.tokenId]) {
+                    await PolicyUtils.associate(ref, token, account);
+                }
                 break;
             }
             case 'dissociate': {
-                await PolicyUtils.dissociate(ref, token, account);
+                if (associatedAccountInfo[token.tokenId]) {
+                    await PolicyUtils.dissociate(ref, token, account);
+                }
                 break;
             }
             default:
@@ -160,7 +166,11 @@ export class TokenConfirmationBlock {
      * @param {IPolicyEvent} event
      */
     @ActionCallback({
-        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
+        ]
     })
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
