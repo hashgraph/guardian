@@ -260,11 +260,12 @@ export class RequestDocumentBlockComponent implements OnInit {
     }
 
     onRestoreClick() {
-        this.preset(
-            Array.isArray(this.restoreData.document.credentialSubject)
-                ? this.restoreData.document.credentialSubject[0]
-                : this.restoreData.document.credentialSubject
-        );
+        const presetDocument = Array.isArray(this.restoreData.document?.credentialSubject)
+            ? this.restoreData.document.credentialSubject[0]
+            : this.restoreData.document?.credentialSubject;
+        if (presetDocument) {
+            this.preset(presetDocument);
+        }
         this.restoreData = null;
     }
 }
