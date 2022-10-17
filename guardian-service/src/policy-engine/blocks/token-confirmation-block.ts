@@ -29,7 +29,8 @@ import { IPolicyUser } from '@policy-engine/policy-user';
         output: [
             PolicyOutputEventType.Confirm,
             PolicyOutputEventType.SkipEvent,
-            PolicyOutputEventType.RefreshEvent
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: false
     }
@@ -160,7 +161,11 @@ export class TokenConfirmationBlock {
      * @param {IPolicyEvent} event
      */
     @ActionCallback({
-        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
+        ]
     })
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {

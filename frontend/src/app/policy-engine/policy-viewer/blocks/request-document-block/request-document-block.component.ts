@@ -44,6 +44,7 @@ export class RequestDocumentBlockComponent implements OnInit {
     presetFields: any;
     buttonClass: any;
     user!: IUser;
+    restoreData: any;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -165,6 +166,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.isExist = true;
             this.needPreset = !!data.presetSchema;
             this.presetFields = data.presetFields || [];
+            this.restoreData = data.restoreData;
             if (this.needPreset && row) {
                 this.rowDocument = this.getJson(row, this.presetFields);
                 this.preset(this.rowDocument);
@@ -255,5 +257,14 @@ export class RequestDocumentBlockComponent implements OnInit {
             disableClose: true,
             data: this
         });
+    }
+
+    onRestoreClick() {
+        this.preset(
+            Array.isArray(this.restoreData.document.credentialSubject)
+                ? this.restoreData.document.credentialSubject[0]
+                : this.restoreData.document.credentialSubject
+        );
+        this.restoreData = null;
     }
 }

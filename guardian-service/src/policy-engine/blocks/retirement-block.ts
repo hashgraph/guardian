@@ -32,7 +32,8 @@ import { IPolicyUser } from '@policy-engine/policy-user';
         ],
         output: [
             PolicyOutputEventType.RunEvent,
-            PolicyOutputEventType.RefreshEvent
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
     }
@@ -154,7 +155,11 @@ export class RetirementBlock {
      * @param {IPolicyEvent} event
      */
     @ActionCallback({
-        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
+        ]
     })
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
