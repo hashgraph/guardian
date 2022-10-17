@@ -25,7 +25,6 @@ export enum PolicyOutputEventType {
     JoinGroup = 'JoinGroup',
     SignatureQuorumReachedEvent= 'SignatureQuorumReachedEvent',
     SignatureSetInsufficientEvent= 'SignatureSetInsufficientEvent',
-    SkipEvent = 'SkipEvent',
     ErrorEvent = 'ErrorEvent'
 }
 

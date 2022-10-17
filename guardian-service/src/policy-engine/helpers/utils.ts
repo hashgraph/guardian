@@ -410,6 +410,26 @@ export class PolicyUtils {
     }
 
     /**
+     * Get Hedera Account Info
+     * @param ref Block Ref
+     * @param hederaAccountId Hedera Account Identifier
+     * @param user Client User
+     * @returns Token's map
+     */
+    public static async getHederaAccountInfo(ref: AnyBlockType, hederaAccountId: string, user: IHederaAccount): Promise<any> {
+        const workers = new Workers();
+        return await workers.addTask({
+            type: WorkerTaskType.GET_ACCOUNT_INFO,
+            data: {
+                userID: user.hederaAccountId,
+                userKey: user.hederaAccountKey,
+                hederaAccountId,
+                dryRun: ref.dryRun
+            }
+        }, 1);
+    }
+
+    /**
      * associate
      * @param token
      * @param user
