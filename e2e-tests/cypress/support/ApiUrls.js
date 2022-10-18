@@ -9,6 +9,7 @@ const API = {
     StandartRegistries:
         "accounts/standard-registries",
     Balance: "accounts/balance",
+    AccountRegister: "accounts/register",
     //Profiles
     Profiles: "profiles/",
     //Tokens
