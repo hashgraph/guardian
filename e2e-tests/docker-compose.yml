@@ -11,8 +11,8 @@ services:
     depends_on:
       - cypress-container
     environment:
-      - GIT_BRANCH=${GIT_BRANCH}
-      - PORT=3000
-      - CYPRESS_baseUrl=http://localhost:3000
+      - PORT=${PORT}
+      - CYPRESS_baseUrl=http://localhost:3000:${PORT}
+      - TAG=${TAG}
     network_mode: "host"
     command: ./entrypoint.sh

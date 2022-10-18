@@ -27,11 +27,21 @@ From /e2e-tests folder:
    docker-compose build 
    ```
 
+To run all tests sequentially in Docker use:
+
+   ```shell
+   docker-compose run cypress-tests
+   ```
+
+With specific port:
+   ```shell
+   docker-compose run cypress-tests -e PORT=3000
+   ```
+
 ### Manual
 From /e2e-tests folder run the following command to install Cypress: 
 
 `npm install cypress --save-dev`
-
 
 
 ## Usage
@@ -48,7 +58,7 @@ For a single test use:
 
 `npx cypress run --spec path/to/file.cy.js`
 
-### Run by tag
+## Run by tag
 To run only the specs that have any tests tagged "@tag":
 
 `npx cypress run --env grepTags=@tag,grepFilterSpecs=true`
@@ -68,8 +78,7 @@ where @tag can be:
 - trustchains - all tests for trustchains operations
 
 
-To run all tests sequentially in Docker use:
-
+To run in Docker
    ```shell
-   docker-compose run cypress-tests
+   TAG=... docker-compose run --entrypoint="npm run test-tag" cypress-tests
    ```
