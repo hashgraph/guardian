@@ -14,6 +14,12 @@
         <div *ngIf="type=='version'" class="g-dialog-title">
             New Version
         </div>
+        <div class="restore-data">
+            <button class="restore-data-button" *ngIf="restoreData && restoreData.id == scheme?.id" mat-raised-button
+                aria-label="Restore Values" type="button" (click)="onRestoreClick()">
+                Restore Values<mat-icon>restore</mat-icon>
+            </button>
+        </div>
         <div class="g-dialog-actions">
             <div class="switch-btn">
                 <switch-button [on-label]="'Advanced'" [off-label]="'Simplified'" [(value)]="extended"></switch-button>
