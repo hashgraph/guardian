@@ -88,36 +88,48 @@ export class TokenActionBlock {
             case 'associate': {
                 if (!associatedAccountInfo[token.tokenId]) {
                     await PolicyUtils.associate(ref, token, account);
+                } else {
+                    console.warn('Token already associated', ref.policyId);
                 }
                 break;
             }
             case 'dissociate': {
                 if (associatedAccountInfo[token.tokenId]) {
                     await PolicyUtils.dissociate(ref, token, account);
+                } else {
+                    console.warn('Token is not associated', ref.policyId);
                 }
                 break;
             }
             case 'freeze': {
                 if (associatedAccountInfo[token.tokenId] && associatedAccountInfo[token.tokenId].frozen === false) {
                     await PolicyUtils.freeze(ref, token, account, policyOwner);
+                } else {
+                    console.warn('Can not freeze token: token is not associated or it is frozen or it does not support freeze action', ref.policyId);
                 }
                 break;
             }
             case 'unfreeze': {
                 if (associatedAccountInfo[token.tokenId] && associatedAccountInfo[token.tokenId].frozen === true) {
                     await PolicyUtils.unfreeze(ref, token, account, policyOwner);
+                } else {
+                    console.warn('Can not unfreeze token: token is not associated or it is not frozen or it does not support unfreeze action', ref.policyId);
                 }
                 break;
             }
             case 'grantKyc': {
                 if (associatedAccountInfo[token.tokenId] && associatedAccountInfo[token.tokenId].kyc === false) {
                     await PolicyUtils.grantKyc(ref, token, account, policyOwner);
+                } else if (associatedAccountInfo[token.tokenId]) {
+                    console.warn('Can not grant kyc token: token is not associated or it is granted kyc or it does not support grant kyc action', ref.policyId);
                 }
                 break;
             }
             case 'revokeKyc': {
                 if (associatedAccountInfo[token.tokenId] && associatedAccountInfo[token.tokenId].kyc === true) {
                     await PolicyUtils.revokeKyc(ref, token, account, policyOwner);
+                } else {
+                    console.warn('Can not grant kyc token: token is not associated or it is revoked kyc or it does not support revoke kyc action', ref.policyId);
                 }
                 break;
             }

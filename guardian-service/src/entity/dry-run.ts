@@ -487,6 +487,12 @@ export class DryRun extends BaseEntity {
     groupLabel?: string;
 
     /**
+     * Token Map
+     */
+    @Property({ nullable: true })
+    tokenMap?: any
+
+    /**
      * Default document values
      */
     @BeforeCreate()
