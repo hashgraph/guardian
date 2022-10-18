@@ -284,9 +284,23 @@ export class HederaSDKHelper {
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async accountInfo(accountId?: string | AccountId): Promise<any> {
         const client = this.client;
-        const transaction = await new AccountInfoQuery()
-            .setAccountId(accountId);
-        return await this.executeAndGetAccountInfo(client, transaction, 'AccountInfoQuery');
+        const info = await new AccountInfoQuery()
+            .setAccountId(accountId)
+            .execute(client);
+        const hBarBalance = info.balance.toString();
+        const tokens = {};
+        for (const key of info.tokenRelationships.keys()) {
+            const tokenId = key.toString();
+            const token = info.tokenRelationships.get(key);
+            tokens[tokenId] = ({
+                tokenId,
+                balance: token.balance.toString(),
+                frozen: token.isFrozen,
+                kyc: token.isKycGranted,
+                hBarBalance
+            });
+        }
+        return tokens;
     }
 
     /**
@@ -856,48 +870,6 @@ export class HederaSDKHelper {
                 return receipt;
             } catch (error) {
                 await this.transactionErrorLog(id, type, transaction, error);
-                throw error;
-            }
-        }
-    }
-
-    /**
-     * Execute and get account info
-     * @param client
-     * @param transaction
-     * @param type
-     * @param metadata
-     * @private
-     */
-    private async executeAndGetAccountInfo(
-        client: Client, transaction: AccountInfoQuery, type: string, metadata?: any
-    ): Promise<any> {
-        if (this.dryRun) {
-            await this.virtualTransactionLog(this.dryRun, type);
-            return {};
-        } else {
-            const id = GenerateUUIDv4();
-            try {
-                await this.transactionStartLog(id, type);
-                const info = await transaction.execute(client);
-                HederaSDKHelper.transactionResponse(client);
-                await this.transactionEndLog(id, type, metadata);
-                const hBarBalance = info.balance.toString();
-                const tokens = {};
-                for (const key of info.tokenRelationships.keys()) {
-                    const tokenId = key.toString();
-                    const token = info.tokenRelationships.get(key);
-                    tokens[tokenId] = ({
-                        tokenId,
-                        balance: token.balance.toString(),
-                        frozen: token.isFrozen,
-                        kyc: token.isKycGranted,
-                        hBarBalance
-                    });
-                }
-                return tokens;
-            } catch (error) {
-                await this.transactionErrorLog(id, type, null, error);
                 throw error;
             }
         }

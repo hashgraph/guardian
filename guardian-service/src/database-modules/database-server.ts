@@ -288,6 +288,189 @@ export class DatabaseServer {
     }
 
     /**
+     * Get Virtual Hedera Account
+     * @param hederaAccountId
+     *
+     * @virtual
+     */
+    public async getVirtualHederaAccountInfo(hederaAccountId: string): Promise<any> {
+        const item = (await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        })) as any;
+        return item?.tokenMap || {};
+    }
+
+    /**
+     * Virtual Associate Token
+     * @param hederaAccountId
+     * @param token
+     *
+     * @virtual
+     */
+    public async virtualAssociate(hederaAccountId: string, token: TokenCollection): Promise<boolean> {
+        const item = await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
+        if (item) {
+            if (item.tokenMap[token.tokenId]) {
+                throw new Error('Token already associated')
+            } else {
+                item.tokenMap[token.tokenId] = {
+                    frozen: token.freezeKey ? false : null,
+                    kyc: token.kycKey ? false : null
+                };
+                await new DataBaseHelper(DryRun).update(item);
+            }
+        } else {
+            const tokenMap = {};
+            tokenMap[token.tokenId] = {
+                frozen: token.freezeKey ? false : null,
+                kyc: token.kycKey ? false : null
+            };
+            await new DataBaseHelper(DryRun).save({
+                dryRunId: this.dryRun,
+                dryRunClass: 'HederaAccountInfo',
+                hederaAccountId,
+                tokenMap
+            });
+        }
+        return true;
+    }
+
+    /**
+     * Virtual Dissociate Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public async virtualDissociate(hederaAccountId: string, tokenId: string): Promise<boolean> {
+        const item = await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
+        if (!item || !item.tokenMap[tokenId]) {
+            throw new Error('Token is not associated');
+        }
+        delete item.tokenMap[tokenId];
+        await new DataBaseHelper(DryRun).update(item);
+        return true;
+    }
+
+    /**
+     * Virtual Freeze Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public async virtualFreeze(hederaAccountId: string, tokenId: string): Promise<boolean> {
+        const item = await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
+        if (!item || !item.tokenMap[tokenId]) {
+            throw new Error('Token is not associated')
+        }
+        if (item.tokenMap[tokenId].frozen === null) {
+            throw new Error('Can not be frozen');
+        }
+        if (item.tokenMap[tokenId].frozen === true) {
+            throw new Error('Token already frozen');
+        }
+        item.tokenMap[tokenId].frozen = true;
+        await new DataBaseHelper(DryRun).update(item);
+        return true;
+    }
+
+    /**
+     * Virtual Unfreeze Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public async virtualUnfreeze(hederaAccountId: string, tokenId: string): Promise<boolean> {
+        const item = await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
+        if (!item || !item.tokenMap[tokenId]) {
+            throw new Error('Token is not associated')
+        }
+        if (item.tokenMap[tokenId].frozen === null) {
+            throw new Error('Can not be unfrozen');
+        }
+        if (item.tokenMap[tokenId].frozen === false) {
+            throw new Error('Token already unfrozen');
+        }
+        item.tokenMap[tokenId].frozen = false;
+        await new DataBaseHelper(DryRun).update(item);
+        return true;
+    }
+
+    /**
+     * Virtual GrantKyc Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public async virtualGrantKyc(hederaAccountId: string, tokenId: string): Promise<boolean> {
+        const item = await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
+        if (!item || !item.tokenMap[tokenId]) {
+            throw new Error('Token is not associated')
+        }
+        if (item.tokenMap[tokenId].kyc === null) {
+            throw new Error('Can not be granted kyc');
+        }
+        if (item.tokenMap[tokenId].kyc === true) {
+            throw new Error('Token already granted kyc');
+        }
+        item.tokenMap[tokenId].kyc = true;
+        await new DataBaseHelper(DryRun).update(item);
+        return true;
+    }
+
+    /**
+     * Virtual RevokeKyc Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public async virtualRevokeKyc(hederaAccountId: string, tokenId: string): Promise<boolean> {
+        const item = await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
+        if (!item || !item.tokenMap[tokenId]) {
+            throw new Error('Token is not associated')
+        }
+        if (item.tokenMap[tokenId].kyc === null) {
+            throw new Error('Can not be revoked kyc');
+        }
+        if (item.tokenMap[tokenId].kyc === false) {
+            throw new Error('Token already revoked kyc');
+        }
+        item.tokenMap[tokenId].kyc = false;
+        await new DataBaseHelper(DryRun).update(item);
+        return true;
+    }
+
+    /**
      * Save Block State
      * @param policyId
      * @param uuid

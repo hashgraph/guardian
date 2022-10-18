@@ -417,16 +417,19 @@ export class PolicyUtils {
      * @returns Token's map
      */
     public static async getHederaAccountInfo(ref: AnyBlockType, hederaAccountId: string, user: IHederaAccount): Promise<any> {
-        const workers = new Workers();
-        return await workers.addTask({
-            type: WorkerTaskType.GET_ACCOUNT_INFO,
-            data: {
-                userID: user.hederaAccountId,
-                userKey: user.hederaAccountKey,
-                hederaAccountId,
-                dryRun: ref.dryRun
-            }
-        }, 1);
+        if (ref.dryRun) {
+            return await ref.databaseServer.getVirtualHederaAccountInfo(hederaAccountId);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.GET_ACCOUNT_INFO,
+                data: {
+                    userID: user.hederaAccountId,
+                    userKey: user.hederaAccountKey,
+                    hederaAccountId
+                }
+            }, 1);
+        }
     }
 
     /**
@@ -435,17 +438,21 @@ export class PolicyUtils {
      * @param user
      */
     public static async associate(ref: AnyBlockType, token: Token, user: IHederaAccount): Promise<boolean> {
-        const workers = new Workers();
-        return await workers.addTask({
-            type: WorkerTaskType.ASSOCIATE_TOKEN,
-            data: {
-                tokenId: token.tokenId,
-                userID: user.hederaAccountId,
-                userKey: user.hederaAccountKey,
-                associate: true,
-                dryRun: ref.dryRun
-            }
-        }, 1);
+        if (ref.dryRun) {
+            return await ref.databaseServer.virtualAssociate(user.hederaAccountId, token);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.ASSOCIATE_TOKEN,
+                data: {
+                    tokenId: token.tokenId,
+                    userID: user.hederaAccountId,
+                    userKey: user.hederaAccountKey,
+                    associate: true,
+                    dryRun: ref.dryRun
+                }
+            }, 1);
+        }
     }
 
     /**
@@ -454,17 +461,21 @@ export class PolicyUtils {
      * @param user
      */
     public static async dissociate(ref: AnyBlockType, token: Token, user: IHederaAccount): Promise<boolean> {
-        const workers = new Workers();
-        return await workers.addTask({
-            type: WorkerTaskType.ASSOCIATE_TOKEN,
-            data: {
-                tokenId: token.tokenId,
-                userID: user.hederaAccountId,
-                userKey: user.hederaAccountKey,
-                associate: false,
-                dryRun: ref.dryRun
-            }
-        }, 1);
+        if (ref.dryRun) {
+            return await ref.databaseServer.virtualDissociate(user.hederaAccountId, token.tokenId);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.ASSOCIATE_TOKEN,
+                data: {
+                    tokenId: token.tokenId,
+                    userID: user.hederaAccountId,
+                    userKey: user.hederaAccountKey,
+                    associate: false,
+                    dryRun: ref.dryRun
+                }
+            }, 1);
+        }
     }
 
     /**
@@ -479,18 +490,22 @@ export class PolicyUtils {
         user: IHederaAccount,
         root: IHederaAccount
     ): Promise<boolean> {
-        const workers = new Workers();
-        return await workers.addTask({
-            type: WorkerTaskType.FREEZE_TOKEN,
-            data: {
-                hederaAccountId: root.hederaAccountId,
-                hederaAccountKey: root.hederaAccountKey,
-                freezeKey: token.freezeKey,
-                tokenId: token.tokenId,
-                freeze: true,
-                dryRun: ref.dryRun
-            }
-        }, 1);
+        if (ref.dryRun) {
+            return await ref.databaseServer.virtualFreeze(user.hederaAccountId, token.tokenId);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.FREEZE_TOKEN,
+                data: {
+                    hederaAccountId: root.hederaAccountId,
+                    hederaAccountKey: root.hederaAccountKey,
+                    freezeKey: token.freezeKey,
+                    tokenId: token.tokenId,
+                    freeze: true,
+                    dryRun: ref.dryRun
+                }
+            }, 1);
+        }
     }
 
     /**
@@ -505,18 +520,22 @@ export class PolicyUtils {
         user: IHederaAccount,
         root: IHederaAccount
     ): Promise<boolean> {
-        const workers = new Workers();
-        return await workers.addTask({
-            type: WorkerTaskType.FREEZE_TOKEN,
-            data: {
-                hederaAccountId: root.hederaAccountId,
-                hederaAccountKey: root.hederaAccountKey,
-                freezeKey: token.freezeKey,
-                tokenId: token.tokenId,
-                freeze: false,
-                dryRun: ref.dryRun
-            }
-        }, 1);
+        if (ref.dryRun) {
+            return await ref.databaseServer.virtualUnfreeze(user.hederaAccountId, token.tokenId);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.FREEZE_TOKEN,
+                data: {
+                    hederaAccountId: root.hederaAccountId,
+                    hederaAccountKey: root.hederaAccountKey,
+                    freezeKey: token.freezeKey,
+                    tokenId: token.tokenId,
+                    freeze: false,
+                    dryRun: ref.dryRun
+                }
+            }, 1);
+        }
     }
 
     /**
@@ -531,19 +550,23 @@ export class PolicyUtils {
         user: IHederaAccount,
         root: IHederaAccount
     ): Promise<boolean> {
-        const workers = new Workers();
-        return await workers.addTask({
-            type: WorkerTaskType.GRANT_KYC_TOKEN,
-            data: {
-                hederaAccountId: root.hederaAccountId,
-                hederaAccountKey: root.hederaAccountKey,
-                userHederaAccountId: user.hederaAccountId,
-                tokenId: token.tokenId,
-                kycKey: token.kycKey,
-                grant: true,
-                dryRun: ref.dryRun
-            }
-        }, 1);
+        if (ref.dryRun) {
+            return await ref.databaseServer.virtualGrantKyc(user.hederaAccountId, token.tokenId);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.GRANT_KYC_TOKEN,
+                data: {
+                    hederaAccountId: root.hederaAccountId,
+                    hederaAccountKey: root.hederaAccountKey,
+                    userHederaAccountId: user.hederaAccountId,
+                    tokenId: token.tokenId,
+                    kycKey: token.kycKey,
+                    grant: true,
+                    dryRun: ref.dryRun
+                }
+            }, 1);
+        }
     }
 
     /**
@@ -558,19 +581,23 @@ export class PolicyUtils {
         user: IHederaAccount,
         root: IHederaAccount
     ): Promise<boolean> {
-        const workers = new Workers();
-        return await workers.addTask({
-            type: WorkerTaskType.GRANT_KYC_TOKEN,
-            data: {
-                hederaAccountId: root.hederaAccountId,
-                hederaAccountKey: root.hederaAccountKey,
-                userHederaAccountId: user.hederaAccountId,
-                tokenId: token.tokenId,
-                kycKey: token.kycKey,
-                grant: false,
-                dryRun: ref.dryRun
-            }
-        }, 1);
+        if (ref.dryRun) {
+            return await ref.databaseServer.virtualRevokeKyc(user.hederaAccountId, token.tokenId);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.GRANT_KYC_TOKEN,
+                data: {
+                    hederaAccountId: root.hederaAccountId,
+                    hederaAccountKey: root.hederaAccountKey,
+                    userHederaAccountId: user.hederaAccountId,
+                    tokenId: token.tokenId,
+                    kycKey: token.kycKey,
+                    grant: false,
+                    dryRun: ref.dryRun
+                }
+            }, 1);
+        }
     }
 
     /**
