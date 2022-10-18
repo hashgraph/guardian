@@ -389,6 +389,18 @@ export async function publishSchema(
     }
     const itemDocument = item.document;
     const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
+
+    const names = Object.keys(itemDocument.properties);
+    for (const name of names) {
+        const field = SchemaHelper.parseProperty(name, itemDocument.properties[name]);
+        if (!field.type) {
+            throw new Error(`Field type not set. Field: ${name}`);
+        }
+        if (field.isRef && (!itemDocument.$defs || !itemDocument.$defs[field.type])) {
+            throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);
+        }
+    }
+
     item.context = schemasToContext([...defsArray, itemDocument]);
 
     const message = new SchemaMessage(type || MessageAction.PublishSchema);
