@@ -97,13 +97,10 @@ export class TokenConfirmationBlock {
             throw new BlockActionError(`Document not found`, ref.blockType, ref.uuid)
         }
 
-        if (data.action === 'confirm') {
-            await this.confirm(ref, data, blockState);
-        } else if (data.action === 'skip') {
-            await this.skip(ref, data, blockState);
-        } else {
+        if (!['confirm', 'skip'].includes(data.action)) {
             throw new BlockActionError(`Invalid Action`, ref.blockType, ref.uuid)
         }
+        await this.confirm(ref, data, blockState, data.action === 'skip');
 
         ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data);
@@ -115,11 +112,7 @@ export class TokenConfirmationBlock {
      * @param {any} data
      * @param {any} state
      */
-    private async confirm(ref: IPolicyBlock, data: any, state: any) {
-        if (!data.hederaAccountKey) {
-            throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
-        }
-
+    private async confirm(ref: IPolicyBlock, data: any, state: any, skip: boolean = false) {
         const account = {
             did: null,
             hederaAccountId: state.accountId,
@@ -130,34 +123,50 @@ export class TokenConfirmationBlock {
 
         await PolicyUtils.checkAccountId(account);
         const policyOwner = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-        const associatedAccountInfo = await PolicyUtils.getHederaAccountInfo(ref, account.hederaAccountId, policyOwner);
+        const hederaAccountInfo = await PolicyUtils.getHederaAccountInfo(ref, account.hederaAccountId, policyOwner);
 
-        switch (ref.options.action) {
-            case 'associate': {
-                if (!associatedAccountInfo[token.tokenId]) {
-                    await PolicyUtils.associate(ref, token, account);
+        if (skip) {
+            switch (ref.options.action) {
+                case 'associate': {
+                    if (!hederaAccountInfo[token.tokenId]) {
+                        throw new BlockActionError(`Token is not associated`, ref.blockType, ref.uuid);
+                    }
+                    break;
                 }
-                break;
-            }
-            case 'dissociate': {
-                if (associatedAccountInfo[token.tokenId]) {
-                    await PolicyUtils.dissociate(ref, token, account);
+                case 'dissociate': {
+                    if (hederaAccountInfo[token.tokenId]) {
+                        throw new BlockActionError(`Token is not dissociated`, ref.blockType, ref.uuid);
+                    }
+                    break;
                 }
-                break;
+                default:
+                    break;
             }
-            default:
-                break;
+        } else {
+            if (!account.hederaAccountKey) {
+                throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
+            }
+            switch (ref.options.action) {
+                case 'associate': {
+                    if (!hederaAccountInfo[token.tokenId]) {
+                        await PolicyUtils.associate(ref, token, account);
+                    } else {
+                        console.warn('Token already associated', ref.policyId);
+                    }
+                    break;
+                }
+                case 'dissociate': {
+                    if (hederaAccountInfo[token.tokenId]) {
+                        await PolicyUtils.dissociate(ref, token, account);
+                    } else {
+                        console.warn('Token already dissociated', ref.policyId);
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
         }
-    }
-
-    /**
-     * Skip action
-     * @param {IPolicyBlock} ref
-     * @param {any} data
-     * @param {any} state
-     */
-    private async skip(ref: IPolicyBlock, data: any, state: any) {
-        return;
     }
 
     /**

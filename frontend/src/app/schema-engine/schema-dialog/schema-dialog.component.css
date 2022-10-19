@@ -27,3 +27,17 @@ textarea {
 :host ::ng-deep .cdk-drop-list-dragging *:not(.cdk-drag-placeholder) {
     transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
+
+:host .restore-data {
+    flex: 1.7;
+}
+
+:host button.restore-data-button {
+    padding: 0 27px;
+    height: 43px;
+    background-color: unset;
+}
+
+:host .restore-data button mat-icon {
+    margin-left: 5px;
+}

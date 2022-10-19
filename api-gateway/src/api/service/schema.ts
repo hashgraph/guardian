@@ -758,7 +758,7 @@ schemaAPI.put('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY),
             return;
         }
         fromOld(newSchema);
-        const schemas = await updateSchema(newSchema, user.did);
+        const schemas = await updateSchema(newSchema, user.username);
         res.status(200).json(toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);

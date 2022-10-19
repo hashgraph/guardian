@@ -185,6 +185,9 @@ export class SchemaConfigurationComponent implements OnInit {
         if (changes.extended && Object.keys(changes).length === 1) {
             return;
         }
+        if (changes.value && Object.keys(changes).length === 1) {
+            this.dataForm = null as any;
+        }
         if (this.system) {
             this.updateSubSchemas(null);
         } else {
@@ -355,15 +358,24 @@ export class SchemaConfigurationComponent implements OnInit {
 
     updateFormControls() {
         this.fieldsForm.reset();
-        this.dataForm.setValue({
-            name: this.value.name,
-            description: this.value.description,
-            entity: this.value.entity,
-            topicId: this.value.topicId,
-            fields: {},
-            conditions: {}
-        });
-
+        if (this.system) {
+            this.dataForm.setValue({
+                name: this.value.name,
+                description: this.value.description,
+                entity: this.value.entity,
+                fields: {},
+                conditions: {}
+            });
+        } else {
+            this.dataForm.setValue({
+                name: this.value.name,
+                description: this.value.description,
+                entity: this.value.entity,
+                topicId: this.value.topicId,
+                fields: {},
+                conditions: {}
+            });
+        }
         const fields = this.value.fields;
         const conditions = this.value.conditions || [];
         const conditionsFields: string[] = [];
