@@ -1,9 +1,42 @@
-.example-spacer {
+@media (max-width: 780px) {
+    .nav-bar {
+        width: 100% !important;
+        padding: 0px !important;
+    }
+    .user-content-info {
+        align-self: center;
+    }
+    .user-content-info.user-logged {
+        transform: translate(60px, 0px);
+    }
+    ::ng-deep .mat-toolbar-single-row {
+        flex-direction: column !important;
+        padding: 0px !important;
+    }
+    .btn-home {
+        font-size: 35px !important;
+        line-height: 27px !important;
+        padding-top: 5px;
+    }
+    .user-name {
+        padding: 3px 50px 0px 150px !important;
+    }
+}
+
+.user-content-info {
     flex: 1 1 auto;
+    justify-content: flex-end;
+    display: flex;
+    min-width: 270px;
 }
 
 .nav-bar {
     padding: 0px 120px 0px 30px;
+    min-width: 210px;
+}
+
+::ng-deep .nav-bar .mat-tab-nav-bar.mat-background-primary>.mat-tab-header-pagination {
+    background-color: unset;
 }
 
 .content {
@@ -134,6 +167,7 @@ a[hidden="true"] {
     overflow: visible;
     position: relative;
     margin-right: 20px;
+    justify-self: flex-end;
 }
 
 .current-user-policy-roles {
