@@ -10,24 +10,24 @@
             </nav>
         </div>
 
-        <span class="example-spacer"></span>
-
-        <button mat-icon-button class="user-content" [matMenuTriggerFor]="menu">
-            <div class="user-info">
-                <div *ngIf="username; else notLogged" class="example-icon user-name">
-                    <div class="user-balance" [attr.balance-type]="balanceType">{{balance}}</div>
-                    <span>{{username}}</span>
-                </div>
-                <ng-template #notLogged>
-                    <div class="example-icon admin-panel">
-                        <span>Demo Admin Panel</span>
+        <div class="user-content-info" [ngClass]="{'user-logged': !!username}">
+            <button mat-icon-button class="user-content" [matMenuTriggerFor]="menu">
+                <div class="user-info">
+                    <div *ngIf="username; else notLogged" class="example-icon user-name">
+                        <div class="user-balance" [attr.balance-type]="balanceType">{{balance}}</div>
+                        <span>{{username}}</span>
                     </div>
-                </ng-template>
-                <div class="user-info-icon">
-                    <mat-icon>{{menuIcon}}</mat-icon>
+                    <ng-template #notLogged>
+                        <div class="example-icon admin-panel">
+                            <span>Demo Admin Panel</span>
+                        </div>
+                    </ng-template>
+                    <div class="user-info-icon">
+                        <mat-icon>{{menuIcon}}</mat-icon>
+                    </div>
                 </div>
-            </div>
-        </button>
+            </button>
+        </div>
 
         <mat-menu #menu="matMenu">
             <button *ngIf="isLogin" mat-menu-item (click)="logOut()">Log out</button>

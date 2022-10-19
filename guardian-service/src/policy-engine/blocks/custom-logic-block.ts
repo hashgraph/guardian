@@ -125,6 +125,11 @@ export class CustomLogicBlock {
                         if (ref.dryRun) {
                             VCHelper.addDryRunContext(vcSubject);
                         }
+
+                        const res = await VCHelper.verifySubject(vcSubject);
+                        if (!res.ok) {
+                            throw new Error(JSON.stringify(res.error));
+                        }
                         const newVC = await VCHelper.createVC(
                             root.did,
                             root.hederaAccountKey,
