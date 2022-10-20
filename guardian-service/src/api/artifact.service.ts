@@ -37,7 +37,7 @@ export async function artifactAPI(
             await DatabaseServer.saveArtifactFile(artifact.uuid, Buffer.from(msg.artifact.data));
             return new MessageResponse(artifact);
         } catch (error) {
-            new Logger().error(error.message, ['GUARDIAN_SERVICE']);
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error.message);
         }
     });
