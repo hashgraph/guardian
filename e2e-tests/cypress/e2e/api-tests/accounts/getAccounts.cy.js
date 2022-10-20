@@ -9,7 +9,7 @@ context("Accounts",  { tags: '@accounts' },() => {
     it("get all users as a StandardRegistry", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.Accounts,
+            url: API.ApiServer + API.Accounts,
             headers: {
                 authorization,
             },
@@ -23,7 +23,7 @@ context("Accounts",  { tags: '@accounts' },() => {
     it("should get 401 status code as Unauthorized", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.Accounts,
+            url: API.ApiServer + API.Accounts,
             headers: {
             },
             failOnStatusCode:false,
@@ -37,7 +37,7 @@ context("Accounts",  { tags: '@accounts' },() => {
         const authorizationError = "bearer 11111111111111111111@#$";
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.Accounts,
+            url: API.ApiServer + API.Accounts,
             headers: {
                 authorizationError,
             },

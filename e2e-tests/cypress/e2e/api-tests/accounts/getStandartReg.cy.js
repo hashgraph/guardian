@@ -7,7 +7,7 @@ context("Accounts",  { tags: '@accounts' }, () => {
     it("Returns all Standard Registries", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.StandartRegistries,
+            url: API.ApiServer + API.StandartRegistries,
             headers: {
                 authorization,
             },

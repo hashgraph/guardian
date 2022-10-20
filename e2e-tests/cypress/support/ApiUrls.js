@@ -39,7 +39,11 @@ const API = {
     //Demo
     RandomKey: "demo/push/randomKey",
     //Policies
+    Policies: "policies/",
+    PolicisImportMsg: "policies/import/message/",
     PolicisImportMsgPreview: "policies/import/message/preview",
     PolicisImportMsgPreviewPush: "policies/push/import/message/preview",
+    //Artifacts
+    Artifacts: "artifact/",
 };
 export default API;

@@ -151,4 +151,18 @@ context("Accounts", { tags: "@accounts" }, () => {
         });
     });
 
+    it('should attempt to put sql injection', () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.AccountRegister,
+            headers: {
+                username: 'select * from users where id = 1 or 1=1',
+                password: "test",
+            },
+            failOnStatusCode:false,
+        }).should(response => {
+            expect(response.status).eql(STATUS_CODE.ERROR);
+        });
+    });
+
 });
