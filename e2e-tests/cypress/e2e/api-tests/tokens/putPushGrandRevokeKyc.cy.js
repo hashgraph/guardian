@@ -1,14 +1,14 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Tokens", { tags: '@tokens' },() => {
+context("Tokens", { tags: "@tokens" }, () => {
     const authorization = Cypress.env("authorization");
     const user = Cypress.env("root_user");
 
     it("push sets the KYC flag for the user", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.ListOfTokens,
+            url: API.ApiServer + API.ListOfTokens,
             headers: {
                 authorization,
             },
@@ -20,7 +20,7 @@ context("Tokens", { tags: '@tokens' },() => {
             cy.request({
                 method: METHOD.PUT,
                 url:
-                    Cypress.env("api_server") +
+                    API.ApiServer +
                     API.ListOfTokens +
                     "push/" +
                     tokenId +
@@ -39,7 +39,7 @@ context("Tokens", { tags: '@tokens' },() => {
     it("push unsets the KYC flag for the user", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.ListOfTokens,
+            url: API.ApiServer + API.ListOfTokens,
             headers: {
                 authorization,
             },
@@ -51,7 +51,7 @@ context("Tokens", { tags: '@tokens' },() => {
             cy.request({
                 method: METHOD.PUT,
                 url:
-                    Cypress.env("api_server") +
+                    API.ApiServer +
                     API.ListOfTokens +
                     "push/" +
                     tokenId +

@@ -8,7 +8,7 @@ context("External",  { tags: '@external' }, () => {
     before(() => {
         cy.request({
             method: "POST",
-            url: `${Cypress.env("api_server")}policies/import/message`,
+            url: `${API.ApiServer}policies/import/message`,
             body: { messageId: "1650282926.728623821" },
             headers: {
                 authorization,
@@ -23,7 +23,7 @@ context("External",  { tags: '@external' }, () => {
     it("shold sends data from an external source", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + "policies",
+            url: API.ApiServer + "policies",
             headers: {
                 authorization,
             },
@@ -33,7 +33,7 @@ context("External",  { tags: '@external' }, () => {
 
             cy.request({
                 method: METHOD.POST,
-                url: Cypress.env("api_server") + API.External,
+                url: API.ApiServer + API.External,
                 body: {
                     owner: owner,
                     policyTag: policyTag,

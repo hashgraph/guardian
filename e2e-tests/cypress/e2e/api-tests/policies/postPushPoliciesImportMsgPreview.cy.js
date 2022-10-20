@@ -7,7 +7,7 @@ context("Schemas", { tags: '@policies' },() => {
     it("push should previews the policy from IPFS without loading it into the local DB", () => {
         cy.request({
             method: METHOD.POST,
-            url: Cypress.env("api_server") + API.PolicisImportMsgPreviewPush,
+            url: API.ApiServer + API.PolicisImportMsgPreviewPush,
             headers: {
                 authorization,
             },

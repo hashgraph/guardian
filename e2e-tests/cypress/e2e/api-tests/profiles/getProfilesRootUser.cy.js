@@ -1,3 +1,6 @@
+import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
+import API from "../../../support/ApiUrls";
+
 
 context('Profiles', { tags: '@profiles' },() => {
     const authorization = Cypress.env('authorization');
@@ -5,7 +8,7 @@ context('Profiles', { tags: '@profiles' },() => {
     it('it returns user account information', () => {
         const options = {
             method: 'GET',
-            url: Cypress.env('api_server') + 'profiles/' + Cypress.env('root_user'),
+            url: API.ApiServer  + 'profiles/' + Cypress.env('root_user'),
             headers: {
               authorization,
             }};

@@ -7,7 +7,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     it("update schema by schemaId", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.Schemas,
+            url: API.ApiServer + API.Schemas,
             headers: {
                 authorization,
             },
@@ -18,7 +18,7 @@ context("Schemas", { tags: '@schemas' }, () => {
 
             cy.request({
                 method: "GET",
-                url: Cypress.env("api_server") + API.SchemasSystem + schemaId,
+                url: API.ApiServer + API.SchemasSystem + schemaId,
                 headers: { authorization },
                 body: {
                     id: schemaId,

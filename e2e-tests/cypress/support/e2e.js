@@ -17,6 +17,8 @@
 import "./commands";
 import "./api/api-helper";
 
+import API from "./ApiUrls";
+
 
 // cypress/support/index.js
 // load and register the grep feature using "require" function
@@ -34,7 +36,7 @@ before(() => {
     let username = "StandardRegistry";
     cy.request({
         method: "GET",
-        url: Cypress.env("api_server") + "profiles/" + username,
+        url: API.ApiServer + "profiles/" + username,
         headers: {
             authorization: authorization,
         },
@@ -42,7 +44,7 @@ before(() => {
         if (response.body.confirmed === false) {
             cy.request({
                 method: "PUT",
-                url: Cypress.env("api_server") + "profiles/" + username,
+                url: API.ApiServer + "profiles/" + username,
                 headers: {
                     authorization: authorization,
                 },

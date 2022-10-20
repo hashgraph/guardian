@@ -17,7 +17,7 @@ context("Schemas",  { tags: '@schemas' }, () => {
         cy.request({
             method: METHOD.GET,
             url:
-                Cypress.env("api_server") +
+            API.ApiServer +
                 API.SchemasSystemEntity +
                 randomItem,
             headers: {

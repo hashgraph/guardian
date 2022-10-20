@@ -1,10 +1,14 @@
+import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
+import API from "../../../support/ApiUrls";
+
+
 context("Policies", { tags: '@policies' }, () => {
     const authorization = Cypress.env("authorization");
 
     before(() => {
         const urlPolicies = {
             method: "GET",
-            url: Cypress.env("api_server") + "policies",
+            url: API.ApiServer + "policies",
             headers: {
                 authorization,
             },
@@ -17,7 +21,7 @@ context("Policies", { tags: '@policies' }, () => {
             const url = {
                 method: "GET",
                 url:
-                    Cypress.env("api_server") +
+                    API.ApiServer +
                     "policies/" +
                     policyId +
                     "/export/file",

@@ -7,7 +7,7 @@ context("Logs",  { tags: '@logs' }, () => {
     it("get logs attributes as a StandardRegistry", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.LogsAttributes,
+            url: API.ApiServer + API.LogsAttributes,
             headers: {
                 authorization,
             },

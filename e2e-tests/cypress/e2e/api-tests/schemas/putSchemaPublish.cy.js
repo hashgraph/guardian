@@ -8,7 +8,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     before(() => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.Schemas,
+            url: API.ApiServer + API.Schemas,
             headers: {
                 authorization,
             },
@@ -17,7 +17,7 @@ context("Schemas", { tags: '@schemas' }, () => {
             //Create new schema
             cy.request({
                 method: "POST",
-                url: Cypress.env("api_server") + API.Schemas + topicUid,
+                url: API.ApiServer + API.Schemas + topicUid,
                 headers: { authorization },
                 body: {
                     uuid: schemaUUID,
@@ -39,7 +39,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     it("create new schema", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.Schemas,
+            url: API.ApiServer + API.Schemas,
             headers: {
                 authorization,
             },
@@ -52,7 +52,7 @@ context("Schemas", { tags: '@schemas' }, () => {
             // cy.request({
             //     method: "PUT",
             //     url:
-            //         Cypress.env("api_server") +
+            //         API.ApiServer +
             //         API.Schemas +
             //         schemaId +
             //         "/publish",

@@ -1,3 +1,6 @@
+import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
+import API from "../../../support/ApiUrls";
+
 
 context('Policies',  { tags: '@policies' },() => {
   const authorization = Cypress.env('authorization');

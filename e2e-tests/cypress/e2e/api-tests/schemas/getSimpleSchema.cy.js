@@ -7,7 +7,7 @@ context("Schemas",{ tags: '@schemas' },  () => {
     it("should returns schema by schema ID", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.Schemas,
+            url: API.ApiServer + API.Schemas,
             headers: {
                 authorization,
             },
@@ -17,7 +17,7 @@ context("Schemas",{ tags: '@schemas' },  () => {
 
             cy.request({
                 method: METHOD.GET,
-                url: Cypress.env("api_server") + API.Schema + schemaId,
+                url: API.ApiServer + API.Schema + schemaId,
                 encoding: null,
                 headers: {
                     authorization,

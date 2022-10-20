@@ -10,7 +10,7 @@ context("Schemas", { tags: '@schemas' },  () => {
             usernames[Math.floor(Math.random() * usernames.length)];
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.SchemasSystem + randomUserName,
+            url: API.ApiServer + API.SchemasSystem + randomUserName,
             headers: {
                 authorization,
             },

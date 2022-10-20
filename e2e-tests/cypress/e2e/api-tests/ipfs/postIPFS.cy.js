@@ -7,7 +7,7 @@ context("IPFS",  { tags: '@ipfs' }, () => {
     it("import the schema file", () => {
         cy.request({
             method: METHOD.GET,
-            url:  Cypress.env("api_server") + API.Schemas, 
+            url:  API.ApiServer + API.Schemas, 
             headers: {
                 authorization,
             },
@@ -17,7 +17,7 @@ context("IPFS",  { tags: '@ipfs' }, () => {
 
             cy.request({
                 method: METHOD.GET,
-                url: Cypress.env("api_server") + API.Schemas + schemaId + "/export/file",
+                url: API.ApiServer + API.Schemas + schemaId + "/export/file",
                 encoding: null,
                 headers: {
                     authorization,
@@ -42,7 +42,7 @@ context("IPFS",  { tags: '@ipfs' }, () => {
     //         .then((file) => {
     //             cy.request({
     //                 method: METHOD.POST,
-    //                 url: Cypress.env("api_server") + API.IPFSFile,
+    //                 url: API.ApiServer + API.IPFSFile,
     //                 body: file,
     //                 headers: {
     //                     "content-type": "binary/octet-stream",
