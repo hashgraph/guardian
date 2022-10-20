@@ -156,7 +156,7 @@ export class TransactionLogger {
                             hederaAccountId: OPERATOR_ID,
                             hederaAccountKey: OPERATOR_KEY
                         }
-                    }, 1);
+                    }, 1, 1);
                     attr.push(balance);
                 } catch (error) {
                     attr.push(null);

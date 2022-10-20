@@ -28,8 +28,8 @@ export async function ipfsAPI(
 
             return Promise.resolve(new MessageResponse<unknown>(null));
         } catch (error) {
-            new Logger().error(error.message, ['IPFS_SERVICE']);
-            return new MessageError(error.message);
+            new Logger().error(error, ['IPFS_SERVICE']);
+            return new MessageError(error);
         }
     });
 
@@ -50,8 +50,8 @@ export async function ipfsAPI(
 
             return Promise.resolve(new MessageResponse<unknown>(null));
         } catch (error) {
-            new Logger().error(error.message, ['IPFS_SERVICE']);
-            return new MessageError(error.message);
+            new Logger().error(error, ['IPFS_SERVICE']);
+            return new MessageError(error);
         }
     });
 }
