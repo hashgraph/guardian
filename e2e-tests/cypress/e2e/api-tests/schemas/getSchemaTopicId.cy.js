@@ -7,7 +7,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     it("get all schemas by topicid", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.Schemas,
+            url: API.ApiServer + API.Schemas,
             headers: {
                 authorization,
             },
@@ -15,7 +15,7 @@ context("Schemas", { tags: '@schemas' }, () => {
             const topicUid = resp.body[0].topicId;
             cy.request({
                 method: METHOD.GET,
-                url: Cypress.env("api_server") + API.Schemas + topicUid,
+                url: API.ApiServer + API.Schemas + topicUid,
                 headers: {
                     authorization,
                 },

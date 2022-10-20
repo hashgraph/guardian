@@ -7,7 +7,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     it("previews the schema from IPFS without loading it into the local DB", () => {
         cy.request({
             method: METHOD.POST,
-            url: Cypress.env("api_server") + API.SchemaImportMsgPreview,
+            url: API.ApiServer + API.SchemaImportMsgPreview,
             headers: {
                 authorization,
             },
@@ -24,7 +24,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     it("previews the schema from IPFS without loading it into the local DB", () => {
         cy.request({
             method: METHOD.POST,
-            url: Cypress.env("api_server") + "schemas/push/import/message/preview",
+            url: API.ApiServer + "schemas/push/import/message/preview",
             headers: {
                 authorization,
             },

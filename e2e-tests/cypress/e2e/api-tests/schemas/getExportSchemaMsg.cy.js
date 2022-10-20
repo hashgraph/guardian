@@ -7,7 +7,7 @@ context("Schema",{ tags: '@schemas' }, () => {
     it("return schema message", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.Schemas,
+            url: API.ApiServer + API.Schemas,
             headers: {
                 authorization,
             },
@@ -18,7 +18,7 @@ context("Schema",{ tags: '@schemas' }, () => {
             cy.request({
                 method: METHOD.GET,
                 url:
-                    Cypress.env("api_server") +
+                API.ApiServer +
                     API.Schemas +
                     schemaId +
                     "/export/message",

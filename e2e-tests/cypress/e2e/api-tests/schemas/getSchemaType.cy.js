@@ -7,7 +7,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     it("returns schema using the json document type.", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.SchemasType,
+            url: API.ApiServer + API.SchemasType,
             headers: { authorization, type: "array" },
         }).then((resp) => {
             expect(resp.status).eql(STATUS_CODE.OK);

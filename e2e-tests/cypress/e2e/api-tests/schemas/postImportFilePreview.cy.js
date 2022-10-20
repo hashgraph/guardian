@@ -7,7 +7,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     before(() => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.Schemas,
+            url: API.ApiServer + API.Schemas,
             headers: {
                 authorization,
             },
@@ -18,7 +18,7 @@ context("Schemas", { tags: '@schemas' }, () => {
             cy.request({
                 method: METHOD.GET,
                 url:
-                    Cypress.env("api_server") +
+                API.ApiServer +
                     API.Schemas +
                     schemaId +
                     "/export/file",
@@ -48,7 +48,7 @@ context("Schemas", { tags: '@schemas' }, () => {
                 cy.request({
                     method: METHOD.POST,
                     url:
-                        Cypress.env("api_server") + API.SchemaImportFilePreview,
+                        API.ApiServer + API.SchemaImportFilePreview,
                     body: file,
                     headers: {
                         "content-type": "binary/octet-stream",

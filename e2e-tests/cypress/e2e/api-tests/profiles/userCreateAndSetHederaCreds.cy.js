@@ -1,6 +1,9 @@
 
 // import { ids } from "../../../fixtures/hederaAccounts.json"
 // import { did } from "../../../fixtures/StandardRegistryData.json";
+import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
+import API from "../../../support/ApiUrls";
+
 
 context('Profiles', { tags: '@profiles' }, () => {
 
@@ -9,7 +12,7 @@ context('Profiles', { tags: '@profiles' }, () => {
     const name = (Math.floor(Math.random() * 999) + 'testUser')
     const options = {
       method: 'POST',
-      url: Cypress.env('api_server') + 'accounts/register',
+      url: API.ApiServer + 'accounts/register',
       body: {
         username: name,
         password: userPassword,
@@ -28,7 +31,7 @@ context('Profiles', { tags: '@profiles' }, () => {
         
         cy.request({
           method: 'POST',
-          url: Cypress.env('api_server') + 'accounts/login',
+          url: API.ApiServer + 'accounts/login',
           body: {
             username: username,
             password: userPassword
@@ -43,7 +46,7 @@ context('Profiles', { tags: '@profiles' }, () => {
             //     let accessToken = 'bearer ' + response.body.accessToken
             //     cy.request({
             //       method: 'PUT',
-            //       url: Cypress.env('api_server') + 'profiles/' + username,
+            //       url: API.ApiServer + 'profiles/' + username,
             //       headers: {
             //         authorization: accessToken
             //       },

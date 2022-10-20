@@ -1,3 +1,6 @@
+import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
+import API from "../../../support/ApiUrls";
+
 
 context('Settings',{ tags: '@settings' },  () => {
 
@@ -6,7 +9,7 @@ context('Settings',{ tags: '@settings' },  () => {
     let username = 'StandardRegistry'
     cy.request({
       method: 'POST',
-      url: Cypress.env('api_server') + 'accounts/login',
+      url:  API.ApiServer + API.AccountsLogin,
       body: {
         username: username,
         password: 'test'
@@ -17,7 +20,7 @@ context('Settings',{ tags: '@settings' },  () => {
         //Checking if StandardRegisty already has hedera credentials
         cy.request({
           method: 'GET',
-          url: Cypress.env('api_server') + 'profiles/' + username,
+          url:  API.ApiServer + 'profiles/' + username,
           headers: {
             authorization: accessToken
           }
@@ -27,7 +30,7 @@ context('Settings',{ tags: '@settings' },  () => {
               //If StandardRegistry doesn't have hedera credentials, creating them
               cy.request({
                 method: 'PUT',
-                url: Cypress.env('api_server') + 'profiles/' + username,
+                url:  API.ApiServer + 'profiles/' + username,
                 headers: {
                   authorization: accessToken
                 },
@@ -48,7 +51,7 @@ context('Settings',{ tags: '@settings' },  () => {
                   //get info about StandardRegistry and put it in the file
                   cy.request({
                     method: 'GET',
-                    url: Cypress.env('api_server') + 'profiles/' + username,
+                    url:  API.ApiServer + 'profiles/' + username,
                     headers: {
                       authorization: accessToken
                     }
@@ -74,7 +77,7 @@ context('Settings',{ tags: '@settings' },  () => {
       const accessToken = 'bearer ' + response.body.accessToken
       cy.request({
         method: 'GET',
-        url: Cypress.env('api_server') + 'settings',
+        url:  API.ApiServer + 'settings',
         headers: {
           authorization: accessToken
         }

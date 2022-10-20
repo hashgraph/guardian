@@ -22,7 +22,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
     it("should run policy without making any persistent changes or executing transaction", () => {
         cy.request({
             method: "GET",
-            url: `${Cypress.env("api_server")}policies/`,
+            url:  API.ApiServer + API.Policies,
             headers: {
                 authorization,
             },
@@ -34,7 +34,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
             cy.request({
                 method: "PUT",
                 url:
-                    Cypress.env("api_server") +
+                    API.ApiServer +
                     "policies/" +
                     policyId +
                     "/dry-run",
@@ -50,7 +50,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
     it("should returns all virtual users", () => {
         cy.request({
             method: "GET",
-            url: `${Cypress.env("api_server")}policies/`,
+            url: API.ApiServer + API.Policies,
             headers: {
                 authorization,
             },
@@ -62,7 +62,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
             cy.request({
                 method: "GET",
                 url:
-                    Cypress.env("api_server") +
+                    API.ApiServer +
                     "policies/" +
                     policyId +
                     "/dry-run/users",
@@ -78,7 +78,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
     it("should returns lists of virtual transactions", () => {
         cy.request({
             method: "GET",
-            url: `${Cypress.env("api_server")}policies/`,
+            url: API.ApiServer + API.Policies,
             headers: {
                 authorization,
             },
@@ -90,7 +90,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
             cy.request({
                 method: "GET",
                 url:
-                    Cypress.env("api_server") +
+                    API.ApiServer +
                     "policies/" +
                     policyId +
                     "/dry-run/transactions",
@@ -106,7 +106,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
     it("should returns lists of virtual artifacts", () => {
         cy.request({
             method: "GET",
-            url: `${Cypress.env("api_server")}policies/`,
+            url: API.ApiServer + API.Policies,
             headers: {
                 authorization,
             },
@@ -118,7 +118,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
             cy.request({
                 method: "GET",
                 url:
-                    Cypress.env("api_server") +
+                    API.ApiServer +
                     "policies/" +
                     policyId +
                     "/dry-run/artifacts",
@@ -134,7 +134,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
     it("should returns lists of virtual ipfs", () => {
         cy.request({
             method: "GET",
-            url: `${Cypress.env("api_server")}policies/`,
+            url: API.ApiServer + API.Policies,
             headers: {
                 authorization,
             },
@@ -146,7 +146,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
             cy.request({
                 method: "GET",
                 url:
-                    Cypress.env("api_server") +
+                    API.ApiServer +
                     "policies/" +
                     policyId +
                     "/dry-run/ipfs",
@@ -162,7 +162,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
     it("should create a new virtual account and login", () => {
         cy.request({
             method: "GET",
-            url: `${Cypress.env("api_server")}policies/`,
+            url: API.ApiServer + API.Policies,
             headers: {
                 authorization,
             },
@@ -174,7 +174,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
             cy.request({
                 method: "POST",
                 url:
-                    Cypress.env("api_server") +
+                    API.ApiServer +
                     "policies/" +
                     policyId +
                     "/dry-run/user",
@@ -188,7 +188,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
                 cy.request({
                     method: "POST",
                     url:
-                        Cypress.env("api_server") +
+                        API.ApiServer +
                         "policies/" +
                         policyId +
                         "/dry-run/login",
@@ -208,7 +208,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
     it("should restarts the execution of the policy and clear data in database", () => {
         cy.request({
             method: "GET",
-            url: `${Cypress.env("api_server")}policies/`,
+            url: API.ApiServer + API.Policies,
             headers: {
                 authorization,
             },
@@ -220,7 +220,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
             cy.request({
                 method: "POST",
                 url:
-                    Cypress.env("api_server") +
+                    API.ApiServer +
                     "policies/" +
                     policyId +
                     "/dry-run/restart",

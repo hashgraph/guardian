@@ -7,7 +7,7 @@ context("Tokens", { tags: '@tokens' },() => {
     it("get all tokens", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.ListOfTokens,
+            url: API.ApiServer + API.ListOfTokens,
             headers: {
                 authorization,
             },

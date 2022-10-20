@@ -7,7 +7,7 @@ context("Trustchains",  { tags: '@trustchains' }, () => {
         let username = 'Auditor'
         cy.request({
           method: 'POST',
-          url: Cypress.env('api_server') + 'accounts/login',
+          url: API.ApiServer + API.AccountsLogin,
           body: {
             username: username,
             password: 'test'
@@ -18,7 +18,7 @@ context("Trustchains",  { tags: '@trustchains' }, () => {
             //Checking if StandardRegisty already has hedera credentials
             cy.request({
               method: 'GET',
-              url: Cypress.env('api_server') + 'profiles/' + username,
+              url: API.ApiServer + 'profiles/' + username,
               headers: {
                 authorization: accessToken
               }
@@ -37,7 +37,7 @@ context("Trustchains",  { tags: '@trustchains' }, () => {
           const accessToken = 'bearer ' + response.body.accessToken
           cy.request({
             method: 'GET',
-            url: Cypress.env("api_server") + API.Trustchains,
+            url: API.ApiServer + API.Trustchains,
             headers: {
               authorization: accessToken
             }
@@ -49,7 +49,7 @@ context("Trustchains",  { tags: '@trustchains' }, () => {
 
               // cy.request({
               //   method: 'GET',
-              //   url: Cypress.env("api_server") + API.Trustchains + hash,
+              //   url: API.ApiServer + API.Trustchains + hash,
               //   headers: {
               //     authorization: accessToken
               //   }

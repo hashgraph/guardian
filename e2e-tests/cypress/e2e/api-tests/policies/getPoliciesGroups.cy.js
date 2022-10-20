@@ -1,3 +1,8 @@
+import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
+import API from "../../../support/ApiUrls";
+
+
+
 context("Policies", { tags: '@policies' }, () => {
     const authorization = Cypress.env("authorization");
 
@@ -6,7 +11,7 @@ context("Policies", { tags: '@policies' }, () => {
     it("check returns of the policy", () => {
         const urlPolicies = {
             method: "GET",
-            url: Cypress.env("api_server") + "policies",
+            url: API.ApiServer + "policies",
             headers: {
                 authorization,
             },
@@ -19,7 +24,7 @@ context("Policies", { tags: '@policies' }, () => {
         //     const urlPoliciesId = {
         //         method: "GET",
         //         url:
-        //             Cypress.env("api_server") +
+        //             API.ApiServer +
         //             "policies/" +
         //             policyId +
         //             "/groups",

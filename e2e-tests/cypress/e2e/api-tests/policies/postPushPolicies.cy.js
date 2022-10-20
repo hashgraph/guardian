@@ -1,3 +1,8 @@
+import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
+import API from "../../../support/ApiUrls";
+
+
+
 context("Policies", { tags: '@policies' }, () => {
     const authorization = Cypress.env("authorization");
 
@@ -6,7 +11,7 @@ context("Policies", { tags: '@policies' }, () => {
 
         const urlPolicies = {
             method: "POST",
-            url: Cypress.env("api_server") + "policies/push",
+            url: API.ApiServer + "policies/push",
             body: {
                 name: nameTag,
                 description: nameTag,

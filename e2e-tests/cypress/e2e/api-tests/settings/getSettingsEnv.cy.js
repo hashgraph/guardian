@@ -7,7 +7,7 @@ context("Settings", { tags: '@settings' }, () => {
     it("Returns current environment name.", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.SettingsEnv,
+            url: API.ApiServer + API.SettingsEnv,
             headers: {
                 authorization,
             },

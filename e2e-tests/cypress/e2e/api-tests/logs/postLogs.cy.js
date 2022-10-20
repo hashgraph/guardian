@@ -7,7 +7,7 @@ context("Logs",  { tags: '@logs' }, () => {
     it("post request all logs as a StandardRegistry", () => {
         cy.request({
             method: METHOD.POST,
-            url: Cypress.env("api_server") + API.Logs,
+            url: API.ApiServer + API.Logs,
             headers: {
                 authorization,
             },

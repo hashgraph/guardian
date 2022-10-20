@@ -6,7 +6,7 @@ context("Tokens",{ tags: '@tokens' }, () => {
     //     let username = "Installer";
     //     cy.request({
     //         method: "POST",
-    //         url: Cypress.env("api_server") + "accounts/login",
+    //         url: API.ApiServer + "accounts/login",
     //         body: {
     //             username: username,
     //             password: "test",
@@ -18,7 +18,7 @@ context("Tokens",{ tags: '@tokens' }, () => {
     //             //Checking if StandardRegisty already has hedera credentials
     //             cy.request({
     //                 method: "GET",
-    //                 url: Cypress.env("api_server") + "profiles/" + username,
+    //                 url: API.ApiServer + "profiles/" + username,
     //                 headers: {
     //                     authorization: accessToken,
     //                 },
@@ -36,7 +36,7 @@ context("Tokens",{ tags: '@tokens' }, () => {
         let username = "Installer";
         cy.request({
             method: "POST",
-            url: Cypress.env("api_server") + "accounts/login",
+            url: API.ApiServer + "accounts/login",
             body: {
                 username: username,
                 password: "test",
@@ -48,7 +48,7 @@ context("Tokens",{ tags: '@tokens' }, () => {
                 //Checking if StandardRegisty already has hedera credentials
                 cy.request({
                     method: "GET",
-                    url: Cypress.env("api_server") + "profiles/" + username,
+                    url: API.ApiServer + "profiles/" + username,
                     headers: {
                         authorization: accessToken,
                     },
@@ -60,7 +60,7 @@ context("Tokens",{ tags: '@tokens' }, () => {
             // cy.request({
             //     method: "PUT",
             //     url:
-            //         Cypress.env("api_server") +
+            //         API.ApiServer +
             //         "tokens/" +
             //         tokenId +
             //         "/dissociate",
@@ -74,7 +74,7 @@ context("Tokens",{ tags: '@tokens' }, () => {
             // cy.request({
             //     method: "PUT",
             //     url:
-            //         Cypress.env("api_server") +
+            //         API.ApiServer +
             //         "tokens/" +
             //         tokenId +
             //         "/associate",

@@ -9,7 +9,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     before(() => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.Schemas,
+            url: API.ApiServer + API.Schemas,
             headers: {
                 authorization,
             },
@@ -18,7 +18,7 @@ context("Schemas", { tags: '@schemas' }, () => {
             //Create new schema
             cy.request({
                 method: "POST",
-                url: Cypress.env("api_server") + API.Schemas + topicUid,
+                url: API.ApiServer + API.Schemas + topicUid,
                 headers: { authorization },
                 body: {
                     uuid: schemaUUID,
@@ -40,7 +40,7 @@ context("Schemas", { tags: '@schemas' }, () => {
     it("delete new schema", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.Schemas,
+            url: API.ApiServer + API.Schemas,
             headers: {
                 authorization,
             },
@@ -55,7 +55,7 @@ context("Schemas", { tags: '@schemas' }, () => {
             //Delete schema
             cy.request({
                 method: "DELETE",
-                url: Cypress.env("api_server") + API.Schemas + schemaId,
+                url: API.ApiServer + API.Schemas + schemaId,
                 headers: { authorization },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);

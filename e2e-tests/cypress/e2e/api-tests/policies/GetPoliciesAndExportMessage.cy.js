@@ -1,10 +1,15 @@
+import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
+import API from "../../../support/ApiUrls";
+
+
+
 context("Policies", { tags: '@policies' }, () => {
     const authorization = Cypress.env("authorization");
 
     before(() => {
         cy.request({
             method: "POST",
-            url: `${Cypress.env("api_server")}policies/import/message`,
+            url: `${API.ApiServer}policies/import/message`,
             body: { messageId: "1650282926.728623821" },
             headers: {
                 authorization,
@@ -18,7 +23,7 @@ context("Policies", { tags: '@policies' }, () => {
     it("check returns of the blocks", () => {
         const urlPolicies = {
             method: "GET",
-            url: Cypress.env("api_server") + "policies",
+            url: API.ApiServer + "policies",
             headers: {
                 authorization,
             },
@@ -34,7 +39,7 @@ context("Policies", { tags: '@policies' }, () => {
             const url = {
                 method: "GET",
                 url:
-                    Cypress.env("api_server") +
+                    API.ApiServer +
                     "policies/" +
                     policyId +
                     "/export/message",
