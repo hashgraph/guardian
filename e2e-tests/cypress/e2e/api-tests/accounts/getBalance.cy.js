@@ -7,7 +7,7 @@ context("Accounts", { tags: '@accounts' }, () => {
     it("Requests current Hedera account balance", () => {
         cy.request({
             method: METHOD.GET,
-            url: Cypress.env("api_server") + API.Balance,
+            url: API.ApiServer + API.Balance,
             headers: {
                 authorization,
             },

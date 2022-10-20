@@ -1,3 +1,5 @@
+import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
+import API from "../../../support/ApiUrls";
 
 context('Accounts', { tags: '@accounts' }, () => {
     const authorization = Cypress.env('authorization');
@@ -7,7 +9,7 @@ context('Accounts', { tags: '@accounts' }, () => {
       it('get session as a StandardRegistry', () => {
         const options = {
           method: 'GET',
-          url: (Cypress.env('api_server') + 'accounts/session'),
+          url: (API.ApiServer + 'accounts/session'),
           headers: {
             authorization,
           }};

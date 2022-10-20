@@ -3,6 +3,7 @@ import API from "../../../support/ApiUrls";
 
 
 context("Accounts", { tags: "@accounts" }, () => {
+
     it("register a new user and login with it", () => {
         const name = Math.floor(Math.random() * 999) + "test001";
         cy.request("POST", API.ApiServer + "accounts/register", {
@@ -147,6 +148,21 @@ context("Accounts", { tags: "@accounts" }, () => {
             },
             failOnStatusCode:false,
         }).then(response => {
+            expect(response.status).eql(STATUS_CODE.ERROR);
+        });
+    });
+
+
+    it('should attempt to put sql injection', () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.AccountRegister,
+            headers: {
+                username: 'select * from users where id = 1 or 1=1',
+                password: "test",
+            },
+            failOnStatusCode:false,
+        }).should(response => {
             expect(response.status).eql(STATUS_CODE.ERROR);
         });
     });

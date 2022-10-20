@@ -1,15 +1,13 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Accounts",  { tags: '@accounts' }, () => {
+context("Artifacts", { tags: '@artifacts' },() => {
     const authorization = Cypress.env("authorization");
 
-    // TODO:
-    // Negative scenario to get accounts as non RootAuthority
-    it("get all users as a StandardRegistry", () => {
+    it("get all artifacts", () => {
         cy.request({
             method: METHOD.GET,
-            url: API.ApiServer + API.RootAuthorities,
+            url: API.ApiServer + API.Artifacts,
             headers: {
                 authorization,
             },
