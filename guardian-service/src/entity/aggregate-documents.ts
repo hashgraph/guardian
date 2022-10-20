@@ -67,19 +67,28 @@ export class AggregateVC extends BaseEntity {
     /**
      * Document policy id
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     policyId?: string;
 
     /**
      * Document block id
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     blockId?: string;
 
     /**
      * Document tag
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        index: true
+    })
     tag?: string;
 
     /**
