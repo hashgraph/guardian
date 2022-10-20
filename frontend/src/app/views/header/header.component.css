@@ -1,4 +1,4 @@
-@media (max-width: 780px) {
+@media (max-width: 810px) {
     .nav-bar {
         width: 100% !important;
         padding: 0px !important;
@@ -6,8 +6,8 @@
     .user-content-info {
         align-self: center;
     }
-    .user-content-info.user-logged {
-        transform: translate(60px, 0px);
+    ::ng-deep .nav-bar div.mat-tab-links {
+        justify-content: center;
     }
     ::ng-deep .mat-toolbar-single-row {
         flex-direction: column !important;
@@ -16,22 +16,20 @@
     .btn-home {
         font-size: 35px !important;
         line-height: 27px !important;
-        padding-top: 5px;
-    }
-    .user-name {
-        padding: 3px 50px 0px 150px !important;
+        transform: translate(0, 5px);
     }
 }
 
 .user-content-info {
     flex: 1 1 auto;
     justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
     display: flex;
-    min-width: 270px;
 }
 
 .nav-bar {
-    padding: 0px 120px 0px 30px;
+    padding: 0px 30px 0px 30px;
     min-width: 210px;
 }
 
@@ -70,26 +68,9 @@
     height: var(--header-height);
 }
 
-.user-name {
-    padding: 3px 56px 0px 160px;
-    position: relative;
-    height: 48px;
-    font-size: 20px;
-    box-sizing: border-box;
-}
-
-.user-name mat-icon {
-    position: absolute;
-    left: 0;
-    top: 9px;
-}
 
 .admin-panel {
-    padding: 3px 56px 0px 35px;
-    position: relative;
-    height: 48px;
     font-size: 20px;
-    box-sizing: border-box;
     color: #fff;
 }
 .admin-panel + .user-info-icon mat-icon {
@@ -146,19 +127,10 @@ a[hidden="true"] {
     white-space: normal;
 }
 
-.user-info {
-    display: table;
-    position: absolute;
-    top: 0;
-    right: 0;
-}
 
 .user-info-icon {
-    position: absolute;
-    right: 0px;
-    top: 0;
-    height: 48px;
     width: 48px;
+    height: 48px;
 }
 
 .user-content {
@@ -192,10 +164,7 @@ a[hidden="true"] {
 }
 
 .user-balance {
-    position: absolute;
-    left: 145px;
-    top: 4px;
-    transform: translate(-100%, 0);
+    display: inline-block;
     background: #fff;
     border-radius: 20px;
     padding: 0px 14px;
