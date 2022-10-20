@@ -273,6 +273,7 @@ export class PolicyUtils {
                 if (i % 100 === 0) {
                     ref.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`);
                 }
+                console.log(element);
                 transferPromiseArray.push(workers.addTask({
                     type: WorkerTaskType.TRANSFER_NFT,
                     data: {

@@ -14,22 +14,6 @@ import Blob from 'cross-blob';
 import { PrivateKey } from '@hashgraph/sdk';
 
 /**
- * Split chunk
- * @param array
- * @param chunk
- * @return
- */
-function splitChunk<T>(array: T[], chunk: number): T[][] {
-    const res: T[][] = [];
-    let i: number;
-    let j: number;
-    for (i = 0, j = array.length; i < j; i += chunk) {
-        res.push(array.slice(i, i + chunk));
-    }
-    return res;
-}
-
-/**
  * Sleep helper
  * @param t
  */
