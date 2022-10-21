@@ -172,6 +172,26 @@ export class PolicyUtils {
     }
 
     /**
+     * Set Object Value
+     * @param data
+     * @param field
+     * @param value
+     */
+    public static setObjectValue(data: any, field: string, value: any): void {
+        if (field) {
+            const keys = field.split('.');
+            let result = data;
+            for (let i = 0; i < keys.length - 1; i++) {
+                if (!result) {
+                    return;
+                }
+                result = result[keys[i]];
+            }
+            result[keys[keys.length - 1]] = value;
+        }
+    }
+
+    /**
      * Get array
      * @param data
      */
