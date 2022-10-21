@@ -297,10 +297,7 @@ export class PolicyEngineService {
                         new Logger().warn(message, ['GUARDIAN_SERVICE']);
                         return;
                     }
-                    notifier.result({
-                        policyId: result.policy.id,
-                        errors: result.errors
-                    });
+                    notifier.result(result.policy.id);
                 } catch (error) {
                     notifier.error(error);
                 }
