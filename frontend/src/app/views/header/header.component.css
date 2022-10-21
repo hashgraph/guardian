@@ -19,13 +19,21 @@
         transform: translate(0, 5px);
     }
 }
+.user-content-info,
+.user-content-button {
+    align-items: center;
+    gap: 10px;
+    display: flex;
+}
 
 .user-content-info {
     flex: 1 1 auto;
     justify-content: flex-end;
-    align-items: center;
-    gap: 10px;
-    display: flex;
+    
+}
+
+.user-content-button {
+    cursor: pointer;
 }
 
 .nav-bar {
