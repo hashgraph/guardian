@@ -336,7 +336,7 @@ npm run test
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialize Standard Registry by completing the Setup.
 
-![](<../../.gitbook/assets/image (23) (1).png>)
+![](<../../.gitbook/assets/image (14).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
@@ -345,6 +345,7 @@ The Format of the Standard Registry Hello World Message is as follows:
 ```
 {
 	'type': 'Standard Registry',
+	'status':'ISSUE'
 	'id': '35c5d340-1a93-475d-9659-818bb77d45df',
 	'did': 'did:hedera:testnet:vzN41A2bMhvYGhg7oCMoo5UAzQ6PCTq4VTQaNPE1uPG;hedera:testnet:tid=0.0.3423402',
 	'action': 'Init',
@@ -366,6 +367,7 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | Parameter | Purpose                            | Example                                                        |
 | --------- | ---------------------------------- | -------------------------------------------------------------- |
 | type      | Account Type                       | Standard Registry                                              |
+| status    | status of the message              | ISSUE                                                          |
 | id        | Message ID                         | 35c5d340-1a93-475d-9659-818bb77d45df                           |
 | did       | Hedera DID                         | did:hedera:testnet:vzN41A2bMhvYGhg7oCMoo5UAzQ6PCTq4VTQaNPE1uPG |
 | action    | Action Type                        | Init                                                           |

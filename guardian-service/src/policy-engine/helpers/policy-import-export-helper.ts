@@ -331,6 +331,8 @@ export class PolicyImportExportHelper {
         const artifactsMap = new Map<string, string>();
         const addedArtifacts = [];
         for (const artifact of artifacts) {
+            delete artifact._id;
+            delete artifact.id;
             const newArtifactUUID = GenerateUUIDv4();
             artifactsMap.set(artifact.uuid, newArtifactUUID);
             artifact.owner = policyOwner;

@@ -11,24 +11,7 @@ import { HederaSDKHelper } from './helpers/hedera-sdk-helper';
 import { Environment } from './helpers/environment';
 import { IpfsClient } from './ipfs-client';
 import Blob from 'cross-blob';
-import { HederaUtils } from './helpers/utils';
 import { PrivateKey } from '@hashgraph/sdk';
-
-/**
- * Split chunk
- * @param array
- * @param chunk
- * @return
- */
-function splitChunk<T>(array: T[], chunk: number): T[][] {
-    const res: T[][] = [];
-    let i: number;
-    let j: number;
-    for (i = 0, j = array.length; i < j; i += chunk) {
-        res.push(array.slice(i, i + chunk));
-    }
-    return res;
-}
 
 /**
  * Sleep helper
@@ -420,58 +403,31 @@ export class Worker {
                     break;
                 }
 
-                case WorkerTaskType.MINT_TOKEN: {
-                    const { hederaAccountId, hederaAccountKey, token, tokenValue, dryRun, transactionMemo, uuid, targetAccount, mintId } = task.data;
-
+                case WorkerTaskType.MINT_NFT: {
+                    const { hederaAccountId, hederaAccountKey, dryRun, tokenId, supplyKey, element, transactionMemo } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
-                    const tokenId = token.tokenId;
-                    const supplyKey = token.supplyKey;
-                    const adminId = token.adminId;
-                    const adminKey = token.adminKey;
+                    result.data = await client.mintNFT(tokenId, supplyKey, element, transactionMemo);
+                    break;
+                }
 
-                    if (token.tokenType === 'non-fungible') {
-                        const metaData = HederaUtils.decode(uuid);
-                        const data = new Array<Uint8Array>(Math.floor(tokenValue));
-                        data.fill(metaData);
-                        const serials: number[] = [];
-                        const dataChunk = splitChunk(data, 10);
-                        for (let i = 0; i < dataChunk.length; i++) {
-                            const element = dataChunk[i];
-                            if (i % 100 === 0) {
-                                console.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
-                            }
-                            try {
-                                const newSerials = await client.mintNFT(tokenId, supplyKey, element, transactionMemo);
-                                for (const serial of newSerials) {
-                                    serials.push(serial)
-                                }
-                            } catch (error) {
-                                console.error(`Mint(${mintId}): Mint Error (${error.message})`);
-                            }
-                        }
+                case WorkerTaskType.TRANSFER_NFT: {
+                    const { hederaAccountId, hederaAccountKey, dryRun, tokenId, targetAccount, adminId, adminKey, element, transactionMemo } = task.data;
+                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
+                    result.data = await client.transferNFT(tokenId, targetAccount, adminId, adminKey, element, transactionMemo);
+                    break;
+                }
 
-                        console.log(`Mint(${mintId}): Minted (Count: ${serials.length})`);
-                        console.log(`Mint(${mintId}): Transfer ${adminId} -> ${targetAccount} `);
+                case WorkerTaskType.MINT_FT: {
+                    const { hederaAccountId, hederaAccountKey, dryRun, tokenId, supplyKey, tokenValue, transactionMemo } = task.data;
+                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
+                    result.data = await client.mint(tokenId, supplyKey, tokenValue, transactionMemo);
+                    break;
+                }
 
-                        const serialsChunk = splitChunk(serials, 10);
-                        for (let i = 0; i < serialsChunk.length; i++) {
-                            const element = serialsChunk[i];
-                            if (i % 100 === 0) {
-                                console.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`);
-                            }
-                            try {
-                                await client.transferNFT(tokenId, targetAccount, adminId, adminKey, element, transactionMemo);
-                            } catch (error) {
-                                console.error(`Mint(${mintId}): Transfer Error (${error.message})`);
-                            }
-                        }
-                    } else {
-                        await client.mint(tokenId, supplyKey, tokenValue, transactionMemo);
-                        await client.transfer(tokenId, targetAccount, adminId, adminKey, tokenValue, transactionMemo);
-                    }
-
-                    result.data = {}
-
+                case WorkerTaskType.TRANSFER_FT: {
+                    const { hederaAccountId, hederaAccountKey, dryRun, tokenId, targetAccount, adminId, adminKey, tokenValue, transactionMemo } = task.data;
+                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
+                    result.data = await client.transfer(tokenId, targetAccount, adminId, adminKey, tokenValue, transactionMemo);
                     break;
                 }
 

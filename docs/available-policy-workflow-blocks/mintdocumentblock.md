@@ -14,13 +14,16 @@ This block is responsible for adding configurations on calculating the amount of
 
 ### UI Properties
 
-| UI Property        | Definition                                                                                                                                 | Example Input                                                                     |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| Token              | The token which is affected by the action                                                                                                  | GHG Token                                                                         |
-| Account Type       | The value from this field is used as the ID of the account under which the action is performed  when ‘Account Type’ is set to ‘Custom’.    | Custom                                                                            |
-| Rule               | Math expression for calculation of the amount of tokens to mint.                                                                           | field7 \* 100                                                                     |
-| Account Id (Field) | The value from this field is used as the ID of the account which is used for token transfer action when ‘Account Type’ is set to ‘Custom’. | field5                                                                            |
-| Memo               | The value in this filed is used to customize the Memo field name.                                                                          | "mint date is $ {document.verifiableCredential\[0],credentialSubject\[0].field5}" |
+| UI Property        | Definition                                                                                                                                                          | Example Input                                                                     |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Token              | The token which is affected by the action                                                                                                                           | GHG Token                                                                         |
+| Account Type       | The value from this field is used as the ID of the account under which the action is performed  when ‘Account Type’ is set to ‘Custom Account Field’.               | <ul><li>Custom Account Field</li><li>Custom Account Value</li></ul>               |
+| Rule               | Math expression for calculation of the amount of tokens to mint.                                                                                                    | field7 \* 100                                                                     |
+| Account Id (Field) | The value from this field is used as the ID of the account which is used for token transfer action when ‘Account Type’ is set to ‘Custom’.                          | field5                                                                            |
+| Account Id (Value) | Allow users to set custom Hedera account id directly in policy configuration (for token transferring). This field is displayed only when Custom Account Value type. | 0.0.48640912                                                                      |
+| Memo               | The value in this filed is used to customize the Memo field name.                                                                                                   | "mint date is $ {document.verifiableCredential\[0],credentialSubject\[0].field5}" |
+
+
 
 <figure><img src="../.gitbook/assets/image (31) (2).png" alt=""><figcaption></figcaption></figure>
 

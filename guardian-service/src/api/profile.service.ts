@@ -363,7 +363,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
                     hederaAccountId: user.hederaAccountId,
                     hederaAccountKey: key
                 }
-            }, 1);
+            }, 1, 1);
             return new MessageResponse({
                 balance,
                 unit: 'Hbar',
@@ -404,7 +404,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
                     hederaAccountId: user.hederaAccountId,
                     hederaAccountKey: key
                 }
-            }, 1);
+            }, 1, 1);
 
             return new MessageResponse(balance);
         } catch (error) {

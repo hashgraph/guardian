@@ -223,21 +223,98 @@ export class PolicyUtils {
         ref.log(`Mint(${mintId}): Start (Count: ${tokenValue})`);
 
         const workers = new Workers();
-        await workers.addTask({
-            type: WorkerTaskType.MINT_TOKEN,
-            data: {
-                hederaAccountId: root.hederaAccountId,
-                hederaAccountKey: root.hederaAccountKey,
-                token,
-                dryRun: ref.dryRun,
-                tokenValue,
-                transactionMemo,
-                uuid,
-                targetAccount, mintId
-            }
-        }, 1);
 
-        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId: token.tokenId, tokenValue, memo: transactionMemo });
+        const tokenId = token.tokenId;
+        const supplyKey = token.supplyKey;
+        const adminId = token.adminId;
+        const adminKey = token.adminKey;
+
+        if (token.tokenType === 'non-fungible') {
+            const metaData = new Uint8Array(Buffer.from(uuid));
+            const data = new Array<Uint8Array>(Math.floor(tokenValue));
+            data.fill(metaData);
+            const serials: number[] = [];
+            const dataChunk = PolicyUtils.splitChunk(data, 10);
+            const mintPromiseArray: Promise<any>[] = [];
+            for (let i = 0; i < dataChunk.length; i++) {
+                const element = dataChunk[i];
+                if (i % 100 === 0) {
+                    ref.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
+                }
+
+                mintPromiseArray.push(workers.addTask({
+                    type: WorkerTaskType.MINT_NFT,
+                    data: {
+                        hederaAccountId: root.hederaAccountId,
+                        hederaAccountKey: root.hederaAccountKey,
+                        dryRun: ref.dryRun,
+                        tokenId, supplyKey, element, transactionMemo
+                    }
+                }, 1));
+
+            }
+            try {
+                for (const newSerials of await Promise.all(mintPromiseArray)) {
+                    for (const serial of newSerials) {
+                        serials.push(serial)
+                    }
+                }
+            } catch (error) {
+                ref.error(`Mint(${mintId}): Mint Error (${error.message})`);
+            }
+
+            ref.log(`Mint(${mintId}): Minted (Count: ${serials.length})`);
+            ref.log(`Mint(${mintId}): Transfer ${adminId} -> ${targetAccount} `);
+
+            const serialsChunk = PolicyUtils.splitChunk(serials, 10);
+            const transferPromiseArray: Promise<any>[] = [];
+            for (let i = 0; i < serialsChunk.length; i++) {
+                const element = serialsChunk[i];
+                if (i % 100 === 0) {
+                    ref.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`);
+                }
+                transferPromiseArray.push(workers.addTask({
+                    type: WorkerTaskType.TRANSFER_NFT,
+                    data: {
+                        hederaAccountId: root.hederaAccountId,
+                        hederaAccountKey: root.hederaAccountKey,
+                        dryRun: ref.dryRun,
+                        tokenId, targetAccount, adminId, adminKey, element, transactionMemo
+                    }
+                }, 1));
+
+            }
+            try {
+                await Promise.all(transferPromiseArray);
+            } catch (error) {
+                ref.error(`Mint(${mintId}): Transfer Error (${error.message})`);
+            }
+        } else {
+            try {
+                await workers.addTask({
+                    type: WorkerTaskType.TRANSFER_NFT,
+                    data: {
+                        hederaAccountId: root.hederaAccountId,
+                        hederaAccountKey: root.hederaAccountKey,
+                        dryRun: ref.dryRun,
+                        tokenId, supplyKey, tokenValue, transactionMemo
+                    }
+                }, 1);
+                await workers.addTask({
+                    type: WorkerTaskType.TRANSFER_FT,
+                    data: {
+                        hederaAccountId: root.hederaAccountId,
+                        hederaAccountKey: root.hederaAccountKey,
+                        dryRun: ref.dryRun,
+                        tokenId, targetAccount, adminId, adminKey, tokenValue, transactionMemo
+                    }
+                }, 1);
+            } catch (error) {
+                ref.error(`Mint FT(${mintId}): Mint/Transfer Error (${error.message})`);
+            }
+        }
+
+        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: transactionMemo });
 
         ref.log(`Mint(${mintId}): End`);
     }
