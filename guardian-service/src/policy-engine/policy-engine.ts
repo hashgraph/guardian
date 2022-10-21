@@ -8,7 +8,8 @@ import {
     UserRole,
     IUser,
     PolicyType,
-    IRootConfig
+    IRootConfig,
+    GenerateUUIDv4
 } from '@guardian/interfaces';
 import {
     DataBaseHelper,
@@ -23,7 +24,7 @@ import {
     TokenMessage,
     TopicHelper
 } from '@hedera-modules'
-import { findAllEntities, replaceAllEntities, SchemaFields } from '@helpers/utils';
+import { findAllEntities, getArtifactType, replaceAllEntities, replaceArtifactProperties, SchemaFields } from '@helpers/utils';
 import { IPolicyInstance, IPolicyInterfaceBlock } from './policy-engine.interface';
 import { incrementSchemaVersion, findAndPublishSchema, publishSystemSchema, findAndDryRunSchema, deleteSchema } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
@@ -122,6 +123,7 @@ export class PolicyEngine {
             delete data.status;
         }
         const model = DatabaseServer.createPolicy(data);
+        let artifacts = [];
         if (model.uuid) {
             const old = await DatabaseServer.getPolicyByUUID(model.uuid);
             if (model.creator !== owner) {
@@ -134,6 +136,9 @@ export class PolicyEngine {
             model.owner = owner;
             delete model.version;
             delete model.messageId;
+            artifacts = await DatabaseServer.getArtifacts({
+                policyId: old.id
+            });
         } else {
             model.creator = owner;
             model.owner = owner;
@@ -196,7 +201,24 @@ export class PolicyEngine {
             notifier.completed();
         }
 
-        notifier.start('Saving in DB');
+        notifier.start('Create Artifacts');
+        const artifactsMap = new Map<string,string>();
+        const addedArtifacts = [];
+        for (const artifact of artifacts) {
+            artifact.data = await DatabaseServer.getArtifactFileByUUID(artifact.uuid);
+            delete artifact._id;
+            delete artifact.id;
+            const newArtifactUUID = GenerateUUIDv4();
+            artifactsMap.set(artifact.uuid, newArtifactUUID);
+            artifact.owner = model.owner;
+            artifact.uuid = newArtifactUUID;
+            artifact.type = getArtifactType(artifact.extention);
+            addedArtifacts.push(await DatabaseServer.saveArtifact(artifact));
+            await DatabaseServer.saveArtifactFile(newArtifactUUID, artifact.data);
+        }
+        replaceArtifactProperties(model.config, 'uuid', artifactsMap);
+
+        notifier.completedAndStart('Saving in DB');
         model.codeVersion = PolicyConverterUtils.VERSION;
         const policy = await DatabaseServer.updatePolicy(model);
 
@@ -204,6 +226,11 @@ export class PolicyEngine {
             newTopic.policyId = policy.id.toString();
             newTopic.policyUUID = policy.uuid;
             await DatabaseServer.updateTopic(newTopic);
+        }
+
+        for (const addedArtifact of addedArtifacts) {
+            addedArtifact.policyId = policy.id;
+            await DatabaseServer.saveArtifact(addedArtifact);
         }
 
         notifier.completed();
@@ -253,8 +280,16 @@ export class PolicyEngine {
             tokenId: { $in: tokenIds }
         });
 
+        const artifacts: any = await DatabaseServer.getArtifacts({
+            policyId: policy.id
+        });
+
+        for (const artifact of artifacts) {
+            artifact.data = await DatabaseServer.getArtifactFileByUUID(artifact.uuid);
+        }
+
         const dataToCreate = {
-            policy, schemas, tokens
+            policy, schemas, tokens, artifacts
         };
         return await PolicyImportExportHelper.importPolicy(dataToCreate, owner, null, notifier, data);
     }
