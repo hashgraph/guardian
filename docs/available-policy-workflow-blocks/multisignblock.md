@@ -13,6 +13,8 @@ This block provides a way to specify multiple signators for a single VC document
 | Stop Propagation | End processing here, don't pass control to the next block.                                                                                                     | Checked or unchecked.                                                                 |        |
 | Threshold (%)    | Proportion Of signators which are required to sign the document to achieve quorum for it to transition to ‘signed’ status. Must be a number between 0 and 100. | 0-100                                                                                 |        |
 
+
+
 {% hint style="info" %}
 **Note:** The system assigns ‘not signed’ status to the document when 100 – threshold percentage of users indicated rejection status.
 {% endhint %}
@@ -90,7 +92,7 @@ This block provides a way to specify multiple signators for a single VC document
 
 We have an option of Signing/ Declining the document by clicking on "Sign" or "Decline" button for the document as shown below:
 
-<figure><img src="../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (20).png" alt=""><figcaption></figcaption></figure>
 
 #### 5.2 Threshold Display
 

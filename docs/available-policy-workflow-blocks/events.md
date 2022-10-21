@@ -63,6 +63,10 @@ Output events are events which are created by the ‘Source’ blocks.
 
 ![](../.gitbook/assets/Events\_10.png)
 
+#### Calculate Block, Custom Logic Block, DocumentValidatorBlock, ExternalDataBlock, MintBlock, Reassigning Block, RequestVcDocumentBlock, RetirementBlock, RevokeBlock, SendToGuardianBlock, TokenActionBlock, TokenConfirmationBlock
+
+* Error Event : Which is called and passed the input data when error occur.
+
 ### Input Events
 
 Input Events are received and processed by the egress interface of the ‘Target’ block.
@@ -85,6 +89,10 @@ Input Events are received and processed by the egress interface of the ‘Target
 
 * StartTimerEvent - starts the timer for the user (to ‘tick’ for the time-activated aggregation logic)
 * StopTimerEvent – stops the ‘ticking’ timer for the user
+
+#### RequestVcDocumentBlock:
+
+* RestoreEvent - Which receive input vc document to restore data.
 
 ### Event Actor
 
