@@ -13,7 +13,7 @@ export enum MessageAction {
     CreateTopic = 'create-topic',
     CreateVP = 'create-vp-document',
     PublishSystemSchema = 'publish-system-schema',
-    Init = 'Initialization',
+    Init = 'Init',
     ChangeMessageStatus = 'change-message-status',
     RevokeDocument = 'revoke-document',
     DeleteDocument = 'delete-document',
