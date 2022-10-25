@@ -150,6 +150,28 @@ export class VCJS {
     }
 
     /**
+     * Issue VC Document
+     *
+     * @param {HcsVcDocument<T>} vcDocument - VC Document
+     * @param {Ed25519Signature2018} suite - suite
+     * @param {DocumentLoaderFunction} documentLoader - Document Loader
+     *
+     * @returns {HcsVcDocument<T>} - VC Document
+     */
+    public async issueJSON(
+        vc: any,
+        suite: Ed25519Signature2018,
+        documentLoader: DocumentLoaderFunction
+    ): Promise<any> {
+        const verifiableCredential = await vcjs.createVerifiableCredential({
+            credential: vc,
+            suite,
+            documentLoader,
+        });
+        return verifiableCredential;
+    }
+
+    /**
      * Verify VC Document
      *
      * @param {HcsVcDocument<T>} vcDocument - VC Document
@@ -314,7 +336,7 @@ export class VCJS {
         vc.setIssuanceDate(TimestampUtils.now());
         vc.addCredentialSubject(vcSubject);
 
-        if(group) {
+        if (group) {
             vc.setIssuer(new Issuer(did, group.groupId));
             vc.addType(group.type);
             vc.addContext(group.context);
@@ -322,6 +344,28 @@ export class VCJS {
             vc.setIssuer(new Issuer(did));
         }
 
+        vc = await this.issue(vc, suite, this.loader);
+        return vc;
+    }
+
+    /**
+     * Create VC Document
+     *
+     * @param {string} did - DID
+     * @param {PrivateKey | string} key - Private Key
+     * @param {any} vc - json
+     */
+    public async issueVC(
+        did: string,
+        key: string | PrivateKey,
+        vc: VcDocument
+    ): Promise<VcDocument> {
+        const document = DidRootKey.createByPrivateKey(did, key);
+        const id = GenerateUUIDv4();
+        const suite = await this.createSuite(document);
+        vc.setId(id);
+        vc.setIssuanceDate(TimestampUtils.now());
+        vc.setProof(null);
         vc = await this.issue(vc, suite, this.loader);
         return vc;
     }

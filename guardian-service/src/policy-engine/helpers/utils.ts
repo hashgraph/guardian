@@ -1113,7 +1113,7 @@ export class PolicyUtils {
      * @param ref
      * @param document
      */
-    public static cloneVC(ref: AnyBlockType, document: IPolicyDocument): VcDocumentCollection {
+    public static cloneVC(ref: AnyBlockType, document: IPolicyDocument): IPolicyDocument {
         return {
             policyId: ref.policyId,
             tag: document.tag || null,

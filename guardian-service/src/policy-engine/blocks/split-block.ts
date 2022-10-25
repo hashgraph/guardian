@@ -8,6 +8,9 @@ import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { SplitDocuments } from '@entity/split-documents';
+import { VcHelper } from '@helpers/vc-helper';
+import { Inject } from '@helpers/decorators/inject';
+import { VcDocument } from '@hedera-modules';
 
 /**
  * Split block
@@ -46,6 +49,13 @@ import { SplitDocuments } from '@entity/split-documents';
 })
 export class SplitBlock {
     /**
+     * VC helper
+     * @private
+     */
+    @Inject()
+    private readonly vcHelper: VcHelper;
+
+    /**
      * Get value
      * @param ref
      * @param doc
@@ -62,22 +72,31 @@ export class SplitBlock {
     /**
      * Create New Doc
      * @param ref
-     * @param doc
+     * @param root
+     * @param document
      * @param newValue
      */
     private async createNewDoc(
         ref: IPolicyBlock,
-        doc: IPolicyDocument,
+        root: IHederaAccount,
+        document: IPolicyDocument,
         newValue: number
     ): Promise<IPolicyDocument> {
-        const clone = JSON.parse(JSON.stringify(doc));
+        let clone = PolicyUtils.cloneVC(ref, document);
+        clone.document = JSON.parse(JSON.stringify(clone.document));
         PolicyUtils.setObjectValue(clone, ref.options.sourceField, newValue);
+        let vc = VcDocument.fromJsonTree(clone.document);
+        vc = await this.vcHelper.issueVC(root.did, root.hederaAccountKey, vc);
+        clone.document = vc.toJsonTree();
+        clone.hash = vc.toCredentialHash();
+        clone = PolicyUtils.setDocumentRef(clone, document);
         return clone;
     }
 
     /**
      * Split Doc
      * @param ref
+     * @param root
      * @param user
      * @param result
      * @param residue
@@ -85,6 +104,7 @@ export class SplitBlock {
      */
     private async split(
         ref: IPolicyBlock,
+        root: IHederaAccount,
         user: IPolicyUser,
         result: SplitDocuments[][],
         residue: SplitDocuments[],
@@ -114,13 +134,13 @@ export class SplitBlock {
                 document
             ));
         } else {
-            const newDoc = await this.createNewDoc(ref, document, needed);
+            const newDoc1 = await this.createNewDoc(ref, root, document, needed);
             residue.push(ref.databaseServer.createResidue(
                 ref.policyId,
                 ref.uuid,
                 user.id,
                 needed,
-                newDoc
+                newDoc1
             ));
             result.push(residue);
             residue = [];
@@ -129,24 +149,24 @@ export class SplitBlock {
             const end = value - needed - (count * threshold);
             if (count > 0) {
                 for (let i = 0; i < count; i++) {
-                    const newDoc = await this.createNewDoc(ref, document, threshold);
+                    const newDocN = await this.createNewDoc(ref, root, document, threshold);
                     result.push([ref.databaseServer.createResidue(
                         ref.policyId,
                         ref.uuid,
                         user.id,
                         threshold,
-                        newDoc
+                        newDocN
                     )]);
                 }
             }
             if (end > 0) {
-                const newDoc = await this.createNewDoc(ref, document, end);
+                const newDocL = await this.createNewDoc(ref, root, document, end);
                 residue.push(ref.databaseServer.createResidue(
                     ref.policyId,
                     ref.uuid,
                     user.id,
                     end,
-                    newDoc
+                    newDocL
                 ));
             }
         }
@@ -161,35 +181,14 @@ export class SplitBlock {
      */
     private async addDocs(ref: IPolicyBlock, user: IPolicyUser, documents: IPolicyDocument[]) {
         const residue = await ref.databaseServer.getResidue(ref.policyId, ref.uuid, user.id);
-        let current = residue;
+        const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
 
-        console.log('!! start', current.map(e => {
-            return {
-                field0: e.document.document.credentialSubject[0].field0,
-                field1: e.document.document.credentialSubject[0].field1
-            }
-        }
-        ));
+        let current = residue;
 
         const data: SplitDocuments[][] = [];
         for (const document of documents) {
-            current = await this.split(ref, user, data, current, document);
+            current = await this.split(ref, root, user, data, current, document);
         }
-
-        console.log('!! residue', current.map(e => {
-            return {
-                field0: e.document.document.credentialSubject[0].field0,
-                field1: e.document.document.credentialSubject[0].field1
-            }
-        }));
-        console.log('!! data', data.map(m => {
-            return m.map(e => {
-                return {
-                    field0: e.document.document.credentialSubject[0].field0,
-                    field1: e.document.document.credentialSubject[0].field1
-                }
-            })
-        }));
 
         await ref.databaseServer.removeResidue(residue);
         await ref.databaseServer.setResidue(current);
@@ -197,8 +196,6 @@ export class SplitBlock {
         for (const chunk of data) {
             const state = { data: chunk.map(c => c.document) };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-
-            console.log('55555');
         }
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, { data: documents });
     }
@@ -220,8 +217,6 @@ export class SplitBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
-
-        console.log('11111111');
         if (Array.isArray(docs)) {
             await this.addDocs(ref, event.user, docs);
         } else {
@@ -236,7 +231,15 @@ export class SplitBlock {
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
-
+            if (!ref.options.threshold) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "threshold" does not set');
+            } else {
+                try {
+                    parseFloat(ref.options.threshold);
+                } catch (error) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "threshold" must be a Number');
+                }
+            }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
