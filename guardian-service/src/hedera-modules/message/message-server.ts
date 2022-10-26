@@ -19,6 +19,8 @@ import { DatabaseServer } from '@database-modules';
 import { Workers } from '@helpers/workers';
 import { Environment } from '../environment';
 import { MessageMemo } from '../memo-mappings/message-memo';
+import { RegistrationMessage } from './registration-message';
+import { TopicMessage } from './topic-message';
 
 /**
  * Message server
@@ -186,10 +188,26 @@ export class MessageServer {
      * @param message
      * @private
      */
-    private async loadIPFS<T extends Message>(message: T): Promise<T> {
+    public async loadIPFS<T extends Message>(message: T): Promise<T> {
         const urls = message.getUrls();
         const promises = urls.map(url => {
             return this.getFile(url.cid, message.responseType);
+        });
+        const documents = await Promise.all(promises);
+        message = message.loadDocuments(documents) as T;
+        return message;
+    }
+
+    /**
+     * Load IPFS
+     * @param message
+     * @private
+     */
+    public static async loadIPFS<T extends Message>(message: T): Promise<T> {
+        const urls = message.getUrls();
+        const promises = urls
+            .map(url => {
+            return IPFS.getFile(url.cid, message.responseType);
         });
         const documents = await Promise.all(promises);
         message = message.loadDocuments(documents) as T;
@@ -263,6 +281,12 @@ export class MessageServer {
                 break;
             case MessageType.VPDocument:
                 message = VPMessage.fromMessageObject(json);
+                break;
+            case MessageType.StandardRegistry:
+                message = RegistrationMessage.fromMessageObject(json);
+                break;
+            case MessageType.Topic:
+                message = TopicMessage.fromMessageObject(json);
                 break;
             // Default schemas
             case 'schema-document':

@@ -36,6 +36,7 @@ import { publishSystemSchema } from './schema.service';
 import { Settings } from '@entity/settings';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { Workers } from '@helpers/workers';
+import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
 
 /**
  * Get global topic
@@ -59,30 +60,6 @@ async function getGlobalTopic(): Promise<Topic | null> {
         return null;
     }
 }
-
-// /**
-//  * Update user balance
-//  * @param channel
-//  */
-// export function updateUserBalance(channel: MessageBrokerChannel) {
-//     return async (client: any) => {
-//         try {
-//             const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
-//             const users = new Users();
-//             const user: any = await users.getUserByAccount(client.operatorAccountId.toString());
-//             await channel.request(['api-gateway', 'update-user-balance'].join('.'), {
-//                 balance,
-//                 unit: 'Hbar',
-//                 user: user ? {
-//                     username: user.username,
-//                     did: user.did
-//                 } : null
-//             });
-//         } catch (error) {
-//             await new Logger().info(error.message, ['GUARDIAN_SERVICE', 'TransactionResponse']);
-//         }
-//     }
-// }
 
 /**
  * Set up user profile
@@ -466,6 +443,34 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
 
                 const did = await setupUserProfile(username, profile, notifier);
                 notifier.result(did);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
+    });
+
+    ApiResponse(channel, MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
+        const { username, profile, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+
+        setImmediate(async () => {
+            try {
+                if (!profile.hederaAccountId) {
+                    notifier.error('Invalid Hedera Account Id');
+                    return;
+                }
+                if (!profile.hederaAccountKey) {
+                    notifier.error('Invalid Hedera Account Key');
+                    return;
+                }
+
+                const restore = new RestoreDataFromHedera();
+                await restore.restoreRootAuthority(username, profile.hederaAccountId, profile.hederaAccountKey)
+
+                notifier.result('did');
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);

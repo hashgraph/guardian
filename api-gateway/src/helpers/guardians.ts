@@ -342,6 +342,16 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Restore user profile async
+     * @param username
+     * @param profile
+     * @param taskId
+     */
+    public async restoreUserProfileCommonAsync(username: string, profile: IUser, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, { username, profile, taskId });
+    }
+
+    /**
      * Get user balance
      * @param username
      */
