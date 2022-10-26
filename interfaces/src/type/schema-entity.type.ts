@@ -12,5 +12,6 @@ export enum SchemaEntity {
     WIPE_TOKEN = 'WIPE_TOKEN',
     MINT_NFTOKEN = 'MINT_NFTOKEN',
     ISSUER = 'ISSUER',
-    USER_ROLE = 'USER_ROLE'
+    USER_ROLE = 'USER_ROLE',
+    CHUNK = 'CHUNK'
 }

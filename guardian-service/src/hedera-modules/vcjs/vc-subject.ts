@@ -73,7 +73,11 @@ export class VcSubject {
             const f = name.split('.');
             let result = this.document;
             for (const it of f) {
-                result = result[it];
+                if (it === 'L' && Array.isArray(result)) {
+                    result = result[result.length - 1];
+                } else {
+                    result = result[it];
+                }
             }
             return result;
         } catch (error) {

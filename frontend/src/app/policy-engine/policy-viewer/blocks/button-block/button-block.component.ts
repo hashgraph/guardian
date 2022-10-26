@@ -140,7 +140,11 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
             result = data;
             for (let i = 0; i < keys.length; i++) {
                 const key = keys[i];
-                result = result[key];
+                if (key === 'L' && Array.isArray(result)) {
+                    result = result[result.length - 1];
+                } else {
+                    result = result[key];
+                }
             }
         }
         return result;
@@ -153,7 +157,11 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
             result = data;
             for (let i = 0; i < keys.length - 1; i++) {
                 const key = keys[i];
-                result = result[key];
+                if (key === 'L' && Array.isArray(result)) {
+                    result = result[result.length - 1];
+                } else {
+                    result = result[key];
+                }
             }
             result[keys[keys.length - 1]] = value;
         }

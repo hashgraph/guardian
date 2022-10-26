@@ -163,7 +163,8 @@ export class ReportBlock {
                 }
                 report.vpDocument = vpDocument;
 
-                const mint = vp.document.verifiableCredential[1];
+                const mintIndex = Math.max(1, vp.document.verifiableCredential.length - 1);
+                const mint = vp.document.verifiableCredential[mintIndex];
                 const mintDocument: ITokenReport = {
                     type: 'VC',
                     tokenId: getVCField(mint, 'tokenId'),
@@ -185,9 +186,17 @@ export class ReportBlock {
                 variables.actionId = mint.id;
                 variables.actionSubjectId = mint.credentialSubject[0].id;
 
-                const doc = vp.document.verifiableCredential[0];
-                variables.documentId = doc.id;
-                variables.documentSubjectId = doc.credentialSubject[0].id;
+                const documentIds = [];
+                const documentSubjectIds = [];
+                for (let i = 0; i < vp.document.verifiableCredential.length - 1; i++) {
+                    const doc = vp.document.verifiableCredential[i];
+                    documentIds.push(doc.id);
+                    documentSubjectIds.push(doc.credentialSubject[0].id);
+                }
+                variables.documentId = documentIds[0];
+                variables.documentSubjectId = documentSubjectIds[0];
+                variables.documentIds = documentIds;
+                variables.documentSubjectIds = documentSubjectIds;
             } else {
                 const vc = await ref.databaseServer.getVcDocument({ hash, policyId: ref.policyId })
 

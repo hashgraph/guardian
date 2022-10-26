@@ -113,7 +113,8 @@ export class RegisteredBlocks {
             { type: BlockType.TokenActionBlock },
             { type: BlockType.TokenConfirmationBlock },
             { type: BlockType.DocumentValidatorBlock },
-            { type: BlockType.MultiSignBlock }
+            { type: BlockType.MultiSignBlock },
+            { type: BlockType.SplitBlock }
         ];
 
         // Main, UI Components
@@ -333,6 +334,14 @@ export class RegisteredBlocks {
                 type: BlockType.DocumentsSourceAddon,
                 group: BlockGroup.UnGrouped
             }]
+        });
+        this.registerBlock({
+            type: BlockType.SplitBlock,
+            icon: 'content_cut',
+            group: BlockGroup.Documents,
+            header: BlockHeaders.ServerBlocks,
+            factory: null,
+            property: null,
         });
 
         // Documents, Addons

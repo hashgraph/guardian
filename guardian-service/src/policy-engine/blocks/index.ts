@@ -32,3 +32,4 @@ export { TokenConfirmationBlock } from './token-confirmation-block';
 export { GroupManagerBlock } from './group-manager';
 export { MultiSignBlock } from './multi-sign-block';
 export { CalculateMathVariables } from './calculate-math-variables';
+export { SplitBlock } from './split-block';

@@ -15,7 +15,7 @@ export class RegistrationMessage extends Message {
     /**
      * Topic ID
      */
-    public topicId: string;
+    public registrationTopicId: string;
     /**
      * Language
      */
@@ -32,12 +32,12 @@ export class RegistrationMessage extends Message {
     /**
      * Set document
      * @param did
-     * @param topicId
+     * @param registrationTopicId
      * @param attributes
      */
-    public setDocument(did: string, topicId: string, attributes?: any): void {
+    public setDocument(did: string, registrationTopicId: string, attributes?: any): void {
         this.did = did;
-        this.topicId = topicId;
+        this.registrationTopicId = registrationTopicId;
         this.lang = 'en-US';
         this.attributes = attributes || {};
     }
@@ -53,7 +53,7 @@ export class RegistrationMessage extends Message {
             action: this.action,
             lang: this.lang,
             did: this.did,
-            topicId: this.topicId,
+            topicId: this.registrationTopicId,
             attributes: this.attributes
         }
     }
@@ -104,7 +104,7 @@ export class RegistrationMessage extends Message {
         message._id = json.id;
         message._status = json.status;
         message.did = json.did;
-        message.topicId = json.topicId;
+        message.registrationTopicId = json.topicId;
         message.lang = json.lang;
         message.attributes = json.attributes || {};
         return message;
