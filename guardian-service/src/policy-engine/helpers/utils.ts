@@ -164,7 +164,11 @@ export class PolicyUtils {
                 if (!result) {
                     return null;
                 }
-                result = result[key];
+                if (key === 'L' && Array.isArray(result)) {
+                    result = result[result.length - 1];
+                } else {
+                    result = result[key];
+                }
             }
             return result;
         }
@@ -185,7 +189,12 @@ export class PolicyUtils {
                 if (!result) {
                     return;
                 }
-                result = result[keys[i]];
+                const key = keys[i];
+                if (key === 'L' && Array.isArray(result)) {
+                    result = result[result.length - 1];
+                } else {
+                    result = result[key];
+                }
             }
             result[keys[keys.length - 1]] = value;
         }

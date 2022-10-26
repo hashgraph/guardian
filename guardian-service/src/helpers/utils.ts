@@ -133,7 +133,11 @@ export function findOptions(document: any, field: any) {
         const keys = field.split('.');
         value = document;
         for (const key of keys) {
-            value = value[key];
+            if (key === 'L' && Array.isArray(value)) {
+                value = value[value.length - 1];
+            } else {
+                value = value[key];
+            }
         }
     }
     return value;
