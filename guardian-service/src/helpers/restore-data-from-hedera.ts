@@ -135,6 +135,7 @@ export class RestoreDataFromHedera {
      * Restore policy documents
      * @param topicMessages
      * @param owner
+     * @param policyId
      * @private
      */
     private async restorePolicyDocuments(topicMessages: any, owner: string, policyId: string): Promise<void> {

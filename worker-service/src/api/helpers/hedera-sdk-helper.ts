@@ -34,7 +34,6 @@ import { Environment } from './environment';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger';
-import URL from 'url';
 
 export const MAX_FEE = 10;
 export const INITIAL_BALANCE = 30;
