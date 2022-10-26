@@ -1,4 +1,4 @@
-import { DataBaseHelper, SettingsContainer, Singleton } from '@guardian/common';
+import { DataBaseHelper, Singleton } from '@guardian/common';
 import { Workers } from '@helpers/workers';
 import {
     DidDocumentStatus,
@@ -37,34 +37,25 @@ export class RestoreDataFromHedera {
      * Workers
      * @private
      */
-    private workers: Workers;
-
-    /**
-     * Operator
-     * @private
-     */
-    private operator: any
+    private readonly workers: Workers;
 
     /**
      * Hello world topic id
      * @private
      */
-    private MAIN_TOPIC_ID = process.env.INITIALIZATION_TOPIC_ID;
+    private readonly MAIN_TOPIC_ID = process.env.INITIALIZATION_TOPIC_ID;
     /**
      * Users service
      * @private
      */
-    private users: Users;
+    private readonly users: Users;
     /**
      * Wallet service
      * @private
      */
-    private wallet: Wallet;
+    private readonly wallet: Wallet;
 
     constructor() {
-        const settingsContainer = new SettingsContainer();
-        this.operator = settingsContainer.settings;
-
         this.workers = new Workers();
         this.users = new Users();
         this.wallet = new Wallet();

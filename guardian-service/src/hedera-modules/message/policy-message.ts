@@ -50,7 +50,7 @@ export class PolicyMessage extends Message {
      * Policy topic ID
      * @private
      */
-    private policyTopicId: string;
+    public policyTopicId: string;
 
     constructor(type: MessageType.Policy | MessageType.InstancePolicy, action: MessageAction) {
         super(action, type);
