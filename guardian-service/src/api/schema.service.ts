@@ -84,7 +84,7 @@ export async function setDefaultSchema() {
     await fn(map[SchemaEntity.WIPE_TOKEN]);
     await fn(map[SchemaEntity.ISSUER]);
     await fn(map[SchemaEntity.USER_ROLE]);
-    await fn(map[SchemaEntity.CHUNK_DOCUMENT]);
+    await fn(map[SchemaEntity.CHUNK]);
 }
 
 /**

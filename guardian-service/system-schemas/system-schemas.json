@@ -586,14 +586,14 @@
         }
     },
     {
-        "uuid": "ChunkDocument",
-        "name": "ChunkDocument",
-        "entity": "CHUNK_DOCUMENT",
+        "uuid": "Chunk",
+        "name": "Chunk",
+        "entity": "CHUNK",
         "document": {
-            "$id": "#ChunkDocument",
-            "$comment": "{ \"@id\": \"#ChunkDocument\", \"term\": \"ChunkDocument\" }",
-            "title": "ChunkDocument",
-            "description": "ChunkDocument",
+            "$id": "#Chunk",
+            "$comment": "{ \"@id\": \"#Chunk\", \"term\": \"Chunk\" }",
+            "title": "Chunk",
+            "description": "Chunk",
             "type": "object",
             "properties": {
                 "evidence": {

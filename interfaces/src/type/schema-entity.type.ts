@@ -13,5 +13,5 @@ export enum SchemaEntity {
     MINT_NFTOKEN = 'MINT_NFTOKEN',
     ISSUER = 'ISSUER',
     USER_ROLE = 'USER_ROLE',
-    CHUNK_DOCUMENT = 'CHUNK_DOCUMENT'
+    CHUNK = 'CHUNK'
 }

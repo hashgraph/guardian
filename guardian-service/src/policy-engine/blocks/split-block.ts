@@ -70,7 +70,7 @@ export class SplitBlock {
     async getSchema(): Promise<SchemaCollection> {
         if (!this.schema) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-            this.schema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.CHUNK_DOCUMENT);
+            this.schema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.CHUNK);
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
             }
