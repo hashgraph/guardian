@@ -42,7 +42,7 @@
         </td>
     </tr>
     <ng-container *ngFor="let item of value; let i=index">
-        <tr class="propRow" [attr.collapse]="collapse">
+        <tr class="propRow" [attr.collapse]="collapse || groupCollapse">
             <td class="propRowCol" (click)="onHideItem(i)" [attr.collapse]="groupCollapse || itemCollapse[i]">
                 <mat-icon>
                     expand_more
@@ -52,6 +52,9 @@
                 {{property.items.label}} {{i}}
             </td>
             <td class="propRowCell">
+                <span class="not-editable-text">
+                    {{getArrayItemText(property.items, item)}}
+                </span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="removeItems(i)">
                     <mat-icon>delete</mat-icon>
                 </span>
@@ -94,10 +97,36 @@
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [title]="property.title">{{property.label}}</td>
-        <td class="propRowCell">
+        <td class="propRowCell ns">
             <mat-select [(value)]="value" [disabled]="readonly" (change)="onSave()">
                 <mat-option *ngFor="let item of property.items" [value]="item.value">{{item.label}}</mat-option>
             </mat-select>
+        </td>
+    </tr>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Schemas'">
+    <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [title]="property.title">{{property.label}}</td>
+        <td class="propRowCell ns">
+            <mat-select [(value)]="value" [disabled]="readonly" (change)="onSave()">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
+                    {{schema.name}}
+                    <span *ngIf="schema.version"> ({{schema.version}})</span>
+                    <span *ngIf="schema.status"> ({{schema.status}})</span>
+                </mat-option>
+            </mat-select>
+        </td>
+    </tr>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'Path'">
+    <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [title]="property.title">{{property.label}}</td>
+        <td class="propRowCell">
+            <document-path [(value)]="value" [readonly]="readonly" (change)="onSave()"></document-path>
         </td>
     </tr>
 </ng-container>

@@ -26,7 +26,8 @@ export const RevokedStatus = 'Revoked';
             PolicyInputEventType.RunEvent
         ],
         output: [
-            PolicyOutputEventType.RunEvent
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
     }
@@ -122,7 +123,10 @@ export class RevokeBlock {
      * @param event
      */
     @ActionCallback({
-        output: [PolicyOutputEventType.RunEvent]
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.ErrorEvent
+        ]
     })
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>): Promise<any> {

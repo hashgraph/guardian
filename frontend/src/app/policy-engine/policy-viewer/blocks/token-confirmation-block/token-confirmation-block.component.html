@@ -5,21 +5,25 @@
     <div class="dialog">
         <div class="title">Token {{action}}</div>
         <div class="description">
-            Please enter the private key for the account 
-            (<dragonglass type="accounts" [params]="accountId">{{accountId}}</dragonglass>) 
-            to <span>{{action}}</span> it with the token <span>{{tokenName}}</span> 
+            Please enter the private key for the account
+            (<dragonglass type="accounts" [params]="accountId">{{accountId}}</dragonglass>)
+            to <span>{{action}}</span> it with the token <span>{{tokenName}}</span>
             (<dragonglass type="tokens" [params]="tokenId">{{tokenId}}</dragonglass>)
         </div>
         <form class="form" [formGroup]="dataForm">
             <mat-form-field appearance="outline">
                 <mat-label>* Private Key</mat-label>
-                <input matInput type="text" placeholder="Private Key" formControlName="privateKey">
+                <input #privateKeyInput matInput type="password" placeholder="Private Key" formControlName="privateKey">
+                <button matSuffix mat-icon-button aria-label="Visibility"
+                    (click)="privateKeyInput.type === 'password' ? privateKeyInput.type = 'text' : privateKeyInput.type = 'password'">
+                    <mat-icon>{{ privateKeyInput.type === 'password' ? 'visibility' : 'visibility_off' }}</mat-icon>
+                </button>
             </mat-form-field>
             <div style="margin-top: 15px">
                 <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid"
                     (click)="onConfirm()">Enter</button>
                 <button mat-raised-button type="submit" (click)="onSkip()" style="margin-left: 20px">
-                    I will <span>{{action}}</span> manually
+                    I have <span>{{action === 'associate' ? 'associated' : action === 'dissociate' ? 'dissociated' : action}}</span> manually
                 </button>
             </div>
 

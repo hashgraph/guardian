@@ -79,7 +79,7 @@ export class SchemaConfigComponent implements OnInit {
         public dialog: MatDialog) {
         this.policies = null;
         this.pageIndex = 0;
-        this.pageSize = 100;
+        this.pageSize = 25;
         this.policyNameByTopic = {};
     }
 
@@ -121,7 +121,7 @@ export class SchemaConfigComponent implements OnInit {
             }
 
             this.pageIndex = 0;
-            this.pageSize = 100;
+            this.pageSize = 25;
             this.loadSchemas();
         }, (error) => {
             this.loading = false;
@@ -201,6 +201,7 @@ export class SchemaConfigComponent implements OnInit {
                 this.loading = true;
                 if (schema.system) {
                     this.schemaService.createSystemSchemas(schema).subscribe((data) => {
+                        localStorage.removeItem('restoreSchemaData');
                         this.loadSchemas();
                     }, (e) => {
                         console.error(e.error);
@@ -239,6 +240,7 @@ export class SchemaConfigComponent implements OnInit {
             disableClose: true,
             data: {
                 type: 'edit',
+                system: this.system,
                 schemasMap: this.schemasMap,
                 topicId: this.currentTopicPolicy,
                 policies: this.policies,
@@ -253,6 +255,7 @@ export class SchemaConfigComponent implements OnInit {
                     this.schemaService.updateSystemSchemas(schema, element.id) :
                     this.schemaService.update(schema, element.id);
                 request.subscribe((data) => {
+                    localStorage.removeItem('restoreSchemaData');
                     this.loadSchemas();
                 }, (e) => {
                     console.error(e.error);
@@ -357,6 +360,7 @@ export class SchemaConfigComponent implements OnInit {
 
     onAsyncCompleted() {
         this.taskId = undefined;
+        localStorage.removeItem('restoreSchemaData');
         this.loadSchemas();
     }
 

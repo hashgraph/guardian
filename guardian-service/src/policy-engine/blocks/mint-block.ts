@@ -32,7 +32,8 @@ import { IPolicyUser } from '@policy-engine/policy-user';
         ],
         output: [
             PolicyOutputEventType.RunEvent,
-            PolicyOutputEventType.RefreshEvent
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
     }
@@ -113,6 +114,8 @@ export class MintBlock {
         const vcs = [].concat(documents, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
 
+        console.log('!!!!! [tokenValue, tokenAmount]', [tokenValue, tokenAmount])
+
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
         ref.log(`Topic Id: ${topicId}`);
         const topic = await PolicyUtils.getTopicById(ref, topicId);
@@ -171,7 +174,11 @@ export class MintBlock {
      * @param {IPolicyEvent} event
      */
     @ActionCallback({
-        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
+        ]
     })
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
@@ -216,20 +223,23 @@ export class MintBlock {
             }
         }
 
-        const firstAccounts = accounts[0];
-        if (accounts.find(a => a !== firstAccounts)) {
-            ref.error(`More than one account found! Transfer made on the first (${firstAccounts})`);
-        }
         const topicId = topicIds[0];
-
         let targetAccountId: string;
-        if (ref.options.accountId) {
-            targetAccountId = firstAccounts;
+        if (ref.options.accountType !== 'custom-value') {
+            const firstAccounts = accounts[0];
+            if (accounts.find(a => a !== firstAccounts)) {
+                ref.error(`More than one account found! Transfer made on the first (${firstAccounts})`);
+            }
+            if (ref.options.accountId) {
+                targetAccountId = firstAccounts;
+            } else {
+                targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner);
+            }
+            if (!targetAccountId) {
+                throw new BlockActionError('Token recipient not set', ref.blockType, ref.uuid);
+            }
         } else {
-            targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner);
-        }
-        if (!targetAccountId) {
-            throw new BlockActionError('Token recipient not set', ref.blockType, ref.uuid);
+            targetAccountId = ref.options.accountIdValue;
         }
 
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
@@ -260,12 +270,15 @@ export class MintBlock {
                 resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
             }
 
-            const accountType = ['default', 'custom'];
+            const accountType = ['default', 'custom', 'custom-value'];
             if (accountType.indexOf(ref.options.accountType) === -1) {
                 resultsContainer.addBlockError(ref.uuid, 'Option "accountType" must be one of ' + accountType.join(','));
             }
             if (ref.options.accountType === 'custom' && !ref.options.accountId) {
                 resultsContainer.addBlockError(ref.uuid, 'Option "accountId" does not set');
+            }
+            if (ref.options.accountType === 'custom-value' && !/^\d+\.\d+\.\d+$/.test(ref.options.accountIdValue)) {
+                resultsContainer.addBlockError(ref.uuid, 'Option "accountIdValue" has invalid hedera account value');
             }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);

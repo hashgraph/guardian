@@ -37,7 +37,7 @@ We have two options to create Policy :
 
 ### 2. Importing Policy either from File or from IPFS
 
-Instead of creating Policy from scratch, there is an option of importing the Policy zip file from Local system.&#x20;
+Instead of creating Policy from scratch, there is an option of importing the Policy zip file from Local system.
 
 {% hint style="info" %}
 **Note:** Files with **.policy** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.

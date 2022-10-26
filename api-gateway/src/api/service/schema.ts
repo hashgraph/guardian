@@ -606,7 +606,13 @@ schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.STANDARD_REGIS
         const schemas = await guardians.exportSchemas([id]);
         const name = `${Date.now()}`;
         const zip = await generateZipFile(schemas);
-        const arcStream = zip.generateNodeStream();
+        const arcStream = zip.generateNodeStream({
+            type: 'nodebuffer' ,
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 3
+            }
+        });
         res.setHeader('Content-disposition', `attachment; filename=${name}`);
         res.setHeader('Content-type', 'application/zip');
         arcStream.pipe(res);
@@ -752,7 +758,7 @@ schemaAPI.put('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY),
             return;
         }
         fromOld(newSchema);
-        const schemas = await updateSchema(newSchema, user.did);
+        const schemas = await updateSchema(newSchema, user.username);
         res.status(200).json(toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);

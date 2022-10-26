@@ -69,6 +69,17 @@ export class LogsViewComponent implements OnInit {
                 });
                 this.onApply();
             }
+            if (params['message']) {
+                try {
+                    const message = atob(params['message']);
+                    this.searchForm.patchValue({
+                        message: message
+                    });
+                    this.onApply();
+                } catch (error) {
+                    return;
+                }
+            }
           });
       }
 

@@ -23,19 +23,38 @@ export class InformService {
         }
         let text;
         if (error.message) {
-            text = `
-                <div>${translatedMessage.text}</div>
-            `;
+            text = `${translatedMessage.text}`;
         } else {
             text = `Unknown error`;
         }
 
-        this.toastr.error(text, header, {
-            timeOut: 30000,
+        const body = `
+            <div>${text}</div>
+            <div>See <a style="color: #0B73F8" href="/admin/logs?message=${btoa(text)}">logs</a> for details.</div>
+        `;
+
+        this.toastr.error(body, header, {
+            timeOut: 100000,
+            extendedTimeOut: 30000,
             closeButton: true,
             positionClass: 'toast-bottom-right',
+            toastClass: 'ngx-toastr error-message-toastr',
             enableHtml: true,
         });
     }
 
+    public errorMessage(text: string, header: string) {
+        const body = `
+            <div>${text}</div>
+            <div>See <a style="color: #0B73F8" href="/admin/logs?message=${btoa(text)}">logs</a> for details.</div>
+        `;
+        this.toastr.error(body, header, {
+            timeOut: 100000,
+            extendedTimeOut: 30000,
+            closeButton: true,
+            positionClass: 'toast-bottom-right',
+            toastClass: 'ngx-toastr error-message-toastr',
+            enableHtml: true,
+        });
+    }
 }

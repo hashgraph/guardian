@@ -4,6 +4,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateAddon } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Calculate math addon
@@ -28,7 +29,7 @@ export class CalculateMathAddon {
      * Run logic
      * @param scope
      */
-    public async run(scope: any): Promise<any> {
+    public async run(scope: any, user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
         if (ref.options.equations) {
             for (const equation of ref.options.equations) {

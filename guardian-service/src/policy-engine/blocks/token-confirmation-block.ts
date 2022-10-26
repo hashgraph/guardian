@@ -28,7 +28,8 @@ import { IPolicyUser } from '@policy-engine/policy-user';
         ],
         output: [
             PolicyOutputEventType.Confirm,
-            PolicyOutputEventType.RefreshEvent
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: false
     }
@@ -96,13 +97,10 @@ export class TokenConfirmationBlock {
             throw new BlockActionError(`Document not found`, ref.blockType, ref.uuid)
         }
 
-        if (data.action === 'confirm') {
-            await this.confirm(ref, data, blockState);
-        } else if (data.action === 'skip') {
-            await this.skip(ref, data, blockState);
-        } else {
+        if (!['confirm', 'skip'].includes(data.action)) {
             throw new BlockActionError(`Invalid Action`, ref.blockType, ref.uuid)
         }
+        await this.confirm(ref, data, blockState, data.action === 'skip');
 
         ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data);
@@ -114,11 +112,7 @@ export class TokenConfirmationBlock {
      * @param {any} data
      * @param {any} state
      */
-    private async confirm(ref: IPolicyBlock, data: any, state: any) {
-        if (!data.hederaAccountKey) {
-            throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
-        }
-
+    private async confirm(ref: IPolicyBlock, data: any, state: any, skip: boolean = false) {
         const account = {
             did: null,
             hederaAccountId: state.accountId,
@@ -128,29 +122,51 @@ export class TokenConfirmationBlock {
         const token = await this.getToken();
 
         await PolicyUtils.checkAccountId(account);
+        const policyOwner = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+        const hederaAccountInfo = await PolicyUtils.getHederaAccountInfo(ref, account.hederaAccountId, policyOwner);
 
-        switch (ref.options.action) {
-            case 'associate': {
-                await PolicyUtils.associate(ref, token, account);
-                break;
+        if (skip) {
+            switch (ref.options.action) {
+                case 'associate': {
+                    if (!hederaAccountInfo[token.tokenId]) {
+                        throw new BlockActionError(`Token is not associated`, ref.blockType, ref.uuid);
+                    }
+                    break;
+                }
+                case 'dissociate': {
+                    if (hederaAccountInfo[token.tokenId]) {
+                        throw new BlockActionError(`Token is not dissociated`, ref.blockType, ref.uuid);
+                    }
+                    break;
+                }
+                default:
+                    break;
             }
-            case 'dissociate': {
-                await PolicyUtils.dissociate(ref, token, account);
-                break;
+        } else {
+            if (!account.hederaAccountKey) {
+                throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
             }
-            default:
-                break;
+            switch (ref.options.action) {
+                case 'associate': {
+                    if (!hederaAccountInfo[token.tokenId]) {
+                        await PolicyUtils.associate(ref, token, account);
+                    } else {
+                        console.warn('Token already associated', ref.policyId);
+                    }
+                    break;
+                }
+                case 'dissociate': {
+                    if (hederaAccountInfo[token.tokenId]) {
+                        await PolicyUtils.dissociate(ref, token, account);
+                    } else {
+                        console.warn('Token already dissociated', ref.policyId);
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
         }
-    }
-
-    /**
-     * Skip action
-     * @param {IPolicyBlock} ref
-     * @param {any} data
-     * @param {any} state
-     */
-    private async skip(ref: IPolicyBlock, data: any, state: any) {
-        return;
     }
 
     /**
@@ -159,7 +175,11 @@ export class TokenConfirmationBlock {
      * @param {IPolicyEvent} event
      */
     @ActionCallback({
-        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
+        ]
     })
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {

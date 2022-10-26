@@ -11,6 +11,7 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * Calculate block
@@ -30,7 +31,8 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
         ],
         output: [
             PolicyOutputEventType.RunEvent,
-            PolicyOutputEventType.RefreshEvent
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
     }
@@ -45,6 +47,7 @@ export class CalculateContainerBlock {
     private async calculate(documents: any | any[], ref: IPolicyCalculateBlock): Promise<VcDocumentCollection> {
         const fields = ref.options.inputFields;
         let scope = {};
+        let docOwner: IPolicyUser;
         if (fields) {
             if (Array.isArray(documents)) {
                 for (const field of fields) {
@@ -54,15 +57,17 @@ export class CalculateContainerBlock {
                     }
                     scope[field.value] = value;
                 }
+                docOwner = PolicyUtils.getDocumentOwner(ref, documents[0]);
             } else {
                 for (const field of fields) {
                     scope[field.value] = documents[field.name];
                 }
+                docOwner = PolicyUtils.getDocumentOwner(ref, documents);
             }
         }
         const addons = ref.getAddons();
         for (const addon of addons) {
-            scope = await addon.run(scope);
+            scope = await addon.run(scope, docOwner);
         }
         const newJson: any = {};
         if (ref.options.outputFields) {
@@ -156,7 +161,11 @@ export class CalculateContainerBlock {
      * @param {IPolicyEvent} event
      */
     @ActionCallback({
-        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
+        ]
     })
     @CatchErrors()
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {

@@ -13,3 +13,12 @@
 | Document Signer  | <p>defines who will sign processed document.<br>Options:<br>1. Policy Owner<br>2. First Document Owner<br>3. First Document Issues</p>            | Policy Owner                                                                          |        |
 | Id Type          | <p>defines Id Type in credential subject of processed document.<br>Options:<br>1. DID (new DID)<br>2. UUID (new UUID)<br>3. Owner (Owner DID)</p> | UUID (new UUID)                                                                       |        |
 
+{% hint style="info" %}
+**Note:** Only this block supports artifacts for now.
+{% endhint %}
+
+This block supports two types of artifacts : JSON (.json) and Executable Code (.js).
+
+**JSON** :  will be added to the “artifacts” variable which is array in specific order (for example artifacts\[0] is e\_grid\_mapping json object).
+
+**Executable Code** :  will be executed before main function.

@@ -1,8 +1,8 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.5.1",
-    "@guardian/interfaces": "^2.5.1",
+    "@guardian/common": "^2.6.0-prerelease",
+    "@guardian/interfaces": "^2.6.0-prerelease",
     "@mikro-orm/core": "^5.3.0",
     "@mikro-orm/mongodb": "^5.3.0",
     "@web-std/fetch": "3.0.0",
@@ -36,5 +36,6 @@
     "start": "node dist/index.js",
     "watch": "nodemon src/index.ts"
   },
-  "version": "2.5.1"
+  "version": "2.6.0-prerelease",
+  "stableVersion": "2.5.1"
 }

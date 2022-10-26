@@ -29,6 +29,10 @@ export class ProfileService {
         return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${encodeURIComponent(this.auth.getUsername())}`, profile);
     }
 
+    public restoreProfile(profile: IUser): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore/${encodeURIComponent(this.auth.getUsername())}`, profile);
+    }
+
     public getBalance(): Observable<string | null> {
         return this.http.get<string | null>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}/balance`);
     }

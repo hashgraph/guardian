@@ -112,3 +112,21 @@
     position: relative !important;
     top: -9px !important;
 }
+
+.restore-data {
+    margin-top: 10px;
+    margin-left: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--primary-color);
+}
+
+.restore-data button.mat-raised-button {
+    padding: 0 12px;
+    height: 36px;
+}
+
+.restore-data button mat-icon {
+    margin-left: 3px;
+}

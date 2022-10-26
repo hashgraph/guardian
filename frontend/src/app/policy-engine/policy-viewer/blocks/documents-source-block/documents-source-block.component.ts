@@ -219,7 +219,11 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 let d = row[field.names[0]];
                 for (let i = 1; i < field.names.length; i++) {
                     const name = field.names[i];
-                    d = d[name];
+                    if (name === 'L' && Array.isArray(d)) {
+                        d = d[d.length - 1];
+                    } else {
+                        d = d[name];
+                    }
                 }
                 return d;
             } else {
@@ -239,7 +243,11 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 let d = row[field.names[0]];
                 for (let i = 1; i < field.names.length; i++) {
                     const name = field.names[i];
-                    d = d[name];
+                    if (name === 'L' && Array.isArray(d)) {
+                        d = d[d.length - 1];
+                    } else {
+                        d = d[name];
+                    }
                 }
                 if (typeof d === 'object') {
                     return d.id;
@@ -279,7 +287,11 @@ export class DocumentsSourceBlockComponent implements OnInit {
             result = data;
             for (let i = 0; i < keys.length; i++) {
                 const key = keys[i];
-                result = result[key];
+                if (key === 'L' && Array.isArray(result)) {
+                    result = result[result.length - 1];
+                } else {
+                    result = result[key];
+                }
             }
         }
         return result;

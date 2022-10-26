@@ -67,7 +67,7 @@ Each of the above field types can be marked as either Marked or optional by chec
 **Note: Important points to be noted when "Enum" type is selected:**
 
 1. Enum values can be added by editing or by importing it from link or from file.
-2. If we are importing files by URL. The response should be ({"enum": \["Option1", "Option2", "Option3"]}) or has same format such as importing file (Options separated by new line symbol).&#x20;
+2. If we are importing files by URL. The response should be ({"enum": \["Option1", "Option2", "Option3"]}) or has same format such as importing file (Options separated by new line symbol).
 
 Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm](https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm)
 

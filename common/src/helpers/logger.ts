@@ -163,12 +163,12 @@ export class Logger {
     private readonly messageTransport: LoggerServiceTransport;
 
     constructor() {
-        this.messageTransport = new LoggerServiceTransport({format: format.json()});
+        this.messageTransport = new LoggerServiceTransport({ format: format.json() });
         this.loggerInstance = createLogger({
             level: 'info',
             format: format.json(),
             transports: [
-                new ConsoleTransport({format: format.json()}),
+                new ConsoleTransport({ format: format.json() }),
                 this.messageTransport
             ]
         })
@@ -226,7 +226,7 @@ export class Logger {
      * @param lvl
      */
     public async error(error: string | Error, attr?: string[], lvl: number = 1): Promise<void> {
-        const message = typeof error === 'string' ? error : error.stack;
+        const message = !error ? 'Unknown error' : (typeof error === 'string' ? error : error.stack);
         this.loggerInstance.error({
             message,
             type: LogType.ERROR,

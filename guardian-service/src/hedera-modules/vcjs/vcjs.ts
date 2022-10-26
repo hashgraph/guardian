@@ -115,9 +115,7 @@ export class VCJS {
     /**
      * Create Suite by DID
      *
-     * @param {string} id - Root DID
-     * @param {string} did - DID
-     * @param {PrivateKey} privateKey - Private Key
+     * @param {DidRootKey} document - DID document
      *
      * @returns {Ed25519Signature2018} - Ed25519Signature2018
      */
@@ -149,6 +147,28 @@ export class VCJS {
         });
         vcDocument.proofFromJson(verifiableCredential);
         return vcDocument;
+    }
+
+    /**
+     * Issue VC Document
+     *
+     * @param {HcsVcDocument<T>} vcDocument - VC Document
+     * @param {Ed25519Signature2018} suite - suite
+     * @param {DocumentLoaderFunction} documentLoader - Document Loader
+     *
+     * @returns {HcsVcDocument<T>} - VC Document
+     */
+    public async issueJSON(
+        vc: any,
+        suite: Ed25519Signature2018,
+        documentLoader: DocumentLoaderFunction
+    ): Promise<any> {
+        const verifiableCredential = await vcjs.createVerifiableCredential({
+            credential: vc,
+            suite,
+            documentLoader,
+        });
+        return verifiableCredential;
     }
 
     /**
@@ -316,7 +336,7 @@ export class VCJS {
         vc.setIssuanceDate(TimestampUtils.now());
         vc.addCredentialSubject(vcSubject);
 
-        if(group) {
+        if (group) {
             vc.setIssuer(new Issuer(did, group.groupId));
             vc.addType(group.type);
             vc.addContext(group.context);
@@ -329,10 +349,32 @@ export class VCJS {
     }
 
     /**
+     * Create VC Document
+     *
+     * @param {string} did - DID
+     * @param {PrivateKey | string} key - Private Key
+     * @param {any} vc - json
+     */
+    public async issueVC(
+        did: string,
+        key: string | PrivateKey,
+        vc: VcDocument
+    ): Promise<VcDocument> {
+        const document = DidRootKey.createByPrivateKey(did, key);
+        const id = GenerateUUIDv4();
+        const suite = await this.createSuite(document);
+        vc.setId(id);
+        vc.setIssuanceDate(TimestampUtils.now());
+        vc.setProof(null);
+        vc = await this.issue(vc, suite, this.loader);
+        return vc;
+    }
+
+    /**
      * Create VP Document
      *
      * @param {string} did - DID
-     * @param {PrivateKey | string} privateKey - Private Key
+     * @param {PrivateKey | string} key - Private Key
      * @param {HcsVcDocument<VcSubject>[]} vcs - VC Documents
      * @param {string} [uuid] - new uuid
      *

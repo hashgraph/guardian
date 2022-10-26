@@ -17,7 +17,10 @@ export class DidDocument extends BaseEntity implements IDidObject {
     /**
      * DID
      */
-    @Property({ nullable: true })
+    @Property({
+        nullable: true,
+        // index: true
+    })
     did?: string;
 
     /**
@@ -29,7 +32,9 @@ export class DidDocument extends BaseEntity implements IDidObject {
     /**
      * Created at
      */
-    @Property()
+    @Property({
+        index: true
+    })
     createDate: Date = new Date();
 
     /**

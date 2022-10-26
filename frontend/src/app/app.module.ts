@@ -45,6 +45,7 @@ import { InfoComponent } from './components/info/info/info.component';
 import { WebSocketService } from './services/web-socket.service';
 import { MessageTranslationService } from './services/message-translation-service/message-translation-service';
 import { TasksService } from './services/tasks.service';
+import { ArtifactService } from './services/artifact.service';
 
 @NgModule({
     declarations: [
@@ -96,6 +97,7 @@ import { TasksService } from './services/tasks.service';
         PolicyEngineService,
         PolicyHelper,
         IPFSService,
+        ArtifactService,
         SettingsService,
         LoggerService,
         DemoService,

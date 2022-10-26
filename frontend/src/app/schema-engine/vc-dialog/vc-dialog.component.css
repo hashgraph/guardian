@@ -3,9 +3,12 @@
 }
 
 .json {
-    word-break: break-all;
-    white-space: pre-wrap;
+    word-break: keep-all;
+    white-space: pre;
     margin-bottom: 8px;
+    font-family: monospace;
+    overflow: auto;
+    cursor: text;
 }
 
 .content {

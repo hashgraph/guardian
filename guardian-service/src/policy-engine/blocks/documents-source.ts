@@ -186,12 +186,27 @@ export class InterfaceDocumentsSource {
 
         switch (filtersAndDataType.dataType) {
             case 'vc-documents':
+                aggregation.unshift({
+                    $match: {
+                        policyId: { $eq: ref.policyId }
+                    }
+                });
                 return await ref.databaseServer.getVcDocumentsByAggregation(aggregation);
             case 'did-documents':
                 return await ref.databaseServer.getDidDocumentsByAggregation(aggregation);
             case 'vp-documents':
+                aggregation.unshift({
+                    $match: {
+                        policyId: { $eq: ref.policyId }
+                    }
+                });
                 return await ref.databaseServer.getVpDocumentsByAggregation(aggregation);
             case 'approve':
+                aggregation.unshift({
+                    $match: {
+                        policyId: { $eq: ref.policyId }
+                    }
+                });
                 return await ref.databaseServer.getApprovalDocumentsByAggregation(aggregation);
             default:
                 return [];

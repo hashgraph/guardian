@@ -15,6 +15,10 @@ import { DocumentStatus, IVC, SchemaEntity, TopicType } from '@guardian/interfac
 import { BaseEntity, DataBaseHelper } from '@guardian/common';
 import { PolicyInvitations } from '@entity/policy-invitations';
 import { MultiDocuments } from '@entity/multi-documents';
+import { Artifact as ArtifactCollection } from '@entity/artifact';
+import { ArtifactChunk as ArtifactChunkCollection } from '@entity/artifact-chunk';
+import { Binary } from 'bson';
+import { SplitDocuments } from '@entity/split-documents';
 
 /**
  * Database server
@@ -31,6 +35,11 @@ export class DatabaseServer {
      * @private
      */
     private readonly classMap: Map<any, string> = new Map();
+
+    /**
+     * Max Document Size ~ 16 MB
+     */
+    private static readonly MAX_DOCUMENT_SIZE = 16000000;
 
     constructor(dryRun: string = null) {
         this.dryRun = dryRun || null;
@@ -50,6 +59,7 @@ export class DatabaseServer {
         this.classMap.set(PolicyRolesCollection, 'PolicyRolesCollection');
         this.classMap.set(PolicyInvitations, 'PolicyInvitations');
         this.classMap.set(MultiDocuments, 'MultiDocuments');
+        this.classMap.set(SplitDocuments, 'SplitDocuments');
     }
 
     /**
@@ -194,10 +204,16 @@ export class DatabaseServer {
      */
     private async save<T extends BaseEntity>(entityClass: new () => T, item: any): Promise<T> {
         if (this.dryRun) {
-            const _item: any = item;
-            _item.dryRunId = this.dryRun;
-            _item.dryRunClass = this.classMap.get(entityClass);
-            return await new DataBaseHelper(DryRun).save(_item) as any;
+            if (Array.isArray(item)) {
+                for (const i of item) {
+                    i.dryRunId = this.dryRun;
+                    i.dryRunClass = this.classMap.get(entityClass);
+                }
+            } else {
+                item.dryRunId = this.dryRun;
+                item.dryRunClass = this.classMap.get(entityClass);
+            }
+            return await new DataBaseHelper(DryRun).save(item) as any;
         } else {
             return await new DataBaseHelper(entityClass).save(item);
         }
@@ -277,6 +293,189 @@ export class DatabaseServer {
             type: keyName,
             hederaAccountKey: key
         });
+    }
+
+    /**
+     * Get Virtual Hedera Account
+     * @param hederaAccountId
+     *
+     * @virtual
+     */
+    public async getVirtualHederaAccountInfo(hederaAccountId: string): Promise<any> {
+        const item = (await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        })) as any;
+        return item?.tokenMap || {};
+    }
+
+    /**
+     * Virtual Associate Token
+     * @param hederaAccountId
+     * @param token
+     *
+     * @virtual
+     */
+    public async virtualAssociate(hederaAccountId: string, token: TokenCollection): Promise<boolean> {
+        const item = await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
+        if (item) {
+            if (item.tokenMap[token.tokenId]) {
+                throw new Error('Token already associated')
+            } else {
+                item.tokenMap[token.tokenId] = {
+                    frozen: token.freezeKey ? false : null,
+                    kyc: token.kycKey ? false : null
+                };
+                await new DataBaseHelper(DryRun).update(item);
+            }
+        } else {
+            const tokenMap = {};
+            tokenMap[token.tokenId] = {
+                frozen: token.freezeKey ? false : null,
+                kyc: token.kycKey ? false : null
+            };
+            await new DataBaseHelper(DryRun).save({
+                dryRunId: this.dryRun,
+                dryRunClass: 'HederaAccountInfo',
+                hederaAccountId,
+                tokenMap
+            });
+        }
+        return true;
+    }
+
+    /**
+     * Virtual Dissociate Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public async virtualDissociate(hederaAccountId: string, tokenId: string): Promise<boolean> {
+        const item = await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
+        if (!item || !item.tokenMap[tokenId]) {
+            throw new Error('Token is not associated');
+        }
+        delete item.tokenMap[tokenId];
+        await new DataBaseHelper(DryRun).update(item);
+        return true;
+    }
+
+    /**
+     * Virtual Freeze Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public async virtualFreeze(hederaAccountId: string, tokenId: string): Promise<boolean> {
+        const item = await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
+        if (!item || !item.tokenMap[tokenId]) {
+            throw new Error('Token is not associated')
+        }
+        if (item.tokenMap[tokenId].frozen === null) {
+            throw new Error('Can not be frozen');
+        }
+        if (item.tokenMap[tokenId].frozen === true) {
+            throw new Error('Token already frozen');
+        }
+        item.tokenMap[tokenId].frozen = true;
+        await new DataBaseHelper(DryRun).update(item);
+        return true;
+    }
+
+    /**
+     * Virtual Unfreeze Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public async virtualUnfreeze(hederaAccountId: string, tokenId: string): Promise<boolean> {
+        const item = await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
+        if (!item || !item.tokenMap[tokenId]) {
+            throw new Error('Token is not associated')
+        }
+        if (item.tokenMap[tokenId].frozen === null) {
+            throw new Error('Can not be unfrozen');
+        }
+        if (item.tokenMap[tokenId].frozen === false) {
+            throw new Error('Token already unfrozen');
+        }
+        item.tokenMap[tokenId].frozen = false;
+        await new DataBaseHelper(DryRun).update(item);
+        return true;
+    }
+
+    /**
+     * Virtual GrantKyc Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public async virtualGrantKyc(hederaAccountId: string, tokenId: string): Promise<boolean> {
+        const item = await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
+        if (!item || !item.tokenMap[tokenId]) {
+            throw new Error('Token is not associated')
+        }
+        if (item.tokenMap[tokenId].kyc === null) {
+            throw new Error('Can not be granted kyc');
+        }
+        if (item.tokenMap[tokenId].kyc === true) {
+            throw new Error('Token already granted kyc');
+        }
+        item.tokenMap[tokenId].kyc = true;
+        await new DataBaseHelper(DryRun).update(item);
+        return true;
+    }
+
+    /**
+     * Virtual RevokeKyc Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public async virtualRevokeKyc(hederaAccountId: string, tokenId: string): Promise<boolean> {
+        const item = await new DataBaseHelper(DryRun).findOne({
+            dryRunId: this.dryRun,
+            dryRunClass: 'HederaAccountInfo',
+            hederaAccountId
+        });
+        if (!item || !item.tokenMap[tokenId]) {
+            throw new Error('Token is not associated')
+        }
+        if (item.tokenMap[tokenId].kyc === null) {
+            throw new Error('Can not be revoked kyc');
+        }
+        if (item.tokenMap[tokenId].kyc === false) {
+            throw new Error('Token already revoked kyc');
+        }
+        item.tokenMap[tokenId].kyc = false;
+        await new DataBaseHelper(DryRun).update(item);
+        return true;
     }
 
     /**
@@ -1111,6 +1310,66 @@ export class DatabaseServer {
         return doc;
     }
 
+    /**
+     * Get Residue objects
+     * @param policyId
+     * @param blockId
+     * @param userId
+     */
+    public async getResidue(
+        policyId: string,
+        blockId: string,
+        userId: string
+    ): Promise<SplitDocuments[]> {
+        return await this.find(SplitDocuments, {
+            where: {
+                policyId: { $eq: policyId },
+                blockId: { $eq: blockId },
+                userId: { $eq: userId }
+            }
+        });
+    }
+
+    /**
+     * Set Residue objects
+     * @param residue
+     */
+    public async setResidue(residue: SplitDocuments[]): Promise<void> {
+        await this.save(SplitDocuments, residue);
+    }
+
+    /**
+     * Remove Residue objects
+     * @param residue
+     */
+    public async removeResidue(residue: SplitDocuments[]): Promise<void> {
+        await this.remove(SplitDocuments, residue);
+    }
+
+    /**
+     * Create Residue object
+     * @param policyId
+     * @param blockId
+     * @param userId
+     * @param value
+     * @param document
+     */
+    public createResidue(
+        policyId: string,
+        blockId: string,
+        userId: string,
+        value: any,
+        document: any
+    ): SplitDocuments {
+        return this.create(SplitDocuments, {
+            policyId,
+            blockId,
+            userId,
+            value,
+            document
+        });
+    }
+
     //Static
 
     /**
@@ -1265,6 +1524,33 @@ export class DatabaseServer {
      */
     public static async getPolicies(filters?: any): Promise<Policy[]> {
         return await new DataBaseHelper(Policy).find(filters);
+    }
+
+    /**
+     * Get policies
+     * @param filters
+     */
+    public static async getListOfPolicies(filters?: any): Promise<Policy[]> {
+        const options: any = {
+            fields: [
+                'id',
+                'uuid',
+                'name',
+                'version',
+                'previousVersion',
+                'description',
+                'status',
+                'creator',
+                'owner',
+                'topicId',
+                'policyTag',
+                'messageId',
+                'codeVersion',
+                'createDate'
+            ],
+            limit: 100
+        }
+        return await new DataBaseHelper(Policy).find(filters, options);
     }
 
     /**
@@ -1448,7 +1734,13 @@ export class DatabaseServer {
             dryRunClass: 'VirtualUsers',
             active: true
         }, {
-            fields: ['did', 'username', 'hederaAccountId', 'active']
+            fields: [
+                'id',
+                'did',
+                'username',
+                'hederaAccountId',
+                'active'
+            ]
         });
     }
 
@@ -1463,7 +1755,13 @@ export class DatabaseServer {
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers'
         }, {
-            fields: ['did', 'username', 'hederaAccountId', 'active']
+            fields: [
+                'id',
+                'did',
+                'username',
+                'hederaAccountId',
+                'active'
+            ]
         })) as any;
     }
 
@@ -1525,10 +1823,20 @@ export class DatabaseServer {
             };
         } else if (type === 'transactions') {
             filters.where.dryRunClass = { $eq: 'Transactions' };
-            otherOptions.fields = ['createDate', 'type', 'hederaAccountId'];
+            otherOptions.fields = [
+                'id',
+                'createDate',
+                'type',
+                'hederaAccountId'
+            ];
         } else if (type === 'ipfs') {
             filters.where.dryRunClass = { $eq: 'Files' };
-            otherOptions.fields = ['createDate', 'document', 'documentURL'];
+            otherOptions.fields = [
+                'id',
+                'createDate',
+                'document',
+                'documentURL'
+            ];
         }
         return await new DataBaseHelper(DryRun).findAndCount(filters, otherOptions);
     }
@@ -1635,5 +1943,89 @@ export class DatabaseServer {
      */
     public static async getTokens(filters?: any): Promise<TokenCollection[]> {
         return await new DataBaseHelper(TokenCollection).find(filters);
+    }
+
+    /**
+     * Save Artifact
+     * @param artifact Artifact
+     * @returns Saved Artifact
+     */
+    public static async saveArtifact(artifact: ArtifactCollection): Promise<ArtifactCollection> {
+        return await new DataBaseHelper(ArtifactCollection).save(artifact);
+    }
+
+    /**
+     * Get Artifact
+     * @param filters Filters
+     * @returns Artifact
+     */
+    public static async getArtifact(filters?: any): Promise<ArtifactCollection> {
+        return await new DataBaseHelper(ArtifactCollection).findOne(filters);
+    }
+
+    /**
+     * Get Artifacts
+     * @param filters Filters
+     * @param options Options
+     * @returns Artifacts
+     */
+    public static async getArtifacts(filters?: any, options?: any): Promise<ArtifactCollection[]> {
+        return await new DataBaseHelper(ArtifactCollection).find(filters, options);
+    }
+
+    /**
+     * Get Artifacts
+     * @param filters Filters
+     * @param options Options
+     * @returns Artifacts
+     */
+    public static async getArtifactsAndCount(filters?: any, options?: any): Promise<[ArtifactCollection[], number]> {
+        return await new DataBaseHelper(ArtifactCollection).findAndCount(filters, options);
+    }
+
+    /**
+     * Remove Artifact
+     * @param artifact Artifact
+     */
+    public static async removeArtifact(artifact?: ArtifactCollection): Promise<void> {
+        await new DataBaseHelper(ArtifactCollection).remove(artifact)
+        await new DataBaseHelper(ArtifactChunkCollection).delete({
+            uuid: artifact.uuid
+        });
+    }
+
+    /**
+     * Save Artifact File
+     * @param uuid File UUID
+     * @param data Data
+     */
+    public static async saveArtifactFile(uuid: string, data: Buffer): Promise<void> {
+        let offset = 0;
+        let fileNumber = 1;
+        while (offset < data.length) {
+            await new DataBaseHelper(ArtifactChunkCollection).save({
+                uuid,
+                number: fileNumber,
+                data: new Binary(data.subarray(offset, offset + DatabaseServer.MAX_DOCUMENT_SIZE > data.length ? data.length : offset + DatabaseServer.MAX_DOCUMENT_SIZE))
+            });
+            offset = offset + DatabaseServer.MAX_DOCUMENT_SIZE;
+            fileNumber++;
+        }
+    }
+
+    /**
+     * Get Artifact File By UUID
+     * @param uuid File UUID
+     * @returns Buffer
+     */
+    public static async getArtifactFileByUUID(uuid: string): Promise<Buffer> {
+        const artifactChunks = (await new DataBaseHelper(ArtifactChunkCollection).find({
+            uuid
+        }, {
+            orderBy: {
+                number: 'ASC'
+            }
+        })).map(item => item.data.buffer);
+        return artifactChunks.length > 0 ? Buffer.concat(artifactChunks) : Buffer.from('');
     }
 }

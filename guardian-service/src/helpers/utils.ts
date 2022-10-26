@@ -1,4 +1,4 @@
-import { IVC, IVCDocument, GenerateUUIDv4 } from '@guardian/interfaces';
+import { IVC, IVCDocument, GenerateUUIDv4, ArtifactType } from '@guardian/interfaces';
 import { Client } from '@hashgraph/sdk';
 
 /**
@@ -133,7 +133,11 @@ export function findOptions(document: any, field: any) {
         const keys = field.split('.');
         value = document;
         for (const key of keys) {
-            value = value[key];
+            if (key === 'L' && Array.isArray(value)) {
+                value = value[value.length - 1];
+            } else {
+                value = value[key];
+            }
         }
     }
     return value;
@@ -184,5 +188,52 @@ export function SetTransactionResponseCallback(fn: Function) {
 export function TransactionResponse(client: Client) {
     if (TransactionResponseCallback) {
         TransactionResponseCallback(client);
+    }
+}
+
+/**
+ * Get Artifact Type
+ * @param extention Artifact File Extention
+ * @returns Artifact Type
+ */
+export function getArtifactType(extention: string): ArtifactType {
+    switch (extention) {
+        case 'js':
+            return ArtifactType.EXECUTABLE_CODE;
+        case 'json':
+            return ArtifactType.JSON;
+        default:
+            return null;
+    }
+}
+
+/**
+ * Get Artifact File Extention
+ * @param name Full File Name
+ * @returns Extention
+ */
+export function getArtifactExtention(name: string): string {
+    return /[^.]+$/.exec(name).toString();
+}
+
+/**
+ * Replace Artifacts Properties
+ * @param obj Config
+ * @param property Property Name
+ * @param artifactsMapping Mapping Values
+ */
+export function replaceArtifactProperties(obj: any, property: any, artifactsMapping: Map<string, string>) {
+    if (!artifactsMapping || !artifactsMapping.size) {
+        return;
+    }
+    if (obj.hasOwnProperty('artifacts')) {
+        for (const artifactConfig of obj.artifacts) {
+            artifactConfig[property] = artifactsMapping.get(artifactConfig[property])
+        }
+    }
+    if (obj.hasOwnProperty('children')) {
+        for (const child of obj.children) {
+            replaceArtifactProperties(child, property, artifactsMapping);
+        }
     }
 }

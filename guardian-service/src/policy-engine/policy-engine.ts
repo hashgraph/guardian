@@ -8,9 +8,11 @@ import {
     UserRole,
     IUser,
     PolicyType,
-    IRootConfig
+    IRootConfig,
+    GenerateUUIDv4
 } from '@guardian/interfaces';
 import {
+    DataBaseHelper,
     IAuthUser,
     Logger
 } from '@guardian/common';
@@ -22,7 +24,7 @@ import {
     TokenMessage,
     TopicHelper
 } from '@hedera-modules'
-import { findAllEntities, replaceAllEntities, SchemaFields } from '@helpers/utils';
+import { findAllEntities, getArtifactType, replaceAllEntities, replaceArtifactProperties, SchemaFields } from '@helpers/utils';
 import { IPolicyInstance, IPolicyInterfaceBlock } from './policy-engine.interface';
 import { incrementSchemaVersion, findAndPublishSchema, publishSystemSchema, findAndDryRunSchema, deleteSchema } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
@@ -37,6 +39,7 @@ import { DatabaseServer } from '@database-modules';
 import { IPolicyUser, PolicyUser } from './policy-user';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from './policy-validation-results-container';
+import { Artifact } from '@entity/artifact';
 
 /**
  * Result of publishing
@@ -120,6 +123,7 @@ export class PolicyEngine {
             delete data.status;
         }
         const model = DatabaseServer.createPolicy(data);
+        let artifacts = [];
         if (model.uuid) {
             const old = await DatabaseServer.getPolicyByUUID(model.uuid);
             if (model.creator !== owner) {
@@ -132,6 +136,9 @@ export class PolicyEngine {
             model.owner = owner;
             delete model.version;
             delete model.messageId;
+            artifacts = await DatabaseServer.getArtifacts({
+                policyId: old.id
+            });
         } else {
             model.creator = owner;
             model.owner = owner;
@@ -194,7 +201,24 @@ export class PolicyEngine {
             notifier.completed();
         }
 
-        notifier.start('Saving in DB');
+        notifier.start('Create Artifacts');
+        const artifactsMap = new Map<string,string>();
+        const addedArtifacts = [];
+        for (const artifact of artifacts) {
+            artifact.data = await DatabaseServer.getArtifactFileByUUID(artifact.uuid);
+            delete artifact._id;
+            delete artifact.id;
+            const newArtifactUUID = GenerateUUIDv4();
+            artifactsMap.set(artifact.uuid, newArtifactUUID);
+            artifact.owner = model.owner;
+            artifact.uuid = newArtifactUUID;
+            artifact.type = getArtifactType(artifact.extention);
+            addedArtifacts.push(await DatabaseServer.saveArtifact(artifact));
+            await DatabaseServer.saveArtifactFile(newArtifactUUID, artifact.data);
+        }
+        replaceArtifactProperties(model.config, 'uuid', artifactsMap);
+
+        notifier.completedAndStart('Saving in DB');
         model.codeVersion = PolicyConverterUtils.VERSION;
         const policy = await DatabaseServer.updatePolicy(model);
 
@@ -204,14 +228,37 @@ export class PolicyEngine {
             await DatabaseServer.updateTopic(newTopic);
         }
 
+        for (const addedArtifact of addedArtifacts) {
+            addedArtifact.policyId = policy.id;
+            await DatabaseServer.saveArtifact(addedArtifact);
+        }
+
         notifier.completed();
         return policy;
     }
 
     /**
      * Clone policy
+     * @param policyId
+     * @param data
+     * @param owner
+     * @param notifier
      */
-    public async clonePolicy(policyId: string, data: any, owner: string, notifier: INotifier): Promise<string> {
+    public async clonePolicy(
+        policyId: string,
+        data: any,
+        owner: string,
+        notifier: INotifier
+    ): Promise<{
+        /**
+         * New Policy
+         */
+        policy: Policy;
+        /**
+         * Errors
+         */
+        errors: any[];
+    }> {
         const logger = new Logger();
         logger.info('Create Policy', ['GUARDIAN_SERVICE']);
 
@@ -233,11 +280,18 @@ export class PolicyEngine {
             tokenId: { $in: tokenIds }
         });
 
+        const artifacts: any = await DatabaseServer.getArtifacts({
+            policyId: policy.id
+        });
+
+        for (const artifact of artifacts) {
+            artifact.data = await DatabaseServer.getArtifactFileByUUID(artifact.uuid);
+        }
+
         const dataToCreate = {
-            policy, schemas, tokens
+            policy, schemas, tokens, artifacts
         };
-        const newPolicy = await PolicyImportExportHelper.importPolicy(dataToCreate, owner, null, notifier, data);
-        return newPolicy.id;
+        return await PolicyImportExportHelper.importPolicy(dataToCreate, owner, null, notifier, data);
     }
 
     /**
@@ -269,6 +323,13 @@ export class PolicyEngine {
             if (schema.status === SchemaStatus.DRAFT) {
                 await deleteSchema(schema.id, notifier);
             }
+        }
+        notifier.completedAndStart('Delete artifacts');
+        const artifactsToDelete = await new DataBaseHelper(Artifact).find({
+            policyId: policyToDelete.id
+        });
+        for (const artifact of artifactsToDelete) {
+            await DatabaseServer.removeArtifact(artifact);
         }
 
         notifier.completedAndStart('Publishing delete policy message');
@@ -347,6 +408,7 @@ export class PolicyEngine {
      * @param model
      * @param owner
      * @param version
+     * @param notifier
      */
     public async publishPolicy(model: Policy, owner: string, version: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
@@ -367,7 +429,13 @@ export class PolicyEngine {
         notifier.completedAndStart('Generate file');
         this.policyGenerator.regenerateIds(model.config);
         const zip = await PolicyImportExportHelper.generateZipFile(model);
-        const buffer = await zip.generateAsync({ type: 'arraybuffer' });
+        const buffer = await zip.generateAsync({
+            type: 'arraybuffer',
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 3
+            }
+        });
 
         notifier.completedAndStart('Token');
         const tokenIds = findAllEntities(model.config, ['tokenId']);
@@ -466,7 +534,13 @@ export class PolicyEngine {
 
         this.policyGenerator.regenerateIds(model.config);
         const zip = await PolicyImportExportHelper.generateZipFile(model);
-        const buffer = await zip.generateAsync({ type: 'arraybuffer' });
+        const buffer = await zip.generateAsync({
+            type: 'arraybuffer',
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 3
+            }
+        });
 
         const rootTopic = await topicHelper.create({
             type: TopicType.InstancePolicyTopic,
@@ -650,7 +724,7 @@ export class PolicyEngine {
     /**
      * Import policy by message
      * @param messageId
-     * @param userFull
+     * @param owner
      * @param hederaAccount
      * @param versionOfTopicId
      * @param notifier
@@ -661,7 +735,16 @@ export class PolicyEngine {
         hederaAccount: IRootConfig,
         versionOfTopicId: string,
         notifier: INotifier
-    ): Promise<Policy> {
+    ): Promise<{
+        /**
+         * New Policy
+         */
+        policy: Policy;
+        /**
+         * Errors
+         */
+        errors: any[];
+    }> {
         notifier.start('Load from IPFS');
         const messageServer = new MessageServer(hederaAccount.hederaAccountId, hederaAccount.hederaAccountKey);
         const message = await messageServer.getMessage<PolicyMessage>(messageId);
@@ -673,10 +756,9 @@ export class PolicyEngine {
         }
 
         notifier.completedAndStart('File parsing');
-        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document);
+        const policyToImport = await PolicyImportExportHelper.parseZipFile(message.document, true);
         notifier.completed();
-        const policy = await PolicyImportExportHelper.importPolicy(policyToImport, owner, versionOfTopicId, notifier);
-        return policy;
+        return await PolicyImportExportHelper.importPolicy(policyToImport, owner, versionOfTopicId, notifier);
     }
 
     /**
