@@ -43,6 +43,7 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { ipfsAPI } from '@api/ipfs.service';
 import { Workers } from '@helpers/workers';
 import { artifactAPI } from '@api/artifact.service';
+import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
 
 Promise.all([
     Migration({

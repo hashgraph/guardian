@@ -64,12 +64,7 @@
     <form *ngIf="!isConfirmed && isNewAccount" [formGroup]="hederaForm" (ngSubmit)="onHederaSubmit()">
         <div class="list">
             <h3>Finish Setup</h3>
-            <div class="list-item">
-                <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
-                    (change)="onChangeForm()">
-                </app-schema-form>
-            </div>
-            <div class="list-item">
+            <div *ngIf="!generated" class="list-item">
                 <mat-form-field class="example-full-width" appearance="outline">
                     <mat-label>OPERATOR ID (Hedera Account):</mat-label>
                     <input matInput placeholder="0.0.1548173" formControlName="hederaAccountId">
@@ -77,16 +72,31 @@
                 <mat-form-field class="example-full-width" appearance="outline">
                     <mat-label>OPERATOR KEY (Hedera Account Private Key):</mat-label>
                     <input matInput placeholder="302e020100300506032b657004220420e..."
-                        formControlName="hederaAccountKey">
+                           formControlName="hederaAccountKey">
                 </mat-form-field>
             </div>
+            <div *ngIf="!generated" class="list-button">
+                <button mat-raised-button type="button" class="generate-btn"
+                        (click)="randomKey()">Generate</button>
+            </div>
+            <div class="list-item" *ngIf="showForm && generated">
+                <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
+                    (change)="onChangeForm()">
+                </app-schema-form>
+            </div>
         </div>
-        <div class="list-button">
-            <button mat-raised-button type="button" color="primary" class="generate-btn"
-                (click)="randomKey()">Generate</button>
+        <div class="list-button" *ngIf="!generated">
+            <button [disabled]="!hederaForm.valid" mat-raised-button type="button" color="primary" class="generate-btn"
+                    (click)="onActionClick($event)">
+                {{currentKeyAction.label}}
+                <mat-icon (click)="onActionMenuClick($event)" [matMenuTriggerFor]="actionMenu">arrow_drop_down</mat-icon>
+            </button>
+            <mat-menu #actionMenu="matMenu">
+                <button *ngFor="let actionType of startActions" mat-menu-item (click)="onActionChange(actionType.type)">{{actionType.label}}</button>
+            </mat-menu>
         </div>
-        <div class="list-button">
-            <button mat-raised-button type="submit" [disabled]="!formValid">Connect</button>
+        <div class="list-button" *ngIf="showForm && generated">
+            <button mat-raised-button type="submit" [disabled]="!formValid" color="primary">Connect</button>
         </div>
     </form>
 

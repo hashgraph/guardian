@@ -46,11 +46,16 @@ export class PolicyMessage extends Message {
      * Instance topic ID
      */
     public instanceTopicId: string;
+    /**
+     * Policy topic ID
+     * @private
+     */
+    private policyTopicId: string;
 
     constructor(type: MessageType.Policy | MessageType.InstancePolicy, action: MessageAction) {
         super(action, type);
         this._responseType = 'raw';
-        this.urls = [];
+        this.setUrls([]);
     }
 
     /**
@@ -66,7 +71,7 @@ export class PolicyMessage extends Message {
         this.version = model.version;
         this.policyTag = model.policyTag;
         this.owner = model.owner;
-        this.topicId = model.topicId;
+        this.policyTopicId = model.topicId;
         this.instanceTopicId = model.instanceTopicId;
         this.document = zip;
     }
@@ -163,7 +168,7 @@ export class PolicyMessage extends Message {
         message.version = json.version;
         message.policyTag = json.policyTag;
         message.policyTag = json.owner;
-        message.topicId = json.topicId;
+        message.policyTopicId = json.topicId;
         message.instanceTopicId = json.instanceTopicId;
 
         if (json.cid && json.url) {
@@ -183,7 +188,7 @@ export class PolicyMessage extends Message {
      * Get URL
      */
     public override getUrl(): IURL {
-        return this.urls[0];
+        return this.getUrls()[0];
     }
 
     /**
