@@ -48,6 +48,16 @@
             <div class="delimiter"></div>
         </ng-template>
 
+        <div *ngIf="this.evidenceJson" class="form-field">
+            <div class="label-field">Evidence</div>
+            <mat-form-field class="example-full-width" appearance="outline">
+                <textarea cdkTextareaAutosize cdkAutosizeMinRows="1" cdkAutosizeMaxRows="5" matInput readonly
+                    [value]="this.evidenceJson"></textarea>
+            </mat-form-field>
+        </div>
+
+        <div class="delimiter"></div>
+
         <div class="form-field">
             <div class="label-field">Proof</div>
             <mat-form-field class="example-full-width" appearance="outline">

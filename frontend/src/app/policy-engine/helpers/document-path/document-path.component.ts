@@ -24,8 +24,10 @@ export class DocumentPath {
         { value: "document.", name: "Document" },
         { value: "document.credentialSubject.", name: "Credential Subjects" },
         { value: "document.credentialSubject.0.", name: "First Credential Subjects" },
+        { value: "document.credentialSubject.L.", name: "Last Credential Subjects" },
         { value: "document.verifiableCredential.", name: "Verifiable Credentials" },
         { value: "document.verifiableCredential.0.", name: "First Verifiable Credential" },
+        { value: "document.verifiableCredential.L.", name: "Last Verifiable Credential" },
         { value: "option.", name: "Attributes" },
     ]
 

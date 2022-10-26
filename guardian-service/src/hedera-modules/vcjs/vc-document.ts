@@ -50,7 +50,10 @@ export class VcDocument {
      * Proof
      */
     public static readonly PROOF = 'proof';
-
+    /**
+     * Evidence
+     */
+    public static readonly EVIDENCE = 'evidence';
     /**
      * ID
      * @protected
@@ -86,11 +89,17 @@ export class VcDocument {
      * @protected
      */
     protected proof: any;
+    /**
+     * Evidences
+     * @protected
+     */
+    protected evidences: any[];
 
     constructor() {
         this.subject = [];
         this.context = [VcDocument.FIRST_CONTEXT_ENTRY];
         this.type = [VcDocument.VERIFIABLE_CREDENTIAL_TYPE];
+        this.evidences = [];
     }
 
     /**
@@ -186,6 +195,14 @@ export class VcDocument {
         if (this.type.indexOf(type) === -1) {
             this.type.push(type);
         }
+    }
+
+    /**
+     * Add evidence
+     * @param evidence
+     */
+    public addEvidence(evidence: any): void {
+        this.evidences.push(evidence);
     }
 
     /**
@@ -298,6 +315,10 @@ export class VcDocument {
         }
         rootObject[VcDocument.CREDENTIAL_SUBJECT] = credentialSubject;
 
+        if (this.evidences?.length) {
+            rootObject[VcDocument.EVIDENCE] = JSON.parse(JSON.stringify(this.evidences));
+        }
+
         if (this.proof) {
             rootObject[VcDocument.PROOF] = this.proof;
         }
@@ -352,6 +373,15 @@ export class VcDocument {
             }
 
             result.context = context.slice();
+        }
+
+        if (json[VcDocument.EVIDENCE]) {
+            result.evidences = JSON.parse(JSON.stringify(json[VcDocument.EVIDENCE]));
+            if (!Array.isArray(result.evidences)) {
+                result.evidences = [result.evidences];
+            }
+        } else {
+            result.evidences = []
         }
 
         if (json[VcDocument.PROOF]) {

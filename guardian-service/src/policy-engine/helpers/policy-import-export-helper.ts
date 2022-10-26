@@ -155,7 +155,8 @@ export class PolicyImportExportHelper {
             DatabaseServer.getSystemSchema(SchemaEntity.MINT_NFTOKEN),
             DatabaseServer.getSystemSchema(SchemaEntity.WIPE_TOKEN),
             DatabaseServer.getSystemSchema(SchemaEntity.ISSUER),
-            DatabaseServer.getSystemSchema(SchemaEntity.USER_ROLE)
+            DatabaseServer.getSystemSchema(SchemaEntity.USER_ROLE),
+            DatabaseServer.getSystemSchema(SchemaEntity.CHUNK)
         ]);
 
         for (const schema of schemas) {
