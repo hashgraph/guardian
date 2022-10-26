@@ -100,7 +100,7 @@ export class PolicyMessage extends Message {
             version: this.version,
             policyTag: this.policyTag,
             owner: this.owner,
-            topicId: this.topicId.toString(),
+            topicId: this.policyTopicId.toString(),
             instanceTopicId: this.instanceTopicId,
             cid: this.getDocumentUrl(UrlType.cid),
             url: this.getDocumentUrl(UrlType.url),
