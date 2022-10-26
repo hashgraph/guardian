@@ -11,6 +11,9 @@ import { SplitDocuments } from '@entity/split-documents';
 import { VcHelper } from '@helpers/vc-helper';
 import { Inject } from '@helpers/decorators/inject';
 import { VcDocument } from '@hedera-modules';
+import { SchemaEntity } from '@guardian/interfaces';
+import { BlockActionError } from '@policy-engine/errors';
+import { Schema as SchemaCollection } from '@entity/schema';
 
 /**
  * Split block
@@ -56,6 +59,26 @@ export class SplitBlock {
     private readonly vcHelper: VcHelper;
 
     /**
+     * Schema
+     * @private
+     */
+    private schema: SchemaCollection | null;
+
+    /**
+     * Get Schema
+     */
+    async getSchema(): Promise<SchemaCollection> {
+        if (!this.schema) {
+            const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
+            this.schema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.CHUNK_DOCUMENT);
+            if (!this.schema) {
+                throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
+            }
+        }
+        return this.schema;
+    }
+
+    /**
      * Get value
      * @param ref
      * @param doc
@@ -80,16 +103,34 @@ export class SplitBlock {
         ref: IPolicyBlock,
         root: IHederaAccount,
         document: IPolicyDocument,
-        newValue: number
+        newValue: number,
+        chunkNumber: number,
+        maxChunks: number,
+        sourceValue: number,
+        threshold: number,
     ): Promise<IPolicyDocument> {
         let clone = PolicyUtils.cloneVC(ref, document);
         clone.document = JSON.parse(JSON.stringify(clone.document));
         PolicyUtils.setObjectValue(clone, ref.options.sourceField, newValue);
         let vc = VcDocument.fromJsonTree(clone.document);
+        if (document.messageId) {
+            const evidenceSchema = await this.getSchema();
+            vc.addType(evidenceSchema.name);
+            vc.addContext(evidenceSchema.contextURL);
+            vc.addEvidence({
+                type: ['SourceDocument'],
+                messageId: document.messageId,
+                sourceField: ref.options.sourceField,
+                sourceValue,
+                threshold,
+                chunkNumber,
+                maxChunks
+            });
+        }
         vc = await this.vcHelper.issueVC(root.did, root.hederaAccountKey, vc);
         clone.document = vc.toJsonTree();
         clone.hash = vc.toCredentialHash();
-        clone = PolicyUtils.setDocumentRef(clone, document);
+        clone = PolicyUtils.setDocumentRef(clone, document) as any;
         return clone;
     }
 
@@ -126,15 +167,25 @@ export class SplitBlock {
         }
 
         if (value < needed) {
+            const maxChunks = 1;
+            const newDoc = await this.createNewDoc(
+                ref, root, document, value, maxChunks, maxChunks, value, threshold
+            );
             residue.push(ref.databaseServer.createResidue(
                 ref.policyId,
                 ref.uuid,
                 user.id,
                 value,
-                document
+                newDoc
             ));
         } else {
-            const newDoc1 = await this.createNewDoc(ref, root, document, needed);
+            const count = Math.floor((value - needed) / threshold);
+            const end = value - needed - (count * threshold);
+            const maxChunks = (count > 0 ? count : 0) + (end > 0 ? 1 : 0) + 1;
+
+            const newDoc1 = await this.createNewDoc(
+                ref, root, document, needed, 1, maxChunks, value, threshold
+            );
             residue.push(ref.databaseServer.createResidue(
                 ref.policyId,
                 ref.uuid,
@@ -145,11 +196,11 @@ export class SplitBlock {
             result.push(residue);
             residue = [];
 
-            const count = Math.floor((value - needed) / threshold);
-            const end = value - needed - (count * threshold);
             if (count > 0) {
                 for (let i = 0; i < count; i++) {
-                    const newDocN = await this.createNewDoc(ref, root, document, threshold);
+                    const newDocN = await this.createNewDoc(
+                        ref, root, document, threshold, i + 2, maxChunks, value, threshold
+                    );
                     result.push([ref.databaseServer.createResidue(
                         ref.policyId,
                         ref.uuid,
@@ -160,7 +211,9 @@ export class SplitBlock {
                 }
             }
             if (end > 0) {
-                const newDocL = await this.createNewDoc(ref, root, document, end);
+                const newDocL = await this.createNewDoc(
+                    ref, root, document, end, maxChunks, maxChunks, value, threshold
+                );
                 residue.push(ref.databaseServer.createResidue(
                     ref.policyId,
                     ref.uuid,
@@ -194,7 +247,13 @@ export class SplitBlock {
         await ref.databaseServer.setResidue(current);
 
         for (const chunk of data) {
-            const state = { data: chunk.map(c => c.document) };
+            const state = {
+                data: chunk.map(c => {
+                    delete c.document.id;
+                    delete c.document._id;
+                    return c.document;
+                })
+            };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
         }
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, { data: documents });

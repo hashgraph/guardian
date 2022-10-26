@@ -584,5 +584,92 @@
                 }
             }
         }
+    },
+    {
+        "uuid": "ChunkDocument",
+        "name": "ChunkDocument",
+        "entity": "CHUNK_DOCUMENT",
+        "document": {
+            "$id": "#ChunkDocument",
+            "$comment": "{ \"@id\": \"#ChunkDocument\", \"term\": \"ChunkDocument\" }",
+            "title": "ChunkDocument",
+            "description": "ChunkDocument",
+            "type": "object",
+            "properties": {
+                "evidence": {
+                    "title": "SourceDocument",
+                    "description": "SourceDocument",
+                    "readOnly": false,
+                    "$ref": "#SourceDocument",
+                    "$comment": "{\"term\":\"SourceDocument\",\"@id\":\"#SourceDocument\"}"
+                }
+            },
+            "required": [
+                "evidence"
+            ],
+            "additionalProperties": false,
+            "$defs": {
+                "#SourceDocument": {
+                    "$id": "#SourceDocument",
+                    "$comment": "{ \"@id\": \"#SourceDocument\", \"term\": \"SourceDocument\" }",
+                    "title": "SourceDocument",
+                    "description": "SourceDocument",
+                    "type": "object",
+                    "properties": {
+                        "messageId": {
+                            "title": "messageId",
+                            "description": "messageId",
+                            "type": "string",
+                            "$comment": "{\"term\": \"topicDescription\", \"@id\": \"https://www.schema.org/text\"}",
+                            "readOnly": false
+                        },
+                        "sourceField": {
+                            "title": "sourceField",
+                            "description": "sourceField",
+                            "type": "string",
+                            "$comment": "{\"term\": \"topicDescription\", \"@id\": \"https://www.schema.org/text\"}",
+                            "readOnly": false
+                        },
+                        "sourceValue": {
+                            "title": "sourceValue",
+                            "description": "sourceValue",
+                            "type": "number",
+                            "$comment": "{\"term\": \"topicDescription\", \"@id\": \"https://www.schema.org/Number\"}",
+                            "readOnly": false
+                        },
+                        "threshold": {
+                            "title": "threshold",
+                            "description": "threshold",
+                            "type": "number",
+                            "$comment": "{\"term\": \"topicDescription\", \"@id\": \"https://www.schema.org/Number\"}",
+                            "readOnly": false
+                        },
+                        "chunkNumber": {
+                            "title": "chunkNumber",
+                            "description": "chunkNumber",
+                            "type": "number",
+                            "$comment": "{\"term\": \"topicDescription\", \"@id\": \"https://www.schema.org/Number\"}",
+                            "readOnly": false
+                        },
+                        "maxChunk": {
+                            "title": "maxChunk",
+                            "description": "maxChunk",
+                            "type": "number",
+                            "$comment": "{\"term\": \"topicDescription\", \"@id\": \"https://www.schema.org/Number\"}",
+                            "readOnly": false
+                        }
+                    },
+                    "required": [
+                        "messageId",
+                        "sourceField",
+                        "sourceValue",
+                        "threshold",
+                        "chunkNumber",
+                        "maxChunk"
+                    ],
+                    "additionalProperties": false
+                }
+            }
+        }
     }
 ]
