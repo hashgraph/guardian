@@ -74,9 +74,10 @@ export class Hashicorp implements IVault{
                 this.vault.token = root_token;
                 console.info('Root Token', root_token);
                 await this.vault.unseal({secret_shares: 1, key: keys[0]});
-
-                await this.forceUnsealVault();
             }
+
+            await this.forceUnsealVault();
+
         } catch (e) {
             console.warn(e.message);
         }
