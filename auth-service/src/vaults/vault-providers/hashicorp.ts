@@ -18,7 +18,7 @@ export class Hashicorp implements IVault{
      * Unseal key
      * @private
      */
-    private readonly unsealKey = process.env.HASHICORP_USEAL_KEY || null;
+    private readonly unsealKey = process.env.HASHICORP_UNSEAL_KEY || null;
 
     /**
      * Vault options
