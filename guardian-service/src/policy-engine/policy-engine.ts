@@ -202,7 +202,7 @@ export class PolicyEngine {
         }
 
         notifier.start('Create Artifacts');
-        const artifactsMap = new Map<string,string>();
+        const artifactsMap = new Map<string, string>();
         const addedArtifacts = [];
         for (const artifact of artifacts) {
             artifact.data = await DatabaseServer.getArtifactFileByUUID(artifact.uuid);
@@ -458,6 +458,7 @@ export class PolicyEngine {
             policyUUID: model.uuid
         });
         rootTopic = await DatabaseServer.saveTopic(rootTopic);
+        model.instanceTopicId = rootTopic.topicId;
 
         notifier.completedAndStart('Publish policy');
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
@@ -465,7 +466,6 @@ export class PolicyEngine {
         const result = await messageServer
             .sendMessage(message);
         model.messageId = result.getId();
-        model.instanceTopicId = rootTopic.topicId;
 
         notifier.completedAndStart('Link topic and policy');
         await topicHelper.twoWayLink(rootTopic, topic, result.getId());
@@ -551,12 +551,12 @@ export class PolicyEngine {
             policyUUID: model.uuid
         });
         databaseServer.saveTopic(rootTopic)
+        model.instanceTopicId = rootTopic.topicId;
 
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
         message.setDocument(model, buffer);
         const result = await messageServer.sendMessage(message);
         model.messageId = result.getId();
-        model.instanceTopicId = rootTopic.topicId;
 
         await topicHelper.twoWayLink(rootTopic, topic, result.getId());
 
