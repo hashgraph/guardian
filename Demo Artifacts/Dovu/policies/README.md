@@ -3,12 +3,16 @@
 Here we have all the policies we are currently building out, the two main focus differentiators for our templates are MRVs that end with:
 
 - Agrecalc
-- Cool Farm Tool 
+- Cool Farm Tool
+- Carbon Space (beta)
+- Geotree (beta)
+- Grain Data Solution (beta)
+- Soil Carbon Coalition (beta)
 
 Inside of each policy folder we have these items:
 
 - The README of the specific policy, with recommendations.
-- A directory of example block submissions, assuming that context and schema UUID's will be injected as part of the guardian process 
+- A directory of example block submissions, assuming that context and schema UUID's will be injected as part of the guardian process
 
 # Common blocks between policies
 
@@ -69,7 +73,7 @@ Internally let's use these definitions for now, For onboarded projects pre-addit
 - MICRO: < 10 tonnes of CO2e
 - SMALL: < 100 tonnes of CO2e
 - MEDIUM: <= 1000 tonnes of CO2e
-- LARGE: > 1000 tonnes of CO2e 
+- LARGE: > 1000 tonnes of CO2e
 
 ### Modular Benefit Projects ("MBP")
 
@@ -84,7 +88,7 @@ Any string for now.
 #### Targeted Benefit Type:
 
 Default to: **Carbon: Removal + Natural** for soil-based carbon projects
-    
+
 #### Developer(s)
 
 These can be any kind of strings, for now point to account IDs, But by default they will be empty.
@@ -95,4 +99,4 @@ These can be any kind of strings, for now point to account IDs, But by default t
 
 #### Claims
 
-This needs further exploration as there is a [proto file that focuses on a given claim](https://github.com/InterWorkAlliance/TokenTaxonomyFramework/blob/main/artifacts/token-templates/definitions/Ecological-Claim/latest/Ecological-Claim.proto).  
+This needs further exploration as there is a [proto file that focuses on a given claim](https://github.com/InterWorkAlliance/TokenTaxonomyFramework/blob/main/artifacts/token-templates/definitions/Ecological-Claim/latest/Ecological-Claim.proto).
