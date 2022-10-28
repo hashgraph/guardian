@@ -334,7 +334,17 @@ npm run test
 
 ### Launching the Guardian
 
-Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialize Standard Registry by completing the Setup.
+Once [http://localhost:3000](http://localhost:3000) is launched, we need to first generate Operator ID and Operator Key by clicking on Generate button as shown below:
+
+<figure><img src="../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
+
+Once you generated Operator ID and Operator Key, we can either click on Next or restore the Data, by selecting Restore Data from the Next button dropdown to setup Registry as shown below.
+
+**Note**: Restore Data can be restored from Hedera if data is available for setting up the Registry.
+
+<figure><img src="../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
+
+If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
 ![](<../../.gitbook/assets/image (14).png>)
 

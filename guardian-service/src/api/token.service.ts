@@ -100,7 +100,7 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
             tokenSymbol,
             tokenType
         }
-    }, 1);
+    }, 1, 1);
     tokenData.owner = root.did;
 
     notifier.completedAndStart('Save token in DB');

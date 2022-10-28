@@ -355,6 +355,8 @@ export class SchemaHelper {
             let props = {}
 
             SchemaHelper.getFieldsFromObject(element.thenFields, req, props, schema.contextURL);
+            // To prevent including condition field in common required fields
+            element.thenFields?.forEach(item => item.required = false);
             fields.splice(insertingPosition, 0, ...element.thenFields);
             if (Object.keys(props).length > 0) {
                 condition.then = {
@@ -370,6 +372,8 @@ export class SchemaHelper {
             props = {}
 
             SchemaHelper.getFieldsFromObject(element.elseFields, req, props, schema.contextURL);
+            // To prevent including condition field in common required fields
+            element.elseFields?.forEach(item => item.required = false);
             fields.splice(insertingPosition + element.thenFields.length, 0, ...element.elseFields);
             if (Object.keys(props).length > 0) {
                 condition.else = {
