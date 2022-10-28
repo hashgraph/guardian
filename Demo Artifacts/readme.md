@@ -29,9 +29,9 @@ This folder contains sub folders for each Methodology and their authors (with ma
 ### Emission Policies
 
 1. GHG Methodology - Remote Workflow - Envision
-2. GHGP Product Standard - Avery Dennison (Coming soon)
-3. GHG Scope II - Atma (Coming soon)
-4. Tymlez (Coming soon)
+2. CET & CRU - Tymlez
+3. GHGP Product Standard - Avery Dennison (Coming soon)
+4. GHG Scope II - Atma (Coming soon)
 5. E-Mission (Coming soon)
 6. RDA - Serapis (Coming soon)
 7. GHGP Corporate Standard (Coming soon)
@@ -65,3 +65,5 @@ IREC Demo : https://docs.hedera.com/guardian-dev/demo-guide/irec-demo-guide
 Verra REDD Demo : https://docs.hedera.com/guardian-dev/demo-guide/verra-redd+-demo-guide
 
 DOVU Guardian Policies: https://github.com/dovuofficial/guardian-policies/
+
+CET & CRU Policies : https://github.com/Tymlez/guardian-policies
