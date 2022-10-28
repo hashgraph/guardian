@@ -6,7 +6,13 @@ This folder contains sub folders for each Methodology and their authors (with ma
 
 1. IREC - Envision
 2. Verra Methodology - Verra Redd - Envision
-3. DOVU Template Methodologies - DOVU
+3. DOVU Template Methodologies (6) - DOVU
+   - Agrecalc
+   - Cool Farm Tool
+   - Carbon Space
+   - Geotree
+   - Grain Data Solutions
+   - Soil Carbon Coalition
 4. Nova VER - OCI (Coming soon)
 5. eWaste Policy - KrypC(Coming soon)
 6. TBA-X (Coming soon)
