@@ -356,13 +356,12 @@ export class Worker {
                             id: operatorId,
                             key: PrivateKey.fromString(operatorKey)
                         },
-                        PrivateKey.fromString(adminKey),
-                        PrivateKey.fromString(kycKey),
-                        PrivateKey.fromString(freezeKey),
-                        PrivateKey.fromString(wipeKey),
-                        PrivateKey.fromString(supplyKey),
+                        adminKey ? PrivateKey.fromString(adminKey) : null,
+                        kycKey ? PrivateKey.fromString(kycKey) : null,
+                        freezeKey ? PrivateKey.fromString(freezeKey) : null,
+                        wipeKey ? PrivateKey.fromString(wipeKey) : null,
+                        supplyKey ? PrivateKey.fromString(supplyKey) : null
                     );
-
                     break;
                 }
 

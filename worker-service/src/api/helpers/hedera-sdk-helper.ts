@@ -222,7 +222,6 @@ export class HederaSDKHelper {
         supplyKey: PrivateKey
     ): Promise<string> {
         const client = this.client;
-
         let transaction = new TokenCreateTransaction()
             .setTokenName(name)
             .setTokenSymbol(symbol)
@@ -251,7 +250,13 @@ export class HederaSDKHelper {
         }
         transaction = transaction.freezeWith(client);
 
-        const signTx = await (await transaction.sign(adminKey)).sign(treasury.key);
+        let signTx: Transaction = transaction;
+        if(adminKey) {
+            signTx = await signTx.sign(adminKey);
+        }
+        if(treasury.key) {
+            signTx = await signTx.sign(treasury.key);
+        }
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenCreateTransaction');
         const tokenId = receipt.tokenId;
 

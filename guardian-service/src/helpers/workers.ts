@@ -29,7 +29,7 @@ export class Workers extends ServiceRequestsBase {
      * Max Repetitions
      * @private
      */
-    private readonly maxRepetitions = 100;
+    private readonly maxRepetitions = 25;
 
     /**
      * Add task
