@@ -355,7 +355,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (typeof super.refreshAction === 'function') {
                     return await super.refreshAction(event);
                 }
-                this.updateBlock(event.data, event.user, '');
+                this.updateBlock(event.data, event.user, this.tag);
             }
 
             /**
@@ -400,8 +400,15 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                         if (this.permissions.includes('OWNER') || this.permissions.includes('ANY_ROLE')) {
                             users[this.policyOwner] = new PolicyUser(this.policyOwner);
                         }
+                        if (user) {
+                            if (this.permissions.includes(user.role)) {
+                                users[user.did] = user;
+                            } else if (this.permissions.includes('ANY_ROLE')) {
+                                users[user.did] = user;
+                            }
+                        }
                     }
-                } else {
+                } else if (user) {
                     users[user.did] = user;
                 }
                 for (const item of Object.values(users)) {
