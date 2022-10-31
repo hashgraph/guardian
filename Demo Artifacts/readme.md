@@ -13,18 +13,18 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - Geotree
    - Grain Data Solutions
    - Soil Carbon Coalition
-4. Nova VER - OCI (Coming soon)
-5. eWaste Policy - KrypC(Coming soon)
-6. TBA-X (Coming soon)
+4. Tolam Earth - OCI
+5. Improved Cookstove - OCI
+6. eWaste Policy - KrypC(Coming soon)
 7. TBA-X (Coming soon)
-8. TBA-D (Coming soon)
-9. Tamuwa VER (Coming soon)
-10. Carbontricity (Coming soon)
-11. VN (Coming soon)
-12. Evercity (Coming soon)
-13. Carbon Captors/Zeru.Earth (Coming soon)
-14. KrypC GCC (Coming soon)
-15. Improved Cookstove - OCI (Coming soon)
+8. TBA-X (Coming soon)
+9. TBA-D (Coming soon)
+10. Tamuwa VER (Coming soon)
+11. Carbontricity (Coming soon)
+12. VN (Coming soon)
+13. Evercity (Coming soon)
+14. Carbon Captors/Zeru.Earth (Coming soon)
+15. KrypC GCC (Coming soon) 
 
 ### Emission Policies
 
