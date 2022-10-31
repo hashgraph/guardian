@@ -321,7 +321,7 @@ export class PolicyUtils {
         } else {
             try {
                 await workers.addTask({
-                    type: WorkerTaskType.TRANSFER_NFT,
+                    type: WorkerTaskType.MINT_FT,
                     data: {
                         hederaAccountId: root.hederaAccountId,
                         hederaAccountKey: root.hederaAccountKey,
