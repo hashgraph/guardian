@@ -93,5 +93,6 @@ Project Registration: When Project Design Documents are approved by a Registry.
 
  
 **Monitoring Report**:
+
 Document that describes and justifies any changes to the Project Design Document, based upon what happened during execution of a project. Also includes any data and/or calculations made during the time period covered by the document. A single project can have multiple Monitoring Reports associated, and each Monitoring Report is associated with a Claim.
 Claim: The end result of execution of a project, often expressed per unit time, which quantifies the impact of the initiative.
