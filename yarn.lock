@@ -187,11 +187,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@guardian/common@^2.6.0, @guardian/common@workspace:common":
+"@guardian/common@^2.6.1, @guardian/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
-    "@guardian/interfaces": ^2.6.0
+    "@guardian/interfaces": ^2.6.1
     "@mikro-orm/core": ^5.3.0
     "@mikro-orm/migrations-mongodb": ^5.3.1
     "@mikro-orm/mongodb": ^5.3.0
@@ -209,7 +209,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@guardian/interfaces@^2.6.0, @guardian/interfaces@workspace:interfaces":
+"@guardian/interfaces@^2.6.1, @guardian/interfaces@workspace:interfaces":
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
@@ -1834,8 +1834,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api-gateway@workspace:api-gateway"
   dependencies:
-    "@guardian/common": ^2.6.0
-    "@guardian/interfaces": ^2.6.0
+    "@guardian/common": ^2.6.1
+    "@guardian/interfaces": ^2.6.1
     "@types/express": ^4.17.13
     "@types/express-fileupload": ^1.4.1
     "@types/jszip": ^3.4.1
@@ -2015,8 +2015,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "auth-service@workspace:auth-service"
   dependencies:
-    "@guardian/common": ^2.6.0
-    "@guardian/interfaces": ^2.6.0
+    "@guardian/common": ^2.6.1
+    "@guardian/interfaces": ^2.6.1
     "@mikro-orm/core": ^5.3.0
     "@mikro-orm/mongodb": ^5.3.0
     "@types/jsonwebtoken": ^8.5.4
@@ -4389,8 +4389,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "guardian-service@workspace:guardian-service"
   dependencies:
-    "@guardian/common": ^2.6.0
-    "@guardian/interfaces": ^2.6.0
+    "@guardian/common": ^2.6.1
+    "@guardian/interfaces": ^2.6.1
     "@hashgraph/sdk": ^2.18.3
     "@mikro-orm/core": ^5.3.0
     "@mikro-orm/mongodb": ^5.3.0
@@ -4960,8 +4960,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "ipfs-client@workspace:ipfs-client"
   dependencies:
-    "@guardian/common": ^2.6.0
-    "@guardian/interfaces": ^2.6.0
+    "@guardian/common": ^2.6.1
+    "@guardian/interfaces": ^2.6.1
     "@types/fs-extra": ^9.0.12
     "@types/js-yaml": ^4.0.3
     "@types/node": ^17.0.13
@@ -6141,8 +6141,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "logger-service@workspace:logger-service"
   dependencies:
-    "@guardian/common": ^2.6.0
-    "@guardian/interfaces": ^2.6.0
+    "@guardian/common": ^2.6.1
+    "@guardian/interfaces": ^2.6.1
     "@mikro-orm/core": ^5.3.0
     "@mikro-orm/mongodb": ^5.3.0
     "@types/fs-extra": ^9.0.12
@@ -6706,7 +6706,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "mrv-sender@workspace:mrv-sender"
   dependencies:
-    "@guardian/common": ^2.6.0
+    "@guardian/common": ^2.6.1
     "@transmute/credentials-context": 0.7.0-unstable.40
     "@transmute/did-context": 0.7.0-unstable.40
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.40
@@ -9744,8 +9744,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "worker-service@workspace:worker-service"
   dependencies:
-    "@guardian/common": ^2.6.0
-    "@guardian/interfaces": ^2.6.0
+    "@guardian/common": ^2.6.1
+    "@guardian/interfaces": ^2.6.1
     "@hashgraph/sdk": ^2.18.3
     "@transmute/credentials-context": ^0.7.0-unstable.60
     "@transmute/did-context": ^0.7.0-unstable.60
