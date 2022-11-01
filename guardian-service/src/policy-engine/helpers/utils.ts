@@ -729,6 +729,8 @@ export class PolicyUtils {
                     ...tokenTemplate
                 }
             }, 1);
+            createdToken.owner = user.did;
+            createdToken.policyId = ref.policyId;
         } else {
             createdToken = {
                 tokenId: new TokenId(Date.now()).toString(),
@@ -742,7 +744,9 @@ export class PolicyUtils {
                 kycKey: tokenTemplate.enableKYC ? user.hederaAccountKey : null,
                 freezeKey: tokenTemplate.enableFreeze ? user.hederaAccountKey : null,
                 wipeKey: tokenTemplate.enableWipe ? user.hederaAccountKey : null,
-                supplyKey: tokenTemplate.changeSupply ? user.hederaAccountKey : null
+                supplyKey: tokenTemplate.changeSupply ? user.hederaAccountKey : null,
+                owner: user.did,
+                policyId: ref.policyId
             };
         }
 
