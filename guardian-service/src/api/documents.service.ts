@@ -231,11 +231,22 @@ export async function documentsAPI(
      */
     ApiResponse(channel, MessageAPI.GET_VP_DOCUMENTS, async (msg) => {
         if (msg) {
-            const document = await vpDocumentRepository.find(msg);
-            return new MessageResponse(document);
+            const { filters, pageIndex, pageSize } = msg;
+            const otherOptions: any = {};
+            const _pageSize = parseInt(pageSize, 10);
+            const _pageIndex = parseInt(pageIndex, 10);
+            if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = _pageSize;
+                otherOptions.offset = _pageIndex * _pageSize;
+            }
+            const [vp, count] = await vpDocumentRepository.findAndCount(filters, otherOptions);
+            return new MessageResponse({ vp, count });
         } else {
-            const documents = await vpDocumentRepository.findAll();
-            return new MessageResponse(documents);
+            const [vp, count] = await vpDocumentRepository.findAndCount(null, {
+                limit: 100
+            });
+            return new MessageResponse({ vp, count });
         }
     });
 }

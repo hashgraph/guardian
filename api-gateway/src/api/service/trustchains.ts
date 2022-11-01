@@ -13,8 +13,24 @@ export const trustchainsAPI = Router();
 trustchainsAPI.get('/', permissionHelper(UserRole.AUDITOR), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
-        const vp = await guardians.getVpDocuments();
-        res.status(200).json(vp);
+        let pageIndex: any;
+        let pageSize: any;
+        let policyId: any;
+        if (req.query && req.query.pageIndex && req.query.pageSize) {
+            pageIndex = req.query.pageIndex;
+            pageSize = req.query.pageSize;
+        }
+        if (req.query && req.query.policyId) {
+            policyId = req.query.policyId;
+        }
+        const { vp, count } = await guardians.getVpDocuments({
+            filters: {
+                policyId,
+            },
+            pageIndex,
+            pageSize
+        });
+        res.status(200).setHeader('X-Total-Count', count).json(vp);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
@@ -28,7 +44,7 @@ trustchainsAPI.get('/:hash', permissionHelper(UserRole.AUDITOR), async (req: Aut
         const chain = await guardians.getChain(hash);
         const DIDs = chain.map((item) => {
             if (item.type === 'VC' && item.document) {
-                if(typeof item.document.issuer === 'string') {
+                if (typeof item.document.issuer === 'string') {
                     return item.document.issuer;
                 } else {
                     return item.document.issuer.id;

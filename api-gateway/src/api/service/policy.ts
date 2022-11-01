@@ -13,10 +13,11 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
         const user = await users.getUser(req.user.username);
-        if (!user.did) {
+        if (!user.did && user.role !== UserRole.AUDITOR) {
             res.status(200).setHeader('X-Total-Count', 0).json([]);
             return;
         }
+        
         let pageIndex: any;
         let pageSize: any;
         if (req.query && req.query.pageIndex && req.query.pageSize) {
@@ -29,6 +30,16 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
                 filters: {
                     owner: user.did,
                 },
+                userDid: user.did,
+                pageIndex,
+                pageSize
+            });
+        } else if (user.role === UserRole.AUDITOR) {
+            const filters: any = {
+                status: PolicyType.PUBLISH,
+            }
+            result = await engineService.getPolicies({
+                filters,
                 userDid: user.did,
                 pageIndex,
                 pageSize

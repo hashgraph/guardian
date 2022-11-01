@@ -31,15 +31,56 @@ a {
     cursor: pointer;
     text-decoration: underline;
 }
-a[disabled="true"]{
+
+a[disabled="true"] {
     color: rgb(150, 150, 150);
     cursor: default;
     pointer-events: none;
 }
 
-.table .mat-column-owner  {
-    max-width: 410px;
+.table .mat-column-owner {
+    max-width: 350px;
     overflow: hidden;
     text-overflow: ellipsis;
     padding-right: 10px;
+}
+
+.table .mat-column-hash {
+    max-width: 250px;
+}
+.table .mat-column-hash a {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 10px;
+    white-space: nowrap;
+}
+
+.table .mat-column-id {
+    max-width: 250px;
+}
+.table .mat-column-id a {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 10px;
+    white-space: nowrap;
+}
+
+.table .mat-column-policyId {
+    max-width: 200px;
+}
+.table .mat-column-policyId a {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 10px;
+    white-space: nowrap;
+}
+
+.actions {
+    padding: 12px 10px 0px 12px;
+    display: flex;
+    width: 400px;
+    flex-direction: column;
 }

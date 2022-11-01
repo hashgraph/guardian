@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpResponse } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { IChainItem, IVCDocument, IVPDocument } from "@guardian/interfaces";
 import { API_BASE_URL } from "./api";
@@ -15,8 +15,17 @@ export class AuditService {
         private http: HttpClient
     ) { }
 
-    public getVpDocuments(): Observable<IVPDocument[]> {
-        return this.http.get<any>(`${this.url}`);
+    public getVpDocuments(currentPolicy?: any, pageIndex?: number, pageSize?: number): Observable<HttpResponse<IVPDocument[]>> {
+        let url = `${this.url}`;
+        if (currentPolicy) {
+            url += `?policyId=${currentPolicy}`;
+            if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+                url += `&pageIndex=${pageIndex}&pageSize=${pageSize}`;
+            }
+        } else if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
+        }
+        return this.http.get<any>(url, { observe: 'response' });
     }
 
     public searchHash(params: string): Observable<IChainItem[]> {
