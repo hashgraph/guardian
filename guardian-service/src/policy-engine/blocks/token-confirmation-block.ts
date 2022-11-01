@@ -245,12 +245,18 @@ export class TokenConfirmationBlock {
             if (types.indexOf(ref.options.action) === -1) {
                 resultsContainer.addBlockError(ref.uuid, 'Option "action" must be one of ' + types.join(','));
             }
-            if (!ref.options.tokenId) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
-            } else if (typeof ref.options.tokenId !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-            } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
-                resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+            if (ref.options.useTemplate) {
+                if (!ref.options.template) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "template" does not set');
+                }
+            } else {
+                if (!ref.options.tokenId) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
+                } else if (typeof ref.options.tokenId !== 'string') {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
+                } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
+                    resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+                }
             }
             if (ref.options.accountType === 'custom' && !ref.options.accountId) {
                 resultsContainer.addBlockError(ref.uuid, 'Option "accountId" does not set');
