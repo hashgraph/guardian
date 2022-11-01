@@ -259,14 +259,13 @@ export class PolicyUtils {
         const adminKey = token.adminKey;
 
         if (token.tokenType === 'non-fungible') {
-            const metaData = new Uint8Array(Buffer.from(uuid));
-            const data = new Array<Uint8Array>(Math.floor(tokenValue));
-            data.fill(metaData);
+            const data = new Array<string>(Math.floor(tokenValue));
+            data.fill(uuid);
             const serials: number[] = [];
             const dataChunk = PolicyUtils.splitChunk(data, 10);
             const mintPromiseArray: Promise<any>[] = [];
             for (let i = 0; i < dataChunk.length; i++) {
-                const element = dataChunk[i];
+                const metaData = dataChunk[i];
                 if (i % 100 === 0) {
                     ref.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
                 }
@@ -277,7 +276,10 @@ export class PolicyUtils {
                         hederaAccountId: root.hederaAccountId,
                         hederaAccountKey: root.hederaAccountKey,
                         dryRun: ref.dryRun,
-                        tokenId, supplyKey, element, transactionMemo
+                        tokenId,
+                        supplyKey,
+                        metaData,
+                        transactionMemo
                     }
                 }, 1));
 
@@ -308,7 +310,12 @@ export class PolicyUtils {
                         hederaAccountId: root.hederaAccountId,
                         hederaAccountKey: root.hederaAccountKey,
                         dryRun: ref.dryRun,
-                        tokenId, targetAccount, adminId, adminKey, element, transactionMemo
+                        tokenId,
+                        targetAccount,
+                        adminId,
+                        adminKey,
+                        element,
+                        transactionMemo
                     }
                 }, 1));
 
@@ -326,7 +333,10 @@ export class PolicyUtils {
                         hederaAccountId: root.hederaAccountId,
                         hederaAccountKey: root.hederaAccountKey,
                         dryRun: ref.dryRun,
-                        tokenId, supplyKey, tokenValue, transactionMemo
+                        tokenId,
+                        supplyKey,
+                        tokenValue,
+                        transactionMemo
                     }
                 }, 1);
                 await workers.addTask({
@@ -335,7 +345,12 @@ export class PolicyUtils {
                         hederaAccountId: root.hederaAccountId,
                         hederaAccountKey: root.hederaAccountKey,
                         dryRun: ref.dryRun,
-                        tokenId, targetAccount, adminId, adminKey, tokenValue, transactionMemo
+                        tokenId,
+                        targetAccount,
+                        adminId,
+                        adminKey,
+                        tokenValue,
+                        transactionMemo
                     }
                 }, 1);
             } catch (error) {
