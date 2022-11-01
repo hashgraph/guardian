@@ -1,7 +1,7 @@
 <h1 mat-dialog-title>{{title}}</h1>
 <div mat-dialog-content>
     <div class="description">{{description}}</div>
-    <app-token-configuration [dataForm]="dataForm" [ft]="true"></app-token-configuration>
+    <app-token-configuration [dataForm]="dataForm"></app-token-configuration>
 </div>
 <div mat-dialog-actions>
     <button mat-raised-button color="primary" (click)="onSubmit()" [attr.started]="started"

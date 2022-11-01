@@ -103,8 +103,12 @@ export class CreateTokenBlock {
         );
         const templateFields = Object.keys(tokenTemplate);
         for (const fieldName of templateFields) {
-            if (tokenTemplate[fieldName] === '') {
-                delete tokenTemplate[fieldName];
+            if (
+                tokenTemplate[fieldName] === '' ||
+                tokenTemplate[fieldName] === null ||
+                tokenTemplate[fieldName] === undefined
+            ) {
+              delete tokenTemplate[fieldName];
             }
         }
 
@@ -177,13 +181,17 @@ export class CreateTokenBlock {
                     ref.uuid
                 );
             }
-
             const templateFields = Object.keys(tokenTemplate);
             for (const fieldName of templateFields) {
-                if (tokenTemplate[fieldName] === '') {
-                    delete tokenTemplate[fieldName];
+                if (
+                    tokenTemplate[fieldName] === '' ||
+                    tokenTemplate[fieldName] === null ||
+                    tokenTemplate[fieldName] === undefined
+                ) {
+                  delete tokenTemplate[fieldName];
                 }
             }
+
             const createdToken = await PolicyUtils.createTokenByTemplate(
                 ref,
                 Object.assign(data, tokenTemplate),
@@ -280,6 +288,11 @@ export class CreateTokenBlock {
             if (!ref.options.template) {
                 resultsContainer.addBlockError(ref.uuid, 'Template can not be empty');
                 return;
+            }
+            const policyTokens = ref.policyInstance.policyTokens || [];
+            const tokenConfig = policyTokens.find(e => e.templateTokenTag === ref.options.template);
+            if (!tokenConfig) {
+                resultsContainer.addBlockError(ref.uuid, `Token "${ref.options.template}" does not exist`);
             }
         } catch (error) {
             resultsContainer.addBlockError(

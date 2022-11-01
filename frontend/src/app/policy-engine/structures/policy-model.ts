@@ -297,10 +297,10 @@ export class PolicyTokenModel {
     public readonly id: string;
 
     private _templateTokenTag: string;
-    private _tokenName?: string | undefined;
-    private _tokenSymbol?: string | undefined;
+    private _tokenName: string;
+    private _tokenSymbol: string;
     private _tokenType?: TokenType;
-    private _decimals?: number | undefined;
+    private _decimals: string;
     private _enableAdmin?: boolean | undefined;
     private _changeSupply?: boolean | undefined;
     private _enableFreeze?: boolean | undefined;
@@ -335,20 +335,20 @@ export class PolicyTokenModel {
         this.changed = true;
     }
 
-    public get tokenName(): string | undefined {
+    public get tokenName(): string {
         return this._tokenName;
     }
 
-    public set tokenName(value: string | undefined) {
+    public set tokenName(value: string) {
         this._tokenName = value;
         this.changed = true;
     }
 
-    public get tokenSymbol(): string | undefined {
+    public get tokenSymbol(): string {
         return this._tokenSymbol;
     }
 
-    public set tokenSymbol(value: string | undefined) {
+    public set tokenSymbol(value: string) {
         this._tokenSymbol = value;
         this.changed = true;
     }
@@ -362,11 +362,11 @@ export class PolicyTokenModel {
         this.changed = true;
     }
 
-    public get decimals(): number | undefined {
+    public get decimals(): string {
         return this._decimals;
     }
 
-    public set decimals(value: number | undefined) {
+    public set decimals(value: string) {
         this._decimals = value;
         this.changed = true;
     }

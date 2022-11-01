@@ -7,10 +7,10 @@ import { FormGroup } from '@angular/forms';
     styleUrls: ['./token-configuration.component.css'],
 })
 export class TokenConfigurationComponent implements OnInit {
-
     @Input('preset') preset?: any;
     @Input('dataForm') dataForm!: FormGroup;
-    @Input('ft') ft: any;
+
+    ft: any;
 
     constructor() {}
 

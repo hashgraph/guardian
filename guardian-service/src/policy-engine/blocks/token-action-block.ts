@@ -62,7 +62,14 @@ export class TokenActionBlock {
         const field = ref.options.accountId;
         const documents = event?.data?.data;
         const doc = Array.isArray(documents) ? documents[0] : documents;
+
         let token;
+        if (!ref.options.useTemplate) {
+            token = await ref.databaseServer.getTokenById(
+                ref.options.tokenId
+            );
+        }
+
         let account: IHederaAccount = null;
         if (doc) {
             if (field) {
@@ -76,7 +83,6 @@ export class TokenActionBlock {
             } else {
                 account = await PolicyUtils.getHederaAccount(ref, doc.owner);
             }
-
             if (ref.options.useTemplate) {
                 if (doc.tokens) {
                     token = await ref.databaseServer.getTokenById(
@@ -84,10 +90,6 @@ export class TokenActionBlock {
                         ref.dryRun
                     );
                 }
-            } else {
-                token = await ref.databaseServer.getTokenById(
-                    ref.options.tokenId
-                );
             }
         }
 
@@ -187,6 +189,11 @@ export class TokenActionBlock {
             if (ref.options.useTemplate) {
                 if (!ref.options.template) {
                     resultsContainer.addBlockError(ref.uuid, 'Option "template" does not set');
+                }
+                const policyTokens = ref.policyInstance.policyTokens || [];
+                const tokenConfig = policyTokens.find(e => e.templateTokenTag === ref.options.template);
+                if (!tokenConfig) {
+                    resultsContainer.addBlockError(ref.uuid, `Token "${ref.options.template}" does not exist`);
                 }
             } else {
                 if (!ref.options.tokenId) {

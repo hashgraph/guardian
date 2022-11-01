@@ -249,6 +249,11 @@ export class TokenConfirmationBlock {
                 if (!ref.options.template) {
                     resultsContainer.addBlockError(ref.uuid, 'Option "template" does not set');
                 }
+                const policyTokens = ref.policyInstance.policyTokens || [];
+                const tokenConfig = policyTokens.find(e => e.templateTokenTag === ref.options.template);
+                if (!tokenConfig) {
+                    resultsContainer.addBlockError(ref.uuid, `Token "${ref.options.template}" does not exist`);
+                }
             } else {
                 if (!ref.options.tokenId) {
                     resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');

@@ -100,7 +100,10 @@ export class PolicyPropertiesComponent implements OnInit {
 
     addToken() {
         this.policy.createToken({
-            templateTokenTag: `token_template_${this.tokens.length}`
+            templateTokenTag: `token_template_${this.tokens.length}`,
+            tokenName: '',
+            tokenSymbol: '',
+            decimals: ''
         });
     }
 
@@ -109,6 +112,6 @@ export class PolicyPropertiesComponent implements OnInit {
     }
 
     onTokenTypeChange(item: any) {
-        item.decimals = undefined;
+        item.decimals = '';
     }
 }

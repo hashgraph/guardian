@@ -28,7 +28,7 @@ export class CreateTokenBlockComponent implements OnInit {
     type!: string;
     content: any;
     dialogContent: any;
-    ref: any;
+    templatePreset: any;
     title: any;
     description: any;
     buttonClass: any;
@@ -105,8 +105,7 @@ export class CreateTokenBlockComponent implements OnInit {
     setData(data: any) {
         if (data) {
             const uiMetaData = data.uiMetaData;
-            const row = data.data;
-            this.ref = row;
+            this.templatePreset = data.data;
             this.type = uiMetaData.type;
             if (this.type == 'dialog') {
                 this.content = uiMetaData.content;

@@ -13,13 +13,6 @@
         <td class="propRowCell cellName">Token Template</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.template" [disabled]="readonly">
-                <!-- <mat-option class="link" value="new">
-                    <span class="mat-option-link">
-                        <mat-icon>add</mat-icon>
-                        <span>Create new topic</span>
-                    </span>
-                </mat-option>
-                <mat-option value="root">Policy Instance</mat-option> -->
                 <mat-option *ngFor="let token of policy.policyTokens" [value]="token.templateTokenTag">
                     {{token.templateTokenTag}}
                 </mat-option>
