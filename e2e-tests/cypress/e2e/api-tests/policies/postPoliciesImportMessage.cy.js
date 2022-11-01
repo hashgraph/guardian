@@ -9,7 +9,7 @@ context('Policy - Import',{ tags: '@policies' }, () => {
   it('imports new policy and all associated artifacts from IPFS into the local DB', () => {
     cy.request({
       method: 'POST',
-      url: `${Cypress.env('api_server')}policies/import/message`,
+      url: API.ApiServer + 'policies/import/message',
       body: { "messageId":"1650282926.728623821"},
       headers: {
         authorization,
@@ -22,7 +22,7 @@ context('Policy - Import',{ tags: '@policies' }, () => {
         expect(firstPolicyStatus).to.equal('DRAFT')
         cy.request({
           method: 'PUT',
-          url: Cypress.env('api_server') + 'policies/' + firstPolicyId + '/publish',
+          url: API.ApiServer + 'policies/' + firstPolicyId + '/publish',
           body: { policyVersion: "1.2.5" },
           headers: { authorization },
           timeout: 600000
