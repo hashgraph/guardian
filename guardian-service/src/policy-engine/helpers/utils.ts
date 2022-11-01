@@ -16,7 +16,7 @@ import {
 } from '@guardian/interfaces';
 import { ExternalEventChannel, IAuthUser } from '@guardian/common';
 import { Schema as SchemaCollection } from '@entity/schema';
-import { TokenId, TopicId } from '@hashgraph/sdk';
+import { AccountId, PrivateKey, TokenId, TopicId } from '@hashgraph/sdk';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
@@ -732,6 +732,12 @@ export class PolicyUtils {
             createdToken.owner = user.did;
             createdToken.policyId = ref.policyId;
         } else {
+            const newPrivateKey = PrivateKey.generate();
+            const newAccountId = new AccountId(Date.now());
+            const treasury = {
+                hederaAccountId: newAccountId.toString(),
+                hederaAccountKey: newPrivateKey.toString()
+            };
             createdToken = {
                 tokenId: new TokenId(Date.now()).toString(),
                 tokenName: tokenTemplate.tokenName,
@@ -740,11 +746,12 @@ export class PolicyUtils {
                 nft: tokenTemplate.tokenType === 'non-fungible',
                 decimals: tokenTemplate.tokenType === 'non-fungible' ? 0 : tokenTemplate.decimals,
                 initialSupply: tokenTemplate.tokenType === 'non-fungible' ? 0 : tokenTemplate.initialSupply,
-                adminKey: tokenTemplate.enableAdmin ? user.hederaAccountKey : null,
-                kycKey: tokenTemplate.enableKYC ? user.hederaAccountKey : null,
-                freezeKey: tokenTemplate.enableFreeze ? user.hederaAccountKey : null,
-                wipeKey: tokenTemplate.enableWipe ? user.hederaAccountKey : null,
-                supplyKey: tokenTemplate.changeSupply ? user.hederaAccountKey : null,
+                adminId: treasury.hederaAccountId,
+                adminKey: tokenTemplate.enableAdmin ? treasury.hederaAccountKey : null,
+                kycKey: tokenTemplate.enableKYC ? treasury.hederaAccountKey : null,
+                freezeKey: tokenTemplate.enableFreeze ? treasury.hederaAccountKey : null,
+                wipeKey: tokenTemplate.enableWipe ? treasury.hederaAccountKey : null,
+                supplyKey: tokenTemplate.changeSupply ? treasury.hederaAccountKey : null,
                 owner: user.did,
                 policyId: ref.policyId
             };

@@ -322,7 +322,7 @@ export class PolicyTokenModel {
         this._decimals = token.decimals;
         this._enableAdmin = token.enableAdmin;
         this._changeSupply = token.changeSupply;
-        this._enableFreeze = token.tokenName;
+        this._enableFreeze = token.enableFreeze;
         this._enableKYC = token.enableKYC;
         this._enableWipe = token.enableWipe;
     }
