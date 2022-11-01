@@ -22,7 +22,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
 10. Carbontricity (Coming soon)
 11. VN (Coming soon)
 12. Evercity (Coming soon)
-13. Carbon Captors/Zeru.Earth (Coming soon)
+13. Zeru.Earth (Coming soon)
 14. KrypC GCC (Coming soon)
 15. Improved Cookstove - OCI (Coming soon)
 
