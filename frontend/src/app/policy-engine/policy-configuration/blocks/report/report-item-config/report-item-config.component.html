@@ -52,8 +52,8 @@
                     <div *ngSwitchCase="true" >
                         <mat-spinner [diameter]="20" class="file-spinner"></mat-spinner>
                     </div>
-                    
-                    <div *ngSwitchCase="false"> 
+
+                    <div *ngSwitchCase="false">
                         <button mat-icon-button class="upload-btn" class="file-action-button" (click)="fileUpload.click()">
                             <mat-icon class="file-action-icon">attach_file</mat-icon>
                         </button>
@@ -93,7 +93,7 @@
                     <span *ngIf="block.dynamicFilters[i].field&&block.dynamicFilters[i].type&&block.dynamicFilters[i].nextItemField" class="not-editable-text">
                         {{block.dynamicFilters[i].nextItemField}} {{block.dynamicFilters[i].type}} {{block.dynamicFilters[i].field}}
                     </span>
-                    <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveFilter(i)">
+                    <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveDynamicFilter(i)">
                         <mat-icon>delete</mat-icon>
                     </span>
                 </td>

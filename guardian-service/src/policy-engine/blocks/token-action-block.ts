@@ -7,6 +7,7 @@ import { IPolicyBlock, IPolicyEventState } from '@policy-engine/policy-engine.in
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
+import { BlockActionError } from '@policy-engine/errors';
 
 /**
  * Information block
@@ -58,12 +59,10 @@ export class TokenActionBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
-
-        const token = await ref.databaseServer.getTokenById(ref.options.tokenId);
         const field = ref.options.accountId;
         const documents = event?.data?.data;
         const doc = Array.isArray(documents) ? documents[0] : documents;
-
+        let token;
         let account: IHederaAccount = null;
         if (doc) {
             if (field) {
@@ -77,6 +76,23 @@ export class TokenActionBlock {
             } else {
                 account = await PolicyUtils.getHederaAccount(ref, doc.owner);
             }
+
+            if (ref.options.useTemplate) {
+                if (doc.tokens) {
+                    token = await ref.databaseServer.getTokenById(
+                        doc.tokens[ref.options.template],
+                        ref.dryRun
+                    );
+                }
+            } else {
+                token = await ref.databaseServer.getTokenById(
+                    ref.options.tokenId
+                );
+            }
+        }
+
+        if (!token) {
+            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
         await PolicyUtils.checkAccountId(account);

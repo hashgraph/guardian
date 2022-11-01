@@ -218,6 +218,10 @@
                         <policy-properties [policy]="policyModel" [readonly]="readonly" [type]="'Topics'">
                         </policy-properties>
                     </ng-container>
+                    <ng-container *ngIf="policyTab=='Tokens'">
+                        <policy-properties [policy]="policyModel" [readonly]="readonly" [type]="'Tokens'">
+                        </policy-properties>
+                    </ng-container>
                 </div>
                 <div class="group-tab">
                     <div class="group-tab-item" [attr.active]="policyTab=='Description'"
@@ -232,6 +236,9 @@
                     </div>
                     <div class="group-tab-item" [attr.active]="policyTab=='Topics'" (click)="policyTab='Topics'">
                         Topics
+                    </div>
+                    <div class="group-tab-item" [attr.active]="policyTab=='Tokens'" (click)="policyTab='Tokens'">
+                        Tokens
                     </div>
                 </div>
             </div>

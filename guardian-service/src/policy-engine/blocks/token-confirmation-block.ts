@@ -119,7 +119,18 @@ export class TokenConfirmationBlock {
             hederaAccountKey: data.hederaAccountKey
         }
 
-        const token = await this.getToken();
+        let token;
+        if (ref.options.useTemplate) {
+            if (state.tokenId) {
+                token = await ref.databaseServer.getTokenById(state.tokenId, ref.dryRun);
+            }
+        } else {
+            token = await this.getToken();
+        }
+
+        if (!token) {
+            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
+        }
 
         await PolicyUtils.checkAccountId(account);
         const policyOwner = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
@@ -193,6 +204,7 @@ export class TokenConfirmationBlock {
             const doc = Array.isArray(documents) ? documents[0] : documents;
 
             let hederaAccountId: string = null;
+            let tokenId;
             if (doc) {
                 if (field) {
                     if (doc.accounts) {
@@ -201,11 +213,18 @@ export class TokenConfirmationBlock {
                 } else {
                     hederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner);
                 }
+
+                if (ref.options.useTemplate) {
+                    if (doc.tokens) {
+                        tokenId = doc.tokens[ref.options.template];
+                    }
+                }
             }
             this.state[id] = {
                 accountId: hederaAccountId,
                 data: event.data,
-                user: event.user
+                user: event.user,
+                tokenId
             };
             await ref.saveState();
         }

@@ -604,6 +604,7 @@ export class DatabaseServer {
             item.topicId = row.topicId || item.topicId;
             item.comment = row.comment;
             item.relationships = row.relationships;
+            item.tokens = row.tokens;
 
             await this.update(VcDocumentCollection, item.id, item);
         } else {
@@ -620,6 +621,16 @@ export class DatabaseServer {
             }));
         }
         return item;
+    }
+
+    /**
+     * Create Token
+     * @param token
+     * @returns
+     */
+    public async createToken(token: any): Promise<TokenCollection> {
+        const newToken = this.create(TokenCollection, token);
+        return await this.save(TokenCollection, newToken);
     }
 
     /**
@@ -952,8 +963,12 @@ export class DatabaseServer {
      * Get Token
      * @param tokenId
      */
-    public async getTokenById(tokenId: string): Promise<TokenCollection> {
-        return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
+    public async getTokenById(tokenId: string, dryRun: any = null): Promise<TokenCollection> {
+        if (dryRun) {
+            return this.findOne(TokenCollection, { tokenId });
+        } else {
+            return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
+        }
     }
 
     /**
@@ -1681,6 +1696,7 @@ export class DatabaseServer {
         model.topicDescription = data.topicDescription;
         model.policyRoles = data.policyRoles;
         model.policyTopics = data.policyTopics;
+        model.policyTokens = data.policyTokens;
         model.policyGroups = data.policyGroups;
         return await new DataBaseHelper(Policy).save(model);
     }

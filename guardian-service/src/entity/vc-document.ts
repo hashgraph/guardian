@@ -146,6 +146,12 @@ export class VcDocument extends BaseEntity implements IVCDocument {
     accounts?: any
 
     /**
+     * Tokens
+     */
+    @Property({ nullable: true })
+    tokens?: any
+
+    /**
      * User group
      */
     @Property({

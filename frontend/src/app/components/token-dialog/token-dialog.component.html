@@ -1,40 +1,10 @@
-<h1 mat-dialog-title>New Token</h1>
+<h1 mat-dialog-title>{{title}}</h1>
 <div mat-dialog-content>
-    <form [formGroup]="dataForm" (ngSubmit)="onSubmit()" [attr.ft]="ft">
-        <mat-form-field class="example-full-width" appearance="outline">
-            <mat-label>TOKEN NAME:</mat-label>
-            <input matInput type="text" placeholder="Token Name" formControlName="tokenName">
-        </mat-form-field>
-
-        <mat-form-field class="example-full-width" appearance="outline">
-            <mat-label>TOKEN SYMBOL:</mat-label>
-            <input matInput type="text" placeholder="F" formControlName="tokenSymbol">
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-            <mat-label>TOKEN TYPE</mat-label>
-            <mat-select formControlName="tokenType" (selectionChange)="onChangeType()">
-                <mat-option value="fungible">Fungible</mat-option>
-                <mat-option value="non-fungible">Non-Fungible</mat-option>
-            </mat-select>
-        </mat-form-field>
-
-        <mat-form-field *ngIf="ft" class="example-full-width" appearance="outline">
-            <mat-label>DECIMALS:</mat-label>
-            <input matInput type="text" placeholder="2" formControlName="decimals">
-        </mat-form-field>
-
-        <mat-checkbox class="example-margin" color="primary" formControlName="enableAdmin">Enable Admin</mat-checkbox>
-        <mat-checkbox class="example-margin" color="primary" formControlName="changeSupply">Change Supply</mat-checkbox>
-        <mat-checkbox class="example-margin" color="primary" formControlName="enableFreeze">Enable Freeze</mat-checkbox>
-        <mat-checkbox class="example-margin" color="primary" formControlName="enableKYC">Enable KYC</mat-checkbox>
-        <mat-checkbox class="example-margin" color="primary" formControlName="enableWipe">Enable Wipe</mat-checkbox>
-
-        <div mat-dialog-actions>
-            <button mat-raised-button color="primary" type="submit" [attr.started]="started"
-                [disabled]="!dataForm.valid">Ok</button>
-            <button mat-button type="button" (click)="onNoClick()">Cancel</button>
-        </div>
-    </form>
-
+    <div class="description">{{description}}</div>
+    <app-token-configuration [dataForm]="dataForm" [ft]="true"></app-token-configuration>
+</div>
+<div mat-dialog-actions>
+    <button mat-raised-button color="primary" (click)="onSubmit()" [attr.started]="started"
+        [disabled]="!dataForm.valid">Ok</button>
+    <button mat-button type="button" (click)="onNoClick()">Cancel</button>
 </div>

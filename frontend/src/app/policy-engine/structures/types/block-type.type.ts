@@ -32,5 +32,6 @@ export enum BlockType {
     GroupManagerBlock = 'groupManagerBlock',
     MultiSignBlock = 'multiSignBlock',
     CalculateMathVariables = 'calculateMathVariables',
+    CreateToken = 'createTokenBlock',
     SplitBlock = 'splitBlock'
 }

@@ -94,6 +94,8 @@ export class CalculateContainerBlock {
 
         // <-- aggregate
         const relationships = [];
+        let accounts = {};
+        let tokens = {};
         const owner = PolicyUtils.getDocumentOwner(ref, isArray ? documents[0] : documents);
 
         let vcs: VcDocument | VcDocument[];
@@ -102,6 +104,8 @@ export class CalculateContainerBlock {
             vcs = [];
             json = [];
             for (const doc of documents) {
+                accounts = Object.assign(accounts, doc.accounts);
+                tokens = Object.assign(tokens, doc.tokens);
                 const vc = VcDocument.fromJsonTree(doc.document);
                 vcs.push(vc);
                 json.push(vc.getCredentialSubject(0).toJsonTree());
@@ -110,6 +114,8 @@ export class CalculateContainerBlock {
                 }
             }
         } else {
+            accounts = Object.assign(accounts, documents.accounts);
+            tokens = Object.assign(tokens, documents.tokens);
             vcs = VcDocument.fromJsonTree(documents.document);
             json = vcs.getCredentialSubject(0).toJsonTree();
             if (documents.messageId) {
@@ -146,8 +152,8 @@ export class CalculateContainerBlock {
         item.type = outputSchema.iri;
         item.schema = outputSchema.iri;
         item.relationships = relationships.length ? relationships : null;
-        const accounts = isArray ? documents.reduce((a: any, b: any) => Object.assign(a, b.accounts), {}) : documents.accounts;
         item.accounts = accounts && Object.keys(accounts).length ? accounts : null;
+        item.tokens = tokens && Object.keys(tokens).length ? tokens : null;
         // -->
 
         return item;
