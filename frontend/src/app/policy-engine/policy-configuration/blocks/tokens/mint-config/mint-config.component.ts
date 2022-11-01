@@ -49,4 +49,9 @@ export class MintConfigComponent implements OnInit {
         delete this.block.accountId;
         delete this.block.accountIdValue;
     }
+
+    onUseTemplateChange() {
+        delete this.block.tokenId;
+        delete this.block.template;
+    }
 }

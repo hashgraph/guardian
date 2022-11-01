@@ -85,4 +85,10 @@ export class Token extends BaseEntity implements IToken {
      */
     @Property({ nullable: true })
     owner?: string;
+
+    /**
+     * Owner
+     */
+    @Property({ nullable: true })
+    policyId?: string;
 }

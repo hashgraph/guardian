@@ -262,6 +262,129 @@
                         </div>
                     </div>
                 </ng-container>
+                <ng-container *ngIf="type == 'Tokens'">
+                    <!-- Tokens  -->
+                    <ng-container *ngFor="let item of tokens; let i=index">
+                        <tr class="propHeader">
+                            <td class="propRowCol" (click)="onHide(propHidden.tokensGroup, i)"
+                                [attr.collapse]="propHidden.tokensGroup[i]">
+                                <mat-icon>expand_more</mat-icon>
+                            </td>
+                            <td class="propHeaderCell cellName">Token</td>
+                            <td class="propHeaderCell">
+                                <div>{{item.templateTokenTag}}</div>
+                                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveToken(item)">
+                                    <mat-icon>delete</mat-icon>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Template Token Tag</td>
+                            <td class="propRowCell remove-cell">
+                                <input class="prop-input" [(ngModel)]="item.templateTokenTag" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Token Name</td>
+                            <td class="propRowCell remove-cell">
+                                <input placeholder="To be specified by user" class="prop-input" [(ngModel)]="item.tokenName" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Token Symbol</td>
+                            <td class="propRowCell remove-cell">
+                                <input placeholder="To be specified by user" class="prop-input" [(ngModel)]="item.tokenSymbol" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Token Type</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select placeholder="To be specified by user" (selectionChange)="onTokenTypeChange(item)" [(ngModel)]="item.tokenType" [disabled]="readonly">
+                                    <mat-option>To be specified by user</mat-option>
+                                    <mat-option value="non-fungible">Non Fungible</mat-option>
+                                    <mat-option value="fungible">Fungible</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" *ngIf="item.tokenType==='fungible'" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Decimals</td>
+                            <td class="propRowCell remove-cell">
+                                <input placeholder="To be specified by user" type="number" class="prop-input" [(ngModel)]="item.decimals" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Enable Admin</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableAdmin" [disabled]="readonly">
+                                    <mat-option>To be specified by user</mat-option>
+                                    <mat-option [value]="true">Yes</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Change Supply</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.changeSupply" [disabled]="readonly">
+                                    <mat-option>To be specified by user</mat-option>
+                                    <mat-option [value]="true">Yes</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Enable Freeze</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableFreeze" [disabled]="readonly">
+                                    <mat-option>To be specified by user</mat-option>
+                                    <mat-option [value]="true">Yes</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Enable KYC</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableKYC" [disabled]="readonly">
+                                    <mat-option>To be specified by user</mat-option>
+                                    <mat-option [value]="true">Yes</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Enable Wipe</td>
+                            <td class="propRowCell remove-cell">
+                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableWipe" [disabled]="readonly">
+                                    <mat-option>To be specified by user</mat-option>
+                                    <mat-option [value]="true">Yes</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <tr class="propRow" style="height: 26px;">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName"></td>
+                        <td class="propRowCell"></td>
+                    </tr>
+                    <div class="propBottom">
+                        <div class="propAdd" (click)="addToken()">
+                            <mat-icon>add</mat-icon>
+                            <span>Add Token</span>
+                        </div>
+                    </div>
+                </ng-container>
             </table>
         </div>
     </div>

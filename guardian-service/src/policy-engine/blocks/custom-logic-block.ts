@@ -106,8 +106,18 @@ export class CustomLogicBlock {
                     }
                     const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
                     const context = SchemaHelper.getContext(outputSchema);
-                    const relationships = documents.filter(d => !!d.messageId).map(d => d.messageId);
-                    const accounts = documents.reduce((a: any, b: any) => Object.assign(a, b.accounts), {});
+
+                    const relationships = [];
+                    let accounts = {};
+                    let tokens = {};
+                    for (const doc of documents) {
+                        accounts = Object.assign(accounts, doc.accounts);
+                        tokens = Object.assign(tokens, doc.tokens);
+                        if (doc.messageId) {
+                            relationships.push(doc.messageId);
+                        }
+                    }
+
                     const VCHelper = new VcHelper();
 
                     const processing = async (document) => {
@@ -140,7 +150,8 @@ export class CustomLogicBlock {
                         item.type = outputSchema.iri;
                         item.schema = outputSchema.iri;
                         item.relationships = relationships.length ? relationships : null;
-                        item.accounts = Object.keys(accounts).length ? accounts : null;;
+                        item.accounts = Object.keys(accounts).length ? accounts : null;
+                        item.tokens = Object.keys(tokens).length ? tokens : null;
                         return item;
                     }
 

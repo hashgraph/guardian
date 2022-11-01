@@ -158,6 +158,12 @@ export class DryRun extends BaseEntity {
     accounts?: any
 
     /**
+     * Tokens
+     */
+    @Property({ nullable: true })
+    tokens?: any
+
+    /**
      * Topic name
      */
     @Property({ nullable: true })
@@ -371,6 +377,12 @@ export class DryRun extends BaseEntity {
      */
     @Property({ nullable: true })
     policyTopics?: any;
+
+    /**
+     * Policy tokens
+     */
+    @Property({ nullable: true })
+    policyTokens?: any[];
 
     /**
      * Policy instance topic id
