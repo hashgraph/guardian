@@ -134,7 +134,7 @@ export class AuditComponent implements OnInit {
         } else {
             this.policies = this._policies;
         }
-        this.currentPolicy = this.policies.find(p => p.id == this.currentPolicy) || '';
+        this.currentPolicy = this.policies.find(p => p.id == this.currentPolicy)?.id || '';
     }
 
     openVP(document: any) {
