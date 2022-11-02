@@ -103,8 +103,8 @@ export class AuditComponent implements OnInit {
         this.dataCount = 0;
         this.pageIndex = 0;
         this.pageSize = 25;
-        this.currentPolicy = this.route.snapshot.queryParams['policyId'];
-        this.currentUser = this.route.snapshot.queryParams['owner'];
+        this.currentPolicy = this.route.snapshot.queryParams['policyId'] || '';
+        this.currentUser = this.route.snapshot.queryParams['owner'] || '';
         forkJoin([
             this.auth.getStandardRegistries(),
             this.policyEngineService.all(),
