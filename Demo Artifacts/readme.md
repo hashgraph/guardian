@@ -16,7 +16,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - GHG Assessment Guideline Soil
    - RothC 
    - Microbial-Mineral Carbon Stabilization (MIMICS)
-   - Agricultural soils of Western Australia
+   - Agricultural soils of Western Australia 
 4. Nova VER - OCI (Coming soon)
 5. eWaste Policy - KrypC(Coming soon)
 6. TBA-X (Coming soon)
