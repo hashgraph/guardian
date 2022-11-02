@@ -5,6 +5,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
     const authorization = Cypress.env("authorization");
 
     before(() => {
+
         cy.request({
             method: "POST",
             url: API.ApiServer + API.PolicisImportMsg,
@@ -16,7 +17,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
         }).then((response) => {
             expect(response.status).to.eq(201);
         });
-
+        
         const urlPolicies = {
             method: "GET",
             url: API.ApiServer + "policies",
@@ -31,7 +32,11 @@ context("Artifacts", { tags: "@artifacts" }, () => {
 
             const url = {
                 method: "GET",
-                url: API.ApiServer + "policies/" + policyId + "/export/file",
+                url:
+                API.ApiServer+
+                    "policies/" +
+                    policyId +
+                    "/export/file",
                 encoding: null,
                 headers: {
                     authorization,
