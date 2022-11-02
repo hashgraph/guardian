@@ -9,7 +9,7 @@ context('Policy - Import',{ tags: '@policies' }, () => {
   it('imports new policy and all associated artifacts from IPFS into the local DB', () => {
     cy.request({
       method: 'POST',
-      url: `${Cypress.env('api_server')}policies/import/message`,
+      url: API.ApiServer + "policies/import/message",
       body: { "messageId":"1650282926.728623821"},
       headers: {
         authorization,
@@ -22,7 +22,7 @@ context('Policy - Import',{ tags: '@policies' }, () => {
         expect(firstPolicyStatus).to.equal('DRAFT')
         cy.request({
           method: 'PUT',
-          url: Cypress.env('api_server') + 'policies/' + firstPolicyId + '/publish',
+          url: API.ApiServer + 'policies/' + firstPolicyId + '/publish',
           body: { policyVersion: "1.2.5" },
           headers: { authorization },
           timeout: 600000
@@ -35,6 +35,22 @@ context('Policy - Import',{ tags: '@policies' }, () => {
             expect(firstPolicyId).to.equal(secondPolicyId)
             expect(policyStatus).to.equal('PUBLISH')
           })
+      })
+  })
+
+  it('should attempt to import the invalid policy', () => {
+    cy.request({
+      method: 'POST',
+      url: API.ApiServer + "policies/import/message",
+      body: { "messageId":"0000000000.000000000"},
+      headers: {
+        authorization,
+      },
+      failOnStatusCode:false,
+      timeout: 180000
+    })
+      .then(response => {
+        expect(response.status).eql(STATUS_CODE.ERROR);
       })
   })
 })

@@ -12,11 +12,11 @@ context("Policies", { tags: '@policies' },() => {
                 authorization,
             },
             body: {
-                "messageId":"1650282926.728623821"
-            },
+                "messageId": "1650282926.728623821"
+              }
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.OK);
             expect(response.body).to.not.be.oneOf([null, ""]);
-    g    });
+        });
     });
 });

@@ -38,6 +38,7 @@ context('Profiles', { tags: '@profiles' }, () => {
           }
         })
           .then((response) => {
+            expect(response.status).to.eq(200)
             //Searching for not used hedera credentials for new user
 
             // for (let item of ids) {
@@ -72,6 +73,72 @@ context('Profiles', { tags: '@profiles' }, () => {
                 // break;
             //   }
             // }
+          })
+      })
+  })
+
+  it('Should attempt to register a new user, login with it and set invalid hedera credentials for it', () => {
+    const userPassword = 'testTest'
+    const name = (Math.floor(Math.random() * 999) + 'testUser')
+    const options = {
+      method: 'POST',
+      url: API.ApiServer + 'accounts/register',
+      body: {
+        username: name,
+        password: userPassword,
+        role: 'USER'
+      }
+    };
+    cy.request(options)
+      .then((response) => {
+        let role = response.body.role
+        let username = response.body.username
+
+        expect(response.status).to.eq(201)
+        expect(response.body).to.not.be.oneOf([null, ""])
+        expect(username).to.equal(name)
+        expect(role).to.equal('USER')
+        
+        cy.request({
+          method: 'POST',
+          url: API.ApiServer + 'accounts/login',
+          body: {
+            username: username,
+            password: userPassword
+          }
+        })
+          .then((response) => {
+            expect(response.status).to.eq(200)
+
+          
+            
+                let accessToken = 'bearer ' + response.body.accessToken
+                cy.request({
+                  method: 'PUT',
+                  url: API.ApiServer + 'profiles/' + username,
+                  headers: {
+                    authorization: accessToken
+                  },
+                  failOnStatusCode:false,
+                  body: {
+                    hederaAccountId: '0.0.00000001',
+                    hederaAccountKey: '302e020100300506032b657004220420aaf0eac4a188e5d7eb3897866d2b33e51ab5d7e7bfc251d736f2037a4b2075',
+                    vcDocument: {
+                      geography: 'testGeography',
+                      law: 'testLaw',
+                      tags: 'testTags',
+                      type: 'StandardRegistry',
+                      '@context': []
+                    }
+                  },
+                  timeout: 200000
+                })
+                  .then((response) => {
+                    expect(response.status).to.eq(500)
+                  })
+               
+              
+      
           })
       })
   })
