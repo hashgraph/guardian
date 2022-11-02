@@ -22,7 +22,7 @@ function getTokenInfo(info: any, token: any) {
         tokenSymbol: token.tokenSymbol,
         tokenType: token.tokenType,
         decimals: token.decimals,
-        policies: null,
+        policyId: token.policyId,
         associated: false,
         balance: null,
         hBarBalance: null,
@@ -100,7 +100,7 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
             tokenSymbol,
             tokenType
         }
-    }, 1);
+    }, 1, 1);
     tokenData.owner = root.did;
 
     notifier.completedAndStart('Save token in DB');

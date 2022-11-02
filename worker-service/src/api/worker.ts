@@ -356,13 +356,12 @@ export class Worker {
                             id: operatorId,
                             key: PrivateKey.fromString(operatorKey)
                         },
-                        PrivateKey.fromString(adminKey),
-                        PrivateKey.fromString(kycKey),
-                        PrivateKey.fromString(freezeKey),
-                        PrivateKey.fromString(wipeKey),
-                        PrivateKey.fromString(supplyKey),
+                        adminKey ? PrivateKey.fromString(adminKey) : null,
+                        kycKey ? PrivateKey.fromString(kycKey) : null,
+                        freezeKey ? PrivateKey.fromString(freezeKey) : null,
+                        wipeKey ? PrivateKey.fromString(wipeKey) : null,
+                        supplyKey ? PrivateKey.fromString(supplyKey) : null
                     );
-
                     break;
                 }
 
@@ -404,9 +403,18 @@ export class Worker {
                 }
 
                 case WorkerTaskType.MINT_NFT: {
-                    const { hederaAccountId, hederaAccountKey, dryRun, tokenId, supplyKey, element, transactionMemo } = task.data;
+                    const { hederaAccountId, hederaAccountKey, dryRun, tokenId, supplyKey, metaData, transactionMemo } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
-                    result.data = await client.mintNFT(tokenId, supplyKey, element, transactionMemo);
+                    let data: Uint8Array[];
+                    if (Array.isArray(metaData)) {
+                        data = new Array<Uint8Array>(metaData.length);
+                        for (let i = 0; i < metaData.length; i++) {
+                            data[i] = new Uint8Array(Buffer.from(metaData[i]));
+                        }
+                    } else {
+                        data = [new Uint8Array(Buffer.from(metaData))];
+                    }
+                    result.data = await client.mintNFT(tokenId, supplyKey, data, transactionMemo);
                     break;
                 }
 

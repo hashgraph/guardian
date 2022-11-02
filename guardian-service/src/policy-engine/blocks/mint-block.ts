@@ -184,11 +184,6 @@ export class MintBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        const token = await ref.databaseServer.getTokenById(ref.options.tokenId);
-        if (!token) {
-            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
-        }
-
         const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
@@ -197,6 +192,20 @@ export class MintBlock {
         const docOwner = PolicyUtils.getDocumentOwner(ref, docs[0]);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
+        }
+
+        let token;
+        if (ref.options.useTemplate) {
+            if (docs[0].tokens) {
+                const tokenId = docs[0].tokens[ref.options.template];
+                token = await ref.databaseServer.getTokenById(tokenId, ref.dryRun);
+            }
+        } else {
+            token = await ref.databaseServer.getTokenById(ref.options.tokenId);
+        }
+
+        if (!token) {
+            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
         const vcs: VcDocument[] = [];
@@ -244,7 +253,15 @@ export class MintBlock {
 
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
 
-        await this.mintProcessing(token, vcs, vsMessages, topicId, root, docOwner, targetAccountId);
+        await this.mintProcessing(
+          token,
+          vcs,
+          vsMessages,
+          topicId,
+          root,
+          docOwner,
+          targetAccountId
+        );
         ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data);
     }
@@ -256,12 +273,23 @@ export class MintBlock {
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
-            if (!ref.options.tokenId) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
-            } else if (typeof ref.options.tokenId !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-            } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
-                resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+            if (ref.options.useTemplate) {
+                if (!ref.options.template) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "template" does not set');
+                }
+                const policyTokens = ref.policyInstance.policyTokens || [];
+                const tokenConfig = policyTokens.find(e => e.templateTokenTag === ref.options.template);
+                if (!tokenConfig) {
+                    resultsContainer.addBlockError(ref.uuid, `Token "${ref.options.template}" does not exist`);
+                }
+            } else {
+                if (!ref.options.tokenId) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
+                } else if (typeof ref.options.tokenId !== 'string') {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
+                } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
+                    resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+                }
             }
 
             if (!ref.options.rule) {

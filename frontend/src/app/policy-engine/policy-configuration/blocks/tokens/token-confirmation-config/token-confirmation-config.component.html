@@ -1,10 +1,21 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="block">
-    <tr class="propRow" [attr.collapse]="propHidden.main">
+    <tr *ngIf="!block.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.tokenId" [disabled]="readonly">
                 <mat-option *ngFor="let token of tokens" [value]="token.tokenId">{{token.tokenName}}</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr *ngIf="block.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Token Template</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.template" [disabled]="readonly">
+                <mat-option *ngFor="let token of policy.policyTokens" [value]="token.templateTokenTag">
+                    {{token.templateTokenTag}}
+                </mat-option>
             </mat-select>
         </td>
     </tr>

@@ -16,7 +16,7 @@ import {
 } from '@guardian/interfaces';
 import { ExternalEventChannel, IAuthUser } from '@guardian/common';
 import { Schema as SchemaCollection } from '@entity/schema';
-import { TopicId } from '@hashgraph/sdk';
+import { AccountId, PrivateKey, TokenId, TopicId } from '@hashgraph/sdk';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
@@ -259,14 +259,13 @@ export class PolicyUtils {
         const adminKey = token.adminKey;
 
         if (token.tokenType === 'non-fungible') {
-            const metaData = new Uint8Array(Buffer.from(uuid));
-            const data = new Array<Uint8Array>(Math.floor(tokenValue));
-            data.fill(metaData);
+            const data = new Array<string>(Math.floor(tokenValue));
+            data.fill(uuid);
             const serials: number[] = [];
             const dataChunk = PolicyUtils.splitChunk(data, 10);
             const mintPromiseArray: Promise<any>[] = [];
             for (let i = 0; i < dataChunk.length; i++) {
-                const element = dataChunk[i];
+                const metaData = dataChunk[i];
                 if (i % 100 === 0) {
                     ref.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
                 }
@@ -277,7 +276,10 @@ export class PolicyUtils {
                         hederaAccountId: root.hederaAccountId,
                         hederaAccountKey: root.hederaAccountKey,
                         dryRun: ref.dryRun,
-                        tokenId, supplyKey, element, transactionMemo
+                        tokenId,
+                        supplyKey,
+                        metaData,
+                        transactionMemo
                     }
                 }, 1));
 
@@ -308,7 +310,12 @@ export class PolicyUtils {
                         hederaAccountId: root.hederaAccountId,
                         hederaAccountKey: root.hederaAccountKey,
                         dryRun: ref.dryRun,
-                        tokenId, targetAccount, adminId, adminKey, element, transactionMemo
+                        tokenId,
+                        targetAccount,
+                        adminId,
+                        adminKey,
+                        element,
+                        transactionMemo
                     }
                 }, 1));
 
@@ -321,12 +328,15 @@ export class PolicyUtils {
         } else {
             try {
                 await workers.addTask({
-                    type: WorkerTaskType.TRANSFER_NFT,
+                    type: WorkerTaskType.MINT_FT,
                     data: {
                         hederaAccountId: root.hederaAccountId,
                         hederaAccountKey: root.hederaAccountKey,
                         dryRun: ref.dryRun,
-                        tokenId, supplyKey, tokenValue, transactionMemo
+                        tokenId,
+                        supplyKey,
+                        tokenValue,
+                        transactionMemo
                     }
                 }, 1);
                 await workers.addTask({
@@ -335,7 +345,12 @@ export class PolicyUtils {
                         hederaAccountId: root.hederaAccountId,
                         hederaAccountKey: root.hederaAccountKey,
                         dryRun: ref.dryRun,
-                        tokenId, targetAccount, adminId, adminKey, tokenValue, transactionMemo
+                        tokenId,
+                        targetAccount,
+                        adminId,
+                        adminKey,
+                        tokenValue,
+                        transactionMemo
                     }
                 }, 1);
             } catch (error) {
@@ -704,6 +719,60 @@ export class PolicyUtils {
                 }
             }, 1);
         }
+    }
+
+    /**
+     * Create token by template
+     * @param ref
+     * @param tokenTemplate
+     * @param user
+     * @returns
+     */
+    public static async createTokenByTemplate(
+        ref: AnyBlockType,
+        tokenTemplate: any,
+        user: IHederaAccount
+    ): Promise<Token> {
+        let createdToken;
+        if (!ref.dryRun) {
+            const workers = new Workers();
+            createdToken = await workers.addTask({
+                type: WorkerTaskType.CREATE_TOKEN,
+                data: {
+                    operatorId: user.hederaAccountId,
+                    operatorKey: user.hederaAccountKey,
+                    ...tokenTemplate
+                }
+            }, 1);
+            createdToken.owner = user.did;
+            createdToken.policyId = ref.policyId;
+        } else {
+            const newPrivateKey = PrivateKey.generate();
+            const newAccountId = new AccountId(Date.now());
+            const treasury = {
+                hederaAccountId: newAccountId.toString(),
+                hederaAccountKey: newPrivateKey.toString()
+            };
+            createdToken = {
+                tokenId: new TokenId(Date.now()).toString(),
+                tokenName: tokenTemplate.tokenName,
+                tokenSymbol: tokenTemplate.tokenSymbol,
+                tokenType: tokenTemplate.tokenType,
+                nft: tokenTemplate.tokenType === 'non-fungible',
+                decimals: tokenTemplate.tokenType === 'non-fungible' ? 0 : tokenTemplate.decimals,
+                initialSupply: tokenTemplate.tokenType === 'non-fungible' ? 0 : tokenTemplate.initialSupply,
+                adminId: treasury.hederaAccountId,
+                adminKey: tokenTemplate.enableAdmin ? treasury.hederaAccountKey : null,
+                kycKey: tokenTemplate.enableKYC ? treasury.hederaAccountKey : null,
+                freezeKey: tokenTemplate.enableFreeze ? treasury.hederaAccountKey : null,
+                wipeKey: tokenTemplate.enableWipe ? treasury.hederaAccountKey : null,
+                supplyKey: tokenTemplate.changeSupply ? treasury.hederaAccountKey : null,
+                owner: user.did,
+                policyId: ref.policyId
+            };
+        }
+
+        return await ref.databaseServer.createToken(createdToken);
     }
 
     /**
@@ -1142,6 +1211,7 @@ export class PolicyUtils {
             relationships: document.relationships || null,
             comment: document.comment || null,
             accounts: document.accounts || null,
+            tokens: document.tokens || null
         } as VcDocumentCollection;
     }
 
@@ -1162,6 +1232,10 @@ export class PolicyUtils {
 
         if (ref && ref.accounts) {
             document.accounts = Object.assign({}, ref.accounts, document.accounts);
+        }
+
+        if (ref && ref.tokens) {
+            document.tokens = Object.assign({}, ref.tokens, document.tokens);
         }
 
         return document;

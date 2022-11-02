@@ -7,6 +7,19 @@ import crypto from 'crypto';
  * HashiCorp vault helper
  */
 export class Hashicorp implements IVault{
+
+    /**
+     * Key encryption algorithm
+     * @private
+     */
+    private readonly encryptionAlg = process.env.HASHICORP_ENCRIPTION_ALG || 'sha512';
+
+    /**
+     * Unseal key
+     * @private
+     */
+    private readonly unsealKey = process.env.HASHICORP_UNSEAL_KEY || null;
+
     /**
      * Vault options
      * @private
@@ -46,7 +59,7 @@ export class Hashicorp implements IVault{
      * @private
      */
     private generateKeyName(token: string, type: string, key: string): string {
-        return crypto.createHash('sha512').update(`${token}|${type}|${key}`).digest('hex');
+        return crypto.createHash(this.encryptionAlg).update(`${token}|${type}|${key}`).digest('hex');
     }
 
     /**
@@ -61,13 +74,25 @@ export class Hashicorp implements IVault{
                 this.vault.token = root_token;
                 console.info('Root Token', root_token);
                 await this.vault.unseal({secret_shares: 1, key: keys[0]});
-
             }
+
+            await this.forceUnsealVault();
+
         } catch (e) {
             console.warn(e.message);
         }
 
         return this;
+    }
+
+    /**
+     * Unseal vault if key exist
+     * @private
+     */
+    private async forceUnsealVault(): Promise<void> {
+        if (this.unsealKey) {
+            await this.vault.unseal({secret_shares: 1, key: this.unsealKey});
+        }
     }
 
     /**

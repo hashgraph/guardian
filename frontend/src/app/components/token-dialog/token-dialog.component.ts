@@ -24,7 +24,8 @@ export class TokenDialog {
         enableKYC: [true, Validators.required],
         enableWipe: [true, Validators.required],
     });
-    ft: boolean = true;
+    title: string = "New Token";
+    description: string = "";
 
     constructor(
         public dialogRef: MatDialogRef<TokenDialog>,
@@ -52,10 +53,5 @@ export class TokenDialog {
             }
             this.dialogRef.close(data);
         }
-    }
-
-    onChangeType() {
-        const data = this.dataForm.value;
-        this.ft = (data && data.tokenType == 'fungible')
     }
 }

@@ -69,3 +69,5 @@ IREC Demo : https://docs.hedera.com/guardian-dev/demo-guide/irec-demo-guide
 Verra REDD Demo : https://docs.hedera.com/guardian-dev/demo-guide/verra-redd+-demo-guide
 
 DOVU Guardian Policies: https://github.com/dovuofficial/guardian-policies/
+
+CET & CRU Policies : https://github.com/Tymlez/guardian-policies

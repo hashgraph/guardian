@@ -22,8 +22,8 @@ function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: any, notEmpt
         return [];
     }
     for (const token of tokens) {
-        token.policies = [];
-        token.policyIds = [];
+        token.policies = token.policies || [];
+        token.policyIds = token.policyIds || [];
         for (const policyObject of map) {
             if (policyObject.tokenIds.includes(token.tokenId)) {
                 token.policies.push(`${policyObject.name} (${policyObject.version || 'DRAFT'})`);
@@ -41,6 +41,31 @@ function setTokensPolicies<T>(tokens: any[], map: any[], policyId?: any, notEmpt
 
 }
 
+/**
+ * Set policy in dynamic tokens
+ * @param tokens
+ * @param policies
+ * @param policyId
+ */
+ async function setDynamicTokenPolicy(tokens: any[], engineService?: PolicyEngine): Promise<any> {
+    if (!tokens || !engineService) {
+        return tokens;
+    }
+    for (const token of tokens) {
+        if (!token.policyId) {
+            continue;
+        }
+        const policy = await engineService.getPolicy({
+            filters: {
+                id: token.policyId,
+            }
+        });
+        token.policies = [`${policy.name} (${policy.version || 'DRAFT'})`];
+        token.policyIds = [policy.id];
+    }
+    return tokens;
+}
+
 tokenAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY, UserRole.USER), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
@@ -53,10 +78,12 @@ tokenAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY, UserRole.USER), a
         if (user.role === UserRole.STANDARD_REGISTRY) {
             tokens = await guardians.getTokens({ did: user.did });
             const map = await engineService.getTokensMap(user.did);
+            tokens = await setDynamicTokenPolicy(tokens, engineService);
             tokens = setTokensPolicies(tokens, map, policyId, false);
         } else if (user.did) {
             tokens = await guardians.getAssociatedTokens(user.did);
             const map = await engineService.getTokensMap(user.parent, 'PUBLISH');
+            tokens = await setDynamicTokenPolicy(tokens, engineService);
             tokens = setTokensPolicies(tokens, map, policyId, true);
         }
         res.status(200).json(tokens);

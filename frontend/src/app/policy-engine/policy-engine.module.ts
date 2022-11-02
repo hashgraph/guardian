@@ -71,6 +71,9 @@ import { DocumentPath } from './helpers/document-path/document-path.component';
 import { CommonPropertyComponent } from './policy-configuration/common-property/common-property.component';
 import { MultiSignBlockComponent } from './policy-viewer/blocks/multi-sign-block/multi-sign-block.component';
 import { SelectBlock } from './helpers/select-block/select-block.component';
+import { CreateTokenBlockComponent } from './policy-viewer/blocks/create-token-block/create-token-block.component';
+import { CreateTokenConfigComponent } from './policy-configuration/blocks/tokens/create-token-config/create-token-config.component';
+import { TokenConfigurationComponent } from '../components/token-configuration/token-configuration.component';
 
 @NgModule({
     declarations: [
@@ -136,7 +139,10 @@ import { SelectBlock } from './helpers/select-block/select-block.component';
         DocumentPath,
         CommonPropertyComponent,
         MultiSignBlockComponent,
-        SelectBlock
+        SelectBlock,
+        CreateTokenConfigComponent,
+        CreateTokenBlockComponent,
+        TokenConfigurationComponent
     ],
     imports: [
         CommonModule,
@@ -198,7 +204,8 @@ import { SelectBlock } from './helpers/select-block/select-block.component';
         TokenConfirmationBlockComponent,
         GroupManagerConfigComponent,
         GroupManagerBlockComponent,
-        InviteDialogComponent
+        InviteDialogComponent,
+        TokenConfigurationComponent
     ],
     providers: [
         RegisteredBlocks
