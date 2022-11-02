@@ -2,12 +2,16 @@
 
 Here we have all the policies we are currently building out, the two main focus differentiators for our templates are MRVs that end with:
 
-- Agrecalc
-- Cool Farm Tool
+- Agrecalc 
+- Cool Farm Tool 
 - Carbon Space (beta)
 - Geotree (beta)
 - Grain Data Solution (beta)
 - Soil Carbon Coalition (beta)
+- GHG Assessment Guideline Soil (beta)
+- RothC (beta)
+- Microbial-Mineral Carbon Stabilization (MIMICS) (beta)
+- Agricultural soils of Western Australia (beta)
 
 Inside of each policy folder we have these items:
 
