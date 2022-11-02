@@ -36,6 +36,7 @@ context("Schemas", { tags: '@schemas' }, () => {
                     schema,
                     "binary"
                 );
+    
             });
         });
     });
@@ -72,4 +73,5 @@ context("Schemas", { tags: '@schemas' }, () => {
                 });
         });
     });
+
 });

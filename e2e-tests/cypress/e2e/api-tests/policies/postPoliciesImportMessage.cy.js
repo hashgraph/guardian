@@ -9,7 +9,7 @@ context('Policy - Import',{ tags: '@policies' }, () => {
   it('imports new policy and all associated artifacts from IPFS into the local DB', () => {
     cy.request({
       method: 'POST',
-      url: API.ApiServer + 'policies/import/message',
+      url: API.ApiServer + "policies/import/message",
       body: { "messageId":"1650282926.728623821"},
       headers: {
         authorization,
@@ -35,6 +35,22 @@ context('Policy - Import',{ tags: '@policies' }, () => {
             expect(firstPolicyId).to.equal(secondPolicyId)
             expect(policyStatus).to.equal('PUBLISH')
           })
+      })
+  })
+
+  it('should attempt to import the invalid policy', () => {
+    cy.request({
+      method: 'POST',
+      url: API.ApiServer + "policies/import/message",
+      body: { "messageId":"0000000000.000000000"},
+      headers: {
+        authorization,
+      },
+      failOnStatusCode:false,
+      timeout: 180000
+    })
+      .then(response => {
+        expect(response.status).eql(STATUS_CODE.ERROR);
       })
   })
 })
