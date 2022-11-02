@@ -17,7 +17,6 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
             res.status(200).setHeader('X-Total-Count', 0).json([]);
             return;
         }
-        
         let pageIndex: any;
         let pageSize: any;
         if (req.query && req.query.pageIndex && req.query.pageSize) {

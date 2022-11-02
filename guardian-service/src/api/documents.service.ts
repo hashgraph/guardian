@@ -9,6 +9,7 @@ import {
     IDidObject,
     IVCDocument,
     MessageAPI,
+    PolicyType,
 } from '@guardian/interfaces';
 import { ApiResponse } from '@api/api-response';
 import {
@@ -17,6 +18,7 @@ import {
     MessageError,
     DataBaseHelper
 } from '@guardian/common';
+import { Policy } from '@entity/policy';
 
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
@@ -25,13 +27,13 @@ import {
  * @param didDocumentRepository - table with DID Documents
  * @param vcDocumentRepository - table with VC Documents
  * @param vpDocumentRepository - table with VP Documents
- * @param vc - verification methods VC and VP Documents
  */
 export async function documentsAPI(
     channel: MessageBrokerChannel,
     didDocumentRepository: DataBaseHelper<DidDocument>,
     vcDocumentRepository: DataBaseHelper<VcDocument>,
     vpDocumentRepository: DataBaseHelper<VpDocument>,
+    policyRepository: DataBaseHelper<Policy>,
 ): Promise<void> {
     const getDIDOperation = (operation: DidDocumentStatus) => {
         switch (operation) {
@@ -240,8 +242,28 @@ export async function documentsAPI(
                 otherOptions.limit = _pageSize;
                 otherOptions.offset = _pageIndex * _pageSize;
             }
-            const [vp, count] = await vpDocumentRepository.findAndCount(filters, otherOptions);
-            return new MessageResponse({ vp, count });
+            if (filters?.policyOwner) {
+                const policies = await policyRepository.find({
+                    owner: filters.policyOwner,
+                    status: PolicyType.PUBLISH
+                }, {
+                    fields: ['id', 'owner']
+                });
+                if (policies && policies.length) {
+                    const policyIds = policies.map(p => p.id.toString());
+                    const [vp, count] = await vpDocumentRepository.findAndCount({
+                        where: {
+                            policyId: { $in: policyIds }
+                        }
+                    }, otherOptions);
+                    return new MessageResponse({ vp, count });
+                } else {
+                    return new MessageResponse({ vp: [], count: 0 });
+                }
+            } else {
+                const [vp, count] = await vpDocumentRepository.findAndCount(filters, otherOptions);
+                return new MessageResponse({ vp, count });
+            }
         } else {
             const [vp, count] = await vpDocumentRepository.findAndCount(null, {
                 limit: 100

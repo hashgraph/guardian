@@ -15,18 +15,24 @@ trustchainsAPI.get('/', permissionHelper(UserRole.AUDITOR), async (req: Authenti
         const guardians = new Guardians();
         let pageIndex: any;
         let pageSize: any;
-        let policyId: any;
-        if (req.query && req.query.pageIndex && req.query.pageSize) {
-            pageIndex = req.query.pageIndex;
-            pageSize = req.query.pageSize;
-        }
-        if (req.query && req.query.policyId) {
-            policyId = req.query.policyId;
+        let filters: any;
+        if (req.query) {
+            if (req.query.pageIndex && req.query.pageSize) {
+                pageIndex = req.query.pageIndex;
+                pageSize = req.query.pageSize;
+            }
+            if (req.query.policyId) {
+                filters = {
+                    policyId: req.query.policyId
+                }
+            } else if (req.query.policyOwner) {
+                filters = {
+                    policyOwner: req.query.policyOwner
+                }
+            }
         }
         const { vp, count } = await guardians.getVpDocuments({
-            filters: {
-                policyId,
-            },
+            filters,
             pageIndex,
             pageSize
         });

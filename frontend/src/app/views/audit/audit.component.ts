@@ -29,7 +29,11 @@ export class AuditComponent implements OnInit {
     ];
     dataSource: any[] = [];
     policies: any[] = [];
+    users: any[] = [];
+    _policies: any[] = [];
+    _users: any[] = [];
     currentPolicy: any;
+    currentUser: any;
     pageIndex: number;
     pageSize: number;
     dataCount: any;
@@ -52,11 +56,17 @@ export class AuditComponent implements OnInit {
         this.loadData();
     }
 
-    onFilter() {
+    onFilter(type?: string) {
+        if (type === 'did') {
+            this.updateFilters();
+        } else if (type === 'policyId') {
+
+        }
         this.pageIndex = 0;
         this.router.navigate(['/audit'], {
             queryParams: {
-                policyId: this.currentPolicy ? this.currentPolicy : ''
+                policyId: this.currentPolicy ? this.currentPolicy : '',
+                owner: this.currentUser ? this.currentUser : ''
             }
         });
         this.loadVP();
@@ -75,7 +85,7 @@ export class AuditComponent implements OnInit {
 
     loadVP() {
         this.loading = true;
-        this.auditService.getVpDocuments(this.currentPolicy, this.pageIndex, this.pageSize)
+        this.auditService.getVpDocuments(this.currentPolicy, this.currentUser, this.pageIndex, this.pageSize)
             .subscribe((dataResponse: HttpResponse<any[]>) => {
                 this.dataSource = dataResponse.body || [];
                 this.dataCount = dataResponse.headers.get('X-Total-Count') || this.dataSource.length;
@@ -94,15 +104,21 @@ export class AuditComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 25;
         this.currentPolicy = this.route.snapshot.queryParams['policyId'];
+        this.currentUser = this.route.snapshot.queryParams['owner'];
         forkJoin([
+            this.auth.getStandardRegistries(),
             this.policyEngineService.all(),
-            this.auditService.getVpDocuments(this.currentPolicy, this.pageIndex, this.pageSize)
+            this.auditService.getVpDocuments(this.currentPolicy, this.currentUser, this.pageIndex, this.pageSize)
         ]).subscribe((value) => {
-            const policies: any = value[0];
-            const dataResponse: any = value[1];
-            this.policies = policies;
+            const users: any = value[0];
+            const policies: any = value[1];
+            const dataResponse: any = value[2];
+            this._users = users;
+            this._policies = policies;
             this.dataSource = dataResponse.body || [];
             this.dataCount = dataResponse.headers.get('X-Total-Count') || this.dataSource.length;
+            this.users = this._users?.filter(u => u.did);
+            this.updateFilters();
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -110,6 +126,15 @@ export class AuditComponent implements OnInit {
             this.loading = false;
             console.error(error);
         });
+    }
+
+    updateFilters() {
+        if (this.currentUser) {
+            this.policies = this._policies?.filter(p => p.owner === this.currentUser);
+        } else {
+            this.policies = this._policies;
+        }
+        this.currentPolicy = this.policies.find(p => p.id == this.currentPolicy) || '';
     }
 
     openVP(document: any) {

@@ -15,10 +15,20 @@ export class AuditService {
         private http: HttpClient
     ) { }
 
-    public getVpDocuments(currentPolicy?: any, pageIndex?: number, pageSize?: number): Observable<HttpResponse<IVPDocument[]>> {
+    public getVpDocuments(
+        currentPolicy?: any,
+        owner?: any,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<IVPDocument[]>> {
         let url = `${this.url}`;
         if (currentPolicy) {
             url += `?policyId=${currentPolicy}`;
+            if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+                url += `&pageIndex=${pageIndex}&pageSize=${pageSize}`;
+            }
+        } else if (owner) {
+            url += `?policyOwner=${owner}`;
             if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
                 url += `&pageIndex=${pageIndex}&pageSize=${pageSize}`;
             }

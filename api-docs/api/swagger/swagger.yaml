@@ -2541,6 +2541,11 @@ paths:
           schema:
             type: string
           description: Selected policy ID.
+        - in: query
+          name: policyOwner
+          schema:
+            type: string
+          description: Selected Standard Registry (DID).
       responses:
         200:
           description: Successful operation.

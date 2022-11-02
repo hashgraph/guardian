@@ -1,16 +1,29 @@
 <div class="content">
 
     <div class="actions">
-        <mat-form-field appearance="outline">
-            <mat-label>Policy</mat-label>
-            <mat-select [(value)]="currentPolicy" (selectionChange)="onFilter()">
-                <mat-option value="">All policies</mat-option>
-                <mat-option *ngFor="let policy of policies" [value]="policy.id">
-                    <span>{{policy.name}}</span>
-                    <span> ({{policy.id}})</span>
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
+        <div>
+            <mat-form-field appearance="outline">
+                <mat-label>Standard Registry</mat-label>
+                <mat-select [(value)]="currentUser" (selectionChange)="onFilter('did')">
+                    <mat-option value="">All</mat-option>
+                    <mat-option *ngFor="let user of users" [value]="user.did">
+                        <span>{{user.username}}</span>
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+        <div>
+            <mat-form-field appearance="outline">
+                <mat-label>Policy</mat-label>
+                <mat-select [(value)]="currentPolicy" (selectionChange)="onFilter('policyId')">
+                    <mat-option value="">All policies</mat-option>
+                    <mat-option *ngFor="let policy of policies" [value]="policy.id">
+                        <span>{{policy.name}}</span>
+                        <span> ({{policy.id}})</span>
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
     </div>
 
     <div class="table-container">

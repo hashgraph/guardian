@@ -81,6 +81,12 @@ a[disabled="true"] {
 .actions {
     padding: 12px 10px 0px 12px;
     display: flex;
-    width: 400px;
+    width: 800px;
+}
+
+.actions > div {
+    display: flex;
+    width: 380px;
     flex-direction: column;
+    margin-right: 15px;
 }
