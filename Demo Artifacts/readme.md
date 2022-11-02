@@ -14,7 +14,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - Grain Data Solutions
    - Soil Carbon Coalition
    - GHG Assessment Guideline Soil
-   - RothC
+   - RothC 
    - Microbial-Mineral Carbon Stabilization (MIMICS)
    - Agricultural soils of Western Australia
 4. Nova VER - OCI (Coming soon)
