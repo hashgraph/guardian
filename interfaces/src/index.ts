@@ -57,3 +57,4 @@ export { GroupRelationshipType, GroupAccessType } from './type/user-group.type';
 export * from './type/workers.type';
 export { ArtifactType } from './type/artifact.type';
 export { IArtifact } from './interface/artifact.interface';
+export { TokenType } from './type/token.type';

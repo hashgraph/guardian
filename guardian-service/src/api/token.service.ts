@@ -22,7 +22,7 @@ function getTokenInfo(info: any, token: any) {
         tokenSymbol: token.tokenSymbol,
         tokenType: token.tokenType,
         decimals: token.decimals,
-        policies: null,
+        policyId: token.policyId,
         associated: false,
         balance: null,
         hBarBalance: null,

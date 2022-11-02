@@ -1,16 +1,16 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
+
 /**
- * Settings for block of 'mintDocument' and 'wipeDocument' types.
+ * Settings for block of 'Create Token' type.
  */
 @Component({
-    selector: 'token-confirmation-config',
-    templateUrl: './token-confirmation-config.component.html',
-    styleUrls: ['./token-confirmation-config.component.css'],
-    encapsulation: ViewEncapsulation.Emulated
+    selector: 'create-token-config',
+    templateUrl: './create-token-config.component.html',
+    styleUrls: ['./create-token-config.component.css']
 })
-export class TokenConfirmationConfigComponent implements OnInit {
+export class CreateTokenConfigComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
     @Input('schemas') schemas!: Schema[];
@@ -20,6 +20,7 @@ export class TokenConfirmationConfigComponent implements OnInit {
 
     propHidden: any = {
         main: false,
+        properties: false,
     };
 
     block!: any;
@@ -38,14 +39,11 @@ export class TokenConfirmationConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.block = block.properties;
+        this.block.uiMetaData = this.block.uiMetaData || {};
+        this.block.uiMetaData.type = this.block.uiMetaData.type || 'page';
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
-    }
-
-    onUseTemplateChange() {
-        delete this.block.tokenId;
-        delete this.block.template;
     }
 }

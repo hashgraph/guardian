@@ -88,6 +88,12 @@ export class Policy extends BaseEntity {
     policyTopics?: any[];
 
     /**
+     * Policy tokens
+     */
+    @Property({ nullable: true })
+    policyTokens?: any;
+
+    /**
      * Policy topic id
      */
     @Property({ nullable: true })

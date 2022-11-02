@@ -1,5 +1,12 @@
 import { moveItemInArray } from '@angular/cdk/drag-drop';
-import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, PolicyType, IArtifact } from '@guardian/interfaces';
+import {
+    GenerateUUIDv4,
+    GroupAccessType,
+    GroupRelationshipType,
+    PolicyType,
+    IArtifact,
+    TokenType,
+} from '@guardian/interfaces';
 
 export class PolicyRoleModel {
     private readonly policy: PolicyModel;
@@ -274,6 +281,169 @@ export class PolicyTopicModel {
             static: this.static,
             memo: this.memo,
             memoObj: this.memoObj
+        };
+    }
+
+    public checkChange() {
+        if (this._changed) {
+            this.emitUpdate();
+        }
+    }
+}
+
+export class PolicyTokenModel {
+    private readonly policy: PolicyModel;
+
+    public readonly id: string;
+
+    private _templateTokenTag: string;
+    private _tokenName: string;
+    private _tokenSymbol: string;
+    private _tokenType?: TokenType;
+    private _decimals: string;
+    private _enableAdmin?: boolean | undefined;
+    private _changeSupply?: boolean | undefined;
+    private _enableFreeze?: boolean | undefined;
+    private _enableKYC?: boolean | undefined;
+    private _enableWipe?: boolean | undefined;
+
+    private _changed: boolean;
+
+    constructor(token: any, policy: PolicyModel) {
+        this._changed = false;
+
+        this.policy = policy;
+        this.id = token.id || GenerateUUIDv4();
+
+        this._templateTokenTag = token.templateTokenTag;
+        this._tokenName = token.tokenName;
+        this._tokenSymbol = token.tokenSymbol;
+        this._tokenType = token.tokenType;
+        this._decimals = token.decimals;
+        this._enableAdmin = token.enableAdmin;
+        this._changeSupply = token.changeSupply;
+        this._enableFreeze = token.enableFreeze;
+        this._enableKYC = token.enableKYC;
+        this._enableWipe = token.enableWipe;
+    }
+
+    public get templateTokenTag(): string {
+        return this._templateTokenTag;
+    }
+    public set templateTokenTag(value: string) {
+        this._templateTokenTag = value;
+        this.changed = true;
+    }
+
+    public get tokenName(): string {
+        return this._tokenName;
+    }
+
+    public set tokenName(value: string) {
+        this._tokenName = value;
+        this.changed = true;
+    }
+
+    public get tokenSymbol(): string {
+        return this._tokenSymbol;
+    }
+
+    public set tokenSymbol(value: string) {
+        this._tokenSymbol = value;
+        this.changed = true;
+    }
+
+    public get tokenType(): TokenType | undefined {
+        return this._tokenType;
+    }
+
+    public set tokenType(value: TokenType | undefined) {
+        this._tokenType = value;
+        this.changed = true;
+    }
+
+    public get decimals(): string {
+        return this._decimals;
+    }
+
+    public set decimals(value: string) {
+        this._decimals = value;
+        this.changed = true;
+    }
+
+    public get enableAdmin(): boolean | undefined {
+        return this._enableAdmin;
+    }
+
+    public set enableAdmin(value: boolean | undefined) {
+        this._enableAdmin = value;
+        this.changed = true;
+    }
+
+    public get changeSupply(): boolean | undefined {
+        return this._changeSupply;
+    }
+
+    public set changeSupply(value: boolean | undefined) {
+        this._changeSupply = value;
+        this.changed = true;
+    }
+
+    public get enableFreeze(): boolean | undefined {
+        return this._enableFreeze;
+    }
+
+    public set enableFreeze(value: boolean | undefined) {
+        this._enableFreeze = value;
+        this.changed = true;
+    }
+
+    public get enableKYC(): boolean | undefined {
+        return this._enableKYC;
+    }
+
+    public set enableKYC(value: boolean | undefined) {
+        this._enableKYC = value;
+        this.changed = true;
+    }
+
+    public get enableWipe(): boolean | undefined {
+        return this._enableWipe;
+    }
+
+    public set enableWipe(value: boolean | undefined) {
+        this._enableWipe = value;
+        this.changed = true;
+    }
+
+    public get changed(): boolean {
+        return this._changed;
+    }
+
+    public set changed(value: boolean) {
+        this._changed = value;
+        if (this.policy) {
+            this.policy.changed = true;
+        }
+    }
+
+    public emitUpdate() {
+        this._changed = false;
+        this.policy.emitUpdate();
+    }
+
+    public getJSON(): any {
+        return {
+            templateTokenTag: this.templateTokenTag,
+            tokenName: this.tokenName,
+            tokenSymbol: this.tokenSymbol,
+            tokenType: this.tokenType,
+            decimals: this.decimals,
+            enableAdmin: this.enableAdmin,
+            changeSupply: this.changeSupply,
+            enableFreeze: this.enableFreeze,
+            enableKYC: this.enableKYC,
+            enableWipe: this.enableWipe
         };
     }
 
@@ -752,6 +922,7 @@ export class PolicyModel {
     private _config!: PolicyBlockModel;
     private _policyGroups!: PolicyGroupModel[];
     private _policyTopics!: PolicyTopicModel[];
+    private _policyTokens!: PolicyTokenModel[];
     private _policyRoles!: PolicyRoleModel[];
 
     private _tagMap: { [tag: string]: PolicyBlockModel; } = {};
@@ -858,6 +1029,10 @@ export class PolicyModel {
         return this._policyTopics;
     }
 
+    public get policyTokens(): PolicyTokenModel[] {
+        return this._policyTokens;
+    }
+
     public get policyRoles(): PolicyRoleModel[] {
         return this._policyRoles;
     }
@@ -888,6 +1063,24 @@ export class PolicyModel {
         const index = this._policyTopics.findIndex((c) => c.id == topic.id);
         if (index !== -1) {
             this._policyTopics.splice(index, 1);
+            this.emitUpdate();
+        }
+    }
+
+    public createToken(token: any) {
+        const e = new PolicyTokenModel(token, this);
+        this.addToken(e);
+    }
+
+    public addToken(token: PolicyTokenModel) {
+        this._policyTokens.push(token);
+        this.emitUpdate();
+    }
+
+    public removeToken(token: PolicyTokenModel) {
+        const index = this._policyTokens.findIndex((c) => c.id == token.id);
+        if (index !== -1) {
+            this._policyTokens.splice(index, 1);
             this.emitUpdate();
         }
     }
@@ -994,6 +1187,13 @@ export class PolicyModel {
                 this._policyTopics.push(new PolicyTopicModel(topic, this));
             }
         }
+
+        this._policyTokens = [];
+        if (Array.isArray(policy.policyTokens)) {
+            for (const token of policy.policyTokens) {
+                this._policyTokens.push(new PolicyTokenModel(token, this));
+            }
+        }
     }
 
     private buildBlock(config: any) {
@@ -1078,6 +1278,7 @@ export class PolicyModel {
             createDate: this.createDate,
             policyRoles: Array<string>(),
             policyTopics: Array<any>(),
+            policyTokens: Array<any>(),
             policyGroups: Array<any>(),
             config: null,
         };
@@ -1089,6 +1290,9 @@ export class PolicyModel {
         }
         for (const topic of this._policyTopics) {
             json.policyTopics.push(topic.getJSON());
+        }
+        for (const token of this._policyTokens) {
+            json.policyTokens.push(token.getJSON());
         }
         json.config = this._config.getJSON();
         return json;
