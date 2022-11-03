@@ -41,7 +41,8 @@ import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
 /**
  * Get global topic
  */
-async function getGlobalTopic(): Promise<Topic | null> {
+// tslint:disable-next-line:completed-docs
+async function getGlobalTopic(): Promise<{ topicId: string, key: string} | null> {
     try {
         const topicId = await new DataBaseHelper(Settings).findOne({
             name: 'INITIALIZATION_TOPIC_ID'
@@ -54,7 +55,7 @@ async function getGlobalTopic(): Promise<Topic | null> {
         return {
             topicId: INITIALIZATION_TOPIC_ID,
             key: INITIALIZATION_TOPIC_KEY
-        } as Topic
+        }
     } catch (error) {
         console.log(error);
         return null;

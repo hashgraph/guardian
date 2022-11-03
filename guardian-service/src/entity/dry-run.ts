@@ -176,12 +176,6 @@ export class DryRun extends BaseEntity {
     description?: any;
 
     /**
-     * Topic key
-     */
-    @Property({ nullable: true })
-    key?: any;
-
-    /**
      * Parent
      */
     @Property({ nullable: true })
@@ -236,34 +230,34 @@ export class DryRun extends BaseEntity {
     adminId?: any;
 
     /**
-     * Admin key
+     * Change supply
      */
     @Property({ nullable: true })
-    adminKey?: any;
+    changeSupply?: boolean;
 
     /**
-     * KYC key
+     * Enable admin
      */
     @Property({ nullable: true })
-    kycKey?: any;
+    enableAdmin?: boolean;
 
     /**
-     * Freeze key
+     * Enable KYC
      */
     @Property({ nullable: true })
-    freezeKey?: any;
+    enableKyc?: boolean;
 
     /**
-     * Wipe key
+     * Enable freeze
      */
     @Property({ nullable: true })
-    wipeKey?: any;
+    enableFreeze?: boolean;
 
     /**
-     * Supply key
+     * Enable wipe
      */
     @Property({ nullable: true })
-    supplyKey?: any;
+    enableWipe?: boolean;
 
     /**
      * Setting value

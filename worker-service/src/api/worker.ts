@@ -447,17 +447,14 @@ export class Worker {
                         tokenValue,
                         dryRun,
                         token,
+                        wipeKey,
                         uuid
                     } = task.data;
-
-                    const tokenId = token.tokenId;
-                    const wipeKey = token.wipeKey;
-
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
                     if (token.tokenType === 'non-fungible') {
                         result.error = 'unsupported operation';
                     } else {
-                        await client.wipe(tokenId, targetAccount, wipeKey, tokenValue, uuid);
+                        await client.wipe(token.tokenId, targetAccount, wipeKey, tokenValue, uuid);
                         result.data = {}
                     }
                     break;

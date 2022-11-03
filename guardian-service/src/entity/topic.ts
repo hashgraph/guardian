@@ -39,12 +39,6 @@ export class Topic extends BaseEntity {
     type?: TopicType;
 
     /**
-     * Topic key
-     */
-    @Property({ nullable: true })
-    key?: string;
-
-    /**
      * Parent
      */
     @Property({ nullable: true })

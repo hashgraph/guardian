@@ -44,6 +44,7 @@ import { ipfsAPI } from '@api/ipfs.service';
 import { Workers } from '@helpers/workers';
 import { artifactAPI } from '@api/artifact.service';
 import { Policy } from '@entity/policy';
+import { sendKeysToVault } from '@helpers/send-keys-to-vault';
 
 Promise.all([
     Migration({
@@ -168,4 +169,8 @@ Promise.all([
     await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
 
     await state.updateState(ApplicationStates.READY);
+
+    if (process.env.SEND_KEYS_TO_VAULT?.toLowerCase() === 'true') {
+        await sendKeysToVault(db.em);
+    }
 });

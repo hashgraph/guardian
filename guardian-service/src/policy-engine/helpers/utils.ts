@@ -16,7 +16,7 @@ import {
 } from '@guardian/interfaces';
 import { ExternalEventChannel, IAuthUser } from '@guardian/common';
 import { Schema as SchemaCollection } from '@entity/schema';
-import { AccountId, PrivateKey, TokenId, TopicId } from '@hashgraph/sdk';
+import { PrivateKey, TokenId, TopicId } from '@hashgraph/sdk';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
@@ -253,10 +253,29 @@ export class PolicyUtils {
 
         const workers = new Workers();
 
-        const tokenId = token.tokenId;
-        const supplyKey = token.supplyKey;
         const adminId = token.adminId;
-        const adminKey = token.adminKey;
+        const tokenId = token.tokenId;
+        let supplyKey;
+        let adminKey;
+
+        if (ref.dryRun) {
+            const tokenPK = PrivateKey.generate().toString();
+            supplyKey = tokenPK;
+            adminKey = tokenPK;
+        } else {
+            [adminKey, supplyKey] = await Promise.all([
+                PolicyUtils.wallet.getUserKey(
+                    token.owner,
+                    KeyType.TOKEN_ADMIN_KEY,
+                    token.tokenId
+                ),
+                PolicyUtils.wallet.getUserKey(
+                    token.owner,
+                    KeyType.TOKEN_SUPPLY_KEY,
+                    token.tokenId
+                ),
+            ]);
+        }
 
         if (token.tokenType === 'non-fungible') {
             const data = new Array<string>(Math.floor(tokenValue));
@@ -380,6 +399,11 @@ export class PolicyUtils {
         uuid: string
     ): Promise<void> {
         const workers = new Workers();
+        const wipeKey = await PolicyUtils.wallet.getUserKey(
+            token.owner,
+            KeyType.TOKEN_WIPE_KEY,
+            token.tokenId
+        );
         await workers.addTask({
             type: WorkerTaskType.WIPE_TOKEN,
             data: {
@@ -387,6 +411,7 @@ export class PolicyUtils {
                 hederaAccountKey: root.hederaAccountKey,
                 dryRun: ref.dryRun,
                 token,
+                wipeKey,
                 targetAccount,
                 tokenValue,
                 uuid
@@ -615,12 +640,13 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualFreeze(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
+            const freezeKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId);
             return await workers.addTask({
                 type: WorkerTaskType.FREEZE_TOKEN,
                 data: {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
-                    freezeKey: token.freezeKey,
+                    freezeKey,
                     tokenId: token.tokenId,
                     freeze: true,
                     dryRun: ref.dryRun
@@ -645,12 +671,13 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualUnfreeze(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
+            const freezeKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId);
             return await workers.addTask({
                 type: WorkerTaskType.FREEZE_TOKEN,
                 data: {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
-                    freezeKey: token.freezeKey,
+                    freezeKey,
                     tokenId: token.tokenId,
                     freeze: false,
                     dryRun: ref.dryRun
@@ -675,6 +702,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualGrantKyc(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
+            const kycKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId);
             return await workers.addTask({
                 type: WorkerTaskType.GRANT_KYC_TOKEN,
                 data: {
@@ -682,7 +710,7 @@ export class PolicyUtils {
                     hederaAccountKey: root.hederaAccountKey,
                     userHederaAccountId: user.hederaAccountId,
                     tokenId: token.tokenId,
-                    kycKey: token.kycKey,
+                    kycKey,
                     grant: true,
                     dryRun: ref.dryRun
                 }
@@ -706,6 +734,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualRevokeKyc(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
+            const kycKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId);
             return await workers.addTask({
                 type: WorkerTaskType.GRANT_KYC_TOKEN,
                 data: {
@@ -713,7 +742,7 @@ export class PolicyUtils {
                     hederaAccountKey: root.hederaAccountKey,
                     userHederaAccountId: user.hederaAccountId,
                     tokenId: token.tokenId,
-                    kycKey: token.kycKey,
+                    kycKey,
                     grant: false,
                     dryRun: ref.dryRun
                 }
@@ -733,10 +762,13 @@ export class PolicyUtils {
         tokenTemplate: any,
         user: IHederaAccount
     ): Promise<Token> {
-        let createdToken;
+        let tokenId;
+        const owner = user.did;
+        const policyId = ref.policyId;
+        const adminId = user.hederaAccountId;
         if (!ref.dryRun) {
             const workers = new Workers();
-            createdToken = await workers.addTask({
+            const createdToken = await workers.addTask({
                 type: WorkerTaskType.CREATE_TOKEN,
                 data: {
                     operatorId: user.hederaAccountId,
@@ -744,35 +776,52 @@ export class PolicyUtils {
                     ...tokenTemplate
                 }
             }, 1);
-            createdToken.owner = user.did;
-            createdToken.policyId = ref.policyId;
+            tokenId = createdToken.tokenId;
+
+            const wallet = new Wallet();
+            await Promise.all([
+                wallet.setUserKey(
+                    user.did,
+                    KeyType.TOKEN_ADMIN_KEY,
+                    createdToken.tokenId,
+                    createdToken.adminKey
+                ),
+                wallet.setUserKey(
+                    user.did,
+                    KeyType.TOKEN_FREEZE_KEY,
+                    createdToken.tokenId,
+                    createdToken.freezeKey
+                ),
+                wallet.setUserKey(
+                    user.did,
+                    KeyType.TOKEN_KYC_KEY,
+                    createdToken.tokenId,
+                    createdToken.kycKey
+                ),
+                wallet.setUserKey(
+                    user.did,
+                    KeyType.TOKEN_SUPPLY_KEY,
+                    createdToken.tokenId,
+                    createdToken.supplyKey
+                ),
+                wallet.setUserKey(
+                    user.did,
+                    KeyType.TOKEN_WIPE_KEY,
+                    createdToken.tokenId,
+                    createdToken.wipeKey
+                ),
+            ]);
         } else {
-            const newPrivateKey = PrivateKey.generate();
-            const newAccountId = new AccountId(Date.now());
-            const treasury = {
-                hederaAccountId: newAccountId.toString(),
-                hederaAccountKey: newPrivateKey.toString()
-            };
-            createdToken = {
-                tokenId: new TokenId(Date.now()).toString(),
-                tokenName: tokenTemplate.tokenName,
-                tokenSymbol: tokenTemplate.tokenSymbol,
-                tokenType: tokenTemplate.tokenType,
-                nft: tokenTemplate.tokenType === 'non-fungible',
-                decimals: tokenTemplate.tokenType === 'non-fungible' ? 0 : tokenTemplate.decimals,
-                initialSupply: tokenTemplate.tokenType === 'non-fungible' ? 0 : tokenTemplate.initialSupply,
-                adminId: treasury.hederaAccountId,
-                adminKey: tokenTemplate.enableAdmin ? treasury.hederaAccountKey : null,
-                kycKey: tokenTemplate.enableKYC ? treasury.hederaAccountKey : null,
-                freezeKey: tokenTemplate.enableFreeze ? treasury.hederaAccountKey : null,
-                wipeKey: tokenTemplate.enableWipe ? treasury.hederaAccountKey : null,
-                supplyKey: tokenTemplate.changeSupply ? treasury.hederaAccountKey : null,
-                owner: user.did,
-                policyId: ref.policyId
-            };
+            tokenId = new TokenId(Date.now()).toString();
         }
 
-        return await ref.databaseServer.createToken(createdToken);
+        return await ref.databaseServer.createToken({
+            ...tokenTemplate,
+            tokenId,
+            owner,
+            policyId,
+            adminId
+        });
     }
 
     /**

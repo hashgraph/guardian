@@ -3,6 +3,7 @@ import { MessageAction, MessageServer, TopicMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 import { TopicMemo } from './memo-mappings/topic-memo';
 import { Workers } from '@helpers/workers';
+import { KeyType, Wallet } from '@helpers/wallet';
 
 /**
  * Topic Helper
@@ -99,13 +100,27 @@ export class TopicHelper {
             }
         }, 1);
 
+        const wallet = new Wallet();
+        await Promise.all([
+            wallet.setUserKey(
+                config.owner,
+                KeyType.TOPIC_SUBMIT_KEY,
+                topicId,
+                this.hederaAccountKey
+            ),
+            wallet.setUserKey(
+                config.owner,
+                KeyType.TOPIC_ADMIN_KEY,
+                topicId,
+                this.hederaAccountKey
+            ),
+        ]);
         return {
             topicId,
             name: config.name,
             description: config.description,
             owner: config.owner,
             type: config.type,
-            key: this.hederaAccountKey,
             policyId: config.policyId,
             policyUUID: config.policyUUID
         } as Topic;
@@ -117,7 +132,8 @@ export class TopicHelper {
      * @param parent
      * @param rationale
      */
-    public async oneWayLink(topic: Topic, parent: Topic, rationale: string) {
+    // tslint:disable-next-line:completed-docs
+    public async oneWayLink(topic: Topic, parent: Topic | { topicId: string }, rationale: string) {
         const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);

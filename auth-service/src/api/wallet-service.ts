@@ -1,8 +1,10 @@
+import { User } from '@entity/user';
 import {
     MessageBrokerChannel,
     MessageResponse,
     MessageError,
     Logger,
+    DataBaseHelper,
 } from '@guardian/common';
 import {
     WalletEvents,
@@ -43,6 +45,32 @@ export class WalletService {
 
             try {
                 await this.vault.setKey(token, type, key, value);
+                return new MessageResponse(null);
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.response<any, IGetKeyResponse>(WalletEvents.GET_USER_KEY, async (msg) => {
+            const { did, type, key } = msg;
+
+            try {
+                const user = await new DataBaseHelper(User).findOne({ did });
+                const value = await this.vault.getKey(user.walletToken, type, key);
+                return new MessageResponse({ key: value });
+            } catch (error) {
+                new Logger().error(error, ['AUTH_SERVICE']);
+                return new MessageError(error)
+            }
+        });
+
+        this.channel.response<any, null>(WalletEvents.SET_USER_KEY, async (msg) => {
+            const { did, type, key, value } = msg;
+
+            try {
+                const user = await new DataBaseHelper(User).findOne({ did });
+                await this.vault.setKey(user.walletToken, type, key, value);
                 return new MessageResponse(null);
             } catch (error) {
                 new Logger().error(error, ['AUTH_SERVICE']);
