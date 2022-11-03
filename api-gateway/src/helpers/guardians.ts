@@ -85,8 +85,17 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {IVPDocument[]} - VP Documents
      */
-    public async getVpDocuments(params?: IFilter): Promise<IVPDocument[]> {
-        return await this.request<IVPDocument[]>(MessageAPI.GET_VP_DOCUMENTS, params);
+    public async getVpDocuments(params?: IFilter): Promise<{
+        /**
+         * Return VP Documents
+         */
+        vp: IVPDocument[],
+        /**
+         * Return count
+         */
+        count: number
+    }> {
+        return await this.request<any>(MessageAPI.GET_VP_DOCUMENTS, params);
     }
 
     /**

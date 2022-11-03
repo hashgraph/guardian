@@ -2517,9 +2517,43 @@ paths:
       security:
       - bearerAuth: []
       summary: Returns a list of all VP documents.
+      parameters:
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
+        - in: query
+          name: policyId
+          schema:
+            type: string
+          description: Selected policy ID.
+        - in: query
+          name: policyOwner
+          schema:
+            type: string
+          description: Selected Standard Registry (DID).
       responses:
         200:
           description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
           content:
             application/json:
               schema:

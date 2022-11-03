@@ -43,6 +43,7 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { ipfsAPI } from '@api/ipfs.service';
 import { Workers } from '@helpers/workers';
 import { artifactAPI } from '@api/artifact.service';
+import { Policy } from '@entity/policy';
 
 Promise.all([
     Migration({
@@ -147,6 +148,7 @@ Promise.all([
     const schemaRepository = new DataBaseHelper(Schema);
     const settingsRepository = new DataBaseHelper(Settings);
     const topicRepository = new DataBaseHelper(Topic);
+    const policyRepository = new DataBaseHelper(Policy);
 
     state.updateState(ApplicationStates.INITIALIZING);
 
@@ -155,7 +157,7 @@ Promise.all([
     await tokenAPI(channel, apiGatewayChannel, tokenRepository);
     await loaderAPI(channel, didDocumentRepository, schemaRepository);
     await profileAPI(channel, apiGatewayChannel);
-    await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
+    await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository, policyRepository);
     await demoAPI(channel, apiGatewayChannel, settingsRepository);
     await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
     await artifactAPI(channel);
