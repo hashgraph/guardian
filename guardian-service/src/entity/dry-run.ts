@@ -245,7 +245,7 @@ export class DryRun extends BaseEntity {
      * Enable KYC
      */
     @Property({ nullable: true })
-    enableKyc?: boolean;
+    enableKYC?: boolean;
 
     /**
      * Enable freeze

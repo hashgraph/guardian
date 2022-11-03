@@ -329,7 +329,7 @@ export class DatabaseServer {
             } else {
                 item.tokenMap[token.tokenId] = {
                     frozen: token.enableFreeze ? false : null,
-                    kyc: token.enableKyc ? false : null
+                    kyc: token.enableKYC ? false : null
                 };
                 await new DataBaseHelper(DryRun).update(item);
             }
@@ -337,7 +337,7 @@ export class DatabaseServer {
             const tokenMap = {};
             tokenMap[token.tokenId] = {
                 frozen: token.enableFreeze ? false : null,
-                kyc: token.enableKyc ? false : null
+                kyc: token.enableKYC ? false : null
             };
             await new DataBaseHelper(DryRun).save({
                 dryRunId: this.dryRun,

@@ -60,7 +60,7 @@ export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
             ]);
             const enableAdmin = token.adminKey ? true : false;
             const enableFreeze = token.enableFreeze ? true : false;
-            const enableKyc = token.kycKey ? true : false;
+            const enableKYC = token.kycKey ? true : false;
             const changeSupply = token.supplyKey ? true : false;
             const enableWipe = token.wipeKey ? true : false;
 
@@ -72,7 +72,7 @@ export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
                     $set: {
                         enableAdmin,
                         enableFreeze,
-                        enableKyc,
+                        enableKYC,
                         changeSupply,
                         enableWipe,
                     },
@@ -125,7 +125,7 @@ export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
                     },
                 },
                 {
-                    upsert: false
+                    upsert: false,
                 }
             );
             updatedTopics++;

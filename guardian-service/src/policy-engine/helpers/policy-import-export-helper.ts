@@ -75,6 +75,8 @@ export class PolicyImportExportHelper {
         })));
         zip.folder('tokens')
         for (const token of tokens) {
+            delete token._id;
+            delete token.id;
             delete token.adminId;
             delete token.owner;
             zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
@@ -267,6 +269,8 @@ export class PolicyImportExportHelper {
             const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
             const tokenRepository = new DataBaseHelper(Token);
             for (const token of tokens) {
+                delete token.id;
+                delete token._id;
                 const tokenName = token.tokenName;
                 const tokenSymbol = token.tokenSymbol;
                 const tokenType = token.tokenType;
@@ -278,7 +282,7 @@ export class PolicyImportExportHelper {
                         ? rootHederaAccountKey.toString()
                         : null;
                 const kycKey =
-                    token.enableKYC || token.keyKey
+                    token.enableKYC || token.kycKey
                         ? rootHederaAccountKey.toString()
                         : null;
                 const freezeKey =
@@ -293,7 +297,7 @@ export class PolicyImportExportHelper {
                     token.changeSupply || token.supplyKey
                         ? rootHederaAccountKey.toString()
                         : null;
-                const adminId = root.hederaAccountKey;
+                const adminId = root.hederaAccountId;
                 const owner = root.did;
 
                 const workers = new Workers();
@@ -321,31 +325,31 @@ export class PolicyImportExportHelper {
                     wallet.setUserKey(
                         root.did,
                         KeyType.TOKEN_ADMIN_KEY,
-                        token.tokenId,
+                        tokenId,
                         adminKey
                     ),
                     wallet.setUserKey(
                         root.did,
                         KeyType.TOKEN_FREEZE_KEY,
-                        token.tokenId,
+                        tokenId,
                         freezeKey
                     ),
                     wallet.setUserKey(
                         root.did,
                         KeyType.TOKEN_KYC_KEY,
-                        token.tokenId,
+                        tokenId,
                         kycKey
                     ),
                     wallet.setUserKey(
                         root.did,
                         KeyType.TOKEN_SUPPLY_KEY,
-                        token.tokenId,
+                        tokenId,
                         supplyKey
                     ),
                     wallet.setUserKey(
                         root.did,
                         KeyType.TOKEN_WIPE_KEY,
-                        token.tokenId,
+                        tokenId,
                         wipeKey
                     ),
                 ]);
@@ -353,7 +357,13 @@ export class PolicyImportExportHelper {
                 const tokenObject = tokenRepository.create({
                     ...token,
                     adminId,
-                    owner
+                    enableKYC: !!kycKey,
+                    enableAdmin: !!adminKey,
+                    changeSupply: !!supplyKey,
+                    enableWipe: !!wipeKey,
+                    enableFreeze: !!freezeKey,
+                    owner,
+                    tokenId
                 });
                 await tokenRepository.save(tokenObject);
                 replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenId);

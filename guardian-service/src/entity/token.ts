@@ -66,7 +66,7 @@ export class Token extends BaseEntity implements IToken {
      * Enable KYC
      */
     @Property({ nullable: true })
-    enableKyc?: boolean;
+    enableKYC?: boolean;
 
     /**
      * Enable freeze
