@@ -114,8 +114,6 @@ export class MintBlock {
         const vcs = [].concat(documents, mintVC);
         const vp = await this.createVP(root, uuid, vcs);
 
-        console.log('!!!!! [tokenValue, tokenAmount]', [tokenValue, tokenAmount])
-
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
         ref.log(`Topic Id: ${topicId}`);
         const topic = await PolicyUtils.getTopicById(ref, topicId);
