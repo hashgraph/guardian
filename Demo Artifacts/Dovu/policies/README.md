@@ -8,6 +8,10 @@ Here we have all the policies we are currently building out, the two main focus 
 - Geotree (beta)
 - Grain Data Solution (beta)
 - Soil Carbon Coalition (beta)
+- GHG Assessment Guideline Soil (beta)
+- RothC (beta)
+- Microbial-Mineral Carbon Stabilization (MIMICS) (beta)
+- Agricultural soils of Western Australia (beta)
 
 Inside of each policy folder we have these items:
 
