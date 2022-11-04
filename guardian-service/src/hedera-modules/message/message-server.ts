@@ -28,6 +28,11 @@ import { KeyType, Wallet } from '@helpers/wallet';
  */
 export class MessageServer {
     /**
+     * Key
+     * @private
+     */
+    private submitKey: PrivateKey | string;
+    /**
      * Topic owner
      * @private
      */
@@ -136,10 +141,15 @@ export class MessageServer {
          */
         topicId?: string,
         /**
+         * Owner
+         */
+        owner?: string,
+        /**
          * Key
          */
-        owner?: string
+        key?: string,
     }): MessageServer {
+        this.submitKey = topic.key;
         this.owner = topic.owner;
         this.topicId = topic.topicId;
         return this;
@@ -150,7 +160,8 @@ export class MessageServer {
      * @param topicId
      * @param submitKey
      */
-    public setTopic(topicId: TopicId | string, owner: string): MessageServer {
+    public setTopic(topicId: TopicId | string, owner?: string, submitKey?: PrivateKey | string): MessageServer {
+        this.submitKey = submitKey;
         this.owner = owner;
         this.topicId = topicId;
         return this;
@@ -227,11 +238,13 @@ export class MessageServer {
         message.setLang(MessageServer.lang);
         const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
-        const submitKey = await new Wallet().getUserKey(
-            this.owner,
-            KeyType.TOPIC_SUBMIT_KEY,
-            this.topicId.toString()
-        );
+        const submitKey =
+            this.submitKey ||
+            (await new Wallet().getUserKey(
+                this.owner,
+                KeyType.TOPIC_SUBMIT_KEY,
+                this.topicId.toString()
+            ));
         const id = await new Workers().addTask({
             type: WorkerTaskType.SEND_HEDERA,
             data: {

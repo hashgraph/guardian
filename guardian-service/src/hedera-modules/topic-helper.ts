@@ -87,7 +87,7 @@ export class TopicHelper {
              */
             memoObj?: any
         }
-    ): Promise<Topic> {
+    ): Promise<[Topic, string, string]> {
 
         const workers = new Workers();
         const topicId = await workers.addTask({
@@ -104,26 +104,30 @@ export class TopicHelper {
         await Promise.all([
             wallet.setUserKey(
                 config.owner,
-                KeyType.TOPIC_SUBMIT_KEY,
+                KeyType.TOPIC_ADMIN_KEY,
                 topicId,
                 this.hederaAccountKey
             ),
             wallet.setUserKey(
                 config.owner,
-                KeyType.TOPIC_ADMIN_KEY,
+                KeyType.TOPIC_SUBMIT_KEY,
                 topicId,
                 this.hederaAccountKey
             ),
         ]);
-        return {
-            topicId,
-            name: config.name,
-            description: config.description,
-            owner: config.owner,
-            type: config.type,
-            policyId: config.policyId,
-            policyUUID: config.policyUUID
-        } as Topic;
+        return [
+            {
+                topicId,
+                name: config.name,
+                description: config.description,
+                owner: config.owner,
+                type: config.type,
+                policyId: config.policyId,
+                policyUUID: config.policyUUID,
+            } as Topic,
+            this.hederaAccountKey,
+            this.hederaAccountKey
+        ];
     }
 
     /**

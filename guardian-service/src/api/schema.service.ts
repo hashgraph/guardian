@@ -236,7 +236,7 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
 
     if (!topic) {
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
-        topic = await topicHelper.create({
+        [topic] = await topicHelper.create({
             type: TopicType.SchemaTopic,
             name: TopicType.SchemaTopic,
             description: TopicType.SchemaTopic,

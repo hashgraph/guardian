@@ -56,6 +56,9 @@ export class WalletService {
             const { did, type, key } = msg;
 
             try {
+                if (!did) {
+                    return new MessageResponse({ key: null });
+                }
                 const user = await new DataBaseHelper(User).findOne({ did });
                 const value = await this.vault.getKey(user.walletToken, type, key);
                 return new MessageResponse({ key: value });
@@ -69,6 +72,9 @@ export class WalletService {
             const { did, type, key, value } = msg;
 
             try {
+                if (!did) {
+                    return new MessageResponse(null);
+                }
                 const user = await new DataBaseHelper(User).findOne({ did });
                 await this.vault.setKey(user.walletToken, type, key, value);
                 return new MessageResponse(null);

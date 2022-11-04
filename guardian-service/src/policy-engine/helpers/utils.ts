@@ -885,7 +885,7 @@ export class PolicyUtils {
             const topicAccountId = config.static ? root.hederaAccountId : user.hederaAccountId;
             const topicAccountKey = config.static ? root.hederaAccountKey : user.hederaAccountKey;
             const topicHelper = new TopicHelper(topicAccountId, topicAccountKey, ref.dryRun);
-            topic = await topicHelper.create({
+            [topic] = await topicHelper.create({
                 type: TopicType.DynamicTopic,
                 owner: topicOwner,
                 name: config.name,

@@ -220,7 +220,7 @@ export class PolicyImportExportHelper {
         if (versionOfTopicId) {
             topicRow = await new DataBaseHelper(Topic).findOne({ topicId: versionOfTopicId })
         } else {
-            topicRow = await topicHelper.create({
+            [topicRow] = await topicHelper.create({
                 type: TopicType.PolicyTopic,
                 name: policy.name || TopicType.PolicyTopic,
                 description: policy.topicDescription || TopicType.PolicyTopic,
