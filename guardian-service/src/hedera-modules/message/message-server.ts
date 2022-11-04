@@ -21,16 +21,22 @@ import { Environment } from '../environment';
 import { MessageMemo } from '../memo-mappings/message-memo';
 import { RegistrationMessage } from './registration-message';
 import { TopicMessage } from './topic-message';
+import { KeyType, Wallet } from '@helpers/wallet';
 
 /**
  * Message server
  */
 export class MessageServer {
     /**
-     * Submit key
+     * Key
      * @private
      */
     private submitKey: PrivateKey | string;
+    /**
+     * Topic owner
+     * @private
+     */
+    private owner: string;
     /**
      * Topic ID
      * @private
@@ -135,11 +141,16 @@ export class MessageServer {
          */
         topicId?: string,
         /**
+         * Owner
+         */
+        owner?: string,
+        /**
          * Key
          */
-        key?: string
+        key?: string,
     }): MessageServer {
         this.submitKey = topic.key;
+        this.owner = topic.owner;
         this.topicId = topic.topicId;
         return this;
     }
@@ -149,8 +160,9 @@ export class MessageServer {
      * @param topicId
      * @param submitKey
      */
-    public setTopic(topicId: TopicId | string, submitKey?: PrivateKey | string): MessageServer {
+    public setTopic(topicId: TopicId | string, owner?: string, submitKey?: PrivateKey | string): MessageServer {
         this.submitKey = submitKey;
+        this.owner = owner;
         this.topicId = topicId;
         return this;
     }
@@ -226,12 +238,19 @@ export class MessageServer {
         message.setLang(MessageServer.lang);
         const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
+        const submitKey =
+            this.submitKey ||
+            (await new Wallet().getUserKey(
+                this.owner,
+                KeyType.TOPIC_SUBMIT_KEY,
+                this.topicId.toString()
+            ));
         const id = await new Workers().addTask({
             type: WorkerTaskType.SEND_HEDERA,
             data: {
                 topicId: this.topicId,
                 buffer,
-                submitKey: this.submitKey,
+                submitKey,
                 clientOptions: this.clientOptions,
                 network: Environment.network,
                 localNodeAddress: Environment.localNodeAddress,

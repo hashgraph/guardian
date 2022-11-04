@@ -101,11 +101,50 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
             tokenType
         }
     }, 1, 1);
-    tokenData.owner = root.did;
 
     notifier.completedAndStart('Save token in DB');
-    const tokenObject = tokenRepository.create(tokenData);
+    const tokenObject = tokenRepository.create({
+        ...token,
+        tokenId: tokenData.tokenId,
+        adminId: tokenData.adminId,
+        owner: root.did
+    });
     const result = await tokenRepository.save(tokenObject);
+
+    const wallet = new Wallet();
+    await Promise.all([
+        wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_ADMIN_KEY,
+            tokenData.tokenId,
+            tokenData.adminKey
+        ),
+        wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_FREEZE_KEY,
+            tokenData.tokenId,
+            tokenData.freezeKey
+        ),
+        wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_KYC_KEY,
+            tokenData.tokenId,
+            tokenData.kycKey
+        ),
+        wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_SUPPLY_KEY,
+            tokenData.tokenId,
+            tokenData.supplyKey
+        ),
+        wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_WIPE_KEY,
+            tokenData.tokenId,
+            tokenData.wipeKey
+        )
+    ]);
+
     notifier.completed();
     return result;
 }
@@ -187,6 +226,11 @@ async function grantKycToken(tokenId, username, owner, grant, tokenRepository: D
 
     notifier.completedAndStart(grant ? 'Grant KYC' : 'Revoke KYC');
     const workers = new Workers();
+    const kycKey = await new Wallet().getUserKey(
+        token.owner,
+        KeyType.TOKEN_KYC_KEY,
+        token.tokenId
+    );
     await workers.addTask({
         type: WorkerTaskType.GRANT_KYC_TOKEN,
         data: {
@@ -194,7 +238,7 @@ async function grantKycToken(tokenId, username, owner, grant, tokenRepository: D
             hederaAccountKey: root.hederaAccountKey,
             userHederaAccountId: user.hederaAccountId,
             tokenId,
-            kycKey: token.kycKey,
+            kycKey,
             grant
         }
     }, 10, 1);
@@ -291,12 +335,17 @@ export async function tokenAPI(
             const root = await users.getHederaAccount(owner);
 
             const workers = new Workers();
+            const freezeKey = await new Wallet().getUserKey(
+                token.owner,
+                KeyType.TOKEN_FREEZE_KEY,
+                token.tokenId
+            );
             await workers.addTask({
                 type: WorkerTaskType.FREEZE_TOKEN,
                 data: {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
-                    freezeKey: token.freezeKey,
+                    freezeKey,
                     tokenId,
                     freeze
                 }

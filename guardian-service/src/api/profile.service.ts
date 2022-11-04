@@ -30,7 +30,8 @@ import {
     MessageResponse,
     MessageError,
     Logger,
-    DataBaseHelper
+    DataBaseHelper,
+    IAuthUser
 } from '@guardian/common';
 import { publishSystemSchema } from './schema.service';
 import { Settings } from '@entity/settings';
@@ -41,7 +42,8 @@ import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
 /**
  * Get global topic
  */
-async function getGlobalTopic(): Promise<Topic | null> {
+// tslint:disable-next-line:completed-docs
+async function getGlobalTopic(): Promise<{ topicId: string, key: string} | null> {
     try {
         const topicId = await new DataBaseHelper(Settings).findOne({
             name: 'INITIALIZATION_TOPIC_ID'
@@ -54,7 +56,7 @@ async function getGlobalTopic(): Promise<Topic | null> {
         return {
             topicId: INITIALIZATION_TOPIC_ID,
             key: INITIALIZATION_TOPIC_KEY
-        } as Topic
+        }
     } catch (error) {
         console.log(error);
         return null;
@@ -77,10 +79,10 @@ async function setupUserProfile(username: string, profile: any, notifier: INotif
     let did: string;
     if (user.role === UserRole.STANDARD_REGISTRY) {
         profile.entity = SchemaEntity.STANDARD_REGISTRY;
-        did = await createUserProfile(profile, notifier);
+        did = await createUserProfile(profile, notifier, user);
     } else if (user.role === UserRole.USER) {
         profile.entity = SchemaEntity.USER;
-        did = await createUserProfile(profile, notifier);
+        did = await createUserProfile(profile, notifier, user);
     } else {
         throw new Error('Unknow user role');
     }
@@ -103,7 +105,7 @@ async function setupUserProfile(username: string, profile: any, notifier: INotif
  * @param profile
  * @param notifier
  */
-async function createUserProfile(profile: any, notifier: INotifier): Promise<string> {
+async function createUserProfile(profile: any, notifier: INotifier, user?: IAuthUser): Promise<string> {
     const logger = new Logger();
 
     const {
@@ -115,6 +117,8 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
     } = profile;
 
     let topic: Topic = null;
+    let topicAdminKey = null;
+    let topicSubmitKey = null;
     let newTopic = false;
 
     notifier.start('Resolve topic');
@@ -133,7 +137,7 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
         notifier.info('Create user topic');
         logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
         const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey);
-        topic = await topicHelper.create({
+        [topic, topicAdminKey, topicSubmitKey] = await topicHelper.create({
             type: TopicType.UserTopic,
             name: TopicType.UserTopic,
             description: TopicType.UserTopic,
@@ -293,6 +297,23 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
         topic.owner = didMessage.did;
         topic.parent = globalTopic?.topicId;
         await new DataBaseHelper(Topic).update(topic);
+        if (user) {
+            const wallet = new Wallet();
+            await Promise.all([
+                wallet.setKey(
+                    user.walletToken,
+                    KeyType.TOPIC_SUBMIT_KEY,
+                    topic.topicId,
+                    topicAdminKey
+                ),
+                wallet.setKey(
+                    user.walletToken,
+                    KeyType.TOPIC_ADMIN_KEY,
+                    topic.topicId,
+                    topicSubmitKey
+                ),
+            ]);
+        }
     }
 
     if (globalTopic && newTopic) {

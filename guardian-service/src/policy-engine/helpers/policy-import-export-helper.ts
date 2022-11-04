@@ -22,6 +22,7 @@ import { DatabaseServer } from '@database-modules';
 import { DataBaseHelper } from '@guardian/common';
 import { Workers } from '@helpers/workers';
 import { Artifact } from '@entity/artifact';
+import { KeyType, Wallet } from '@helpers/wallet';
 
 /**
  * Policy import export helper
@@ -74,13 +75,10 @@ export class PolicyImportExportHelper {
         })));
         zip.folder('tokens')
         for (const token of tokens) {
+            delete token._id;
+            delete token.id;
             delete token.adminId;
             delete token.owner;
-            token.adminKey = token.adminKey ? '...' : null;
-            token.kycKey = token.kycKey ? '...' : null;
-            token.wipeKey = token.wipeKey ? '...' : null;
-            token.supplyKey = token.supplyKey ? '...' : null;
-            token.freezeKey = token.freezeKey ? '...' : null;
             zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
         }
         zip.folder('schemas')
@@ -222,7 +220,7 @@ export class PolicyImportExportHelper {
         if (versionOfTopicId) {
             topicRow = await new DataBaseHelper(Topic).findOne({ topicId: versionOfTopicId })
         } else {
-            topicRow = await topicHelper.create({
+            [topicRow] = await topicHelper.create({
                 type: TopicType.PolicyTopic,
                 name: policy.name || TopicType.PolicyTopic,
                 description: policy.topicDescription || TopicType.PolicyTopic,
@@ -271,17 +269,36 @@ export class PolicyImportExportHelper {
             const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
             const tokenRepository = new DataBaseHelper(Token);
             for (const token of tokens) {
+                delete token.id;
+                delete token._id;
                 const tokenName = token.tokenName;
                 const tokenSymbol = token.tokenSymbol;
                 const tokenType = token.tokenType;
                 const nft = tokenType === 'non-fungible';
                 const decimals = nft ? 0 : token.decimals;
                 const initialSupply = nft ? 0 : token.initialSupply;
-                const adminKey = token.adminKey ? rootHederaAccountKey.toString() : null;
-                const kycKey = token.kycKey ? rootHederaAccountKey.toString() : null;
-                const freezeKey = token.freezeKey ? rootHederaAccountKey.toString() : null;
-                const wipeKey = token.wipeKey ? rootHederaAccountKey.toString() : null;
-                const supplyKey = token.supplyKey ? rootHederaAccountKey.toString() : null;
+                const adminKey =
+                    token.enableAdmin || token.adminKey
+                        ? rootHederaAccountKey.toString()
+                        : null;
+                const kycKey =
+                    token.enableKYC || token.kycKey
+                        ? rootHederaAccountKey.toString()
+                        : null;
+                const freezeKey =
+                    token.enableFreeze || token.freezeKey
+                        ? rootHederaAccountKey.toString()
+                        : null;
+                const wipeKey =
+                    token.enableWipe || token.wipeKey
+                        ? rootHederaAccountKey.toString()
+                        : null;
+                const supplyKey =
+                    token.changeSupply || token.supplyKey
+                        ? rootHederaAccountKey.toString()
+                        : null;
+                const adminId = root.hederaAccountId;
+                const owner = root.did;
 
                 const workers = new Workers();
                 const tokenId = await workers.addTask({
@@ -303,20 +320,50 @@ export class PolicyImportExportHelper {
                     }
                 }, 1);
 
+                const wallet = new Wallet();
+                await Promise.all([
+                    wallet.setUserKey(
+                        root.did,
+                        KeyType.TOKEN_ADMIN_KEY,
+                        tokenId,
+                        adminKey
+                    ),
+                    wallet.setUserKey(
+                        root.did,
+                        KeyType.TOKEN_FREEZE_KEY,
+                        tokenId,
+                        freezeKey
+                    ),
+                    wallet.setUserKey(
+                        root.did,
+                        KeyType.TOKEN_KYC_KEY,
+                        tokenId,
+                        kycKey
+                    ),
+                    wallet.setUserKey(
+                        root.did,
+                        KeyType.TOKEN_SUPPLY_KEY,
+                        tokenId,
+                        supplyKey
+                    ),
+                    wallet.setUserKey(
+                        root.did,
+                        KeyType.TOKEN_WIPE_KEY,
+                        tokenId,
+                        wipeKey
+                    ),
+                ]);
+
                 const tokenObject = tokenRepository.create({
-                    tokenId,
-                    tokenName,
-                    tokenSymbol,
-                    tokenType,
-                    decimals,
-                    initialSupply,
-                    adminId: root.hederaAccountId,
-                    adminKey: adminKey ? adminKey.toString() : null,
-                    kycKey: kycKey ? kycKey.toString() : null,
-                    freezeKey: freezeKey ? freezeKey.toString() : null,
-                    wipeKey: wipeKey ? wipeKey.toString() : null,
-                    supplyKey: supplyKey ? supplyKey.toString() : null,
-                    owner: root.did
+                    ...token,
+                    adminId,
+                    enableKYC: !!kycKey,
+                    enableAdmin: !!adminKey,
+                    changeSupply: !!supplyKey,
+                    enableWipe: !!wipeKey,
+                    enableFreeze: !!freezeKey,
+                    owner,
+                    tokenId
                 });
                 await tokenRepository.save(tokenObject);
                 replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenId);

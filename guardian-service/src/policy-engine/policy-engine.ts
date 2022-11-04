@@ -158,7 +158,7 @@ export class PolicyEngine {
             const parent = await DatabaseServer.getTopicByType(owner, TopicType.UserTopic);
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
 
-            let topic = await topicHelper.create({
+            let [topic] = await topicHelper.create({
                 type: TopicType.PolicyTopic,
                 name: model.name || TopicType.PolicyTopic,
                 description: model.topicDescription || TopicType.PolicyTopic,
@@ -449,7 +449,7 @@ export class PolicyEngine {
 
         notifier.completedAndStart('Create topic');
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
-        let rootTopic = await topicHelper.create({
+        let [rootTopic] = await topicHelper.create({
             type: TopicType.InstancePolicyTopic,
             name: model.name || TopicType.InstancePolicyTopic,
             description: model.topicDescription || TopicType.InstancePolicyTopic,
@@ -542,7 +542,7 @@ export class PolicyEngine {
             }
         });
 
-        const rootTopic = await topicHelper.create({
+        const [rootTopic] = await topicHelper.create({
             type: TopicType.InstancePolicyTopic,
             name: model.name || TopicType.InstancePolicyTopic,
             description: model.topicDescription || TopicType.InstancePolicyTopic,

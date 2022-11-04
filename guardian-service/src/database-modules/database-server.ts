@@ -328,16 +328,16 @@ export class DatabaseServer {
                 throw new Error('Token already associated')
             } else {
                 item.tokenMap[token.tokenId] = {
-                    frozen: token.freezeKey ? false : null,
-                    kyc: token.kycKey ? false : null
+                    frozen: token.enableFreeze ? false : null,
+                    kyc: token.enableKYC ? false : null
                 };
                 await new DataBaseHelper(DryRun).update(item);
             }
         } else {
             const tokenMap = {};
             tokenMap[token.tokenId] = {
-                frozen: token.freezeKey ? false : null,
-                kyc: token.kycKey ? false : null
+                frozen: token.enableFreeze ? false : null,
+                kyc: token.enableKYC ? false : null
             };
             await new DataBaseHelper(DryRun).save({
                 dryRunId: this.dryRun,
