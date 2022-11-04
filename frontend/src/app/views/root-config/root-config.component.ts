@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
@@ -13,7 +13,10 @@ import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 
 enum OperationMode {
-    None, Generate, SetProfile
+    None,
+    Generate,
+    SetProfile,
+    RestoreProfile
 }
 
 /**
@@ -25,6 +28,43 @@ enum OperationMode {
     styleUrls: ['./root-config.component.css']
 })
 export class RootConfigComponent implements OnInit {
+    @ViewChild('actionMenu') actionMenu: any;
+
+    get currentKeyAction() {
+        return this.startActions[this.currentKeyActionIndex];
+    }
+    private currentKeyActionIndex = 0;
+    startActions = [
+        {
+            label: 'Next',
+            type: 'next-action',
+            action: () => {
+                this.generated = true;
+            }
+        },
+        {
+            label: 'Restore data',
+            type: 'restore-data',
+            action: () => {
+                const { hederaAccountId, hederaAccountKey } = this.hederaForm.value;
+                this.loading = true;
+                this.headerProps.setLoading(true);
+                this.profileService.restoreProfile({ hederaAccountId, hederaAccountKey }).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
+                    this.operationMode = OperationMode.RestoreProfile;
+                }, (e) => {
+                    this.loading = false;
+                    this.taskId = undefined;
+                })
+            }
+        }
+    ]
+    get showForm(): boolean {
+        return this.currentKeyAction.type === 'next-action'
+    }
+
     isConfirmed: boolean = false;
     isFailed: boolean = false;
     isNewAccount: boolean = true;
@@ -48,6 +88,7 @@ export class RootConfigComponent implements OnInit {
     operationMode: OperationMode = OperationMode.None;
     taskId: string | undefined = undefined;
     expectedTaskMessages: number = 0;
+    generated: boolean;
 
     constructor(
         private auth: AuthService,
@@ -67,6 +108,7 @@ export class RootConfigComponent implements OnInit {
         this.hideVC = {
             id: true
         }
+        this.generated = false;
         this.hederaForm.statusChanges.subscribe(
             (result) => {
                 setTimeout(() => {
@@ -199,6 +241,21 @@ export class RootConfigComponent implements OnInit {
         clearInterval(this.progressInterval)
     }
 
+    onActionMenuClick(event: MouseEvent): void {
+        event.stopPropagation();
+        console.log(this.actionMenu);
+    }
+
+    onActionClick(event: MouseEvent): void {
+        event.preventDefault();
+        this.currentKeyAction.action();
+    }
+
+    onActionChange(actionType: string): void {
+        this.currentKeyActionIndex = this.startActions.findIndex(a => a.type === actionType);
+        console.log('set action type to', actionType);
+    }
+
     randomKey() {
         this.loading = true;
         this.otherService.pushGetRandomKey().subscribe((result) => {
@@ -280,6 +337,10 @@ export class RootConfigComponent implements OnInit {
                         break;
                     }
                     case OperationMode.SetProfile: {
+                        this.loadProfile();
+                        break;
+                    }
+                    case OperationMode.RestoreProfile: {
                         this.loadProfile();
                         break;
                     }

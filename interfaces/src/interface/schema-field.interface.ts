@@ -91,4 +91,9 @@ export interface SchemaField {
      * Enum values
      */
     enum?: string[];
+
+    /**
+     * Comment
+     */
+    comment?: string;
 }

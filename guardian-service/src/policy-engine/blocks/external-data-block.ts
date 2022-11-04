@@ -29,7 +29,8 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
         input: null,
         output: [
             PolicyOutputEventType.RunEvent,
-            PolicyOutputEventType.RefreshEvent
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
     }
@@ -120,7 +121,11 @@ export class ExternalDataBlock {
      * @param data
      */
     @ActionCallback({
-        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
+        ]
     })
     @CatchErrors()
     async receiveData(data: IPolicyDocument) {

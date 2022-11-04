@@ -121,6 +121,10 @@
 .grid-setting::ng-deep .propRow .propRowCell {
     background: #fff;
     position: relative;
+    overflow: hidden;
+    max-width: 333px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .grid-setting::ng-deep .propRow:nth-child(2n) .propRowCell {
@@ -128,8 +132,17 @@
 }
 
 .grid-setting::ng-deep .cellName {
-    width: 160px;
+    width: 155px;
     padding-left: 5px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding-right: 5px;
+    max-width: 155px !important;
+}
+
+.grid-setting::ng-deep .table-body .cellName {
+    line-height: 24px;
 }
 
 .grid-setting::ng-deep .table-body .cellName {
@@ -138,21 +151,41 @@
 
 .grid-setting::ng-deep .subRow .cellName {
     padding-left: 20px;
-    width: 145px;
+    width: 140px;
+    max-width: 140px !important;
 }
 
 .grid-setting::ng-deep .subRow-2 .cellName {
     padding-left: 40px;
-    width: 125px;
+    width: 120px;
+    max-width: 120px !important;
 }
 
 .grid-setting::ng-deep .subRow-3 .cellName {
     padding-left: 60px;
-    width: 105px;
+    width: 100px;
+    max-width: 100px !important;
 }
 
 .grid-setting::ng-deep .subRow-4 .cellName {
     padding-left: 80px;
+    width: 80px;
+    max-width: 80px !important;
+}
+
+.grid-setting::ng-deep .subRow .cellName span {
+    width: 135px;
+}
+
+.grid-setting::ng-deep .subRow-2 .cellName {
+    width: 115px;
+}
+
+.grid-setting::ng-deep .subRow-3 .cellName {
+    width: 95px;
+}
+
+.grid-setting::ng-deep .subRow-4 .cellName {
     width: 85px;
 }
 
@@ -436,16 +469,19 @@
 .grid-setting::ng-deep *[offset="1"] .propRowCell.cellName {
     padding-left: 20px;
     width: 145px;
+    max-width: 145px !important;
 }
 
 .grid-setting::ng-deep *[offset="2"] .propRowCell.cellName {
     padding-left: 40px;
     width: 125px;
+    max-width: 125px !important;
 }
 
 .grid-setting::ng-deep *[offset="3"] .propRowCell.cellName {
     padding-left: 60px;
     width: 105px;
+    max-width: 105px !important;
 }
 
 .block-name {
@@ -475,4 +511,8 @@
     top: -2px;
     left: -4px;
     position: relative;
+}
+
+.ns {
+    user-select: none;
 }

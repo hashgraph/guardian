@@ -8,13 +8,11 @@ import { ModelHelper } from './model-helper';
  */
 export class SchemaHelper {
     /**
-     * Parse Field
+     * Parse Property
      * @param name
      * @param property
-     * @param required
-     * @param url
      */
-    public static parseField(name: string, property: any, required: boolean, url: string): [SchemaField, number] {
+    public static parseProperty(name: string, property: any): SchemaField {
         const field: SchemaField = {
             name: null,
             title: null,
@@ -32,6 +30,7 @@ export class SchemaHelper {
             conditions: null,
             context: null,
             customType: null,
+            comment: null
         };
         let _property = property;
         const readonly = _property.readOnly;
@@ -42,34 +41,50 @@ export class SchemaHelper {
         field.title = _property.title || name;
         field.description = _property.description || name;
         field.isArray = _property.type === SchemaDataTypes.array;
-        const {
-            unit,
-            unitSystem,
-            customType,
-            orderPosition
-        } = SchemaHelper.parseFieldComment(_property.$comment);
+        field.comment = _property.$comment;
         if (field.isArray) {
             _property = _property.items;
         }
         field.isRef = !!(_property.$ref && !_property.type);
         if (field.isRef) {
             field.type = _property.$ref;
+        } else {
+            field.type = _property.type ? String(_property.type) : null;
+            field.format = _property.format ? String(_property.format) : null;
+            field.pattern = _property.pattern ? String(_property.pattern) : null;
+            field.enum = _property.enum;
+            field.remoteLink = _property.$ref;
+        }
+        field.readOnly = !!(_property.readOnly || readonly);
+        return field;
+    }
+
+    /**
+     * Parse Field
+     * @param name
+     * @param property
+     * @param required
+     * @param url
+     */
+    public static parseField(name: string, property: any, required: boolean, url: string): [SchemaField, number] {
+        const field: SchemaField = SchemaHelper.parseProperty(name, property);
+        const {
+            unit,
+            unitSystem,
+            customType,
+            orderPosition
+        } = SchemaHelper.parseFieldComment(field.comment);
+        if (field.isRef) {
             const { type } = SchemaHelper.parseRef(field.type);
             field.context = {
                 type,
                 context: [url]
             };
         } else {
-            field.type = _property.type ? String(_property.type) : null;
-            field.format = _property.format ? String(_property.format) : null;
-            field.pattern = _property.pattern ? String(_property.pattern) : null;
             field.unit = unit ? String(unit) : null;
             field.unitSystem = unitSystem ? String(unitSystem) : null;
             field.customType = customType ? String(customType) : null;
-            field.enum = _property.enum;
-            field.remoteLink = _property.$ref;
         }
-        field.readOnly = !!(_property.readOnly || readonly);
         field.required = required;
         return [field, orderPosition];
     }
@@ -253,7 +268,7 @@ export class SchemaHelper {
                 field.conditions = conditions;
             }
             if (orderPosition) {
-                fieldsWithPositions.push({field, orderPosition});
+                fieldsWithPositions.push({ field, orderPosition });
             } else {
                 fields.push(field);
             }
@@ -262,7 +277,7 @@ export class SchemaHelper {
 
         return fields.concat(
             fieldsWithPositions
-                .sort((a,b) => a.orderPosition - b.orderPosition)
+                .sort((a, b) => a.orderPosition - b.orderPosition)
                 .map(item => item.field)
         );
     }
@@ -340,6 +355,8 @@ export class SchemaHelper {
             let props = {}
 
             SchemaHelper.getFieldsFromObject(element.thenFields, req, props, schema.contextURL);
+            // To prevent including condition field in common required fields
+            element.thenFields?.forEach(item => item.required = false);
             fields.splice(insertingPosition, 0, ...element.thenFields);
             if (Object.keys(props).length > 0) {
                 condition.then = {
@@ -355,6 +372,8 @@ export class SchemaHelper {
             props = {}
 
             SchemaHelper.getFieldsFromObject(element.elseFields, req, props, schema.contextURL);
+            // To prevent including condition field in common required fields
+            element.elseFields?.forEach(item => item.required = false);
             fields.splice(insertingPosition + element.thenFields.length, 0, ...element.elseFields);
             if (Object.keys(props).length > 0) {
                 condition.else = {

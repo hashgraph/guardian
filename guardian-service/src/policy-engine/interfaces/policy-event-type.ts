@@ -8,7 +8,8 @@ export enum PolicyInputEventType {
     RefreshEvent = 'RefreshEvent',
     RunEvent = 'RunEvent',
     ReleaseEvent = 'ReleaseEvent',
-    PopEvent = 'PopEvent'
+    PopEvent = 'PopEvent',
+    RestoreEvent = 'RestoreEvent'
 }
 
 /**
@@ -23,7 +24,8 @@ export enum PolicyOutputEventType {
     CreateGroup = 'CreateGroup',
     JoinGroup = 'JoinGroup',
     SignatureQuorumReachedEvent= 'SignatureQuorumReachedEvent',
-    SignatureSetInsufficientEvent= 'SignatureSetInsufficientEvent'
+    SignatureSetInsufficientEvent= 'SignatureSetInsufficientEvent',
+    ErrorEvent = 'ErrorEvent'
 }
 
 /**

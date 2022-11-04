@@ -17,11 +17,15 @@ export class ArtifactService {
         for (const file of files) {
             formData.append('artifacts', file);
         }
+<<<<<<< HEAD
         return this.http.post<string>(`${this.url}/${policyId}`, formData, {
             params: {
                 policyId
             }
         });
+=======
+        return this.http.post<string>(`${this.url}/${policyId}`, formData);
+>>>>>>> main
     }
 
     public getArtifacts(policyId?: string, pageIndex?: any, pageSize?: any): Observable<HttpResponse<any[]>> {

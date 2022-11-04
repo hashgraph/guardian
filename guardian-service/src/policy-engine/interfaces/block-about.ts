@@ -28,7 +28,9 @@ export enum PropertyType {
     Select = 'Select',
     MultipleSelect = 'MultipleSelect',
     Group = 'Group',
-    Array = 'Array'
+    Array = 'Array',
+    Schemas = 'Schemas',
+    Path = 'Path'
 }
 
 /**
@@ -141,10 +143,34 @@ export interface ArrayProperties extends BlockProperties {
          */
         label: string,
         /**
+         * Minimized text value
+         */
+        value: string,
+        /**
          * Children
          */
         properties: AnyBlockProperties[];
     }
+}
+
+/**
+ * Schemas Properties
+ */
+export interface SchemasProperties extends BlockProperties {
+    /**
+     * Property type
+     */
+    type: PropertyType.Schemas;
+}
+
+/**
+ * Path Properties
+ */
+export interface PathProperties extends BlockProperties {
+    /**
+     * Property type
+     */
+    type: PropertyType.Path;
 }
 
 /**
@@ -156,7 +182,9 @@ export type AnyBlockProperties =
     SelectProperties |
     MultipleSelectProperties |
     GroupProperties |
-    ArrayProperties;
+    ArrayProperties |
+    SchemasProperties |
+    PathProperties;
 
 /**
  * Block about

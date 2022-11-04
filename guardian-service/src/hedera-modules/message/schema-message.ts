@@ -172,7 +172,7 @@ export class SchemaMessage extends Message {
      * Get URL
      */
     public override getUrl(): IURL[] {
-        return this.urls;
+        return this.getUrls();
     }
 
     /**

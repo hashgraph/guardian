@@ -11,9 +11,10 @@ import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@
 export class DocumentPath {
     @Input('value') value!: string;
     @Input('displayTooltip') displayTooltip!: boolean;
-    @Output('valueChange') valueChange = new EventEmitter<string>();
-
     @Input('readonly') readonly!: boolean;
+
+    @Output('valueChange') valueChange = new EventEmitter<string>();
+    @Output('change') change = new EventEmitter<string>();
 
     startPath: string = '';
     endPath: string = '';
@@ -23,8 +24,10 @@ export class DocumentPath {
         { value: "document.", name: "Document" },
         { value: "document.credentialSubject.", name: "Credential Subjects" },
         { value: "document.credentialSubject.0.", name: "First Credential Subjects" },
+        { value: "document.credentialSubject.L.", name: "Last Credential Subjects" },
         { value: "document.verifiableCredential.", name: "Verifiable Credentials" },
         { value: "document.verifiableCredential.0.", name: "First Verifiable Credential" },
+        { value: "document.verifiableCredential.L.", name: "Last Verifiable Credential" },
         { value: "option.", name: "Attributes" },
     ]
 
@@ -34,6 +37,7 @@ export class DocumentPath {
     onChange() {
         this.value = this.startPath + this.endPath;
         this.valueChange.emit(this.value);
+        this.change.emit(this.value);
     }
 
     ngOnChanges(changes: SimpleChanges) {

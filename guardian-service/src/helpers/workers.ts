@@ -29,16 +29,19 @@ export class Workers extends ServiceRequestsBase {
      * Max Repetitions
      * @private
      */
-    private readonly maxRepetitions = 100;
+    private readonly maxRepetitions = 25;
 
     /**
      * Add task
      * @param task
+     * @param priority
+     * @param attempts
      */
-    public addTask(task: ITask, priority: number): Promise<any> {
+    public addTask(task: ITask, priority: number, attempts: number = 0): Promise<any> {
         const taskId = GenerateUUIDv4()
         task.id = taskId;
         task.priority = priority;
+        attempts = attempts > 0 && attempts < this.maxRepetitions ? attempts : this.maxRepetitions;
         this.queue.push(task);
         const result = new Promise((resolve, reject) => {
             this.tasksCallbacks.set(taskId, {
@@ -49,7 +52,7 @@ export class Workers extends ServiceRequestsBase {
                         if (this.tasksCallbacks.has(taskId)) {
                             const callback = this.tasksCallbacks.get(taskId);
                             callback.number++;
-                            if (callback.number > this.maxRepetitions) {
+                            if (callback.number > attempts) {
                                 this.tasksCallbacks.delete(taskId);
                                 reject(error);
                                 return;

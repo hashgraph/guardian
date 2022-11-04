@@ -25,6 +25,11 @@ export class RegistrationMessage extends Message {
      */
     public attributes: { [x: string]: string } | undefined;
 
+    /**
+     * Registrant topicId
+     */
+    public registrantTopicId: string;
+
     constructor(action: MessageAction) {
         super(action, MessageType.StandardRegistry);
     }
@@ -37,7 +42,7 @@ export class RegistrationMessage extends Message {
      */
     public setDocument(did: string, topicId: string, attributes?: any): void {
         this.did = did;
-        this.topicId = topicId;
+        this.registrantTopicId = topicId;
         this.lang = 'en-US';
         this.attributes = attributes || {};
     }
@@ -53,7 +58,7 @@ export class RegistrationMessage extends Message {
             action: this.action,
             lang: this.lang,
             did: this.did,
-            topicId: this.topicId,
+            topicId: this.registrantTopicId,
             attributes: this.attributes
         }
     }
@@ -104,7 +109,7 @@ export class RegistrationMessage extends Message {
         message._id = json.id;
         message._status = json.status;
         message.did = json.did;
-        message.topicId = json.topicId;
+        message.registrantTopicId = json.topicId
         message.lang = json.lang;
         message.attributes = json.attributes || {};
         return message;

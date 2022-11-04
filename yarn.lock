@@ -129,29 +129,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ethersproject/bytes@npm:^5.6.1":
-  version: 5.6.1
-  resolution: "@ethersproject/bytes@npm:5.6.1"
+"@ethersproject/bytes@npm:^5.7.0":
+  version: 5.7.0
+  resolution: "@ethersproject/bytes@npm:5.7.0"
   dependencies:
-    "@ethersproject/logger": ^5.6.0
-  checksum: d06ffe3bf12aa8a6588d99b82e40b46a2cbb8b057fc650aad836e3e8c95d4559773254eeeb8fed652066dcf8082e527e37cd2b9fff7ac8cabc4de7c49459a7eb
+    "@ethersproject/logger": ^5.7.0
+  checksum: 66ad365ceaab5da1b23b72225c71dce472cf37737af5118181fa8ab7447d696bea15ca22e3a0e8836fdd8cfac161afe321a7c67d0dde96f9f645ddd759676621
   languageName: node
   linkType: hard
 
-"@ethersproject/logger@npm:^5.6.0":
-  version: 5.6.0
-  resolution: "@ethersproject/logger@npm:5.6.0"
-  checksum: 6eee38a973c7a458552278971c109a3e5df3c257e433cb959da9a287ea04628d1f510d41b83bd5f9da5ddc05d97d307ed2162a9ba1b4fcc50664e4f60061636c
+"@ethersproject/logger@npm:^5.7.0":
+  version: 5.7.0
+  resolution: "@ethersproject/logger@npm:5.7.0"
+  checksum: 075ab2f605f1fd0813f2e39c3308f77b44a67732b36e712d9bc085f22a84aac4da4f71b39bee50fe78da3e1c812673fadc41180c9970fe5e486e91ea17befe0d
   languageName: node
   linkType: hard
 
-"@ethersproject/rlp@npm:^5.6.0":
-  version: 5.6.1
-  resolution: "@ethersproject/rlp@npm:5.6.1"
+"@ethersproject/rlp@npm:^5.7.0":
+  version: 5.7.0
+  resolution: "@ethersproject/rlp@npm:5.7.0"
   dependencies:
-    "@ethersproject/bytes": ^5.6.1
-    "@ethersproject/logger": ^5.6.0
-  checksum: 43a281d0e7842606e2337b5552c13f4b5dad209dce173de39ef6866e02c9d7b974f1cae945782f4c4b74a8e22d8272bfd0348c1cd1bfeb2c278078ef95565488
+    "@ethersproject/bytes": ^5.7.0
+    "@ethersproject/logger": ^5.7.0
+  checksum: bce165b0f7e68e4d091c9d3cf47b247cac33252df77a095ca4281d32d5eeaaa3695d9bc06b2b057c5015353a68df89f13a4a54a72e888e4beeabbe56b15dda6e
   languageName: node
   linkType: hard
 
@@ -162,36 +162,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@grpc/grpc-js@npm:^1.6.7":
-  version: 1.6.7
-  resolution: "@grpc/grpc-js@npm:1.6.7"
+"@grpc/grpc-js@npm:^1.7.0":
+  version: 1.7.1
+  resolution: "@grpc/grpc-js@npm:1.7.1"
   dependencies:
-    "@grpc/proto-loader": ^0.6.4
+    "@grpc/proto-loader": ^0.7.0
     "@types/node": ">=12.12.47"
-  checksum: 2668b08c2eec433970561384b22cf81443106835077ff1d8b7989cb5519fb7d2284c7a46b6ae94968f3b488ffbd9326ba9b4fbe4971a185d3b89eb0ee99e4fcd
+  checksum: ffa9f051224dcab87dd2e47e21cb6f001d3e18b0e2a8998bdb960fc557aee73000c743f74cabba14bd72db4ed900ee0dd4f1400852b191312a2e0016d9648618
   languageName: node
   linkType: hard
 
-"@grpc/proto-loader@npm:^0.6.4":
-  version: 0.6.12
-  resolution: "@grpc/proto-loader@npm:0.6.12"
+"@grpc/proto-loader@npm:^0.7.0":
+  version: 0.7.3
+  resolution: "@grpc/proto-loader@npm:0.7.3"
   dependencies:
     "@types/long": ^4.0.1
     lodash.camelcase: ^4.3.0
     long: ^4.0.0
-    protobufjs: ^6.10.0
+    protobufjs: ^7.0.0
     yargs: ^16.2.0
   bin:
     proto-loader-gen-types: build/bin/proto-loader-gen-types.js
-  checksum: 19bb53811e650e9a975cafa1e0cb084870235cff957695a38a8429c4a71435d584740c1d780fb51882ff4d4863cb9c81393d4dc25c55f5078be283f5ea5289a9
+  checksum: a37712bca61da8d3b3dbf3fe39fa04447d748fd1f96f0758a1e99ede652b0afdfc17ce8093b596f64e9b685be57214e83821e3795905cc2a410336884458ac6d
   languageName: node
   linkType: hard
 
-"@guardian/common@^2.5.1, @guardian/common@workspace:common":
+"@guardian/common@^2.6.1, @guardian/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
-    "@guardian/interfaces": ^2.5.1
+    "@guardian/interfaces": ^2.6.1
     "@mikro-orm/core": ^5.3.0
     "@mikro-orm/migrations-mongodb": ^5.3.1
     "@mikro-orm/mongodb": ^5.3.0
@@ -209,7 +209,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@guardian/interfaces@^2.5.1, @guardian/interfaces@workspace:interfaces":
+"@guardian/interfaces@^2.6.1, @guardian/interfaces@workspace:interfaces":
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
@@ -221,9 +221,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@hashgraph/cryptography@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@hashgraph/cryptography@npm:1.2.0"
+"@hashgraph/cryptography@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@hashgraph/cryptography@npm:1.4.1"
   dependencies:
     bignumber.js: ^9.0.2
     crypto-js: ^4.1.1
@@ -235,39 +235,49 @@ __metadata:
     expo: ^45.0.3
     expo-crypto: ^10.1.2
     expo-random: ^12.1.2
-  checksum: b8ee5402ac550c4387caf245cef080d001ba8288f5aa2c74bf74e3fdaf05442481aaee4b2c9609d485f8f8362d017a9a2c3d888846fd8c4ba2d8967ffb8f98de
+  peerDependenciesMeta:
+    expo:
+      optional: true
+    expo-crypto:
+      optional: true
+    expo-random:
+      optional: true
+  checksum: 54e159b094a3ae48721ab53ca6e22a8b79101e9efe99492af72f82603a462bfd1e5c77f38c4673744cec3ba69473254cb3447c4ec1553bd33ec01c3f4ed14c35
   languageName: node
   linkType: hard
 
-"@hashgraph/proto@npm:2.5.0":
-  version: 2.5.0
-  resolution: "@hashgraph/proto@npm:2.5.0"
+"@hashgraph/proto@npm:2.10.0":
+  version: 2.10.0
+  resolution: "@hashgraph/proto@npm:2.10.0"
   dependencies:
     long: ^4.0.0
-    protobufjs: ^6.11.2
-  checksum: 46e2fd3f2d83140335f7339ce2fa6e73299b167c6f02c06b2462233c3422af6a8d87b04fcfee64b6ec81286ec0bce949baa853788e97deccd30f05dcef00620a
+    protobufjs: ^6.11.3
+  checksum: 0e94246a6c9fd7bafde9f9f86f0a81a473493ff15742cc3978108c906439ae2ab2e4b38f1af1895286d07974dea5e94193919e5b882d9b37f97abf65aa2e74d3
   languageName: node
   linkType: hard
 
-"@hashgraph/sdk@npm:^2.15.0":
-  version: 2.15.0
-  resolution: "@hashgraph/sdk@npm:2.15.0"
+"@hashgraph/sdk@npm:^2.18.3":
+  version: 2.18.3
+  resolution: "@hashgraph/sdk@npm:2.18.3"
   dependencies:
-    "@ethersproject/rlp": ^5.6.0
-    "@grpc/grpc-js": ^1.6.7
-    "@hashgraph/cryptography": ^1.2.0
-    "@hashgraph/proto": 2.5.0
+    "@ethersproject/rlp": ^5.7.0
+    "@grpc/grpc-js": ^1.7.0
+    "@hashgraph/cryptography": ^1.4.1
+    "@hashgraph/proto": 2.10.0
     axios: ^0.27.2
-    bignumber.js: ^9.0.2
+    bignumber.js: ^9.1.0
     crypto-js: ^4.1.1
     js-base64: ^3.7.2
     js-logger: ^1.6.1
     long: ^4.0.0
-    protobufjs: ^6.11.2
+    protobufjs: ^6.11.3
     utf8: ^3.0.0
   peerDependencies:
     expo: ^45.0.3
-  checksum: a7f986d1812ff52aae2648e650d840ee3f35cf8abac7405604c9800d9077bbc6c71cee98c7e3537b71bd694c4120ec2f6d75b7346ebc7d8ae3139b622bd3fdf2
+  peerDependenciesMeta:
+    expo:
+      optional: true
+  checksum: 8970f19ccb5f66ce7ff2a25d34c83d7d9a98b49915e5c1a8336d74d4bf6a5f8483f08cc798c79896c7794eff32436da82ea4fc15ea30c19cb1ef2b7b236fd7fa
   languageName: node
   linkType: hard
 
@@ -1824,8 +1834,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api-gateway@workspace:api-gateway"
   dependencies:
-    "@guardian/common": ^2.5.1
-    "@guardian/interfaces": ^2.5.1
+    "@guardian/common": ^2.6.1
+    "@guardian/interfaces": ^2.6.1
     "@types/express": ^4.17.13
     "@types/express-fileupload": ^1.4.1
     "@types/jszip": ^3.4.1
@@ -2005,8 +2015,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "auth-service@workspace:auth-service"
   dependencies:
-    "@guardian/common": ^2.5.1
-    "@guardian/interfaces": ^2.5.1
+    "@guardian/common": ^2.6.1
+    "@guardian/interfaces": ^2.6.1
     "@mikro-orm/core": ^5.3.0
     "@mikro-orm/mongodb": ^5.3.0
     "@types/jsonwebtoken": ^8.5.4
@@ -2136,6 +2146,13 @@ __metadata:
   version: 9.0.2
   resolution: "bignumber.js@npm:9.0.2"
   checksum: 8637b71d0a99104b20413c47578953970006fec6b4df796b9dcfd9835ea9c402ea0e727eba9a5ca9f9a393c1d88b6168c5bbe0887598b708d4f8b4870ad62e1f
+  languageName: node
+  linkType: hard
+
+"bignumber.js@npm:^9.1.0":
+  version: 9.1.0
+  resolution: "bignumber.js@npm:9.1.0"
+  checksum: 52ec2bb5a3874d7dc1a1018f28f8f7aff4683515ffd09d6c2d93191343c76567ae0ee32cc45149d53afb2b904bc62ed471a307b35764beea7e9db78e56bef6c6
   languageName: node
   linkType: hard
 
@@ -4372,9 +4389,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "guardian-service@workspace:guardian-service"
   dependencies:
-    "@guardian/common": ^2.5.1
-    "@guardian/interfaces": ^2.5.1
-    "@hashgraph/sdk": ^2.15.0
+    "@guardian/common": ^2.6.1
+    "@guardian/interfaces": ^2.6.1
+    "@hashgraph/sdk": ^2.18.3
     "@mikro-orm/core": ^5.3.0
     "@mikro-orm/mongodb": ^5.3.0
     "@transmute/credentials-context": ^0.7.0-unstable.60
@@ -4943,8 +4960,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "ipfs-client@workspace:ipfs-client"
   dependencies:
-    "@guardian/common": ^2.5.1
-    "@guardian/interfaces": ^2.5.1
+    "@guardian/common": ^2.6.1
+    "@guardian/interfaces": ^2.6.1
     "@types/fs-extra": ^9.0.12
     "@types/js-yaml": ^4.0.3
     "@types/node": ^17.0.13
@@ -6124,8 +6141,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "logger-service@workspace:logger-service"
   dependencies:
-    "@guardian/common": ^2.5.1
-    "@guardian/interfaces": ^2.5.1
+    "@guardian/common": ^2.6.1
+    "@guardian/interfaces": ^2.6.1
     "@mikro-orm/core": ^5.3.0
     "@mikro-orm/mongodb": ^5.3.0
     "@types/fs-extra": ^9.0.12
@@ -6149,6 +6166,13 @@ __metadata:
   version: 4.0.0
   resolution: "long@npm:4.0.0"
   checksum: 16afbe8f749c7c849db1f4de4e2e6a31ac6e617cead3bdc4f9605cb703cd20e1e9fc1a7baba674ffcca57d660a6e5b53a9e236d7b25a295d3855cca79cc06744
+  languageName: node
+  linkType: hard
+
+"long@npm:^5.0.0":
+  version: 5.2.0
+  resolution: "long@npm:5.2.0"
+  checksum: 37aa4e67b9c3eebc6d9d675adcc9d06f06059ca268922a71273de389746bf07f0ff282f9e604d17fdf84c4149099b44e936ea2b621a6c4759a216621afa97efd
   languageName: node
   linkType: hard
 
@@ -6682,7 +6706,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "mrv-sender@workspace:mrv-sender"
   dependencies:
-    "@guardian/common": ^2.5.1
+    "@guardian/common": ^2.6.1
     "@transmute/credentials-context": 0.7.0-unstable.40
     "@transmute/did-context": 0.7.0-unstable.40
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.40
@@ -7558,7 +7582,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"protobufjs@npm:^6.10.0, protobufjs@npm:^6.10.2, protobufjs@npm:^6.11.2":
+"protobufjs@npm:^6.10.2, protobufjs@npm:^6.11.2":
   version: 6.11.2
   resolution: "protobufjs@npm:6.11.2"
   dependencies:
@@ -7579,6 +7603,50 @@ __metadata:
     pbjs: bin/pbjs
     pbts: bin/pbts
   checksum: 80e9d9610c3eb66f9eae4e44a1ae30381cedb721b7d5f635d781fe4c507e2c77bb7c879addcd1dda79733d3ae589d9e66fd18d42baf99b35df7382a0f9920795
+  languageName: node
+  linkType: hard
+
+"protobufjs@npm:^6.11.3":
+  version: 6.11.3
+  resolution: "protobufjs@npm:6.11.3"
+  dependencies:
+    "@protobufjs/aspromise": ^1.1.2
+    "@protobufjs/base64": ^1.1.2
+    "@protobufjs/codegen": ^2.0.4
+    "@protobufjs/eventemitter": ^1.1.0
+    "@protobufjs/fetch": ^1.1.0
+    "@protobufjs/float": ^1.0.2
+    "@protobufjs/inquire": ^1.1.0
+    "@protobufjs/path": ^1.1.2
+    "@protobufjs/pool": ^1.1.0
+    "@protobufjs/utf8": ^1.1.0
+    "@types/long": ^4.0.1
+    "@types/node": ">=13.7.0"
+    long: ^4.0.0
+  bin:
+    pbjs: bin/pbjs
+    pbts: bin/pbts
+  checksum: 4a6ce1964167e4c45c53fd8a312d7646415c777dd31b4ba346719947b88e61654912326101f927da387d6b6473ab52a7ea4f54d6f15d63b31130ce28e2e15070
+  languageName: node
+  linkType: hard
+
+"protobufjs@npm:^7.0.0":
+  version: 7.1.2
+  resolution: "protobufjs@npm:7.1.2"
+  dependencies:
+    "@protobufjs/aspromise": ^1.1.2
+    "@protobufjs/base64": ^1.1.2
+    "@protobufjs/codegen": ^2.0.4
+    "@protobufjs/eventemitter": ^1.1.0
+    "@protobufjs/fetch": ^1.1.0
+    "@protobufjs/float": ^1.0.2
+    "@protobufjs/inquire": ^1.1.0
+    "@protobufjs/path": ^1.1.2
+    "@protobufjs/pool": ^1.1.0
+    "@protobufjs/utf8": ^1.1.0
+    "@types/node": ">=13.7.0"
+    long: ^5.0.0
+  checksum: ae41669b1b0372fb1d49f506f2d1f2b0fb3dc3cece85987b17bcb544e4cef7c8d27f480486cdec324146ad0a5d22a327166a7ea864a9b3e49cc3c92a5d3f6500
   languageName: node
   linkType: hard
 
@@ -9676,9 +9744,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "worker-service@workspace:worker-service"
   dependencies:
-    "@guardian/common": ^2.5.1
-    "@guardian/interfaces": ^2.5.1
-    "@hashgraph/sdk": ^2.15.0
+    "@guardian/common": ^2.6.1
+    "@guardian/interfaces": ^2.6.1
+    "@hashgraph/sdk": ^2.18.3
     "@transmute/credentials-context": ^0.7.0-unstable.60
     "@transmute/did-context": ^0.7.0-unstable.60
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.60

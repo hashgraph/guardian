@@ -8,16 +8,18 @@
 
 html,
 body {
-  height: 100%;
-}
-body {
-  margin: 0;
-  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
-    Helvetica, Arial, "Lucida Grande", sans-serif;
-  font-weight: 300;
+    height: 100%;
 }
 
-.mat-subheading-1,.mat-typography h4 {
+body {
+    margin: 0;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue",
+        Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight: 300;
+}
+
+.mat-subheading-1,
+.mat-typography h4 {
     font-size: 20px;
     line-height: 23px;
     flex: 0 0 190px;
@@ -148,17 +150,17 @@ button.mat-button {
 }
 
 *::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.3);
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 10px;
-    box-shadow: rgba(255,255,255,0.3) 0 0 0 1px;
+    box-shadow: rgba(255, 255, 255, 0.3) 0 0 0 1px;
 }
 
 *:hover::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.45);
+    background: rgba(0, 0, 0, 0.45);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-    background: rgba(0,0,0,0.55);
+    background: rgba(0, 0, 0, 0.55);
 }
 
 .mat-datepicker-content .mat-calendar {
@@ -167,4 +169,29 @@ button.mat-button {
 
 .not-editable-text {
     color: gray;
+}
+
+.error-message-toastr {
+    background-color: #fdebeb !important;
+    border: 1px solid #BD362F !important;
+    color: #9d180d !important;
+    background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA1MTIgNTEyJyB3aWR0aD0nNTEyJyBoZWlnaHQ9JzUxMic+PHBhdGggZmlsbD0ncmdiKDI1MCwyNSw1KScgZD0nTTI1NiA4QzExOSA4IDggMTE5IDggMjU2czExMSAyNDggMjQ4IDI0OCAyNDgtMTExIDI0OC0yNDhTMzkzIDggMjU2IDh6bTEyMS42IDMxMy4xYzQuNyA0LjcgNC43IDEyLjMgMCAxN0wzMzggMzc3LjZjLTQuNyA0LjctMTIuMyA0LjctMTcgMEwyNTYgMzEybC02NS4xIDY1LjZjLTQuNyA0LjctMTIuMyA0LjctMTcgMEwxMzQuNCAzMzhjLTQuNy00LjctNC43LTEyLjMgMC0xN2w2NS42LTY1LTY1LjYtNjUuMWMtNC43LTQuNy00LjctMTIuMyAwLTE3bDM5LjYtMzkuNmM0LjctNC43IDEyLjMtNC43IDE3IDBsNjUgNjUuNyA2NS4xLTY1LjZjNC43LTQuNyAxMi4zLTQuNyAxNyAwbDM5LjYgMzkuNmM0LjcgNC43IDQuNyAxMi4zIDAgMTdMMzEyIDI1Nmw2NS42IDY1LjF6Jy8+PC9zdmc+) !important;
+    box-shadow: 0 0 0px 1px #ffffff, 0 0 8px 1px #999999 !important;
+    margin: 1px 1px 6px 1px !important;
+}
+
+.error-message-toastr .toast-title {
+    color: #fa1905 !important;
+    font-size: 16px !important;
+    margin-bottom: 3px !important;
+}
+
+.error-message-toastr a {
+    color: #126db3 !important;
+    font-weight: 500 !important;
+    padding: 0px 2px !important;
+}
+
+.error-message-toastr .toast-close-button {
+    color: #fa1905 !important;
 }

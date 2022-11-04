@@ -135,7 +135,7 @@ export class VPMessage extends Message {
      * Get URL
      */
     public override getUrl(): IURL {
-        return this.urls[0];
+        return this.getUrls()[0];
     }
 
     /**

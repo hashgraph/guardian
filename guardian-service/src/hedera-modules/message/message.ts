@@ -34,7 +34,7 @@ export abstract class Message {
     /**
      * URLs
      */
-    public urls: IURL[];
+    private urls: IURL[];
     /**
      * Topic ID
      */
@@ -128,7 +128,9 @@ export abstract class Message {
      * @param url
      */
     public setUrls(url: IURL[]): void {
-        this.urls = url;
+        this.urls = url?.filter(u => {
+            return !!u.cid
+        });
     }
 
     /**

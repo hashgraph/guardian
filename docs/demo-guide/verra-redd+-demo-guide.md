@@ -2,7 +2,7 @@
 
 This folder contains a sample file that is referenced in the Demo Usage Guide
 
-1. Sample of Verra REDD Policy (`Verra REDD Policy 2.policy`)
+1. Sample of Verra REDD Policy (`Verra REDD Policy 3 groups (1665667787.019450003).policy`)
 2. Sample Schema design template for Verra REDD Policy (`REDD APD Schema Design Template.xlsx`)
 
 1.The Guardian reference implementation comes with three predefined users:
@@ -17,79 +17,103 @@ This folder contains a sample file that is referenced in the Demo Usage Guide
 
 3\. You'll now be prompted to configure your Verra account. Enter the details and then press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../.gitbook/assets/iREC\_4.2.png)
+![](../.gitbook/assets/Verra\_2.2.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the import button and enter the one of the following Hedera message IDs:
 
 ```
 REDD 1.1.0 = 1661883705.247269744
 REDD 2.2.2 = 1661882417.772439852
+<<<<<<< HEAD
 Verra REDD Policy 3 groups (1663846582.307635866).policy
+=======
+Verra REDD Policy 3 groups (1665667787.019450003).policy
+>>>>>>> main
 ```
 
-![](../.gitbook/assets/verra\_new\_1.png)
+<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
-Once Policy is imported successfully, click on "Publish" button to publish the policy.
+Once Policy is imported successfully, you get two options : Publish and Dry Run mode.
 
-![](../.gitbook/assets/verra\_new\_2.png)
+<figure><img src="../.gitbook/assets/3_2.png" alt=""><figcaption></figcaption></figure>
 
-5\. Click on Verra's profile icon and select "Log Out." We will now go back into the Admin Panel. This time we will select VVB.
+We select publish option to publish the Policy to the Hedera network.
 
-6\. Now, we can click on the Policies tab. This is where the specific actions required by the Policy Workflow will be found. We can click Open button to the right of the Verra Policy, the Verra created.
+<figure><img src="../.gitbook/assets/3_3.png" alt=""><figcaption></figcaption></figure>
 
-![](<../.gitbook/assets/verra\_new\_2.1 (1).png>)
+5\. Click on Standard Registry profile icon and select "Log Out." We will now go back into the Admin Panel. This time we will select VVB. We select Standard Registry in the dropdown, generate Operator ID and Operator Key and submit.
 
-7\. This is where the custom user will be able to assign the role that was created by Verra during the workflow creation process. In our case, we created the custom role of VVB so the user will need to select the VVB role from the drop down.
+<figure><img src="../.gitbook/assets/3_4.png" alt=""><figcaption></figcaption></figure>
 
-![](../.gitbook/assets/verra\_new\_3.png)
+6\. Now, we can click on the Policies tab. This is where the specific actions required by the Policy Workflow will be found. We can click Go button to the right of the Verra Policy, the Verra created.
 
-After selecting the VVB role, we will see the form that is based on the imported Policy. This form is one of the Policy Workflow State Objects. Once you fill out the required information, press the OK button.
+<figure><img src="../.gitbook/assets/3_5.png" alt=""><figcaption></figcaption></figure>
 
-![](../.gitbook/assets/verra\_new\_4.png)
+7\. We have an option to create a group or accept an invite. In this case, we create a new group by selecting VVBs group from the dropdown and adding a Group label as shown below:
 
-8\. The next step of our flow is to log out and sign back in as Verra. Navigate to the Policies tab and click the Open button on the far right. Here you will find the approval actions based on our Policy Workflow required by Verra. You will be able to view the Verifiable Credential prior to approval by selecting the View Document link. Once you are ready to approve the document, you can click on the Approve button.
+<figure><img src="../.gitbook/assets/3_6.png" alt=""><figcaption></figcaption></figure>
 
-![](../.gitbook/assets/verra\_new\_5.png)
+<figure><img src="../.gitbook/assets/3_7.png" alt=""><figcaption></figcaption></figure>
 
-![](../.gitbook/assets/verra\_new\_6.png)
+8\. Once the group is created, we need to create VVB by entering VVB name.
 
-9\. Click on Verra's profile icon and select "Log Out." We will now go back into the Admin Panel. This time we will select Project Proponent.
+<figure><img src="../.gitbook/assets/3_8.png" alt=""><figcaption></figcaption></figure>
 
-10\. This is where the custom user will be able to assign the role that was created by the Verra during the workflow creation process. In our case, we created the custom role of Project Proponent so the user will need to select the Project Proponent role from the drop down.
+Once, VVB name is submitted, its waiting for the approval.
 
-![](../.gitbook/assets/verra\_new\_7.png)
+9\. Now, we logout as VVB and login as Standard Registry and review the document and approve VVB by clicking on Approve button.
 
-After selecting the Project Proponent role, we will see the New Project button. When we click on the button, we get a form, where complete project details need to be added. We have uploaded a [Sample test data](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/REDD%20APD%20Schema%20Design%20Template.xlsx) file in our repo.
+<figure><img src="../.gitbook/assets/3_9.png" alt=""><figcaption></figcaption></figure>
+
+10\. Now we login as Project Proponent and repeat same steps as Step 5, Step 6.
+
+11\. Now, we select Project Proponent from the drop down in the Group and also enter the Group label as shown below.
+
+<figure><img src="../.gitbook/assets/3_10.png" alt=""><figcaption></figcaption></figure>
+
+After creating the group, we will see the New Project button. When we click on the button, we get a form, where complete project details need to be added. We have uploaded a [Sample test data](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/REDD%20APD%20Schema%20Design%20Template.xlsx) file in our repo.
 
 ![](../.gitbook/assets/verra\_new\_8.png)
 
-11\. The next step of our flow is to log out and sign back in as the Verra. Navigate to the Policies tab and click the Open button on the far right. Here you will find the approval actions based on our Policy Workflow required by Verra. You will be able to view the Verifiable Credential prior to approval by selecting the View Document link. Once you are ready to approve the project details, you can click on the Add button.
+12\. The next step of our flow is to log out and sign back in as the Standard Registry. Navigate to the Policies tab and click the Open button on the far right. Here you will find the approval actions based on our Policy Workflow required by Verra. You will be able to view the Verifiable Credential prior to approval by selecting the View Document link. Once you are ready to approve the project details, you can click on the Add button.
 
-![](../.gitbook/assets/verra\_new\_9.png)
+<figure><img src="../.gitbook/assets/3_11.png" alt=""><figcaption></figcaption></figure>
 
-12\. Now, we login as Project Proponent and select VVB from the dropdown of Assign column for Validating the project details.
+13\. Now, we login as Project Proponent and select VVB from the dropdown of Assign column for Validating the project details.
 
-![](../.gitbook/assets/verra\_new\_10.png)
+<figure><img src="../.gitbook/assets/3_12.png" alt=""><figcaption></figcaption></figure>
 
-13\. The next step of our flow is to log out and sign back in as the VVB. Navigate to the Policies tab and click the Open button on the far right. You will be able to see Projects tab, where you can view the Verifiable Credential prior to approval by selecting the View Document link. Once you are ready to approve the project details, you can click on the Validate button.
+14\. The next step of our flow is to log out and sign back in as the VVB. We click on Members tab in the Policy and click on Get Invite button to create an invitation link. This invitation link is created to create VVB member.
 
-![](../.gitbook/assets/verra\_new\_11.png)
+<figure><img src="../.gitbook/assets/3_13.png" alt=""><figcaption></figcaption></figure>
 
-14\. Once the Project is validated, we log out as VVB and login as Project Proponent. Monitoring Report details should be added by clicking on Add Report
+<figure><img src="../.gitbook/assets/3_14.png" alt=""><figcaption></figcaption></figure>
 
-![](../.gitbook/assets/verra\_new\_12.png)
+15\. Now, we create a new user as VVBNew and paste the link under accept invitation section as shown below:
 
-![](../.gitbook/assets/verra\_new\_13.png)
+<figure><img src="../.gitbook/assets/3_15.png" alt=""><figcaption></figcaption></figure>
 
-15\. Now, you log out and login to VVB. You will be able to view the Verifiable Credential by selecting View Document button. Once, you are ready to verify the monitoring report details, you can click on Verify button.
+16\. Once clicked on OK in above screen, we now have an option to sign/ decline the Project. For demo purpose, we click on Sign button to validate the Project.
 
-![](../.gitbook/assets/verra\_new\_14.png)
+<figure><img src="../.gitbook/assets/3_16.png" alt=""><figcaption></figcaption></figure>
 
-16\. Once, Monitoring report is verified, you log out as VVB and login as Verra. Navigate to the Policies tab and click the Open button on the far right. You will be able to see Monitoring Reports tab, where you have an option to click on Mint button.
+{% hint style="info" %}
+Note: If there are more than one VVB, we need atleast 70% consensus to get the finalized decision on the Project to proceed.
+{% endhint %}
 
-![](../.gitbook/assets/verra\_new\_15.png)
+16\. Once the Project is validated, we log out as VVB and login as Project Proponent. Monitoring Report details should be added by clicking on Add Report
 
-17\. Once, Minting process is completed, navigate to the Token History tab, where you have an option of viewing TrustChain. You can view TrustChain by clicking on View TrustChain button.
+<figure><img src="../.gitbook/assets/3_17.png" alt=""><figcaption></figcaption></figure>
+
+17\. Now, you log out and login to VVBNew. You will be able to view the Verifiable Credential by selecting View Document button. Once, you are ready to verify the monitoring report details, you can click on Sign button.
+
+<figure><img src="../.gitbook/assets/3_18.png" alt=""><figcaption></figcaption></figure>
+
+17\. Once, Monitoring report is verified, you log out as VVBNew and login as Standard Registry. Navigate to the Policies tab and click the Open button on the far right. You will be able to see Monitoring Reports tab, where you have an option to click on Mint button.
+
+<figure><img src="../.gitbook/assets/3_19.png" alt=""><figcaption></figcaption></figure>
+
+18\. Once, Minting process is completed, navigate to the Token History tab, where you have an option of viewing TrustChain. You can view TrustChain by clicking on View TrustChain button.
 
 ![](../.gitbook/assets/verra\_new\_16.png)
 

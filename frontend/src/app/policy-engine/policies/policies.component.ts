@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IToken, IUser, UserRole } from '@guardian/interfaces';
-import { ToastrService } from 'ngx-toastr';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -80,7 +79,6 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private dialog: MatDialog,
-        private toastr: ToastrService,
         private taskService: TasksService,
         private informService: InformService
     ) {
@@ -236,12 +234,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                         text.push(`<div>${block.id}: ${error}</div>`);
                     }
                 }
-                this.toastr.error(text.join(''), 'The policy is invalid', {
-                    timeOut: 30000,
-                    closeButton: true,
-                    positionClass: 'toast-bottom-right',
-                    enableHtml: true
-                });
+                this.informService.errorMessage(text.join(''), 'The policy is invalid');
             }
             this.loadAllPolicy();
         }, (e) => {
@@ -287,7 +280,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
             data: {
                 dialogTitle: 'Delete policy',
-                dialogText: !element.previousVersion 
+                dialogText: !element.previousVersion
                     ? 'Are you sure to delete policy with related schemas?'
                     : 'Are you sure to delete policy?'
             },
@@ -297,7 +290,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             if (!result) {
                 return;
             }
-            
+
             this.loading = true;
             this.policyEngineService.pushDelete(element.id).subscribe((result) => {
                 const { taskId, expectation } = result;
@@ -440,16 +433,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                             );
                         }
                     }
-                    this.toastr.error(
-                        text.join(''),
-                        'The policy is invalid',
-                        {
-                            timeOut: 30000,
-                            closeButton: true,
-                            positionClass: 'toast-bottom-right',
-                            enableHtml: true,
-                        }
-                    );
+                    this.informService.errorMessage(text.join(''), 'The policy is invalid');
                 }
                 this.loadAllPolicy();
             }

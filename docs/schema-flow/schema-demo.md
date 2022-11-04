@@ -25,15 +25,15 @@ To create a new System Schemas, click on the **New** button at the top right cor
 
 After clicking on the New button, you will be asked to enter Schema details such as Schema Name, Policy Dropdown, Entity : VC/MRV/NONE, Schema Description and any other required fields.
 
-![](<../.gitbook/assets/image (1) (1) (1).png>)
+![](<../.gitbook/assets/image (2) (3).png>)
 
 In addition to the basic Schema details we also have an option to add Field and Condition to each field.
 
-![](<../.gitbook/assets/image (9) (1).png>)
+![](<../.gitbook/assets/image (3) (3).png>)
 
 We can also customize the Field keys and Field Title by clicking on Advanced Tab.
 
-![](<../.gitbook/assets/image (3) (1) (1).png>)
+![](<../.gitbook/assets/image (27).png>)
 
 There are different types of Field Types:
 
@@ -67,7 +67,7 @@ Each of the above field types can be marked as either Marked or optional by chec
 **Note: Important points to be noted when "Enum" type is selected:**
 
 1. Enum values can be added by editing or by importing it from link or from file.
-2. If we are importing files by URL. The response should be ({"enum": \["Option1", "Option2", "Option3"]}) or has same format such as importing file (Options separated by new line symbol).&#x20;
+2. If we are importing files by URL. The response should be ({"enum": \["Option1", "Option2", "Option3"]}) or has same format such as importing file (Options separated by new line symbol).
 
 Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm](https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm)
 
@@ -76,7 +76,7 @@ Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup
 
 Once the above details are added, click on the Create button.
 
-![](<../.gitbook/assets/image (2) (1) (2).png>)
+![](<../.gitbook/assets/image (10) (2).png>)
 
 Once the System Schema is created, we have options for activating, deleting, editing and viewing JSON documents.
 
@@ -133,7 +133,7 @@ Import from IPFS: You can also import Schema from IPFS by entering the correct S
 1644847084.945541771 (iREC 3 Policy)
 ```
 
-![](<../.gitbook/assets/image (14) (1) (1) (1).png>)
+![](<../.gitbook/assets/image (14) (1) (1).png>)
 
 Once the Schema is imported, we need to select the Policy from the Policy dropdown to connect the Schema and the Policy.
 

@@ -54,8 +54,8 @@ export class DIDMessage extends Message {
             action: this.action,
             lang: this.lang,
             did: this.did,
-            cid: this.urls[0].cid,
-            url: this.urls[0].url
+            cid: this.getUrls()[0]?.cid,
+            url: this.getUrls()[0]?.url
         };
     }
 
@@ -117,7 +117,7 @@ export class DIDMessage extends Message {
      * Get URL
      */
     public override getUrl(): IURL {
-        return this.urls[0];
+        return this.getUrls()[0];
     }
 
     /**

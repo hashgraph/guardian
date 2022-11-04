@@ -113,7 +113,8 @@ export class RegisteredBlocks {
             { type: BlockType.TokenActionBlock },
             { type: BlockType.TokenConfirmationBlock },
             { type: BlockType.DocumentValidatorBlock },
-            { type: BlockType.MultiSignBlock }
+            { type: BlockType.MultiSignBlock },
+            { type: BlockType.SplitBlock }
         ];
 
         // Main, UI Components
@@ -334,6 +335,14 @@ export class RegisteredBlocks {
                 group: BlockGroup.UnGrouped
             }]
         });
+        this.registerBlock({
+            type: BlockType.SplitBlock,
+            icon: 'content_cut',
+            group: BlockGroup.Documents,
+            header: BlockHeaders.ServerBlocks,
+            factory: null,
+            property: null,
+        });
 
         // Documents, Addons
         this.registerBlock({
@@ -430,6 +439,9 @@ export class RegisteredBlocks {
             allowedChildren: [{
                 type: BlockType.CalculateMathAddon,
                 group: BlockGroup.UnGrouped,
+            },{
+                type: BlockType.CalculateMathVariables,
+                group: BlockGroup.UnGrouped,
             }]
         });
         this.registerBlock({
@@ -449,6 +461,14 @@ export class RegisteredBlocks {
             header: BlockHeaders.Addons,
             factory: null,
             property: CalculateMathConfigComponent,
+        });
+        this.registerBlock({
+            type: BlockType.CalculateMathVariables,
+            icon: '123',
+            group: BlockGroup.Calculate,
+            header: BlockHeaders.Addons,
+            factory: null,
+            property: null,
         });
 
         // Report, UIComponents

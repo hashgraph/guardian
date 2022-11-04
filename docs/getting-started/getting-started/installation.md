@@ -334,9 +334,19 @@ npm run test
 
 ### Launching the Guardian
 
-Once [http://localhost:3000](http://localhost:3000) is launched, we need to initialize Standard Registry by completing the Setup.
+Once [http://localhost:3000](http://localhost:3000) is launched, we need to first generate Operator ID and Operator Key by clicking on Generate button as shown below:
 
-![](<../../.gitbook/assets/image (23) (1).png>)
+<figure><img src="../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
+
+Once you generated Operator ID and Operator Key, we can either click on Next or restore the Data, by selecting Restore Data from the Next button dropdown to setup Registry as shown below.
+
+**Note**: Restore Data can be restored from Hedera if data is available for setting up the Registry.
+
+<figure><img src="../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
+
+If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
+
+![](<../../.gitbook/assets/image (14).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
@@ -345,6 +355,7 @@ The Format of the Standard Registry Hello World Message is as follows:
 ```
 {
 	'type': 'Standard Registry',
+	'status':'ISSUE'
 	'id': '35c5d340-1a93-475d-9659-818bb77d45df',
 	'did': 'did:hedera:testnet:vzN41A2bMhvYGhg7oCMoo5UAzQ6PCTq4VTQaNPE1uPG;hedera:testnet:tid=0.0.3423402',
 	'action': 'Init',
@@ -366,6 +377,7 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | Parameter | Purpose                            | Example                                                        |
 | --------- | ---------------------------------- | -------------------------------------------------------------- |
 | type      | Account Type                       | Standard Registry                                              |
+| status    | status of the message              | ISSUE                                                          |
 | id        | Message ID                         | 35c5d340-1a93-475d-9659-818bb77d45df                           |
 | did       | Hedera DID                         | did:hedera:testnet:vzN41A2bMhvYGhg7oCMoo5UAzQ6PCTq4VTQaNPE1uPG |
 | action    | Action Type                        | Init                                                           |

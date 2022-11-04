@@ -32,7 +32,8 @@ import { DatabaseServer } from '@database-modules';
         ],
         output: [
             PolicyOutputEventType.RunEvent,
-            PolicyOutputEventType.RefreshEvent
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
     }
@@ -51,7 +52,11 @@ export class CustomLogicBlock {
      * @param {IPolicyEvent} event
      */
     @ActionCallback({
-        output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
+        output: [
+            PolicyOutputEventType.RunEvent,
+            PolicyOutputEventType.RefreshEvent,
+            PolicyOutputEventType.ErrorEvent
+        ]
     })
     @CatchErrors()
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {
@@ -119,6 +124,11 @@ export class CustomLogicBlock {
                         };
                         if (ref.dryRun) {
                             VCHelper.addDryRunContext(vcSubject);
+                        }
+
+                        const res = await VCHelper.verifySubject(vcSubject);
+                        if (!res.ok) {
+                            throw new Error(JSON.stringify(res.error));
                         }
                         const newVC = await VCHelper.createVC(
                             root.did,

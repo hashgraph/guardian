@@ -6,6 +6,12 @@
         <form *ngIf="schema" [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-{{type}}">
             <h1 *ngIf="title" mat-dialog-title>{{title}}</h1>
             <div *ngIf="description" class="description">{{description}}</div>
+            <div *ngIf="restoreData" class="restore-data">
+                <mat-icon>info</mat-icon><b>There is some data to restore. You can restore latest values:</b>
+                <button mat-raised-button aria-label="Restore Values" type="button" (click)="onRestoreClick()">
+                    Restore Values<mat-icon>restore</mat-icon>
+                </button>
+            </div>
             <div class="schema-form">
                 <app-schema-form [formGroup]="dataForm" [schema]="schema" [private-fields]="hideFields"
                     [preset]="presetDocument">
@@ -27,6 +33,12 @@
         <h1 mat-dialog-title>{{data.dialogContent}}</h1>
         <div class="description">
             {{description}}
+        </div>
+        <div *ngIf="restoreData" class="restore-data">
+            <mat-icon>info</mat-icon><b>There is some data to restore. You can restore latest values:</b>
+            <button mat-raised-button aria-label="Restore Values" type="button" (click)="onRestoreClick()">
+                Restore Values<mat-icon>restore</mat-icon>
+            </button>
         </div>
         <div *ngIf="data.schema" mat-dialog-content class="body-dialog-template">
             <div *ngIf="dialogLoading || disabled" class="loading-dialog">

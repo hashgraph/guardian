@@ -26,6 +26,7 @@ export class SchemaDialog {
     valid: boolean = true;
     extended: boolean = false;
     fields: any[] = [];
+    restoreData: any = null;
 
     constructor(
         public dialogRef: MatDialogRef<SchemaDialog>,
@@ -41,6 +42,14 @@ export class SchemaDialog {
     }
 
     ngOnInit(): void {
+        const restoreData = localStorage.getItem('restoreSchemaData');
+        if (restoreData) {
+            try {
+                this.restoreData = JSON.parse(restoreData);
+            } catch {
+                this.restoreData = null;
+            }
+        }
         setTimeout(() => {
             this.started = true;
         });
@@ -56,6 +65,7 @@ export class SchemaDialog {
 
     onCreate() {
         const schema = this.schemaControl?.getSchema();
+        localStorage.setItem('restoreSchemaData', JSON.stringify(schema));
         this.dialogRef.close(schema);
     }
 
@@ -70,5 +80,10 @@ export class SchemaDialog {
 
     drop(event: CdkDragDrop<any[]>) {
         moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    }
+
+    onRestoreClick() {
+        this.scheme = this.restoreData;
+        this.restoreData = null;
     }
 }

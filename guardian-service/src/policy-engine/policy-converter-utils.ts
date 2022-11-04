@@ -21,9 +21,40 @@ export class PolicyConverterUtils {
             return policy;
         }
 
-        policy.config = PolicyConverterUtils.BlockConverter(policy.config);
+        policy.config = PolicyConverterUtils.BlockConverter(policy.config, policy.codeVersion);
         policy.codeVersion = PolicyConverterUtils.VERSION;
         return policy;
+    }
+
+    /**
+     * Compare versions
+     * @param v1 First version
+     * @param v2 Second Version
+     */
+    public static versionCompare(v1: string, v2: string) {
+        if (!v2) {
+            return 1;
+        }
+        const v1parts = v1.split('.').map(e=>parseInt(e, 10));
+        const v2parts = v2.split('.').map(e=>parseInt(e, 10));
+        for (let i = 0; i < v1parts.length; ++i) {
+            if (v2parts.length === i) {
+                return 1;
+            }
+            if (v1parts[i] === v2parts[i]) {
+                continue;
+            }
+            else if (v1parts[i] > v2parts[i]) {
+                return 1;
+            }
+            else {
+                return -1;
+            }
+        }
+        if (v1parts.length !== v2parts.length) {
+            return -1;
+        }
+        return 0;
     }
 
     /**
@@ -38,21 +69,28 @@ export class PolicyConverterUtils {
      */
     private static BlockConverter(
         block: any,
+        policyVersion: string,
         parent?: any,
         index?: any,
         next?: any,
         prev?: any
     ): any {
-
-        block = PolicyConverterUtils.v1_0_0(block, parent, index, next, prev);
-        block = PolicyConverterUtils.v1_1_0(block, parent, index, next, prev);
-        block = PolicyConverterUtils.v1_2_0(block, parent, index, next, prev);
-        block = PolicyConverterUtils.v1_3_0(block, parent, index, next, prev);
-
+        if (PolicyConverterUtils.versionCompare('1.0.0', policyVersion) > 0) {
+            block = PolicyConverterUtils.v1_0_0(block, parent, index, next, prev);
+        }
+        if (PolicyConverterUtils.versionCompare('1.1.0', policyVersion) > 0) {
+            block = PolicyConverterUtils.v1_1_0(block, parent, index, next, prev);
+        }
+        if (PolicyConverterUtils.versionCompare('1.2.0', policyVersion) > 0) {
+            block = PolicyConverterUtils.v1_2_0(block, parent, index, next, prev);
+        }
+        if (PolicyConverterUtils.versionCompare('1.3.0', policyVersion) > 0) {
+            block = PolicyConverterUtils.v1_3_0(block, parent, index, next, prev);
+        }
         if (block.children && block.children.length) {
             for (let i = 0; i < block.children.length; i++) {
                 block.children[i] = PolicyConverterUtils.BlockConverter(
-                    block.children[i], block, i, block.children[i + 1], block.children[i - 1]
+                    block.children[i], policyVersion, block, i, block.children[i + 1], block.children[i - 1]
                 );
             }
         }

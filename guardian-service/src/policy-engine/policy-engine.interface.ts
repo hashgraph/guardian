@@ -556,7 +556,7 @@ export interface IPolicyCalculateAddon extends IPolicyBlock {
      * Run logic
      * @param scope
      */
-    run(scope: any): Promise<any>;
+    run(scope: any, user: IPolicyUser): Promise<any>;
 
     /**
      * Get variables

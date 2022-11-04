@@ -18,80 +18,102 @@ export class HandleErrorsService implements HttpInterceptor {
     ) {
     }
 
-    messageToText(message: any) {
+    private messageToText(message: any) {
         if (typeof message === 'object') {
             return JSON.stringify(message, null, 2);
         }
         return message;
     }
 
+    private async getMessage(error: any) {
+        let header = 'Other Error';
+        let text = 'Unknown error';
+        let warning = false;
+
+        if (!error.error) {
+            return { warning, text, header };
+        }
+
+        if (typeof error.error === 'string') {
+            const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
+            header = `${error.status} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : error.statusText}`;
+            if (error.message) {
+                text = `<div>${translatedMessage.text}</div><div>${this.messageToText(error.error)}</div>`;
+            } else {
+                text = `${error.error}`;
+            }
+            return { warning, text, header };
+        }
+
+        warning = error.error.code === 0;
+
+        if (typeof error.error === 'object') {
+            if (typeof error.error.text == 'function') {
+                try {
+                    const e = await error.error.text();
+                    const _error = JSON.parse(e);
+                    const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(_error.message));
+                    const header = `${_error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
+                    let text;
+                    if (_error.message) {
+                        text = `<div>${translatedMessage.text}</div><div>${this.messageToText(_error.error)}</div>`;
+                    } else {
+                        text = `${_error.error}`;
+                    }
+                    return { warning, text, header };
+                } catch (a) {
+                    return { warning, text, header };
+                }
+            } else {
+                const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.error.message));
+                if (error.error.uuid) {
+                    text = `<div>${this.messageToText(translatedMessage.text)}</div><div>${error.error.uuid}</div>`;
+                } else {
+                    text = `${this.messageToText(translatedMessage.text)}`;
+                }
+                if (error.error.type) {
+                    header = `${error.error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : error.error.type}`;
+                } else {
+                    header = `${error.error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
+                }
+                return { warning, text, header };
+            }
+        }
+
+        const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
+        header = `${error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
+        text = `${translatedMessage.text}`;
+
+        return { warning, text, header };
+    }
+
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(req).pipe(
-            catchError((error) => {
+            catchError((error: any) => {
                 console.error(error);
-                let header = "";
-                let text = "";
-                if (typeof error.error === 'string') {
-                    const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
-                    header = `${error.status} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : error.statusText}`;
-                    if (error.message) {
-                        text = `<div>${translatedMessage.text}</div><div>${this.messageToText(error.error)}</div>`;
-                    } else {
-                        text = `${error.error}`;
-                    }
-                } else if (typeof error.error === 'object') {
-                    if (typeof error.error.text == 'function') {
-                        error.error.text().then((e: string) => {
-                            const error = JSON.parse(e);
-                            const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
-                            const header = `${error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
-                            let text;
-                            if (error.message) {
-                                text = `<div>${translatedMessage.text}</div><div>${this.messageToText(error.error)}</div>`;
-                            } else {
-                                text = `${error.error}`;
-                            }
-                            this.toastr.error(text, header, {
-                                timeOut: 30000,
-                                closeButton: true,
-                                positionClass: 'toast-bottom-right',
-                                enableHtml: true
-                            });
+                this.getMessage(error).then((result) => {
+                    if (result.warning) {
+                        this.toastr.warning(result.text, 'Waiting for initialization', {
+                            timeOut: 30000,
+                            closeButton: true,
+                            positionClass: 'toast-bottom-right',
+                            enableHtml: true
                         });
-                        return throwError(error.message);
-                    }
-                    const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.error.message));
-
-                    if (error.error.uuid) {
-                        text = `<div>${this.messageToText(translatedMessage.text)}</div><div>${error.error.uuid}</div>`;
                     } else {
-                        text = `${this.messageToText(translatedMessage.text)}`;
+                        const body = `
+                            <div>${result.text}</div>
+                            <div>See <a style="color: #0B73F8" href="/admin/logs?message=${btoa(result.text)}">logs</a> for details.</div>
+                        `;
+                        this.toastr.error(body, result.header, {
+                            timeOut: 100000,
+                            extendedTimeOut: 30000,
+                            closeButton: true,
+                            positionClass: 'toast-bottom-right',
+                            toastClass: 'ngx-toastr error-message-toastr',
+                            enableHtml: true,
+                        });
                     }
-                    if (error.error.type) {
-                        header = `${error.error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : error.error.type}`;
-                    } else {
-                        header = `${error.error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
-                    }
-                } else {
-                    const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
-                    header = `${error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
-                    text = `${translatedMessage.text}`;
-                }
-                if (error.error.code === 0) {
-                    this.toastr.warning(text, 'Waiting for initialization', {
-                        timeOut: 30000,
-                        closeButton: true,
-                        positionClass: 'toast-bottom-right',
-                        enableHtml: true
-                    });
-                    return throwError(error.message);
-                }
-                this.toastr.error(text, header, {
-                    timeOut: 30000,
-                    closeButton: true,
-                    positionClass: 'toast-bottom-right',
-                    enableHtml: true
-                });
+                })
                 return throwError(error.message);
             })
         );

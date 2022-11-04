@@ -119,6 +119,26 @@ profileAPI.put('/push/:username', async (req: AuthenticatedRequest, res: Respons
     res.status(200).send({ taskId, expectation });
 });
 
+profileAPI.put('/restore/:username', async (req: AuthenticatedRequest, res: Response) => {
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Restore user profile');
+
+    const profile: any = req.body;
+    const username: string = req.user.username;
+
+    setImmediate(async () => {
+        try {
+            const guardians = new Guardians();
+            await guardians.restoreUserProfileCommonAsync(username, profile, taskId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
+        }
+    })
+
+    res.status(200).send({ taskId, expectation });
+})
+
 profileAPI.get('/:username/balance', async (req: Request, res: Response) => {
     try {
         const guardians = new Guardians();

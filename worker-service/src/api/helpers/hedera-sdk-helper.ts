@@ -222,7 +222,6 @@ export class HederaSDKHelper {
         supplyKey: PrivateKey
     ): Promise<string> {
         const client = this.client;
-
         let transaction = new TokenCreateTransaction()
             .setTokenName(name)
             .setTokenSymbol(symbol)
@@ -251,7 +250,13 @@ export class HederaSDKHelper {
         }
         transaction = transaction.freezeWith(client);
 
-        const signTx = await (await transaction.sign(adminKey)).sign(treasury.key);
+        let signTx: Transaction = transaction;
+        if(adminKey) {
+            signTx = await signTx.sign(adminKey);
+        }
+        if(treasury.key) {
+            signTx = await signTx.sign(treasury.key);
+        }
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenCreateTransaction');
         const tokenId = receipt.tokenId;
 
@@ -812,28 +817,40 @@ export class HederaSDKHelper {
          */
         message: string
     }[]> {
-        const res = await axios.get(`${Environment.HEDERA_TOPIC_API}${topicId}/messages`, {
-            params: { limit: Number.MAX_SAFE_INTEGER },
-            responseType: 'json'
-        });
-
-        if (!res || !res.data || !res.data.messages) {
-            throw new Error(`Invalid topicId '${topicId}'`);
-        }
-
+        let goNext = true;
+        let url = `${Environment.HEDERA_TOPIC_API}${topicId}/messages`;
         const result = [];
-        const messages = res.data.messages;
-        if (messages.length === 0) {
-            return result;
+        const p = {
+            params: {limit: Number.MAX_SAFE_INTEGER},
+            responseType: 'json'
         }
 
-        for (const m of messages) {
-            const buffer = Buffer.from(m.message, 'base64').toString();
-            const id = m.consensus_timestamp;
-            result.push({
-                id,
-                message: buffer
-            });
+        while (goNext) {
+            const res = await axios.get(url, p as any);
+            delete p.params
+
+            if (!res || !res.data || !res.data.messages) {
+                throw new Error(`Invalid topicId '${topicId}'`);
+            }
+
+            const messages = res.data.messages;
+            if (messages.length === 0) {
+                return result;
+            }
+
+            for (const m of messages) {
+                const buffer = Buffer.from(m.message, 'base64').toString();
+                const id = m.consensus_timestamp;
+                result.push({
+                    id,
+                    message: buffer
+                });
+            }
+            if (res.data.links?.next) {
+                url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
+            } else {
+                goNext = false;
+            }
         }
 
         return result;

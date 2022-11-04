@@ -4,8 +4,8 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
-import { AnyBlockType, IPolicyDocument, IPolicyRequestBlock, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
 import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-modules';
@@ -30,6 +30,7 @@ import { IPolicyUser } from '@policy-engine/policy-user';
         input: [
             PolicyInputEventType.RunEvent,
             PolicyInputEventType.RefreshEvent,
+            PolicyInputEventType.RestoreEvent
         ],
         output: [
             PolicyOutputEventType.RunEvent,
@@ -158,6 +159,7 @@ export class RequestVcDocumentBlock {
 
         const schema = await this.getSchema();
         const sources = await ref.getSources(user);
+        const restoreData = this.state[user.id] && this.state[user.id].restoreData;
 
         return {
             id: ref.uuid,
@@ -168,7 +170,8 @@ export class RequestVcDocumentBlock {
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || [],
             active: this.getActive(user),
-            data: sources && sources.length && sources[0] || null
+            data: sources && sources.length && sources[0] || null,
+            restoreData
         };
     }
 
@@ -197,6 +200,10 @@ export class RequestVcDocumentBlock {
     async setData(user: IPolicyUser, _data: IPolicyDocument): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         ref.log(`setData`);
+
+        if (this.state.hasOwnProperty(user.id)) {
+            delete this.state[user.id].restoreData;
+        }
 
         if (!user.did) {
             throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
@@ -278,6 +285,30 @@ export class RequestVcDocumentBlock {
         }
 
         return {};
+    }
+
+    /**
+     * Save data to restore
+     * @param event Event
+     * @returns
+     */
+    @ActionCallback({
+        type: PolicyInputEventType.RestoreEvent
+    })
+    async restoreAction(event: IPolicyEvent<IPolicyEventState>) {
+        const user = event?.user;
+        const vcDocument = event?.data?.data;
+        if (!vcDocument || !user) {
+            return;
+        }
+        let blockState: any;
+        if (!this.state.hasOwnProperty(user.id)) {
+            blockState = {};
+            this.state[user.id] = blockState;
+        } else {
+            blockState = this.state[user.id];
+        }
+        blockState.restoreData = vcDocument;
     }
 
     /**

@@ -23,7 +23,7 @@
                 <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid"
                     (click)="onConfirm()">Enter</button>
                 <button mat-raised-button type="submit" (click)="onSkip()" style="margin-left: 20px">
-                    I will <span>{{action}}</span> manually
+                    I have <span>{{action === 'associate' ? 'associated' : action === 'dissociate' ? 'dissociated' : action}}</span> manually
                 </button>
             </div>
 

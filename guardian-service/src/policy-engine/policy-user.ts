@@ -103,6 +103,11 @@ export class PolicyUser implements IPolicyUser {
             this.did = user.did;
             this.virtual = true;
             this.username = user.username;
+            if (this.group) {
+                this.id = `${this.group}:${this.did}`;
+            } else {
+                this.id = this.did;
+            }
         }
         return this;
     }

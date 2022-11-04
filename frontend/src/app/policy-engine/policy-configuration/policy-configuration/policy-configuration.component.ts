@@ -771,7 +771,8 @@ export class PolicyConfigurationComponent implements OnInit {
             && this.currentView === 'blocks'
             && !this.readonly) {
             event.preventDefault();
-            navigator.clipboard.writeText(JSON.stringify(this.currentBlock));
+            const blockData = this.currentBlock?.getJSON() || null;
+            navigator.clipboard.writeText(JSON.stringify(blockData));
         }
     }
 

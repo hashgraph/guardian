@@ -84,6 +84,7 @@ export async function setDefaultSchema() {
     await fn(map[SchemaEntity.WIPE_TOKEN]);
     await fn(map[SchemaEntity.ISSUER]);
     await fn(map[SchemaEntity.USER_ROLE]);
+    await fn(map[SchemaEntity.CHUNK]);
 }
 
 /**
@@ -294,7 +295,21 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
  * @param files
  * @param topicId
  */
-export async function importSchemaByFiles(owner: string, files: ISchema[], topicId: string, notifier: INotifier) {
+export async function importSchemaByFiles(
+    owner: string,
+    files: ISchema[],
+    topicId: string,
+    notifier: INotifier
+): Promise<{
+    /**
+     * New schema uuid
+     */
+    schemasMap: any[];
+    /**
+     * Errors
+     */
+    errors: any[];
+}> {
     notifier.start('Import schemas');
     const uuidMap: Map<string, string> = new Map();
     for (const file of files) {
@@ -323,8 +338,16 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
 
     const parsedSchemas = files.map(item => new Schema(item, true));
     const updatedSchemasMap = {};
+    const errors: any[] = [];
     for (const file of files) {
-        fixSchemaDefsOnImport(file.iri, parsedSchemas, updatedSchemasMap);
+        const valid = fixSchemaDefsOnImport(file.iri, parsedSchemas, updatedSchemasMap);
+        if (!valid) {
+            errors.push({
+                uuid: file.uuid,
+                name: file.name,
+                error: 'invalid defs'
+            });
+        }
     }
 
     let num: number = 0;
@@ -336,7 +359,7 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
         notifier.info(`Schema ${num} (${file.name || '-'}) created`);
     }
 
-    const schemasMap = [];
+    const schemasMap: any[] = [];
     uuidMap.forEach((v, k) => {
         schemasMap.push({
             oldUUID: k,
@@ -347,7 +370,7 @@ export async function importSchemaByFiles(owner: string, files: ISchema[], topic
     });
 
     notifier.completed();
-    return schemasMap;
+    return { schemasMap, errors };
 }
 
 /**
@@ -367,6 +390,18 @@ export async function publishSchema(
     }
     const itemDocument = item.document;
     const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
+
+    const names = Object.keys(itemDocument.properties);
+    for (const name of names) {
+        const field = SchemaHelper.parseProperty(name, itemDocument.properties[name]);
+        if (!field.type) {
+            throw new Error(`Field type not set. Field: ${name}`);
+        }
+        if (field.isRef && (!itemDocument.$defs || !itemDocument.$defs[field.type])) {
+            throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);
+        }
+    }
+
     item.context = schemasToContext([...defsArray, itemDocument]);
 
     const message = new SchemaMessage(type || MessageAction.PublishSchema);
@@ -455,7 +490,7 @@ async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
 
 /**
  * Update schema document
- * @param schemaId Schema Identifier
+ * @param schema Schema
  */
 async function updateSchemaDocument(schema: SchemaCollection): Promise<void> {
     if (!schema) {
@@ -479,28 +514,33 @@ async function updateSchemaDocument(schema: SchemaCollection): Promise<void> {
  * @param schemas Schemas
  * @param map Map of updated schemas
  */
-function fixSchemaDefsOnImport(iri: string, schemas: Schema[], map: any) {
+function fixSchemaDefsOnImport(iri: string, schemas: Schema[], map: any): boolean {
     if (map[iri]) {
-        return;
+        return true;
     }
     const schema = schemas.find(s => s.iri === iri);
     if (!schema) {
-        throw new Error(`Schema ${schema.iri} doesn't exist`);
+        return false;
     }
+    let valid = true;
     for (const field of schema.fields) {
         if (field.isRef) {
-            fixSchemaDefsOnImport(field.type, schemas, map);
+            const fieldValid = fixSchemaDefsOnImport(field.type, schemas, map);
+            if (!fieldValid) {
+                field.type = null;
+            }
+            valid = valid && fieldValid;
         }
     }
     schema.update(schema.fields, schema.conditions);
     schema.updateRefs(schemas);
     map[iri] = schema;
+    return valid;
 }
 
 /**
  * Publishing schemas in defs
  * @param defs Definitions
- * @param version Version
  * @param owner Owner
  * @param root HederaAccount
  */
@@ -595,6 +635,17 @@ export async function findAndDryRunSchema(item: SchemaCollection, version: strin
 
     const itemDocument = item.document;
     const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
+
+    const names = Object.keys(itemDocument.properties);
+    for (const name of names) {
+        const field = SchemaHelper.parseProperty(name, itemDocument.properties[name]);
+        if (!field.type) {
+            throw new Error(`Field type not set. Field: ${name}`);
+        }
+        if (field.isRef && (!itemDocument.$defs || !itemDocument.$defs[field.type])) {
+            throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);
+        }
+    }
     item.context = schemasToContext([...defsArray, itemDocument]);
     // item.status = SchemaStatus.PUBLISHED;
 
@@ -610,7 +661,21 @@ export async function findAndDryRunSchema(item: SchemaCollection, version: strin
  * @param topicId
  * @param notifier
  */
-async function importSchemasByMessages(owner, messageIds, topicId, notifier: INotifier): Promise<any[]> {
+async function importSchemasByMessages(
+    owner: string,
+    messageIds: string[],
+    topicId: string,
+    notifier: INotifier
+): Promise<{
+    /**
+     * New schema uuid
+     */
+    schemasMap: any[];
+    /**
+     * Errors
+     */
+    errors: any[];
+}> {
     notifier.start('Load schema files');
     const files: ISchema[] = [];
     for (const messageId of messageIds) {
@@ -618,8 +683,7 @@ async function importSchemasByMessages(owner, messageIds, topicId, notifier: INo
         files.push(newSchema);
     }
     notifier.completed();
-    const schemasMap = await importSchemaByFiles(owner, files, topicId, notifier);
-    return schemasMap;
+    return await importSchemaByFiles(owner, files, topicId, notifier);
 }
 
 /**
@@ -1000,8 +1064,8 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 return new MessageError('Invalid import schema parameter');
             }
 
-            const schemasMap = await importSchemaByFiles(owner, files, topicId, emptyNotifier());
-            return new MessageResponse(schemasMap);
+            const result = await importSchemaByFiles(owner, files, topicId, emptyNotifier());
+            return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
@@ -1021,8 +1085,8 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                     notifier.error('Invalid import schema parameter');
                 }
 
-                const schemasMap = await importSchemaByFiles(owner, files, topicId, notifier);
-                notifier.result(schemasMap);
+                const result = await importSchemaByFiles(owner, files, topicId, notifier);
+                notifier.result(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);

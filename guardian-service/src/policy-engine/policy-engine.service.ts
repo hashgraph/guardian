@@ -290,7 +290,14 @@ export class PolicyEngineService {
             const notifier = initNotifier(this.apiGatewayChannel, taskId);
             setImmediate(async () => {
                 try {
-                    notifier.result(await this.policyEngine.clonePolicy(policyId, model, user.did, notifier));
+                    const result = await this.policyEngine.clonePolicy(policyId, model, user.did, notifier);
+                    if (result?.errors?.length) {
+                        const message = `Failed to clone schemas: ${JSON.stringify(result.errors.map(e => e.name))}`;
+                        notifier.error(message);
+                        new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                        return;
+                    }
+                    notifier.result(result.policy.id);
                 } catch (error) {
                     notifier.error(error);
                 }
@@ -642,7 +649,11 @@ export class PolicyEngineService {
                 const zip = await PolicyImportExportHelper.generateZipFile(policy);
                 const file = await zip.generateAsync({
                     type: 'arraybuffer',
+<<<<<<< HEAD
                     compression:'DEFLATE',
+=======
+                    compression: 'DEFLATE',
+>>>>>>> main
                     compressionOptions: {
                         level: 3,
                     },
@@ -701,7 +712,16 @@ export class PolicyEngineService {
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const did = await this.getUserDid(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data), true);
+<<<<<<< HEAD
                 await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, emptyNotifier());
+=======
+                const result = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, emptyNotifier());
+                if (result?.errors?.length) {
+                    const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`;
+                    new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                    return new MessageError(message);
+                }
+>>>>>>> main
                 const policies = await DatabaseServer.getListOfPolicies({ owner: did });
                 return new MessageResponse(policies);
             } catch (error) {
@@ -724,8 +744,17 @@ export class PolicyEngineService {
                     notifier.start('File parsing');
                     const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data), true);
                     notifier.completed();
-                    const policy = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, notifier);
-                    notifier.result(policy.id);
+                    const result = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, notifier);
+                    if (result?.errors?.length) {
+                        const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
+                        notifier.error(message);
+                        new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                        return;
+                    }
+                    notifier.result({
+                        policyId: result.policy.id,
+                        errors: result.errors
+                    });
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     notifier.error(error);
@@ -773,7 +802,17 @@ export class PolicyEngineService {
 
                 const root = await this.users.getHederaAccount(did);
 
+<<<<<<< HEAD
                 await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, emptyNotifier());
+=======
+                const result = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, emptyNotifier());
+                if (result?.errors?.length) {
+                    const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
+                    new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                    return new MessageError(message);
+                }
+
+>>>>>>> main
                 const policies = await DatabaseServer.getListOfPolicies({ owner: did });
                 return new MessageResponse(policies);
             } catch (error) {
@@ -795,8 +834,17 @@ export class PolicyEngineService {
                     const did = await this.getUserDid(user.username);
                     const root = await this.users.getHederaAccount(did);
                     notifier.completed();
-                    const policy = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, notifier);
-                    notifier.result(policy.id);
+                    const result = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, notifier);
+                    if (result?.errors?.length) {
+                        const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
+                        notifier.error(message);
+                        new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                        return;
+                    }
+                    notifier.result({
+                        policyId: result.policy.id,
+                        errors: result.errors
+                    });
                 } catch (error) {
                     new Logger().error(error, ['GUARDIAN_SERVICE']);
                     notifier.error(error);

@@ -164,11 +164,40 @@ export class PolicyUtils {
                 if (!result) {
                     return null;
                 }
-                result = result[key];
+                if (key === 'L' && Array.isArray(result)) {
+                    result = result[result.length - 1];
+                } else {
+                    result = result[key];
+                }
             }
             return result;
         }
         return null;
+    }
+
+    /**
+     * Set Object Value
+     * @param data
+     * @param field
+     * @param value
+     */
+    public static setObjectValue(data: any, field: string, value: any): void {
+        if (field) {
+            const keys = field.split('.');
+            let result = data;
+            for (let i = 0; i < keys.length - 1; i++) {
+                if (!result) {
+                    return;
+                }
+                const key = keys[i];
+                if (key === 'L' && Array.isArray(result)) {
+                    result = result[result.length - 1];
+                } else {
+                    result = result[key];
+                }
+            }
+            result[keys[keys.length - 1]] = value;
+        }
     }
 
     /**
@@ -223,21 +252,113 @@ export class PolicyUtils {
         ref.log(`Mint(${mintId}): Start (Count: ${tokenValue})`);
 
         const workers = new Workers();
-        await workers.addTask({
-            type: WorkerTaskType.MINT_TOKEN,
-            data: {
-                hederaAccountId: root.hederaAccountId,
-                hederaAccountKey: root.hederaAccountKey,
-                token,
-                dryRun: ref.dryRun,
-                tokenValue,
-                transactionMemo,
-                uuid,
-                targetAccount, mintId
-            }
-        }, 1);
 
-        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId: token.tokenId, tokenValue, memo: transactionMemo });
+        const tokenId = token.tokenId;
+        const supplyKey = token.supplyKey;
+        const adminId = token.adminId;
+        const adminKey = token.adminKey;
+
+        if (token.tokenType === 'non-fungible') {
+            const data = new Array<string>(Math.floor(tokenValue));
+            data.fill(uuid);
+            const serials: number[] = [];
+            const dataChunk = PolicyUtils.splitChunk(data, 10);
+            const mintPromiseArray: Promise<any>[] = [];
+            for (let i = 0; i < dataChunk.length; i++) {
+                const metaData = dataChunk[i];
+                if (i % 100 === 0) {
+                    ref.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
+                }
+
+                mintPromiseArray.push(workers.addTask({
+                    type: WorkerTaskType.MINT_NFT,
+                    data: {
+                        hederaAccountId: root.hederaAccountId,
+                        hederaAccountKey: root.hederaAccountKey,
+                        dryRun: ref.dryRun,
+                        tokenId,
+                        supplyKey,
+                        metaData,
+                        transactionMemo
+                    }
+                }, 1));
+
+            }
+            try {
+                for (const newSerials of await Promise.all(mintPromiseArray)) {
+                    for (const serial of newSerials) {
+                        serials.push(serial)
+                    }
+                }
+            } catch (error) {
+                ref.error(`Mint(${mintId}): Mint Error (${error.message})`);
+            }
+
+            ref.log(`Mint(${mintId}): Minted (Count: ${serials.length})`);
+            ref.log(`Mint(${mintId}): Transfer ${adminId} -> ${targetAccount} `);
+
+            const serialsChunk = PolicyUtils.splitChunk(serials, 10);
+            const transferPromiseArray: Promise<any>[] = [];
+            for (let i = 0; i < serialsChunk.length; i++) {
+                const element = serialsChunk[i];
+                if (i % 100 === 0) {
+                    ref.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`);
+                }
+                transferPromiseArray.push(workers.addTask({
+                    type: WorkerTaskType.TRANSFER_NFT,
+                    data: {
+                        hederaAccountId: root.hederaAccountId,
+                        hederaAccountKey: root.hederaAccountKey,
+                        dryRun: ref.dryRun,
+                        tokenId,
+                        targetAccount,
+                        adminId,
+                        adminKey,
+                        element,
+                        transactionMemo
+                    }
+                }, 1));
+
+            }
+            try {
+                await Promise.all(transferPromiseArray);
+            } catch (error) {
+                ref.error(`Mint(${mintId}): Transfer Error (${error.message})`);
+            }
+        } else {
+            try {
+                await workers.addTask({
+                    type: WorkerTaskType.MINT_FT,
+                    data: {
+                        hederaAccountId: root.hederaAccountId,
+                        hederaAccountKey: root.hederaAccountKey,
+                        dryRun: ref.dryRun,
+                        tokenId,
+                        supplyKey,
+                        tokenValue,
+                        transactionMemo
+                    }
+                }, 1);
+                await workers.addTask({
+                    type: WorkerTaskType.TRANSFER_FT,
+                    data: {
+                        hederaAccountId: root.hederaAccountId,
+                        hederaAccountKey: root.hederaAccountKey,
+                        dryRun: ref.dryRun,
+                        tokenId,
+                        targetAccount,
+                        adminId,
+                        adminKey,
+                        tokenValue,
+                        transactionMemo
+                    }
+                }, 1);
+            } catch (error) {
+                ref.error(`Mint FT(${mintId}): Mint/Transfer Error (${error.message})`);
+            }
+        }
+
+        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: transactionMemo });
 
         ref.log(`Mint(${mintId}): End`);
     }
@@ -410,22 +531,49 @@ export class PolicyUtils {
     }
 
     /**
+     * Get Hedera Account Info
+     * @param ref Block Ref
+     * @param hederaAccountId Hedera Account Identifier
+     * @param user Client User
+     * @returns Token's map
+     */
+    public static async getHederaAccountInfo(ref: AnyBlockType, hederaAccountId: string, user: IHederaAccount): Promise<any> {
+        if (ref.dryRun) {
+            return await ref.databaseServer.getVirtualHederaAccountInfo(hederaAccountId);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.GET_ACCOUNT_INFO,
+                data: {
+                    userID: user.hederaAccountId,
+                    userKey: user.hederaAccountKey,
+                    hederaAccountId
+                }
+            }, 1);
+        }
+    }
+
+    /**
      * associate
      * @param token
      * @param user
      */
     public static async associate(ref: AnyBlockType, token: Token, user: IHederaAccount): Promise<boolean> {
-        const workers = new Workers();
-        return await workers.addTask({
-            type: WorkerTaskType.ASSOCIATE_TOKEN,
-            data: {
-                tokenId: token.tokenId,
-                userID: user.hederaAccountId,
-                userKey: user.hederaAccountKey,
-                associate: true,
-                dryRun: ref.dryRun
-            }
-        }, 1);
+        if (ref.dryRun) {
+            return await ref.databaseServer.virtualAssociate(user.hederaAccountId, token);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.ASSOCIATE_TOKEN,
+                data: {
+                    tokenId: token.tokenId,
+                    userID: user.hederaAccountId,
+                    userKey: user.hederaAccountKey,
+                    associate: true,
+                    dryRun: ref.dryRun
+                }
+            }, 1);
+        }
     }
 
     /**
@@ -434,17 +582,21 @@ export class PolicyUtils {
      * @param user
      */
     public static async dissociate(ref: AnyBlockType, token: Token, user: IHederaAccount): Promise<boolean> {
-        const workers = new Workers();
-        return await workers.addTask({
-            type: WorkerTaskType.ASSOCIATE_TOKEN,
-            data: {
-                tokenId: token.tokenId,
-                userID: user.hederaAccountId,
-                userKey: user.hederaAccountKey,
-                associate: false,
-                dryRun: ref.dryRun
-            }
-        }, 1);
+        if (ref.dryRun) {
+            return await ref.databaseServer.virtualDissociate(user.hederaAccountId, token.tokenId);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.ASSOCIATE_TOKEN,
+                data: {
+                    tokenId: token.tokenId,
+                    userID: user.hederaAccountId,
+                    userKey: user.hederaAccountKey,
+                    associate: false,
+                    dryRun: ref.dryRun
+                }
+            }, 1);
+        }
     }
 
     /**
@@ -459,18 +611,22 @@ export class PolicyUtils {
         user: IHederaAccount,
         root: IHederaAccount
     ): Promise<boolean> {
-        const workers = new Workers();
-        return await workers.addTask({
-            type: WorkerTaskType.FREEZE_TOKEN,
-            data: {
-                hederaAccountId: root.hederaAccountId,
-                hederaAccountKey: root.hederaAccountKey,
-                freezeKey: token.freezeKey,
-                tokenId: token.tokenId,
-                freeze: true,
-                dryRun: ref.dryRun
-            }
-        }, 1);
+        if (ref.dryRun) {
+            return await ref.databaseServer.virtualFreeze(user.hederaAccountId, token.tokenId);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.FREEZE_TOKEN,
+                data: {
+                    hederaAccountId: root.hederaAccountId,
+                    hederaAccountKey: root.hederaAccountKey,
+                    freezeKey: token.freezeKey,
+                    tokenId: token.tokenId,
+                    freeze: true,
+                    dryRun: ref.dryRun
+                }
+            }, 1);
+        }
     }
 
     /**
@@ -485,18 +641,22 @@ export class PolicyUtils {
         user: IHederaAccount,
         root: IHederaAccount
     ): Promise<boolean> {
-        const workers = new Workers();
-        return await workers.addTask({
-            type: WorkerTaskType.FREEZE_TOKEN,
-            data: {
-                hederaAccountId: root.hederaAccountId,
-                hederaAccountKey: root.hederaAccountKey,
-                freezeKey: token.freezeKey,
-                tokenId: token.tokenId,
-                freeze: false,
-                dryRun: ref.dryRun
-            }
-        }, 1);
+        if (ref.dryRun) {
+            return await ref.databaseServer.virtualUnfreeze(user.hederaAccountId, token.tokenId);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.FREEZE_TOKEN,
+                data: {
+                    hederaAccountId: root.hederaAccountId,
+                    hederaAccountKey: root.hederaAccountKey,
+                    freezeKey: token.freezeKey,
+                    tokenId: token.tokenId,
+                    freeze: false,
+                    dryRun: ref.dryRun
+                }
+            }, 1);
+        }
     }
 
     /**
@@ -511,19 +671,23 @@ export class PolicyUtils {
         user: IHederaAccount,
         root: IHederaAccount
     ): Promise<boolean> {
-        const workers = new Workers();
-        return await workers.addTask({
-            type: WorkerTaskType.GRANT_KYC_TOKEN,
-            data: {
-                hederaAccountId: root.hederaAccountId,
-                hederaAccountKey: root.hederaAccountKey,
-                userHederaAccountId: user.hederaAccountId,
-                tokenId: token.tokenId,
-                kycKey: token.kycKey,
-                grant: true,
-                dryRun: ref.dryRun
-            }
-        }, 1);
+        if (ref.dryRun) {
+            return await ref.databaseServer.virtualGrantKyc(user.hederaAccountId, token.tokenId);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.GRANT_KYC_TOKEN,
+                data: {
+                    hederaAccountId: root.hederaAccountId,
+                    hederaAccountKey: root.hederaAccountKey,
+                    userHederaAccountId: user.hederaAccountId,
+                    tokenId: token.tokenId,
+                    kycKey: token.kycKey,
+                    grant: true,
+                    dryRun: ref.dryRun
+                }
+            }, 1);
+        }
     }
 
     /**
@@ -538,19 +702,23 @@ export class PolicyUtils {
         user: IHederaAccount,
         root: IHederaAccount
     ): Promise<boolean> {
-        const workers = new Workers();
-        return await workers.addTask({
-            type: WorkerTaskType.GRANT_KYC_TOKEN,
-            data: {
-                hederaAccountId: root.hederaAccountId,
-                hederaAccountKey: root.hederaAccountKey,
-                userHederaAccountId: user.hederaAccountId,
-                tokenId: token.tokenId,
-                kycKey: token.kycKey,
-                grant: false,
-                dryRun: ref.dryRun
-            }
-        }, 1);
+        if (ref.dryRun) {
+            return await ref.databaseServer.virtualRevokeKyc(user.hederaAccountId, token.tokenId);
+        } else {
+            const workers = new Workers();
+            return await workers.addTask({
+                type: WorkerTaskType.GRANT_KYC_TOKEN,
+                data: {
+                    hederaAccountId: root.hederaAccountId,
+                    hederaAccountKey: root.hederaAccountKey,
+                    userHederaAccountId: user.hederaAccountId,
+                    tokenId: token.tokenId,
+                    kycKey: token.kycKey,
+                    grant: false,
+                    dryRun: ref.dryRun
+                }
+            }, 1);
+        }
     }
 
     /**
