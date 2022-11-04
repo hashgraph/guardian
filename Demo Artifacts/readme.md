@@ -6,7 +6,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
 
 1. IREC - Envision
 2. Verra Methodology - Verra Redd - Envision
-3. DOVU Template Methodologies (6) - DOVU
+3. DOVU Template Methodologies (10) - DOVU
    - Agrecalc
    - Cool Farm Tool
    - Carbon Space
