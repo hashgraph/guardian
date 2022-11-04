@@ -80,5 +80,5 @@ where @tag can be:
 
 To run in Docker
    ```shell
-   TAG=... docker-compose run --entrypoint="npm run test-tag" cypress-tests
+   TAG=<TEST-TAG> docker-compose run --entrypoint="npm run test-tag" cypress-tests
    ```
