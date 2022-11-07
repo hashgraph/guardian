@@ -15,11 +15,11 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - Soil Carbon Coalition
 4. Tolam Earth - OCI
 5. Improved Cookstove - OCI
-6. eWaste Policy - KrypC(Coming soon)
-7. TBA-X (Coming soon)
+6. Tamuwa VER 
+7. eWaste Policy - KrypC(Coming soon)
 8. TBA-X (Coming soon)
-9. TBA-D (Coming soon)
-10. Tamuwa VER (Coming soon)
+9. TBA-X (Coming soon)
+10. TBA-D (Coming soon)
 11. Carbontricity (Coming soon)
 12. VN (Coming soon)
 13. Evercity (Coming soon)
@@ -29,9 +29,9 @@ This folder contains sub folders for each Methodology and their authors (with ma
 ### Emission Policies
 
 1. GHG Methodology - Remote Workflow - Envision
-2. GHGP Product Standard - Avery Dennison (Coming soon)
-3. GHG Scope II - Atma (Coming soon)
-4. Tymlez (Coming soon)
+2. Tymlez - CET & CRU
+3. GHGP Product Standard - Avery Dennison (Coming soon)
+4. GHG Scope II - Atma (Coming soon)
 5. E-Mission (Coming soon)
 6. RDA - Serapis (Coming soon)
 7. GHGP Corporate Standard (Coming soon)
