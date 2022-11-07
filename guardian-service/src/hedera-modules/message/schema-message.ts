@@ -92,7 +92,7 @@ export class SchemaMessage extends Message {
             document_cid: this.getDocumentUrl(UrlType.cid),
             document_url: this.getDocumentUrl(UrlType.url),
             context_cid: this.getContextUrl(UrlType.cid),
-            context_url: this.getContextUrl(UrlType.url)
+            context_url: this.getContextUrl(UrlType.custom_context_url)
         };
     }
 

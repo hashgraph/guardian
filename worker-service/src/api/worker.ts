@@ -194,7 +194,7 @@ export class Worker {
                         fileContent = Buffer.from(data.body, 'base64')
                     }
                     const blob: any = new Blob([fileContent]);
-                    const r = await this.ipfsClient.addFiile(blob);
+                    const r = await this.ipfsClient.addFile(blob);
                     this.channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
                     result.data = r;
                     break;
