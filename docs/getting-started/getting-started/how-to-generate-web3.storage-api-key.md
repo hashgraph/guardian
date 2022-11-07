@@ -14,7 +14,7 @@ Following are the steps to follow to generate Web3.Storage API Key:
 
 3\. Now, enter a descriptive name for your API token and click **Create**.
 
-<figure><img src="../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (5) (3).png" alt=""><figcaption></figcaption></figure>
 
 4\. Once, token is created, Token Key can be copied and pasted as IPFS\__Storage\__API\_Key in `ipfs-client/.env` or `ipfs-client/.env/docker`.
 
