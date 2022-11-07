@@ -41,7 +41,7 @@ export class IpfsClient {
      * @param file
      * @param beforeCallback
      */
-    public async addFiile(file: Blob): Promise<IAddFileResult> {
+    public async addFile(file: Blob): Promise<IAddFileResult> {
         const cid = await this.client.put([file] as any, { wrapWithDirectory: false });
         const url = `${this.IPFS_PUBLIC_GATEWAY}/${cid}`;
 

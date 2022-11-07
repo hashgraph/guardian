@@ -106,6 +106,10 @@ Promise.all([
         await new Logger().error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
         throw new Error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message);
     }
+    if (!process.env.IPFS_CONTEXT_GATEWAY) {
+        await new Logger().error('IPFS_CONTEXT_GATEWAY field in .env file can not be empty', ['GUARDIAN_SERVICE']);
+        throw new Error('IPFS_CONTEXT_GATEWAY field in .env file can not be empty');
+    }
 
     /////////////
     await state.updateState(ApplicationStates.STARTED);
