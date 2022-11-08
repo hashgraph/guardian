@@ -130,7 +130,12 @@ export class TreeFlatOverview {
      * */
     drop(event: CdkDragDrop<string[]>) {
         // ignore drops outside of the tree
-        if (!event.isPointerOverContainer) return;
+        if (
+            !event.isPointerOverContainer ||
+            event.previousIndex === event.currentIndex
+        ) {
+            return;
+        }
 
         // construct a list of visible nodes, this will match the DOM.
         // the cdkDragDrop event.currentIndex jives with visible nodes.
@@ -157,13 +162,21 @@ export class TreeFlatOverview {
         }
 
         // determine where to insert the node
-        const nodeAtDest = visibleNodes[event.currentIndex];
+        const lastElement =
+            event.previousIndex < event.currentIndex &&
+            !visibleNodes[event.currentIndex + 1];
+        const nodeAtDest =
+            event.previousIndex < event.currentIndex
+                ? visibleNodes[event.currentIndex + 1] ||
+                  visibleNodes[event.currentIndex]
+                : visibleNodes[event.currentIndex];
         const newSiblings = findNodeSiblings(changedData, nodeAtDest, this.compare);
         if (!newSiblings) return;
+        const node = event.item.data as FlatBlockNode;
+        const sameContainer = newSiblings.includes(node.node);
         const insertIndex = newSiblings.findIndex(s => this.compare(s, nodeAtDest));
 
         // remove the node from its old place
-        const node = event.item.data as FlatBlockNode;
         const siblings = findNodeSiblings(changedData, node.node, this.compare);
         const siblingIndex = siblings.findIndex(n => this.compare(n, node.node));
         const nodeToInsert: BlockNode = siblings.splice(siblingIndex, 1)[0];
@@ -177,7 +190,19 @@ export class TreeFlatOverview {
         }
 
         // insert node
-        newSiblings.splice(insertIndex, 0, nodeToInsert);
+        newSiblings.splice(
+            event.previousIndex < event.currentIndex &&
+                sameContainer &&
+                !lastElement
+                ? insertIndex - 1 < 0
+                    ? 0
+                    : insertIndex - 1
+                : lastElement
+                ? insertIndex + 1
+                : insertIndex,
+            0,
+            nodeToInsert
+        );
 
         // rebuild tree with mutated data
         // this.rebuildTreeForData(changedData);
@@ -235,7 +260,10 @@ export class TreeFlatOverview {
     /**
      * Experimental - opening tree nodes as you drag over them
      */
-    dragStart() {
+    dragStart(node?: any) {
+        if (node) {
+            this.treeControl.collapse(node);
+        }
         this.dragging = true;
     }
 
