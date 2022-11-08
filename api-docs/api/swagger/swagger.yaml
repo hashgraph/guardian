@@ -1892,7 +1892,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /schemas/{schemaId}/active:
+  /schemas/system/{schemaId}/active:
     put:
       tags:
         - schemas
