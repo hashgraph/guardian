@@ -168,7 +168,7 @@ Promise.all([
     await artifactAPI(channel);
     await setDefaultSchema();
 
-    await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'));
+    await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'), channel);
 
     await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
 

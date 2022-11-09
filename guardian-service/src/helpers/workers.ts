@@ -92,4 +92,16 @@ export class Workers extends ServiceRequestsBase {
             return new MessageResponse(null);
         });
     }
+
+    /**
+     * Update worker settings
+     */
+    public updateSettings(settings: {
+        /**
+         * IPFS storage api key
+         */
+        ipfsStorageApiKey
+    }) {
+        this.channel.publish(WorkerEvents.UPDATE_SETTINGS, settings);
+    }
 }
