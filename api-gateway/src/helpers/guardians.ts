@@ -787,4 +787,34 @@ export class Guardians extends ServiceRequestsBase {
             artifactId
         });
     }
+
+    /**
+     * Add file to IPFS
+     * @param buffer File
+     * @returns CID, URL
+     */
+    public async addFileIpfs(buffer: any): Promise<{
+        /**
+         * CID
+         */
+        cid,
+        /**
+         * URL
+         */
+        url
+    }> {
+        return await this.request<any>(MessageAPI.IPFS_ADD_FILE, buffer);
+    }
+
+    /**
+     * Get file from IPFS
+     * @param cid CID
+     * @param responseType Response type
+     * @returns File
+     */
+    public async getFileIpfs(cid: string, responseType: any): Promise<any> {
+        return await this.request<any>(MessageAPI.IPFS_GET_FILE, {
+            cid, responseType
+        });
+    }
 }
