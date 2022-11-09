@@ -71,7 +71,7 @@ export class RestoreDataFromHedera {
             throw new Error('Bad topicId');
         }
 
-        const messages = await this.workers.addTask({
+        const messages = await this.workers.addRetryableTask({
             type: WorkerTaskType.GET_TOPIC_MESSAGES,
             data: {
                 operatorId: null,

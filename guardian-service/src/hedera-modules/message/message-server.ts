@@ -245,7 +245,7 @@ export class MessageServer {
                 KeyType.TOPIC_SUBMIT_KEY,
                 this.topicId.toString()
             ));
-        const id = await new Workers().addTask({
+        const id = await new Workers().addRetryableTask({
             type: WorkerTaskType.SEND_HEDERA,
             data: {
                 topicId: this.topicId,
@@ -332,7 +332,7 @@ export class MessageServer {
         const {operatorId, operatorKey, dryRun} = this.clientOptions;
 
         const workers = new Workers();
-        const { topicId, message } = await workers.addTask({
+        const { topicId, message } = await workers.addRetryableTask({
             type: WorkerTaskType.GET_TOPIC_MESSAGE,
             data: {
                 operatorId,
@@ -361,7 +361,7 @@ export class MessageServer {
 
         const topic = topicId.toString();
         const workers = new Workers();
-        const messages = await workers.addTask({
+        const messages = await workers.addRetryableTask({
             type: WorkerTaskType.GET_TOPIC_MESSAGES,
             data: {
                 operatorId,
@@ -484,7 +484,7 @@ export class MessageServer {
                 const {operatorId, operatorKey, dryRun} = this.clientOptions;
 
                 const workers = new Workers();
-                const { topicId } = await workers.addTask({
+                const { topicId } = await workers.addRetryableTask({
                     type: WorkerTaskType.GET_TOPIC_MESSAGE,
                     data: {
                         operatorId,

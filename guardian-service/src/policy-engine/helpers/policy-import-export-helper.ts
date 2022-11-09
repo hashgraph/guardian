@@ -301,7 +301,7 @@ export class PolicyImportExportHelper {
                 const owner = root.did;
 
                 const workers = new Workers();
-                const tokenId = await workers.addTask({
+                const tokenId = await workers.addRetryableTask({
                     type: WorkerTaskType.NEW_TOKEN,
                     data: {
                         operatorId: root.hederaAccountId,

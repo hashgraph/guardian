@@ -150,13 +150,13 @@ export class TransactionLogger {
                     const settingsContainer = new SettingsContainer();
                     const { OPERATOR_ID, OPERATOR_KEY } = settingsContainer.settings;
                     const workers = new Workers();
-                    const balance = await workers.addTask({
+                    const balance = await workers.addNonRetryableTask({
                         type: WorkerTaskType.GET_USER_BALANCE,
                         data: {
                             hederaAccountId: OPERATOR_ID,
                             hederaAccountKey: OPERATOR_KEY
                         }
-                    }, 1, 1);
+                    }, 1);
                     attr.push(balance);
                 } catch (error) {
                     attr.push(null);

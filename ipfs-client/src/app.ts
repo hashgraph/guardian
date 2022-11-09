@@ -12,21 +12,29 @@ Promise.all([
     MessageBrokerChannel.connect('IPFS_CLIENT')
 ]).then(async values => {
     const [cn] = values;
-    const state = new ApplicationState('IPFS_CLIENT');
-    const channel = new MessageBrokerChannel(cn, 'ipfs-client');
+    try {
+        const state = new ApplicationState('IPFS_CLIENT');
+        const channel = new MessageBrokerChannel(cn, 'ipfs-client');
 
-    new Logger().setChannel(channel);
-    state.setChannel(channel);
+        new Logger().setChannel(channel);
+        state.setChannel(channel);
 
-    const settingsContainer = new SettingsContainer();
-    settingsContainer.setChannel(channel);
-    await settingsContainer.init('IPFS_STORAGE_API_KEY');
+        const settingsContainer = new SettingsContainer();
+        settingsContainer.setChannel(channel);
+        await settingsContainer.init('IPFS_STORAGE_API_KEY');
 
-    const {IPFS_STORAGE_API_KEY} = settingsContainer.settings;
+        const {IPFS_STORAGE_API_KEY} = settingsContainer.settings;
 
-    state.updateState(ApplicationStates.INITIALIZING);
-    await fileAPI(channel, new Web3Storage({ token: IPFS_STORAGE_API_KEY } as any));
+        state.updateState(ApplicationStates.INITIALIZING);
+        await fileAPI(channel, new Web3Storage({token: IPFS_STORAGE_API_KEY} as any));
 
-    state.updateState(ApplicationStates.READY);
-    new Logger().info('ipfs-client service started', ['IPFS_CLIENT']);
+        state.updateState(ApplicationStates.READY);
+        new Logger().info('ipfs-client service started', ['IPFS_CLIENT']);
+    } catch (error) {
+        console.log(error.message);
+        process.exit(1);
+    }
+}, (reason) => {
+    console.log(reason);
+    process.exit(0);
 })

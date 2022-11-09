@@ -84,7 +84,7 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
     notifier.completedAndStart('Create token');
 
     const workers = new Workers();
-    const tokenData = await workers.addTask({
+    const tokenData = await workers.addNonRetryableTask({
         type: WorkerTaskType.CREATE_TOKEN,
         data: {
             operatorId: root.hederaAccountId,
@@ -100,7 +100,7 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
             tokenSymbol,
             tokenType
         }
-    }, 1, 1);
+    }, 1);
 
     notifier.completedAndStart('Save token in DB');
     const tokenObject = tokenRepository.create({
@@ -182,7 +182,7 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
     notifier.completedAndStart(associate ? 'Associate' : 'Dissociate');
 
     const workers = new Workers();
-    const status = await workers.addTask({
+    const status = await workers.addNonRetryableTask({
         type: WorkerTaskType.ASSOCIATE_TOKEN,
         data: {
             tokenId,
@@ -190,7 +190,7 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
             userKey,
             associate
         }
-    }, 1, 1);
+    }, 1);
 
     notifier.completed();
     return status;
@@ -231,7 +231,7 @@ async function grantKycToken(tokenId, username, owner, grant, tokenRepository: D
         KeyType.TOKEN_KYC_KEY,
         token.tokenId
     );
-    await workers.addTask({
+    await workers.addNonRetryableTask({
         type: WorkerTaskType.GRANT_KYC_TOKEN,
         data: {
             hederaAccountId: root.hederaAccountId,
@@ -241,16 +241,16 @@ async function grantKycToken(tokenId, username, owner, grant, tokenRepository: D
             kycKey,
             grant
         }
-    }, 10, 1);
+    }, 10);
 
-    const info = await workers.addTask({
+    const info = await workers.addNonRetryableTask({
         type: WorkerTaskType.GET_ACCOUNT_INFO,
         data: {
             userID: root.hederaAccountId,
             userKey: root.hederaAccountKey,
             hederaAccountId: user.hederaAccountId,
         }
-    }, 10, 1);
+    }, 10);
 
     const result = getTokenInfo(info, { tokenId });
     notifier.completed();
@@ -340,7 +340,7 @@ export async function tokenAPI(
                 KeyType.TOKEN_FREEZE_KEY,
                 token.tokenId
             );
-            await workers.addTask({
+            await workers.addNonRetryableTask({
                 type: WorkerTaskType.FREEZE_TOKEN,
                 data: {
                     hederaAccountId: root.hederaAccountId,
@@ -349,16 +349,16 @@ export async function tokenAPI(
                     tokenId,
                     freeze
                 }
-            }, 1, 1);
+            }, 1);
 
-            const info = await workers.addTask({
+            const info = await workers.addNonRetryableTask({
                 type: WorkerTaskType.GET_ACCOUNT_INFO,
                 data: {
                     userID: root.hederaAccountId,
                     userKey: root.hederaAccountKey,
                     hederaAccountId: user.hederaAccountId,
                 }
-            }, 10, 1);
+            }, 10);
 
             const result = getTokenInfo(info, { tokenId });
             return new MessageResponse(result);
@@ -445,14 +445,14 @@ export async function tokenAPI(
 
             const root = await users.getHederaAccount(owner);
             const workers = new Workers();
-            const info = await workers.addTask({
+            const info = await workers.addNonRetryableTask({
                 type: WorkerTaskType.GET_ACCOUNT_INFO,
                 data: {
                     userID: root.hederaAccountId,
                     userKey: root.hederaAccountKey,
                     hederaAccountId: user.hederaAccountId
                 }
-            }, 1, 1);
+            }, 1);
 
             const result = getTokenInfo(info, token);
 
@@ -483,14 +483,14 @@ export async function tokenAPI(
             }
 
             const workers = new Workers();
-            const info = await workers.addTask({
+            const info = await workers.addNonRetryableTask({
                 type: WorkerTaskType.GET_ACCOUNT_INFO,
                 data: {
                     userID,
                     userKey,
                     hederaAccountId: user.hederaAccountId
                 }
-            }, 1, 1);
+            }, 1);
 
             const tokens: any = await tokenRepository.find(user.parent
                 ? {
