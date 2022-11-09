@@ -54,10 +54,10 @@ export class Workers extends ServiceRequestsBase {
      * Add retryable task
      * @param task
      * @param priority
-     * @param isRetriableTask
+     * @param isRetryableTask
      * @param attempts
      */
-    private addTask(task: ITask, priority: number, isRetriableTask: boolean = false, attempts: number = 0): Promise<any> {
+    private addTask(task: ITask, priority: number, isRetryableTask: boolean = false, attempts: number = 0): Promise<any> {
         const taskId = GenerateUUIDv4()
         task.id = taskId;
         task.priority = priority;
@@ -69,7 +69,7 @@ export class Workers extends ServiceRequestsBase {
                 number: 0,
                 callback: (data, error) => {
                     if (error) {
-                        if (isRetriableTask) {
+                        if (isRetryableTask) {
                             if (this.tasksCallbacks.has(taskId)) {
                                 const callback = this.tasksCallbacks.get(taskId);
                                 callback.number++;
