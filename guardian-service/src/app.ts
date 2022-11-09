@@ -82,13 +82,13 @@ Promise.all([
         AccountId.fromString(OPERATOR_ID);
     } catch (error) {
         await new Logger().error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
-        process.exit(0);
+        throw new Error('OPERATOR_ID field in settings: ' + error.message);
     }
     try {
         PrivateKey.fromString(OPERATOR_KEY);
     } catch (error) {
         await new Logger().error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        process.exit(0);
+        throw new Error('OPERATOR_KEY field in .env file: ' + error.message);
     }
     try {
         if (process.env.INITIALIZATION_TOPIC_ID) {
@@ -96,7 +96,7 @@ Promise.all([
         }
     } catch (error) {
         await new Logger().error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        process.exit(0);
+        throw new Error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message);
     }
     try {
         if (process.env.INITIALIZATION_TOPIC_KEY) {
@@ -104,11 +104,11 @@ Promise.all([
         }
     } catch (error) {
         await new Logger().error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        process.exit(0);
+        throw new Error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message);
     }
     if (!process.env.IPFS_CONTEXT_GATEWAY) {
         await new Logger().error('IPFS_CONTEXT_GATEWAY field in .env file can not be empty', ['GUARDIAN_SERVICE']);
-        process.exit(0);
+        throw new Error('IPFS_CONTEXT_GATEWAY field in .env file can not be empty');
     }
 
     /////////////
@@ -130,7 +130,7 @@ Promise.all([
     workersHelper.initListeners();
 
     if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
-        process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
+        process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addTask({
             type: WorkerTaskType.NEW_TOPIC,
             data: {
                 hederaAccountId: OPERATOR_ID,
@@ -141,15 +141,10 @@ Promise.all([
         }, 1);
     }
 
-    try {
-        const policyGenerator = new BlockTreeGenerator();
-        const policyService = new PolicyEngineService(channel, apiGatewayChannel);
-        await policyGenerator.init();
-        policyService.registerListeners();
-    } catch (error) {
-        console.error(error.message);
-        process.exit(0);
-    }
+    const policyGenerator = new BlockTreeGenerator();
+    const policyService = new PolicyEngineService(channel, apiGatewayChannel);
+    await policyGenerator.init();
+    policyService.registerListeners();
 
     const didDocumentRepository = new DataBaseHelper(DidDocument);
     const vcDocumentRepository = new DataBaseHelper(VcDocument);
@@ -162,30 +157,19 @@ Promise.all([
 
     state.updateState(ApplicationStates.INITIALIZING);
 
-    try {
-        await configAPI(channel, settingsRepository, topicRepository);
-        await schemaAPI(channel, apiGatewayChannel);
-        await tokenAPI(channel, apiGatewayChannel, tokenRepository);
-        await loaderAPI(channel, didDocumentRepository, schemaRepository);
-        await profileAPI(channel, apiGatewayChannel);
-        await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository, policyRepository);
-        await demoAPI(channel, apiGatewayChannel, settingsRepository);
-        await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
-        await artifactAPI(channel);
-    } catch (error) {
-        console.error(error.message);
-        process.exit(0);
-    }
+    await configAPI(channel, settingsRepository, topicRepository);
+    await schemaAPI(channel, apiGatewayChannel);
+    await tokenAPI(channel, apiGatewayChannel, tokenRepository);
+    await loaderAPI(channel, didDocumentRepository, schemaRepository);
+    await profileAPI(channel, apiGatewayChannel);
+    await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository, policyRepository);
+    await demoAPI(channel, apiGatewayChannel, settingsRepository);
+    await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
+    await artifactAPI(channel);
+    await setDefaultSchema();
 
     try {
-        await setDefaultSchema();
-    } catch (error) {
-        console.error(error.message);
-        process.exit(0);
-    }
-
-    try {
-        await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'));
+        await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'), channel);
     } catch (error) {
         console.error(error.message);
         // process.exit(0);
@@ -195,14 +179,7 @@ Promise.all([
 
     await state.updateState(ApplicationStates.READY);
 
-    try {
-        if (process.env.SEND_KEYS_TO_VAULT?.toLowerCase() === 'true') {
-            await sendKeysToVault(db.em);
-        }
-    } catch (error) {
-        console.error(error.message);
+    if (process.env.SEND_KEYS_TO_VAULT?.toLowerCase() === 'true') {
+        await sendKeysToVault(db.em);
     }
-}, (reason) => {
-    console.log(reason);
-    process.exit(0);
 });

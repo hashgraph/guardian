@@ -37,9 +37,8 @@ export class Worker {
 
     /**
      * Ipfs client
-     * @private
      */
-    private readonly ipfsClient: IpfsClient;
+    private ipfsClient: IpfsClient;
 
     /**
      * Current task ID
@@ -128,6 +127,11 @@ export class Worker {
             } else {
                 this.updateEventReceived = true;
             }
+        });
+
+        this.channel.subscribe(WorkerEvents.UPDATE_SETTINGS, (msg: any) => {
+            new SettingsContainer().updateSetting('IPFS_STORAGE_API_KEY', msg.ipfsStorageApiKey);
+            this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
         });
 
         HederaSDKHelper.setTransactionResponseCallback(async (client: any) => {

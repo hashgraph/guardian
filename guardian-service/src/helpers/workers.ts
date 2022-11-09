@@ -32,32 +32,12 @@ export class Workers extends ServiceRequestsBase {
     private readonly maxRepetitions = 25;
 
     /**
-     * Add non retriable task
-     * @param task
-     * @param priority
-     */
-    public addNonRetryableTask(task: ITask, priority: number): Promise<any> {
-        return this.addTask(task, priority, false);
-    }
-
-    /**
-     * Add retryable task
+     * Add task
      * @param task
      * @param priority
      * @param attempts
      */
-    public addRetryableTask(task: ITask, priority: number, attempts: number = 0): Promise<any> {
-        return this.addTask(task, priority, true, attempts);
-    }
-
-    /**
-     * Add retryable task
-     * @param task
-     * @param priority
-     * @param isRetriableTask
-     * @param attempts
-     */
-    private addTask(task: ITask, priority: number, isRetriableTask: boolean = false, attempts: number = 0): Promise<any> {
+    public addTask(task: ITask, priority: number, attempts: number = 0): Promise<any> {
         const taskId = GenerateUUIDv4()
         task.id = taskId;
         task.priority = priority;
@@ -69,20 +49,16 @@ export class Workers extends ServiceRequestsBase {
                 number: 0,
                 callback: (data, error) => {
                     if (error) {
-                        if (isRetriableTask) {
-                            if (this.tasksCallbacks.has(taskId)) {
-                                const callback = this.tasksCallbacks.get(taskId);
-                                callback.number++;
-                                if (callback.number > attempts) {
-                                    this.tasksCallbacks.delete(taskId);
-                                    reject(error);
-                                    return;
-                                }
+                        if (this.tasksCallbacks.has(taskId)) {
+                            const callback = this.tasksCallbacks.get(taskId);
+                            callback.number++;
+                            if (callback.number > attempts) {
+                                this.tasksCallbacks.delete(taskId);
+                                reject(error);
+                                return;
                             }
-                            this.queue.push(task);
-                        } else {
-                            reject(error);
                         }
+                        this.queue.push(task);
                     } else {
                         this.tasksCallbacks.delete(taskId);
                         resolve(data);
@@ -115,5 +91,17 @@ export class Workers extends ServiceRequestsBase {
             activeTask.callback(msg.data, msg.error);
             return new MessageResponse(null);
         });
+    }
+
+    /**
+     * Update worker settings
+     */
+    public updateSettings(settings: {
+        /**
+         * IPFS storage api key
+         */
+        ipfsStorageApiKey
+    }) {
+        this.channel.publish(WorkerEvents.UPDATE_SETTINGS, settings);
     }
 }
