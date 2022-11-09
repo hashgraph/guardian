@@ -11,6 +11,7 @@ import {
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
 import { Environment } from '@hedera-modules';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { Workers } from '@helpers/workers';
 
 /**
  * Connecting to the message broker methods of working with root address book.
@@ -47,11 +48,11 @@ export async function configAPI(
                 await new Logger().error('OPERATOR_KEY: ' + error.message, ['GUARDIAN_SERVICE']);
                 throw new Error('OPERATOR_KEY: ' + error.message);
             }
-            if (settings.ipfsStorageApiKey) {
-                await settingsContainer.updateSetting('IPFS_STORAGE_API_KEY', settings.ipfsStorageApiKey);
-            }
             await settingsContainer.updateSetting('OPERATOR_ID', settings.operatorId);
             await settingsContainer.updateSetting('OPERATOR_KEY', settings.operatorKey);
+            await new Workers().updateSettings({
+                ipfsStorageApiKey: settings.ipfsStorageApiKey
+            });
             return new MessageResponse(null);
         }
         catch (error) {
