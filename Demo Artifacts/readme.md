@@ -34,8 +34,8 @@ This folder contains sub folders for each Methodology and their authors (with ma
 
 1. GHG Methodology - Remote Workflow - Envision
 2. Tymlez - CET & CRU
-3. GHGP Product Standard - Avery Dennison (Coming soon)
-4. GHG Scope II - Atma (Coming soon)
+3. GHG Scope II - Atma
+4. GHGP Product Standard - Avery Dennison (Coming soon)
 5. E-Mission (Coming soon)
 6. RDA - Serapis (Coming soon)
 7. GHGP Corporate Standard (Coming soon)
