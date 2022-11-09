@@ -47,8 +47,11 @@ export async function configAPI(
                 await new Logger().error('OPERATOR_KEY: ' + error.message, ['GUARDIAN_SERVICE']);
                 throw new Error('OPERATOR_KEY: ' + error.message);
             }
+            if (settings.ipfsStorageApiKey) {
+                await settingsContainer.updateSetting('IPFS_STORAGE_API_KEY', settings.ipfsStorageApiKey);
+            }
             await settingsContainer.updateSetting('OPERATOR_ID', settings.operatorId);
-            await settingsContainer.updateSetting('OPERATOR_KEY', settings.operatorKey)
+            await settingsContainer.updateSetting('OPERATOR_KEY', settings.operatorKey);
             return new MessageResponse(null);
         }
         catch (error) {
@@ -68,7 +71,8 @@ export async function configAPI(
             return new MessageResponse({
                 operatorId: OPERATOR_ID,
                 // operatorKey: OPERATOR_KEY
-                operatorKey: ''
+                operatorKey: '',
+                ipfsStorageApiKey: ''
             });
         }
         catch (error) {
