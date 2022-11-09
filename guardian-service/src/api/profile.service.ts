@@ -355,13 +355,13 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
             }
 
             const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-            const balance = await workers.addTask({
+            const balance = await workers.addNonRetryableTask({
                 type: WorkerTaskType.GET_USER_BALANCE,
                 data: {
                     hederaAccountId: user.hederaAccountId,
                     hederaAccountKey: key
                 }
-            }, 1, 1);
+            }, 1);
             return new MessageResponse({
                 balance,
                 unit: 'Hbar',
@@ -396,13 +396,13 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
             }
 
             const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-            const balance = await workers.addTask({
+            const balance = await workers.addNonRetryableTask({
                 type: WorkerTaskType.GET_USER_BALANCE,
                 data: {
                     hederaAccountId: user.hederaAccountId,
                     hederaAccountKey: key
                 }
-            }, 1, 1);
+            }, 1);
 
             return new MessageResponse(balance);
         } catch (error) {

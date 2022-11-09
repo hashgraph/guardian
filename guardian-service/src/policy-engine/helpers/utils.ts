@@ -289,7 +289,7 @@ export class PolicyUtils {
                     ref.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
                 }
 
-                mintPromiseArray.push(workers.addTask({
+                mintPromiseArray.push(workers.addRetryableTask({
                     type: WorkerTaskType.MINT_NFT,
                     data: {
                         hederaAccountId: root.hederaAccountId,
@@ -323,7 +323,7 @@ export class PolicyUtils {
                 if (i % 100 === 0) {
                     ref.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`);
                 }
-                transferPromiseArray.push(workers.addTask({
+                transferPromiseArray.push(workers.addRetryableTask({
                     type: WorkerTaskType.TRANSFER_NFT,
                     data: {
                         hederaAccountId: root.hederaAccountId,
@@ -346,7 +346,7 @@ export class PolicyUtils {
             }
         } else {
             try {
-                await workers.addTask({
+                await workers.addRetryableTask({
                     type: WorkerTaskType.MINT_FT,
                     data: {
                         hederaAccountId: root.hederaAccountId,
@@ -358,7 +358,7 @@ export class PolicyUtils {
                         transactionMemo
                     }
                 }, 1);
-                await workers.addTask({
+                await workers.addRetryableTask({
                     type: WorkerTaskType.TRANSFER_FT,
                     data: {
                         hederaAccountId: root.hederaAccountId,
@@ -404,7 +404,7 @@ export class PolicyUtils {
             KeyType.TOKEN_WIPE_KEY,
             token.tokenId
         );
-        await workers.addTask({
+        await workers.addRetryableTask({
             type: WorkerTaskType.WIPE_TOKEN,
             data: {
                 hederaAccountId: root.hederaAccountId,
@@ -567,7 +567,7 @@ export class PolicyUtils {
             return await ref.databaseServer.getVirtualHederaAccountInfo(hederaAccountId);
         } else {
             const workers = new Workers();
-            return await workers.addTask({
+            return await workers.addNonRetryableTask({
                 type: WorkerTaskType.GET_ACCOUNT_INFO,
                 data: {
                     userID: user.hederaAccountId,
@@ -588,7 +588,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualAssociate(user.hederaAccountId, token);
         } else {
             const workers = new Workers();
-            return await workers.addTask({
+            return await workers.addNonRetryableTask({
                 type: WorkerTaskType.ASSOCIATE_TOKEN,
                 data: {
                     tokenId: token.tokenId,
@@ -611,7 +611,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualDissociate(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            return await workers.addTask({
+            return await workers.addNonRetryableTask({
                 type: WorkerTaskType.ASSOCIATE_TOKEN,
                 data: {
                     tokenId: token.tokenId,
@@ -641,7 +641,7 @@ export class PolicyUtils {
         } else {
             const workers = new Workers();
             const freezeKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId);
-            return await workers.addTask({
+            return await workers.addNonRetryableTask({
                 type: WorkerTaskType.FREEZE_TOKEN,
                 data: {
                     hederaAccountId: root.hederaAccountId,
@@ -672,7 +672,7 @@ export class PolicyUtils {
         } else {
             const workers = new Workers();
             const freezeKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId);
-            return await workers.addTask({
+            return await workers.addRetryableTask({
                 type: WorkerTaskType.FREEZE_TOKEN,
                 data: {
                     hederaAccountId: root.hederaAccountId,
@@ -703,7 +703,7 @@ export class PolicyUtils {
         } else {
             const workers = new Workers();
             const kycKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId);
-            return await workers.addTask({
+            return await workers.addRetryableTask({
                 type: WorkerTaskType.GRANT_KYC_TOKEN,
                 data: {
                     hederaAccountId: root.hederaAccountId,
@@ -735,7 +735,7 @@ export class PolicyUtils {
         } else {
             const workers = new Workers();
             const kycKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId);
-            return await workers.addTask({
+            return await workers.addRetryableTask({
                 type: WorkerTaskType.GRANT_KYC_TOKEN,
                 data: {
                     hederaAccountId: root.hederaAccountId,
@@ -768,7 +768,7 @@ export class PolicyUtils {
         const adminId = user.hederaAccountId;
         if (!ref.dryRun) {
             const workers = new Workers();
-            const createdToken = await workers.addTask({
+            const createdToken = await workers.addRetryableTask({
                 type: WorkerTaskType.CREATE_TOKEN,
                 data: {
                     operatorId: user.hederaAccountId,
@@ -830,7 +830,7 @@ export class PolicyUtils {
      */
     public static async checkAccountId(account: IHederaAccount): Promise<void> {
         const workers = new Workers();
-        return await workers.addTask({
+        return await workers.addNonRetryableTask({
             type: WorkerTaskType.CHECK_ACCOUNT,
             data: {
                 hederaAccountId: account.hederaAccountId,

@@ -32,16 +32,24 @@ Promise.all([
 
     state.setChannel(channel);
     state.updateState(ApplicationStates.INITIALIZING);
-    await fixtures();
+    try {
+        await fixtures();
 
-    new Logger().setChannel(channel);
-    new AccountService(channel).registerListeners();
-    new WalletService(channel, vault).registerListeners();
+        new Logger().setChannel(channel);
+        new AccountService(channel).registerListeners();
+        new WalletService(channel, vault).registerListeners();
 
-    if (process.env.IMPORT_KEYS_FROM_DB) {
-        await ImportKeysFromDatabase(vault);
+        if (process.env.IMPORT_KEYS_FROM_DB) {
+            await ImportKeysFromDatabase(vault);
+        }
+
+        state.updateState(ApplicationStates.READY);
+        new Logger().info('auth service started', ['AUTH_SERVICE']);
+    } catch (error) {
+        console.log(error.message);
+        process.exit(1);
     }
-
-    state.updateState(ApplicationStates.READY);
-    new Logger().info('auth service started', ['AUTH_SERVICE']);
+}, (reason) => {
+    console.log(reason);
+    process.exit(0);
 });

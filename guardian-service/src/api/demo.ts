@@ -52,7 +52,7 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
     notifier.completedAndStart('Creating account in Hedera');
 
     const workers = new Workers();
-    const result = await workers.addTask({
+    const result = await workers.addNonRetryableTask({
         type: WorkerTaskType.GENERATE_DEMO_KEY,
         data: {
             operatorId: OPERATOR_ID,

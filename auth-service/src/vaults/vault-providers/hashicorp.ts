@@ -47,6 +47,9 @@ export class Hashicorp implements IVault{
         assert(process.env.HASHICORP_ADDRESS, 'HASHICORP_ADDRESS environment variable is not set');
         assert(process.env.HASHICORP_TOKEN, 'HASHICORP_TOKEN environment variable is not set');
 
+        // Remove all final slashes
+        this.options.endpoint = this.options.endpoint.replace(/^(.+?)(\/+)$/, '$1');
+
         this.vault = NodeVault(this.options);
         // this.logger = new Logger();
     }
