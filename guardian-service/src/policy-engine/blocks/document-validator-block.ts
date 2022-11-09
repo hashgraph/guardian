@@ -7,6 +7,7 @@ import { IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '@poli
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Document Validator
@@ -162,9 +163,12 @@ export class DocumentValidatorBlock {
                     return false;
                 }
             }
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
             return true;
         } else {
-            return await this.validateDocument(ref, event, document);
+            const value = await this.validateDocument(ref, event, document);
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
+            return value;
         }
     }
 

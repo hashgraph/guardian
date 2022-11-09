@@ -13,6 +13,7 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { MessageAction, MessageServer, VcDocument, VPMessage } from '@hedera-modules';
 import { PolicyRoles } from '@entity/policy-roles';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Sign Status
@@ -166,6 +167,8 @@ export class MultiSignBlock {
         await this.updateThreshold(users, sourceDoc, documentId, user);
 
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
     }
 
     /**

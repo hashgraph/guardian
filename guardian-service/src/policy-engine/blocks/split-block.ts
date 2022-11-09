@@ -14,6 +14,7 @@ import { VcDocument } from '@hedera-modules';
 import { SchemaEntity } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { Schema as SchemaCollection } from '@entity/schema';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Split block
@@ -281,6 +282,7 @@ export class SplitBlock {
         } else {
             await this.addDocs(ref, event.user, [docs]);
         }
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
     }
 
     /**

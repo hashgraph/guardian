@@ -13,6 +13,7 @@ import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-m
 import { KeyType } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { DatabaseServer } from '@database-modules';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Custom logic block
@@ -69,6 +70,8 @@ export class CustomLogicBlock {
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
         }
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
     }
 
     /**
@@ -92,7 +95,7 @@ export class CustomLogicBlock {
                     const owner = PolicyUtils.getDocumentOwner(ref, documents[0]);
                     const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
                     let root;
-                    switch(ref.options.documentSigner) {
+                    switch (ref.options.documentSigner) {
                         case 'owner':
                             root = await PolicyUtils.getHederaAccount(ref, owner.did);
                             break;
@@ -196,7 +199,7 @@ export class CustomLogicBlock {
      * @param userHederaAccount
      * @param userHederaKey
      */
-     async generateId(idType: string, user: IPolicyUser, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
+    async generateId(idType: string, user: IPolicyUser, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (idType === 'UUID') {

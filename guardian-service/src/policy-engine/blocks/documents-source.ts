@@ -7,6 +7,7 @@ import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { StateField } from '@policy-engine/helpers/decorators';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Document source block with UI
@@ -55,6 +56,7 @@ export class InterfaceDocumentsSource {
 
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag);
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
     }
 
     /**

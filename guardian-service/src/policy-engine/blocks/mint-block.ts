@@ -12,6 +12,7 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Mint block
@@ -262,6 +263,8 @@ export class MintBlock {
         );
         ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data);
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
     }
 
     /**

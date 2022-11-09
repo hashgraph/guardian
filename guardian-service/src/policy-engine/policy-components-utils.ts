@@ -17,6 +17,7 @@ import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
 import { GetBlockAbout } from '@policy-engine/blocks';
 import { DatabaseServer } from '@database-modules';
 import { IPolicyUser } from './policy-user';
+import { ExternalEvent } from './interfaces/external-event';
 
 /**
  * Policy action map type
@@ -39,6 +40,10 @@ export class PolicyComponentsUtils {
      * Update user info function
      */
     public static UpdateUserInfoFn: (user: IPolicyUser, policy: Policy) => Promise<void>;
+    /**
+     * External Event function
+     */
+    public static ExternalEventFn: (event: ExternalEvent<any>) => Promise<void>;
 
     /**
      * Block ID list

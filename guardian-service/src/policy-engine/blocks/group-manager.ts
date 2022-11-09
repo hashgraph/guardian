@@ -8,6 +8,7 @@ import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { PolicyRoles } from '@entity/policy-roles';
 import { MessageServer, MessageStatus } from '@hedera-modules';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Document action clock with UI
@@ -121,6 +122,7 @@ export class GroupManagerBlock {
         }
 
         ref.triggerInternalEvent('remove-user', (new PolicyUser(did, !!ref.dryRun)).setGroup(member));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.DeleteMember, ref, user, null));
     }
 
     /**
@@ -196,6 +198,7 @@ export class GroupManagerBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         if (blockData.action === 'invite') {
             const invitation = await this.createInvite(ref, user, blockData.group, blockData.role);
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
             return { invitation };
         }
         if (blockData.action === 'delete') {
@@ -206,6 +209,7 @@ export class GroupManagerBlock {
                 blockData.user,
                 blockData.message
             );
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
             return { deleted: true };
         }
     }

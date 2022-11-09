@@ -5,6 +5,7 @@ import { IPolicyCalculateAddon } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Calculate math addon
@@ -36,6 +37,7 @@ export class CalculateMathAddon {
                 scope[equation.variable] = ref.evaluate(equation.formula, scope);
             }
         }
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, null, null));
         return scope;
     }
 
