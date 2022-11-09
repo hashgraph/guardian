@@ -230,3 +230,13 @@ form {
     padding: 22px 1px 1px 14px;
     font-size: 20px;
 }
+
+.file-upload {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.loading-enum-values{
+    margin: 0 auto;
+}
