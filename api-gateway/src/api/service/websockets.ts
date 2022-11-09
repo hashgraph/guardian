@@ -2,7 +2,6 @@ import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
 import { IUpdateUserInfoMessage, IUpdateUserBalanceMessage, MessageAPI, IUpdateBlockMessage, IErrorBlockMessage, IStatus } from '@guardian/interfaces';
-import { IPFS } from '@helpers/ipfs';
 import { Guardians } from '@helpers/guardians';
 import { MessageBrokerChannel, MessageResponse, Logger } from '@guardian/common';
 
@@ -164,18 +163,15 @@ export class WebSocketsService {
                 case MessageAPI.GET_STATUS:
                     const logger = new Logger();
                     const guardians = new Guardians();
-                    const ipfs = new IPFS();
                     const auth = new Users();
 
                     const [
                         LOGGER_SERVICE,
                         GUARDIAN_SERVICE,
-                        IPFS_CLIENT,
                         AUTH_SERVICE
                     ] = await Promise.all([
                         logger.getStatus(),
                         guardians.getStatus(),
-                        ipfs.getStatus(),
                         auth.getStatus()
                     ]);
                     ws.send(JSON.stringify(
@@ -184,7 +180,6 @@ export class WebSocketsService {
                             data: {
                                 LOGGER_SERVICE,
                                 GUARDIAN_SERVICE,
-                                IPFS_CLIENT,
                                 AUTH_SERVICE
                             }
                         }

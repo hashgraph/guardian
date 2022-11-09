@@ -1,6 +1,5 @@
 import { permissionHelper } from '@auth/authorization-helper';
 import { Guardians } from '@helpers/guardians';
-import { IPFS } from '@helpers/ipfs';
 import { Request, Response, Router } from 'express';
 import { CommonSettings, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
@@ -17,10 +16,8 @@ settingsAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: 
             throw new Error('Invalid settings');
         }
         const guardians = new Guardians();
-        const ipfs = new IPFS();
         await Promise.all([
-            guardians.updateSettings(settings),
-            ipfs.updateSettings(settings)
+            guardians.updateSettings(settings)
         ]);
         res.json(null);
     } catch (error) {
@@ -32,14 +29,11 @@ settingsAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: 
 settingsAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
     try {
         const guardians = new Guardians();
-        const ipfs = new IPFS();
-        const [guardiansSettings, ipfsClientSettings] = await Promise.all([
-            guardians.getSettings(),
-            ipfs.getSettings()
+        const [guardiansSettings] = await Promise.all([
+            guardians.getSettings()
         ]);
         res.json({
-            ...guardiansSettings,
-            ...ipfsClientSettings
+            ...guardiansSettings
         });
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
