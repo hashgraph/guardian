@@ -48,7 +48,7 @@ export class IPFS {
          */
         url: string
     }> {
-        const res = await new Workers().addTask({
+        const res = await new Workers().addRetryableTask({
             type: WorkerTaskType.ADD_FILE,
             data: {
                 target: [IPFS.target, MessageAPI.IPFS_ADD_FILE].join('.'),
@@ -70,7 +70,7 @@ export class IPFS {
      * @returns File
      */
     public static async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
-        const res = await new Workers().addTask({
+        const res = await new Workers().addRetryableTask({
             type: WorkerTaskType.GET_FILE,
             data: {
                 target: [IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'),

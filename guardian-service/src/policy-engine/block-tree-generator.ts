@@ -60,6 +60,10 @@ export class BlockTreeGenerator {
             policyId = PolicyComponentsUtils.GenerateNewUUID();
         }
 
+        if (!policy || (typeof policy !== 'object')) {
+            throw new Error('Policy was not exist');
+        }
+
         new Logger().info('Start policy', ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
 
         try {
@@ -96,6 +100,12 @@ export class BlockTreeGenerator {
         } else {
             policy = arg;
             policyConfig = policy.config;
+        }
+
+        if (!policy || (typeof policy !== 'object')) {
+            return {
+                isBadPolicy: true
+            };
         }
 
         const policyInstance = await this.generate(arg, true);

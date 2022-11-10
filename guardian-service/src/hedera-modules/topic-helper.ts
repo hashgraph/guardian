@@ -90,7 +90,7 @@ export class TopicHelper {
     ): Promise<[Topic, string, string]> {
 
         const workers = new Workers();
-        const topicId = await workers.addTask({
+        const topicId = await workers.addRetryableTask({
             type: WorkerTaskType.NEW_TOPIC,
             data: {
                 hederaAccountId: this.hederaAccountId,

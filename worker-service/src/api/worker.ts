@@ -37,9 +37,8 @@ export class Worker {
 
     /**
      * Ipfs client
-     * @private
      */
-    private readonly ipfsClient: IpfsClient;
+    private ipfsClient: IpfsClient;
 
     /**
      * Current task ID
@@ -130,6 +129,11 @@ export class Worker {
             }
         });
 
+        this.channel.subscribe(WorkerEvents.UPDATE_SETTINGS, (msg: any) => {
+            new SettingsContainer().updateSetting('IPFS_STORAGE_API_KEY', msg.ipfsStorageApiKey);
+            this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
+        });
+
         HederaSDKHelper.setTransactionResponseCallback(async (client: any) => {
             try {
                 const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
@@ -194,7 +198,7 @@ export class Worker {
                         fileContent = Buffer.from(data.body, 'base64')
                     }
                     const blob: any = new Blob([fileContent]);
-                    const r = await this.ipfsClient.addFiile(blob);
+                    const r = await this.ipfsClient.addFile(blob);
                     this.channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
                     result.data = r;
                     break;

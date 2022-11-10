@@ -120,7 +120,7 @@ async function loadSchema(messageId: string, owner: string) {
             topicId: message.getTopicId(),
             messageId,
             documentURL: message.getDocumentUrl(UrlType.url),
-            contextURL: message.getContextUrl(UrlType.url),
+            contextURL: message.getContextUrl(UrlType.custom_context_url),
             iri: null
         }
         SchemaHelper.updateIRI(schemaToImport);
@@ -411,7 +411,7 @@ export async function publishSchema(
 
     const messageId = result.getId();
     const topicId = result.getTopicId();
-    const contextUrl = result.getContextUrl(UrlType.url);
+    const contextUrl = result.getContextUrl(UrlType.custom_context_url);
     const documentUrl = result.getDocumentUrl(UrlType.url);
 
     item.status = SchemaStatus.PUBLISHED;

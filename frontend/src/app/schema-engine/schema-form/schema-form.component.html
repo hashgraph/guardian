@@ -21,7 +21,7 @@
                         <div *ngIf="isIPFS(item)">
                             <input type="file" class="file-input" style="display:none;" accept="image/*"
                                 (change)="onFileSelected($event, options.controls[item.name], item)" #fileUpload>
-                            <div class="file-upload" style="position: absolute; right:0; top:0;">
+                            <div class="file-upload">
                                 <ng-container [ngSwitch]="item.fileUploading">
                                     <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
                                     <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
@@ -68,6 +68,9 @@
                         <mat-select [formControlName]="item.name">
                             <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue">
                                 {{enumValue}}
+                            </mat-option>
+                            <mat-option *ngIf="item.fileUploading">
+                                <mat-spinner class="loading-enum-values" [diameter]="35"></mat-spinner>
                             </mat-option>
                         </mat-select>
                     </mat-form-field>
@@ -128,7 +131,7 @@
                                 <div *ngIf="isIPFS(item)">
                                     <input type="file" class="file-input" style="display:none;" accept="image/*"
                                         (change)="onFileSelected($event, listItem.control, listItem)" #fileUpload>
-                                    <div class="file-upload" style="position: absolute; right:0; top:0;">
+                                    <div class="file-upload">
                                         <ng-container [ngSwitch]="listItem.fileUploading">
                                             <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
                                             <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
@@ -178,6 +181,9 @@
                                 <mat-select [formControl]="listItem.control">
                                     <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue">
                                         {{enumValue}}
+                                    </mat-option>
+                                    <mat-option *ngIf="item.fileUploading">
+                                        <mat-spinner class="loading-enum-values" [diameter]="35"></mat-spinner>
                                     </mat-option>
                                 </mat-select>
                             </mat-form-field>

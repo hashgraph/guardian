@@ -191,11 +191,13 @@ export class SchemaFormComponent implements OnInit {
             const validators = this.getValidators(item);
             item.control = new FormControl(item.preset === null || item.preset === undefined ? "" : item.preset, validators);
             if (field.remoteLink) {
+                item.fileUploading = true;
                 fetch(field.remoteLink)
                     .then(r => r.json())
                     .then((res: any) => {
                         item.enumValues = res.enum;
-                    });
+                    })
+                    .finally(() => item.fileUploading = false);
             }
             if (field.enum) {
                 item.enumValues = field.enum;
@@ -215,11 +217,13 @@ export class SchemaFormComponent implements OnInit {
             item.control = new FormArray([]);
             item.list = [];
             if (field.remoteLink) {
+                item.fileUploading = true;
                 fetch(field.remoteLink)
                     .then(r => r.json())
                     .then((res: any) => {
                         item.enumValues = res.enum;
-                    });
+                    })
+                    .finally(() => item.fileUploading = false);
             }
             if (field.enum) {
                 item.enumValues = field.enum;

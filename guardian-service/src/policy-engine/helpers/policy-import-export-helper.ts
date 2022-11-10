@@ -269,7 +269,7 @@ export class PolicyImportExportHelper {
             const tokenRepository = new DataBaseHelper(Token);
             for (const token of tokens) {
                 const workers = new Workers();
-                const tokenData = await workers.addTask({
+                const tokenData = await workers.addRetryableTask({
                     type: WorkerTaskType.CREATE_TOKEN,
                     data: {
                         operatorId: root.hederaAccountId,

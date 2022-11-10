@@ -7,7 +7,7 @@
             <mat-icon>unfold_less</mat-icon>
         </div>
     </div>
-    
+
     <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" cdkDropList (cdkDropListDropped)="drop($event)">
         <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding cdkDrag [cdkDragData]="node"
             (mouseenter)="dragHover(node)" (mouseleave)="dragHoverEnd()" (cdkDragStarted)="dragStart()"
@@ -17,7 +17,7 @@
             </ng-container>
         </mat-tree-node>
         <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding cdkDrag [cdkDragData]="node"
-            (mouseenter)="dragHover(node)" (mouseleave)="dragHoverEnd()" (cdkDragStarted)="dragStart()"
+            (mouseenter)="dragHover(node)" (mouseleave)="dragHoverEnd()" (cdkDragStarted)="dragStart(node)"
             (cdkDragReleased)="dragEnd()">
             <button mat-icon-button matTreeNodeToggle (click)="expansionModel.toggle(node.node.id)">
                 <mat-icon class="mat-icon-rtl-mirror">{{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
@@ -30,9 +30,9 @@
 </div>
 
 <ng-template #blockTemplate let-node='node'>
-    <div class="block" 
-        (click)="onSelect($event, node)" 
-        [attr.selected]="isSelect(node)" 
+    <div class="block"
+        (click)="onSelect($event, node)"
+        [attr.selected]="isSelect(node)"
         [attr.error]="isError(node)"
         [attr.control]="node.about.control"
         [attr.root]="node.root"

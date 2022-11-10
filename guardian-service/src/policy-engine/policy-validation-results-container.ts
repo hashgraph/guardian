@@ -47,7 +47,12 @@ export interface ISerializedErrors {
     /**
      * Blocks
      */
-    blocks: IInstanceErrors[]
+    blocks?: IInstanceErrors[]
+
+    /**
+     * Is bad policy
+     */
+    isBadPolicy?: boolean
 }
 
 /**

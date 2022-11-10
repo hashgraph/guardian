@@ -33,6 +33,10 @@
 
 * [Policy Demo](policy-flow/policy-demo.md)
 
+## Artifacts Demo
+
+* [How to Import/Delete Artifacts](artifacts-demo/how-to-import-delete-artifacts.md)
+
 ## Demo Guide
 
 * [Demo Usage Guide](demo-guide/demo-usage-guide.md)
@@ -63,6 +67,11 @@
 ## Token Authentication
 
 * [How to establish Token Authenticity](token-authentication/how-to-establish-token-authenticity.md)
+
+## Tokens Tab
+
+* [How to create token template](tokens-tab/how-to-create-token-template.md)
+* [Creating Token through UI](tokens-tab/creating-token-through-ui.md)
 
 ## Available Policy Workflow Blocks
 
@@ -99,6 +108,7 @@
 * [multiSignBlock](available-policy-workflow-blocks/multisignblock.md)
 * [customLogicBlock](available-policy-workflow-blocks/customlogicblock.md)
 * [splitBlock](available-policy-workflow-blocks/splitblock.md)
+* [Create Token Block](available-policy-workflow-blocks/create-token-block.md)
 
 ## Policy Workflow Creation using the Guardian User Interface
 
@@ -218,6 +228,14 @@
 * [Freeze Tokens of a user](token-apis/freeze-tokens-of-a-user.md)
 * [UnFreeze Tokens of a user](token-apis/unfreeze-tokens-of-a-user.md)
 
+## Token Related APIs for Asynchronous Execution
+
+* [Token Creation](token-related-apis-for-asynchronous-execution/token-creation.md)
+* [Associating User with the Hedera Token](token-related-apis-for-asynchronous-execution/associating-user-with-the-hedera-token.md)
+* [Disassociating User with the Hedera Token](token-related-apis-for-asynchronous-execution/disassociating-user-with-the-hedera-token.md)
+* [Setting KYC for the User](token-related-apis-for-asynchronous-execution/setting-kyc-for-the-user.md)
+* [Unsetting KYC for the User](token-related-apis-for-asynchronous-execution/unsetting-kyc-for-the-user.md)
+
 ## TrustChains APIs
 
 * [Requesting](trustchains-apis/requesting.md)
@@ -261,10 +279,6 @@
 
 * [Listen to external event published by Guardian](external-events/external-events.md)
 
-## FAQs
-
-* [FAQs](faqs/faqs.md)
-
 ## Schema Related APIs for Asynchronous Execution
 
 * [Creation of Schema](schema-related-apis-for-asynchronous-execution/creation-of-schema.md)
@@ -273,18 +287,10 @@
 * [Importing Schema from IPFS](schema-related-apis-for-asynchronous-execution/importing-schema-from-ipfs.md)
 * [Importing Schema from .zip](schema-related-apis-for-asynchronous-execution/importing-schema-from-.zip.md)
 
-## Token Related APIs for Asynchronous Execution
-
-* [Token Creation](token-related-apis-for-asynchronous-execution/token-creation.md)
-* [Associating User with the Hedera Token](token-related-apis-for-asynchronous-execution/associating-user-with-the-hedera-token.md)
-* [Disassociating User with the Hedera Token](token-related-apis-for-asynchronous-execution/disassociating-user-with-the-hedera-token.md)
-* [Setting KYC for the User](token-related-apis-for-asynchronous-execution/setting-kyc-for-the-user.md)
-* [Unsetting KYC for the User](token-related-apis-for-asynchronous-execution/unsetting-kyc-for-the-user.md)
-
 ## Task APIs
 
 * [Returning Task Statuses](task-apis/returning-task-statuses.md)
 
-## Artifacts Demo
+## FAQs
 
-* [How to Import/Delete Artifacts](artifacts-demo/how-to-import-delete-artifacts.md)
+* [FAQs](faqs/faqs.md)
