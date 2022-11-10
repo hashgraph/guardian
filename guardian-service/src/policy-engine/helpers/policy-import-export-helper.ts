@@ -15,7 +15,6 @@ import { Users } from '@helpers/users';
 import { MessageAction, MessageServer, MessageType, PolicyMessage, TopicHelper } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 import { importSchemaByFiles, publishSystemSchema } from '@api/schema.service';
-import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
 import { DatabaseServer } from '@database-modules';

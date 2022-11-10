@@ -431,7 +431,7 @@ export class PolicyRolesBlock {
         ]);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
-    
+
         return true;
     }
 }

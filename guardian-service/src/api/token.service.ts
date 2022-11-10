@@ -256,7 +256,6 @@ async function updateToken(oldToken: Token, newToken: Token, tokenRepository: Da
     return result;
 }
 
-
 /**
  * Delete token
  * @param token
@@ -494,7 +493,7 @@ export async function tokenAPI(
                 if (!msg) {
                     throw new Error('Invalid Params');
                 }
-                const item = await tokenRepository.findOne({ tokenId: tokenId });
+                const item = await tokenRepository.findOne({ tokenId });
                 if (!item) {
                     throw new Error('Token not found');
                 }

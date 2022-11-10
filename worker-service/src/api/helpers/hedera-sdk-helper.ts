@@ -265,7 +265,7 @@ export class HederaSDKHelper {
      * @param {PrivateKey} adminKey - Admin Key
      * @param {PrivateKey} treasuryKey - Treasury Key
      * @param {any} changes - changes
-     * 
+     *
      * @returns {boolean} - status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -302,13 +302,13 @@ export class HederaSDKHelper {
         const transactionStatus = receipt.status;
         return transactionStatus === Status.Success;
     }
+
     /**
      * Delete token (TokenDeleteTransaction)
      *
      * @param {TokenId} tokenId - Token Id
      * @param {PrivateKey} adminKey - Admin Key
-     * @param {PrivateKey} treasuryKey - Treasury Key
-     * 
+     *
      * @returns {boolean} - status
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
@@ -317,7 +317,7 @@ export class HederaSDKHelper {
         adminKey: PrivateKey
     ): Promise<boolean> {
         const client = this.client;
-        let transaction = new TokenDeleteTransaction()
+        const transaction = new TokenDeleteTransaction()
             .setTokenId(tokenId)
             .freezeWith(client);
 
@@ -330,7 +330,6 @@ export class HederaSDKHelper {
         const transactionStatus = receipt.status;
         return transactionStatus === Status.Success;
     }
-
 
     /**
      * Get balance account (AccountBalanceQuery)
