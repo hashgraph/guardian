@@ -338,7 +338,7 @@ tokenAPI.put('/:tokenId/:username/grantKyc', permissionHelper(UserRole.STANDARD_
 
 tokenAPI.put('/push/:tokenId/:username/grantKyc', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
-    const { taskId, expectation } = taskManager.start('Grant/revoke KYC');
+    const { taskId, expectation } = taskManager.start('Grant KYC');
 
     const tokenId = req.params.tokenId;
     const username = req.params.username;
@@ -381,7 +381,7 @@ tokenAPI.put('/:tokenId/:username/revokeKyc', permissionHelper(UserRole.STANDARD
 
 tokenAPI.put('/push/:tokenId/:username/revokeKyc', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
-    const { taskId, expectation } = taskManager.start('Grant/revoke KYC');
+    const { taskId, expectation } = taskManager.start('Revoke KYC');
 
     const tokenId = req.params.tokenId;
     const username = req.params.username;
@@ -438,6 +438,56 @@ tokenAPI.put('/:tokenId/:username/unfreeze', permissionHelper(UserRole.STANDARD_
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code || 500, message: error.message });
     }
+});
+
+tokenAPI.put('/push/:tokenId/:username/freeze', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Freeze Token');
+
+    const tokenId = req.params.tokenId;
+    const username = req.params.username;
+    const owner = req.user.did;
+    if (!owner) {
+        res.status(500).json({ code: 500, message: 'User not registered' });
+        return;
+    }
+
+    setImmediate(async () => {
+        try {
+            const guardians = new Guardians();
+            await guardians.freezeTokenAsync(tokenId, username, owner, taskId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
+        }
+    });
+
+    res.status(200).send({ taskId, expectation });
+});
+
+tokenAPI.put('/push/:tokenId/:username/unfreeze', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const taskManager = new TaskManager();
+    const { taskId, expectation } = taskManager.start('Unfreeze Token');
+
+    const tokenId = req.params.tokenId;
+    const username = req.params.username;
+    const owner = req.user.did;
+    if (!owner) {
+        res.status(500).json({ code: 500, message: 'User not registered' });
+        return;
+    }
+
+    setImmediate(async () => {
+        try {
+            const guardians = new Guardians();
+            await guardians.unfreezeTokenAsync(tokenId, username, owner, taskId);
+        } catch (error) {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
+        }
+    });
+
+    res.status(200).send({ taskId, expectation });
 });
 
 tokenAPI.get('/:tokenId/:username/info', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {

@@ -79,6 +79,14 @@ export class TokenService {
         }
     }
 
+    public pushFreeze(tokenId: string, username: string, freeze: boolean): Observable<{ taskId: string, expectation: number }> {
+        if (freeze) {
+            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/freeze`, null);
+        } else {
+            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/unfreeze`, null);
+        }
+    };
+
     public info(tokenId: string, username: string): Observable<ITokenInfo> {
         return this.http.get<ITokenInfo>(`${this.url}/${tokenId}/${username}/info`);
     }

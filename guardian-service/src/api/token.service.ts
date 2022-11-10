@@ -23,6 +23,10 @@ function getTokenInfo(info: any, token: any) {
         tokenType: token.tokenType,
         decimals: token.decimals,
         policyId: token.policyId,
+        enableAdmin: !!token.enableAdmin,
+        enableFreeze: !!token.enableFreeze,
+        enableKYC: !!token.enableKYC,
+        enableWipe: !!token.enableWipe,
         associated: false,
         balance: null,
         hBarBalance: null,
@@ -354,7 +358,14 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
  * @param tokenRepository
  * @param notifier
  */
-async function grantKycToken(tokenId, username, owner, grant, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<any> {
+async function grantKycToken(
+    tokenId: any,
+    username: string,
+    owner: string,
+    grant: boolean,
+    tokenRepository: DataBaseHelper<Token>,
+    notifier: INotifier
+): Promise<any> {
     notifier.start('Find token data');
     const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
     if (!token) {
@@ -401,7 +412,75 @@ async function grantKycToken(tokenId, username, owner, grant, tokenRepository: D
         }
     }, 10);
 
-    const result = getTokenInfo(info, { tokenId });
+    const result = getTokenInfo(info, token);
+    notifier.completed();
+    return result;
+}
+
+/**
+ * Freeze/unfreeze token
+ * @param tokenId
+ * @param username
+ * @param owner
+ * @param freeze
+ * @param tokenRepository
+ * @param notifier
+ */
+async function freezeToken(
+    tokenId: any,
+    username: string,
+    owner: string,
+    freeze: boolean,
+    tokenRepository: DataBaseHelper<Token>,
+    notifier: INotifier
+): Promise<any> {
+    notifier.start('Find token data');
+    const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+    if (!token) {
+        throw new Error('Token not found');
+    }
+
+    notifier.completedAndStart('Resolve Hedera account');
+    const users = new Users();
+    const user = await users.getUser(username);
+    if (!user) {
+        throw new Error('User not found');
+    }
+    if (!user.hederaAccountId) {
+        throw new Error('User is not linked to an Hedera Account');
+    }
+
+    const root = await users.getHederaAccount(owner);
+
+    notifier.completedAndStart(freeze ? 'Freeze Token' : 'Unfreeze Token');
+    const workers = new Workers();
+    const freezeKey = await new Wallet().getUserKey(
+        token.owner,
+        KeyType.TOKEN_FREEZE_KEY,
+        token.tokenId
+    );
+    await workers.addNonRetryableTask({
+        type: WorkerTaskType.FREEZE_TOKEN,
+        data: {
+            hederaAccountId: root.hederaAccountId,
+            hederaAccountKey: root.hederaAccountKey,
+            userHederaAccountId: user.hederaAccountId,
+            freezeKey,
+            tokenId,
+            freeze
+        }
+    }, 1);
+
+    const info = await workers.addNonRetryableTask({
+        type: WorkerTaskType.GET_ACCOUNT_INFO,
+        data: {
+            userID: root.hederaAccountId,
+            userKey: root.hederaAccountKey,
+            hederaAccountId: user.hederaAccountId,
+        }
+    }, 10);
+
+    const result = getTokenInfo(info, token);
     notifier.completed();
     return result;
 }
@@ -510,55 +589,29 @@ export async function tokenAPI(
     ApiResponse(channel, MessageAPI.FREEZE_TOKEN, async (msg) => {
         try {
             const { tokenId, username, owner, freeze } = msg;
-
-            const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
-            if (!token) {
-                throw new Error('Token not found');
-            }
-
-            const users = new Users();
-            const user = await users.getUser(username);
-            if (!user) {
-                throw new Error('User not found');
-            }
-            if (!user.hederaAccountId) {
-                throw new Error('User is not linked to an Hedera Account');
-            }
-
-            const root = await users.getHederaAccount(owner);
-
-            const workers = new Workers();
-            const freezeKey = await new Wallet().getUserKey(
-                token.owner,
-                KeyType.TOKEN_FREEZE_KEY,
-                token.tokenId
-            );
-            await workers.addNonRetryableTask({
-                type: WorkerTaskType.FREEZE_TOKEN,
-                data: {
-                    hederaAccountId: root.hederaAccountId,
-                    hederaAccountKey: root.hederaAccountKey,
-                    freezeKey,
-                    tokenId,
-                    freeze
-                }
-            }, 1);
-
-            const info = await workers.addNonRetryableTask({
-                type: WorkerTaskType.GET_ACCOUNT_INFO,
-                data: {
-                    userID: root.hederaAccountId,
-                    userKey: root.hederaAccountKey,
-                    hederaAccountId: user.hederaAccountId,
-                }
-            }, 10);
-
-            const result = getTokenInfo(info, { tokenId });
+            const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, emptyNotifier());
             return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error, 400);
         }
+    });
+
+    ApiResponse(channel, MessageAPI.FREEZE_TOKEN_ASYNC, async (msg) => {
+        const { tokenId, username, owner, freeze, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+
+        setImmediate(async () => {
+            try {
+                const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, notifier);
+                notifier.result(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
     });
 
     ApiResponse(channel, MessageAPI.KYC_TOKEN, async (msg) => {

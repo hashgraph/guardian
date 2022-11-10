@@ -188,6 +188,23 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Async Unfreeze token
+     * @param tokenId
+     * @param username
+     * @param owner
+     * @param taskId
+     */
+    public async freezeTokenAsync(tokenId: string, username: string, owner: string, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.FREEZE_TOKEN_ASYNC, {
+            tokenId,
+            username,
+            owner,
+            freeze: true,
+            taskId,
+        });
+    }
+
+    /**
      * Unfreeze token
      * @param tokenId
      * @param username
@@ -199,6 +216,23 @@ export class Guardians extends ServiceRequestsBase {
             username,
             owner,
             freeze: false,
+        });
+    }
+
+    /**
+     * Async Unfreeze token
+     * @param tokenId
+     * @param username
+     * @param owner
+     * @param taskId
+     */
+    public async unfreezeTokenAsync(tokenId: string, username: string, owner: string, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.FREEZE_TOKEN_ASYNC, {
+            tokenId,
+            username,
+            owner,
+            freeze: false,
+            taskId,
         });
     }
 

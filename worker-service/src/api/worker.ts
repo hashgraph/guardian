@@ -12,6 +12,7 @@ import { Environment } from './helpers/environment';
 import { IpfsClient } from './ipfs-client';
 import Blob from 'cross-blob';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
+import { HederaUtils } from './helpers/utils';
 
 /**
  * Sleep helper
@@ -292,7 +293,7 @@ export class Worker {
                     const _decimals = nft ? 0 : decimals;
                     const _initialSupply = nft ? 0 : initialSupply;
                     const treasuryId = AccountId.fromString(operatorId);
-                    const treasuryKey = PrivateKey.fromString(operatorKey);
+                    const treasuryKey = HederaUtils.parsPrivateKey(operatorKey);
                     const supplyKey = PrivateKey.generate();
                     const adminKey = enableAdmin ? PrivateKey.generate() : null;
                     const freezeKey = enableFreeze ? PrivateKey.generate() : null;
@@ -353,7 +354,7 @@ export class Worker {
                     const client = new HederaSDKHelper(operatorId, operatorKey);
                     const status = await client.updateToken(
                         TokenId.fromString(tokenId),
-                        PrivateKey.fromString(adminKey),
+                        HederaUtils.parsPrivateKey(adminKey),
                         changes
                     )
 
@@ -378,7 +379,7 @@ export class Worker {
                     const client = new HederaSDKHelper(operatorId, operatorKey);
                     result.data = await client.deleteToken(
                         TokenId.fromString(tokenId),
-                        PrivateKey.fromString(adminKey)
+                        HederaUtils.parsPrivateKey(adminKey)
                     )
 
                     break;
@@ -397,7 +398,15 @@ export class Worker {
                 }
 
                 case WorkerTaskType.GRANT_KYC_TOKEN: {
-                    const { hederaAccountId, hederaAccountKey, userHederaAccountId, tokenId, kycKey, grant, dryRun } = task.data;
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        userHederaAccountId,
+                        tokenId,
+                        kycKey,
+                        grant,
+                        dryRun
+                    } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
 
                     if (grant) {
@@ -410,12 +419,20 @@ export class Worker {
                 }
 
                 case WorkerTaskType.FREEZE_TOKEN: {
-                    const { hederaAccountId, hederaAccountKey, freezeKey, freeze, tokenId, dryRun } = task.data;
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        userHederaAccountId,
+                        tokenId,
+                        freezeKey,
+                        freeze,
+                        dryRun
+                    } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
                     if (freeze) {
-                        result.data = await client.freeze(tokenId, hederaAccountId, freezeKey);
+                        result.data = await client.freeze(tokenId, userHederaAccountId, freezeKey);
                     } else {
-                        result.data = await client.unfreeze(tokenId, hederaAccountId, freezeKey);
+                        result.data = await client.unfreeze(tokenId, userHederaAccountId, freezeKey);
                     }
 
                     break;

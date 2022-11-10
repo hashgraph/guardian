@@ -45,4 +45,27 @@ export class HederaUtils {
     public static decode(text: string): Uint8Array {
         return new Uint8Array(Buffer.from(text));
     }
+
+    /**
+     * Pars random key
+     * @param key
+     * @param notNull
+     */
+    public static parsPrivateKey(key: string | PrivateKey, notNull = true): PrivateKey {
+        if (key) {
+            try {
+                if (typeof key === 'string') {
+                    return PrivateKey.fromString(key);
+                } else {
+                    return key;
+                }
+            } catch (error) {
+                throw new Error('Invalid Private Key');
+            }
+        } else if (notNull) {
+            throw new Error('Invalid Private Key');
+        } else {
+            return null;
+        }
+    }
 }

@@ -13,7 +13,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 
 enum OperationMode {
-    None, Create, Kyc
+    None, Create, Kyc, Freeze
 }
 
 /**
@@ -191,6 +191,14 @@ export class TokenConfigComponent implements OnInit {
                         this.user = null;
                     });
                     break;
+                case OperationMode.Freeze:
+                    this.taskService.get(taskId).subscribe((task) => {
+                        this.loading = false;
+                        const { result } = task;
+                        this.refreshUser(this.user, result);
+                        this.user = null;
+                    });
+                    break;
                 default:
                     console.log('Unsupported operation mode');
             }
@@ -204,7 +212,15 @@ export class TokenConfigComponent implements OnInit {
         user.hBarBalance = "n/a";
         user.frozen = "n/a";
         user.kyc = "n/a";
+        user.enableAdmin = false;
+        user.enableFreeze = false;
+        user.enableKYC = false;
+        user.enableWipe = false;
         if (res) {
+            user.enableAdmin = res.enableAdmin;
+            user.enableFreeze = res.enableFreeze;
+            user.enableKYC = res.enableKYC;
+            user.enableWipe = res.enableWipe;
             user.associated = res.associated ? "Yes" : "No";
             if (res.associated) {
                 user.balance = res.balance;
@@ -243,9 +259,12 @@ export class TokenConfigComponent implements OnInit {
 
     freeze(user: any, freeze: boolean) {
         this.loading = true;
-        this.tokenService.freeze(this.tokenId, user.username, freeze).subscribe((res) => {
-            this.refreshUser(user, res);
-            this.loading = false;
+        this.tokenService.pushFreeze(this.tokenId, user.username, freeze).subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.operationMode = OperationMode.Freeze;
+            this.user = user;
         }, (e) => {
             console.error(e.error);
             this.loading = false;
