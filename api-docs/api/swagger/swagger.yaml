@@ -222,6 +222,14 @@ components:
           type: boolean
         kyc:
           type: boolean
+        enableAdmin:
+          type: boolean
+        enableKYC:
+          type: boolean
+        enableFreeze:
+          type: boolean
+        enableWipe:
+          type: boolean
     PolicyConfig:
       type: object
       required:
