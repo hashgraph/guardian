@@ -51,7 +51,11 @@ export class HederaUtils {
      * @param key
      * @param notNull
      */
-    public static parsPrivateKey(key: string | PrivateKey, notNull = true): PrivateKey {
+    public static parsPrivateKey(
+        key: string | PrivateKey,
+        notNull = true,
+        keyName: string = 'Private Key'
+    ): PrivateKey {
         if (key) {
             try {
                 if (typeof key === 'string') {
@@ -60,10 +64,10 @@ export class HederaUtils {
                     return key;
                 }
             } catch (error) {
-                throw new Error('Invalid Private Key');
+                throw new Error(`Invalid ${keyName}`);
             }
         } else if (notNull) {
-            throw new Error('Invalid Private Key');
+            throw new Error(`${keyName} not set`);
         } else {
             return null;
         }

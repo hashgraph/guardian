@@ -354,7 +354,7 @@ export class Worker {
                     const client = new HederaSDKHelper(operatorId, operatorKey);
                     const status = await client.updateToken(
                         TokenId.fromString(tokenId),
-                        HederaUtils.parsPrivateKey(adminKey),
+                        HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key'),
                         changes
                     )
 
@@ -379,7 +379,7 @@ export class Worker {
                     const client = new HederaSDKHelper(operatorId, operatorKey);
                     result.data = await client.deleteToken(
                         TokenId.fromString(tokenId),
-                        HederaUtils.parsPrivateKey(adminKey)
+                        HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key')
                     )
 
                     break;

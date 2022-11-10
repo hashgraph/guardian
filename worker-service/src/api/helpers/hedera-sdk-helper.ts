@@ -441,7 +441,7 @@ export class HederaSDKHelper {
     public async freeze(tokenId: string | TokenId, accountId: string, freezeKey: string): Promise<boolean> {
         const client = this.client;
 
-        const _freezeKey = HederaUtils.parsPrivateKey(freezeKey);
+        const _freezeKey = HederaUtils.parsPrivateKey(freezeKey, true, 'Freeze Key');
         const transaction = new TokenFreezeTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
@@ -466,7 +466,7 @@ export class HederaSDKHelper {
     public async unfreeze(tokenId: string | TokenId, accountId: string, freezeKey: string): Promise<boolean> {
         const client = this.client;
 
-        const _freezeKey = HederaUtils.parsPrivateKey(freezeKey);
+        const _freezeKey = HederaUtils.parsPrivateKey(freezeKey, true, 'Freeze Key');
         const transaction = new TokenUnfreezeTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
@@ -491,7 +491,7 @@ export class HederaSDKHelper {
     public async grantKyc(tokenId: string | TokenId, accountId: string, kycKey: string): Promise<boolean> {
         const client = this.client;
 
-        const _kycKey = HederaUtils.parsPrivateKey(kycKey);
+        const _kycKey = HederaUtils.parsPrivateKey(kycKey, true, 'KYC Key');
         const transaction = new TokenGrantKycTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
@@ -516,7 +516,7 @@ export class HederaSDKHelper {
     public async revokeKyc(tokenId: string | TokenId, accountId: string, kycKey: string): Promise<boolean> {
         const client = this.client;
 
-        const _kycKey = HederaUtils.parsPrivateKey(kycKey);
+        const _kycKey = HederaUtils.parsPrivateKey(kycKey, true, 'KYC Key');
         const transaction = new TokenRevokeKycTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
@@ -547,7 +547,7 @@ export class HederaSDKHelper {
     ): Promise<boolean> {
         const client = this.client;
 
-        const _supplyKey = HederaUtils.parsPrivateKey(supplyKey);
+        const _supplyKey = HederaUtils.parsPrivateKey(supplyKey, true, 'Supply Key');
         const transaction = new TokenMintTransaction()
             .setTokenId(tokenId)
             .setAmount(amount)
@@ -580,7 +580,7 @@ export class HederaSDKHelper {
     ): Promise<number[]> {
         const client = this.client;
 
-        const _supplyKey = HederaUtils.parsPrivateKey(supplyKey);
+        const _supplyKey = HederaUtils.parsPrivateKey(supplyKey, true, 'Supply Key');
         const transaction = new TokenMintTransaction()
             .setTokenId(tokenId)
             .setMetadata(data)
@@ -618,7 +618,7 @@ export class HederaSDKHelper {
     ): Promise<boolean> {
         const client = this.client;
 
-        const _wipeKey = HederaUtils.parsPrivateKey(wipeKey);
+        const _wipeKey = HederaUtils.parsPrivateKey(wipeKey, true, 'Wipe Key');
         const transaction = new TokenWipeTransaction()
             .setAccountId(targetId)
             .setTokenId(tokenId)
@@ -775,19 +775,19 @@ export class HederaSDKHelper {
         }
 
         if (submitKey) {
-            const accountKey = HederaUtils.parsPrivateKey(submitKey);
+            const accountKey = HederaUtils.parsPrivateKey(submitKey, true, 'Submit Key');
             transaction = transaction.setSubmitKey(accountKey);
         }
 
         if (adminKey) {
-            const accountKey = HederaUtils.parsPrivateKey(adminKey);
+            const accountKey = HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key');
             transaction = transaction.setAdminKey(accountKey)
         }
 
         transaction = transaction.freezeWith(client);
 
         if (adminKey) {
-            const accountKey = HederaUtils.parsPrivateKey(adminKey);
+            const accountKey = HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key');
             transaction = await transaction.sign(accountKey);
         }
 
