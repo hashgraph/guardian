@@ -112,6 +112,17 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Return token
+     *
+     * @param {string} [tokenId] - token id
+     *
+     * @returns {IToken} - token
+     */
+    public async getTokenById(tokenId: string): Promise<IToken> {
+        return await this.request<IToken>(MessageAPI.GET_TOKEN, { tokenId });
+    }
+
+    /**
      * Return trust chain
      *
      * @param {string} id - hash or uuid
@@ -140,6 +151,24 @@ export class Guardians extends ServiceRequestsBase {
      */
     public async setTokenAsync(token: IToken | any, owner: any, taskId: string): Promise<any> {
         return await this.request<any>(MessageAPI.SET_TOKEN_ASYNC, { token, owner, taskId });
+    }
+
+    /**
+     * Async create new token
+     * @param token
+     * @param taskId
+     */
+    public async updateTokenAsync(token: IToken | any, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.UPDATE_TOKEN_ASYNC, { token, taskId });
+    }
+
+    /**
+     * Async create new token
+     * @param item
+     * @param taskId
+     */
+    public async deleteTokenAsync(tokenId: string, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.DELETE_TOKEN_ASYNC, { tokenId, taskId });
     }
 
     /**

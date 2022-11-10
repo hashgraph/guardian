@@ -163,11 +163,9 @@ export class DocumentValidatorBlock {
                     return false;
                 }
             }
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
             return true;
         } else {
             const value = await this.validateDocument(ref, event, document);
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
             return value;
         }
     }
@@ -196,6 +194,7 @@ export class DocumentValidatorBlock {
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
     }
 
     /**

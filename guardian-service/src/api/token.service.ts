@@ -104,15 +104,30 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
 
     notifier.completedAndStart('Save token in DB');
     const tokenObject = tokenRepository.create({
-        ...token,
         tokenId: tokenData.tokenId,
-        adminId: tokenData.adminId,
-        owner: root.did
+        tokenName: tokenData.tokenName,
+        tokenSymbol: tokenData.tokenSymbol,
+        tokenType: tokenData.tokenType,
+        decimals: tokenData.decimals,
+        initialSupply: tokenData.initialSupply,
+        adminId: tokenData.treasuryId,
+        changeSupply: !!tokenData.supplyKey,
+        enableAdmin: !!tokenData.adminKey,
+        enableKYC: !!tokenData.kycKey,
+        enableFreeze: !!tokenData.freezeKey,
+        enableWipe: !!tokenData.wipeKey,
+        owner: root.did,
+        policyId: null
     });
     const result = await tokenRepository.save(tokenObject);
-
     const wallet = new Wallet();
     await Promise.all([
+        wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_TREASURY_KEY,
+            tokenData.tokenId,
+            tokenData.treasuryKey
+        ),
         wallet.setUserKey(
             root.did,
             KeyType.TOKEN_ADMIN_KEY,
@@ -147,6 +162,141 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
 
     notifier.completed();
     return result;
+}
+
+/**
+ * Update token
+ * @param oldToken
+ * @param newToken
+ * @param tokenRepository
+ * @param notifier
+ */
+async function updateToken(oldToken: Token, newToken: Token, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<Token> {
+    if (!newToken.tokenName) {
+        throw new Error('Invalid Token Name');
+    }
+
+    if (!newToken.tokenSymbol) {
+        throw new Error('Invalid Token Symbol');
+    }
+
+    if (!oldToken.enableAdmin) {
+        throw new Error('Invalid Admin Key');
+    }
+
+    const changes: { [x: string]: any } = {};
+    if (oldToken.tokenName !== newToken.tokenName) {
+        changes.tokenName = newToken.tokenName;
+    }
+    if (oldToken.tokenSymbol !== newToken.tokenSymbol) {
+        changes.tokenSymbol = newToken.tokenSymbol;
+    }
+
+    notifier.start('Resolve Hedera account');
+    const users = new Users();
+    const wallet = new Wallet();
+    const workers = new Workers();
+
+    const root = await users.getHederaAccount(oldToken.owner);
+
+    const adminKey = await wallet.getUserKey(
+        oldToken.owner,
+        KeyType.TOKEN_ADMIN_KEY,
+        oldToken.tokenId
+    );
+
+    notifier.completedAndStart('Update token');
+
+    const tokenData = await workers.addTask({
+        type: WorkerTaskType.UPDATE_TOKEN,
+        data: {
+            tokenId: oldToken.tokenId,
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            adminKey,
+            changes
+        }
+    }, 1, 1);
+
+    notifier.completedAndStart('Save token in DB');
+
+    oldToken.tokenName = newToken.tokenName;
+    oldToken.tokenSymbol = newToken.tokenSymbol;
+
+    const result = await tokenRepository.update(oldToken);
+
+    const saveKeys = [];
+    if (changes.enableFreeze) {
+        saveKeys.push(wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_FREEZE_KEY,
+            tokenData.tokenId,
+            tokenData.freezeKey
+        ));
+    }
+    if (changes.enableKYC) {
+        saveKeys.push(wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_KYC_KEY,
+            tokenData.tokenId,
+            tokenData.kycKey
+        ));
+    }
+    if (changes.enableWipe) {
+        saveKeys.push(wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_WIPE_KEY,
+            tokenData.tokenId,
+            tokenData.wipeKey
+        ));
+    }
+    await Promise.all(saveKeys);
+
+    notifier.completed();
+    return result;
+}
+
+
+/**
+ * Delete token
+ * @param token
+ * @param tokenRepository
+ * @param notifier
+ */
+async function deleteToken(token: Token, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<boolean> {
+    notifier.start('Resolve Hedera account');
+    const users = new Users();
+    const wallet = new Wallet();
+    const workers = new Workers();
+
+    const root = await users.getHederaAccount(token.owner);
+    const adminKey = await wallet.getUserKey(
+        token.owner,
+        KeyType.TOKEN_ADMIN_KEY,
+        token.tokenId
+    );
+
+    notifier.completedAndStart('Delete token');
+
+    const tokenData = await workers.addTask({
+        type: WorkerTaskType.DELETE_TOKEN,
+        data: {
+            tokenId: token.tokenId,
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            adminKey
+        }
+    }, 1, 1);
+
+    notifier.completedAndStart('Save token in DB');
+
+    if (tokenData) {
+        await tokenRepository.delete(token);
+    }
+
+    notifier.completed();
+
+    return true;
 }
 
 /**
@@ -302,7 +452,6 @@ export async function tokenAPI(
                 if (!msg) {
                     throw new Error('Invalid Params');
                 }
-
                 const result = await createToken(token, owner, tokenRepository, notifier);
                 notifier.result(result);
             } catch (error) {
@@ -311,6 +460,51 @@ export async function tokenAPI(
             }
         });
 
+        return new MessageResponse({ taskId });
+    });
+
+    ApiResponse(channel, MessageAPI.UPDATE_TOKEN_ASYNC, async (msg) => {
+        const { token, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+        setImmediate(async () => {
+            try {
+                if (!msg) {
+                    throw new Error('Invalid Params');
+                }
+                const item = await tokenRepository.findOne({ tokenId: token.tokenId });
+                if (!item) {
+                    throw new Error('Token not found');
+                }
+                const result = await updateToken(item, token, tokenRepository, notifier);
+                notifier.result(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
+    });
+
+    ApiResponse(channel, MessageAPI.DELETE_TOKEN_ASYNC, async (msg) => {
+        const { tokenId, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+        setImmediate(async () => {
+            try {
+                if (!msg) {
+                    throw new Error('Invalid Params');
+                }
+                const item = await tokenRepository.findOne({ tokenId: tokenId });
+                if (!item) {
+                    throw new Error('Token not found');
+                }
+                const result = await deleteToken(item, tokenRepository, notifier);
+                notifier.result(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
         return new MessageResponse({ taskId });
     });
 
@@ -548,6 +742,21 @@ export async function tokenAPI(
                 ]
             }
         }));
+    })
+
+    /**
+     * Return token
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {IToken} - token
+     */
+    ApiResponse(channel, MessageAPI.GET_TOKEN, async (msg) => {
+        if (msg) {
+            const token = await tokenRepository.findOne(msg);
+            return new MessageResponse(token);
+        }
+        return new MessageResponse(null);
     })
 
     /**

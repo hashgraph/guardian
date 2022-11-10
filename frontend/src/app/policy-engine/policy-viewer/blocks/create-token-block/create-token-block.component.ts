@@ -53,8 +53,8 @@ export class CreateTokenBlockComponent implements OnInit {
             initialSupply: ['0'],
             enableAdmin: [true, Validators.required],
             changeSupply: [true, Validators.required],
-            enableFreeze: [true, Validators.required],
-            enableKYC: [true, Validators.required],
+            enableFreeze: [false, Validators.required],
+            enableKYC: [false, Validators.required],
             enableWipe: [true, Validators.required],
         });
     }
@@ -141,8 +141,9 @@ export class CreateTokenBlockComponent implements OnInit {
     }
 
     onDialog() {
-       const dialogRef = this.dialog.open(TokenDialog, {
-            width: '600px',
+        const dialogRef = this.dialog.open(TokenDialog, {
+            width: '750px',
+            panelClass: 'g-dialog',
             disableClose: true,
             data: {
                 title: this.title,

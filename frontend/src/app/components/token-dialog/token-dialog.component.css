@@ -13,3 +13,7 @@
 .description {
     margin-bottom: 20px;
 }
+
+.g-dialog-actions-btn {
+    min-width: 210px !important;
+}

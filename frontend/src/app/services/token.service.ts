@@ -24,6 +24,14 @@ export class TokenService {
         return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/`, data);
     }
 
+    public pushUpdate(data: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/`, data);
+    }
+
+    public pushDelete(tokenId: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.delete<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}`);
+    }
+
     public getTokens(policyId?: string): Observable<ITokenInfo[]> {
         if (policyId) {
             return this.http.get<ITokenInfo[]>(`${this.url}?policy=${policyId}`);

@@ -1,6 +1,6 @@
 <label class="mode-switch">
-    <input type="checkbox" name="mode" id="mode" [(ngModel)]="value" (change)="onChange()">
-    <label for="mode">
+    <input type="checkbox" [name]="mode" [id]="mode" [(ngModel)]="value" (change)="onChange()">
+    <label [for]="mode">
         <p class="l-off">{{off}}</p>
         <p class="l-on">{{on}}</p>
     </label>

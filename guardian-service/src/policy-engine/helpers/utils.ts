@@ -253,20 +253,20 @@ export class PolicyUtils {
 
         const workers = new Workers();
 
-        const adminId = token.adminId;
+        const treasuryId = token.adminId;
         const tokenId = token.tokenId;
-        let supplyKey;
-        let adminKey;
+        let supplyKey: string;
+        let treasuryKey: string;
 
         if (ref.dryRun) {
             const tokenPK = PrivateKey.generate().toString();
             supplyKey = tokenPK;
-            adminKey = tokenPK;
+            treasuryKey = tokenPK;
         } else {
-            [adminKey, supplyKey] = await Promise.all([
+            [treasuryKey, supplyKey] = await Promise.all([
                 PolicyUtils.wallet.getUserKey(
                     token.owner,
-                    KeyType.TOKEN_ADMIN_KEY,
+                    KeyType.TOKEN_TREASURY_KEY,
                     token.tokenId
                 ),
                 PolicyUtils.wallet.getUserKey(
@@ -314,7 +314,7 @@ export class PolicyUtils {
             }
 
             ref.log(`Mint(${mintId}): Minted (Count: ${serials.length})`);
-            ref.log(`Mint(${mintId}): Transfer ${adminId} -> ${targetAccount} `);
+            ref.log(`Mint(${mintId}): Transfer ${treasuryId} -> ${targetAccount} `);
 
             const serialsChunk = PolicyUtils.splitChunk(serials, 10);
             const transferPromiseArray: Promise<any>[] = [];
@@ -331,8 +331,8 @@ export class PolicyUtils {
                         dryRun: ref.dryRun,
                         tokenId,
                         targetAccount,
-                        adminId,
-                        adminKey,
+                        treasuryId,
+                        treasuryKey,
                         element,
                         transactionMemo
                     }
@@ -366,8 +366,8 @@ export class PolicyUtils {
                         dryRun: ref.dryRun,
                         tokenId,
                         targetAccount,
-                        adminId,
-                        adminKey,
+                        treasuryId,
+                        treasuryKey,
                         tokenValue,
                         transactionMemo
                     }
@@ -780,6 +780,12 @@ export class PolicyUtils {
 
             const wallet = new Wallet();
             await Promise.all([
+                wallet.setUserKey(
+                    user.did,
+                    KeyType.TOKEN_TREASURY_KEY,
+                    createdToken.tokenId,
+                    createdToken.adminKey
+                ),
                 wallet.setUserKey(
                     user.did,
                     KeyType.TOKEN_ADMIN_KEY,

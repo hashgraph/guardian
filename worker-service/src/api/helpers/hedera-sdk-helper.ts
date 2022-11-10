@@ -11,6 +11,7 @@ import {
     Timestamp,
     TokenAssociateTransaction,
     TokenCreateTransaction,
+    TokenDeleteTransaction,
     TokenDissociateTransaction,
     TokenFreezeTransaction,
     TokenGrantKycTransaction,
@@ -19,6 +20,7 @@ import {
     TokenRevokeKycTransaction,
     TokenType,
     TokenUnfreezeTransaction,
+    TokenUpdateTransaction,
     TokenWipeTransaction,
     TopicCreateTransaction,
     TopicId,
@@ -205,27 +207,19 @@ export class HederaSDKHelper {
         decimals: number,
         initialSupply: number,
         tokenMemo: string,
-        treasury: {
-            /**
-             * Id
-             */
-            id: AccountId | string;
-            /**
-             * Key
-             */
-            key: PrivateKey;
-        },
-        adminKey: PrivateKey,
-        kycKey: PrivateKey,
-        freezeKey: PrivateKey,
-        wipeKey: PrivateKey,
-        supplyKey: PrivateKey
+        treasuryId: AccountId,
+        treasuryKey: PrivateKey,
+        supplyKey: PrivateKey,
+        adminKey: PrivateKey | null,
+        kycKey: PrivateKey | null,
+        freezeKey: PrivateKey | null,
+        wipeKey: PrivateKey | null
     ): Promise<string> {
         const client = this.client;
         let transaction = new TokenCreateTransaction()
             .setTokenName(name)
             .setTokenSymbol(symbol)
-            .setTreasuryAccountId(treasury.id)
+            .setTreasuryAccountId(treasuryId)
             .setDecimals(decimals)
             .setInitialSupply(initialSupply)
             .setTokenMemo(tokenMemo);
@@ -251,17 +245,92 @@ export class HederaSDKHelper {
         transaction = transaction.freezeWith(client);
 
         let signTx: Transaction = transaction;
-        if(adminKey) {
+        if (adminKey) {
             signTx = await signTx.sign(adminKey);
         }
-        if(treasury.key) {
-            signTx = await signTx.sign(treasury.key);
+        if (treasuryKey) {
+            signTx = await signTx.sign(treasuryKey);
         }
+
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenCreateTransaction');
         const tokenId = receipt.tokenId;
 
         return tokenId.toString();
     }
+
+    /**
+     * Update token (TokenUpdateTransaction)
+     *
+     * @param {TokenId} tokenId - Token Id
+     * @param {PrivateKey} adminKey - Admin Key
+     * @param {PrivateKey} treasuryKey - Treasury Key
+     * @param {any} changes - changes
+     * 
+     * @returns {boolean} - status
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async updateToken(
+        tokenId: TokenId,
+        adminKey: PrivateKey,
+        changes: { [x: string]: any }
+    ): Promise<boolean> {
+        const client = this.client;
+        let transaction = new TokenUpdateTransaction()
+            .setTokenId(tokenId)
+
+        if (changes.hasOwnProperty('tokenName')) {
+            transaction = transaction.setTokenName(changes.tokenName);
+        }
+        if (changes.hasOwnProperty('tokenSymbol')) {
+            transaction = transaction.setTokenName(changes.tokenSymbol);
+        }
+        if (changes.hasOwnProperty('freezeKey')) {
+            transaction = transaction.setFreezeKey(changes.freezeKey);
+        }
+        if (changes.hasOwnProperty('kycKey')) {
+            transaction = transaction.setKycKey(changes.kycKey);
+        }
+        if (changes.hasOwnProperty('wipeKey')) {
+            transaction = transaction.setWipeKey(changes.wipeKey);
+        }
+        transaction = transaction.freezeWith(client);
+        let signTx: Transaction = transaction;
+        if (adminKey) {
+            signTx = await signTx.sign(adminKey);
+        }
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenUpdateTransaction');
+        const transactionStatus = receipt.status;
+        return transactionStatus === Status.Success;
+    }
+    /**
+     * Delete token (TokenDeleteTransaction)
+     *
+     * @param {TokenId} tokenId - Token Id
+     * @param {PrivateKey} adminKey - Admin Key
+     * @param {PrivateKey} treasuryKey - Treasury Key
+     * 
+     * @returns {boolean} - status
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async deleteToken(
+        tokenId: TokenId,
+        adminKey: PrivateKey
+    ): Promise<boolean> {
+        const client = this.client;
+        let transaction = new TokenDeleteTransaction()
+            .setTokenId(tokenId)
+            .freezeWith(client);
+
+        let signTx: Transaction = transaction;
+        if (adminKey) {
+            signTx = await signTx.sign(adminKey);
+        }
+
+        const receipt = await this.executeAndReceipt(client, signTx, 'TokenDeleteTransaction');
+        const transactionStatus = receipt.status;
+        return transactionStatus === Status.Success;
+    }
+
 
     /**
      * Get balance account (AccountBalanceQuery)
@@ -821,7 +890,7 @@ export class HederaSDKHelper {
         let url = `${Environment.HEDERA_TOPIC_API}${topicId}/messages`;
         const result = [];
         const p = {
-            params: {limit: Number.MAX_SAFE_INTEGER},
+            params: { limit: Number.MAX_SAFE_INTEGER },
             responseType: 'json'
         }
 

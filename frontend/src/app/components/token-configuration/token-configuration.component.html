@@ -1,30 +1,73 @@
-<form [formGroup]="dataForm">
+<form *ngIf="dataForm" [formGroup]="dataForm" [attr.immutable]="readonly">
     <mat-form-field class="example-full-width" appearance="outline">
-        <mat-label>TOKEN NAME:</mat-label>
+        <mat-label>* Token Name</mat-label>
         <input matInput type="text" placeholder="Token Name" formControlName="tokenName">
     </mat-form-field>
 
     <mat-form-field class="example-full-width" appearance="outline">
-        <mat-label>TOKEN SYMBOL:</mat-label>
+        <mat-label>* Token Symbol</mat-label>
         <input matInput type="text" placeholder="F" formControlName="tokenSymbol">
     </mat-form-field>
 
-    <mat-form-field appearance="outline">
-        <mat-label>TOKEN TYPE</mat-label>
+    <mat-form-field appearance="outline" class="immutable">
+        <mat-label>* Token Type</mat-label>
         <mat-select formControlName="tokenType" (selectionChange)="onChangeType()">
             <mat-option value="fungible">Fungible</mat-option>
             <mat-option value="non-fungible">Non-Fungible</mat-option>
         </mat-select>
     </mat-form-field>
 
-    <mat-form-field *ngIf="ft" class="example-full-width" appearance="outline">
-        <mat-label>DECIMALS:</mat-label>
+    <mat-form-field *ngIf="ft" class="example-full-width immutable" appearance="outline">
+        <mat-label>Decimals</mat-label>
         <input matInput type="text" placeholder="2" formControlName="decimals">
     </mat-form-field>
 
-    <mat-checkbox class="example-margin" color="primary" formControlName="enableAdmin">Enable Admin</mat-checkbox>
-    <mat-checkbox class="example-margin" color="primary" formControlName="changeSupply">Change Supply</mat-checkbox>
-    <mat-checkbox class="example-margin" color="primary" formControlName="enableFreeze">Enable Freeze</mat-checkbox>
-    <mat-checkbox class="example-margin" color="primary" formControlName="enableKYC">Enable KYC</mat-checkbox>
-    <mat-checkbox class="example-margin" color="primary" formControlName="enableWipe">Enable Wipe</mat-checkbox>
+    <div class="delimiter"></div>
+
+    <div class="keys-config immutable">
+        <div class="key-value">
+            <div class="switch-btn">
+                <switch-button [on-label]="'Enabled'" [off-label]="'Disabled'" [(value)]="enableAdmin"></switch-button>
+            </div>
+            <div class="key-name">
+                Admin Key
+            </div>
+            <div class="key-description">
+                The key which can perform token update and token delete operations on the token. If empty, the token can be perceived as immutable.
+            </div>
+        </div>
+        <div class="key-value">
+            <div class="switch-btn">
+                <switch-button [on-label]="'Enabled'" [off-label]="'Disabled'" [(value)]="enableWipe"></switch-button>
+            </div>
+            <div class="key-name">
+                Wipe Key
+            </div>
+            <div class="key-description">
+                The key which can wipe the token balance of an account. If empty, wipe is not possible.
+            </div>
+        </div>
+        <div class="key-value">
+            <div class="switch-btn">
+                <switch-button [on-label]="'Enabled'" [off-label]="'Disabled'" [(value)]="enableFreeze"></switch-button>
+            </div>
+            <div class="key-name">
+                Freeze Key
+            </div>
+            <div class="key-description">
+                The key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is not possible.
+            </div>
+        </div>
+        <div class="key-value">
+            <div class="switch-btn">
+                <switch-button [on-label]="'Enabled'" [off-label]="'Disabled'" [(value)]="enableKYC"></switch-button>
+            </div>
+            <div class="key-name">
+                KYC Key
+            </div>
+            <div class="key-description">
+                The key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not required, and KYC grant or revoke operations are not possible.
+            </div>
+        </div>
+    </div>
 </form>

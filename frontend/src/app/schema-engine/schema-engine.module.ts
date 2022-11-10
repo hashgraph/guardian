@@ -17,7 +17,6 @@ import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { FileDragNDropComponent } from '../components/file-drag-n-drop/file-drag-n-drop.component';
 import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
-import { SwitchButton } from '../components/switch-button/switch-button.component';
 import { CommonComponentsModule } from '../common-components.module';
 import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.component';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
@@ -37,7 +36,6 @@ import { ArtifactPropertiesComponent } from '../artifact-engine/artifact-propert
         SchemaViewDialog,
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,
-        SwitchButton,
         EnumEditorDialog
     ],
     imports: [

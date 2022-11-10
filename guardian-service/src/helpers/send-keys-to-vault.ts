@@ -29,6 +29,12 @@ export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
             await Promise.all([
                 wallet.setUserKey(
                     token.owner,
+                    KeyType.TOKEN_TREASURY_KEY,
+                    token.tokenId,
+                    token.adminKey
+                ),
+                wallet.setUserKey(
+                    token.owner,
                     KeyType.TOKEN_ADMIN_KEY,
                     token.tokenId,
                     token.adminKey

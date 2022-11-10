@@ -3,12 +3,14 @@ import {
     Client,
     TokenAssociateTransaction,
     TokenCreateTransaction,
+    TokenDeleteTransaction,
     TokenDissociateTransaction,
     TokenFreezeTransaction,
     TokenGrantKycTransaction,
     TokenMintTransaction,
     TokenRevokeKycTransaction,
     TokenUnfreezeTransaction,
+    TokenUpdateTransaction,
     TokenWipeTransaction,
     TopicCreateTransaction,
     TopicMessageSubmitTransaction,
@@ -161,6 +163,16 @@ export class TransactionLogger {
             data += 'payer sigs: 1; ';
             data += 'total sigs: 1; ';
             data += `message size: ${TransactionLogger.stringSize(t.message)}; `;
+            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
+        }
+        if (transactionName === 'TokenUpdateTransaction') {
+            const t = transaction as TokenUpdateTransaction;
+            data += 'payer sigs: 1; ';
+            data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
+        }
+        if (transactionName === 'TokenDeleteTransaction') {
+            const t = transaction as TokenDeleteTransaction;
+            data += 'payer sigs: 1; ';
             data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
         }
         return data;
