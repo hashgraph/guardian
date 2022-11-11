@@ -29,8 +29,8 @@ export class Token {
      */
     public enableKYC: boolean;
     /**
-    * Enable Wipe
-    */
+     * Enable Wipe
+     */
     public enableWipe: boolean;
     /**
      * Was associated
@@ -84,9 +84,6 @@ export class Token {
             this.frozen = 'n/a';
             this.kyc = 'n/a';
         }
-
-
-
         this.url = btoa(this.tokenId);
     }
 }
