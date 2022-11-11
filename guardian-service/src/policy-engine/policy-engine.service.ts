@@ -172,7 +172,7 @@ export class PolicyEngineService {
         }
 
         PolicyComponentsUtils.ExternalEventFn = async (...args: any[]) => {
-            console.log('<-- External Event -->', args);
+            // console.log('<-- External Event -->', args);
         };
 
         this.channel.response<any, any>('mrv-data', async (msg) => {
