@@ -12,8 +12,8 @@ export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
     try {
         logger.info('Start send keys to vault', ['GUARDIAN_SERVICE']);
 
-        const tokenCollection = await em.getCollection('Token');
-        const tokens = await tokenCollection.find();
+        const tokenCollection = em.getCollection('Token');
+        const tokens = tokenCollection.find();
         let updatedTokens = 0;
         while (await tokens.hasNext()) {
             const token = await tokens.next();
@@ -46,26 +46,26 @@ export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
                     token.freezeKey
                 ),
                 wallet.setUserKey(
-                    token.did,
+                    token.owner,
                     KeyType.TOKEN_KYC_KEY,
                     token.tokenId,
                     token.kycKey
                 ),
                 wallet.setUserKey(
-                    token.did,
+                    token.owner,
                     KeyType.TOKEN_SUPPLY_KEY,
                     token.tokenId,
                     token.supplyKey
                 ),
                 wallet.setUserKey(
-                    token.did,
+                    token.owner,
                     KeyType.TOKEN_WIPE_KEY,
                     token.tokenId,
                     token.wipeKey
-                ),
+                )
             ]);
             const enableAdmin = token.adminKey ? true : false;
-            const enableFreeze = token.enableFreeze ? true : false;
+            const enableFreeze = token.freezeKey ? true : false;
             const enableKYC = token.kycKey ? true : false;
             const changeSupply = token.supplyKey ? true : false;
             const enableWipe = token.wipeKey ? true : false;
@@ -98,8 +98,8 @@ export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
         }
         logger.info(`Updated ${updatedTokens} tokens`, ['GUARDIAN_SERVICE']);
 
-        const topicCollection = await em.getCollection('Token');
-        const topics = await topicCollection.find();
+        const topicCollection = em.getCollection('Token');
+        const topics = topicCollection.find();
         let updatedTopics = 0;
         while (await topics.hasNext()) {
             const topic = await topics.next();
