@@ -98,7 +98,7 @@ export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
         }
         logger.info(`Updated ${updatedTokens} tokens`, ['GUARDIAN_SERVICE']);
 
-        const topicCollection = em.getCollection('Token');
+        const topicCollection = em.getCollection('Topic');
         const topics = topicCollection.find();
         let updatedTopics = 0;
         while (await topics.hasNext()) {
@@ -121,7 +121,7 @@ export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
                 ),
             ]);
 
-            await tokenCollection.updateOne(
+            await topicCollection.updateOne(
                 {
                     _id: topic._id,
                 },
