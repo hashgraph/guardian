@@ -140,7 +140,7 @@ export class TransactionLogger {
             data += 'Non-Fungible Token; ';
             data += 'payer sigs: 1; ';
             data += 'total sigs: 1; ';
-            data += `of NFTs transferred: ${metadata.length}; `;
+            data += `of NFTs transferred: ${TransactionLogger.stringSize(metadata)}; `;
             data += `memo size: ${TransactionLogger.stringSize(t.transactionMemo)}; `;
         }
         if (transactionName === 'AccountCreateTransaction') {

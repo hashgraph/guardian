@@ -310,7 +310,7 @@ export class PolicyUtils {
                     }
                 }
             } catch (error) {
-                ref.error(`Mint(${mintId}): Mint Error (${error.message})`);
+                ref.error(`Mint(${mintId}): Mint Error (${this.getErrorMessage(error)})`);
             }
 
             ref.log(`Mint(${mintId}): Minted (Count: ${serials.length})`);
@@ -342,7 +342,7 @@ export class PolicyUtils {
             try {
                 await Promise.all(transferPromiseArray);
             } catch (error) {
-                ref.error(`Mint(${mintId}): Transfer Error (${error.message})`);
+                ref.error(`Mint(${mintId}): Transfer Error (${this.getErrorMessage(error)})`);
             }
         } else {
             try {
@@ -373,7 +373,7 @@ export class PolicyUtils {
                     }
                 }, 1);
             } catch (error) {
-                ref.error(`Mint FT(${mintId}): Mint/Transfer Error (${error.message})`);
+                ref.error(`Mint FT(${mintId}): Mint/Transfer Error (${this.getErrorMessage(error)})`);
             }
         }
 
