@@ -190,12 +190,13 @@ export class HederaSDKHelper {
      * @param {number} decimals - Decimals
      * @param {number} initialSupply - Initial Supply
      * @param {string} tokenMemo - Memo field
-     * @param {any} treasury - treasury account
+     * @param {AccountId} treasuryId - treasury account
+     * @param {PrivateKey} treasuryKey - treasury account
+     * @param {PrivateKey} [supplyKey] - set supply key
      * @param {PrivateKey} [adminKey] - set admin key
      * @param {PrivateKey} [kycKey] - set kyc key
      * @param {PrivateKey} [freezeKey] - set freeze key
      * @param {PrivateKey} [wipeKey] - set wipe key
-     * @param {PrivateKey} [supplyKey] - set supply key
      *
      * @returns {string} - Token id
      */
