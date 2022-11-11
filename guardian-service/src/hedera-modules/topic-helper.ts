@@ -88,7 +88,6 @@ export class TopicHelper {
             memoObj?: any
         }
     ): Promise<[Topic, string, string]> {
-
         const workers = new Workers();
         const topicId = await workers.addRetryableTask({
             type: WorkerTaskType.NEW_TOPIC,
@@ -99,22 +98,23 @@ export class TopicHelper {
                 topicMemo: TopicMemo.parseMemo(true, config.memo, config.memoObj) || TopicMemo.getTopicMemo(config)
             }
         }, 1);
-
-        const wallet = new Wallet();
-        await Promise.all([
-            wallet.setUserKey(
-                config.owner,
-                KeyType.TOPIC_ADMIN_KEY,
-                topicId,
-                this.hederaAccountKey
-            ),
-            wallet.setUserKey(
-                config.owner,
-                KeyType.TOPIC_SUBMIT_KEY,
-                topicId,
-                this.hederaAccountKey
-            ),
-        ]);
+        if (!this.dryRun) {
+            const wallet = new Wallet();
+            await Promise.all([
+                wallet.setUserKey(
+                    config.owner,
+                    KeyType.TOPIC_ADMIN_KEY,
+                    topicId,
+                    this.hederaAccountKey
+                ),
+                wallet.setUserKey(
+                    config.owner,
+                    KeyType.TOPIC_SUBMIT_KEY,
+                    topicId,
+                    this.hederaAccountKey
+                ),
+            ]);
+        }
         return [
             {
                 topicId,
