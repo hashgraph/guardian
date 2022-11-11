@@ -8,6 +8,7 @@ import { WalletEvents, IGetKeyResponse } from '@guardian/interfaces';
 export enum KeyType {
     ID = 'ID',
     KEY = 'KEY',
+    TOKEN_TREASURY_KEY = 'TOKEN_TREASURY_KEY',
     TOKEN_ADMIN_KEY = 'TOKEN_ADMIN_KEY',
     TOKEN_SUPPLY_KEY = 'TOKEN_SUPPLY_KEY',
     TOKEN_FREEZE_KEY = 'TOKEN_FREEZE_KEY',

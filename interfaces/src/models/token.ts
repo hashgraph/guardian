@@ -17,6 +17,22 @@ export class Token {
      */
     public tokenSymbol: string;
     /**
+     * Enable Admin
+     */
+    public enableAdmin: boolean;
+    /**
+     * Enable Freeze
+     */
+    public enableFreeze: boolean;
+    /**
+     * Enable KYC
+     */
+    public enableKYC: boolean;
+    /**
+     * Enable Wipe
+     */
+    public enableWipe: boolean;
+    /**
      * Was associated
      */
     public associated: string;
@@ -40,7 +56,10 @@ export class Token {
      * URL
      */
     public url: string;
-
+    /**
+     * URL
+     */
+    public policies: string[];
     /**
      * Token constructor
      * @param data
@@ -50,6 +69,11 @@ export class Token {
         this.tokenId = data.tokenId;
         this.tokenName = data.tokenName;
         this.tokenSymbol = data.tokenSymbol;
+        this.enableAdmin = data.enableAdmin;
+        this.enableFreeze = data.enableFreeze;
+        this.enableKYC = data.enableKYC;
+        this.enableWipe = data.enableWipe;
+        this.policies = (data as any).policies || [];
         this.associated = (data as ITokenInfo).associated ? 'Yes' : 'No';
         this.tokenBalance = (data as ITokenInfo).balance || 'n/a';
         this.hBarBalance = (data as ITokenInfo).hBarBalance || 'n/a';
@@ -60,7 +84,6 @@ export class Token {
             this.frozen = 'n/a';
             this.kyc = 'n/a';
         }
-
         this.url = btoa(this.tokenId);
     }
 }

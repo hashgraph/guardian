@@ -20,17 +20,39 @@ export class TokenDialog {
         initialSupply: ['0'],
         enableAdmin: [true, Validators.required],
         changeSupply: [true, Validators.required],
-        enableFreeze: [true, Validators.required],
-        enableKYC: [true, Validators.required],
+        enableFreeze: [false, Validators.required],
+        enableKYC: [false, Validators.required],
         enableWipe: [true, Validators.required],
     });
     title: string = "New Token";
     description: string = "";
-
+    token: any = null;
+    valid: boolean = true;
+    readonly: boolean = false;
+    
     constructor(
         public dialogRef: MatDialogRef<TokenDialog>,
         private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
+        if (data) {
+            if (data.title) {
+                this.title = data.title;
+            } else {
+                if (data.token) {
+                    this.title = "Edit Token";
+                } else {
+                    this.title = "New Token";
+                }
+            }
+            if (data.description) {
+                this.description = data.description;
+            }
+            if (data.token) {
+                this.dataForm?.patchValue(data.token);
+                this.token = data.token;
+                this.readonly = true;
+            }
+        }
     }
 
     ngOnInit() {
@@ -41,7 +63,7 @@ export class TokenDialog {
         this.dialogRef.close(null);
     }
 
-    onSubmit() {
+    onCreate() {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
             if (data.tokenType == 'fungible') {
@@ -51,6 +73,13 @@ export class TokenDialog {
                 data.decimals = '0';
                 data.initialSupply = '0';
             }
+            this.dialogRef.close(data);
+        }
+    }
+
+    onSave() {
+        if (this.dataForm.valid) {
+            const data = this.dataForm.value;
             this.dialogRef.close(data);
         }
     }

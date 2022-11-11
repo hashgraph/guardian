@@ -22,6 +22,7 @@ import { IPolicyUser } from '@policy-engine/policy-user';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { MessageAction, MessageServer, TokenMessage } from '@hedera-modules';
 import { TopicType } from '@guardian/interfaces';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Create Token block
@@ -246,6 +247,8 @@ export class CreateTokenBlock {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
 
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
+
         return {};
     }
 
@@ -274,6 +277,8 @@ export class CreateTokenBlock {
         }
         blockState.data = eventData;
         await ref.saveState();
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, null));
     }
 
     /**

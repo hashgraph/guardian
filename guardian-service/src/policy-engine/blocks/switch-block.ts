@@ -7,6 +7,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@poli
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Switch block
@@ -163,10 +164,12 @@ export class SwitchBlock {
                 ref.triggerEvents(tag, curUser, event.data);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
                 if (executionFlow === 'firstTrue') {
-                    return;
+                    break;
                 }
             }
         }
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
     }
 
     /**

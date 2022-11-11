@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@angular/core';
-
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 /**
  * Dialog for icon preview.
  */
@@ -14,6 +14,8 @@ export class SwitchButton {
     
     @Input('value') value!: boolean;
     @Output('valueChange') valueChange = new EventEmitter<boolean>();
+
+    mode: string = GenerateUUIDv4();
 
     constructor() {
     }

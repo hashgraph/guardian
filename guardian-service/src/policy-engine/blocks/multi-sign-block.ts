@@ -13,6 +13,7 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { MessageAction, MessageServer, VcDocument, VPMessage } from '@hedera-modules';
 import { PolicyRoles } from '@entity/policy-roles';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Sign Status
@@ -166,6 +167,8 @@ export class MultiSignBlock {
         await this.updateThreshold(users, sourceDoc, documentId, user);
 
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
     }
 
     /**
@@ -233,9 +236,11 @@ export class MultiSignBlock {
             await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.SIGNED);
 
             ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, currentUser, { data: sourceDoc });
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.SignatureQuorumReachedEvent, ref, null, null));
         } else if (declined >= declinedThreshold) {
             await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.DECLINED);
             ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, currentUser, { data: sourceDoc });
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.SignatureSetInsufficientEvent, ref, null, null));
         }
     }
 
@@ -306,6 +311,7 @@ export class MultiSignBlock {
                 await this.updateThreshold(users, vc, documentId, user);
             }
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, null, null);
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.DeleteMember, ref, user, null));
         }
     }
 

@@ -32,7 +32,7 @@ export class Workers extends ServiceRequestsBase {
     private readonly maxRepetitions = 25;
 
     /**
-     * Add non retriable task
+     * Add non retryable task
      * @param task
      * @param priority
      */
@@ -124,7 +124,7 @@ export class Workers extends ServiceRequestsBase {
         /**
          * IPFS storage api key
          */
-        ipfsStorageApiKey
+        ipfsStorageApiKey: string
     }) {
         this.channel.publish(WorkerEvents.UPDATE_SETTINGS, settings);
     }

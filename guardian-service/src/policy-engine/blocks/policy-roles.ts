@@ -9,6 +9,7 @@ import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { VcHelper } from '@helpers/vc-helper';
 import { MessageAction, MessageServer, VCMessage } from '@hedera-modules';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * User Group
@@ -428,6 +429,9 @@ export class PolicyRolesBlock {
             PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag),
             PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance)
         ]);
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
+
         return true;
     }
 }

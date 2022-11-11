@@ -15,7 +15,6 @@ import { Users } from '@helpers/users';
 import { MessageAction, MessageServer, MessageType, PolicyMessage, TopicHelper } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 import { importSchemaByFiles, publishSystemSchema } from '@api/schema.service';
-import { PrivateKey } from '@hashgraph/sdk';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
 import { DatabaseServer } from '@database-modules';
@@ -266,107 +265,83 @@ export class PolicyImportExportHelper {
         // Import Tokens
         if (tokens) {
             notifier.start('Import tokens');
-            const rootHederaAccountKey = PrivateKey.fromString(root.hederaAccountKey);
             const tokenRepository = new DataBaseHelper(Token);
             for (const token of tokens) {
-                delete token.id;
-                delete token._id;
-                const tokenName = token.tokenName;
-                const tokenSymbol = token.tokenSymbol;
-                const tokenType = token.tokenType;
-                const nft = tokenType === 'non-fungible';
-                const decimals = nft ? 0 : token.decimals;
-                const initialSupply = nft ? 0 : token.initialSupply;
-                const adminKey =
-                    token.enableAdmin || token.adminKey
-                        ? rootHederaAccountKey.toString()
-                        : null;
-                const kycKey =
-                    token.enableKYC || token.kycKey
-                        ? rootHederaAccountKey.toString()
-                        : null;
-                const freezeKey =
-                    token.enableFreeze || token.freezeKey
-                        ? rootHederaAccountKey.toString()
-                        : null;
-                const wipeKey =
-                    token.enableWipe || token.wipeKey
-                        ? rootHederaAccountKey.toString()
-                        : null;
-                const supplyKey =
-                    token.changeSupply || token.supplyKey
-                        ? rootHederaAccountKey.toString()
-                        : null;
-                const adminId = root.hederaAccountId;
-                const owner = root.did;
-
                 const workers = new Workers();
-                const tokenId = await workers.addRetryableTask({
-                    type: WorkerTaskType.NEW_TOKEN,
+                const tokenData = await workers.addRetryableTask({
+                    type: WorkerTaskType.CREATE_TOKEN,
                     data: {
                         operatorId: root.hederaAccountId,
                         operatorKey: root.hederaAccountKey,
-                        tokenName,
-                        tokenSymbol,
-                        nft,
-                        decimals,
-                        initialSupply,
-                        tokenMemo: '',
-                        adminKey,
-                        kycKey,
-                        freezeKey,
-                        wipeKey,
-                        supplyKey,
+                        tokenName: token.tokenName,
+                        tokenSymbol: token.tokenSymbol,
+                        tokenType: token.tokenType,
+                        initialSupply: token.initialSupply,
+                        decimals: token.decimals,
+                        changeSupply: true,
+                        enableAdmin: !!(token.enableAdmin || token.adminKey),
+                        enableFreeze: !!(token.enableFreeze || token.freezeKey),
+                        enableKYC: !!(token.enableKYC || token.kycKey),
+                        enableWipe: !!(token.enableWipe || token.wipeKey),
                     }
                 }, 1);
-
                 const wallet = new Wallet();
                 await Promise.all([
                     wallet.setUserKey(
                         root.did,
+                        KeyType.TOKEN_TREASURY_KEY,
+                        tokenData.tokenId,
+                        tokenData.treasuryKey
+                    ),
+                    wallet.setUserKey(
+                        root.did,
                         KeyType.TOKEN_ADMIN_KEY,
-                        tokenId,
-                        adminKey
+                        tokenData.tokenId,
+                        tokenData.adminKey
                     ),
                     wallet.setUserKey(
                         root.did,
                         KeyType.TOKEN_FREEZE_KEY,
-                        tokenId,
-                        freezeKey
+                        tokenData.tokenId,
+                        tokenData.freezeKey
                     ),
                     wallet.setUserKey(
                         root.did,
                         KeyType.TOKEN_KYC_KEY,
-                        tokenId,
-                        kycKey
+                        tokenData.tokenId,
+                        tokenData.kycKey
                     ),
                     wallet.setUserKey(
                         root.did,
                         KeyType.TOKEN_SUPPLY_KEY,
-                        tokenId,
-                        supplyKey
+                        tokenData.tokenId,
+                        tokenData.supplyKey
                     ),
                     wallet.setUserKey(
                         root.did,
                         KeyType.TOKEN_WIPE_KEY,
-                        tokenId,
-                        wipeKey
-                    ),
+                        tokenData.tokenId,
+                        tokenData.wipeKey
+                    )
                 ]);
-
                 const tokenObject = tokenRepository.create({
-                    ...token,
-                    adminId,
-                    enableKYC: !!kycKey,
-                    enableAdmin: !!adminKey,
-                    changeSupply: !!supplyKey,
-                    enableWipe: !!wipeKey,
-                    enableFreeze: !!freezeKey,
-                    owner,
-                    tokenId
+                    tokenId: tokenData.tokenId,
+                    tokenName: tokenData.tokenName,
+                    tokenSymbol: tokenData.tokenSymbol,
+                    tokenType: tokenData.tokenType,
+                    decimals: tokenData.decimals,
+                    initialSupply: tokenData.initialSupply,
+                    adminId: tokenData.treasuryId,
+                    changeSupply: !!tokenData.supplyKey,
+                    enableAdmin: !!tokenData.adminKey,
+                    enableKYC: !!tokenData.kycKey,
+                    enableFreeze: !!tokenData.freezeKey,
+                    enableWipe: !!tokenData.wipeKey,
+                    owner: root.did,
+                    policyId: null
                 });
                 await tokenRepository.save(tokenObject);
-                replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenId);
+                replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenData.tokenId);
             }
             notifier.completed();
         }

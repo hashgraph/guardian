@@ -11,7 +11,8 @@ import { HederaSDKHelper } from './helpers/hedera-sdk-helper';
 import { Environment } from './helpers/environment';
 import { IpfsClient } from './ipfs-client';
 import Blob from 'cross-blob';
-import { PrivateKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
+import { HederaUtils } from './helpers/utils';
 
 /**
  * Sleep helper
@@ -277,7 +278,6 @@ export class Worker {
                     const {
                         operatorId,
                         operatorKey,
-                        changeSupply,
                         decimals,
                         enableAdmin,
                         enableFreeze,
@@ -286,34 +286,35 @@ export class Worker {
                         initialSupply,
                         tokenName,
                         tokenSymbol,
-                        tokenType } = task.data;
+                        tokenType
+                    } = task.data;
                     const client = new HederaSDKHelper(operatorId, operatorKey);
-                    const treasury = client.newTreasury(operatorId, operatorKey);
-                    const treasuryId = treasury.id;
-                    const treasuryKey = treasury.key;
-                    const adminKey = enableAdmin ? treasuryKey : null;
-                    const kycKey = enableKYC ? treasuryKey : null;
-                    const freezeKey = enableFreeze ? treasuryKey : null;
-                    const wipeKey = enableWipe ? treasuryKey : null;
-                    const supplyKey = changeSupply ? treasuryKey : null;
                     const nft = tokenType === 'non-fungible';
                     const _decimals = nft ? 0 : decimals;
                     const _initialSupply = nft ? 0 : initialSupply;
+                    const treasuryId = AccountId.fromString(operatorId);
+                    const treasuryKey = HederaUtils.parsPrivateKey(operatorKey);
+                    const supplyKey = PrivateKey.generate();
+                    const adminKey = enableAdmin ? PrivateKey.generate() : null;
+                    const freezeKey = enableFreeze ? PrivateKey.generate() : null;
+                    const kycKey = enableKYC ? PrivateKey.generate() : null;
+                    const wipeKey = enableWipe ? PrivateKey.generate() : null;
+                    const tokenMemo = '';
                     const tokenId = await client.newToken(
                         tokenName,
                         tokenSymbol,
                         nft,
                         _decimals,
                         _initialSupply,
-                        '',
-                        treasury,
+                        tokenMemo,
+                        treasuryId,
+                        treasuryKey,
+                        supplyKey,
                         adminKey,
                         kycKey,
                         freezeKey,
-                        wipeKey,
-                        supplyKey,
+                        wipeKey
                     );
-
                     result.data = {
                         tokenId,
                         tokenName,
@@ -321,51 +322,66 @@ export class Worker {
                         tokenType,
                         decimals: _decimals,
                         initialSupply: _initialSupply,
-                        adminId: treasuryId ? treasuryId.toString() : null,
+                        treasuryId: treasuryId.toString(),
+                        treasuryKey: treasuryKey.toString(),
+                        supplyKey: supplyKey.toString(),
                         adminKey: adminKey ? adminKey.toString() : null,
-                        kycKey: kycKey ? kycKey.toString() : null,
                         freezeKey: freezeKey ? freezeKey.toString() : null,
-                        wipeKey: wipeKey ? wipeKey.toString() : null,
-                        supplyKey: supplyKey ? supplyKey.toString() : null
+                        kycKey: kycKey ? kycKey.toString() : null,
+                        wipeKey: wipeKey ? wipeKey.toString() : null
+                    }
+                    break;
+                }
+
+                case WorkerTaskType.UPDATE_TOKEN: {
+                    const {
+                        tokenId,
+                        operatorId,
+                        operatorKey,
+                        adminKey,
+                        changes
+                    } = task.data;
+
+                    if (changes.freezeKey) {
+                        changes.freezeKey = PrivateKey.generate();
+                    }
+                    if (changes.kycKey) {
+                        changes.kycKey = PrivateKey.generate();
+                    }
+                    if (changes.wipeKey) {
+                        changes.wipeKey = PrivateKey.generate();
+                    }
+                    const client = new HederaSDKHelper(operatorId, operatorKey);
+                    const status = await client.updateToken(
+                        TokenId.fromString(tokenId),
+                        HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key'),
+                        changes
+                    )
+
+                    result.data = {
+                        status,
+                        freezeKey: changes.freezeKey ? changes.freezeKey.toString() : null,
+                        kycKey: changes.kycKey ? changes.kycKey.toString() : null,
+                        wipeKey: changes.wipeKey ? changes.wipeKey.toString() : null
                     }
 
                     break;
                 }
 
-                case WorkerTaskType.NEW_TOKEN: {
+                case WorkerTaskType.DELETE_TOKEN: {
                     const {
+                        tokenId,
                         operatorId,
                         operatorKey,
-                        tokenName,
-                        tokenSymbol,
-                        nft,
-                        decimals,
-                        initialSupply,
-                        tokenMemo,
                         adminKey,
-                        kycKey,
-                        freezeKey,
-                        wipeKey,
-                        supplyKey,
                     } = task.data;
+
                     const client = new HederaSDKHelper(operatorId, operatorKey);
-                    result.data = await client.newToken(
-                        tokenName,
-                        tokenSymbol,
-                        nft,
-                        decimals,
-                        initialSupply,
-                        tokenMemo,
-                        {
-                            id: operatorId,
-                            key: PrivateKey.fromString(operatorKey)
-                        },
-                        adminKey ? PrivateKey.fromString(adminKey) : null,
-                        kycKey ? PrivateKey.fromString(kycKey) : null,
-                        freezeKey ? PrivateKey.fromString(freezeKey) : null,
-                        wipeKey ? PrivateKey.fromString(wipeKey) : null,
-                        supplyKey ? PrivateKey.fromString(supplyKey) : null
-                    );
+                    result.data = await client.deleteToken(
+                        TokenId.fromString(tokenId),
+                        HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key')
+                    )
+
                     break;
                 }
 
@@ -382,7 +398,15 @@ export class Worker {
                 }
 
                 case WorkerTaskType.GRANT_KYC_TOKEN: {
-                    const { hederaAccountId, hederaAccountKey, userHederaAccountId, tokenId, kycKey, grant, dryRun } = task.data;
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        userHederaAccountId,
+                        tokenId,
+                        kycKey,
+                        grant,
+                        dryRun
+                    } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
 
                     if (grant) {
@@ -395,12 +419,20 @@ export class Worker {
                 }
 
                 case WorkerTaskType.FREEZE_TOKEN: {
-                    const { hederaAccountId, hederaAccountKey, freezeKey, freeze, tokenId, dryRun } = task.data;
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        userHederaAccountId,
+                        tokenId,
+                        freezeKey,
+                        freeze,
+                        dryRun
+                    } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
                     if (freeze) {
-                        result.data = await client.freeze(tokenId, hederaAccountId, freezeKey);
+                        result.data = await client.freeze(tokenId, userHederaAccountId, freezeKey);
                     } else {
-                        result.data = await client.unfreeze(tokenId, hederaAccountId, freezeKey);
+                        result.data = await client.unfreeze(tokenId, userHederaAccountId, freezeKey);
                     }
 
                     break;
@@ -423,9 +455,19 @@ export class Worker {
                 }
 
                 case WorkerTaskType.TRANSFER_NFT: {
-                    const { hederaAccountId, hederaAccountKey, dryRun, tokenId, targetAccount, adminId, adminKey, element, transactionMemo } = task.data;
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        dryRun,
+                        tokenId,
+                        targetAccount,
+                        treasuryId,
+                        treasuryKey,
+                        element,
+                        transactionMemo
+                    } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
-                    result.data = await client.transferNFT(tokenId, targetAccount, adminId, adminKey, element, transactionMemo);
+                    result.data = await client.transferNFT(tokenId, targetAccount, treasuryId, treasuryKey, element, transactionMemo);
                     break;
                 }
 
@@ -437,9 +479,19 @@ export class Worker {
                 }
 
                 case WorkerTaskType.TRANSFER_FT: {
-                    const { hederaAccountId, hederaAccountKey, dryRun, tokenId, targetAccount, adminId, adminKey, tokenValue, transactionMemo } = task.data;
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        dryRun,
+                        tokenId,
+                        targetAccount,
+                        treasuryId,
+                        treasuryKey,
+                        tokenValue,
+                        transactionMemo
+                    } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
-                    result.data = await client.transfer(tokenId, targetAccount, adminId, adminKey, tokenValue, transactionMemo);
+                    result.data = await client.transfer(tokenId, targetAccount, treasuryId, treasuryKey, tokenValue, transactionMemo);
                     break;
                 }
 

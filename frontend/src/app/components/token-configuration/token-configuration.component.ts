@@ -9,10 +9,43 @@ import { FormGroup } from '@angular/forms';
 export class TokenConfigurationComponent implements OnInit {
     @Input('preset') preset?: any;
     @Input('dataForm') dataForm!: FormGroup;
-
+    @Input('readonly') readonly?: any;
+    
     ft: any;
 
-    constructor() {}
+    constructor() { }
+
+    get enableAdmin(): any {
+        return this.dataForm?.get('enableAdmin')?.value;
+    }
+
+    set enableAdmin(value: any) {
+        this.dataForm?.patchValue({ enableAdmin: value });
+    }
+
+    get enableWipe(): any {
+        return this.dataForm?.get('enableWipe')?.value;
+    }
+
+    set enableWipe(value: any) {
+        this.dataForm?.patchValue({ enableWipe: value });
+    }
+
+    get enableFreeze(): any {
+        return this.dataForm?.get('enableFreeze')?.value;
+    }
+
+    set enableFreeze(value: any) {
+        this.dataForm?.patchValue({ enableFreeze: value });
+    }
+
+    get enableKYC(): any {
+        return this.dataForm?.get('enableKYC')?.value;
+    }
+
+    set enableKYC(value: any) {
+        this.dataForm?.patchValue({ enableKYC: value });
+    }
 
     ngOnInit(): void {
         if (this.preset) {

@@ -36,13 +36,13 @@ export class Token extends BaseEntity implements IToken {
      * Token decimals
      */
     @Property({ nullable: true })
-    decimals: string;
+    decimals: any;
 
     /**
      * Initial supply
      */
     @Property({ nullable: true })
-    initialSupply?: string;
+    initialSupply?: any;
 
     /**
      * Admin id
