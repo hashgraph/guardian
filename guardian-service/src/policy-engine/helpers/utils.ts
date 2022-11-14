@@ -65,6 +65,33 @@ export class PolicyUtils {
      * Wallet service
      */
     private static readonly wallet = new Wallet();
+    /**
+     * Custom Functions
+     */
+    private static readonly customFunctions = mathjs.create({
+        ...mathjs.all,
+        createEqual: mathjs.factory('equal', [], () => function equal(a: any, b: any) {
+            return a === b
+        }),
+        createUnequal: mathjs.factory('unequal', [], () => function unequal(a: any, b: any) {
+            return a !== b
+        }),
+        createSmaller: mathjs.factory('smaller', [], () => function smaller(a: any, b: any) {
+            return a < b
+        }),
+        createSmallerEq: mathjs.factory('smallerEq', [], () => function smallerEq(a: any, b: any) {
+            return a <= b
+        }),
+        createLarger: mathjs.factory('larger', [], () => function larger(a: any, b: any) {
+            return a > b
+        }),
+        createLargerEq: mathjs.factory('largerEq', [], () => function largerEq(a: any, b: any) {
+            return a >= b
+        }),
+        createCompare: mathjs.factory('compare', [], () => function compare(a: any, b: any) {
+            return a > b ? 1 : a < b ? -1 : 0
+        })
+    });
 
     /**
      * Variables
@@ -98,6 +125,22 @@ export class PolicyUtils {
                 return 'Incorrect formula';
             }
         }).call(null, mathjs, formula, scope);
+    }
+
+    /**
+     * Evaluate
+     * @param formula
+     * @param scope
+     */
+    public static evaluateCustomFormula(formula: string, scope: any) {
+        // tslint:disable-next-line:only-arrow-functions
+        return (function (math: any, _formula: string, _scope: any) {
+            try {
+                return math.evaluate(_formula, _scope);
+            } catch (error) {
+                return 'Incorrect formula';
+            }
+        }).call(null, PolicyUtils.customFunctions, formula, scope);
     }
 
     /**

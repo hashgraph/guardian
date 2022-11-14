@@ -125,7 +125,7 @@ export class SwitchBlock {
             let result = false;
             if (type === 'equal') {
                 if (scope) {
-                    const formulaResult = PolicyUtils.evaluateFormula(value, scope);
+                    const formulaResult = PolicyUtils.evaluateCustomFormula(value, scope);
                     if (formulaResult === 'Incorrect formula') {
                         ref.error(`expression: ${result}, ${JSON.stringify(scope)}`);
                         result = false;
@@ -137,7 +137,7 @@ export class SwitchBlock {
                 }
             } else if (type === 'not_equal') {
                 if (scope) {
-                    const formulaResult = PolicyUtils.evaluateFormula(value, scope);
+                    const formulaResult = PolicyUtils.evaluateCustomFormula(value, scope);
                     if (formulaResult === 'Incorrect formula') {
                         ref.error(`expression: ${result}, ${JSON.stringify(scope)}`);
                         result = false;
