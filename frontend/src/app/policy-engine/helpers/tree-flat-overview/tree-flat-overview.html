@@ -31,7 +31,8 @@
     <app-tree-node-actions class="block-node-actions" [visible]="this.currentBlock === node.node && this.currentBlock !== root"
         (delete)="onDelete($event, node)" [node]="node" [visibleMoveActions]="visibleMoveActions"
         (visibleMoreActions)="onVisibleMoreActions($event, node)" (dropUp)="onMoveBlockUpDown(-1)"
-        (dropDown)="onMoveBlockUpDown(1)" (dropLeft)="onMoveBlockLeft()" (dropRight)="onMoveBlockRight()">
+        (dropDown)="onMoveBlockUpDown(1)" (dropLeft)="onMoveBlockLeft()" (dropRight)="onMoveBlockRight()"
+        [attr.block-instance-container]="node.node.tag">
         <ng-container block [ngTemplateOutlet]="blockTemplate" [ngTemplateOutletContext]="{node}">
         </ng-container>
     </app-tree-node-actions>
