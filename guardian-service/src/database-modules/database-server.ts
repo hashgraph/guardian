@@ -695,7 +695,7 @@ export class DatabaseServer {
      * @virtual
      */
     public async getPolicy(policyId: string): Promise<Policy> {
-        return await this.findOne(Policy, policyId);
+        return await new DataBaseHelper(Policy).findOne(policyId);
     }
 
     /**
