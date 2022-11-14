@@ -236,13 +236,13 @@ export class EventsOverview {
             start_top_y: Math.round(start.top - start.topOffset - 6),
             start_bottom_x: Math.round(start.left + (minWidth / 2) - start.leftOffset),
             start_bottom_y: Math.round(start.top + start.height - start.topOffset + 2),
-            start_right_x: Math.round(start.right - start.leftOffset + 32),
+            start_right_x: Math.round(start.right - start.leftOffset + 12),
             start_right_y: Math.round(start.top - start.topOffset + 16 + 6),
             end_top_x: Math.round(end.left + (minWidth / 2) - start.leftOffset),
             end_top_y: Math.round(end.top - start.topOffset - 6),
             end_bottom_x: Math.round(end.left + (minWidth / 2) - start.leftOffset),
             end_bottom_y: Math.round(end.top + end.height - start.topOffset + 2),
-            end_right_x: Math.round(end.right - start.leftOffset + 32),
+            end_right_x: Math.round(end.right - start.leftOffset + 12),
             end_right_y: Math.round(end.top - start.topOffset + 16 - 6),
             startTag: startTag,
             endTag: endTag,
@@ -433,7 +433,7 @@ export class EventsOverview {
                     const line = this.lastImages.lines[this.lastImages.index - 1];
                     this._tooltip.innerHTML = `
                         <div class="s1"><span>Source (Block Tag)</span>: ${line.startTag}</div>
-                        <div class="s2"><span>Output (Event)</span>: ${line.output}</div> 
+                        <div class="s2"><span>Output (Event)</span>: ${line.output}</div>
                         <div class="s3"><span>Target (Block Tag)</span>: ${line.endTag}</div>
                         <div class="s4"><span>Input (Event)</span>: ${line.input}</div>
                         <div class="s5"><span>Event Actor</span>: ${this.actorMap[line.actor]}</div>

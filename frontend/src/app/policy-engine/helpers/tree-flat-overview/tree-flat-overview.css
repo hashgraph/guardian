@@ -23,7 +23,7 @@
     border: 1px solid #000;
     border-radius: 6px;
     padding: 4px 12px;
-    margin: 10px 8px 10px 2px;
+    margin: 0px 8px 0px 2px;
     cursor: pointer;
     position: relative;
     height: 22px;
@@ -236,4 +236,10 @@
     cursor: pointer;
     margin: 1px;
     color: #000000;
+}
+
+.block-node-actions {
+    display: flex;
+    min-height: 37px;
+    margin: 7px 0px;
 }

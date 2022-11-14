@@ -74,6 +74,7 @@ import { SelectBlock } from './helpers/select-block/select-block.component';
 import { CreateTokenBlockComponent } from './policy-viewer/blocks/create-token-block/create-token-block.component';
 import { CreateTokenConfigComponent } from './policy-configuration/blocks/tokens/create-token-config/create-token-config.component';
 import { TokenConfigurationComponent } from '../components/token-configuration/token-configuration.component';
+import { TreeNodeActionsComponent } from './helpers/tree-node-actions/tree-node-actions.component';
 
 @NgModule({
     declarations: [
@@ -142,7 +143,8 @@ import { TokenConfigurationComponent } from '../components/token-configuration/t
         SelectBlock,
         CreateTokenConfigComponent,
         CreateTokenBlockComponent,
-        TokenConfigurationComponent
+        TokenConfigurationComponent,
+        TreeNodeActionsComponent
     ],
     imports: [
         CommonModule,

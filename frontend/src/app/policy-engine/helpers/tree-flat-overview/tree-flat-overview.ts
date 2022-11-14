@@ -2,7 +2,7 @@ import { FlatTreeControl } from '@angular/cdk/tree';
 import { Component, ElementRef, EventEmitter, Injectable, Input, Output, SimpleChanges } from '@angular/core';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
 import { BehaviorSubject, Observable, of as observableOf } from 'rxjs';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { SelectionModel } from '@angular/cdk/collections';
 import { BlockNode } from 'src/app/policy-engine/helpers/tree-data-source/tree-data-source';
 import { RegisteredBlocks } from '../../registered-blocks';
@@ -55,6 +55,7 @@ export class TreeFlatOverview {
     validateDrop = false;
     isCollapseAll = true;
     eventsDisabled = false;
+    visibleMoveActions = false;
 
     public readonly context: ElementRef;
 
@@ -122,6 +123,48 @@ export class TreeFlatOverview {
 
     compare(a: BlockNode, b: BlockNode): boolean {
         return a.id == b.id;
+    }
+
+    onMoveBlockUpDown(position: number) {
+        const currentBlockParent = this.currentBlock?.parent;
+        if (currentBlockParent && currentBlockParent.children) {
+            const currentBlockIndex = currentBlockParent.children.indexOf(this.currentBlock);
+            moveItemInArray(currentBlockParent.children, currentBlockIndex, currentBlockIndex + position);
+            this.reorder.emit(this.dataSource.data);
+        }
+    }
+
+    onMoveBlockLeft() {
+        const currentBlockParent = this.currentBlock?.parent;
+        if (currentBlockParent &&
+            currentBlockParent.children &&
+            currentBlockParent.parent &&
+            currentBlockParent.parent.children
+        ) {
+            const currentBlockIndex = currentBlockParent.children.indexOf(this.currentBlock);
+            const currentBlockParentIndex = currentBlockParent.parent.children.indexOf(currentBlockParent);
+            this.currentBlock.parent = currentBlockParent.parent;
+            transferArrayItem(
+                currentBlockParent.children,
+                currentBlockParent.parent.children,
+                currentBlockIndex,
+                currentBlockParentIndex
+            );
+            this.reorder.emit(this.dataSource.data);
+        }
+    }
+
+    onMoveBlockRight() {
+        const currentBlockParent = this.currentBlock?.parent;
+        if (currentBlockParent && currentBlockParent.children) {
+            const currentBlockIndex = currentBlockParent.children.indexOf(this.currentBlock);
+            const nextBlock = currentBlockParent.children[currentBlockIndex + 1];
+            if (nextBlock && nextBlock.children) {
+                transferArrayItem(currentBlockParent.children, nextBlock.children, currentBlockIndex, 0);
+                this.expansionModel.select(nextBlock.id);
+                this.reorder.emit(this.dataSource.data);
+            }
+        }
     }
 
     /**
@@ -311,6 +354,7 @@ export class TreeFlatOverview {
         } else {
             this.currentBlock = this.root;
         }
+        this.select.emit(this.currentBlock);
         setTimeout(() => {
             this.eventsDisabled = false;
             this.change.emit();
@@ -384,6 +428,15 @@ export class TreeFlatOverview {
             }
         } else {
             this.currentBlock = this.root;
+        }
+    }
+
+    onVisibleMoreActions(event: MouseEvent, node: FlatBlockNode) {
+        this.visibleMoveActions = !this.visibleMoveActions;
+        if (this.currentBlock !== node.node) {
+            this.onSelect(event, node)
+        } else {
+            setTimeout(() => this.change.emit(), 10);
         }
     }
 }
