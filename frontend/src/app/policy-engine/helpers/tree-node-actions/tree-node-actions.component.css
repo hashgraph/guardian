@@ -20,10 +20,6 @@
     color: red;
 }
 
-.block-actions-menu {
-    display: flex;
-}
-
 .actions-container {
     background-color: white;
     border-radius: 5px;

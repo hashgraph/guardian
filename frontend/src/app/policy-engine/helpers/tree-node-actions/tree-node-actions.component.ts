@@ -9,7 +9,8 @@ import { FlatBlockNode } from '../tree-flat-overview/tree-flat-overview';
 export class TreeNodeActionsComponent implements OnInit {
     @Input('node') node!: FlatBlockNode;
     @Input('visible') visible: boolean = true;
-    @Input('visibleMoveActions') visibleMoveActions = false;
+    @Input('readonly') readonly!: boolean;
+    @Input('visibleMoveActions') visibleMoveActions!: boolean;
 
     @Output('delete') delete = new EventEmitter();
     @Output('visibleMoreActions') visibleMoreActions =
