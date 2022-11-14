@@ -717,6 +717,11 @@ export class PolicyBlockModel {
         return this._parent;
     }
 
+    public set parent(value: PolicyBlockModel | null) {
+        this._parent = value;
+        this.changed = true;
+    }
+
     public get changed(): boolean {
         return this._changed;
     }

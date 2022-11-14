@@ -12,9 +12,8 @@
         <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding cdkDrag [cdkDragData]="node"
             (mouseenter)="dragHover(node)" (mouseleave)="dragHoverEnd()" (cdkDragStarted)="dragStart()"
             (cdkDragReleased)="dragEnd()">
-            <button mat-icon-button disabled></button>
-            <ng-container [ngTemplateOutlet]="blockTemplate" [ngTemplateOutletContext]="{node: node}">
-            </ng-container>
+                <button mat-icon-button disabled></button>
+                <ng-container *ngTemplateOutlet="nodeTemp; context: {node}"></ng-container>
         </mat-tree-node>
         <mat-tree-node *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding cdkDrag [cdkDragData]="node"
             (mouseenter)="dragHover(node)" (mouseleave)="dragHoverEnd()" (cdkDragStarted)="dragStart(node)"
@@ -23,11 +22,20 @@
                 <mat-icon class="mat-icon-rtl-mirror">{{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
                 </mat-icon>
             </button>
-            <ng-container [ngTemplateOutlet]="blockTemplate" [ngTemplateOutletContext]="{node: node}">
-            </ng-container>
+            <ng-container *ngTemplateOutlet="nodeTemp; context: {node}"></ng-container>
         </mat-tree-node>
     </mat-tree>
 </div>
+
+<ng-template #nodeTemp let-node="node">
+    <app-tree-node-actions class="block-node-actions" [visible]="this.currentBlock === node.node && this.currentBlock !== root"
+        (delete)="onDelete($event, node)" [node]="node" [visibleMoveActions]="visibleMoveActions"
+        (visibleMoreActions)="onVisibleMoreActions($event, node)" (dropUp)="onMoveBlockUpDown(-1)"
+        (dropDown)="onMoveBlockUpDown(1)" (dropLeft)="onMoveBlockLeft()" (dropRight)="onMoveBlockRight()">
+        <ng-container block [ngTemplateOutlet]="blockTemplate" [ngTemplateOutletContext]="{node}">
+        </ng-container>
+    </app-tree-node-actions>
+</ng-template>
 
 <ng-template #blockTemplate let-node='node'>
     <div class="block"
@@ -43,9 +51,5 @@
         </div>
 
         {{node.node.tag}}
-
-        <div class="btn-delete" (click)="onDelete($event, node)">
-            <mat-icon>delete</mat-icon>
-        </div>
     </div>
 </ng-template>
