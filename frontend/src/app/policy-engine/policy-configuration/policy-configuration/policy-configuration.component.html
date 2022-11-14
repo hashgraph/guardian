@@ -186,7 +186,7 @@
                         </events-overview>
                         <tree-flat-overview #treeOverview [blocks]="policyModel.dataSource" [errors]="errorsMap"
                             (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)"
-                            (change)="onTreeChange($event)" (init)="onInitTree($event)">
+                            (change)="onTreeChange($event)" (init)="onInitTree($event)" [readonly]="readonly">
                         </tree-flat-overview>
                     </div>
                 </div>

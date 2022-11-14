@@ -1,6 +1,6 @@
 <div class="block-actions" (mouseenter)="onHoverVisible = true;" (mouseleave)="onHoverVisible = false;">
     <ng-content select="[block]"></ng-content>
-    <div class="move-actions-container" *ngIf="(visible) && visibleMoveActions">
+    <div class="move-actions-container" *ngIf="!readonly && visible && visibleMoveActions">
         <button (click)="onDropUp($event)" mat-icon-button class="action-button move-action-up">
             <mat-icon>arrow_drop_up</mat-icon>
         </button>
@@ -17,12 +17,12 @@
             <mat-icon>more_horiz</mat-icon>
         </button>
     </div>
-    <div class="actions-container" *ngIf="visible || onHoverVisible">
-        <button *ngIf="(visible || onHoverVisible) && !visibleMoveActions"
-            (click)="onVisibleMoreActions($event)" mat-icon-button class="action-button">
+    <div class="actions-container" *ngIf="!readonly && (visible || onHoverVisible)">
+        <button *ngIf="!visibleMoveActions" (click)="onVisibleMoreActions($event)"
+            mat-icon-button class="action-button">
             <mat-icon>more_horiz</mat-icon>
         </button>
-        <button *ngIf="visible || onHoverVisible" (click)="onDelete($event)" mat-icon-button
+        <button (click)="onDelete($event)" mat-icon-button
             class="action-button delete-action">
             <mat-icon>delete</mat-icon>
         </button>

@@ -34,6 +34,7 @@ export class FlatBlockNode {
 export class TreeFlatOverview {
     @Input('blocks') blocks!: BlockNode[];
     @Input('errors') errors!: any;
+    @Input('readonly') readonly!: boolean;
 
     @Output('delete') delete = new EventEmitter();
     @Output('select') select = new EventEmitter();
