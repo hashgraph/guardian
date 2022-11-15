@@ -14,7 +14,7 @@ export async function ImportKeysFromDatabase(vault: IVault): Promise<void> {
         return;
     }
 
-    const re = /^.*KEY\|(.+)$/;
+    const re = /^(.*KEY)\|(.+)$/;
 
     logger.info('Start import keys', ['AUTH_SERVICE']);
     const walletRepository = new DataBaseHelper(WalletAccount)
@@ -25,8 +25,8 @@ export async function ImportKeysFromDatabase(vault: IVault): Promise<void> {
         return {
             value: w.key,
             token: w.token,
-            type: 'KEY',
-            key: re.exec(w.type)[1]
+            type: re.exec(w.type)[1],
+            key: re.exec(w.type)[2]
         }
     })
 
