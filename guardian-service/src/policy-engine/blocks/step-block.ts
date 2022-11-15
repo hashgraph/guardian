@@ -72,8 +72,10 @@ export class InterfaceStepBlock {
      */
     @StateField()
     state: { [key: string]: any } = { index: 0 };
-
-    private endIndexes: { [x: number]: boolean } = {};
+    /**
+     * Final steps
+     */
+    private readonly endIndexes: { [x: number]: boolean } = {};
 
     /**
      * Before init callback
