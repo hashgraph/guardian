@@ -7,6 +7,7 @@ import {
     IArtifact,
     TokenType,
 } from '@guardian/interfaces';
+import { BlockType } from './types/block-type.type';
 
 export class PolicyRoleModel {
     private readonly policy: PolicyModel;
@@ -750,6 +751,14 @@ export class PolicyBlockModel {
         return undefined;
     }
 
+    public get lastChild(): PolicyBlockModel | null {
+        try {
+            return this._children[this._children.length - 1];
+        } catch (error) {
+            return null;
+        }
+    }
+
     public remove() {
         if (this.parent) {
             this.parent._removeChild(this);
@@ -902,6 +911,18 @@ export class PolicyBlockModel {
         if (this._changed) {
             this.emitUpdate();
         }
+    }
+
+    public isFinal(): boolean {
+        if (this.parent && this.parent.blockType === BlockType.Step) {
+            if (this.parent.lastChild == this) {
+                return true;
+            }
+            if (Array.isArray(this.parent.properties?.finalBlocks)) {
+                return this.parent.properties.finalBlocks.indexOf(this.tag) > -1;
+            }
+        }
+        return false;
     }
 }
 

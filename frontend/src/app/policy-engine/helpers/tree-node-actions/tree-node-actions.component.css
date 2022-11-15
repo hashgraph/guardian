@@ -10,8 +10,8 @@
     width: 31px;
     height: 31px;
     line-height: 0px;
-    box-shadow: 0px 0px 7px -1px #3f51b5, 0px 0px 5px 5px #eeeeee;
-    margin: 3px;
+    box-shadow: 0px 0px 7px -1px #3f51b5a6, 0px 0px 5px 5px #eeeeee;
+    margin: 2px;
     color: #3f51b5;
     z-index: 2;
 }
@@ -23,7 +23,7 @@
 .actions-container {
     background-color: white;
     border-radius: 5px;
-    box-shadow: 0px 0px 7px -1px #3f51b5;
+    box-shadow: 0px 0px 7px -1px #3f51b5a6;
 }
 
 .actions-container > .action-button {
@@ -41,7 +41,7 @@
 }
 
 .move-more-action-button {
-    box-shadow: 0px 0px 7px -1px #3f51b5, 0px 0px 20px 20px #eeeeee !important;
+    box-shadow: 0px 0px 7px -1px #3f51b5a6, 0px 0px 20px 20px #eeeeee !important;
     z-index: 1 !important;
     grid-row: 2;
     grid-column: 2;

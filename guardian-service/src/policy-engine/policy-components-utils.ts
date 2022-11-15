@@ -408,7 +408,7 @@ export class PolicyComponentsUtils {
         }
         if (instance.parent?.blockType === 'interfaceStepBlock') {
             PolicyComponentsUtils.RegisterLink(
-                instance, PolicyOutputEventType.RunEvent,
+                instance, PolicyOutputEventType.ReleaseEvent,
                 instance.parent, PolicyInputEventType.ReleaseEvent,
                 EventActor.EventInitiator
             );

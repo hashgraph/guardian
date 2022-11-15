@@ -136,7 +136,7 @@ export class RegisteredBlocks {
             group: BlockGroup.Main,
             header: BlockHeaders.UIComponents,
             factory: StepBlockComponent,
-            property: ContainerConfigComponent,
+            property: null,
             allowedChildren: allowedChildrenStepContainerBlocks
         });
         this.registerBlock({

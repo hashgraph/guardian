@@ -137,6 +137,7 @@ export class ReassigningBlock {
         ref.log(`Reassigning Document: ${JSON.stringify(result)}`);
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, event.data);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, null));

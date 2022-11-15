@@ -262,6 +262,7 @@ export class MintBlock {
           targetAccountId
         );
         ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, docOwner, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));

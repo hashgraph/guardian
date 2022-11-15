@@ -47,6 +47,10 @@
         [attr.root]="node.root"
         [attr.block-instance]="node.node.tag"
     >
+        <div *ngIf="isFinal(node)" class="final-step-icon" title="Final Step">
+            <mat-icon>radio_button_checked</mat-icon>
+        </div>
+
         <div class="block-icon">
             <mat-icon>{{node.icon}}</mat-icon>
         </div>

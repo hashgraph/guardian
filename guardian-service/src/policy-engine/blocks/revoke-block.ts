@@ -185,6 +185,7 @@ export class RevokeBlock {
             data: documents
         };
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
     }

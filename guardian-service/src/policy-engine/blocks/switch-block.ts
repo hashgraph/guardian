@@ -168,7 +168,7 @@ export class SwitchBlock {
                 }
             }
         }
-
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event?.user, null);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
     }
 

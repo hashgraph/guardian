@@ -240,6 +240,7 @@ export class CreateTokenBlock {
 
             await this.changeActive(user, true);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, stateData);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, stateData);
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);

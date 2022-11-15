@@ -399,6 +399,10 @@ export class TreeFlatOverview {
         return this.currentBlock == node.node;
     }
 
+    isFinal(node: FlatBlockNode) {
+        return node.node?.isFinal();
+    }
+
     isError(node: FlatBlockNode) {
         if (this.errors && this.errors[node.node.id]) {
             return true;

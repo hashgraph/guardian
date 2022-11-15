@@ -278,6 +278,7 @@ export class RequestVcDocumentBlock {
 
             await this.changeActive(user, true);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
