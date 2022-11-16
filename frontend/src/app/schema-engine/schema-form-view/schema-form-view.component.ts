@@ -95,7 +95,9 @@ export class SchemaFormViewComponent implements OnInit {
                     const fieldValue = this.values[item.name];
                     if (Array.isArray(fieldValue)) {
                         value = fieldValue.map((fieldItem) => {
-                            value: fieldItem;
+                            return {
+                                value: fieldItem,
+                            };
                         });
                     }
                     else {

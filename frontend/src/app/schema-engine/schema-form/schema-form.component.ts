@@ -27,7 +27,8 @@ enum PlaceholderByFieldType {
     URL = "example.com",
     String = "Please enter text here",
     IPFS = 'ipfs.io/ipfs/example-hash',
-    HederaAccount= '0.0.1'
+    HederaAccount = '0.0.1',
+    Duration = 'P1D'
 }
 
 enum ErrorFieldMessageByFieldType {
@@ -86,7 +87,6 @@ export class SchemaFormComponent implements OnInit {
     conditionFields: SchemaField[] = [];
 
     private _patternByNumberType: any = {
-        duration: /^[0-9]+$/,
         number: /^-?\d*(\.\d+)?$/,
         integer: /^-?\d*$/
     };
@@ -312,7 +312,11 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (item.format === 'duration') {
-            validators.push(this.isNumberOrEmptyValidator());
+            validators.push(
+                Validators.pattern(
+                    /^(-?)P(?=\d|T\d)(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)([DW]))?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/
+                )
+            );
         }
 
         if (item.type === 'integer') {
@@ -351,7 +355,7 @@ export class SchemaFormComponent implements OnInit {
                     } else {
                         valueToSet = "";
                     }
-                } else if (type === 'number' || type === 'integer' || format === 'duration') {
+                } else if (type === 'number' || type === 'integer') {
                     if (typeof (val) === 'string') {
                         if (
                             (!pattern && !this._patternByNumberType[type].test(val)) ||
@@ -360,7 +364,7 @@ export class SchemaFormComponent implements OnInit {
                             valueToSet = null;
                         } else if (type == 'integer') {
                             valueToSet = parseInt(val);
-                        } else if (type == 'number' || type == 'duration') {
+                        } else if (type == 'number') {
                             valueToSet = parseFloat(val);
                         }
                     }
@@ -478,7 +482,7 @@ export class SchemaFormComponent implements OnInit {
             case 'number':
                 return PlaceholderByFieldType.Number;
             case 'duration':
-                return PlaceholderByFieldType.Number;
+                return PlaceholderByFieldType.Duration;
             case 'integer':
                 return PlaceholderByFieldType.Number;
             case 'url':
