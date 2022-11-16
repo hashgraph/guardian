@@ -43,7 +43,9 @@ const decrypt = (encrypted: Buffer) => {
             for await (const m of sub) {
                 const payload = c.decode(m.data)
                 console.log(`[${sub.getProcessed()} - ${m.subject}]`, payload);
-                await cb(payload)
+                if(cb) {
+                    await cb(payload);
+                }
             }
             console.log('subscription closed');
         })();
@@ -89,9 +91,9 @@ const decrypt = (encrypted: Buffer) => {
         const res = JSON.parse(unpackedString);
         console.log('Response file content: ', res.body)
     });
-    subscribeEvent(ExternalMessageEvents.TOKEN_MINTED, console.log);
-    subscribeEvent(ExternalMessageEvents.ERROR_LOG, console.log);
-    subscribeEvent(ExternalMessageEvents.BLOCK_RUN_EVENTS, console.log);
+    subscribeEvent(ExternalMessageEvents.TOKEN_MINTED, null);
+    subscribeEvent(ExternalMessageEvents.ERROR_LOG, null);
+    subscribeEvent(ExternalMessageEvents.BLOCK_EVENTS, null);
 
     if (ENABLE_IPFS_ENCRYPTION) {
         responseToIpfsEvent(ExternalMessageEvents.IPFS_BEFORE_UPLOAD_CONTENT, encrypt)

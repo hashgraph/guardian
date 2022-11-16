@@ -242,13 +242,22 @@ export class CreateTokenBlock {
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, stateData);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, stateData);
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
+                tokenName: createdToken.tokenName,
+                tokenSymbol: createdToken.tokenSymbol,
+                tokenType: createdToken.tokenType,
+                decimals: createdToken.decimals,
+                initialSupply: createdToken.initialSupply,
+                enableAdmin: createdToken.enableAdmin,
+                enableFreeze: createdToken.enableFreeze,
+                enableKYC: createdToken.enableKYC,
+                enableWipe: createdToken.enableWipe
+            }));
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             await this.changeActive(user, true);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
-
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
 
         return {};
     }

@@ -4,7 +4,7 @@ import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage, VpDocument, MessageMemo } from '@hedera-modules';
+import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage, MessageMemo } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
@@ -12,7 +12,7 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Mint block
@@ -20,7 +20,6 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
 @BasicBlock({
     blockType: 'mintDocumentBlock',
     commonBlock: true,
-    publishExternalEvent: true,
     about: {
         label: 'Mint',
         title: `Add 'Mint' Block`,
@@ -100,7 +99,7 @@ export class MintBlock {
         root: IHederaAccount,
         user: IPolicyUser,
         targetAccountId: string
-    ): Promise<VpDocument> {
+    ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         const uuid = GenerateUUIDv4();
@@ -164,7 +163,7 @@ export class MintBlock {
                 .trimEnd()
         );
 
-        return vp;
+        return [savedVp, tokenValue];
     }
 
     /**
@@ -252,20 +251,25 @@ export class MintBlock {
 
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
 
-        await this.mintProcessing(
-          token,
-          vcs,
-          vsMessages,
-          topicId,
-          root,
-          docOwner,
-          targetAccountId
+        const [vp, tokenValue] = await this.mintProcessing(
+            token,
+            vcs,
+            vsMessages,
+            topicId,
+            root,
+            docOwner,
+            targetAccountId
         );
         ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);
         ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, docOwner, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data);
-
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, docOwner, {
+            tokenId: token.tokenId,
+            accountId: targetAccountId,
+            amount: tokenValue,
+            documents: ExternalDocuments(docs),
+            result: ExternalDocuments(vp),
+        }));
     }
 
     /**

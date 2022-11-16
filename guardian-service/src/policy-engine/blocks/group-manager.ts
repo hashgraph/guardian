@@ -100,7 +100,7 @@ export class GroupManagerBlock {
             } else {
                 throw new Error(`Permission denied`);
             }
-        } else if(member.groupAccessType === GroupAccessType.Global) {
+        } else if (member.groupAccessType === GroupAccessType.Global) {
             if (ref.options.canDelete === 'all' || member.owner === user.did) {
                 await ref.databaseServer.deleteGroup(member);
             } else {
@@ -196,9 +196,11 @@ export class GroupManagerBlock {
      */
     async setData(user: IPolicyUser, blockData: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
+            action: blockData?.action
+        }));
         if (blockData.action === 'invite') {
             const invitation = await this.createInvite(ref, user, blockData.group, blockData.role);
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
             return { invitation };
         }
         if (blockData.action === 'delete') {
@@ -209,7 +211,6 @@ export class GroupManagerBlock {
                 blockData.user,
                 blockData.message
             );
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
             return { deleted: true };
         }
     }

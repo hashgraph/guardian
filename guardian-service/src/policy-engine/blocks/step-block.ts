@@ -123,7 +123,9 @@ export class InterfaceStepBlock {
         ref.updateBlock(blockState, user);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
 
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Step, ref, user, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Step, ref, user, {
+            index: blockState?.index
+        }));
     }
 
     /**

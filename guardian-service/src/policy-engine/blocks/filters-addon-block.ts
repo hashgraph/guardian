@@ -122,7 +122,7 @@ export class FiltersAddonBlock {
             this.state[user.id] = blockState;
         }
         ref.setFilters(filter, user);
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, data));
     }
 
     /**

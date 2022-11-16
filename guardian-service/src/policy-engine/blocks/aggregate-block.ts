@@ -16,7 +16,6 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
 @BasicBlock({
     blockType: 'aggregateDocumentBlock',
     commonBlock: true,
-    publishExternalEvent: true,
     about: {
         label: 'Aggregate Data',
         title: `Add 'Aggregate' Block`,

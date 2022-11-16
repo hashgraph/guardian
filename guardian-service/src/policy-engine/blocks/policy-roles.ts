@@ -430,7 +430,10 @@ export class PolicyRolesBlock {
             PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance)
         ]);
 
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
+            group: group.uuid,
+            role: group.role
+        }));
 
         return true;
     }

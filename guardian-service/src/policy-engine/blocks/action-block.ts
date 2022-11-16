@@ -11,7 +11,7 @@ import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/inte
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Document action clock with UI
@@ -79,6 +79,7 @@ export class InterfaceDocumentActionBlock {
 
         const state: any = { data: document };
 
+        let result: any = null;
         if (ref.options.type === 'selector') {
             const option = this.findOptions(document, ref.options.field, ref.options.uiMetaData.options);
             if (option) {
@@ -88,16 +89,12 @@ export class InterfaceDocumentActionBlock {
                 ref.triggerEvents(option.tag, newUser, state);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
             }
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
-            return;
         }
 
         if (ref.options.type === 'dropdown') {
             const newUser = PolicyUtils.getDocumentOwner(ref, document);
             ref.triggerEvents(PolicyOutputEventType.DropdownEvent, newUser, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
-            return;
         }
 
         if (ref.options.type === 'download') {
@@ -112,8 +109,7 @@ export class InterfaceDocumentActionBlock {
             const schemaObject = await ref.databaseServer.getSchemaByIRI(ref.options.schema);
             const schema = new Schema(schemaObject);
             const didDocument = DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
-            return {
+            result = {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
                 body: {
                     'url': ref.options.targetUrl || process.env.MRV_ADDRESS,
@@ -136,6 +132,13 @@ export class InterfaceDocumentActionBlock {
                 }
             }
         }
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
+            action: ref.options.type,
+            documents: ExternalDocuments(document)
+        }));
+
+        return result;
     }
 
     /**

@@ -56,7 +56,7 @@ export class InterfaceDocumentsSource {
 
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag);
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, data));
     }
 
     /**

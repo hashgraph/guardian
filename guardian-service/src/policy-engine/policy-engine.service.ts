@@ -1,7 +1,8 @@
 import {
     PolicyEngineEvents,
     TopicType,
-    PolicyType
+    PolicyType,
+    ExternalMessageEvents
 } from '@guardian/interfaces';
 import {
     IAuthUser,
@@ -9,7 +10,8 @@ import {
     MessageResponse,
     MessageError,
     BinaryMessageResponse,
-    Logger
+    Logger,
+    ExternalEventChannel
 } from '@guardian/common';
 import {
     DIDDocument,
@@ -50,6 +52,11 @@ export class PolicyEngineService {
     private readonly apiGatewayChannel: MessageBrokerChannel;
 
     /**
+     * External event channel
+     */
+    private readonly externalEventChannel: ExternalEventChannel;
+
+    /**
      * Policy Engine
      * @private
      */
@@ -59,6 +66,7 @@ export class PolicyEngineService {
         this.channel = channel;
         this.apiGatewayChannel = apiGatewayChannel;
         this.policyEngine = new PolicyEngine()
+        this.externalEventChannel = new ExternalEventChannel()
     }
 
     /**
@@ -172,7 +180,11 @@ export class PolicyEngineService {
         }
 
         PolicyComponentsUtils.ExternalEventFn = async (...args: any[]) => {
-            // console.log('<-- External Event -->', args);
+            try {
+                this.externalEventChannel.publishMessage(ExternalMessageEvents.BLOCK_EVENTS, args);
+            } catch (error) {
+                console.log(error);
+            }
         };
 
         this.channel.response<any, any>('mrv-data', async (msg) => {

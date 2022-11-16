@@ -16,7 +16,6 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
 @BasicBlock({
     blockType: 'timerBlock',
     commonBlock: true,
-    publishExternalEvent: true,
     about: {
         label: 'Timer',
         title: `Add 'Timer' Block`,
