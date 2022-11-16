@@ -1,8 +1,9 @@
 import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
+import { IPFSService } from 'src/app/services/ipfs.service';
 import { DATETIME_FORMATS } from '../schema-form/schema-form.component';
 
 /**
@@ -28,7 +29,7 @@ export class SchemaFormViewComponent implements OnInit {
     fields: any[] | undefined = [];
     pageSize: number = 20;
 
-    constructor() { }
+    constructor(private ipfs: IPFSService, private changeDetector: ChangeDetectorRef) { }
 
 
     ngOnInit(): void {
@@ -68,24 +69,51 @@ export class SchemaFormViewComponent implements OnInit {
                     || this.values[item.name] === undefined
                     ? ""
                     : this.values[item.name];
+                if (this.isIPFS(field)) {
+                    item.loading = true;
+                    this.ipfs
+                        .getImageByLink(item.value)
+                        .then((res) => {
+                            item.imgSrc = res;
+                        })
+                        .finally(() => {
+                            item.loading = false;
+                            this.changeDetector.markForCheck();
+                        });
+                }
             }
             if (!field.isArray && field.isRef) {
                 item.fields = field.fields;
             }
 
             if (field.isArray && !field.isRef) {
-                let value = [];
+                let value: any = [];
                 if (this.values
                     && this.values[item.name] !== null
                     && this.values[item.name] !== undefined
                 ) {
                     const fieldValue = this.values[item.name];
                     if (Array.isArray(fieldValue)) {
-                        value = fieldValue;
+                        value = fieldValue.map((fieldItem) => {
+                            value: fieldItem;
+                        });
                     }
                     else {
-                        value = [fieldValue]
+                        value = [{
+                            value: fieldValue
+                        }]
                         item.isInvalidType = true;
+                    }
+                    if (this.isIPFS(field)) {
+                        for (const fieldItem of value) {
+                            fieldItem.loading = true;
+                            this.ipfs
+                                .getImageByLink(fieldItem.value)
+                                .then((res) => {
+                                    fieldItem.imgSrc = res;
+                                })
+                                .finally(() => (fieldItem.loading = false));
+                        }
                     }
                 }
 
@@ -147,7 +175,8 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     isIPFS(item: SchemaField): boolean {
-        return item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+';
+        return item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+'
+            || item.pattern === '^ipfs:\/\/.+';
     }
 
     isInput(item: SchemaField): boolean {

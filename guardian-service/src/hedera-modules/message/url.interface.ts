@@ -17,6 +17,5 @@ export interface IURL {
  */
 export enum UrlType {
     url = 'url',
-    cid = 'cid',
-    custom_context_url = 'custom-context-url'
+    cid = 'cid'
 }

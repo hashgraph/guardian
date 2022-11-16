@@ -22,6 +22,7 @@ import { ApiResponse } from '@api/api-response';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
+import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
 
 export const schemaCache = {};
 
@@ -120,8 +121,9 @@ async function loadSchema(messageId: string, owner: string) {
             topicId: message.getTopicId(),
             messageId,
             documentURL: message.getDocumentUrl(UrlType.url),
-            contextURL: message.getContextUrl(UrlType.custom_context_url),
-            iri: null
+            contextURL: message.getContextUrl(UrlType.url),
+            iri: null,
+            codeVersion: message.codeVersion
         }
         SchemaHelper.updateIRI(schemaToImport);
         log.info(`loadSchema end: ${messageId}`, ['GUARDIAN_SERVICE']);
@@ -253,7 +255,7 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
     schemaObject.status = SchemaStatus.DRAFT;
     schemaObject.topicId = topic.topicId;
     schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
-
+    schemaObject.codeVersion = SchemaConverterUtils.VERSION;
     const errorsCount = await DatabaseServer.getSchemasCount({
         where: {
             iri: {
@@ -351,9 +353,10 @@ export async function importSchemaByFiles(
     }
 
     let num: number = 0;
-    for (const file of files) {
+    for (let file of files) {
         const parsedSchema = updatedSchemasMap[file.iri];
         file.document = parsedSchema.document;
+        file = SchemaConverterUtils.SchemaConverter(file);
         await createSchema(file, owner, emptyNotifier());
         num++;
         notifier.info(`Schema ${num} (${file.name || '-'}) created`);
@@ -411,7 +414,7 @@ export async function publishSchema(
 
     const messageId = result.getId();
     const topicId = result.getTopicId();
-    const contextUrl = result.getContextUrl(UrlType.custom_context_url);
+    const contextUrl = result.getContextUrl(UrlType.url);
     const documentUrl = result.getDocumentUrl(UrlType.url);
 
     item.status = SchemaStatus.PUBLISHED;

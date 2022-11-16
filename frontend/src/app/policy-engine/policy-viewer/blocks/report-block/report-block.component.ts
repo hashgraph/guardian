@@ -3,8 +3,9 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import { IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport } from '@guardian/interfaces';
+import { IconType, IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
+import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { IconsArray } from './iconsArray';
@@ -43,7 +44,8 @@ export class ReportBlockComponent implements OnInit {
         private fb: FormBuilder,
         public dialog: MatDialog,
         iconRegistry: MatIconRegistry,
-        sanitizer: DomSanitizer
+        sanitizer: DomSanitizer,
+        private ipfs: IPFSService
     ) {
         for (let i = 0; i < IconsArray.length; i++) {
             const element = IconsArray[i];
@@ -149,6 +151,13 @@ export class ReportBlockComponent implements OnInit {
             if (reportItem.multiple && reportItem.document[0]) {
                 this.onMultipleDocumentClick(reportItem.document[0], reportItem);
             }
+            if (reportItem.iconType === IconType.CUSTOM) {
+                const iconLink = reportItem.icon;
+                reportItem.icon = '';
+                this.ipfs.getImageByLink(iconLink).then((res) => {
+                    reportItem.icon = res;
+                })
+            }
         });
         this.loading = false;
     }
@@ -230,9 +239,9 @@ export class ReportBlockComponent implements OnInit {
     }
 
     dynamicSortItems(item?: any, activeDocument?: any) {
-        if (!item 
-            || !this.documents 
-            || !activeDocument 
+        if (!item
+            || !this.documents
+            || !activeDocument
             || !item.dynamicFilters
             || !item.dynamicFilters.length) {
             return;

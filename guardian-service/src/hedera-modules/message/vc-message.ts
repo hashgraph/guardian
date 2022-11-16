@@ -4,6 +4,7 @@ import { IURL, UrlType } from './url.interface';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { VcMessageBody } from './message-body.interface';
+import { IPFS } from '@helpers/ipfs';
 
 /**
  * VC message
@@ -85,7 +86,7 @@ export class VCMessage extends Message {
             issuer: this.issuer,
             relationships: this.relationships,
             cid: this.getDocumentUrl(UrlType.cid),
-            url: this.getDocumentUrl(UrlType.url),
+            uri: this.getDocumentUrl(UrlType.url),
             documentStatus: this.documentStatus
         };
     }
@@ -138,7 +139,7 @@ export class VCMessage extends Message {
         message.relationships = json.relationships;
         const urls = [{
             cid: json.cid,
-            url: json.url
+            url: IPFS.IPFS_PROTOCOL + json.cid
         }]
         message.setUrls(urls);
         return message;
