@@ -64,7 +64,7 @@ export class ExternalEvent<T> {
 /**
  * Convert Document
  */
-const getDoc = function (document: IPolicyDocument) {
+const getDoc = (document: IPolicyDocument) => {
     const type = (document.document) ? (
         (document.document.credentialSubject) ? ('VC') : (
             (document.document.verifiableCredential) ? ('VP') : (
@@ -82,7 +82,7 @@ const getDoc = function (document: IPolicyDocument) {
 /**
  * External Documents
  */
-export const ExternalDocuments = function (document: IPolicyDocument | IPolicyDocument[]): any[] {
+export const ExternalDocuments = (document: IPolicyDocument | IPolicyDocument[]): any[] => {
     try {
         if (document) {
             if (Array.isArray(document)) {

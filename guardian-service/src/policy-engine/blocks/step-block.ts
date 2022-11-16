@@ -49,19 +49,6 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
                 label: 'Title',
                 title: 'Title',
                 type: PropertyType.Input
-            }, {
-                name: 'type',
-                label: 'Type',
-                title: 'Nested elements display type',
-                type: PropertyType.Select,
-                items: [{
-                    label: 'BLANK',
-                    value: 'blank'
-                }, {
-                    label: 'TABS',
-                    value: 'tabs'
-                }],
-                default: 'blank'
             }]
         }]
     }
