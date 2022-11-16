@@ -80,7 +80,7 @@ export class FieldTypesDictionary {
             name: 'Image',
             type: 'string',
             format: undefined,
-            pattern: '^((https):\/\/)?ipfs.io\/ipfs\/.+',
+            pattern: '^ipfs:\/\/.+',
             isRef: false
         },
         {

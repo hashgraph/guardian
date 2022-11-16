@@ -15,6 +15,7 @@ import { SchemaLoader, SchemaLoaderFunction } from '../document-loader/schema-lo
 import { DidRootKey } from './did-document';
 import { Issuer } from './issuer';
 import axios from 'axios';
+import { IPFS } from '@helpers/ipfs';
 
 /**
  * Suite interface
@@ -466,10 +467,23 @@ export class VCJS {
      * @param uri URI
      * @returns Schema
      */
-    public async loadSchema(uri) {
+    public async loadSchema(uri: string) {
         try {
-            const response = await axios.get(uri);
-            return response.data;
+            let response;
+            if (uri.startsWith(IPFS.IPFS_PROTOCOL)) {
+                const cidMatches = uri.match(IPFS.CID_PATTERN);
+                response = JSON.parse(
+                    Buffer.from(
+                        await IPFS.getFile(
+                            (cidMatches && cidMatches[0]) || '',
+                            'raw'
+                        )
+                    ).toString()
+                );
+            } else {
+                response = (await axios.get(uri)).data;
+            }
+            return response;
         } catch (err) {
             throw new Error('Can not resolve reference: ' + uri);
         }

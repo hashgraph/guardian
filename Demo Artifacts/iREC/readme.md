@@ -25,6 +25,8 @@ As the initial step in IREC Policy involve creation of following Schemas: iRec r
 | iREC 3 | 1662641840.731000003 | iRec 2 Policy + revoke actions (Added: Revoke Block, Button Block) | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Policies/IRec%20Policy%203.policy) |
 | iREC 4 | 1662642008.325450377 | iRec 3 Policy + auto associate and grant KYC token actions (Added: Token Action Block, Token Confirmation Block) | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Policies/IRec%20Policy%204.policy) |
 | iREC policy 5 group | 1663850151.496004277 | Demonstrates the usage of the new concepts of common groups and multi-signature approvals. Document approval responsibilities are given to the new 'Approver' role, which belongs to a group. Users can become members of the group without the invite, and thereby become approvers. | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/iREC/Policies/IRec%20Policy%205%20group%20(1663850151.496004277).policy) |
+| IRec Policy 6 search documents | 1666182325.863957003 | The ability to process other than input documents in calculation block (calculateMathVariables block improvement) | [Link](https://github.com/hashgraph/guardian/blob/develop/Demo%20Artifacts/iREC/Policies/IRec%20Policy%206%20search%20documents%20(1666182325.863957003).policy) |
+| IRec Policy 7 split documents | 1666798058.496271367 | Splitting documents to chunks (added splitBlock) | [Link](https://github.com/hashgraph/guardian/blob/develop/Demo%20Artifacts/iREC/Policies/IRec%20Policy%207%20split%20documents%20(1666798058.496271367).policy) |
 
 
 For complete User Guide and API Flow for executing IREC Policy, please refer to :
