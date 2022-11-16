@@ -72,10 +72,10 @@ export class RequestVcDocumentBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IPolicyUser, state: any): Promise<boolean> {
+    protected async validateDocuments(user: IPolicyUser, state: any): Promise<string> {
         const validators = this.getValidators();
         for (const validator of validators) {
-            const valid = await validator.run({
+            const error = await validator.run({
                 type: null,
                 inputType: null,
                 outputType: null,
@@ -87,11 +87,11 @@ export class RequestVcDocumentBlock {
                 user,
                 data: state
             });
-            if (!valid) {
-                return false;
+            if (error) {
+                return error;
             }
         }
-        return true;
+        return null;
     }
 
     /**
@@ -271,9 +271,9 @@ export class RequestVcDocumentBlock {
 
             const state = { data: item };
 
-            const valid = await this.validateDocuments(user, state);
-            if (!valid) {
-                throw new BlockActionError('Invalid document', ref.blockType, ref.uuid);
+            const error = await this.validateDocuments(user, state);
+            if (error) {
+                throw new BlockActionError(error, ref.blockType, ref.uuid);
             }
 
             await this.changeActive(user, true);

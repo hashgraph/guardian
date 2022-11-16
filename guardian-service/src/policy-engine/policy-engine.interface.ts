@@ -636,8 +636,9 @@ export interface IPolicyValidatorBlock extends IPolicyBlock {
     /**
      * Run block logic
      * @param event
+     * @returns error
      */
-    run(event: IPolicyEvent<any>): Promise<boolean>;
+    run(event: IPolicyEvent<any>): Promise<string>;
 }
 
 /**

@@ -63,10 +63,10 @@ export class ExternalDataBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IPolicyUser, state: any): Promise<boolean> {
+    protected async validateDocuments(user: IPolicyUser, state: any): Promise<string> {
         const validators = this.getValidators();
         for (const validator of validators) {
-            const valid = await validator.run({
+            const error = await validator.run({
                 type: null,
                 inputType: null,
                 outputType: null,
@@ -78,11 +78,11 @@ export class ExternalDataBlock {
                 user,
                 data: state
             });
-            if (!valid) {
-                return false;
+            if (error) {
+                return error;
             }
         }
-        return true;
+        return null;
     }
 
     /**
@@ -177,9 +177,9 @@ export class ExternalDataBlock {
 
         const state = { data: doc };
 
-        const valid = await this.validateDocuments(user, state);
-        if (!valid) {
-            throw new BlockActionError('Invalid document', ref.blockType, ref.uuid);
+        const error = await this.validateDocuments(user, state);
+        if (error) {
+            throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);

@@ -463,6 +463,19 @@ export class PolicyUtils {
     }
 
     /**
+     * Get Schema Context
+     * @param ref
+     * @param schema
+     */
+    public static getSchemaContext(ref: AnyBlockType, schema: SchemaCollection): string {
+        if (ref.dryRun) {
+            return `schema${schema.iri}`;
+        } else {
+            return schema.contextURL;
+        }
+    }
+
+    /**
      * Get subject id
      * @param data
      */
@@ -509,12 +522,13 @@ export class PolicyUtils {
 
     /**
      * Check Document Schema
+     * @param ref
      * @param document
      * @param schema
      */
-    public static checkDocumentSchema(document: any, schema: SchemaCollection): boolean {
+    public static checkDocumentSchema(ref: AnyBlockType, document: any, schema: SchemaCollection): boolean {
         const iri = schema.iri ? schema.iri.slice(1) : null;
-        const context = schema.contextURL;
+        const context = PolicyUtils.getSchemaContext(ref, schema);
         if (document && document.document) {
             if (Array.isArray(document.document.credentialSubject)) {
                 return (

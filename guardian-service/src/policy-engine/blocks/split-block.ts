@@ -116,8 +116,9 @@ export class SplitBlock {
         let vc = VcDocument.fromJsonTree(clone.document);
         if (document.messageId) {
             const evidenceSchema = await this.getSchema();
+            const context = PolicyUtils.getSchemaContext(ref, evidenceSchema);
             vc.addType(evidenceSchema.name);
-            vc.addContext(evidenceSchema.contextURL);
+            vc.addContext(context);
             vc.addEvidence({
                 type: ['SourceDocument'],
                 messageId: document.messageId,
