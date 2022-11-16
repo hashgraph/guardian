@@ -4,7 +4,6 @@ import { IURL, UrlType } from './url.interface';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { SchemaMessageBody } from './message-body.interface';
-import { IPFS } from '@helpers/ipfs';
 
 /**
  * Schema message
@@ -167,11 +166,11 @@ export class SchemaMessage extends Message {
         message.codeVersion = json.code_version;
         const urls = [{
             cid: json.document_cid,
-            url: IPFS.IPFS_PROTOCOL + json.document_cid
+            url: json.document_url || json.document_uri
         },
         {
             cid: json.context_cid,
-            url: IPFS.IPFS_PROTOCOL + json.context_cid
+            url: json.context_url || json.context_uri
         }];
         message.setUrls(urls);
         return message;
