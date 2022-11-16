@@ -153,17 +153,25 @@ export interface SchemaMessageBody extends MessageBody {
      */
     document_cid: string;
     /**
+     * Document URL
+     */
+    document_url?: string;
+    /**
      * Document URI
      */
-    document_uri: string;
+    document_uri?: string;
     /**
      * Context CID
      */
     context_cid: string;
     /**
+     * Context URL
+     */
+    context_url?: string;
+    /**
      * Context URI
      */
-    context_uri: string;
+    context_uri?: string;
 }
 
 /**
