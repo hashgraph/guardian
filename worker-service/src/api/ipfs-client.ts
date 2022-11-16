@@ -32,7 +32,7 @@ export class IpfsClient {
      */
     public async getFile(cid: string): Promise<any> {
         const fileRes = await axios.get(
-            process.env.IPFS_PUBLIC_GATEWAY.replace('${cid}', cid),
+            process.env.IPFS_PUBLIC_GATEWAY?.replace('${cid}', cid),
             {
                 responseType: 'arraybuffer',
                 timeout:

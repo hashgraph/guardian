@@ -18,11 +18,11 @@ export class SchemaConverterUtils {
         if (schema.codeVersion === SchemaConverterUtils.VERSION) {
             return schema;
         }
-        schema.codeVersion = SchemaConverterUtils.VERSION;
         schema.document = SchemaConverterUtils.DocumentConverter(
             schema.document,
             schema.codeVersion
         );
+        schema.codeVersion = SchemaConverterUtils.VERSION;
         return schema;
     }
 

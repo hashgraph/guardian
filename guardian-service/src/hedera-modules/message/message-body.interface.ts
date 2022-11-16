@@ -147,7 +147,7 @@ export interface SchemaMessageBody extends MessageBody {
     /**
      * Code Version
      */
-    codeVersion: string;
+    code_version: string;
     /**
      * Document CID
      */

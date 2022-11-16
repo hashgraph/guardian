@@ -60,6 +60,7 @@ export class SchemaMessage extends Message {
         this.owner = schema.owner;
         this.uuid = schema.uuid;
         this.version = schema.version;
+        this.codeVersion = schema.codeVersion;
         const document = schema.document;
         const context = schema.context;
         this.documents = [document, context];
@@ -99,7 +100,7 @@ export class SchemaMessage extends Message {
             document_uri: this.getDocumentUrl(UrlType.url),
             context_cid: this.getContextUrl(UrlType.cid),
             context_uri: this.getContextUrl(UrlType.url),
-            codeVersion: this.codeVersion
+            code_version: this.codeVersion
         };
     }
 
@@ -163,7 +164,7 @@ export class SchemaMessage extends Message {
         message.owner = json.owner;
         message.uuid = json.uuid;
         message.version = json.version;
-        message.codeVersion = json.codeVersion;
+        message.codeVersion = json.code_version;
         const urls = [{
             cid: json.document_cid,
             url: IPFS.IPFS_PROTOCOL + json.document_cid

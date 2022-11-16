@@ -20,13 +20,17 @@ export class ReleaseMigration extends Migration {
         const policies = policiesCollection.find({}, { session: this.ctx });
         while (await policies.hasNext()) {
             const policy = await policies.next();
-            if (policy.status === 'DRAFT') {
+            if (policy && policy.status !== 'PUBLISH') {
                 const schemas = schemasCollection.find({
                     topicId: policy.topicId,
                 });
                 while (await schemas.hasNext()) {
                     const schema = await schemas.next();
-                    if (schema.status === 'DRAFT' && schema.document) {
+                    if (
+                        schema &&
+                        schema.status !== 'PUBLISH' &&
+                        schema.document
+                    ) {
                         const document = schema.document;
                         if (!document.properties) {
                             return document;
@@ -34,9 +38,16 @@ export class ReleaseMigration extends Migration {
                         const fields = Object.keys(document.properties);
                         for (const field of fields) {
                             const properties = document.properties[field];
-                            if (properties.pattern === '^((https)://)?ipfs.io/ipfs/.+') {
+                            if (
+                                properties.pattern ===
+                                '^((https)://)?ipfs.io/ipfs/.+'
+                            ) {
                                 properties.pattern = '^ipfs://.+';
-                            } else if (properties.items && properties.items.pattern === '^((https)://)?ipfs.io/ipfs/.+') {
+                            } else if (
+                                properties.items &&
+                                properties.items.pattern ===
+                                    '^((https)://)?ipfs.io/ipfs/.+'
+                            ) {
                                 properties.items.pattern = '^ipfs://.+';
                             }
                         }
