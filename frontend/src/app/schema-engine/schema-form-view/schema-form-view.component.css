@@ -156,3 +156,7 @@ form {
     padding: 22px 4px 1px 14px;
     font-size: 20px;
 }
+
+.loading {
+    margin: 10px auto;
+}

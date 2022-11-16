@@ -14,6 +14,7 @@ import {
     OnLoad
 } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
+import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
 
 /**
  * Schema collection
@@ -146,6 +147,12 @@ export class Schema extends BaseEntity implements ISchema {
     category: SchemaCategory;
 
     /**
+     * Schema code version
+     */
+    @Property({ nullable: true })
+    codeVersion?: string;
+
+    /**
      * Schema defaults
      */
     @BeforeCreate()
@@ -160,6 +167,7 @@ export class Schema extends BaseEntity implements ISchema {
         }
         this.system = this.system || false;
         this.active = this.active || false;
+        this.codeVersion = this.codeVersion || SchemaConverterUtils.VERSION;
     }
 
     /**

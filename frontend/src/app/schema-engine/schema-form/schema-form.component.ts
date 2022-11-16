@@ -6,7 +6,7 @@ import { Schema, SchemaCondition, SchemaField, UnitSystem } from '@guardian/inte
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { API_IPFS_GATEWAY_URL } from 'src/app/services/api';
+import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 
 export const DATETIME_FORMATS = {
@@ -192,8 +192,8 @@ export class SchemaFormComponent implements OnInit {
             item.control = new FormControl(item.preset === null || item.preset === undefined ? "" : item.preset, validators);
             if (field.remoteLink) {
                 item.fileUploading = true;
-                fetch(field.remoteLink)
-                    .then(r => r.json())
+                this.ipfs
+                    .getJsonFileByLink(field.remoteLink)
                     .then((res: any) => {
                         item.enumValues = res.enum;
                     })
@@ -218,8 +218,8 @@ export class SchemaFormComponent implements OnInit {
             item.list = [];
             if (field.remoteLink) {
                 item.fileUploading = true;
-                fetch(field.remoteLink)
-                    .then(r => r.json())
+                this.ipfs
+                    .getJsonFileByLink(field.remoteLink)
                     .then((res: any) => {
                         item.enumValues = res.enum;
                     })
@@ -424,7 +424,11 @@ export class SchemaFormComponent implements OnInit {
         item.fileUploading = true;
         this.ipfs.addFile(file)
             .subscribe(res => {
-                control.patchValue(API_IPFS_GATEWAY_URL + res);
+                if (item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+') {
+                    control.patchValue(API_IPFS_GATEWAY_URL + res);
+                } else {
+                    control.patchValue(IPFS_SCHEMA + res);
+                }
                 item.fileUploading = false;
             }, error => {
                 item.fileUploading = false;
@@ -569,7 +573,8 @@ export class SchemaFormComponent implements OnInit {
     }
 
     isIPFS(item: SchemaField): boolean {
-        return item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+';
+        return item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+'
+            || item.pattern === '^ipfs:\/\/.+';
     }
 
     isInput(item: SchemaField): boolean {
