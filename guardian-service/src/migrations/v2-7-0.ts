@@ -53,7 +53,11 @@ export class ReleaseMigration extends Migration {
                         }
                         await schemasCollection.updateOne(
                             { _id: schema._id },
-                            schema,
+                            {
+                                $set: {
+                                    document,
+                                },
+                            },
                             { session: this.ctx, upsert: false }
                         );
                     }
