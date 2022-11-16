@@ -1,7 +1,8 @@
 version: '3.8'
 services:
     mongo:
-        image: mongo
+        image: mongo:6
+        command: "--setParameter allowDiskUseByDefault=true"
         restart: always
         expose:
             - 27017
