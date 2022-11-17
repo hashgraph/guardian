@@ -257,6 +257,9 @@ export class SplitBlock {
                 })
             };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Chunk, ref, user, {
+                documents: ExternalDocuments(state.data)
+            }));
         }
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, { data: documents });
     }
@@ -278,14 +281,14 @@ export class SplitBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+            documents: ExternalDocuments(docs)
+        }));
         if (Array.isArray(docs)) {
             await this.addDocs(ref, event.user, docs);
         } else {
             await this.addDocs(ref, event.user, [docs]);
         }
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
-            documents: ExternalDocuments(docs),
-        }));
     }
 
     /**

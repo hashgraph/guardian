@@ -14,7 +14,8 @@ export enum ExternalEventType {
     StopCron = 'StopCron',
     SignatureQuorumReachedEvent = 'SignatureQuorumReachedEvent',
     SignatureSetInsufficientEvent = 'SignatureSetInsufficientEvent',
-    Step = 'Step'
+    Step = 'Step',
+    Chunk = 'Chunk'
 }
 
 /**
