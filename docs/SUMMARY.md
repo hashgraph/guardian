@@ -42,7 +42,7 @@
 * [Demo Usage Guide](demo-guide/demo-usage-guide.md)
 * [Demo Using APIs](demo-guide/demo-using-apis.md)
 * [Verra Redd+ Demo Guide](demo-guide/verra-redd+-demo-guide.md)
-* [iREC Demo UI Guide](demo-guide/irec-demo-guide.md)
+* [iREC 5 Demo UI Guide](demo-guide/irec-demo-guide.md)
 * [iREC API Demo Guide](demo-guide/api-workflow-of-irec-demo.md)
 
 ## Dry Run Demo
