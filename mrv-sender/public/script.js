@@ -90,7 +90,10 @@ function addConfig(config) {
         if (key == "policyId") {
             continue;
         }
-
+        if (key == "ref") {
+            continue;
+        }
+        
         setting[key] = {
             value: null,
             random: false,
