@@ -1,4 +1,4 @@
-<div class="custom-field" [formGroup]="form">
+<div *ngIf="!readonly" class="custom-field" [formGroup]="form">
     <ng-template [ngIf]="field.controlKey.invalid && field.controlKey.errors">
         <small class="error-message"
             *ngIf="field.controlKey.hasError('key')">
@@ -98,5 +98,47 @@
     </div>
     <div *ngIf="loading" class="loading">
         <mat-spinner [diameter]="65"></mat-spinner>
+    </div>
+</div>
+
+<div *ngIf="readonly" class="custom-field">
+    <div class="readonly-extended-config" [attr.extended]="extended">
+        <div class="custom-field-name f1">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>* Key</mat-label>
+                <input matInput placeholder="Field name" [disabled]="readonly" [value]="value?.name">
+            </mat-form-field>
+        </div>
+
+        <div class="custom-field-name f2">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>Title</mat-label>
+                <input matInput placeholder="Field name" [disabled]="readonly" [value]="value?.title">
+            </mat-form-field>
+        </div>
+
+        <div class="custom-field-name f3">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>* Description</mat-label>
+                <input matInput placeholder="Field name" [disabled]="readonly" [value]="value?.description">
+            </mat-form-field>
+        </div>
+    </div>
+
+    <div class="custom-field-type">
+        <mat-form-field appearance="outline">
+            <mat-label>Field type</mat-label>
+            <input matInput placeholder="Field name" [disabled]="readonly" [value]="value?.type">
+        </mat-form-field>
+    </div>
+    <div class="custom-field-required">
+        <mat-checkbox color="primary" [disabled]="readonly" [checked]="value?.required">
+            Required Field
+        </mat-checkbox>
+    </div>
+    <div class="custom-field-isArray">
+        <mat-checkbox color="primary" [disabled]="readonly" [checked]="value?.isArray">
+            Allow multiple answers
+        </mat-checkbox>
     </div>
 </div>

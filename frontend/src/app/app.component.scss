@@ -173,3 +173,11 @@ body {
 ::ng-deep .CodeMirror {
     height: auto !important;
 }
+
+::ng-deep body .mat-input-element:disabled {
+    color: rgba(0,0,0,.54);
+}
+
+::ng-deep body .mat-checkbox-disabled.mat-checkbox-checked .mat-checkbox-background {
+    background-color: #b0b0b0;
+}

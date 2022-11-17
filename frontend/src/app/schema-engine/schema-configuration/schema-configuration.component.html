@@ -1,6 +1,6 @@
 <form class="context" [formGroup]="dataForm">
     <div class="block-delimiter" data-label="Schema Properties" style="top:-20px;height:80px;"></div>
-    
+
     <mat-form-field appearance="outline" [attr.disabled]="type=='version'">
         <mat-label>* Schema Name</mat-label>
         <input matInput type="text" placeholder="Schema Name" formControlName="name" [tabindex]='value ? -1 : 0'>
@@ -21,9 +21,8 @@
                 <mat-option value="USER">USER</mat-option>
             </mat-select>
             <mat-select *ngIf="!system" formControlName="entity" tabindex='-1'>
-                <mat-option value="NONE">NONE</mat-option>
-                <mat-option value="VC">VC</mat-option>
-                <mat-option value="MRV">MRV</mat-option>
+                <mat-option value="NONE">Default</mat-option>
+                <mat-option value="VC">Verifiable Credential</mat-option>
             </mat-select>
         </mat-form-field>
     </div>
@@ -32,6 +31,18 @@
         <mat-label>Description for Schema (optional)</mat-label>
         <input matInput type="text" placeholder="Description for Schema (optional)" formControlName="description">
     </mat-form-field>
+
+    <ng-container *ngIf="defaultFieldsMap[currentEntity]; let fields">
+        <div class="block-delimiter" data-label="System Fields"></div>
+        <div class="fields">
+            <div class="custom-fields">
+                <div *ngFor="let field of fields" class="custom-schema-field">
+                    <schema-field-configuration [value]="field" [readonly]="true" [extended]="extended">
+                    </schema-field-configuration>
+                </div>
+            </div>
+        </div>
+    </ng-container>
 
     <div class="block-delimiter" data-label="Fields"></div>
 
