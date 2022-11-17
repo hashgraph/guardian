@@ -8039,8 +8039,8 @@ rootDID
         "owner": "did:hedera:testnet:G8S2SYNkuZq8R2MBRuBUagRSb4oucbZipJk8XADwe1T7;hedera:testnet:tid=0.0.34824275",
         "topicId": "0.0.34824582",
         "messageId": "1652716919.907860000",
-        "documentURL": "https://ipfs.io/ipfs/bafkreibaheup25wqaa6thx3b3m5t36w3jfh4t5np73k7dzlfm5c4crnaoa",
-        "contextURL": "https://ipfs.io/ipfs/bafkreib7o25julfdxlg2ls4acie4rvdohaxhq22kbjfys4ssykr7ng3m2i",
+        "document_uri": "ipfs://bafkreibaheup25wqaa6thx3b3m5t36w3jfh4t5np73k7dzlfm5c4crnaoa",
+        "context_uri": "ipfs://bafkreib7o25julfdxlg2ls4acie4rvdohaxhq22kbjfys4ssykr7ng3m2i",
         "iri": "#732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0",
         "document": {
             "$id": "#732d99d8-b254-4aa7-8bb4-e78f15212892&1.0.0",
@@ -9631,8 +9631,8 @@ null
         "owner": "did:hedera:testnet:DxUh34RvLVnepXjKmQK9q46remcasWfxtSaj3BcwbCGG;hedera:testnet:tid=0.0.34895921",
         "topicId": "0.0.34904155",
         "messageId": "1653417825.201434396",
-        "documentURL": "https://ipfs.io/ipfs/bafkreihesagko7flofgvb3smausrt5nejp4zxm5puwj4cgsyehtfeilyu4",
-        "contextURL": "https://ipfs.io/ipfs/bafkreigdplzcs6ljxtaxlnkffq6mby5o4l5ckwx4vkqoo4ja36wn5g6k2e",
+        "document_uri": "ipfs/bafkreihesagko7flofgvb3smausrt5nejp4zxm5puwj4cgsyehtfeilyu4",
+        "context_uri": "https://ipfs.io/ipfs/bafkreigdplzcs6ljxtaxlnkffq6mby5o4l5ckwx4vkqoo4ja36wn5g6k2e",
         "iri": "#00526b15-79e2-4432-90d6-c895cee289b1&1.0.0",
         "document": {
             "$id": "#00526b15-79e2-4432-90d6-c895cee289b1&1.0.0",
