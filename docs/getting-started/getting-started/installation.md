@@ -342,11 +342,18 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 **Note**: Restore Data can be restored from Hedera if data is available for setting up the Registry.
 
-<figure><img src="../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="info" %}
+**Limitations on restoring the data:**\
+1\. The state of policy workflows is not persisted onto any decentralised storage used by Guardian (such as IPFS and/or Hedera blockchain), and therefore not available for restoring. This means that while all artifacts produced by projects and their respective Policy workflows will be discovered and made accessible through the restored Guardian, the policy execution state will not be restored.
+
+2\. Similarly, dynamic filled ‘options’ from VCs is not available at restoration time. This results in the limitation that some document grids will not be restored.
+{% endhint %}
 
 If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
-![](<../../.gitbook/assets/image (14).png>)
+![](<../../.gitbook/assets/image (23) (1).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
@@ -408,6 +415,40 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                       |
 | LOG\_LEVEL                             | level of the Logs                                                                  | 2                           |
 
+### Restoring account from Database/Hashicorp vault during Setup.
+
+For backup all data, we need to create dump of all used mongodb databases and hashicorp vault (if it use)
+
+#### Mongo DB:
+
+Mongo DB databases set in .env (.env.docker) files or via environment variables named DB\_DATABASE Default names:
+
+* auth-service - auth\_db
+* guardian-service - guardian\_db
+* logger-service (not nesessary) - logger\_db
+
+Example using mongo utils:
+
+Creating dump:
+
+```
+mongodump --db auth_db --out ./dump
+mongodump --db guardian_db --out ./dump
+mongodump --db logger_db --out ./dump
+```
+
+Restoring dump:
+
+```
+mongorestore --db auth_db ./dump/auth_db
+mongorestore --db guardian_db ./dump/guardian_db
+mongorestore --db logger_db ./dump/logger_db
+```
+
+#### Hashicorp Vault:
+
+For Hashicorp vault backup and restore use this instructions: [https://developer.hashicorp.com/vault/tutorials/standard-procedures/sop-backup](https://developer.hashicorp.com/vault/tutorials/standard-procedures/sop-backup)
+
 ### Summary of URLs and Ports
 
 #### Using Docker:
@@ -429,3 +470,4 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | MRV\_SENDER    | [http://localhost:3005/](http://localhost:3005/) |
 | TOPIC\_VIEWER  | [http://localhost:3006/](http://localhost:3006/) |
 | API\_DOCS      | [http://localhost:3001/](http://localhost:3001/) |
+
