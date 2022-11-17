@@ -13,27 +13,17 @@ export class TreeNodeActionsComponent implements OnInit {
     @Input('visibleMoveActions') visibleMoveActions!: boolean;
 
     @Output('delete') delete = new EventEmitter();
-    @Output('visibleMoreActions') visibleMoreActions =
-        new EventEmitter();
+    @Output('visibleMoreActions') visibleMoreActions = new EventEmitter();
     @Output('dropUp') dropUp = new EventEmitter();
     @Output('dropDown') dropDown = new EventEmitter();
     @Output('dropLeft') dropLeft = new EventEmitter();
     @Output('dropRight') dropRight = new EventEmitter();
 
-    onHoverVisible = false;
     constructor() {}
 
     ngOnInit(): void {}
 
-    ngOnChanges(changes: SimpleChanges) {
-        if (
-            changes.visibleMoveActions &&
-            !changes.visibleMoveActions.currentValue
-        ) {
-            // fix onHoverVisible when you fold move actions (clicking on right down corner of more-horiz button).
-            this.onHoverVisible = false;
-        }
-    }
+    ngOnChanges(changes: SimpleChanges) {}
 
     onDelete(event: any) {
         this.delete.emit(event);
