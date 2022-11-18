@@ -140,7 +140,7 @@
     max-width: 100px;
 }
 
-.table-container .mat-column-operation {
+.table-container .mat-column-status {
     padding-left: 8px;
     width: 155px;
     max-width: 155px;
@@ -165,6 +165,20 @@
     padding-left: 8px;
     width: 100px;
     max-width: 100px;
+    border-right: 1px solid #dddddd;
+}
+
+.table-container .mat-column-instance {
+    padding-left: 8px;
+    width: 135px;
+    max-width: 135px;
+    border-right: 1px solid #dddddd;
+}
+
+.table-container .mat-column-operations {
+    padding-left: 8px;
+    width: 130px;
+    max-width: 130px;
     border-right: 1px solid #dddddd;
 }
 
@@ -289,4 +303,18 @@
     left: 50px;
     top: 6px;
     font-size: 22px;
+}
+
+.commands-line {
+    display: flex;
+    align-items: center;
+}
+
+.commands-line > *:not(:first-child) {
+    margin-left: 18px;
+}
+
+.btn-icon-import[status="Main"],
+.btn-icon-import[status="Sub"] {
+    color: #49af54;
 }

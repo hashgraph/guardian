@@ -327,7 +327,8 @@ export class PolicyComponentsUtils {
             policyId,
             dryRun,
             databaseServer,
-            isMultipleGroup: !!(policy.policyGroups?.length)
+            isMultipleGroup: !!(policy.policyGroups?.length),
+            instanceTopicId: policy.instanceTopicId
         }
         PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
     }
@@ -586,6 +587,10 @@ export class PolicyComponentsUtils {
             }
 
             result.userGroups = groups;
+            if (policy.status == PolicyType.PUBLISH) {
+                const multiPolicy = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, did);
+                result.multiPolicyStatus = multiPolicy?.type;
+            }
         } else {
             result.userRoles = ['No role'];
             result.userGroups = [];

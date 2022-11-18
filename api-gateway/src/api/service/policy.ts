@@ -615,3 +615,23 @@ policyAPI.get('/:policyId/dry-run/ipfs', permissionHelper(UserRole.STANDARD_REGI
         res.status(500).send({ code: 500, message: error.message || error });
     }
 });
+
+policyAPI.get('/:policyId/multiple', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.send(await engineService.getMultiPolicy(req.user, req.params.policyId));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
+policyAPI.post('/:policyId/multiple/', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.send(await engineService.setMultiPolicy(req.user, req.params.policyId, req.body));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});

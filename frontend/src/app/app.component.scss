@@ -181,3 +181,7 @@ body {
 ::ng-deep body .mat-checkbox-disabled.mat-checkbox-checked .mat-checkbox-background {
     background-color: #b0b0b0;
 }
+
+::ng-deep body .mat-radio-button:not(.mat-radio-disabled).cdk-program-focused .mat-radio-persistent-ripple {
+    opacity: .0;
+}

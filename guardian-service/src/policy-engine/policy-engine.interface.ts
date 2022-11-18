@@ -739,4 +739,9 @@ export interface IPolicyInstance {
      * Is Multiple Group
      */
     readonly isMultipleGroup: boolean;
+
+    /**
+     * Policy Instance Topic Id
+     */
+    readonly instanceTopicId?: string
 }

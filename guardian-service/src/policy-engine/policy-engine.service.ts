@@ -2,7 +2,8 @@ import {
     PolicyEngineEvents,
     TopicType,
     PolicyType,
-    ExternalMessageEvents
+    ExternalMessageEvents,
+    GenerateUUIDv4
 } from '@guardian/interfaces';
 import {
     IAuthUser,
@@ -251,7 +252,8 @@ export class PolicyEngineService {
                         'policyTag',
                         'messageId',
                         'codeVersion',
-                        'createDate'
+                        'createDate',
+                        'instanceTopicId'
                     ]
                 };
                 const _pageSize = parseInt(pageSize, 10);
@@ -1015,6 +1017,57 @@ export class PolicyEngineService {
                 const documents = await DatabaseServer.getVirtualDocuments(policyId, type, pageIndex, pageSize);
                 return new MessageResponse(documents);
             } catch (error) {
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.GET_MULTI_POLICY, async (msg) => {
+            try {
+                const { user, policyId } = msg;
+
+                const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
+                const userFull = await this.policyEngine.getUser(policyInstance, user);
+                const item = await DatabaseServer.getMultiPolicy(policyInstance.instanceTopicId, userFull.did);
+                if (item) {
+                    return new MessageResponse(item);
+                } else {
+                    return new MessageResponse({
+                        uuid: null,
+                        instanceTopicId: policyInstance.instanceTopicId,
+                        mainPolicyTopicId: policyInstance.instanceTopicId,
+                        synchronizationTopicId: policyInstance.instanceTopicId,
+                        owner: userFull.did,
+                        type: null
+                    });
+                }
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.SET_MULTI_POLICY, async (msg) => {
+            try {
+                const { user, policyId, data } = msg;
+
+                const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
+                const userFull = await this.policyEngine.getUser(policyInstance, user);
+                const item = await DatabaseServer.getMultiPolicy(policyInstance.instanceTopicId, userFull.did);
+                if (item) {
+                    return new MessageError(new Error('Policy is already bound'));
+                } else {
+                    const result = await DatabaseServer.setMultiPolicy({
+                        uuid: GenerateUUIDv4(),
+                        instanceTopicId: policyInstance.instanceTopicId,
+                        mainPolicyTopicId: data.mainPolicyTopicId,
+                        synchronizationTopicId: data.synchronizationTopicId,
+                        owner: userFull.did,
+                        type: data.mainPolicyTopicId == policyInstance.instanceTopicId ? 'Main' : 'Sub',
+                    });
+                    return new MessageResponse(result);
+                }
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

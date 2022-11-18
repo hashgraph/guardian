@@ -19,6 +19,7 @@ import { Artifact as ArtifactCollection } from '@entity/artifact';
 import { ArtifactChunk as ArtifactChunkCollection } from '@entity/artifact-chunk';
 import { Binary } from 'bson';
 import { SplitDocuments } from '@entity/split-documents';
+import { MultiPolicy } from '@entity/multi-policy';
 
 /**
  * Database server
@@ -2043,5 +2044,14 @@ export class DatabaseServer {
             }
         })).map(item => item.data.buffer);
         return artifactChunks.length > 0 ? Buffer.concat(artifactChunks) : Buffer.from('');
+    }
+
+    public static async getMultiPolicy(instanceTopicId: string, owner: string): Promise<MultiPolicy> {
+        return await new DataBaseHelper(MultiPolicy).findOne({ instanceTopicId, owner });
+    }
+
+    public static async setMultiPolicy(multiPolicy: any): Promise<MultiPolicy> {
+        const item = new DataBaseHelper(MultiPolicy).create(multiPolicy);
+        return await new DataBaseHelper(MultiPolicy).save(item);
     }
 }

@@ -75,6 +75,7 @@ import { CreateTokenBlockComponent } from './policy-viewer/blocks/create-token-b
 import { CreateTokenConfigComponent } from './policy-configuration/blocks/tokens/create-token-config/create-token-config.component';
 import { TokenConfigurationComponent } from '../components/token-configuration/token-configuration.component';
 import { TreeNodeActionsComponent } from './helpers/tree-node-actions/tree-node-actions.component';
+import { MultiPolicyDialogComponent } from './helpers/multi-policy-dialog/multi-policy-dialog.component';
 
 @NgModule({
     declarations: [
@@ -144,7 +145,8 @@ import { TreeNodeActionsComponent } from './helpers/tree-node-actions/tree-node-
         CreateTokenConfigComponent,
         CreateTokenBlockComponent,
         TokenConfigurationComponent,
-        TreeNodeActionsComponent
+        TreeNodeActionsComponent,
+        MultiPolicyDialogComponent
     ],
     imports: [
         CommonModule,
