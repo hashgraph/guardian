@@ -8,8 +8,8 @@
   "dependencies": {
     "@guardian/common": "^2.6.1",
     "@guardian/interfaces": "^2.6.1",
-    "@mikro-orm/core": "^5.3.0",
-    "@mikro-orm/mongodb": "^5.3.0",
+    "@mikro-orm/core": "~5.3.0",
+    "@mikro-orm/mongodb": "~5.3.0",
     "dotenv": "^16.0.0",
     "jsonwebtoken": "^8.5.1",
     "module-alias": "^2.2.2",
@@ -19,7 +19,7 @@
   "description": "",
   "devDependencies": {
     "@types/jsonwebtoken": "^8.5.4",
-    "@types/node": "^17.0.13",
+    "@types/node": "^18.11.9",
     "@types/node-vault": "^0",
     "chai": "^4.3.4",
     "cross-env": "^7.0.3",
