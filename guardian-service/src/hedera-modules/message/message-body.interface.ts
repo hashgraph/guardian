@@ -312,3 +312,13 @@ export interface TokenMessageBody extends MessageBody {
      */
     owner: string;
 }
+
+/**
+ * Synchronization message body
+ */
+export interface SynchronizationMessageBody extends MessageBody {
+    /**
+     * Language
+     */
+    lang: string;
+}

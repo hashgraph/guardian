@@ -28,4 +28,4 @@ export { MessageMemo } from './memo-mappings/message-memo';
 export { TopicMemo } from './memo-mappings/topic-memo';
 export { TokenMessage } from './message/token-message';
 export { TopicConfig } from './topic';
-
+export { SynchronizationMessage } from './message/synchronization-message';
