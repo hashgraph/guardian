@@ -67,6 +67,7 @@ enum ErrorArrayMessageByFieldType {
 })
 export class SchemaFormComponent implements OnInit {
     @Input('private-fields') hide!: { [x: string]: boolean };
+    @Input('readonly-fields') readonly?: any;
     @Input('schema') schema!: Schema;
     @Input('fields') schemaFields!: SchemaField[];
     @Input('context') context!: {
@@ -207,8 +208,8 @@ export class SchemaFormComponent implements OnInit {
 
         if (!field.isArray && field.isRef) {
             item.fields = field.fields;
-            item.displayRequired = item.fields.some((field: any) => field.required);
-            if (field.required) {
+            item.displayRequired = item.fields.some((refField: any) => refField.required);
+            if (field.required || item.preset) {
                 item.control = new FormGroup({});
             }
         }
@@ -269,7 +270,17 @@ export class SchemaFormComponent implements OnInit {
                 this.change.emit();
             }
         }
-
+        if (
+            this.readonly &&
+            this.readonly.find(
+                (readonlyItem: any) => readonlyItem.name === field.name
+            )
+        ) {
+            setTimeout(() => {
+                item.control?.disable();
+                item.control?.disable();
+            });
+        }
         return item;
     }
 
