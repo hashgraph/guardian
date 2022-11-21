@@ -39,6 +39,27 @@
                 }
               ],
               "outputHashing": "all"
+            },
+            "demo": {
+                "budgets": [
+                {
+                  "maximumError": "10mb",
+                  "maximumWarning": "5mb",
+                  "type": "initial"
+                },
+                {
+                  "maximumError": "10kb",
+                  "maximumWarning": "5kb",
+                  "type": "anyComponentStyle"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.demo.ts"
+                }
+              ],
+              "outputHashing": "all"
             }
           },
           "defaultConfiguration": "production",
@@ -79,6 +100,9 @@
             },
             "production": {
               "browserTarget": "guardian:build:production"
+            },
+            "demo": {
+              "browserTarget": "guardian:build:demo"
             }
           },
           "defaultConfiguration": "development"

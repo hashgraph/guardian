@@ -52,8 +52,12 @@
     "scripts": {
         "dev:docker": "ng serve --host 0.0.0.0 --disable-host-check --proxy-config ./proxy.docker.json",
         "build": "ng build",
+        "build:demo": "ng build --configuration=demo",
+        "build:prod": "ng build --configuration=production",
         "ng": "ng",
         "start": "ng serve --proxy-config ./proxy.conf.json",
+        "start:demo": "ng serve --proxy-config ./proxy.conf.json --configuration=demo",
+        "start:prod": "ng serve --proxy-config ./proxy.conf.json --configuration=production",
         "test": "ng test",
         "watch": "ng build --watch --configuration development --output-path ../www-data"
     },
