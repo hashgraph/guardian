@@ -99,10 +99,12 @@
               "proxyConfig": "proxy.conf.json"
             },
             "production": {
-              "browserTarget": "guardian:build:production"
+              "browserTarget": "guardian:build:production",
+              "proxyConfig": "proxy.conf.json"
             },
             "demo": {
-              "browserTarget": "guardian:build:demo"
+              "browserTarget": "guardian:build:demo",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
