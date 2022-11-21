@@ -53,7 +53,7 @@ export class RevokeBlock {
         revokeMessage: string,
         parentId?: string[]
     ) {
-        const topic = await PolicyUtils.getTopicById(ref, message.topicId);
+        const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId);
         message.revoke(revokeMessage, parentId);
         await messageServer
             .setTopicObject(topic)

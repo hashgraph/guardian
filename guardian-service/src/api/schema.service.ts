@@ -15,7 +15,7 @@ import {
 import path from 'path';
 import { readJSON } from 'fs-extra';
 import { schemasToContext } from '@transmute/jsonld-schema';
-import { MessageAction, MessageServer, MessageType, SchemaMessage, TopicHelper, UrlType } from '@hedera-modules';
+import { MessageAction, MessageServer, MessageType, SchemaMessage, TopicConfig, TopicHelper, UrlType } from '@hedera-modules';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
@@ -231,14 +231,14 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
     }
     const schemaObject = DatabaseServer.createSchema(newSchema);
     notifier.completedAndStart('Resolve Topic');
-    let topic: Topic;
+    let topic: TopicConfig;
     if (newSchema.topicId) {
-        topic = await DatabaseServer.getTopicById(newSchema.topicId);
+        topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(newSchema.topicId), true);
     }
 
     if (!topic) {
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
-        [topic] = await topicHelper.create({
+        topic = await topicHelper.create({
             type: TopicType.SchemaTopic,
             name: TopicType.SchemaTopic,
             description: TopicType.SchemaTopic,
@@ -246,8 +246,7 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
             policyId: null,
             policyUUID: null
         });
-        topic = await DatabaseServer.saveTopic(topic);
-
+        await DatabaseServer.saveTopic(topic.toObject());
         await topicHelper.twoWayLink(topic, null, null);
     }
 
@@ -602,7 +601,7 @@ export async function findAndPublishSchema(
     item = await DatabaseServer.getSchema(id);
 
     notifier.completedAndStart('Resolve topic');
-    const topic = await DatabaseServer.getTopicById(item.topicId);
+    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
         .setTopicObject(topic);
     notifier.completedAndStart('Publish schema');
@@ -759,7 +758,7 @@ export async function deleteSchema(schemaId: any, notifier: INotifier) {
 
     notifier.info(`Delete schema ${item.name}`);
     if (item.topicId) {
-        const topic = await DatabaseServer.getTopicById(item.topicId);
+        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
         if (topic) {
             const users = new Users();
             const root = await users.getHederaAccount(item.owner);

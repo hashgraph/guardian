@@ -1,9 +1,10 @@
 import { TopicType, WorkerTaskType } from '@guardian/interfaces';
-import { MessageAction, MessageServer, TopicMessage } from '@hedera-modules';
+import { TopicConfig, MessageAction, MessageServer, TopicMessage } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 import { TopicMemo } from './memo-mappings/topic-memo';
 import { Workers } from '@helpers/workers';
 import { KeyType, Wallet } from '@helpers/wallet';
+import { DataBaseHelper } from '@guardian/common';
 
 /**
  * Topic Helper
@@ -76,18 +77,16 @@ export class TopicHelper {
              * Policy UUID
              */
             policyUUID?: string,
-
             /**
              * Topic Memo
              */
             memo?: string,
-
             /**
              * Memo parameters object
              */
             memoObj?: any
         }
-    ): Promise<[Topic, string, string]> {
+    ): Promise<TopicConfig> {
         const workers = new Workers();
         const topicId = await workers.addRetryableTask({
             type: WorkerTaskType.NEW_TOPIC,
@@ -115,19 +114,15 @@ export class TopicHelper {
                 ),
             ]);
         }
-        return [
-            {
-                topicId,
-                name: config.name,
-                description: config.description,
-                owner: config.owner,
-                type: config.type,
-                policyId: config.policyId,
-                policyUUID: config.policyUUID,
-            } as Topic,
-            this.hederaAccountKey,
-            this.hederaAccountKey
-        ];
+        return new TopicConfig({
+            topicId,
+            name: config.name,
+            description: config.description,
+            owner: config.owner,
+            type: config.type,
+            policyId: config.policyId,
+            policyUUID: config.policyUUID,
+        }, this.hederaAccountKey, this.hederaAccountKey);
     }
 
     /**
@@ -137,7 +132,7 @@ export class TopicHelper {
      * @param rationale
      */
     // tslint:disable-next-line:completed-docs
-    public async oneWayLink(topic: Topic, parent: Topic | { topicId: string }, rationale: string) {
+    public async oneWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string) {
         const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
@@ -162,7 +157,7 @@ export class TopicHelper {
      * @param parent
      * @param rationale
      */
-    public async twoWayLink(topic: Topic, parent: Topic, rationale: string) {
+    public async twoWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string) {
         const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);

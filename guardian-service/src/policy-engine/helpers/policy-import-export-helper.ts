@@ -12,7 +12,7 @@ import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
 import { SchemaEntity, TopicType, GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
-import { MessageAction, MessageServer, MessageType, PolicyMessage, TopicHelper } from '@hedera-modules';
+import { MessageAction, MessageServer, MessageType, PolicyMessage, TopicConfig, TopicHelper } from '@hedera-modules';
 import { Topic } from '@entity/topic';
 import { importSchemaByFiles, publishSystemSchema } from '@api/schema.service';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
@@ -212,14 +212,16 @@ export class PolicyImportExportHelper {
         notifier.start('Resolve Hedera account');
         const root = await users.getHederaAccount(policyOwner);
         notifier.completedAndStart('Resolve topic');
-        const parent = await new DataBaseHelper(Topic).findOne({ owner: policyOwner, type: TopicType.UserTopic });
+        const parent = await TopicConfig.fromObject(
+            await DatabaseServer.getTopicByType(policyOwner, TopicType.UserTopic), true
+        );
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
 
-        let topicRow: Topic;
+        let topicRow: TopicConfig;
         if (versionOfTopicId) {
-            topicRow = await new DataBaseHelper(Topic).findOne({ topicId: versionOfTopicId })
+            topicRow = await TopicConfig.fromObject(await DatabaseServer.getTopicById(versionOfTopicId), true);
         } else {
-            [topicRow] = await topicHelper.create({
+            topicRow = await topicHelper.create({
                 type: TopicType.PolicyTopic,
                 name: policy.name || TopicType.PolicyTopic,
                 description: policy.topicDescription || TopicType.PolicyTopic,
@@ -227,7 +229,7 @@ export class PolicyImportExportHelper {
                 policyId: null,
                 policyUUID: null
             });
-            topicRow = await new DataBaseHelper(Topic).save(topicRow);
+            await DatabaseServer.saveTopic(topicRow.toObject());
         }
 
         notifier.completed();
@@ -373,9 +375,10 @@ export class PolicyImportExportHelper {
         const model = new DataBaseHelper(Policy).create(policy as Policy);
         const result = await new DataBaseHelper(Policy).save(model);
 
-        topicRow.policyId = result.id.toString();
-        topicRow.policyUUID = result.uuid;
-        await new DataBaseHelper(Topic).update(topicRow);
+        const _topicRow = await new DataBaseHelper(Topic).findOne({ topicId: topicRow.topicId })
+        _topicRow.policyId = result.id.toString();
+        _topicRow.policyUUID = result.uuid;
+        await new DataBaseHelper(Topic).update(_topicRow);
 
         for (const addedArtifact of addedArtifacts) {
             addedArtifact.policyId = result.id;

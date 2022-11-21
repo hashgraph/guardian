@@ -109,7 +109,7 @@ export class CreateTokenBlock {
                 tokenTemplate[fieldName] === null ||
                 tokenTemplate[fieldName] === undefined
             ) {
-              delete tokenTemplate[fieldName];
+                delete tokenTemplate[fieldName];
             }
         }
 
@@ -189,7 +189,7 @@ export class CreateTokenBlock {
                     tokenTemplate[fieldName] === null ||
                     tokenTemplate[fieldName] === undefined
                 ) {
-                  delete tokenTemplate[fieldName];
+                    delete tokenTemplate[fieldName];
                 }
             }
 
@@ -201,10 +201,7 @@ export class CreateTokenBlock {
             // #endregion
 
             // #region Send new token to hedera
-            const rootTopic = await ref.databaseServer.getTopic({
-                policyId: ref.policyId,
-                type: TopicType.InstancePolicyTopic,
-            });
+            const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
             const messageServer = new MessageServer(
                 root.hederaAccountId,
                 root.hederaAccountKey,

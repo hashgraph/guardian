@@ -15,7 +15,7 @@ import {
     ExternalEventChannel
 } from '@guardian/common';
 import {
-    DIDDocument,
+    DIDDocument, TopicConfig,
 } from '@hedera-modules'
 import { IPolicyBlock, IPolicyInterfaceBlock } from './policy-engine.interface';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
@@ -910,7 +910,9 @@ export class PolicyEngineService {
                     throw new Error(`Policy is not in Dry Run`);
                 }
 
-                const topic = await DatabaseServer.getTopicByType(did, TopicType.UserTopic);
+                const topic = await TopicConfig.fromObject(
+                    await DatabaseServer.getTopicByType(did, TopicType.UserTopic), false
+                );
 
                 const newPrivateKey = PrivateKey.generate();
                 const newAccountId = new AccountId(Date.now());

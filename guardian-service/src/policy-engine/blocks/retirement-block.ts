@@ -13,6 +13,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@poli
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { MintService } from '@policy-engine/multi-policy-service/mint-service';
 
 /**
  * Retirement block
@@ -109,9 +110,7 @@ export class RetirementBlock {
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
         ref.log(`Topic Id: ${topicId}`);
-        const topic = await PolicyUtils.getTopicById(ref, topicId);
-        ref.log(`Topic Id: ${topic?.id}`);
-
+        const topic = await PolicyUtils.getPolicyTopic(ref, topicId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(wipeVC);
         vcMessage.setRelationships(relationships);
@@ -144,7 +143,7 @@ export class RetirementBlock {
 
         await ref.databaseServer.saveVP(vpDocument);
 
-        await PolicyUtils.wipe(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());
+        await MintService.wipe(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());
 
         return [vpDocument, tokenValue];
     }

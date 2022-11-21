@@ -17,6 +17,7 @@ import {
     MessageAction,
     MessageServer,
     RegistrationMessage,
+    TopicConfig,
     TopicHelper,
     VCMessage
 } from '@hedera-modules';
@@ -43,7 +44,7 @@ import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
  * Get global topic
  */
 // tslint:disable-next-line:completed-docs
-async function getGlobalTopic(): Promise<{ topicId: string, key: string} | null> {
+async function getGlobalTopic(): Promise<TopicConfig | null> {
     try {
         const topicId = await new DataBaseHelper(Settings).findOne({
             name: 'INITIALIZATION_TOPIC_ID'
@@ -53,10 +54,7 @@ async function getGlobalTopic(): Promise<{ topicId: string, key: string} | null>
         });
         const INITIALIZATION_TOPIC_ID = topicId?.value || process.env.INITIALIZATION_TOPIC_ID;
         const INITIALIZATION_TOPIC_KEY = topicKey?.value || process.env.INITIALIZATION_TOPIC_KEY;
-        return {
-            topicId: INITIALIZATION_TOPIC_ID,
-            key: INITIALIZATION_TOPIC_KEY
-        }
+        return new TopicConfig({ topicId: INITIALIZATION_TOPIC_ID }, null, INITIALIZATION_TOPIC_KEY);
     } catch (error) {
         console.log(error);
         return null;
@@ -116,7 +114,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
         entity
     } = profile;
 
-    let topic: Topic = null;
+    let topic: TopicConfig = null;
     let topicAdminKey = null;
     let topicSubmitKey = null;
     let newTopic = false;
@@ -127,17 +125,18 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
 
     if (parent) {
-        topic = await new DataBaseHelper(Topic).findOne({
-            owner: parent,
-            type: TopicType.UserTopic
-        });
+        topic = await TopicConfig.fromObject(
+            await new DataBaseHelper(Topic).findOne({
+                owner: parent,
+                type: TopicType.UserTopic
+            }), true);
     }
 
     if (!topic) {
         notifier.info('Create user topic');
         logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
         const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey);
-        [topic, topicAdminKey, topicSubmitKey] = await topicHelper.create({
+        topic = await topicHelper.create({
             type: TopicType.UserTopic,
             name: TopicType.UserTopic,
             description: TopicType.UserTopic,
@@ -145,7 +144,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
             policyId: null,
             policyUUID: null
         });
-        topic = await new DataBaseHelper(Topic).save(topic);
+        await new DataBaseHelper(Topic).save(topic.toObject());
         await topicHelper.oneWayLink(topic, globalTopic, null);
         newTopic = true;
     }

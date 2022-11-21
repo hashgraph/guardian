@@ -13,6 +13,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@poli
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { MintService } from '@policy-engine/multi-policy-service/mint-service';
 
 /**
  * Mint block
@@ -115,10 +116,9 @@ export class MintBlock {
         const vp = await this.createVP(root, uuid, vcs);
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
+        
         ref.log(`Topic Id: ${topicId}`);
-        const topic = await PolicyUtils.getTopicById(ref, topicId);
-        ref.log(`Topic Id: ${topic?.id}`);
-
+        const topic = await PolicyUtils.getPolicyTopic(ref, topicId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
         vcMessage.setRelationships(relationships);
@@ -150,17 +150,17 @@ export class MintBlock {
         vpDocument.topicId = vpMessageResult.getTopicId();
 
         const savedVp = await ref.databaseServer.saveVP(vpDocument);
+        const transactionMemo = `${vpMessageId} ${MessageMemo.parseMemo(true, ref.options.memo, savedVp)}`.trimEnd();
 
-        await PolicyUtils.mint(
+        await MintService.mint(
             ref,
             token,
             tokenValue,
+            user,
             root,
             targetAccountId,
             vpMessageId,
-            vpMessageId
-                .concat(' ', MessageMemo.parseMemo(true, ref.options.memo, savedVp))
-                .trimEnd()
+            transactionMemo
         );
 
         return [savedVp, tokenValue];

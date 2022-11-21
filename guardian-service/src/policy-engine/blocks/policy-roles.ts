@@ -330,10 +330,7 @@ export class PolicyRolesBlock {
 
         const mintVC = await vcHelper.createVC(groupOwner.did, groupOwner.hederaAccountKey, vcSubject);
 
-        const rootTopic = await ref.databaseServer.getTopic({
-            policyId: ref.policyId,
-            type: TopicType.InstancePolicyTopic
-        });
+        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
         const messageServer = new MessageServer(groupOwner.hederaAccountId, groupOwner.hederaAccountKey, ref.dryRun);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);

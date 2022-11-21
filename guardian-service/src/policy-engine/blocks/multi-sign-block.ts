@@ -218,7 +218,7 @@ export class MultiSignBlock {
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
             vpMessage.setRelationships(sourceDoc.messageId ? [sourceDoc.messageId] : []);
-            const topic = await PolicyUtils.getTopicById(ref, sourceDoc.topicId);
+            const topic = await PolicyUtils.getPolicyTopic(ref, sourceDoc.topicId);
             const messageServer = new MessageServer(
                 documentOwnerAccount.hederaAccountId,
                 documentOwnerAccount.hederaAccountKey,
