@@ -9,13 +9,10 @@ context('Profiles', { tags: '@profiles' },() => {
         const options = {
             method: 'GET',
             url: API.ApiServer + 'profiles/' + Cypress.env('root_user') + '/balance',
-            headers: {
-              authorization,
-            }};
+           };
         cy.request(options)
           .should((response) => {
             expect(response.status).to.eq(200)
-            expect(response.body).to.not.be.oneOf([null, ""])
         })
     })
 })
