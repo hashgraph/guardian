@@ -14,6 +14,7 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import deepEqual from 'deep-equal';
 
 /**
  * Request VC document block
@@ -199,7 +200,7 @@ export class RequestVcDocumentBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     async setData(user: IPolicyUser, _data: IPolicyDocument): Promise<any> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         ref.log(`setData`);
 
         if (this.state.hasOwnProperty(user.id)) {
@@ -222,6 +223,25 @@ export class RequestVcDocumentBlock {
 
             const document = _data.document;
             const documentRef = await this.getRelationships(ref, _data.ref);
+
+            if (ref.options.presetSchema) {
+                const modifiedReadonlyPresetFields =
+                    this.getModifiedReadonlyFields(
+                        ref.options.presetFields,
+                        document,
+                        documentRef.document?.credentialSubject &&
+                            documentRef.document.credentialSubject[0]
+                    );
+                if (modifiedReadonlyPresetFields.length > 0) {
+                    throw new BlockActionError(
+                        `Readonly preset fields can not be modified (${modifiedReadonlyPresetFields
+                            .map((field) => field.name)
+                            .join(', ')})`,
+                        ref.blockType,
+                        ref.uuid
+                    );
+                }
+            }
 
             const credentialSubject = document;
             const schemaIRI = ref.options.schema;
@@ -362,6 +382,27 @@ export class RequestVcDocumentBlock {
             ref.error(`generateId: ${idType} : ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
+    }
+
+    /**
+     * Get modified readonly fields
+     * @param presetFields Preset fields
+     * @param document Current document
+     * @param presetDocument Preset document
+     * @returns Modified fields
+     */
+    public getModifiedReadonlyFields(presetFields: any[], document: any, presetDocument: any) {
+        if (!presetFields || !document || !presetDocument) {
+            return [];
+        }
+        return presetFields.filter(
+            (item) =>
+                item.readonly &&
+                !deepEqual(
+                    presetDocument[item.name],
+                    document[item.name]
+                )
+        );
     }
 
     /**

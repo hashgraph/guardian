@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^17.0.23",
+    "@types/node": "^18.11.9",
     "typescript": "^4.6.3",
     "@hashgraph/did-sdk-js": "0.1.1",
     "@hashgraph/sdk": "^2.18.3",

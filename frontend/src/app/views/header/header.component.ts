@@ -8,6 +8,7 @@ import { DemoService } from 'src/app/services/demo.service';
 import { HeaderPropsService } from 'src/app/services/header-props.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { environment } from 'src/environments/environment';
 import { AuthService } from '../../services/auth.service';
 
 /**
@@ -36,6 +37,7 @@ export class HeaderComponent implements OnInit {
     balanceType: string;
     ws!: any;
     authSubscription!: any;
+    displayDemoAccounts: boolean = environment.displayDemoAccounts;
 
     constructor(
         public authState: AuthStateService,
@@ -72,7 +74,7 @@ export class HeaderComponent implements OnInit {
             name: "Tokens",
             disabled: false,
             link: '/tokens'
-        }, 
+        },
         {
             name: "Artifacts",
             disabled: false,

@@ -4,7 +4,7 @@ These are the following steps to create and using a token templates:
 
 Step 1 : Use Create Token Block to allow policy user create new token by token template.
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
 Step 2: User creates token by template and it will set new token id in data VC
 
