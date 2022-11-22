@@ -1037,7 +1037,7 @@ export class PolicyEngineService {
                         uuid: null,
                         instanceTopicId: policyInstance.instanceTopicId,
                         mainPolicyTopicId: policyInstance.instanceTopicId,
-                        synchronizationTopicId: policyInstance.instanceTopicId,
+                        synchronizationTopicId: policyInstance.synchronizationTopicId,
                         owner: userFull.did,
                         type: null
                     });
@@ -1051,21 +1051,14 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.SET_MULTI_POLICY, async (msg) => {
             try {
                 const { user, policyId, data } = msg;
-
                 const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
                 const userFull = await this.policyEngine.getUser(policyInstance, user);
                 const item = await DatabaseServer.getMultiPolicy(policyInstance.instanceTopicId, userFull.did);
+                const root = await this.users.getHederaAccount(userFull.did);
                 if (item) {
                     return new MessageError(new Error('Policy is already bound'));
                 } else {
-                    const result = await DatabaseServer.setMultiPolicy({
-                        uuid: GenerateUUIDv4(),
-                        instanceTopicId: policyInstance.instanceTopicId,
-                        mainPolicyTopicId: data.mainPolicyTopicId,
-                        synchronizationTopicId: data.synchronizationTopicId,
-                        owner: userFull.did,
-                        type: data.mainPolicyTopicId == policyInstance.instanceTopicId ? 'Main' : 'Sub',
-                    });
+                    const result = await this.policyEngine.createMultiPolicy(policyInstance, userFull, root, data);
                     return new MessageResponse(result);
                 }
             } catch (error) {

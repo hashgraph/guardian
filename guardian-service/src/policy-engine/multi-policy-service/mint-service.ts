@@ -13,7 +13,7 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { DatabaseServer } from '@database-modules';
 import { MultiPolicy } from '@entity/multi-policy';
-import { MessageAction, MessageServer, SynchronizationMessage, TopicConfig } from '@hedera-modules';
+import { MessageAction, MessageServer, SynchronizationMessage, TopicConfig, VcDocument } from '@hedera-modules';
 
 /**
  * Token Config
@@ -212,18 +212,23 @@ export class MintService {
                     token.tokenId
                 ),
             ]);
-            tokenConfig.supplyKey = treasuryKey;
-            tokenConfig.treasuryKey = supplyKey;
+            tokenConfig.supplyKey = supplyKey;
+            tokenConfig.treasuryKey = treasuryKey;
         }
         return tokenConfig;
     }
 
-    private static async sendMessage(ref: AnyBlockType, multipleConfig: MultiPolicy, root: IRootConfig) {
+    private static async sendMessage(
+        ref: AnyBlockType,
+        multipleConfig: MultiPolicy,
+        root: IRootConfig,
+        data: any
+    ) {
         const message = new SynchronizationMessage(MessageAction.Mint);
-        message.setDocument();
+        message.setDocument(multipleConfig, data);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
         const topic = new TopicConfig({ topicId: multipleConfig.synchronizationTopicId }, null, null);
-        const result = await messageServer
+        await messageServer
             .setTopicObject(topic)
             .sendMessage(message);
     }
@@ -246,14 +251,25 @@ export class MintService {
         root: IRootConfig,
         targetAccount: string,
         uuid: string,
-        transactionMemo: string
+        transactionMemo: string,
+        documents: VcDocument[]
     ): Promise<void> {
         const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
-
         if (multipleConfig) {
-            await MintService.sendMessage(ref, multipleConfig, root);
+            const hash = VcDocument.toCredentialHash(documents, (value:any) => {
+                delete value.id;
+                delete value.policyId;
+                delete value.ref;
+                return value;
+            });
+            await MintService.sendMessage(ref, multipleConfig, root, {
+                hash,
+                messageId: uuid,
+                tokenId: token.tokenId,
+                amount: tokenValue
+            });
         } else {
-            const tokenConfig = await MintService.getTokenConfig(ref, token)
+            const tokenConfig = await MintService.getTokenConfig(ref, token);
             if (token.tokenType === 'non-fungible') {
                 await MintService.mintNonFungibleTokens(
                     ref, tokenConfig, tokenValue, root, targetAccount, uuid, transactionMemo

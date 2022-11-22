@@ -85,6 +85,16 @@ export class TopicHelper {
              * Memo parameters object
              */
             memoObj?: any
+        },
+        keys?: {
+            /**
+             * Need admin key
+             */
+            admin: boolean,
+            /**
+             * Need submit key
+             */
+            submit: boolean
         }
     ): Promise<TopicConfig> {
         const workers = new Workers();
@@ -94,25 +104,54 @@ export class TopicHelper {
                 hederaAccountId: this.hederaAccountId,
                 hederaAccountKey: this.hederaAccountKey,
                 dryRun: this.dryRun,
-                topicMemo: TopicMemo.parseMemo(true, config.memo, config.memoObj) || TopicMemo.getTopicMemo(config)
+                topicMemo: TopicMemo.parseMemo(true, config.memo, config.memoObj) || TopicMemo.getTopicMemo(config),
+                keys
             }
         }, 1);
-        if (!this.dryRun) {
-            const wallet = new Wallet();
-            await Promise.all([
-                wallet.setUserKey(
+
+        const wallet = new Wallet();
+        const tasks: any[] = [];
+        let adminKey: any = null;
+        let submitKey: any = null;
+        if (keys) {
+            if (keys.admin) {
+                adminKey = this.hederaAccountKey;
+                tasks.push(wallet.setUserKey(
                     config.owner,
                     KeyType.TOPIC_ADMIN_KEY,
                     topicId,
-                    this.hederaAccountKey
-                ),
-                wallet.setUserKey(
+                    adminKey
+                ));
+            }
+            if (keys.submit) {
+                submitKey = this.hederaAccountKey;
+                tasks.push(wallet.setUserKey(
                     config.owner,
                     KeyType.TOPIC_SUBMIT_KEY,
                     topicId,
-                    this.hederaAccountKey
-                ),
-            ]);
+                    submitKey
+                ));
+            }
+        } else {
+            adminKey = this.hederaAccountKey;
+            submitKey = this.hederaAccountKey;
+            tasks.push(wallet.setUserKey(
+                config.owner,
+                KeyType.TOPIC_ADMIN_KEY,
+                topicId,
+                adminKey
+            ));
+            tasks.push(wallet.setUserKey(
+                config.owner,
+                KeyType.TOPIC_SUBMIT_KEY,
+                topicId,
+                submitKey
+            ));
+        }
+
+        
+        if (!this.dryRun) {
+            await Promise.all(tasks);
         }
         return new TopicConfig({
             topicId,
@@ -122,7 +161,7 @@ export class TopicHelper {
             type: config.type,
             policyId: config.policyId,
             policyUUID: config.policyUUID,
-        }, this.hederaAccountKey, this.hederaAccountKey);
+        }, adminKey, submitKey);
     }
 
     /**

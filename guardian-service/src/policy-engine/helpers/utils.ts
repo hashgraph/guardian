@@ -802,7 +802,7 @@ export class PolicyUtils {
      * Get topic
      * @param ref
      */
-     public static async getInstancePolicyTopic(ref: AnyBlockType): Promise<TopicConfig> {
+    public static async getInstancePolicyTopic(ref: AnyBlockType): Promise<TopicConfig> {
         let topic = await ref.databaseServer.getTopic({ policyId: ref.policyId, type: TopicType.InstancePolicyTopic });
         if (!topic) {
             throw new Error(`Topic does not exist`);

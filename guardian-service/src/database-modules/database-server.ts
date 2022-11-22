@@ -2050,8 +2050,11 @@ export class DatabaseServer {
         return await new DataBaseHelper(MultiPolicy).findOne({ instanceTopicId, owner });
     }
 
-    public static async setMultiPolicy(multiPolicy: any): Promise<MultiPolicy> {
-        const item = new DataBaseHelper(MultiPolicy).create(multiPolicy);
-        return await new DataBaseHelper(MultiPolicy).save(item);
+    public static createMultiPolicy(multiPolicy: any): MultiPolicy {
+        return new DataBaseHelper(MultiPolicy).create(multiPolicy);
+    }
+
+    public static async saveMultiPolicy(multiPolicy: MultiPolicy): Promise<MultiPolicy> {
+        return await new DataBaseHelper(MultiPolicy).save(multiPolicy);
     }
 }

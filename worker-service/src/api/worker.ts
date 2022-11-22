@@ -517,11 +517,24 @@ export class Worker {
                 }
 
                 case WorkerTaskType.NEW_TOPIC: {
-                    const { hederaAccountId, hederaAccountKey, dryRun, topicMemo } = task.data;
+                    const { hederaAccountId, hederaAccountKey, dryRun, topicMemo, keys } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun);
+                    let adminKey: any = null;
+                    let submitKey: any = null;
+                    if (keys) {
+                        if (keys.admin) {
+                            adminKey = hederaAccountKey;
+                        }
+                        if (keys.submit) {
+                            submitKey = hederaAccountKey;
+                        }
+                    } else {
+                        adminKey = hederaAccountKey;
+                        submitKey = hederaAccountKey;
+                    }
                     result.data = await client.newTopic(
-                        hederaAccountKey,
-                        hederaAccountKey,
+                        adminKey,
+                        submitKey,
                         topicMemo
                     );
 

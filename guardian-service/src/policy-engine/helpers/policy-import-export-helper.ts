@@ -204,6 +204,7 @@ export class PolicyImportExportHelper {
         policy.owner = policyOwner;
         policy.status = 'DRAFT';
         policy.instanceTopicId = null;
+        policy.synchronizationTopicId = null;
         policy.name = additionalPolicyConfig?.name || policy.name;
         policy.topicDescription = additionalPolicyConfig?.topicDescription || policy.topicDescription;
         policy.description = additionalPolicyConfig?.description || policy.description;

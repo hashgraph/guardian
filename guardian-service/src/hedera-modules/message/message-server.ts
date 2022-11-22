@@ -163,15 +163,18 @@ export class MessageServer {
      * @private
      */
     private async sendIPFS<T extends Message>(message: T): Promise<T> {
-        const time = await this.messageStartLog('IPFS');
         const buffers = await message.toDocuments();
-
-        const promises = buffers.map(buffer => {
-            return this.addFile(buffer);
-        });
-        const urls = await Promise.all(promises);
-        await this.messageEndLog(time, 'IPFS');
-        message.setUrls(urls);
+        if (buffers && buffers.length) {
+            const time = await this.messageStartLog('IPFS');
+            const promises = buffers.map(buffer => {
+                return this.addFile(buffer);
+            });
+            const urls = await Promise.all(promises);
+            await this.messageEndLog(time, 'IPFS');
+            message.setUrls(urls);
+        } else {
+            message.setUrls([]);
+        }
         return message;
     }
 

@@ -19,5 +19,6 @@ export enum MessageAction {
     DeleteDocument = 'delete-document',
     UseToken = 'token-issue',
     CreateToken = 'create-token',
+    CreateMultiPolicy = 'create-multi-policy',
     Mint = 'mint'
 }

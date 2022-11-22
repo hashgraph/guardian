@@ -3,6 +3,7 @@ import { IURL } from './url.interface';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { SynchronizationMessageBody } from './message-body.interface';
+import { MultiPolicy } from '@entity/multi-policy';
 
 /**
  * Synchronization message
@@ -12,6 +13,34 @@ export class SynchronizationMessage extends Message {
      * Language
      */
     public lang: string;
+    /**
+     * User DID
+     */
+    public user: string;
+    /**
+     * Policy ID (Topic ID)
+     */
+    public policy: string;
+    /**
+     * Policy Type
+     */
+    public policyType: string;
+    /**
+     * VC
+     */
+    public hash: string;
+    /**
+     * Message Id
+     */
+    public messageId: string;
+    /**
+     * Token Id
+     */
+    public tokenId: string;
+    /**
+    * Token amount
+    */
+    public amount: string;
 
     constructor(action: MessageAction) {
         super(action, MessageType.Synchronization);
@@ -20,21 +49,44 @@ export class SynchronizationMessage extends Message {
     /**
      * Set document
      */
-    public setDocument(): void {
+    public setDocument(policy: MultiPolicy, data?: any): void {
         this.lang = 'en-US';
+        this.user = policy.owner;
+        this.policy = policy.instanceTopicId;
+        this.policyType = policy.type;
+        if(data) {
+            this.hash = data.hash;
+            this.messageId = data.messageId;
+            this.tokenId= data.tokenId;
+            this.amount= data.amount;
+        }
     }
 
     /**
      * To message object
      */
     public override toMessageObject(): SynchronizationMessageBody {
-        return {
+        const result: SynchronizationMessageBody = {
             id: this._id,
             status: null,
             type: this.type,
             action: this.action,
-            lang: this.lang,
+            lang: this.lang
+        };
+        if (this.action === MessageAction.CreateMultiPolicy) {
+            result.user = this.user;
+            result.policy = this.policy;
+            result.policyType = this.policyType;
+        } else if (this.action === MessageAction.Mint) {
+            result.user = this.user;
+            result.policy = this.policy;
+            result.policyType = this.policyType;
+            result.hash = this.hash;
+            result.messageId = this.messageId;
+            result.tokenId= this.tokenId;
+            result.amount= this.amount;
         }
+        return result;
     }
 
     /**

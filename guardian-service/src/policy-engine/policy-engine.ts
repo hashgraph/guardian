@@ -21,6 +21,7 @@ import {
     MessageServer,
     MessageType,
     PolicyMessage,
+    SynchronizationMessage,
     TokenMessage,
     TopicConfig,
     TopicHelper
@@ -41,6 +42,7 @@ import { IPolicyUser, PolicyUser } from './policy-user';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from './policy-validation-results-container';
 import { Artifact } from '@entity/artifact';
+import { MultiPolicy } from '@entity/multi-policy';
 
 /**
  * Result of publishing
@@ -449,7 +451,7 @@ export class PolicyEngine {
                 .sendMessage(tokenMessage);
         }
 
-        notifier.completedAndStart('Create topic');
+        notifier.completedAndStart('Create instance topic');
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
         const rootTopic = await topicHelper.create({
             type: TopicType.InstancePolicyTopic,
@@ -461,6 +463,18 @@ export class PolicyEngine {
         });
         await DatabaseServer.saveTopic(rootTopic.toObject());
         model.instanceTopicId = rootTopic.topicId;
+
+        notifier.completedAndStart('Create synchronization topic');
+        const synchronizationTopic = await topicHelper.create({
+            type: TopicType.SynchronizationTopic,
+            name: model.name || TopicType.SynchronizationTopic,
+            description: model.topicDescription || TopicType.InstancePolicyTopic,
+            owner,
+            policyId: model.id.toString(),
+            policyUUID: model.uuid
+        }, { admin: true, submit: false });
+        await DatabaseServer.saveTopic(synchronizationTopic.toObject());
+        model.synchronizationTopicId = synchronizationTopic.topicId;
 
         notifier.completedAndStart('Publish policy');
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
@@ -792,5 +806,38 @@ export class PolicyEngine {
      */
     public getRoot(policyId: string): IPolicyInterfaceBlock {
         return this.policyGenerator.getRoot(policyId);;
+    }
+
+    /**
+     * Create Multi Policy
+     * @param policyInstance
+     * @param owner
+     * @param root
+     * @param data
+     */
+    public async createMultiPolicy(
+        policyInstance: IPolicyInstance,
+        owner: IPolicyUser,
+        root: IRootConfig,
+        data: any,
+    ): Promise<MultiPolicy> {
+        const multipleConfig = DatabaseServer.createMultiPolicy({
+            uuid: GenerateUUIDv4(),
+            instanceTopicId: policyInstance.instanceTopicId,
+            mainPolicyTopicId: data.mainPolicyTopicId,
+            synchronizationTopicId: data.synchronizationTopicId,
+            owner: owner.did,
+            type: data.mainPolicyTopicId == policyInstance.instanceTopicId ? 'Main' : 'Sub',
+        });
+
+        const message = new SynchronizationMessage(MessageAction.CreateMultiPolicy);
+        message.setDocument(multipleConfig);
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        const topic = new TopicConfig({ topicId: multipleConfig.synchronizationTopicId }, null, null);
+        await messageServer
+            .setTopicObject(topic)
+            .sendMessage(message);
+
+        return await DatabaseServer.saveMultiPolicy(multipleConfig);
     }
 }

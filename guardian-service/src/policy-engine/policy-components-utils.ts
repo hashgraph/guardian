@@ -328,7 +328,8 @@ export class PolicyComponentsUtils {
             dryRun,
             databaseServer,
             isMultipleGroup: !!(policy.policyGroups?.length),
-            instanceTopicId: policy.instanceTopicId
+            instanceTopicId: policy.instanceTopicId,
+            synchronizationTopicId: policy.synchronizationTopicId
         }
         PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
     }

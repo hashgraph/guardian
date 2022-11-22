@@ -744,4 +744,8 @@ export interface IPolicyInstance {
      * Policy Instance Topic Id
      */
     readonly instanceTopicId?: string
+    /**
+     * Synchronization Topic Id
+     */
+    readonly synchronizationTopicId?: string
 }

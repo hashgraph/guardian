@@ -112,7 +112,8 @@ export class MintBlock {
 
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         const mintVC = await this.createMintVC(root, token, tokenAmount, ref);
-        const vcs = [].concat(documents, mintVC);
+        const vcs = documents.slice();
+        vcs.push(mintVC);
         const vp = await this.createVP(root, uuid, vcs);
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
@@ -160,7 +161,8 @@ export class MintBlock {
             root,
             targetAccountId,
             vpMessageId,
-            transactionMemo
+            transactionMemo,
+            documents
         );
 
         return [savedVp, tokenValue];

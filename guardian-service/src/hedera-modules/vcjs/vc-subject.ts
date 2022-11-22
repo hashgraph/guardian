@@ -194,4 +194,40 @@ export class VcSubject {
 
         return result;
     }
+
+    /**
+     * Clear Object
+     * @param map - object
+     * @param f - clear function
+     */
+    private _clear(map: any, f?: Function): any {
+        if (map && typeof map === 'object') {
+            if(Array.isArray(map)) {
+                for (let i = 0; i < map.length; i++) {
+                    map[i] = this._clear(map[i], f);
+                }
+            } else {
+                if(f) {
+                    map = f(map);
+                }
+                delete map[VcSubject.CREDENTIAL_ID];
+                delete map[VcSubject.CREDENTIAL_TYPE];
+                delete map[VcSubject.CONTEXT];
+                const keys = Object.keys(this.document);
+                for (const key of keys) {
+                    map[key] = this._clear(map[key], f);
+                }
+            }
+        }
+        return map;
+    }
+
+    /**
+     * To Static Object
+     * @param f - clear function
+     */
+    public toStaticObject(f?: Function): any {
+        const map = JSON.parse(JSON.stringify(this.document));
+        return this._clear(map, f);
+    }
 }

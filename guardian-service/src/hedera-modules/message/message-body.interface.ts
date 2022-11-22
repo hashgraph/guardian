@@ -107,6 +107,10 @@ export interface PolicyMessageBody extends MessageBody {
      */
     instanceTopicId: string;
     /**
+     * Synchronization topic ID
+     */
+    synchronizationTopicId: string;
+    /**
      * CID
      */
     cid: string;
@@ -321,4 +325,32 @@ export interface SynchronizationMessageBody extends MessageBody {
      * Language
      */
     lang: string;
+    /**
+     * User DID
+     */
+    user?: string,
+    /**
+     * Policy ID (Topic ID)
+     */
+    policy?: string,
+    /**
+     * Policy Type
+     */
+    policyType?: string,
+    /**
+     * VC
+     */
+    hash?: string,
+    /**
+     * Message Id
+     */
+    messageId?: string,
+    /**
+     * Token Id
+     */
+    tokenId?: string,
+    /**
+    * Token amount
+    */
+    amount?: string;
 }

@@ -48,6 +48,10 @@ export class PolicyMessage extends Message {
      */
     public instanceTopicId: string;
     /**
+     * Synchronization topic ID
+     */
+    public synchronizationTopicId: string;
+    /**
      * Policy topic ID
      * @private
      */
@@ -74,6 +78,7 @@ export class PolicyMessage extends Message {
         this.owner = model.owner;
         this.policyTopicId = model.topicId;
         this.instanceTopicId = model.instanceTopicId;
+        this.synchronizationTopicId = model.synchronizationTopicId;
         this.document = zip;
     }
 
@@ -103,6 +108,7 @@ export class PolicyMessage extends Message {
             owner: this.owner,
             topicId: this.policyTopicId?.toString(),
             instanceTopicId: this.instanceTopicId,
+            synchronizationTopicId: this.synchronizationTopicId,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url)
         }

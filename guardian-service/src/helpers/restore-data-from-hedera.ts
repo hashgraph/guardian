@@ -218,13 +218,16 @@ export class RestoreDataFromHedera {
                 const parsedPolicyFile = await PolicyImportExportHelper.parseZipFile(policy.document);
                 const policyObject = parsedPolicyFile.policy;
 
-                const policyInstanceTopicMessage = policyMessages.find(m => m.rationale === policy.id);
-                policyObject.instanceTopicId = policyInstanceTopicMessage.childId;
+                policyObject.instanceTopicId = policy.instanceTopicId;
+                policyObject.synchronizationTopicId = policy.synchronizationTopicId;
                 policyObject.status = PolicyType.PUBLISH;
                 policyObject.topicId = policyTopicId;
+                if (!policyObject.instanceTopicId) {
+                    const policyInstanceTopicMessage = policyMessages.find(m => m.rationale === policy.id);
+                    policyObject.instanceTopicId = policyInstanceTopicMessage.childId;
+                }
 
-                const policyInstanceMessages = await this.readTopicMessages(policyInstanceTopicMessage.childId);
-
+                const policyInstanceMessages = await this.readTopicMessages(policyObject.instanceTopicId);
                 const p = new DataBaseHelper(PolicyCollection).create(policyObject);
                 const r = await new DataBaseHelper(PolicyCollection).save(p);
 
@@ -265,11 +268,11 @@ export class RestoreDataFromHedera {
      * @param hederaAccountID
      * @param hederaAccountKey
      */
-    async restoreRootAuthority(username: string, hederaAccountID: string, hederaAccountKey): Promise<void> {
+    async restoreRootAuthority(username: string, hederaAccountID: string, hederaAccountKey: any): Promise<void> {
         const did = DIDDocument.create(hederaAccountKey, null);
         const didString = did.getDid();
 
-        // didString = 'did:hedera:testnet:zYVrjgg5HmNJVdn9j81P3k8ZeJfmdFv8SzsKAwPk5cB'
+        // const didString = 'did:hedera:testnet:zYVrjgg5HmNJVdn9j81P3k8ZeJfmdFv8SzsKAwPk5cB'
 
         const user = await this.users.getUser(username);
 

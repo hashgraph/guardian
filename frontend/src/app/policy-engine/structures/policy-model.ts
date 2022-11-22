@@ -937,6 +937,7 @@ export class PolicyModel {
     public readonly status!: string;
     public readonly topicId!: string;
     public readonly instanceTopicId!: string;
+    public readonly synchronizationTopicId!: string;
     public readonly messageId!: string;
     public readonly version!: string;
     public readonly previousVersion!: string;
@@ -982,6 +983,7 @@ export class PolicyModel {
         this.status = policy.status;
         this.topicId = policy.topicId;
         this.instanceTopicId = policy.instanceTopicId;
+        this.synchronizationTopicId = policy.synchronizationTopicId;
         this.messageId = policy.messageId;
         this.version = policy.version;
         this.previousVersion = policy.previousVersion;
@@ -1298,6 +1300,7 @@ export class PolicyModel {
             owner: this.owner,
             topicId: this.topicId,
             instanceTopicId: this.instanceTopicId,
+            synchronizationTopicId: this.synchronizationTopicId,
             policyTag: this.policyTag,
             messageId: this.messageId,
             codeVersion: this.codeVersion,
