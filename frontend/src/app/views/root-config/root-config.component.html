@@ -23,7 +23,7 @@
                     <a (click)="openDIDDocument(profile.didDocument, 'DID')">View Document</a>
                 </p>
             </div>
-            <div class="list-item">
+            <div *ngIf="profile.vcDocument" class="list-item">
                 <h4 mat-line>VC Document</h4>
                 <p mat-line class="root-field">
                     <a (click)="openVCDocument(profile.vcDocument, 'VC')">View Document</a>
