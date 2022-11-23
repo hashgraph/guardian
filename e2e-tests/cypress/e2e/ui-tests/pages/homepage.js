@@ -43,6 +43,35 @@ export class HomePage {
         cy.contains(HomePageLocators.logoutBtn).click({ force: true });
     }
 
+
+    loginAsRegistrant() {
+        const inputName = cy.get(HomePageLocators.usernameInput);
+        inputName.type('Registrant');
+        const inputPass = cy.get(HomePageLocators.passInput);
+        inputPass.type('test');
+        cy.get(HomePageLocators.submitBtn).click();
+    }
+
+    logoutAsRegistrant() {
+        const Installer = cy.contains('Registrant');
+        Installer.click({ force: true });
+        cy.contains(HomePageLocators.logoutBtn).click({ force: true });
+    }
+
+    loginAsVVB() {
+        const inputName = cy.get(HomePageLocators.usernameInput);
+        inputName.type('VVB');
+        const inputPass = cy.get(HomePageLocators.passInput);
+        inputPass.type('test');
+        cy.get(HomePageLocators.submitBtn).click();
+    }
+
+    logoutAsVVB() {
+        const standartRegistry = cy.contains('VVB');
+        standartRegistry.click({ force: true });
+        cy.contains(HomePageLocators.logoutBtn).click({ force: true });
+    }
+
     checkSetupInstaller() {
         cy.wait(2000)
           cy.get('body').then((body) => {
@@ -67,6 +96,45 @@ export class HomePage {
     }
 
 
+    checkSetupRegistrant() {
+        cy.wait(2000)
+          cy.get('body').then((body) => {
+               if (body.find('[role="combobox"]').length) {
+
+                 //fill info for Registrant
+                 cy.get('[role="combobox"]').click().then(() => {
+                   cy.get('[role="option"]').click()
+                   cy.contains(HomePageLocators.generateBtn).click()
+                       
+                   cy.wait(5000)
+                     
+                   })
+                   cy.contains('Submit').click()
+                   cy.intercept('/api/v1/profiles/Installer').as('waitForRegisterRegistrant')
+                   cy.wait('@waitForRegisterRegistrant', { timeout: 8000 })
+               }
+             })
+    }
+
+    checkSetupVVB() {
+        cy.wait(2000)
+          cy.get('body').then((body) => {
+               if (body.find('[role="combobox"]').length) {
+
+                 //fill info for Registrant
+                 cy.get('[role="combobox"]').click().then(() => {
+                   cy.get('[role="option"]').click()
+                   cy.contains(HomePageLocators.generateBtn).click()
+                       
+                   cy.wait(5000)
+                     
+                   })
+                   cy.contains('Submit').click()
+                   cy.intercept('/api/v1/profiles/Installer').as('waitForVVB')
+                   cy.wait('@waitForVVB', { timeout: 8000 })
+               }
+             })
+    }
   
 
   }
