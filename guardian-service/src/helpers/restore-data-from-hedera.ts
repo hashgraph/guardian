@@ -12,7 +12,7 @@ import {
     DIDDocument,
     DIDMessage,
     MessageServer,
-    MessageType, TopicHelper,
+    MessageType,
     TopicMessage,
     VcDocument,
     VCMessage, VpDocument, VPMessage
