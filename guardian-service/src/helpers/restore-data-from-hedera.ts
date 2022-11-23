@@ -27,6 +27,7 @@ import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-e
 import { Policy as PolicyCollection } from '@entity/policy';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { Topic } from '@entity/topic';
+import { Token } from '@entity/token';
 
 /**
  * Restore data from hedera class
@@ -65,9 +66,10 @@ export class RestoreDataFromHedera {
     /**
      * Read topic
      * @param topicId
+     * @param loadIPFS
      * @private
      */
-    private async readTopicMessages(topicId: string): Promise<any[]> {
+    private async readTopicMessages(topicId: string, loadIPFS = true): Promise<any[]> {
         if (typeof topicId !== 'string') {
             throw new Error('Bad topicId');
         }
@@ -88,7 +90,9 @@ export class RestoreDataFromHedera {
                 const r = MessageServer.fromMessage<any>(m.message);
                 r.setTopicId(topicId);
                 r.setId(m.id);
-                await MessageServer.loadIPFS(r);
+                if (loadIPFS) {
+                    await MessageServer.loadIPFS(r);
+                }
                 result.push(r);
             } catch (e) {
                 ++errors;
@@ -213,10 +217,11 @@ export class RestoreDataFromHedera {
      * @param policyTopicId
      * @param owner
      * @param user
+     * @param hederaAccountID
      * @param hederaAccountKey
      * @private
      */
-    private async restorePolicy(policyTopicId: string, owner: string, user: any, hederaAccountKey: string): Promise<void> {
+    private async restorePolicy(policyTopicId: string, owner: string, user: any, hederaAccountID: string, hederaAccountKey: string): Promise<void> {
         try {
             const policyMessages = await this.readTopicMessages(policyTopicId);
 
@@ -229,6 +234,25 @@ export class RestoreDataFromHedera {
                 policyId: null,
                 policyUUID: null,
             }, user, hederaAccountKey, hederaAccountKey);
+
+            // Restore tokens
+            for (const {tokenId, tokenName, tokenSymbol, tokenType, decimals} of this.findMessagesByType(MessageType.Token, policyMessages)) {
+                await new DataBaseHelper(Token).save({
+                    tokenId,
+                    tokenName,
+                    tokenSymbol,
+                    tokenType,
+                    decimals,
+                    initialSupply: 0,
+                    adminId: hederaAccountID,
+                    changeSupply: false,
+                    enableAdmin: false,
+                    enableKYC: false,
+                    enableFreeze: false,
+                    enableWipe: false,
+                    owner
+                });
+            }
 
             const publishedSchemas = policyMessages.filter(m => m._action === 'publish-schema');
 
@@ -389,7 +413,7 @@ export class RestoreDataFromHedera {
 
         // Restore policies
         for (const policyMessage of this.findMessagesByType(MessageType.Policy, RAMessages)) {
-            await this.restorePolicy(policyMessage.policyTopicId, didDocumentMessage.document.id, user, hederaAccountKey);
+            await this.restorePolicy(policyMessage.policyTopicId, didDocumentMessage.document.id, user, hederaAccountID, hederaAccountKey);
         }
     }
 }
