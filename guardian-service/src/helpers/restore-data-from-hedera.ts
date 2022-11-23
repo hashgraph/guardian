@@ -289,10 +289,6 @@ export class RestoreDataFromHedera {
             throw new Error('Couldn\'t find DID document')
         }
 
-        if (!vcDocumentMessage) {
-            throw new Error('Couldn\'t find VC document')
-        }
-
         await new DataBaseHelper(DidDocumentCollection).save({
             did: didDocumentMessage.document.id,
             document: didDocumentMessage.document,
@@ -301,13 +297,15 @@ export class RestoreDataFromHedera {
             topicId: didDocumentMessage.topicId
         });
 
-        const vcDoc = VcDocument.fromJsonTree(vcDocumentMessage.document);
-        await new DataBaseHelper(VcDocumentCollection).save({
-            hash: vcDoc.toCredentialHash(),
-            owner: didDocumentMessage.document.id,
-            document: vcDoc.toJsonTree(),
-            type: 'STANDARD_REGISTRY'
-        });
+        if (vcDocumentMessage) {
+            const vcDoc = VcDocument.fromJsonTree(vcDocumentMessage.document);
+            await new DataBaseHelper(VcDocumentCollection).save({
+                hash: vcDoc.toCredentialHash(),
+                owner: didDocumentMessage.document.id,
+                document: vcDoc.toJsonTree(),
+                type: 'STANDARD_REGISTRY'
+            });
+        }
 
         await this.users.updateCurrentUser(username, {
             did: didDocumentMessage.document.id,
