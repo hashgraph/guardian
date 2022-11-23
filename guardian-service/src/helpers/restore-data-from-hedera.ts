@@ -281,9 +281,19 @@ export class RestoreDataFromHedera {
 
         const RAMessages = await this.readTopicMessages(currentRAMessage.registrantTopicId);
 
+        console.log(RAMessages.length);
+
         // Restore account
         const didDocumentMessage = this.findMessageByType(MessageType.DIDDocument, RAMessages);
         const vcDocumentMessage = this.findMessageByType(MessageType.VCDocument, RAMessages);
+
+        if (!didDocumentMessage) {
+            throw new Error('Couldn\'t find DID document')
+        }
+
+        if (!vcDocumentMessage) {
+            throw new Error('Couldn\'t find VC document')
+        }
 
         await new DataBaseHelper(DidDocumentCollection).save({
             did: didDocumentMessage.document.id,
