@@ -281,8 +281,6 @@ export class RestoreDataFromHedera {
 
         const RAMessages = await this.readTopicMessages(currentRAMessage.registrantTopicId);
 
-        console.log(RAMessages.length);
-
         // Restore account
         const didDocumentMessage = this.findMessageByType(MessageType.DIDDocument, RAMessages);
         const vcDocumentMessage = this.findMessageByType(MessageType.VCDocument, RAMessages);
