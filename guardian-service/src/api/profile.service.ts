@@ -39,6 +39,7 @@ import { Settings } from '@entity/settings';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { Workers } from '@helpers/workers';
 import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
+import { DatabaseServer } from '@database-modules';
 
 /**
  * Get global topic
@@ -114,10 +115,8 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
         entity
     } = profile;
 
-    let topic: TopicConfig = null;
-    let topicAdminKey = null;
-    let topicSubmitKey = null;
-    let newTopic = false;
+    let topicConfig: TopicConfig = null;
+    let newTopic: Topic = null;
 
     notifier.start('Resolve topic');
     const globalTopic = await getGlobalTopic();
@@ -125,18 +124,20 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
 
     if (parent) {
-        topic = await TopicConfig.fromObject(
+        topicConfig = await TopicConfig.fromObject(
             await new DataBaseHelper(Topic).findOne({
                 owner: parent,
                 type: TopicType.UserTopic
             }), true);
     }
 
-    if (!topic) {
+    console.log('!!!! topic', topicConfig);
+
+    if (!topicConfig) {
         notifier.info('Create user topic');
         logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
         const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey);
-        topic = await topicHelper.create({
+        topicConfig = await topicHelper.create({
             type: TopicType.UserTopic,
             name: TopicType.UserTopic,
             description: TopicType.UserTopic,
@@ -144,19 +145,18 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
             policyId: null,
             policyUUID: null
         });
-        await new DataBaseHelper(Topic).save(topic.toObject());
-        await topicHelper.oneWayLink(topic, globalTopic, null);
-        newTopic = true;
+        await topicHelper.oneWayLink(topicConfig, globalTopic, null);
+        newTopic = await new DataBaseHelper(Topic).save(topicConfig.toObject());
     }
 
-    messageServer.setTopicObject(topic);
+    messageServer.setTopicObject(topicConfig);
 
     // ------------------------
     // <-- Publish DID Document
     // ------------------------
     notifier.completedAndStart('Publish DID Document');
     logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
-    const didObject = DIDDocument.create(hederaAccountKey, topic.topicId);
+    const didObject = DIDDocument.create(hederaAccountKey, topicConfig.topicId);
     const userDID = didObject.getDid();
     const didMessage = new DIDMessage(MessageAction.CreateDID);
     didMessage.setDocument(didObject);
@@ -166,7 +166,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     });
     try {
         const didMessageResult = await messageServer
-            .setTopicObject(topic)
+            .setTopicObject(topicConfig)
             .sendMessage(didMessage)
         didDoc.status = DidDocumentStatus.CREATE;
         didDoc.messageId = didMessageResult.getId();
@@ -192,7 +192,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
         schema = await new DataBaseHelper(SchemaCollection).findOne({
             entity: SchemaEntity.STANDARD_REGISTRY,
             readonly: true,
-            topicId: topic.topicId
+            topicId: topicConfig.topicId
         });
         if (!schema) {
             schema = await new DataBaseHelper(SchemaCollection).findOne({
@@ -213,7 +213,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
         schema = await new DataBaseHelper(SchemaCollection).findOne({
             entity: SchemaEntity.USER,
             readonly: true,
-            topicId: topic.topicId
+            topicId: topicConfig.topicId
         });
         if (!schema) {
             schema = await new DataBaseHelper(SchemaCollection).findOne({
@@ -235,7 +235,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
             schema = await new DataBaseHelper(SchemaCollection).findOne({
                 entity,
                 readonly: true,
-                topicId: topic.topicId
+                topicId: topicConfig.topicId
             });
             if (schema) {
                 schemaObject = new Schema(schema);
@@ -275,7 +275,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
 
         try {
             const vcMessageResult = await messageServer
-                .setTopicObject(topic)
+                .setTopicObject(topicConfig)
                 .sendMessage(vcMessage);
             vcDoc.hederaStatus = DocumentStatus.ISSUE;
             vcDoc.messageId = vcMessageResult.getId();
@@ -293,23 +293,23 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
 
     notifier.completedAndStart('Save changes');
     if (newTopic) {
-        topic.owner = didMessage.did;
-        topic.parent = globalTopic?.topicId;
-        await new DataBaseHelper(Topic).update(topic);
+        newTopic.owner = didMessage.did;
+        newTopic.parent = globalTopic?.topicId;
+        await new DataBaseHelper(Topic).update(newTopic);
         if (user) {
             const wallet = new Wallet();
             await Promise.all([
                 wallet.setKey(
                     user.walletToken,
                     KeyType.TOPIC_SUBMIT_KEY,
-                    topic.topicId,
-                    topicAdminKey
+                    topicConfig.topicId,
+                    topicConfig.submitKey
                 ),
                 wallet.setKey(
                     user.walletToken,
                     KeyType.TOPIC_ADMIN_KEY,
-                    topic.topicId,
-                    topicSubmitKey
+                    topicConfig.topicId,
+                    topicConfig.adminKey
                 ),
             ]);
         }
@@ -320,7 +320,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
         delete attributes.type;
         delete attributes['@context'];
         const regMessage = new RegistrationMessage(MessageAction.Init);
-        regMessage.setDocument(didMessage.did, topic?.topicId, attributes);
+        regMessage.setDocument(didMessage.did, topicConfig?.topicId, attributes);
         await messageServer
             .setTopicObject(globalTopic)
             .sendMessage(regMessage)

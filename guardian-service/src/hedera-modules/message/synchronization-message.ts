@@ -41,6 +41,14 @@ export class SynchronizationMessage extends Message {
     * Token amount
     */
     public amount: string;
+    /**
+    * Target Account
+    */
+    public target: string;
+    /**
+    * Memo
+    */
+    public memo: string;
 
     constructor(action: MessageAction) {
         super(action, MessageType.Synchronization);
@@ -54,11 +62,13 @@ export class SynchronizationMessage extends Message {
         this.user = policy.owner;
         this.policy = policy.instanceTopicId;
         this.policyType = policy.type;
-        if(data) {
+        if (data) {
             this.hash = data.hash;
             this.messageId = data.messageId;
-            this.tokenId= data.tokenId;
-            this.amount= data.amount;
+            this.tokenId = data.tokenId;
+            this.amount = data.amount;
+            this.memo = data.memo;
+            this.target = data.target;
         }
     }
 
@@ -83,8 +93,10 @@ export class SynchronizationMessage extends Message {
             result.policyType = this.policyType;
             result.hash = this.hash;
             result.messageId = this.messageId;
-            result.tokenId= this.tokenId;
-            result.amount= this.amount;
+            result.tokenId = this.tokenId;
+            result.amount = this.amount;
+            result.memo = this.memo;
+            result.target = this.target;
         }
         return result;
     }
@@ -126,7 +138,7 @@ export class SynchronizationMessage extends Message {
             throw new Error('JSON Object is empty');
         }
 
-        if (json.type !== MessageType.StandardRegistry) {
+        if (json.type !== MessageType.Synchronization) {
             throw new Error('Invalid message type');
         }
 
@@ -135,6 +147,15 @@ export class SynchronizationMessage extends Message {
         message._id = json.id;
         message._status = json.status;
         message.lang = json.lang;
+        message.user = json.user;
+        message.policy = json.policy;
+        message.policyType = json.policyType;
+        message.hash = json.hash;
+        message.messageId = json.messageId;
+        message.tokenId = json.tokenId;
+        message.amount = json.amount;
+        message.memo = json.memo;
+        message.target = json.target;
         return message;
     }
 

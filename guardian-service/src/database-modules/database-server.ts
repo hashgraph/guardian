@@ -20,6 +20,7 @@ import { ArtifactChunk as ArtifactChunkCollection } from '@entity/artifact-chunk
 import { Binary } from 'bson';
 import { SplitDocuments } from '@entity/split-documents';
 import { MultiPolicy } from '@entity/multi-policy';
+import { MultiPolicyTransaction } from '@entity/multi-policy-transaction';
 
 /**
  * Database server
@@ -1537,9 +1538,10 @@ export class DatabaseServer {
     /**
      * Get policies
      * @param filters
+     * @param options
      */
-    public static async getPolicies(filters?: any): Promise<Policy[]> {
-        return await new DataBaseHelper(Policy).find(filters);
+    public static async getPolicies(filters?: any, options?: any): Promise<Policy[]> {
+        return await new DataBaseHelper(Policy).find(filters, options);
     }
 
     /**
@@ -2056,5 +2058,39 @@ export class DatabaseServer {
 
     public static async saveMultiPolicy(multiPolicy: MultiPolicy): Promise<MultiPolicy> {
         return await new DataBaseHelper(MultiPolicy).save(multiPolicy);
+    }
+
+    /**
+     * Get Token
+     * @param tokenId
+     */
+    public static async getTokenById(tokenId: string): Promise<TokenCollection> {
+        return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
+    }
+
+    /**
+     * Create MultiPolicyTransaction
+     * @param transaction
+     */
+    public static async createMultiPolicyTransaction(transaction:any): Promise<MultiPolicyTransaction> {
+        const item = new DataBaseHelper(MultiPolicyTransaction).create(transaction);
+        return await new DataBaseHelper(MultiPolicyTransaction).save(item);
+    }
+
+    /**
+     * Get MultiPolicyTransaction
+     * @param policyId
+     * @param owner
+     */
+    public static async getMultiPolicyTransactions(policyId: string, owner: string): Promise<MultiPolicyTransaction[]> {
+        return await new DataBaseHelper(MultiPolicyTransaction).find({ policyId, owner, status: 'Waiting' });
+    }
+
+    /**
+     * Update MultiPolicyTransaction
+     * @param item
+     */
+    public static async updateMultiPolicyTransactions(item: MultiPolicyTransaction): Promise<void> {
+        await new DataBaseHelper(MultiPolicyTransaction).update(item);
     }
 }

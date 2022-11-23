@@ -353,4 +353,12 @@ export interface SynchronizationMessageBody extends MessageBody {
     * Token amount
     */
     amount?: string;
+    /**
+    * Target Account
+    */
+    target?: string;
+    /**
+    * Memo
+    */
+    memo?: string;
 }

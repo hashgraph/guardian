@@ -216,6 +216,7 @@ export class PolicyImportExportHelper {
         const parent = await TopicConfig.fromObject(
             await DatabaseServer.getTopicByType(policyOwner, TopicType.UserTopic), true
         );
+        console.log('!!!! parent', parent);
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
 
         let topicRow: TopicConfig;

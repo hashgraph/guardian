@@ -45,6 +45,7 @@ import { Workers } from '@helpers/workers';
 import { artifactAPI } from '@api/artifact.service';
 import { Policy } from '@entity/policy';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
+import { SynchronizationService } from '@policy-engine/multi-policy-service';
 
 Promise.all([
     Migration({
@@ -142,6 +143,7 @@ Promise.all([
         const policyService = new PolicyEngineService(channel, apiGatewayChannel);
         await policyGenerator.init();
         policyService.registerListeners();
+        SynchronizationService.start();
     } catch (error) {
         console.error(error.message);
         process.exit(0);

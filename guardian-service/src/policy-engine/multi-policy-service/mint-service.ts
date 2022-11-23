@@ -2,10 +2,11 @@ import { Token } from '@entity/token';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import {
     ExternalMessageEvents,
+    GenerateUUIDv4,
     IRootConfig,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { ExternalEventChannel } from '@guardian/common';
+import { ExternalEventChannel, Logger } from '@guardian/common';
 import { PrivateKey } from '@hashgraph/sdk';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Workers } from '@helpers/workers';
@@ -34,26 +35,31 @@ export class MintService {
      */
     private static readonly wallet = new Wallet();
     /**
+     * Logger service
+     */
+    private static readonly logger = new Logger();
+
+    /**
      * Mint Non Fungible Tokens
-     * @param ref
      * @param token
      * @param tokenValue
      * @param root
      * @param targetAccount
      * @param uuid
      * @param transactionMemo
+     * @param ref
      */
     private static async mintNonFungibleTokens(
-        ref: AnyBlockType,
         token: TokenConfig,
         tokenValue: number,
         root: IRootConfig,
         targetAccount: string,
         uuid: string,
-        transactionMemo: string
+        transactionMemo: string,
+        ref?: AnyBlockType,
     ) {
         const mintId = Date.now();
-        ref.log(`Mint(${mintId}): Start (Count: ${tokenValue})`);
+        MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref);
 
         const workers = new Workers();
         const data = new Array<string>(Math.floor(tokenValue));
@@ -64,7 +70,7 @@ export class MintService {
         for (let i = 0; i < dataChunk.length; i++) {
             const metaData = dataChunk[i];
             if (i % 100 === 0) {
-                ref.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
+                MintService.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`, ref);
             }
 
             mintPromiseArray.push(workers.addRetryableTask({
@@ -72,7 +78,7 @@ export class MintService {
                 data: {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
-                    dryRun: ref.dryRun,
+                    dryRun: ref && ref.dryRun,
                     tokenId: token.tokenId,
                     supplyKey: token.supplyKey,
                     metaData,
@@ -88,25 +94,25 @@ export class MintService {
                 }
             }
         } catch (error) {
-            ref.error(`Mint(${mintId}): Mint Error (${PolicyUtils.getErrorMessage(error)})`);
+            MintService.error(`Mint(${mintId}): Mint Error (${PolicyUtils.getErrorMessage(error)})`, ref);
         }
 
-        ref.log(`Mint(${mintId}): Minted (Count: ${serials.length})`);
-        ref.log(`Mint(${mintId}): Transfer ${token.treasuryId} -> ${targetAccount} `);
+        MintService.log(`Mint(${mintId}): Minted (Count: ${serials.length})`, ref);
+        MintService.log(`Mint(${mintId}): Transfer ${token.treasuryId} -> ${targetAccount} `, ref);
 
         const serialsChunk = PolicyUtils.splitChunk(serials, 10);
         const transferPromiseArray: Promise<any>[] = [];
         for (let i = 0; i < serialsChunk.length; i++) {
             const element = serialsChunk[i];
             if (i % 100 === 0) {
-                ref.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`);
+                MintService.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`, ref);
             }
             transferPromiseArray.push(workers.addRetryableTask({
                 type: WorkerTaskType.TRANSFER_NFT,
                 data: {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
-                    dryRun: ref.dryRun,
+                    dryRun: ref && ref.dryRun,
                     tokenId: token.tokenId,
                     targetAccount,
                     treasuryId: token.treasuryId,
@@ -120,33 +126,33 @@ export class MintService {
         try {
             await Promise.all(transferPromiseArray);
         } catch (error) {
-            ref.error(`Mint(${mintId}): Transfer Error (${PolicyUtils.getErrorMessage(error)})`);
+            MintService.error(`Mint(${mintId}): Transfer Error (${PolicyUtils.getErrorMessage(error)})`, ref);
         }
 
-        ref.log(`Mint(${mintId}): End`);
+        MintService.log(`Mint(${mintId}): End`, ref);
     }
 
     /**
      * Mint Fungible Tokens
-     * @param ref
      * @param token
      * @param tokenValue
      * @param root
      * @param targetAccount
      * @param uuid
      * @param transactionMemo
+     * @param ref
      */
     private static async mintFungibleTokens(
-        ref: AnyBlockType,
         token: TokenConfig,
         tokenValue: number,
         root: IRootConfig,
         targetAccount: string,
         uuid: string,
-        transactionMemo: string
+        transactionMemo: string,
+        ref?: AnyBlockType,
     ) {
         const mintId = Date.now();
-        ref.log(`Mint(${mintId}): Start (Count: ${tokenValue})`);
+        MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref);
 
         try {
             const workers = new Workers();
@@ -155,7 +161,7 @@ export class MintService {
                 data: {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
-                    dryRun: ref.dryRun,
+                    dryRun: ref && ref.dryRun,
                     tokenId: token.tokenId,
                     supplyKey: token.supplyKey,
                     tokenValue,
@@ -167,7 +173,7 @@ export class MintService {
                 data: {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
-                    dryRun: ref.dryRun,
+                    dryRun: ref && ref.dryRun,
                     tokenId: token.tokenId,
                     targetAccount,
                     treasuryId: token.treasuryId,
@@ -177,10 +183,10 @@ export class MintService {
                 }
             }, 1);
         } catch (error) {
-            ref.error(`Mint FT(${mintId}): Mint/Transfer Error (${PolicyUtils.getErrorMessage(error)})`);
+            MintService.error(`Mint FT(${mintId}): Mint/Transfer Error (${PolicyUtils.getErrorMessage(error)})`, ref);
         }
 
-        ref.log(`Mint(${mintId}): End`);
+        MintService.log(`Mint(${mintId}): End`, ref);
     }
 
     /**
@@ -256,7 +262,7 @@ export class MintService {
     ): Promise<void> {
         const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
         if (multipleConfig) {
-            const hash = VcDocument.toCredentialHash(documents, (value:any) => {
+            const hash = VcDocument.toCredentialHash(documents, (value: any) => {
                 delete value.id;
                 delete value.policyId;
                 delete value.ref;
@@ -266,17 +272,29 @@ export class MintService {
                 hash,
                 messageId: uuid,
                 tokenId: token.tokenId,
-                amount: tokenValue
+                amount: tokenValue,
+                memo: transactionMemo,
+                target: targetAccount
+            });
+            await DatabaseServer.createMultiPolicyTransaction({
+                uuid: GenerateUUIDv4(),
+                policyId: ref.policyId,
+                owner: documentOwner,
+                hash,
+                tokenId: token.tokenId,
+                amount: tokenValue,
+                target: targetAccount,
+                status: 'Waiting'
             });
         } else {
             const tokenConfig = await MintService.getTokenConfig(ref, token);
             if (token.tokenType === 'non-fungible') {
                 await MintService.mintNonFungibleTokens(
-                    ref, tokenConfig, tokenValue, root, targetAccount, uuid, transactionMemo
+                    tokenConfig, tokenValue, root, targetAccount, uuid, transactionMemo, ref
                 );
             } else {
                 await MintService.mintFungibleTokens(
-                    ref, tokenConfig, tokenValue, root, targetAccount, uuid, transactionMemo
+                    tokenConfig, tokenValue, root, targetAccount, uuid, transactionMemo, ref
                 );
             }
         }
@@ -287,6 +305,65 @@ export class MintService {
                 tokenId: token.tokenId,
                 tokenValue,
                 memo: transactionMemo
+            }
+        );
+    }
+
+    /**
+     * Mint
+     * @param ref
+     * @param token
+     * @param tokenValue
+     * @param documentOwner
+     * @param root
+     * @param targetAccount
+     * @param uuid
+     */
+    public static async multiMint(
+        root: IRootConfig,
+        token: Token,
+        tokenValue: number,
+        targetAccount: string,
+        ids: string[]
+    ): Promise<void> {
+        const memo = ids.join(',');
+        const tokenConfig: TokenConfig = {
+            treasuryId: token.adminId,
+            tokenId: token.tokenId,
+            supplyKey: null,
+            treasuryKey: null
+        }
+        const [treasuryKey, supplyKey] = await Promise.all([
+            MintService.wallet.getUserKey(
+                token.owner,
+                KeyType.TOKEN_TREASURY_KEY,
+                token.tokenId
+            ),
+            MintService.wallet.getUserKey(
+                token.owner,
+                KeyType.TOKEN_SUPPLY_KEY,
+                token.tokenId
+            ),
+        ]);
+        tokenConfig.supplyKey = supplyKey;
+        tokenConfig.treasuryKey = treasuryKey;
+
+        if (token.tokenType === 'non-fungible') {
+            await MintService.mintNonFungibleTokens(
+                tokenConfig, tokenValue, root, targetAccount, memo, memo
+            );
+        } else {
+            await MintService.mintFungibleTokens(
+                tokenConfig, tokenValue, root, targetAccount, memo, memo
+            );
+        }
+
+        new ExternalEventChannel().publishMessage(
+            ExternalMessageEvents.TOKEN_MINTED,
+            {
+                tokenId: token.tokenId,
+                tokenValue,
+                memo
             }
         );
     }
@@ -330,5 +407,44 @@ export class MintService {
 
     private static async getMultipleConfig(ref: AnyBlockType, documentOwner: IPolicyUser) {
         return await DatabaseServer.getMultiPolicy(ref.policyInstance.instanceTopicId, documentOwner.did);
+    }
+
+    /**
+     * Write log message
+     * @param message
+     */
+    private static log(message: string, ref?: AnyBlockType,) {
+        if (ref) {
+            this.logger.info(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId]);
+        } else {
+            this.logger.info(message, ['GUARDIAN_SERVICE']);
+        }
+
+    }
+
+    /**
+     * Write error message
+     * @param message
+     */
+    private static error(message: string, ref?: AnyBlockType,) {
+        if (ref) {
+            this.logger.error(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId]);
+        } else {
+            this.logger.error(message, ['GUARDIAN_SERVICE']);
+        }
+
+    }
+
+    /**
+     * Write warn message
+     * @param message
+     */
+    private static warn(message: string, ref?: AnyBlockType,) {
+        if (ref) {
+            this.logger.warn(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId]);
+        } else {
+            this.logger.warn(message, ['GUARDIAN_SERVICE']);
+        }
+
     }
 }
