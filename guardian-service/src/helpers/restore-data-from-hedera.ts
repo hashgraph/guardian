@@ -4,7 +4,7 @@ import {
     DidDocumentStatus,
     ISchema, PolicyType,
     SchemaCategory,
-    SchemaStatus,
+    SchemaStatus, TopicType,
     UserRole,
     WorkerTaskType
 } from '@guardian/interfaces';
@@ -12,7 +12,7 @@ import {
     DIDDocument,
     DIDMessage,
     MessageServer,
-    MessageType,
+    MessageType, TopicHelper,
     TopicMessage,
     VcDocument,
     VCMessage, VpDocument, VPMessage
@@ -26,6 +26,7 @@ import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
 import { Policy as PolicyCollection } from '@entity/policy';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
+import { Topic } from '@entity/topic';
 
 /**
  * Restore data from hedera class
@@ -281,6 +282,8 @@ export class RestoreDataFromHedera {
 
         const RAMessages = await this.readTopicMessages(currentRAMessage.registrantTopicId);
 
+        console.log(RAMessages);
+
         // Restore account
         const didDocumentMessage = this.findMessageByType(MessageType.DIDDocument, RAMessages);
         const vcDocumentMessage = this.findMessageByType(MessageType.VCDocument, RAMessages);
@@ -310,8 +313,18 @@ export class RestoreDataFromHedera {
         await this.users.updateCurrentUser(username, {
             did: didDocumentMessage.document.id,
             parent: undefined,
-            hederaAccountId: hederaAccountID
+            hederaAccountId: hederaAccountID,
         });
+        await new DataBaseHelper(Topic).save({
+            topicId: currentRAMessage.registrantTopicId,
+            name: RAMessages[0].name,
+            description: RAMessages[0].description,
+            owner: didDocumentMessage.document.id,
+            type: TopicType.UserTopic,
+            policyId: null,
+            policyUUID: null,
+        });
+
         await this.wallet.setKey(user.walletToken, KeyType.KEY, didDocumentMessage.document.id, hederaAccountKey);
 
         // Restore policies
