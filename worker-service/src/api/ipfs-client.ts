@@ -24,7 +24,7 @@ export class IpfsClient {
     /**
      * Public gateway
      */
-    private readonly IPFS_PUBLIC_GATEWAY = 'https://ipfs.io/ipfs';
+    private readonly IPFS_PUBLIC_GATEWAY = process.env.IPFS_PUBLIC_GATEWAY || 'https://ipfs.io/ipfs';
 
     /**
      * Web3storage instance
