@@ -362,6 +362,10 @@ export class RestoreDataFromHedera {
         ]);
     }
 
+    /**
+     * Get main topic messages
+     * @private
+     */
     private async getMainTopicMessages(): Promise<any[]> {
         const currentTime = Date.now();
         if ((currentTime - this.mainTopicLastUpdate) > this.UPDATE_INTERVAL) {
