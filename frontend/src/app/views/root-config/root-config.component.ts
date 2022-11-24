@@ -94,7 +94,7 @@ export class RootConfigComponent implements OnInit {
 
     selectedTokenId = new FormControl(null, Validators.required);
 
-    userTopics: string[] = [];
+    userTopics: any[] = [];
 
     constructor(
         private auth: AuthService,
@@ -376,9 +376,18 @@ export class RootConfigComponent implements OnInit {
                         break;
                     }
                     case OperationMode.GetAllUserTopics: {
-                        this.userTopics = task.result;
+                        this.userTopics = task.result
+                            .sort((a: any, b: any) => {
+                                return b.timestamp - a.timestamp;
+                            })
+                            .map((i: any) => {
+                            return {
+                                topicId: i.topicId,
+                                date: new Date(i.timestamp).toLocaleString()
+                            }
+                        });
                         this.loadProfile();
-                        this.selectedTokenId.setValue(this.userTopics[0] || undefined)
+                        this.selectedTokenId.setValue((this.userTopics && this.userTopics.length) ? this.userTopics[0].topicId : undefined)
                         break;
                     }
                 }

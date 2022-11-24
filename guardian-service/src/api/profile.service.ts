@@ -521,8 +521,6 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
                 const restore = new RestoreDataFromHedera();
                 const result = await restore.findAllUserTopics(username, profile.hederaAccountId, profile.hederaAccountKey)
 
-                console.log(result);
-
                 notifier.result(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);

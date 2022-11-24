@@ -110,6 +110,7 @@ export class RestoreDataFromHedera {
                 r.setId(m.id);
                 if (loadIPFS) {
                     await MessageServer.loadIPFS(r);
+                    console.log('loadIPFS', r);
                 }
                 result.push(r);
             } catch (e) {
@@ -243,6 +244,8 @@ export class RestoreDataFromHedera {
         try {
             const policyMessages = await this.readTopicMessages(policyTopicId);
 
+            console.log(policyTopicId);
+
             await this.restoreTopic({
                 topicId: policyTopicId,
                 name: policyMessages[0].name,
@@ -281,7 +284,10 @@ export class RestoreDataFromHedera {
 
             // Restore policy
             const publishedPolicies = policyMessages.filter(m => m._action === 'publish-policy');
+            console.log(policyMessages);
+            console.log(publishedPolicies);
             for (const policy of publishedPolicies) {
+                console.log(policy);
                 const parsedPolicyFile = await PolicyImportExportHelper.parseZipFile(policy.document);
                 const policyObject = parsedPolicyFile.policy;
 
@@ -382,7 +388,7 @@ export class RestoreDataFromHedera {
      * @param hederaAccountID
      * @param hederaAccountKey
      */
-    async findAllUserTopics(username: string, hederaAccountID: string, hederaAccountKey): Promise<string[]> {
+    async findAllUserTopics(username: string, hederaAccountID: string, hederaAccountKey): Promise<any[]> {
         const mainTopicMessages = await this.getMainTopicMessages();
 
         const did = DIDDocument.create(hederaAccountKey, null);
@@ -391,8 +397,10 @@ export class RestoreDataFromHedera {
         const foundMessages = mainTopicMessages.filter(m => !!m.did).filter(m => m.did?.includes(didString));
 
         return foundMessages.map(m => {
-            const parsedDID = /^.+(\d+\.\d+\.\d+)$/.exec(m.did);
-            return parsedDID[1];
+            return {
+                topicId: /^.+(\d+\.\d+\.\d+)$/.exec(m.did)[1],
+                timestamp: Math.floor(parseFloat(m.id) * 1000)
+            };
         })
     }
 

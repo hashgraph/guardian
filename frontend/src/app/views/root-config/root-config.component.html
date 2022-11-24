@@ -78,8 +78,12 @@
                     <mat-form-field class="example-full-width" appearance="outline">
                         <mat-label>Topic ID:</mat-label>
                         <mat-select [formControl]="selectedTokenId">
-                            <mat-option *ngFor="let topic of userTopics" [value]="topic">
-                                {{topic}}
+                            <mat-select-trigger>{{selectedTokenId.value}}</mat-select-trigger>
+                            <mat-option *ngFor="let topic of userTopics" [value]="topic.topicId">
+                                <div class="topic-item">
+                                    <span>{{topic.topicId}}</span>
+                                    <span><dragonglass type="topics" [params]="topic.topicId">{{topic.date}}</dragonglass></span>
+                                </div>
                             </mat-option>
                         </mat-select>
                     </mat-form-field>
