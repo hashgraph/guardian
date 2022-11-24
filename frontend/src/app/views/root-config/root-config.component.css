@@ -87,7 +87,7 @@ a {
 }
 
 .example-full-width {
-    width: 100%; 
+    width: 100%;
 }
 
 .list-button{
@@ -179,4 +179,18 @@ a {
     margin: 0 0 16px 0;
     color: #000000;
     font-weight: 500;
+}
+
+.topic-id-field {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.topic-id-field .list-button{
+    width: auto;
+    margin-left: 20px;
+    margin-bottom: 13px;
 }

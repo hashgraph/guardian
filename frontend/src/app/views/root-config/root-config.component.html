@@ -74,6 +74,21 @@
                     <input matInput placeholder="302e020100300506032b657004220420e..."
                            formControlName="hederaAccountKey">
                 </mat-form-field>
+                <div class="topic-id-field" *ngIf="!showForm && !generated">
+                    <mat-form-field class="example-full-width" appearance="outline">
+                        <mat-label>Topic ID:</mat-label>
+                        <mat-select [formControl]="selectedTokenId">
+                            <mat-option *ngFor="let topic of userTopics" [value]="topic">
+                                {{topic}}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <div class="list-button">
+                        <button mat-mini-fab [disabled]="!hederaForm.valid" (click)="getAllUserTopics($event)" color="primary" aria-label="Refresh topics">
+                            <mat-icon>refresh</mat-icon>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div *ngIf="!generated" class="list-button">
                 <button mat-raised-button type="button" class="generate-btn"
@@ -86,7 +101,7 @@
             </div>
         </div>
         <div class="list-button" *ngIf="!generated">
-            <button [disabled]="!hederaForm.valid" mat-raised-button type="button" color="primary" class="generate-btn"
+            <button [disabled]="!hederaForm.valid && !selectedTokenId.valid" mat-raised-button type="button" color="primary" class="generate-btn"
                     (click)="onActionClick($event)">
                 {{currentKeyAction.label}}
                 <mat-icon (click)="onActionMenuClick($event)" [matMenuTriggerFor]="actionMenu">arrow_drop_down</mat-icon>

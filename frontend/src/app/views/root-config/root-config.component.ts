@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
@@ -16,7 +16,8 @@ enum OperationMode {
     None,
     Generate,
     SetProfile,
-    RestoreProfile
+    RestoreProfile,
+    GetAllUserTopics
 }
 
 /**
@@ -47,9 +48,10 @@ export class RootConfigComponent implements OnInit {
             type: 'restore-data',
             action: () => {
                 const { hederaAccountId, hederaAccountKey } = this.hederaForm.value;
+                const topicId = this.selectedTokenId.value;
                 this.loading = true;
                 this.headerProps.setLoading(true);
-                this.profileService.restoreProfile({ hederaAccountId, hederaAccountKey }).subscribe((result) => {
+                this.profileService.restoreProfile({ hederaAccountId, hederaAccountKey, topicId }).subscribe((result) => {
                     const { taskId, expectation } = result;
                     this.taskId = taskId;
                     this.expectedTaskMessages = expectation;
@@ -90,6 +92,10 @@ export class RootConfigComponent implements OnInit {
     expectedTaskMessages: number = 0;
     generated: boolean;
 
+    selectedTokenId = new FormControl(null, Validators.required);
+
+    userTopics: string[] = [];
+
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
@@ -116,6 +122,8 @@ export class RootConfigComponent implements OnInit {
                 });
             }
         );
+
+        console.log(this);
     }
 
     ngOnInit() {
@@ -253,7 +261,6 @@ export class RootConfigComponent implements OnInit {
 
     onActionChange(actionType: string): void {
         this.currentKeyActionIndex = this.startActions.findIndex(a => a.type === actionType);
-        console.log('set action type to', actionType);
     }
 
     randomKey() {
@@ -271,6 +278,30 @@ export class RootConfigComponent implements OnInit {
 
     onChangeForm() {
         this.vcForm.updateValueAndValidity();
+    }
+
+    getAllUserTopics(event: any) {
+        event.stopPropagation();
+        event.preventDefault();
+        if (this.hederaForm.invalid) {
+            return;
+        }
+
+        const value = this.hederaForm.value;
+        const profile = {
+            hederaAccountId: value.hederaAccountId,
+            hederaAccountKey: value.hederaAccountKey
+        }
+        this.loading = true;
+        this.profileService.getAllUserTopics(profile).subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.operationMode = OperationMode.GetAllUserTopics;
+        }, (e) => {
+            this.loading = false;
+            this.taskId = undefined;
+        })
     }
 
     retry() {
@@ -342,6 +373,12 @@ export class RootConfigComponent implements OnInit {
                     }
                     case OperationMode.RestoreProfile: {
                         this.loadProfile();
+                        break;
+                    }
+                    case OperationMode.GetAllUserTopics: {
+                        this.userTopics = task.result;
+                        this.loadProfile();
+                        this.selectedTokenId.setValue(this.userTopics[0] || undefined)
                         break;
                     }
                 }

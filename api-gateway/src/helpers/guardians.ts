@@ -424,6 +424,16 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Get all user topics
+     * @param username
+     * @param profile
+     * @param taskId
+     */
+    public async getAllUserTopicsAsync(username: string, profile: IUser, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.GET_ALL_USER_TOPICS_ASYNC, { username, profile, taskId });
+    }
+
+    /**
      * Get user balance
      * @param username
      */
