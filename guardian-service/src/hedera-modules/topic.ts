@@ -2,6 +2,9 @@ import { Topic } from '@entity/topic';
 import { TopicType } from '@guardian/interfaces';
 import { KeyType, Wallet } from '@helpers/wallet';
 
+/**
+ * Topic Config
+ */
 export class TopicConfig {
     /**
      * Topic ID
@@ -85,6 +88,11 @@ export class TopicConfig {
         this.adminKey = adminKey;
     }
 
+    /**
+     * Create topic config by json
+     * @param topic
+     * @param needKey
+     */
     public static async fromObject(topic: Topic, needKey: boolean = false): Promise<TopicConfig> {
         if (!topic) {
             return null;
@@ -102,6 +110,9 @@ export class TopicConfig {
         }
     }
 
+    /**
+     * Get topic object
+     */
     public toObject(): any {
         return {
             topicId: this.topicId,

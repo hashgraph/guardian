@@ -1,4 +1,4 @@
-import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
+import { Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
 /**
@@ -41,4 +41,10 @@ export class MultiPolicy extends BaseEntity {
      */
     @Property({ nullable: true })
     type?: string;
+
+    /**
+     * User ID (Account ID)
+     */
+    @Property({ nullable: true })
+    user?: string;
 }

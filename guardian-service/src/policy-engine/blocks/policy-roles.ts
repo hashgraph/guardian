@@ -3,7 +3,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';

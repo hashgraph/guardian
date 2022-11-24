@@ -811,28 +811,28 @@ export class PolicyEngine {
     /**
      * Create Multi Policy
      * @param policyInstance
-     * @param owner
-     * @param root
+     * @param userAccount
      * @param data
      */
     public async createMultiPolicy(
         policyInstance: IPolicyInstance,
-        owner: IPolicyUser,
-        root: IRootConfig,
+        userAccount: IRootConfig,
         data: any,
     ): Promise<MultiPolicy> {
+
         const multipleConfig = DatabaseServer.createMultiPolicy({
             uuid: GenerateUUIDv4(),
             instanceTopicId: policyInstance.instanceTopicId,
             mainPolicyTopicId: data.mainPolicyTopicId,
             synchronizationTopicId: data.synchronizationTopicId,
-            owner: owner.did,
-            type: data.mainPolicyTopicId == policyInstance.instanceTopicId ? 'Main' : 'Sub',
+            owner: userAccount.did,
+            user: userAccount.hederaAccountId,
+            type: data.mainPolicyTopicId === policyInstance.instanceTopicId ? 'Main' : 'Sub',
         });
 
         const message = new SynchronizationMessage(MessageAction.CreateMultiPolicy);
         message.setDocument(multipleConfig);
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
+        const messageServer = new MessageServer(userAccount.hederaAccountId, userAccount.hederaAccountKey);
         const topic = new TopicConfig({ topicId: multipleConfig.synchronizationTopicId }, null, null);
         await messageServer
             .setTopicObject(topic)

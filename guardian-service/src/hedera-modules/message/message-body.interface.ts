@@ -338,10 +338,6 @@ export interface SynchronizationMessageBody extends MessageBody {
      */
     policyType?: string,
     /**
-     * VC
-     */
-    hash?: string,
-    /**
      * Message Id
      */
     messageId?: string,
@@ -350,15 +346,15 @@ export interface SynchronizationMessageBody extends MessageBody {
      */
     tokenId?: string,
     /**
-    * Token amount
-    */
-    amount?: string;
+     * Token amount
+     */
+    amount?: any;
     /**
-    * Target Account
-    */
+     * Target Account
+     */
     target?: string;
     /**
-    * Memo
-    */
+     * Memo
+     */
     memo?: string;
 }

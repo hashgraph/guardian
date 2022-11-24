@@ -2048,14 +2048,30 @@ export class DatabaseServer {
         return artifactChunks.length > 0 ? Buffer.concat(artifactChunks) : Buffer.from('');
     }
 
+    /**
+     * Get Multi Policy link
+     * @param instanceTopicId
+     * @param owner
+     * @returns MultiPolicy
+     */
     public static async getMultiPolicy(instanceTopicId: string, owner: string): Promise<MultiPolicy> {
         return await new DataBaseHelper(MultiPolicy).findOne({ instanceTopicId, owner });
     }
 
+    /**
+     * Create Multi Policy object
+     * @param multiPolicy
+     * @returns MultiPolicy
+     */
     public static createMultiPolicy(multiPolicy: any): MultiPolicy {
         return new DataBaseHelper(MultiPolicy).create(multiPolicy);
     }
 
+    /**
+     * Save Multi Policy object
+     * @param multiPolicy
+     * @returns multiPolicy
+     */
     public static async saveMultiPolicy(multiPolicy: MultiPolicy): Promise<MultiPolicy> {
         return await new DataBaseHelper(MultiPolicy).save(multiPolicy);
     }
@@ -2082,8 +2098,8 @@ export class DatabaseServer {
      * @param policyId
      * @param owner
      */
-    public static async getMultiPolicyTransactions(policyId: string, owner: string): Promise<MultiPolicyTransaction[]> {
-        return await new DataBaseHelper(MultiPolicyTransaction).find({ policyId, owner, status: 'Waiting' });
+    public static async getMultiPolicyTransactions(policyId: string, user: string): Promise<MultiPolicyTransaction[]> {
+        return await new DataBaseHelper(MultiPolicyTransaction).find({ policyId, user, status: 'Waiting' });
     }
 
     /**
@@ -2092,5 +2108,13 @@ export class DatabaseServer {
      */
     public static async updateMultiPolicyTransactions(item: MultiPolicyTransaction): Promise<void> {
         await new DataBaseHelper(MultiPolicyTransaction).update(item);
+    }
+
+    /**
+     * Get MultiPolicyTransaction count
+     * @param policyId
+     */
+    public static async countMultiPolicyTransactions(policyId: string) {
+        return await new DataBaseHelper(MultiPolicyTransaction).count({ policyId, status: 'Waiting' });
     }
 }

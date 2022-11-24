@@ -20,9 +20,21 @@ import { MessageAction, MessageServer, SynchronizationMessage, TopicConfig, VcDo
  * Token Config
  */
 interface TokenConfig {
+    /**
+     * Treasury Account Id
+     */
     treasuryId: any;
+    /**
+     * Token ID
+     */
     tokenId: any;
+    /**
+     * Supply Key
+     */
     supplyKey: string;
+    /**
+     * Treasury Account Key
+     */
     treasuryKey: string;
 }
 
@@ -224,6 +236,13 @@ export class MintService {
         return tokenConfig;
     }
 
+    /**
+     * Send Synchronization Message
+     * @param ref
+     * @param multipleConfig
+     * @param root
+     * @param data
+     */
     private static async sendMessage(
         ref: AnyBlockType,
         multipleConfig: MultiPolicy,
@@ -276,16 +295,20 @@ export class MintService {
                 memo: transactionMemo,
                 target: targetAccount
             });
-            await DatabaseServer.createMultiPolicyTransaction({
-                uuid: GenerateUUIDv4(),
-                policyId: ref.policyId,
-                owner: documentOwner,
-                hash,
-                tokenId: token.tokenId,
-                amount: tokenValue,
-                target: targetAccount,
-                status: 'Waiting'
-            });
+            if (multipleConfig.type === 'Main') {
+                const user = await PolicyUtils.getHederaAccount(ref, documentOwner.did);
+                await DatabaseServer.createMultiPolicyTransaction({
+                    uuid: GenerateUUIDv4(),
+                    policyId: ref.policyId,
+                    owner: documentOwner.did,
+                    user: user.hederaAccountId,
+                    hash,
+                    tokenId: token.tokenId,
+                    amount: tokenValue,
+                    target: targetAccount,
+                    status: 'Waiting'
+                });
+            }
         } else {
             const tokenConfig = await MintService.getTokenConfig(ref, token);
             if (token.tokenType === 'non-fungible') {
@@ -405,6 +428,11 @@ export class MintService {
         }, 1);
     }
 
+    /**
+     * Get Multiple Link
+     * @param ref
+     * @param documentOwner
+     */
     private static async getMultipleConfig(ref: AnyBlockType, documentOwner: IPolicyUser) {
         return await DatabaseServer.getMultiPolicy(ref.policyInstance.instanceTopicId, documentOwner.did);
     }
@@ -413,11 +441,11 @@ export class MintService {
      * Write log message
      * @param message
      */
-    private static log(message: string, ref?: AnyBlockType,) {
+    public static log(message: string, ref?: AnyBlockType,) {
         if (ref) {
-            this.logger.info(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId]);
+            MintService.logger.info(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId]);
         } else {
-            this.logger.info(message, ['GUARDIAN_SERVICE']);
+            MintService.logger.info(message, ['GUARDIAN_SERVICE']);
         }
 
     }
@@ -426,11 +454,11 @@ export class MintService {
      * Write error message
      * @param message
      */
-    private static error(message: string, ref?: AnyBlockType,) {
+    public static error(message: string, ref?: AnyBlockType,) {
         if (ref) {
-            this.logger.error(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId]);
+            MintService.logger.error(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId]);
         } else {
-            this.logger.error(message, ['GUARDIAN_SERVICE']);
+            MintService.logger.error(message, ['GUARDIAN_SERVICE']);
         }
 
     }
@@ -439,11 +467,11 @@ export class MintService {
      * Write warn message
      * @param message
      */
-    private static warn(message: string, ref?: AnyBlockType,) {
+    public static warn(message: string, ref?: AnyBlockType,) {
         if (ref) {
-            this.logger.warn(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId]);
+            MintService.logger.warn(message, ['GUARDIAN_SERVICE', ref.uuid, ref.blockType, ref.tag, ref.policyId]);
         } else {
-            this.logger.warn(message, ['GUARDIAN_SERVICE']);
+            MintService.logger.warn(message, ['GUARDIAN_SERVICE']);
         }
 
     }

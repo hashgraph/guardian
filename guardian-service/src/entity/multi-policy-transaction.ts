@@ -1,4 +1,4 @@
-import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
+import { Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
 /**
@@ -25,12 +25,6 @@ export class MultiPolicyTransaction extends BaseEntity {
     owner?: string;
 
     /**
-     * Hash
-     */
-    @Property({ nullable: true })
-    hash?: string;
-
-    /**
      * Token Id
      */
     @Property({ nullable: true })
@@ -53,4 +47,10 @@ export class MultiPolicyTransaction extends BaseEntity {
      */
     @Property({ nullable: true })
     status?: string;
+
+    /**
+     * User ID (Account ID)
+     */
+    @Property({ nullable: true })
+    user?: string;
 }

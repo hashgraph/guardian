@@ -39,7 +39,6 @@ import { Settings } from '@entity/settings';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { Workers } from '@helpers/workers';
 import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
-import { DatabaseServer } from '@database-modules';
 
 /**
  * Get global topic

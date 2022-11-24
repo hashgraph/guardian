@@ -588,7 +588,7 @@ export class PolicyComponentsUtils {
             }
 
             result.userGroups = groups;
-            if (policy.status == PolicyType.PUBLISH) {
+            if (policy.status === PolicyType.PUBLISH) {
                 const multiPolicy = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, did);
                 result.multiPolicyStatus = multiPolicy?.type;
             }

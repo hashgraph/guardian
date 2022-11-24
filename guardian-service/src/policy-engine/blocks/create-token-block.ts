@@ -21,7 +21,6 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { MessageAction, MessageServer, TokenMessage } from '@hedera-modules';
-import { TopicType } from '@guardian/interfaces';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**

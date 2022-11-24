@@ -2,8 +2,7 @@ import {
     PolicyEngineEvents,
     TopicType,
     PolicyType,
-    ExternalMessageEvents,
-    GenerateUUIDv4
+    ExternalMessageEvents
 } from '@guardian/interfaces';
 import {
     IAuthUser,
@@ -1052,13 +1051,13 @@ export class PolicyEngineService {
             try {
                 const { user, policyId, data } = msg;
                 const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
-                const userFull = await this.policyEngine.getUser(policyInstance, user);
-                const item = await DatabaseServer.getMultiPolicy(policyInstance.instanceTopicId, userFull.did);
-                const root = await this.users.getHederaAccount(userFull.did);
+                const userDID = await this.getUserDid(user.username);
+                const item = await DatabaseServer.getMultiPolicy(policyInstance.instanceTopicId, userDID);
+                const userAccount = await this.users.getHederaAccount(userDID);
                 if (item) {
                     return new MessageError(new Error('Policy is already bound'));
                 } else {
-                    const result = await this.policyEngine.createMultiPolicy(policyInstance, userFull, root, data);
+                    const result = await this.policyEngine.createMultiPolicy(policyInstance, userAccount, data);
                     return new MessageResponse(result);
                 }
             } catch (error) {

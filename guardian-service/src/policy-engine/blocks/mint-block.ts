@@ -117,7 +117,7 @@ export class MintBlock {
         const vp = await this.createVP(root, uuid, vcs);
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
-        
+
         ref.log(`Topic Id: ${topicId}`);
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);

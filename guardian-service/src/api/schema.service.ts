@@ -1,5 +1,4 @@
 import { Schema as SchemaCollection } from '@entity/schema';
-import { Topic } from '@entity/topic';
 import {
     ISchema,
     MessageAPI,

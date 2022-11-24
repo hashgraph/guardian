@@ -26,10 +26,6 @@ export class SynchronizationMessage extends Message {
      */
     public policyType: string;
     /**
-     * VC
-     */
-    public hash: string;
-    /**
      * Message Id
      */
     public messageId: string;
@@ -38,16 +34,16 @@ export class SynchronizationMessage extends Message {
      */
     public tokenId: string;
     /**
-    * Token amount
-    */
-    public amount: string;
+     * Token amount
+     */
+    public amount: any;
     /**
-    * Target Account
-    */
+     * Target Account
+     */
     public target: string;
     /**
-    * Memo
-    */
+     * Memo
+     */
     public memo: string;
 
     constructor(action: MessageAction) {
@@ -59,11 +55,10 @@ export class SynchronizationMessage extends Message {
      */
     public setDocument(policy: MultiPolicy, data?: any): void {
         this.lang = 'en-US';
-        this.user = policy.owner;
+        this.user = policy.user;
         this.policy = policy.instanceTopicId;
         this.policyType = policy.type;
         if (data) {
-            this.hash = data.hash;
             this.messageId = data.messageId;
             this.tokenId = data.tokenId;
             this.amount = data.amount;
@@ -91,7 +86,6 @@ export class SynchronizationMessage extends Message {
             result.user = this.user;
             result.policy = this.policy;
             result.policyType = this.policyType;
-            result.hash = this.hash;
             result.messageId = this.messageId;
             result.tokenId = this.tokenId;
             result.amount = this.amount;
@@ -150,7 +144,6 @@ export class SynchronizationMessage extends Message {
         message.user = json.user;
         message.policy = json.policy;
         message.policyType = json.policyType;
-        message.hash = json.hash;
         message.messageId = json.messageId;
         message.tokenId = json.tokenId;
         message.amount = json.amount;
