@@ -489,9 +489,39 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
                 }
 
                 const restore = new RestoreDataFromHedera();
-                await restore.restoreRootAuthority(username, profile.hederaAccountId, profile.hederaAccountKey)
+                await restore.restoreRootAuthority(username, profile.hederaAccountId, profile.hederaAccountKey, profile.topicId)
+                console.log(username, profile.hederaAccountId, profile.hederaAccountKey, profile.topicId)
 
                 notifier.result('did');
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
+    });
+
+    ApiResponse(channel, MessageAPI.GET_ALL_USER_TOPICS_ASYNC, async (msg) => {
+        const { username, profile, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+
+        setImmediate(async () => {
+            console.log(username, profile, taskId);
+            try {
+                if (!profile.hederaAccountId) {
+                    notifier.error('Invalid Hedera Account Id');
+                    return;
+                }
+                if (!profile.hederaAccountKey) {
+                    notifier.error('Invalid Hedera Account Key');
+                    return;
+                }
+
+                const restore = new RestoreDataFromHedera();
+                const result = await restore.findAllUserTopics(username, profile.hederaAccountId, profile.hederaAccountKey)
+
+                notifier.result(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
