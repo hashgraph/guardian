@@ -1,4 +1,4 @@
-# Roles and Groups
+# 💻 Creating Roles and Groups using Policy Configurator UI
 
 ### 1. Roles
 
@@ -58,8 +58,6 @@ Groups are separate sets of documents access , which can be limited to users who
 | True          | False          | Only documents created by the current user (in all groups)      |
 | False         | True           | Only documents created in the current group (by all users)      |
 | True          | True           | Only documents created by the current user in the current group |
-
-
 
 <figure><img src="../.gitbook/assets/image (23) (3).png" alt=""><figcaption></figcaption></figure>
 

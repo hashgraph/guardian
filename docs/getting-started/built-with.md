@@ -1,4 +1,4 @@
-# Frameworks/Libraries
+# 📖 Frameworks/Libraries
 
 The Guardian solution is built with the following major frameworks/libraries.
 

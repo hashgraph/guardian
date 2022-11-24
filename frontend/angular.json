@@ -62,7 +62,7 @@
               "outputHashing": "all"
             }
           },
-          "defaultConfiguration": "production",
+          "defaultConfiguration": "development",
           "options": {
             "allowedCommonJsDependencies": [
               "interfaces"

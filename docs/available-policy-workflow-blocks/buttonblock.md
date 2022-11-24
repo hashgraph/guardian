@@ -1,4 +1,4 @@
-# Button Block
+# buttonBlock
 
 ### Properties
 

@@ -4,7 +4,7 @@ import {
     DidDocumentStatus,
     ISchema, PolicyType,
     SchemaCategory,
-    SchemaStatus,
+    SchemaStatus, TopicType,
     UserRole,
     WorkerTaskType
 } from '@guardian/interfaces';
@@ -26,6 +26,8 @@ import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
 import { Policy as PolicyCollection } from '@entity/policy';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
+import { Topic } from '@entity/topic';
+import { Token } from '@entity/token';
 
 /**
  * Restore data from hedera class
@@ -64,9 +66,10 @@ export class RestoreDataFromHedera {
     /**
      * Read topic
      * @param topicId
+     * @param loadIPFS
      * @private
      */
-    private async readTopicMessages(topicId: string): Promise<any[]> {
+    private async readTopicMessages(topicId: string, loadIPFS = true): Promise<any[]> {
         if (typeof topicId !== 'string') {
             throw new Error('Bad topicId');
         }
@@ -87,7 +90,9 @@ export class RestoreDataFromHedera {
                 const r = MessageServer.fromMessage<any>(m.message);
                 r.setTopicId(topicId);
                 r.setId(m.id);
-                await MessageServer.loadIPFS(r);
+                if (loadIPFS) {
+                    await MessageServer.loadIPFS(r);
+                }
                 result.push(r);
             } catch (e) {
                 ++errors;
@@ -137,9 +142,11 @@ export class RestoreDataFromHedera {
      * @param topicMessages
      * @param owner
      * @param policyId
+     * @param user
+     * @param hederaAccountKey
      * @private
      */
-    private async restorePolicyDocuments(topicMessages: any, owner: string, policyId: string): Promise<void> {
+    private async restorePolicyDocuments(topicMessages: any, owner: string, policyId: string, uuid: string, user: any, hederaAccountKey: string): Promise<void> {
         for (const message of topicMessages) {
             switch (message.constructor) {
                 case DIDMessage: {
@@ -184,7 +191,18 @@ export class RestoreDataFromHedera {
                 case TopicMessage: {
                     if (message.messageType === 'DYNAMIC_TOPIC' && message.childId) {
                         const messages = await this.readTopicMessages(message.childId);
-                        await this.restorePolicyDocuments(messages, owner, policyId)
+
+                        await this.restoreTopic({
+                            topicId: message.childId,
+                            name: messages[0].name,
+                            description: messages[0].description,
+                            owner: messages[0].owner,
+                            type: TopicType.DynamicTopic,
+                            policyId,
+                            policyUUID: uuid,
+                        }, user, null, null);
+
+                        await this.restorePolicyDocuments(messages, owner, policyId, uuid, user, hederaAccountKey);
                     }
                     break;
                 }
@@ -199,11 +217,43 @@ export class RestoreDataFromHedera {
      * Restore policy
      * @param policyTopicId
      * @param owner
+     * @param user
+     * @param hederaAccountID
+     * @param hederaAccountKey
      * @private
      */
-    private async restorePolicy(policyTopicId: string, owner: string): Promise<void> {
+    private async restorePolicy(policyTopicId: string, owner: string, user: any, hederaAccountID: string, hederaAccountKey: string): Promise<void> {
         try {
             const policyMessages = await this.readTopicMessages(policyTopicId);
+
+            await this.restoreTopic({
+                topicId: policyTopicId,
+                name: policyMessages[0].name,
+                description: policyMessages[0].description,
+                owner,
+                type: TopicType.PolicyTopic,
+                policyId: null,
+                policyUUID: null,
+            }, user, hederaAccountKey, hederaAccountKey);
+
+            // Restore tokens
+            for (const {tokenId, tokenName, tokenSymbol, tokenType, decimals} of this.findMessagesByType(MessageType.Token, policyMessages)) {
+                await new DataBaseHelper(Token).save({
+                    tokenId,
+                    tokenName,
+                    tokenSymbol,
+                    tokenType,
+                    decimals,
+                    initialSupply: 0,
+                    adminId: hederaAccountID,
+                    changeSupply: false,
+                    enableAdmin: false,
+                    enableKYC: false,
+                    enableFreeze: false,
+                    enableWipe: false,
+                    owner
+                });
+            }
 
             const publishedSchemas = policyMessages.filter(m => m._action === 'publish-schema');
 
@@ -231,7 +281,17 @@ export class RestoreDataFromHedera {
                 const p = new DataBaseHelper(PolicyCollection).create(policyObject);
                 const r = await new DataBaseHelper(PolicyCollection).save(p);
 
-                await this.restorePolicyDocuments(policyInstanceMessages, owner, r.id.toString());
+                await this.restoreTopic({
+                    topicId: policyObject.instanceTopicId,
+                    name: policyInstanceMessages[0].name,
+                    description: policyInstanceMessages[0].description,
+                    owner,
+                    type: TopicType.InstancePolicyTopic,
+                    policyId: r.id.toString(),
+                    policyUUID: r.uuid,
+                }, user, hederaAccountKey, hederaAccountKey);
+
+                await this.restorePolicyDocuments(policyInstanceMessages, owner, r.id.toString(), r.uuid, user, hederaAccountKey);
 
                 await new BlockTreeGenerator().generate(r.id.toString());
 
@@ -263,6 +323,32 @@ export class RestoreDataFromHedera {
     }
 
     /**
+     * Restore topic
+     * @param topic
+     * @param user
+     * @param topicAdminKey
+     * @param topicSubmitKey
+     * @private
+     */
+    private async restoreTopic(topic: any, user: any, topicAdminKey: string, topicSubmitKey: string): Promise<void> {
+        await new DataBaseHelper(Topic).save(topic);
+        await Promise.all([
+            this.wallet.setKey(
+                user.walletToken,
+                KeyType.TOPIC_SUBMIT_KEY,
+                topic.topicId,
+                topicAdminKey
+            ),
+            this.wallet.setKey(
+                user.walletToken,
+                KeyType.TOPIC_ADMIN_KEY,
+                topic.topicId,
+                topicSubmitKey
+            ),
+        ]);
+    }
+
+    /**
      * Restore standard registry
      * @param username
      * @param hederaAccountID
@@ -289,6 +375,10 @@ export class RestoreDataFromHedera {
         const didDocumentMessage = this.findMessageByType(MessageType.DIDDocument, RAMessages);
         const vcDocumentMessage = this.findMessageByType(MessageType.VCDocument, RAMessages);
 
+        if (!didDocumentMessage) {
+            throw new Error('Couldn\'t find DID document')
+        }
+
         await new DataBaseHelper(DidDocumentCollection).save({
             did: didDocumentMessage.document.id,
             document: didDocumentMessage.document,
@@ -297,24 +387,37 @@ export class RestoreDataFromHedera {
             topicId: didDocumentMessage.topicId
         });
 
-        const vcDoc = VcDocument.fromJsonTree(vcDocumentMessage.document);
-        await new DataBaseHelper(VcDocumentCollection).save({
-            hash: vcDoc.toCredentialHash(),
-            owner: didDocumentMessage.document.id,
-            document: vcDoc.toJsonTree(),
-            type: 'STANDARD_REGISTRY'
-        });
+        if (vcDocumentMessage) {
+            const vcDoc = VcDocument.fromJsonTree(vcDocumentMessage.document);
+            await new DataBaseHelper(VcDocumentCollection).save({
+                hash: vcDoc.toCredentialHash(),
+                owner: didDocumentMessage.document.id,
+                document: vcDoc.toJsonTree(),
+                type: 'STANDARD_REGISTRY'
+            });
+        }
 
         await this.users.updateCurrentUser(username, {
             did: didDocumentMessage.document.id,
             parent: undefined,
-            hederaAccountId: hederaAccountID
+            hederaAccountId: hederaAccountID,
         });
+
+        await this.restoreTopic({
+            topicId: currentRAMessage.registrantTopicId,
+            name: RAMessages[0].name,
+            description: RAMessages[0].description,
+            owner: didDocumentMessage.document.id,
+            type: TopicType.UserTopic,
+            policyId: null,
+            policyUUID: null,
+        }, user, hederaAccountKey, hederaAccountKey);
+
         await this.wallet.setKey(user.walletToken, KeyType.KEY, didDocumentMessage.document.id, hederaAccountKey);
 
         // Restore policies
         for (const policyMessage of this.findMessagesByType(MessageType.Policy, RAMessages)) {
-            await this.restorePolicy(policyMessage.policyTopicId, didDocumentMessage.document.id);
+            await this.restorePolicy(policyMessage.policyTopicId, didDocumentMessage.document.id, user, hederaAccountID, hederaAccountKey);
         }
     }
 }

@@ -31,4 +31,3 @@ Then we click on the “Save” button on the left side in the top navigation ba
   ]
 }
 ```
-

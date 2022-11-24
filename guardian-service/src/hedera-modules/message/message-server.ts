@@ -22,6 +22,7 @@ import { MessageMemo } from '../memo-mappings/message-memo';
 import { RegistrationMessage } from './registration-message';
 import { TopicMessage } from './topic-message';
 import { TopicConfig } from 'hedera-modules/topic';
+import { TokenMessage } from './token-message';
 
 /**
  * Message server
@@ -282,6 +283,9 @@ export class MessageServer {
                 break;
             case MessageType.Topic:
                 message = TopicMessage.fromMessageObject(json);
+                break;
+            case MessageType.Token:
+                message = TokenMessage.fromMessageObject(json);
                 break;
             // Default schemas
             case 'schema-document':

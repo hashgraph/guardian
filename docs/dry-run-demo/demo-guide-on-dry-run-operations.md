@@ -1,4 +1,4 @@
-# Demo Guide on Dry Run Operations
+# 💻 Dry Run Mode using UI
 
 In this mode of operation all artifacts (files, documents and transactions) that are produced in the course of execution of the policy are stored in the local database but not sent out to Hedera or IPFS. The artifacts are stored in the database in a separate table specific for the ‘dry run’ mode. This also allows the trial for executing the workflow without real accounts.
 

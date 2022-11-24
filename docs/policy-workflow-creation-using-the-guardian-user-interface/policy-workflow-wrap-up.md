@@ -1,7 +1,5 @@
 # Policy Workflow Wrap Up
 
-
-
 We can then look at the entire process.
 
 ![](../.gitbook/assets/PW\_image\_33.png)

@@ -2,7 +2,7 @@
 description: Demonstrating Split functionality
 ---
 
-# iREC 7 Demo Guide
+# 💻 iREC 7 Demo UI Guide
 
 Following are the steps to run iREC 7 Policy.
 
@@ -60,8 +60,8 @@ Once device details are entered, they are submitted for approval.
 
 12\. We can check the Tokens minting status and Trustchain in Token History tab of Standard Registry:
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (6).png" alt=""><figcaption></figcaption></figure>
 
 13\. To view the trustchain, we need to click on View Trustchain in Token Histroy tab or Trustchain tab.
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>

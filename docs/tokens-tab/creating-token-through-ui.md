@@ -1,4 +1,4 @@
-# Creating Token through UI
+# Creating Token through UI using Token Template
 
 These are the following steps to create and using a token templates:
 

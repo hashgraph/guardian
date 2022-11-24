@@ -1,6 +1,6 @@
 # User listing except Standard Registry and Auditor
 
-### DISPLAYING USERS&#x20;
+### DISPLAYING USERS
 
 {% swagger method="get" path="" baseUrl="/accounts" summary="Returns a list of users, excluding Standard Registry and Auditors" %}
 {% swagger-description %}

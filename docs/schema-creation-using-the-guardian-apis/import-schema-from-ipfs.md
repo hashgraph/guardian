@@ -1,4 +1,4 @@
-# Import schema from Zip
+# Import Schema from Zip (Cancelled)
 
 ### IMPORTING SCHEMA FROM .ZIP FILE
 

@@ -1,4 +1,4 @@
-# iREC API Demo Guide
+# ⚙ iREC API Demo Guide
 
 ## Standard Registry
 
