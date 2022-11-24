@@ -101,7 +101,7 @@
             </div>
         </div>
         <div class="list-button" *ngIf="!generated">
-            <button [disabled]="!hederaForm.valid && !selectedTokenId.valid" mat-raised-button type="button" color="primary" class="generate-btn"
+            <button [disabled]="!hederaForm.valid || !selectedTokenId.valid" mat-raised-button type="button" color="primary" class="generate-btn"
                     (click)="onActionClick($event)">
                 {{currentKeyAction.label}}
                 <mat-icon (click)="onActionMenuClick($event)" [matMenuTriggerFor]="actionMenu">arrow_drop_down</mat-icon>
