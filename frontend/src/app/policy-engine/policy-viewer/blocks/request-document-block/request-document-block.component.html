@@ -46,7 +46,7 @@
             </div>
             <form [formGroup]="dataForm" (ngSubmit)="data.onSubmit()">
                 <div class="form-{{data.type}}">
-                    <app-schema-form [formGroup]="data.dataForm" [schema]="data.schema"
+                    <app-schema-form [formGroup]="data.dataForm" [schema]="data.schema" [readonly-fields]="presetReadonlyFields"
                         [private-fields]="data.hideFields" [preset]="presetDocument">
                     </app-schema-form>
                 </div>

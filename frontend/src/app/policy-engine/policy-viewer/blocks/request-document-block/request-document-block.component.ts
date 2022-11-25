@@ -169,7 +169,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.presetFields = data.presetFields || [];
             this.restoreData = data.restoreData;
             this.presetReadonlyFields = this.presetFields.filter(
-                (item: any) => item.readonly
+                (item: any) => item.readonly && item.value
             );
             if (this.needPreset && row) {
                 this.rowDocument = this.getJson(row, this.presetFields);
