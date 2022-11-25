@@ -103,7 +103,7 @@
                                     <span>Go</span>
                                 </div>
                             </div>
-                            <div>
+                            <div *ngIf="role === 'USER'">
                                 <div *ngIf="element.status =='PUBLISH'" 
                                     class="btn-icon-import"
                                     [attr.status]="element.multiPolicyStatus"

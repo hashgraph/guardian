@@ -906,8 +906,10 @@ export class HederaSDKHelper {
             for (const m of messages) {
                 const buffer = Buffer.from(m.message, 'base64').toString();
                 const id = m.consensus_timestamp;
+                const payer_account_id = m.payer_account_id;
                 result.push({
                     id,
+                    payer_account_id,
                     message: buffer
                 });
             }

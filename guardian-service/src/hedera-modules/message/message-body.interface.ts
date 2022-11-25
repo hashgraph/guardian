@@ -357,4 +357,8 @@ export interface SynchronizationMessageBody extends MessageBody {
      * Memo
      */
     memo?: string;
+    /**
+     * Policy Owner DID
+     */
+    policyOwner?: string;
 }

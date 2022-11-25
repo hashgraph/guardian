@@ -323,13 +323,14 @@ export class PolicyComponentsUtils {
     public static async RegisterPolicyInstance(policyId: string, policy: Policy) {
         const dryRun = policy.status === PolicyType.DRY_RUN ? policyId : null;
         const databaseServer = new DatabaseServer(dryRun);
-        const policyInstance = {
+        const policyInstance: IPolicyInstance = {
             policyId,
             dryRun,
             databaseServer,
             isMultipleGroup: !!(policy.policyGroups?.length),
             instanceTopicId: policy.instanceTopicId,
-            synchronizationTopicId: policy.synchronizationTopicId
+            synchronizationTopicId: policy.synchronizationTopicId,
+            owner: policy.owner,
         }
         PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
     }

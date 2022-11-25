@@ -128,11 +128,17 @@ export class SynchronizationService {
                     const synchronizationMessage = SynchronizationMessage.fromMessage(message.message);
                     const user = synchronizationMessage.user;
                     if (synchronizationMessage.action === MessageAction.CreateMultiPolicy) {
+                        if (synchronizationMessage.user !== message.payer_account_id) {
+                            continue;
+                        }
                         if (!policyMap[user]) {
                             policyMap[user] = [];
                         }
                         policyMap[user].push(synchronizationMessage);
                     } else if (synchronizationMessage.action === MessageAction.Mint) {
+                        if (synchronizationMessage.policyOwner !== message.payer_account_id) {
+                            continue;
+                        }
                         if (!vpMap[user]) {
                             vpMap[user] = new Map<string, SynchronizationMessage>();
                         }
@@ -144,7 +150,7 @@ export class SynchronizationService {
                         }
                     }
                 } catch (error) {
-                    console.log(error);
+                    console.log(`${message?.id}: ${error}`);
                 }
             }
             const users = Object.keys(policyMap);
@@ -178,16 +184,22 @@ export class SynchronizationService {
         policies: SynchronizationMessage[],
         vps: Map<string, SynchronizationMessage>
     ) {
+        if (!vps) {
+            return;
+        }
         const vpMap: { [x: string]: SynchronizationMessage[] } = {};
         const vpCountMap: { [x: string]: number } = {};
+        const policyOwnerMap: { [x: string]: string } = {};
         for (const p of policies) {
             vpMap[p.policy] = [];
             vpCountMap[p.policy] = 0;
+            policyOwnerMap[p.policy] = p.policyOwner;
         }
         for (const vp of vps.values()) {
-            if (vpMap[vp.policy]) {
-                vpMap[vp.policy].push(vp);
-                vpCountMap[vp.policy] += vp.amount;
+            const policyId = vp.policy;
+            if (vpMap[policyId] && policyOwnerMap[policyId] === vp.policyOwner) {
+                vpMap[policyId].push(vp);
+                vpCountMap[policyId] += vp.amount;
             }
         }
         let min = Infinity;

@@ -817,6 +817,7 @@ export class PolicyEngine {
     public async createMultiPolicy(
         policyInstance: IPolicyInstance,
         userAccount: IRootConfig,
+        root: IRootConfig,
         data: any,
     ): Promise<MultiPolicy> {
 
@@ -827,6 +828,7 @@ export class PolicyEngine {
             synchronizationTopicId: data.synchronizationTopicId,
             owner: userAccount.did,
             user: userAccount.hederaAccountId,
+            policyOwner: root.hederaAccountId,
             type: data.mainPolicyTopicId === policyInstance.instanceTopicId ? 'Main' : 'Sub',
         });
 

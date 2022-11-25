@@ -170,8 +170,9 @@
 
 .table-container .mat-column-instance {
     padding-left: 8px;
-    width: 135px;
     max-width: 135px;
+    min-width: 95px;
+    width: 100px;
     border-right: 1px solid #dddddd;
 }
 

@@ -723,7 +723,7 @@ export interface IPolicyInstance {
     /**
      * Policy id
      */
-    readonly policyId?: string;
+    readonly policyId: string;
 
     /**
      * Dry-run
@@ -743,9 +743,15 @@ export interface IPolicyInstance {
     /**
      * Policy Instance Topic Id
      */
-    readonly instanceTopicId?: string
+    readonly instanceTopicId: string;
+
     /**
      * Synchronization Topic Id
      */
-    readonly synchronizationTopicId?: string
+    readonly synchronizationTopicId: string;
+
+    /**
+     * Policy Owner
+     */
+    readonly owner: string;
 }

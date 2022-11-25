@@ -45,6 +45,10 @@ export class SynchronizationMessage extends Message {
      * Memo
      */
     public memo: string;
+    /**
+     * Policy Owner DID
+     */
+    public policyOwner: string;
 
     constructor(action: MessageAction) {
         super(action, MessageType.Synchronization);
@@ -58,6 +62,7 @@ export class SynchronizationMessage extends Message {
         this.user = policy.user;
         this.policy = policy.instanceTopicId;
         this.policyType = policy.type;
+        this.policyOwner = policy.policyOwner;
         if (data) {
             this.messageId = data.messageId;
             this.tokenId = data.tokenId;
@@ -82,10 +87,12 @@ export class SynchronizationMessage extends Message {
             result.user = this.user;
             result.policy = this.policy;
             result.policyType = this.policyType;
+            result.policyOwner = this.policyOwner;
         } else if (this.action === MessageAction.Mint) {
             result.user = this.user;
             result.policy = this.policy;
             result.policyType = this.policyType;
+            result.policyOwner = this.policyOwner;
             result.messageId = this.messageId;
             result.tokenId = this.tokenId;
             result.amount = this.amount;
@@ -149,6 +156,7 @@ export class SynchronizationMessage extends Message {
         message.amount = json.amount;
         message.memo = json.memo;
         message.target = json.target;
+        message.policyOwner = json.policyOwner;
         return message;
     }
 

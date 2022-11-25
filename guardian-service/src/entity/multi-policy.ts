@@ -47,4 +47,10 @@ export class MultiPolicy extends BaseEntity {
      */
     @Property({ nullable: true })
     user?: string;
+
+    /**
+     * Policy Owner ID (Account ID)
+     */
+    @Property({ nullable: true })
+    policyOwner?: string;
 }

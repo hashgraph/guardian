@@ -1057,7 +1057,8 @@ export class PolicyEngineService {
                 if (item) {
                     return new MessageError(new Error('Policy is already bound'));
                 } else {
-                    const result = await this.policyEngine.createMultiPolicy(policyInstance, userAccount, data);
+                    const root = await this.users.getHederaAccount(policyInstance.owner);
+                    const result = await this.policyEngine.createMultiPolicy(policyInstance, userAccount, root, data);
                     return new MessageResponse(result);
                 }
             } catch (error) {
