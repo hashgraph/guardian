@@ -10,6 +10,8 @@ Step 2: Once button is clicked, we get a pop up box to enter token details such 
 
 <figure><img src="../../.gitbook/assets/token_create_2.png" alt=""><figcaption></figcaption></figure>
 
+Following are the parameters required to complete the token creation process:
+
 | Field Name    | Description                                                             | Exmaple              |
 | ------------- | ----------------------------------------------------------------------- | -------------------- |
 | Token Name    | Name of the token                                                       | iREC Token           |
