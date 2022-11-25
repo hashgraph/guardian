@@ -46,6 +46,8 @@ import { artifactAPI } from '@api/artifact.service';
 import { Policy } from '@entity/policy';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
 
+export const obj = {};
+
 Promise.all([
     Migration({
         ...COMMON_CONNECTION_CONFIG,
@@ -59,7 +61,7 @@ Promise.all([
         driverOptions: {
             useUnifiedTopology: true
         },
-        ensureIndexes: true
+        ensureIndexes: true,
     }),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE')
 ]).then(async values => {

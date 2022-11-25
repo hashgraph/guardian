@@ -9,7 +9,6 @@
     "api-gateway",
     "auth-service",
     "guardian-service",
-    "ipfs-client",
     "logger-service",
     "mrv-sender",
     "worker-service"
