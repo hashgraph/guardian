@@ -305,6 +305,25 @@ export class PolicyUtils {
     }
 
     /**
+     * Get subject id
+     * @param data
+     */
+    public static getCredentialSubject(data: any): any {
+        try {
+            if (data && data.document) {
+                if (Array.isArray(data.document.credentialSubject)) {
+                    return data.document.credentialSubject[0];
+                } else {
+                    return data.document.credentialSubject;
+                }
+            }
+        } catch (error) {
+            return null;
+        }
+        return null;
+    }
+
+    /**
      * Get Document Type
      * @param document
      */
@@ -772,6 +791,9 @@ export class PolicyUtils {
                     ? memoObj
                     : config
             });
+            if(!ref.dryRun) {
+                await topic.saveKeys();
+            }
             await topicHelper.twoWayLink(topic, rootTopic, null);
             await ref.databaseServer.saveTopic(topic.toObject());
         }

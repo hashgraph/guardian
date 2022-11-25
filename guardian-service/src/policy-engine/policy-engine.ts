@@ -170,6 +170,7 @@ export class PolicyEngine {
                 policyId: null,
                 policyUUID: null
             });
+            await topic.saveKeys();
 
             model.topicId = topic.topicId;
 
@@ -461,6 +462,7 @@ export class PolicyEngine {
             policyId: model.id.toString(),
             policyUUID: model.uuid
         });
+        await rootTopic.saveKeys();
         await DatabaseServer.saveTopic(rootTopic.toObject());
         model.instanceTopicId = rootTopic.topicId;
 
@@ -473,6 +475,7 @@ export class PolicyEngine {
             policyId: model.id.toString(),
             policyUUID: model.uuid
         }, { admin: true, submit: false });
+        await synchronizationTopic.saveKeys();
         await DatabaseServer.saveTopic(synchronizationTopic.toObject());
         model.synchronizationTopicId = synchronizationTopic.topicId;
 
@@ -565,6 +568,7 @@ export class PolicyEngine {
             policyId: model.id.toString(),
             policyUUID: model.uuid
         });
+        await rootTopic.saveKeys();
         await databaseServer.saveTopic(rootTopic.toObject());
         model.instanceTopicId = rootTopic.topicId;
 

@@ -106,55 +106,18 @@ export class TopicHelper {
                 keys
             }
         }, 1);
-
-        const wallet = new Wallet();
-        const tasks: any[] = [];
         let adminKey: any = null;
         let submitKey: any = null;
         if (keys) {
             if (keys.admin) {
                 adminKey = this.hederaAccountKey;
-                if (config.owner) {
-                    tasks.push(wallet.setUserKey(
-                        config.owner,
-                        KeyType.TOPIC_ADMIN_KEY,
-                        topicId,
-                        adminKey
-                    ));
-                }
             }
             if (keys.submit) {
                 submitKey = this.hederaAccountKey;
-                if (config.owner) {
-                    tasks.push(wallet.setUserKey(
-                        config.owner,
-                        KeyType.TOPIC_SUBMIT_KEY,
-                        topicId,
-                        submitKey
-                    ));
-                }
             }
         } else {
             adminKey = this.hederaAccountKey;
             submitKey = this.hederaAccountKey;
-            if (config.owner) {
-                tasks.push(wallet.setUserKey(
-                    config.owner,
-                    KeyType.TOPIC_ADMIN_KEY,
-                    topicId,
-                    adminKey
-                ));
-                tasks.push(wallet.setUserKey(
-                    config.owner,
-                    KeyType.TOPIC_SUBMIT_KEY,
-                    topicId,
-                    submitKey
-                ));
-            }
-        }
-
-        if (!this.dryRun) {
-            await Promise.all(tasks);
         }
         return new TopicConfig({
             topicId,

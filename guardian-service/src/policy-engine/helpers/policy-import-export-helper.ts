@@ -231,6 +231,7 @@ export class PolicyImportExportHelper {
                 policyId: null,
                 policyUUID: null
             });
+            await topicRow.saveKeys();
             await DatabaseServer.saveTopic(topicRow.toObject());
         }
 

@@ -245,6 +245,7 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
             policyId: null,
             policyUUID: null
         });
+        await topic.saveKeys();
         await DatabaseServer.saveTopic(topic.toObject());
         await topicHelper.twoWayLink(topic, null, null);
     }

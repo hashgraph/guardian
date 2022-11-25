@@ -125,4 +125,29 @@ export class TopicConfig {
             policyUUID: this.policyUUID,
         }
     }
+
+    /**
+     * Get topic object
+     */
+    public async saveKeys(): Promise<void> {
+        if (this.owner) {
+            const wallet = new Wallet();
+            if (this.adminKey) {
+                await wallet.setUserKey(
+                    this.owner,
+                    KeyType.TOPIC_ADMIN_KEY,
+                    this.topicId,
+                    this.adminKey
+                );
+            }
+            if (this.submitKey) {
+                await wallet.setUserKey(
+                    this.owner,
+                    KeyType.TOPIC_SUBMIT_KEY,
+                    this.topicId,
+                    this.submitKey
+                );
+            }
+        }
+    }
 }

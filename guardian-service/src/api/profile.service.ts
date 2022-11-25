@@ -295,23 +295,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
         newTopic.owner = didMessage.did;
         newTopic.parent = globalTopic?.topicId;
         await new DataBaseHelper(Topic).update(newTopic);
-        if (user) {
-            const wallet = new Wallet();
-            await Promise.all([
-                wallet.setKey(
-                    user.walletToken,
-                    KeyType.TOPIC_SUBMIT_KEY,
-                    topicConfig.topicId,
-                    topicConfig.submitKey
-                ),
-                wallet.setKey(
-                    user.walletToken,
-                    KeyType.TOPIC_ADMIN_KEY,
-                    topicConfig.topicId,
-                    topicConfig.adminKey
-                ),
-            ]);
-        }
+        await topicConfig.saveKeys();
     }
 
     if (globalTopic && newTopic) {
