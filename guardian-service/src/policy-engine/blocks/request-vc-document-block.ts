@@ -397,9 +397,9 @@ export class RequestVcDocumentBlock {
         }
         return presetFields.filter(
             (item) =>
-                item.readonly &&
+                item.readonly && item.value &&
                 !deepEqual(
-                    presetDocument[item.name],
+                    presetDocument[item.value],
                     document[item.name]
                 )
         );
