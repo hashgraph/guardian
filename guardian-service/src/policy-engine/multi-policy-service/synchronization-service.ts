@@ -27,7 +27,7 @@ export class SynchronizationService {
      * Cron Mask
      * @private
      */
-    private static readonly cronMask = `* * * * *`;
+    private static readonly cronMask = `0 0 * * *`;
     /**
      * Task Status
      * @private
@@ -52,7 +52,7 @@ export class SynchronizationService {
             SynchronizationService.task().then();
         }, null, false, 'UTC');
         SynchronizationService.job.start();
-        new Logger().info('Start synchronization', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+        new Logger().info(`Start synchronization: ${cronMask}`, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
     }
 
     /**
