@@ -57,6 +57,24 @@ export class RestoreDataFromHedera {
      */
     private readonly wallet: Wallet;
 
+    /**
+     * Main topic update interval
+     * @private
+     */
+    private readonly UPDATE_INTERVAL = 2 * 60 * 1000;
+
+    /**
+     * Last update
+     * @private
+     */
+    private mainTopicLastUpdate = 0;
+
+    /**
+     * MainTopicMessages
+     * @private
+     */
+    private mainTopicMessages: any[] = [];
+
     constructor() {
         this.workers = new Workers();
         this.users = new Users();
@@ -92,6 +110,7 @@ export class RestoreDataFromHedera {
                 r.setId(m.id);
                 if (loadIPFS) {
                     await MessageServer.loadIPFS(r);
+                    console.log('loadIPFS', r);
                 }
                 result.push(r);
             } catch (e) {
@@ -226,6 +245,8 @@ export class RestoreDataFromHedera {
         try {
             const policyMessages = await this.readTopicMessages(policyTopicId);
 
+            console.log(policyTopicId);
+
             await this.restoreTopic({
                 topicId: policyTopicId,
                 name: policyMessages[0].name,
@@ -264,7 +285,10 @@ export class RestoreDataFromHedera {
 
             // Restore policy
             const publishedPolicies = policyMessages.filter(m => m._action === 'publish-policy');
+            console.log(policyMessages);
+            console.log(publishedPolicies);
             for (const policy of publishedPolicies) {
+                console.log(policy);
                 const parsedPolicyFile = await PolicyImportExportHelper.parseZipFile(policy.document);
                 const policyObject = parsedPolicyFile.policy;
 
@@ -349,16 +373,53 @@ export class RestoreDataFromHedera {
     }
 
     /**
-     * Restore standard registry
+     * Get main topic messages
+     * @private
+     */
+    private async getMainTopicMessages(): Promise<any[]> {
+        const currentTime = Date.now();
+        if ((currentTime - this.mainTopicLastUpdate) > this.UPDATE_INTERVAL) {
+            this.mainTopicMessages = await this.readTopicMessages(this.MAIN_TOPIC_ID);
+            this.mainTopicLastUpdate = currentTime;
+        }
+
+        return this.mainTopicMessages;
+    }
+
+    /**
+     * FindAllUserTopics
      * @param username
      * @param hederaAccountID
      * @param hederaAccountKey
      */
-    async restoreRootAuthority(username: string, hederaAccountID: string, hederaAccountKey: any): Promise<void> {
+    async findAllUserTopics(username: string, hederaAccountID: string, hederaAccountKey): Promise<any[]> {
+        const mainTopicMessages = await this.getMainTopicMessages();
+
         const did = DIDDocument.create(hederaAccountKey, null);
         const didString = did.getDid();
 
-        // const didString = 'did:hedera:testnet:zYVrjgg5HmNJVdn9j81P3k8ZeJfmdFv8SzsKAwPk5cB'
+        const foundMessages = mainTopicMessages.filter(m => !!m.did).filter(m => m.did?.includes(didString));
+
+        return foundMessages.map(m => {
+            return {
+                topicId: /^.+(\d+\.\d+\.\d+)$/.exec(m.did)[1],
+                timestamp: Math.floor(parseFloat(m.id) * 1000)
+            };
+        })
+    }
+
+    /**
+     * Restore standard registry
+     * @param username
+     * @param hederaAccountID
+     * @param hederaAccountKey
+     * @param userTopic
+     */
+    async restoreRootAuthority(username: string, hederaAccountID: string, hederaAccountKey, userTopic: string): Promise<void> {
+        const did = DIDDocument.create(hederaAccountKey, null);
+        const didString = did.getDid();
+
+        // didString = 'did:hedera:testnet:zYVrjgg5HmNJVdn9j81P3k8ZeJfmdFv8SzsKAwPk5cB'
 
         const user = await this.users.getUser(username);
 
@@ -366,8 +427,17 @@ export class RestoreDataFromHedera {
             throw new Error('User is not a Standard Registry')
         }
 
-        const mainTopicMessages = await this.readTopicMessages(this.MAIN_TOPIC_ID);
-        const currentRAMessage = mainTopicMessages.find(m => m.did?.includes(didString));
+        const mainTopicMessages = await this.getMainTopicMessages();
+
+        const currentRAMessage = mainTopicMessages.find(m => {
+            return m.did?.includes(didString) && m.did?.includes(userTopic);
+        });
+
+        if (!currentRAMessage) {
+            throw new Error('User not found');
+        }
+
+        console.log(currentRAMessage);
 
         const RAMessages = await this.readTopicMessages(currentRAMessage.registrantTopicId);
 
