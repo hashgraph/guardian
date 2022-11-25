@@ -51,6 +51,8 @@ export class SynchronizationService {
         SynchronizationService.job = new CronJob(cronMask, () => {
             SynchronizationService.task().then();
         }, null, false, 'UTC');
+        SynchronizationService.job.start();
+        new Logger().info('Start synchronization', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
     }
 
     /**
