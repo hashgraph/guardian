@@ -1,4 +1,4 @@
-# How to generate Web3.Storage API Key
+# 🔨 How to generate Web3.Storage API Key
 
 To get a quick info, please visit: [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart)
 

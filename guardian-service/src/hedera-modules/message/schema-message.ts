@@ -35,6 +35,11 @@ export class SchemaMessage extends Message {
     public version: string;
 
     /**
+     * Code Version
+     */
+    public codeVersion: string;
+
+    /**
      * Documents
      */
     public documents: any[];
@@ -54,6 +59,7 @@ export class SchemaMessage extends Message {
         this.owner = schema.owner;
         this.uuid = schema.uuid;
         this.version = schema.version;
+        this.codeVersion = schema.codeVersion;
         const document = schema.document;
         const context = schema.context;
         this.documents = [document, context];
@@ -90,9 +96,10 @@ export class SchemaMessage extends Message {
             uuid: this.uuid,
             version: this.version,
             document_cid: this.getDocumentUrl(UrlType.cid),
-            document_url: this.getDocumentUrl(UrlType.url),
+            document_uri: this.getDocumentUrl(UrlType.url),
             context_cid: this.getContextUrl(UrlType.cid),
-            context_url: this.getContextUrl(UrlType.custom_context_url)
+            context_uri: this.getContextUrl(UrlType.url),
+            code_version: this.codeVersion
         };
     }
 
@@ -156,13 +163,14 @@ export class SchemaMessage extends Message {
         message.owner = json.owner;
         message.uuid = json.uuid;
         message.version = json.version;
+        message.codeVersion = json.code_version;
         const urls = [{
             cid: json.document_cid,
-            url: json.document_url
+            url: json.document_url || json.document_uri
         },
         {
             cid: json.context_cid,
-            url: json.context_url
+            url: json.context_url || json.context_uri
         }];
         message.setUrls(urls);
         return message;

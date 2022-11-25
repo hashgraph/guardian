@@ -1,4 +1,4 @@
-# Listen to external event published by Guardian
+# 🏜 External Events
 
 ### Introduction
 

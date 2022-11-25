@@ -4,6 +4,7 @@ import { IURL } from './url.interface';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { DidMessageBody } from './message-body.interface';
+import { IPFS } from '@helpers/ipfs';
 
 /**
  * DID message
@@ -55,7 +56,7 @@ export class DIDMessage extends Message {
             lang: this.lang,
             did: this.did,
             cid: this.getUrls()[0]?.cid,
-            url: this.getUrls()[0]?.url
+            uri: this.getUrls()[0]?.url
         };
     }
 
@@ -107,7 +108,7 @@ export class DIDMessage extends Message {
         message._status = json.status;
         const urls = [{
             cid: json.cid,
-            url: json.url
+            url: IPFS.IPFS_PROTOCOL + json.cid
         }]
         message.setUrls(urls);
         return message;

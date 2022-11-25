@@ -6,7 +6,7 @@
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
 | type             | A type of the block which creates a form from the schema, and sends the document to the server.                                                              | **requestVCDocument**Block (Can't be changed).                                                                               |                                            |
 | tag              | Unique name for the logic block.                                                                                                                             | add\_new\_installer\_request.                                                                                                |                                            |
-| permissions      | Which entity has rights to interact at this part of the workflow.                                                                                            | Standard Registry.                                                                                                              |                                            |
+| permissions      | Which entity has rights to interact at this part of the workflow.                                                                                            | Standard Registry.                                                                                                           |                                            |
 | defaultActive    | Shows whether this block is active at this time and whether it needs to be shown.                                                                            | Checked or unchecked.                                                                                                        |                                            |
 | dependencies     | Establish workflow dependancies that need to be completed prior.                                                                                             | Select the appropriate block from the dropdown.                                                                              | <mark style="color:red;">Deprecated</mark> |
 | schema           | Pre-configured schemas for the document relevant for policy action requests. Technically, it's the uuid of the schema, which will be used to build the form. | IRec-Application-Details (to be selected from the drop down of available schemas in your Guardian instance).                 |                                            |
@@ -46,7 +46,7 @@ To know more information about events, please look at [events.md](events.md "men
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="blockType: 'requestVcDocument'" summary="" %}
+{% swagger method="get" path="" baseUrl="blockType: " summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
@@ -68,7 +68,7 @@ Schema Description
 {% endswagger-parameter %}
 {% endswagger %}
 
-{% swagger method="post" path="" baseUrl="blockType: 'requestVcDocument'" summary="" %}
+{% swagger method="post" path="" baseUrl="blockType: " summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
@@ -77,7 +77,7 @@ Schema Description
 VC Document
 {% endswagger-parameter %}
 
-{% swagger-parameter in="path" name="ref" type="String" %}
+{% swagger-parameter in="path" name="ref" type="String" required="false" %}
 ID of linked VC
 {% endswagger-parameter %}
 {% endswagger %}

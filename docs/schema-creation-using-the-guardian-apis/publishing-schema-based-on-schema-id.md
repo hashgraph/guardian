@@ -1,4 +1,4 @@
-# Publishing schema based on schema ID
+# Publishing Schema based on Schema ID
 
 ### PUBLISHING SCHEMA BASED ON SCHEMA ID
 

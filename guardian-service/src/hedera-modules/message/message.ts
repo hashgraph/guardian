@@ -204,10 +204,6 @@ export abstract class Message {
                     return this.urls[index].cid;
                 case UrlType.url:
                     return this.urls[index].url;
-                case UrlType.custom_context_url:
-                    return (
-                        process.env.IPFS_CONTEXT_GATEWAY + this.urls[index].cid
-                    );
                 default:
                     break;
             }

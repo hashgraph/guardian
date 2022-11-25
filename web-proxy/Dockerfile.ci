@@ -9,7 +9,7 @@ WORKDIR /usr/local/frontend
 COPY ./frontend/. /usr/local/frontend
 RUN npm install /usr/interfaces/guardian-interfaces-*.tgz
 RUN npm install
-RUN npm run build
+RUN npm run build:prod
 
 FROM nginx:latest
 ENV PLATFORM="docker"

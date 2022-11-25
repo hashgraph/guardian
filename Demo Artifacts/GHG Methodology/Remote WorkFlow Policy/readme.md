@@ -16,5 +16,8 @@ The workflow begins with each employee completing a survey to help refine their 
 
 <img width="772" alt="image" src="https://user-images.githubusercontent.com/79293833/193054429-cf3260d6-7535-47b4-ac33-ae756061c64e.png">
 
+**Following are the timestamps of the policy versions:**
 
-
+| Version | IPFS Timestamp | 
+|---|---:|
+| Remote Workflow Policy 1 | 1666365267.042969003 | 

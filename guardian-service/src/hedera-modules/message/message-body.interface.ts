@@ -61,9 +61,9 @@ export interface DidMessageBody extends MessageBody {
      */
     cid: string;
     /**
-     * URL
+     * URI
      */
-    url: string;
+    uri: string;
 }
 
 /**
@@ -111,9 +111,9 @@ export interface PolicyMessageBody extends MessageBody {
      */
     cid: string;
     /**
-     * URL
+     * URI
      */
-    url: string;
+    uri: string;
 }
 
 /**
@@ -145,13 +145,21 @@ export interface SchemaMessageBody extends MessageBody {
      */
     version: string;
     /**
+     * Code Version
+     */
+    code_version: string;
+    /**
      * Document CID
      */
     document_cid: string;
     /**
      * Document URL
      */
-    document_url: string;
+    document_url?: string;
+    /**
+     * Document URI
+     */
+    document_uri?: string;
     /**
      * Context CID
      */
@@ -159,7 +167,11 @@ export interface SchemaMessageBody extends MessageBody {
     /**
      * Context URL
      */
-    context_url: string;
+    context_url?: string;
+    /**
+     * Context URI
+     */
+    context_uri?: string;
 }
 
 /**
@@ -209,9 +221,9 @@ export interface VcMessageBody extends MessageBody {
      */
     cid: string;
     /**
-     * URL
+     * URI
      */
-    url: string;
+    uri: string;
     /**
      * Relationships
      */
@@ -235,9 +247,9 @@ export interface VpMessageBody extends MessageBody {
      */
     cid: string;
     /**
-     * URL
+     * URI
      */
-    url: string;
+    uri: string;
     /**
      * Relationships
      */

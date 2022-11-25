@@ -9,3 +9,4 @@
 | permissions    | Which entity has rights to interact at this part of the workflow.                 | Installer                                       |
 | defaultActive  | Shows whether this block is active at this time and whether it needs to be shown. | Checked or Unchecked                            |
 | dependencies   | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown. |
+

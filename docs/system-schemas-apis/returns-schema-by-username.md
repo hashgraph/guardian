@@ -11,11 +11,11 @@ Return all system schemas by username. Only user with the Standard Registry are 
 Username
 {% endswagger-parameter %}
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" %}
+{% swagger-parameter in="query" name="pageIndex" type="Integer" required="false" %}
 The number of pages to skip before starting to collect the result set.
 {% endswagger-parameter %}
 
-{% swagger-parameter in="query" name="pageSize" type="Integer" %}
+{% swagger-parameter in="query" name="pageSize" type="Integer" required="false" %}
 The number of items to return.
 {% endswagger-parameter %}
 

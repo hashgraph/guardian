@@ -108,4 +108,9 @@ export interface ISchema {
      * Is active schema
      */
     active?: boolean;
+
+    /**
+     * Code version
+     */
+    codeVersion?: string;
 }
