@@ -2,7 +2,6 @@ import { TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TopicConfig, MessageAction, MessageServer, TopicMessage } from '@hedera-modules';
 import { TopicMemo } from './memo-mappings/topic-memo';
 import { Workers } from '@helpers/workers';
-import { KeyType, Wallet } from '@helpers/wallet';
 
 /**
  * Topic Helper

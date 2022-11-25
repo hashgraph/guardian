@@ -423,4 +423,3 @@ export class RequestVcDocumentBlock {
         }
     }
 }
-
