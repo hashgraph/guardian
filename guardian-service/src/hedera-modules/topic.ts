@@ -150,4 +150,30 @@ export class TopicConfig {
             }
         }
     }
+
+    /**
+     * Save key by user
+     * @param user
+     */
+    public async saveKeysByUser(user: any): Promise<void> {
+        if (this.owner) {
+            const wallet = new Wallet();
+            if (this.adminKey) {
+                await wallet.setKey(
+                    user.walletToken,
+                    KeyType.TOPIC_ADMIN_KEY,
+                    this.topicId,
+                    this.adminKey
+                );
+            }
+            if (this.submitKey) {
+                await wallet.setKey(
+                    user.walletToken,
+                    KeyType.TOPIC_SUBMIT_KEY,
+                    this.topicId,
+                    this.submitKey
+                );
+            }
+        }
+    }
 }

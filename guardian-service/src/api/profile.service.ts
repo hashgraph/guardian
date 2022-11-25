@@ -130,8 +130,6 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
             }), true);
     }
 
-    console.log('!!!! topic', topicConfig);
-
     if (!topicConfig) {
         notifier.info('Create user topic');
         logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
@@ -295,7 +293,9 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
         newTopic.owner = didMessage.did;
         newTopic.parent = globalTopic?.topicId;
         await new DataBaseHelper(Topic).update(newTopic);
-        await topicConfig.saveKeys();
+        topicConfig.owner = didMessage.did;
+        topicConfig.parent = globalTopic?.topicId;
+        await topicConfig.saveKeysByUser(user);
     }
 
     if (globalTopic && newTopic) {
