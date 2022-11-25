@@ -14,6 +14,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
+import { MultiPolicyDialogComponent } from '../helpers/multi-policy-dialog/multi-policy-dialog.component';
 
 enum OperationMode {
     None,
@@ -95,18 +96,16 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             'version',
             'tokens',
             'schemas',
-            'operation',
-            'open',
-            'export',
-            'edit',
-            'delete'
+            'status',
+            'instance',
+            'operations'
         ]
         this.columnsRole[UserRole.USER] = [
             'name',
             'description',
             'roles',
             'version',
-            'open',
+            'instance',
         ]
     }
 
@@ -436,6 +435,23 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                     this.informService.errorMessage(text.join(''), 'The policy is invalid');
                 }
                 this.loadAllPolicy();
+            }
+        });
+    }
+
+    createMultiPolicy(element: any) {
+        const dialogRef = this.dialog.open(MultiPolicyDialogComponent, {
+            width: '650px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
+            data: {
+                policyId: element.id
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.importPolicyDetails(result);
             }
         });
     }

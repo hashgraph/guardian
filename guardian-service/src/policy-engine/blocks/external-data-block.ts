@@ -12,7 +12,7 @@ import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * External data block
@@ -63,10 +63,10 @@ export class ExternalDataBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IPolicyUser, state: any): Promise<boolean> {
+    protected async validateDocuments(user: IPolicyUser, state: any): Promise<string> {
         const validators = this.getValidators();
         for (const validator of validators) {
-            const valid = await validator.run({
+            const error = await validator.run({
                 type: null,
                 inputType: null,
                 outputType: null,
@@ -78,11 +78,11 @@ export class ExternalDataBlock {
                 user,
                 data: state
             });
-            if (!valid) {
-                return false;
+            if (error) {
+                return error;
             }
         }
-        return true;
+        return null;
     }
 
     /**
@@ -177,14 +177,17 @@ export class ExternalDataBlock {
 
         const state = { data: doc };
 
-        const valid = await this.validateDocuments(user, state);
-        if (!valid) {
-            throw new BlockActionError('Invalid document', ref.blockType, ref.uuid);
+        const error = await this.validateDocuments(user, state);
+        if (error) {
+            throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
+            documents: ExternalDocuments(doc)
+        }));
     }
 
     /**

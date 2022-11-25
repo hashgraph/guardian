@@ -21,7 +21,7 @@ import { Environment } from '../environment';
 import { MessageMemo } from '../memo-mappings/message-memo';
 import { RegistrationMessage } from './registration-message';
 import { TopicMessage } from './topic-message';
-import { KeyType, Wallet } from '@helpers/wallet';
+import { TopicConfig } from 'hedera-modules/topic';
 import { TokenMessage } from './token-message';
 
 /**
@@ -33,11 +33,6 @@ export class MessageServer {
      * @private
      */
     private submitKey: PrivateKey | string;
-    /**
-     * Topic owner
-     * @private
-     */
-    private owner: string;
     /**
      * Topic ID
      * @private
@@ -136,22 +131,8 @@ export class MessageServer {
      * Set topic object
      * @param topic
      */
-    public setTopicObject(topic: {
-        /**
-         * Topic ID
-         */
-        topicId?: string,
-        /**
-         * Owner
-         */
-        owner?: string,
-        /**
-         * Key
-         */
-        key?: string,
-    }): MessageServer {
-        this.submitKey = topic.key;
-        this.owner = topic.owner;
+    public setTopicObject(topic: TopicConfig): MessageServer {
+        this.submitKey = topic.submitKey;
         this.topicId = topic.topicId;
         return this;
     }
@@ -161,9 +142,8 @@ export class MessageServer {
      * @param topicId
      * @param submitKey
      */
-    public setTopic(topicId: TopicId | string, owner?: string, submitKey?: PrivateKey | string): MessageServer {
+    public setTopic(topicId: TopicId | string, submitKey?: PrivateKey | string): MessageServer {
         this.submitKey = submitKey;
-        this.owner = owner;
         this.topicId = topicId;
         return this;
     }
@@ -184,15 +164,18 @@ export class MessageServer {
      * @private
      */
     private async sendIPFS<T extends Message>(message: T): Promise<T> {
-        const time = await this.messageStartLog('IPFS');
         const buffers = await message.toDocuments();
-
-        const promises = buffers.map(buffer => {
-            return this.addFile(buffer);
-        });
-        const urls = await Promise.all(promises);
-        await this.messageEndLog(time, 'IPFS');
-        message.setUrls(urls);
+        if (buffers && buffers.length) {
+            const time = await this.messageStartLog('IPFS');
+            const promises = buffers.map(buffer => {
+                return this.addFile(buffer);
+            });
+            const urls = await Promise.all(promises);
+            await this.messageEndLog(time, 'IPFS');
+            message.setUrls(urls);
+        } else {
+            message.setUrls([]);
+        }
         return message;
     }
 
@@ -239,21 +222,12 @@ export class MessageServer {
         message.setLang(MessageServer.lang);
         const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
-
-        let submitKey = this.submitKey;
-        if (!this.submitKey && !this.dryRun) {
-            submitKey = await new Wallet().getUserKey(
-                this.owner,
-                KeyType.TOPIC_SUBMIT_KEY,
-                this.topicId.toString()
-            );
-        }
         const id = await new Workers().addRetryableTask({
             type: WorkerTaskType.SEND_HEDERA,
             data: {
                 topicId: this.topicId,
                 buffer,
-                submitKey,
+                submitKey: this.submitKey,
                 clientOptions: this.clientOptions,
                 network: Environment.network,
                 localNodeAddress: Environment.localNodeAddress,

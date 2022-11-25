@@ -7,7 +7,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@poli
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Switch block
@@ -116,6 +116,7 @@ export class SwitchBlock {
         const scope = this.getScope(docs);
 
         const { conditions, executionFlow } = ref.options;
+        const tags: string[] = [];
         for (const condition of conditions) {
             const type = condition.type as string;
             const value = condition.value as string;
@@ -163,13 +164,17 @@ export class SwitchBlock {
             if (result) {
                 ref.triggerEvents(tag, curUser, event.data);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, curUser, event.data);
+                tags.push(tag);
                 if (executionFlow === 'firstTrue') {
                     break;
                 }
             }
         }
-
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event?.user, null);
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+            conditions: tags,
+            documents: ExternalDocuments(docs),
+        }));
     }
 
     /**

@@ -28,13 +28,14 @@ import { FieldControl } from "../field-control";
     styleUrls: ['./schema-field-configuration.component.css'],
 })
 export class SchemaFieldConfigurationComponent implements OnInit {
+    @Input('readonly') readonly!: boolean;
     @Input('form') form!: FormGroup;
     @Input('field') field!: FieldControl;
-
     @Input('types') types!: any[];
     @Input('measureTypes') measureTypes!: any[];
     @Input('schemaTypes') schemaTypes!: any[];
     @Input('extended') extended!: boolean;
+    @Input('value') value!: any;
 
     @Output('remove') remove = new EventEmitter<any>();
 
@@ -50,16 +51,17 @@ export class SchemaFieldConfigurationComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        const enumValues = this.field.controlEnum.value
-        if (enumValues && enumValues.length) {
-            for (let i=0;i<enumValues.length && i<5; i++) {
-                this.keywords.push(enumValues[i]);
+        if (this.field) {
+            const enumValues = this.field.controlEnum.value
+            if (enumValues && enumValues.length) {
+                for (let i = 0; i < enumValues.length && i < 5; i++) {
+                    this.keywords.push(enumValues[i]);
+                }
             }
-        }
-
-        const remoteLinkValue = this.field.controlRemoteLink.value;
-        if (remoteLinkValue) {
-            this.loadRemoteEnumData(remoteLinkValue);
+            const remoteLinkValue = this.field.controlRemoteLink.value;
+            if (remoteLinkValue) {
+                this.loadRemoteEnumData(remoteLinkValue);
+            }
         }
     }
 
@@ -81,7 +83,7 @@ export class SchemaFieldConfigurationComponent implements OnInit {
         }
     }
 
-    loadRemoteEnumData(link:string) {
+    loadRemoteEnumData(link: string) {
         this.loading = true;
         this.ipfs
             .getJsonFileByLink(link)
@@ -98,8 +100,10 @@ export class SchemaFieldConfigurationComponent implements OnInit {
         if (changes.extended && Object.keys(changes).length === 1) {
             return;
         }
-        const type = this.field.controlType.value;
-        this.onTypeChange(type);
+        if(this.field) {
+            const type = this.field.controlType.value;
+            this.onTypeChange(type);
+        }
     }
 
     ngOnDestroy() {

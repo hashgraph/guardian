@@ -292,13 +292,16 @@ export class RestoreDataFromHedera {
                 const parsedPolicyFile = await PolicyImportExportHelper.parseZipFile(policy.document);
                 const policyObject = parsedPolicyFile.policy;
 
-                const policyInstanceTopicMessage = policyMessages.find(m => m.rationale === policy.id);
-                policyObject.instanceTopicId = policyInstanceTopicMessage.childId;
+                policyObject.instanceTopicId = policy.instanceTopicId;
+                policyObject.synchronizationTopicId = policy.synchronizationTopicId;
                 policyObject.status = PolicyType.PUBLISH;
                 policyObject.topicId = policyTopicId;
+                if (!policyObject.instanceTopicId) {
+                    const policyInstanceTopicMessage = policyMessages.find(m => m.rationale === policy.id);
+                    policyObject.instanceTopicId = policyInstanceTopicMessage.childId;
+                }
 
-                const policyInstanceMessages = await this.readTopicMessages(policyInstanceTopicMessage.childId);
-
+                const policyInstanceMessages = await this.readTopicMessages(policyObject.instanceTopicId);
                 const p = new DataBaseHelper(PolicyCollection).create(policyObject);
                 const r = await new DataBaseHelper(PolicyCollection).save(p);
 

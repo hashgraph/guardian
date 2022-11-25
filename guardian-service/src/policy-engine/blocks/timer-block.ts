@@ -16,7 +16,6 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
 @BasicBlock({
     blockType: 'timerBlock',
     commonBlock: true,
-    publishExternalEvent: true,
     about: {
         label: 'Timer',
         title: `Add 'Timer' Block`,
@@ -243,6 +242,7 @@ export class TimerBlock {
         await ref.saveState();
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
     }

@@ -3,7 +3,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyDocument, IPolicyEventState, IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Set document relationships action
@@ -123,6 +123,10 @@ export class SetRelationshipsBlock {
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+            documents: ExternalDocuments(event.data?.data),
+        }));
     }
 }

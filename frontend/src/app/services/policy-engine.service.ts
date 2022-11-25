@@ -204,4 +204,12 @@ export class PolicyEngineService {
     public setGroup(policyId: string, uuid: string): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/groups`, { uuid });
     }
+
+    public getMultiPolicy(policyId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/multiple`);
+    }
+
+    public setMultiPolicy(policyId: string, data: any): Observable<any> {
+        return this.http.post<void>(`${this.url}/${policyId}/multiple`, data);
+    }
 }

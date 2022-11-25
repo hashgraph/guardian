@@ -105,7 +105,10 @@ export class TokenConfirmationBlock {
 
         ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data);
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, null, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, blockState.user, {
+            userAction: data.action,
+            action: ref.options.action
+        }));
     }
 
     /**

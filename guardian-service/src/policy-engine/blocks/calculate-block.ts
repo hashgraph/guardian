@@ -12,7 +12,7 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@poli
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Calculate block
@@ -194,8 +194,11 @@ export class CalculateContainerBlock {
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
+            documents: ExternalDocuments(event.data?.data)
+        }));
     }
 
     /**

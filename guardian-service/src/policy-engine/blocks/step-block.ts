@@ -3,7 +3,7 @@ import { BlockActionError } from '@policy-engine/errors';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { ChildrenType, ControlType, PropertyType, SelectItemType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
@@ -27,7 +27,30 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
         output: [
             PolicyOutputEventType.RefreshEvent
         ],
-        defaultEvent: false
+        defaultEvent: false,
+        properties: [{
+            name: 'cyclic',
+            label: 'Cyclic',
+            title: 'Restart the block when the final step is reached?',
+            type: PropertyType.Checkbox
+        }, {
+            name: 'finalBlocks',
+            label: 'Final steps',
+            title: 'Final steps',
+            type: PropertyType.MultipleSelect,
+            items: SelectItemType.Children
+        }, {
+            name: 'uiMetaData',
+            label: 'UI',
+            title: 'UI Properties',
+            type: PropertyType.Group,
+            properties: [{
+                name: 'title',
+                label: 'Title',
+                title: 'Title',
+                type: PropertyType.Input
+            }]
+        }]
     }
 })
 export class InterfaceStepBlock {
@@ -36,6 +59,24 @@ export class InterfaceStepBlock {
      */
     @StateField()
     state: { [key: string]: any } = { index: 0 };
+    /**
+     * Final steps
+     */
+    private readonly endIndexes: { [x: number]: boolean } = {};
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        this.endIndexes[ref.children.length - 1] = true;
+        if (ref.options?.finalBlocks && Array.isArray(ref.options.finalBlocks)) {
+            for (const finalBlock of ref.options.finalBlocks) {
+                const index = ref.children.findIndex(c => c.tag === finalBlock);
+                this.endIndexes[index] = true;
+            }
+        }
+    }
 
     /**
      * Change step
@@ -69,7 +110,9 @@ export class InterfaceStepBlock {
         ref.updateBlock(blockState, user);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
 
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Step, ref, user, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Step, ref, user, {
+            index: blockState?.index
+        }));
     }
 
     /**
@@ -83,13 +126,9 @@ export class InterfaceStepBlock {
     async releaseChild(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const index = ref.children.findIndex(c => c.uuid === event.sourceId);
-        if (
-            index !== -1 &&
-            index === (ref.children.length - 1) &&
-            ref.options.cyclic
-        ) {
+        if ((ref.options.cyclic && index !== -1) && (this.endIndexes[index])) {
             const user = event.user;
-            if(user) {
+            if (user) {
                 let blockState: any;
                 if (!this.state.hasOwnProperty(user.id)) {
                     blockState = {};

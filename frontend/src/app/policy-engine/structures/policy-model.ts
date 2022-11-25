@@ -7,6 +7,7 @@ import {
     IArtifact,
     TokenType,
 } from '@guardian/interfaces';
+import { BlockType } from './types/block-type.type';
 
 export class PolicyRoleModel {
     private readonly policy: PolicyModel;
@@ -750,6 +751,14 @@ export class PolicyBlockModel {
         return undefined;
     }
 
+    public get lastChild(): PolicyBlockModel | null {
+        try {
+            return this._children[this._children.length - 1];
+        } catch (error) {
+            return null;
+        }
+    }
+
     public remove() {
         if (this.parent) {
             this.parent._removeChild(this);
@@ -903,6 +912,18 @@ export class PolicyBlockModel {
             this.emitUpdate();
         }
     }
+
+    public isFinal(): boolean {
+        if (this.parent && this.parent.blockType === BlockType.Step) {
+            if (this.parent.lastChild == this) {
+                return true;
+            }
+            if (Array.isArray(this.parent.properties?.finalBlocks)) {
+                return this.parent.properties.finalBlocks.indexOf(this.tag) > -1;
+            }
+        }
+        return false;
+    }
 }
 
 export class PolicyModel {
@@ -916,6 +937,7 @@ export class PolicyModel {
     public readonly status!: string;
     public readonly topicId!: string;
     public readonly instanceTopicId!: string;
+    public readonly synchronizationTopicId!: string;
     public readonly messageId!: string;
     public readonly version!: string;
     public readonly previousVersion!: string;
@@ -961,6 +983,7 @@ export class PolicyModel {
         this.status = policy.status;
         this.topicId = policy.topicId;
         this.instanceTopicId = policy.instanceTopicId;
+        this.synchronizationTopicId = policy.synchronizationTopicId;
         this.messageId = policy.messageId;
         this.version = policy.version;
         this.previousVersion = policy.previousVersion;
@@ -1277,6 +1300,7 @@ export class PolicyModel {
             owner: this.owner,
             topicId: this.topicId,
             instanceTopicId: this.instanceTopicId,
+            synchronizationTopicId: this.synchronizationTopicId,
             policyTag: this.policyTag,
             messageId: this.messageId,
             codeVersion: this.codeVersion,

@@ -13,7 +13,7 @@ import { VcHelper } from '@helpers/vc-helper';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 import deepEqual from 'deep-equal';
 
 /**
@@ -73,10 +73,10 @@ export class RequestVcDocumentBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IPolicyUser, state: any): Promise<boolean> {
+    protected async validateDocuments(user: IPolicyUser, state: any): Promise<string> {
         const validators = this.getValidators();
         for (const validator of validators) {
-            const valid = await validator.run({
+            const error = await validator.run({
                 type: null,
                 inputType: null,
                 outputType: null,
@@ -88,11 +88,11 @@ export class RequestVcDocumentBlock {
                 user,
                 data: state
             });
-            if (!valid) {
-                return false;
+            if (error) {
+                return error;
             }
         }
-        return true;
+        return null;
     }
 
     /**
@@ -223,25 +223,7 @@ export class RequestVcDocumentBlock {
 
             const document = _data.document;
             const documentRef = await this.getRelationships(ref, _data.ref);
-
-            if (ref.options.presetSchema) {
-                const modifiedReadonlyPresetFields =
-                    this.getModifiedReadonlyFields(
-                        ref.options.presetFields,
-                        document,
-                        documentRef.document?.credentialSubject &&
-                            documentRef.document.credentialSubject[0]
-                    );
-                if (modifiedReadonlyPresetFields.length > 0) {
-                    throw new BlockActionError(
-                        `Readonly preset fields can not be modified (${modifiedReadonlyPresetFields
-                            .map((field) => field.name)
-                            .join(', ')})`,
-                        ref.blockType,
-                        ref.uuid
-                    );
-                }
-            }
+            await this.checkPreset(ref, document, documentRef);
 
             const credentialSubject = document;
             const schemaIRI = ref.options.schema;
@@ -291,21 +273,24 @@ export class RequestVcDocumentBlock {
 
             const state = { data: item };
 
-            const valid = await this.validateDocuments(user, state);
-            if (!valid) {
-                throw new BlockActionError('Invalid document', ref.blockType, ref.uuid);
+            const error = await this.validateDocuments(user, state);
+            if (error) {
+                throw new BlockActionError(error, ref.blockType, ref.uuid);
             }
 
             await this.changeActive(user, true);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
+                documents: ExternalDocuments(item)
+            }));
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             await this.changeActive(user, true);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
-
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
 
         return {};
     }
@@ -383,24 +368,26 @@ export class RequestVcDocumentBlock {
     }
 
     /**
-     * Get modified readonly fields
-     * @param presetFields Preset fields
+     * Check modified readonly fields
+     * @param ref
      * @param document Current document
-     * @param presetDocument Preset document
-     * @returns Modified fields
+     * @param documentRef Preset document
      */
-    public getModifiedReadonlyFields(presetFields: any[], document: any, presetDocument: any) {
-        if (!presetFields || !document || !presetDocument) {
-            return [];
+    private async checkPreset(ref: AnyBlockType, document: any, documentRef: VcDocumentCollection) {
+        if (ref.options.presetFields && ref.options.presetFields.length && ref.options.presetSchema) {
+            const readonly = ref.options.presetFields.filter((item: any) => item.readonly && item.value);
+            if (readonly.length && document && documentRef) {
+                const presetDocument = PolicyUtils.getCredentialSubject(documentRef);
+                if (!presetDocument) {
+                    throw new BlockActionError(`Readonly preset fields can not be verified.`, ref.blockType, ref.uuid);
+                }
+                for (const field of readonly) {
+                    if (!deepEqual(presetDocument[field.value], document[field.name])) {
+                        throw new BlockActionError(`Readonly preset field (${field.name}) can not be modified.`, ref.blockType, ref.uuid);
+                    }
+                }
+            }
         }
-        return presetFields.filter(
-            (item) =>
-                item.readonly && item.value &&
-                !deepEqual(
-                    presetDocument[item.value],
-                    document[item.name]
-                )
-        );
     }
 
     /**

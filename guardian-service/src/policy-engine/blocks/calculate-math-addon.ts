@@ -37,7 +37,9 @@ export class CalculateMathAddon {
                 scope[equation.variable] = ref.evaluate(equation.formula, scope);
             }
         }
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, null, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
+            scope
+        }));
         return scope;
     }
 

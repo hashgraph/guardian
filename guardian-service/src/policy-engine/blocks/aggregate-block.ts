@@ -8,7 +8,7 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Aggregate block
@@ -16,7 +16,6 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
 @BasicBlock({
     blockType: 'aggregateDocumentBlock',
     commonBlock: true,
-    publishExternalEvent: true,
     about: {
         label: 'Aggregate Data',
         title: `Add 'Aggregate' Block`,
@@ -116,10 +115,11 @@ export class AggregateBlock {
                 const user = PolicyUtils.getDocumentOwner(ref, documents[0]);
                 ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+                PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickCron, ref, user, {
+                    documents: ExternalDocuments(documents)
+                }));
             }
         }
-
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickCron, ref, null, null));
     }
 
     /**
@@ -200,9 +200,10 @@ export class AggregateBlock {
             const state = { data: rawEntities };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickAggregate, ref, user, {
+                documents: ExternalDocuments(rawEntities)
+            }));
         }
-
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickAggregate, ref, null, null));
     }
 
     /**
@@ -243,7 +244,9 @@ export class AggregateBlock {
             this.tickAggregate(ref, owner, group).then();
         }
 
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
+            documents: ExternalDocuments(docs)
+        }));
     }
 
     /**

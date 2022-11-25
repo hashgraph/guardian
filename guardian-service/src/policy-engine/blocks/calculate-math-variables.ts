@@ -208,7 +208,9 @@ export class CalculateMathVariables {
             }
         }
 
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, null, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
+            scope
+        }));
 
         return scope;
     }

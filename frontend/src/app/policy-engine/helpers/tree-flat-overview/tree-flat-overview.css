@@ -243,3 +243,29 @@
     min-height: 37px;
     margin: 7px 0px;
 }
+
+
+.final-step-icon {
+    display: inline-block;
+    color: #ff0000;
+    height: 16px;
+    width: 22px;
+    font-size: 22px;
+    overflow: visible;
+    line-height: 16px;
+    position: relative;
+    top: 3px;
+}
+
+.final-step-icon mat-icon {
+    display: block;
+    width: 22px;
+    height: 16px;
+    line-height: 16px;
+    font-size: 21px;
+    position: absolute;
+    left: -6px;
+    top: 0px;
+}
+
+

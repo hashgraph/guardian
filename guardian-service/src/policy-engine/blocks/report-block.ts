@@ -284,10 +284,11 @@ export class ReportBlock {
             const blockState = this.state[user.id] || {};
             blockState.lastValue = value;
             this.state[user.id] = blockState;
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
+                value
+            }));
         } catch (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
-
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
     }
 }

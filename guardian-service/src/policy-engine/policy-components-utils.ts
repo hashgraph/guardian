@@ -323,11 +323,14 @@ export class PolicyComponentsUtils {
     public static async RegisterPolicyInstance(policyId: string, policy: Policy) {
         const dryRun = policy.status === PolicyType.DRY_RUN ? policyId : null;
         const databaseServer = new DatabaseServer(dryRun);
-        const policyInstance = {
+        const policyInstance: IPolicyInstance = {
             policyId,
             dryRun,
             databaseServer,
-            isMultipleGroup: !!(policy.policyGroups?.length)
+            isMultipleGroup: !!(policy.policyGroups?.length),
+            instanceTopicId: policy.instanceTopicId,
+            synchronizationTopicId: policy.synchronizationTopicId,
+            owner: policy.owner,
         }
         PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
     }
@@ -408,7 +411,7 @@ export class PolicyComponentsUtils {
         }
         if (instance.parent?.blockType === 'interfaceStepBlock') {
             PolicyComponentsUtils.RegisterLink(
-                instance, PolicyOutputEventType.RunEvent,
+                instance, PolicyOutputEventType.ReleaseEvent,
                 instance.parent, PolicyInputEventType.ReleaseEvent,
                 EventActor.EventInitiator
             );
@@ -586,6 +589,10 @@ export class PolicyComponentsUtils {
             }
 
             result.userGroups = groups;
+            if (policy.status === PolicyType.PUBLISH) {
+                const multiPolicy = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, did);
+                result.multiPolicyStatus = multiPolicy?.type;
+            }
         } else {
             result.userRoles = ['No role'];
             result.userGroups = [];

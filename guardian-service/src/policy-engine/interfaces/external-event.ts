@@ -1,12 +1,12 @@
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser } from '@policy-engine/policy-user';
 
 /**
  * External Event Type
  */
 export enum ExternalEventType {
-    Run = 'run',
-    Set = 'set',
+    Run = 'Run',
+    Set = 'Set',
     TickAggregate = 'TickAggregate',
     TickCron = 'TickCron',
     DeleteMember = 'DeleteMember',
@@ -14,7 +14,8 @@ export enum ExternalEventType {
     StopCron = 'StopCron',
     SignatureQuorumReachedEvent = 'SignatureQuorumReachedEvent',
     SignatureSetInsufficientEvent = 'SignatureSetInsufficientEvent',
-    Step = 'Step'
+    Step = 'Step',
+    Chunk = 'Chunk'
 }
 
 /**
@@ -58,5 +59,41 @@ export class ExternalEvent<T> {
         this.blockTag = block?.tag;
         this.userId = user?.id;
         this.data = data;
+    }
+}
+
+/**
+ * Convert Document
+ */
+const getDoc = (document: IPolicyDocument) => {
+    const type = (document.document) ? (
+        (document.document.credentialSubject) ? ('VC') : (
+            (document.document.verifiableCredential) ? ('VP') : (
+                (document.document.verificationMethod) ? ('DID') : (null)
+            )
+        )
+    ) : (null);
+    return {
+        type,
+        id: document.id,
+        uuid: document.document?.id
+    }
+}
+
+/**
+ * External Documents
+ */
+export const ExternalDocuments = (document: IPolicyDocument | IPolicyDocument[]): any[] => {
+    try {
+        if (document) {
+            if (Array.isArray(document)) {
+                return document.map(doc => getDoc(doc));
+            } else {
+                return [getDoc(document)];
+            }
+        }
+        return null;
+    } catch (error) {
+        return null;
     }
 }

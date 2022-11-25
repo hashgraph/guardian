@@ -245,3 +245,9 @@
 .enum-edit-button-label {
     white-space: nowrap;
 }
+
+.readonly-extended-config {
+    display: grid;
+    grid-template-columns: 1fr 1fr 0px;
+    width: 100%;
+}

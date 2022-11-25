@@ -1,22 +1,21 @@
 import { Token } from '@entity/token';
 import { Topic } from '@entity/topic';
-import { VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument } from '@hedera-modules';
+import { VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument, TopicConfig } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import {
     DidDocumentStatus,
     DocumentSignature,
     DocumentStatus,
-    ExternalMessageEvents,
     IRootConfig,
     Schema,
     SchemaEntity,
     TopicType,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { ExternalEventChannel, IAuthUser } from '@guardian/common';
+import { IAuthUser } from '@guardian/common';
 import { Schema as SchemaCollection } from '@entity/schema';
-import { PrivateKey, TokenId, TopicId } from '@hashgraph/sdk';
+import { TokenId, TopicId } from '@hashgraph/sdk';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
@@ -274,192 +273,16 @@ export class PolicyUtils {
     }
 
     /**
-     * Mint
+     * Get Schema Context
      * @param ref
-     * @param token
-     * @param tokenValue
-     * @param root
-     * @param targetAccount
-     * @param uuid
+     * @param schema
      */
-    public static async mint(
-        ref: AnyBlockType,
-        token: Token,
-        tokenValue: number,
-        root: IRootConfig,
-        targetAccount: string,
-        uuid: string,
-        transactionMemo: string
-    ): Promise<void> {
-        const mintId = Date.now();
-        ref.log(`Mint(${mintId}): Start (Count: ${tokenValue})`);
-
-        const workers = new Workers();
-
-        const treasuryId = token.adminId;
-        const tokenId = token.tokenId;
-        let supplyKey: string;
-        let treasuryKey: string;
-
+    public static getSchemaContext(ref: AnyBlockType, schema: SchemaCollection): string {
         if (ref.dryRun) {
-            const tokenPK = PrivateKey.generate().toString();
-            supplyKey = tokenPK;
-            treasuryKey = tokenPK;
+            return `schema${schema.iri}`;
         } else {
-            [treasuryKey, supplyKey] = await Promise.all([
-                PolicyUtils.wallet.getUserKey(
-                    token.owner,
-                    KeyType.TOKEN_TREASURY_KEY,
-                    token.tokenId
-                ),
-                PolicyUtils.wallet.getUserKey(
-                    token.owner,
-                    KeyType.TOKEN_SUPPLY_KEY,
-                    token.tokenId
-                ),
-            ]);
+            return schema.contextURL;
         }
-
-        if (token.tokenType === 'non-fungible') {
-            const data = new Array<string>(Math.floor(tokenValue));
-            data.fill(uuid);
-            const serials: number[] = [];
-            const dataChunk = PolicyUtils.splitChunk(data, 10);
-            const mintPromiseArray: Promise<any>[] = [];
-            for (let i = 0; i < dataChunk.length; i++) {
-                const metaData = dataChunk[i];
-                if (i % 100 === 0) {
-                    ref.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
-                }
-
-                mintPromiseArray.push(workers.addRetryableTask({
-                    type: WorkerTaskType.MINT_NFT,
-                    data: {
-                        hederaAccountId: root.hederaAccountId,
-                        hederaAccountKey: root.hederaAccountKey,
-                        dryRun: ref.dryRun,
-                        tokenId,
-                        supplyKey,
-                        metaData,
-                        transactionMemo
-                    }
-                }, 1));
-
-            }
-            try {
-                for (const newSerials of await Promise.all(mintPromiseArray)) {
-                    for (const serial of newSerials) {
-                        serials.push(serial)
-                    }
-                }
-            } catch (error) {
-                ref.error(`Mint(${mintId}): Mint Error (${PolicyUtils.getErrorMessage(error)})`);
-            }
-
-            ref.log(`Mint(${mintId}): Minted (Count: ${serials.length})`);
-            ref.log(`Mint(${mintId}): Transfer ${treasuryId} -> ${targetAccount} `);
-
-            const serialsChunk = PolicyUtils.splitChunk(serials, 10);
-            const transferPromiseArray: Promise<any>[] = [];
-            for (let i = 0; i < serialsChunk.length; i++) {
-                const element = serialsChunk[i];
-                if (i % 100 === 0) {
-                    ref.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`);
-                }
-                transferPromiseArray.push(workers.addRetryableTask({
-                    type: WorkerTaskType.TRANSFER_NFT,
-                    data: {
-                        hederaAccountId: root.hederaAccountId,
-                        hederaAccountKey: root.hederaAccountKey,
-                        dryRun: ref.dryRun,
-                        tokenId,
-                        targetAccount,
-                        treasuryId,
-                        treasuryKey,
-                        element,
-                        transactionMemo
-                    }
-                }, 1));
-
-            }
-            try {
-                await Promise.all(transferPromiseArray);
-            } catch (error) {
-                ref.error(`Mint(${mintId}): Transfer Error (${PolicyUtils.getErrorMessage(error)})`);
-            }
-        } else {
-            try {
-                await workers.addRetryableTask({
-                    type: WorkerTaskType.MINT_FT,
-                    data: {
-                        hederaAccountId: root.hederaAccountId,
-                        hederaAccountKey: root.hederaAccountKey,
-                        dryRun: ref.dryRun,
-                        tokenId,
-                        supplyKey,
-                        tokenValue,
-                        transactionMemo
-                    }
-                }, 1);
-                await workers.addRetryableTask({
-                    type: WorkerTaskType.TRANSFER_FT,
-                    data: {
-                        hederaAccountId: root.hederaAccountId,
-                        hederaAccountKey: root.hederaAccountKey,
-                        dryRun: ref.dryRun,
-                        tokenId,
-                        targetAccount,
-                        treasuryId,
-                        treasuryKey,
-                        tokenValue,
-                        transactionMemo
-                    }
-                }, 1);
-            } catch (error) {
-                ref.error(`Mint FT(${mintId}): Mint/Transfer Error (${PolicyUtils.getErrorMessage(error)})`);
-            }
-        }
-
-        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: transactionMemo });
-
-        ref.log(`Mint(${mintId}): End`);
-    }
-
-    /**
-     * Wipe
-     * @param token
-     * @param tokenValue
-     * @param root
-     * @param targetAccount
-     * @param uuid
-     */
-    public static async wipe(
-        ref: AnyBlockType,
-        token: Token,
-        tokenValue: number,
-        root: IRootConfig,
-        targetAccount: string,
-        uuid: string
-    ): Promise<void> {
-        const workers = new Workers();
-        const wipeKey = await PolicyUtils.wallet.getUserKey(
-            token.owner,
-            KeyType.TOKEN_WIPE_KEY,
-            token.tokenId
-        );
-        await workers.addRetryableTask({
-            type: WorkerTaskType.WIPE_TOKEN,
-            data: {
-                hederaAccountId: root.hederaAccountId,
-                hederaAccountKey: root.hederaAccountKey,
-                dryRun: ref.dryRun,
-                token,
-                wipeKey,
-                targetAccount,
-                tokenValue,
-                uuid
-            }
-        }, 1);
     }
 
     /**
@@ -473,6 +296,25 @@ export class PolicyUtils {
                     return data.document.credentialSubject[0].id;
                 } else {
                     return data.document.credentialSubject.id;
+                }
+            }
+        } catch (error) {
+            return null;
+        }
+        return null;
+    }
+
+    /**
+     * Get subject id
+     * @param data
+     */
+    public static getCredentialSubject(data: any): any {
+        try {
+            if (data && data.document) {
+                if (Array.isArray(data.document.credentialSubject)) {
+                    return data.document.credentialSubject[0];
+                } else {
+                    return data.document.credentialSubject;
                 }
             }
         } catch (error) {
@@ -509,12 +351,13 @@ export class PolicyUtils {
 
     /**
      * Check Document Schema
+     * @param ref
      * @param document
      * @param schema
      */
-    public static checkDocumentSchema(document: any, schema: SchemaCollection): boolean {
+    public static checkDocumentSchema(ref: AnyBlockType, document: any, schema: SchemaCollection): boolean {
         const iri = schema.iri ? schema.iri.slice(1) : null;
-        const context = schema.contextURL;
+        const context = PolicyUtils.getSchemaContext(ref, schema);
         if (document && document.document) {
             if (Array.isArray(document.document.credentialSubject)) {
                 return (
@@ -900,11 +743,12 @@ export class PolicyUtils {
         root: IRootConfig,
         user: any,
         memoObj?: any
-    ): Promise<Topic> {
-        const rootTopic = await ref.databaseServer.getTopic({
-            policyId: ref.policyId,
-            type: TopicType.InstancePolicyTopic
-        });
+    ): Promise<TopicConfig> {
+        const rootTopic = await TopicConfig.fromObject(
+            await ref.databaseServer.getTopic({
+                policyId: ref.policyId,
+                type: TopicType.InstancePolicyTopic
+            }), !ref.dryRun);
 
         if (!topicName) {
             return rootTopic;
@@ -914,7 +758,7 @@ export class PolicyUtils {
             return rootTopic;
         }
 
-        let topic: Topic;
+        let topic: TopicConfig;
 
         const policyTopics = ref.policyInstance.policyTopics || [];
         const config = policyTopics.find(e => e.name === topicName);
@@ -923,18 +767,19 @@ export class PolicyUtils {
         }
 
         const topicOwner = config.static ? root.did : user.did;
-        topic = await ref.databaseServer.getTopic({
-            policyId: ref.policyId,
-            type: TopicType.DynamicTopic,
-            name: topicName,
-            owner: topicOwner
-        });
+        topic = await TopicConfig.fromObject(
+            await ref.databaseServer.getTopic({
+                policyId: ref.policyId,
+                type: TopicType.DynamicTopic,
+                name: topicName,
+                owner: topicOwner
+            }), !ref.dryRun);
 
         if (!topic) {
             const topicAccountId = config.static ? root.hederaAccountId : user.hederaAccountId;
             const topicAccountKey = config.static ? root.hederaAccountKey : user.hederaAccountKey;
             const topicHelper = new TopicHelper(topicAccountId, topicAccountKey, ref.dryRun);
-            [topic] = await topicHelper.create({
+            topic = await topicHelper.create({
                 type: TopicType.DynamicTopic,
                 owner: topicOwner,
                 name: config.name,
@@ -946,8 +791,11 @@ export class PolicyUtils {
                     ? memoObj
                     : config
             });
+            if(!ref.dryRun) {
+                await topic.saveKeys();
+            }
             await topicHelper.twoWayLink(topic, rootTopic, null);
-            topic = await ref.databaseServer.saveTopic(topic);
+            await ref.databaseServer.saveTopic(topic.toObject());
         }
 
         return topic;
@@ -958,10 +806,7 @@ export class PolicyUtils {
      * @param ref
      * @param topicId
      */
-    public static async getTopicById(
-        ref: AnyBlockType,
-        topicId: string | TopicId
-    ): Promise<Topic> {
+    public static async getPolicyTopic(ref: AnyBlockType, topicId: string | TopicId): Promise<TopicConfig> {
         let topic: Topic;
         if (topicId) {
             topic = await ref.databaseServer.getTopic({ policyId: ref.policyId, topicId: topicId.toString() });
@@ -972,7 +817,19 @@ export class PolicyUtils {
         if (!topic) {
             throw new Error(`Topic does not exist`);
         }
-        return topic;
+        return await TopicConfig.fromObject(topic, !ref.dryRun);
+    }
+
+    /**
+     * Get topic
+     * @param ref
+     */
+    public static async getInstancePolicyTopic(ref: AnyBlockType): Promise<TopicConfig> {
+        const topic = await ref.databaseServer.getTopic({ policyId: ref.policyId, type: TopicType.InstancePolicyTopic });
+        if (!topic) {
+            throw new Error(`Topic does not exist`);
+        }
+        return await TopicConfig.fromObject(topic, !ref.dryRun);
     }
 
     /**

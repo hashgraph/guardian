@@ -9,7 +9,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IRootConfig } from '@guardian/interfaces';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Reassigning block
@@ -137,8 +137,11 @@ export class ReassigningBlock {
         ref.log(`Reassigning Document: ${JSON.stringify(result)}`);
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, event.data);
 
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
+            documents: ExternalDocuments(result)
+        }));
     }
 }

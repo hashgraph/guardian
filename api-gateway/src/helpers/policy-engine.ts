@@ -43,7 +43,7 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param owner
      * @param status
      */
-    public async getTokensMap(owner: string, status?:string): Promise<any> {
+    public async getTokensMap(owner: string, status?: string): Promise<any> {
         return await this.request<any>(PolicyEngineEvents.GET_TOKENS_MAP, { owner, status });
     }
 
@@ -394,5 +394,24 @@ export class PolicyEngine extends ServiceRequestsBase {
      */
     public async selectGroup(user: any, policyId: string, uuid: string) {
         return await this.request(PolicyEngineEvents.SELECT_POLICY_GROUP, { user, policyId, uuid });
+    }
+
+    /**
+     * Get block data
+     * @param user
+     * @param policyId
+     */
+    public async getMultiPolicy(user: any, policyId: any) {
+        return await this.request(PolicyEngineEvents.GET_MULTI_POLICY, { user, policyId });
+    }
+
+    /**
+     * Set block data
+     * @param user
+     * @param policyId
+     * @param data
+     */
+    public async setMultiPolicy(user: any, policyId, data: any) {
+        return await this.request(PolicyEngineEvents.SET_MULTI_POLICY, { user, policyId, data });
     }
 }

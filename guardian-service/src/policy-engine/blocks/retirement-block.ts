@@ -12,7 +12,8 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { MintService } from '@policy-engine/multi-policy-service/mint-service';
 
 /**
  * Retirement block
@@ -20,7 +21,6 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
 @BasicBlock({
     blockType: 'retirementDocumentBlock',
     commonBlock: true,
-    publishExternalEvent: true,
     about: {
         label: 'Wipe',
         title: `Add 'Wipe' Block`,
@@ -98,7 +98,7 @@ export class RetirementBlock {
         root: IRootConfig,
         user: IPolicyUser,
         targetAccountId: string
-    ): Promise<any> {
+    ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         const uuid = GenerateUUIDv4();
@@ -110,9 +110,7 @@ export class RetirementBlock {
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
         ref.log(`Topic Id: ${topicId}`);
-        const topic = await PolicyUtils.getTopicById(ref, topicId);
-        ref.log(`Topic Id: ${topic?.id}`);
-
+        const topic = await PolicyUtils.getPolicyTopic(ref, topicId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(wipeVC);
         vcMessage.setRelationships(relationships);
@@ -145,9 +143,9 @@ export class RetirementBlock {
 
         await ref.databaseServer.saveVP(vpDocument);
 
-        await PolicyUtils.wipe(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());
+        await MintService.wipe(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());
 
-        return vp;
+        return [vpDocument, tokenValue];
     }
 
     /**
@@ -222,11 +220,27 @@ export class RetirementBlock {
 
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
 
-        await this.retirementProcessing(token, vcs, vsMessages, topicId, root, docOwner, targetAccountId);
+        const [vp, tokenValue] = await this.retirementProcessing(
+            token,
+            vcs,
+            vsMessages,
+            topicId,
+            root,
+            docOwner,
+            targetAccountId
+        );
+
         ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, docOwner, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data);
 
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, docOwner, {
+            tokenId: token.tokenId,
+            accountId: targetAccountId,
+            amount: tokenValue,
+            documents: ExternalDocuments(docs),
+            result: ExternalDocuments(vp),
+        }));
     }
 
     /**

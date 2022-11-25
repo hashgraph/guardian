@@ -20,10 +20,6 @@ export interface PolicyBlockDecoratorOptions {
      * Block about
      */
     about?: BlockAbout;
-    /**
-     * Publish external event
-     */
-    publishExternalEvent?: boolean;
 }
 
 /**

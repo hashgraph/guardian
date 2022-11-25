@@ -13,7 +13,7 @@ import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-m
 import { KeyType } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { DatabaseServer } from '@database-modules';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Custom logic block
@@ -66,12 +66,14 @@ export class CustomLogicBlock {
         try {
             event.data.data = await this.execute(event.data, event.user);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+                documents: ExternalDocuments(event?.data?.data)
+            }));
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
         }
-
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
     }
 
     /**

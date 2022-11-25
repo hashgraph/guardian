@@ -1,13 +1,13 @@
 import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-default-options';
 import { EventConfig } from '@policy-engine/interfaces';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
-import { ExternalMessageEvents, PolicyRole, PolicyType } from '@guardian/interfaces';
+import { PolicyRole, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
-import { ExternalEventChannel, Logger } from '@guardian/common';
+import { Logger } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import deepEqual from 'deep-equal';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
@@ -79,10 +79,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Block about
              */
             static about = defaultOptions.about;
-            /**
-             * Publish external event
-             */
-            static publishExternalEvent = defaultOptions.publishExternalEvent;
             /**
              * Old data state
              * @protected
@@ -330,18 +326,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 let result: any;
                 if (typeof super.runAction === 'function') {
                     result = await super.runAction(event);
-                }
-                if (this.publishExternalEvent) {
-                    new ExternalEventChannel().publishMessage(
-                        ExternalMessageEvents.BLOCK_RUN_EVENTS,
-                        {
-                            uuid: this.uuid,
-                            blockType: this.blockType,
-                            blockTag: this.tag,
-                            data: event.data,
-                            result
-                        }
-                    )
                 }
                 return result;
             }

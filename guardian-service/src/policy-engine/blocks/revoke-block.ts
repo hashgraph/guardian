@@ -7,7 +7,7 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 export const RevokedStatus = 'Revoked';
 
@@ -53,7 +53,7 @@ export class RevokeBlock {
         revokeMessage: string,
         parentId?: string[]
     ) {
-        const topic = await PolicyUtils.getTopicById(ref, message.topicId);
+        const topic = await PolicyUtils.getPolicyTopic(ref, message.topicId);
         message.revoke(revokeMessage, parentId);
         await messageServer
             .setTopicObject(topic)
@@ -185,8 +185,11 @@ export class RevokeBlock {
             data: documents
         };
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
 
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+            documents: ExternalDocuments(documents),
+        }));
     }
 
     /**

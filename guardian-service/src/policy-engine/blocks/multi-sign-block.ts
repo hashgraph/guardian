@@ -13,7 +13,7 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { MessageAction, MessageServer, VcDocument, VPMessage } from '@hedera-modules';
 import { PolicyRoles } from '@entity/policy-roles';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Sign Status
@@ -168,7 +168,9 @@ export class MultiSignBlock {
 
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
 
-        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, null));
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
+            documents: ExternalDocuments(document)
+        }));
     }
 
     /**
@@ -216,7 +218,7 @@ export class MultiSignBlock {
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
             vpMessage.setRelationships(sourceDoc.messageId ? [sourceDoc.messageId] : []);
-            const topic = await PolicyUtils.getTopicById(ref, sourceDoc.topicId);
+            const topic = await PolicyUtils.getPolicyTopic(ref, sourceDoc.topicId);
             const messageServer = new MessageServer(
                 documentOwnerAccount.hederaAccountId,
                 documentOwnerAccount.hederaAccountKey,
@@ -236,11 +238,16 @@ export class MultiSignBlock {
             await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.SIGNED);
 
             ref.triggerEvents(PolicyOutputEventType.SignatureQuorumReachedEvent, currentUser, { data: sourceDoc });
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.SignatureQuorumReachedEvent, ref, null, null));
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.SignatureQuorumReachedEvent, ref, null, {
+                documents: ExternalDocuments(data),
+                result: ExternalDocuments(vpDocument),
+            }));
         } else if (declined >= declinedThreshold) {
             await ref.databaseServer.setMultiSigStatus(ref.uuid, documentId, currentUser.group, DocumentStatus.DECLINED);
             ref.triggerEvents(PolicyOutputEventType.SignatureSetInsufficientEvent, currentUser, { data: sourceDoc });
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.SignatureSetInsufficientEvent, ref, null, null));
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.SignatureSetInsufficientEvent, ref, null, {
+                documents: ExternalDocuments(data)
+            }));
         }
     }
 

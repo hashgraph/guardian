@@ -19,6 +19,8 @@ import { Artifact as ArtifactCollection } from '@entity/artifact';
 import { ArtifactChunk as ArtifactChunkCollection } from '@entity/artifact-chunk';
 import { Binary } from 'bson';
 import { SplitDocuments } from '@entity/split-documents';
+import { MultiPolicy } from '@entity/multi-policy';
+import { MultiPolicyTransaction } from '@entity/multi-policy-transaction';
 
 /**
  * Database server
@@ -1536,9 +1538,10 @@ export class DatabaseServer {
     /**
      * Get policies
      * @param filters
+     * @param options
      */
-    public static async getPolicies(filters?: any): Promise<Policy[]> {
-        return await new DataBaseHelper(Policy).find(filters);
+    public static async getPolicies(filters?: any, options?: any): Promise<Policy[]> {
+        return await new DataBaseHelper(Policy).find(filters, options);
     }
 
     /**
@@ -2043,5 +2046,75 @@ export class DatabaseServer {
             }
         })).map(item => item.data.buffer);
         return artifactChunks.length > 0 ? Buffer.concat(artifactChunks) : Buffer.from('');
+    }
+
+    /**
+     * Get Multi Policy link
+     * @param instanceTopicId
+     * @param owner
+     * @returns MultiPolicy
+     */
+    public static async getMultiPolicy(instanceTopicId: string, owner: string): Promise<MultiPolicy> {
+        return await new DataBaseHelper(MultiPolicy).findOne({ instanceTopicId, owner });
+    }
+
+    /**
+     * Create Multi Policy object
+     * @param multiPolicy
+     * @returns MultiPolicy
+     */
+    public static createMultiPolicy(multiPolicy: any): MultiPolicy {
+        return new DataBaseHelper(MultiPolicy).create(multiPolicy);
+    }
+
+    /**
+     * Save Multi Policy object
+     * @param multiPolicy
+     * @returns multiPolicy
+     */
+    public static async saveMultiPolicy(multiPolicy: MultiPolicy): Promise<MultiPolicy> {
+        return await new DataBaseHelper(MultiPolicy).save(multiPolicy);
+    }
+
+    /**
+     * Get Token
+     * @param tokenId
+     */
+    public static async getTokenById(tokenId: string): Promise<TokenCollection> {
+        return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
+    }
+
+    /**
+     * Create MultiPolicyTransaction
+     * @param transaction
+     */
+    public static async createMultiPolicyTransaction(transaction:any): Promise<MultiPolicyTransaction> {
+        const item = new DataBaseHelper(MultiPolicyTransaction).create(transaction);
+        return await new DataBaseHelper(MultiPolicyTransaction).save(item);
+    }
+
+    /**
+     * Get MultiPolicyTransaction
+     * @param policyId
+     * @param owner
+     */
+    public static async getMultiPolicyTransactions(policyId: string, user: string): Promise<MultiPolicyTransaction[]> {
+        return await new DataBaseHelper(MultiPolicyTransaction).find({ policyId, user, status: 'Waiting' });
+    }
+
+    /**
+     * Update MultiPolicyTransaction
+     * @param item
+     */
+    public static async updateMultiPolicyTransactions(item: MultiPolicyTransaction): Promise<void> {
+        await new DataBaseHelper(MultiPolicyTransaction).update(item);
+    }
+
+    /**
+     * Get MultiPolicyTransaction count
+     * @param policyId
+     */
+    public static async countMultiPolicyTransactions(policyId: string) {
+        return await new DataBaseHelper(MultiPolicyTransaction).count({ policyId, status: 'Waiting' });
     }
 }
