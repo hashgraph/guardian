@@ -12,6 +12,7 @@ import { MintService } from './mint-service';
 import { Users } from '@helpers/users';
 import { MultiPolicyTransaction } from '@entity/multi-policy-transaction';
 import { Token } from '@entity/token';
+import { Logger } from '@guardian/common';
 
 /**
  * Synchronization Service
@@ -72,6 +73,8 @@ export class SynchronizationService {
             if (SynchronizationService.taskStatus) {
                 return;
             }
+            new Logger().info('Start synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+
             SynchronizationService.taskStatus = true;
 
             const policies = await DatabaseServer.getPolicies({
@@ -88,9 +91,14 @@ export class SynchronizationService {
                 tasks.push(SynchronizationService.taskByPolicy(policy));
             }
             await Promise.all<any[][]>(tasks);
+
+            SynchronizationService.taskStatus = false;
+
+            new Logger().info('Complete synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         } catch (error) {
             SynchronizationService.taskStatus = false;
             console.log(error);
+            new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         }
     }
 
@@ -163,6 +171,7 @@ export class SynchronizationService {
             await Promise.all<any[][]>(tasks);
         } catch (error) {
             console.log(error);
+            new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         }
     }
 
