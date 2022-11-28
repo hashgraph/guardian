@@ -143,8 +143,8 @@ Promise.all([
     try {
         const policyGenerator = new BlockTreeGenerator();
         const policyService = new PolicyEngineService(channel, apiGatewayChannel);
-        await policyGenerator.init();
         policyService.registerListeners();
+        await policyGenerator.init();
         SynchronizationService.start();
     } catch (error) {
         console.error(error.message);
