@@ -57,4 +57,18 @@ export class InformService {
             enableHtml: true,
         });
     }
+
+    public errorShortMessage(text: string, header: string) {
+        const body = `
+            <div>${text}</div>
+        `;
+        this.toastr.error(body, header, {
+            timeOut: 100000,
+            extendedTimeOut: 30000,
+            closeButton: true,
+            positionClass: 'toast-bottom-right',
+            toastClass: 'ngx-toastr error-message-toastr',
+            enableHtml: true,
+        });
+    }
 }
