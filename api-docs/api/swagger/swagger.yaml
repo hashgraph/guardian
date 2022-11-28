@@ -591,6 +591,27 @@ components:
           type: string
         type:
           type: string
+    MultiPolicyConfig:
+      type: object
+      properties:
+        id:
+          type: string
+        uuid:
+          type: string 
+        owner:
+          type: string
+        type:
+          type: string
+        instanceTopicId:
+          type: string
+        mainPolicyTopicId:
+          type: string
+        synchronizationTopicId:
+          type: string
+        policyOwner:
+          type: string
+        user:
+          type: string
 tags:
   - name: "accounts"
     description: "Operations related to Guardian users"
@@ -4004,7 +4025,84 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
+  /policies/{policyId}/multiple:
+    post:
+      tags:
+        - policies
+      description: Creates a link between the current policy and the main policy. Or creates a group making the current policy the main one.
+      security:
+        - bearerAuth: []
+      summary: Requests Multi policy config.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      requestBody:
+        description: Multi policy config.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - mainPolicyTopicId
+                - synchronizationTopicId
+              properties:
+                mainPolicyTopicId:
+                  type: string
+                synchronizationTopicId:
+                  type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultiPolicyConfig'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - policies
+      description: Requests Multi policy config.
+      security:
+        - bearerAuth: []
+      summary: Requests Multi policy config.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultiPolicyConfig'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /external:
     post:
       tags:
