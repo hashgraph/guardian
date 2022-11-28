@@ -712,18 +712,9 @@ export class DatabaseServer {
     public async getAggregateDocuments(
         policyId: string,
         blockId: string,
-        owner?: string,
-        group?: string
+        filters: any = {},
     ): Promise<AggregateVC[]> {
-        if (owner) {
-            if (group) {
-                return await this.find(AggregateVC, { policyId, blockId, owner, group });
-            } else {
-                return await this.find(AggregateVC, { policyId, blockId, owner });
-            }
-        } else {
-            return await this.find(AggregateVC, { policyId, blockId });
-        }
+        return await this.find(AggregateVC, { policyId, blockId, ...filters });
     }
 
     /**
