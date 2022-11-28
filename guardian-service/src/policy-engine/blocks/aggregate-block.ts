@@ -7,7 +7,8 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import ObjGet from 'lodash.get';
+import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
@@ -32,7 +33,23 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
             PolicyOutputEventType.RunEvent,
             PolicyOutputEventType.RefreshEvent
         ],
-        defaultEvent: true
+        defaultEvent: true,
+        properties: [{
+            name: 'groupByFields',
+            label: 'Group By Fields',
+            title: 'Group By Fields',
+            type: PropertyType.Array,
+            items: {
+                label: 'Field Path',
+                value: '@fieldPath',
+                properties: [{
+                    name: 'fieldPath',
+                    label: 'Field Path',
+                    title: 'Field Path',
+                    type: PropertyType.Path
+                }]
+            }
+        }]
     }
 })
 export class AggregateBlock {
@@ -85,17 +102,40 @@ export class AggregateBlock {
         ref.log(`tick scheduler, ${ids.length}`);
 
         const rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid);
+        const usingFieldsGroup =
+            ref.options.groupByFields && ref.options.groupByFields.length > 0;
 
-        const map = new Map<string, AggregateVC[]>();
+        const map = new Map<
+            string,
+            AggregateVC[] | Map<string, AggregateVC[]>
+        >();
         const removeMsp: AggregateVC[] = [];
         for (const id of ids) {
-            map.set(id, []);
+            map.set(
+                id,
+                usingFieldsGroup ? new Map<string, AggregateVC[]>() : []
+            );
         }
 
         for (const element of rawEntities) {
             const id = PolicyUtils.getScopeId(element);
             if (map.has(id)) {
-                map.get(id).push(element);
+                if (usingFieldsGroup) {
+                    const groupedDocuments = map.get(id) as Map<string, AggregateVC[]>;
+                    const documentKey = ref.options.groupByFields
+                        .map((item) =>
+                            JSON.stringify(ObjGet(element, item.fieldPath))
+                        )
+                        .join(':');
+                    if (groupedDocuments.has(documentKey)) {
+                        groupedDocuments.get(documentKey).push(element);
+                    } else {
+                        groupedDocuments.set(documentKey, [element]);
+                    }
+                } else {
+                    const userDocuments = map.get(id) as AggregateVC[];
+                    userDocuments.push(element);
+                }
             } else {
                 removeMsp.push(element);
             }
@@ -106,19 +146,41 @@ export class AggregateBlock {
         }
 
         for (const id of ids) {
-            const documents = map.get(id);
-            if (documents.length) {
-                await ref.databaseServer.removeAggregateDocuments(documents);
+            if (usingFieldsGroup) {
+                const groupedDocuments = map.get(id) as Map<
+                    string,
+                    AggregateVC[]
+                >;
+                for (const [, documents] of groupedDocuments) {
+                    await this.sendCronDocuments(ref, id, documents);
+                }
+            } else {
+                const documents = map.get(id) as AggregateVC[];
+                await this.sendCronDocuments(ref, id, documents);
             }
-            if (documents.length || ref.options.emptyData) {
-                const state = { data: documents };
-                const user = PolicyUtils.getDocumentOwner(ref, documents[0]);
-                ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
-                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
-                PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickCron, ref, user, {
-                    documents: ExternalDocuments(documents)
-                }));
-            }
+        }
+    }
+    /**
+     * Send cron documents
+     * @param ref Block ref
+     * @param userId User Id
+     * @param documents Documents
+     */
+    private async sendCronDocuments(ref: AnyBlockType, userId: string, documents: AggregateVC[]) {
+        if (documents.length) {
+            await ref.databaseServer.removeAggregateDocuments(documents);
+        }
+
+        if (documents.length || ref.options.emptyData) {
+            const state = { data: documents };
+            const user = PolicyUtils.getPolicyUserById(ref, userId);
+            ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+            PolicyComponentsUtils.ExternalEventFn(
+                new ExternalEvent(ExternalEventType.TickCron, ref, user, {
+                    documents: ExternalDocuments(documents),
+                })
+            );
         }
     }
 
@@ -170,16 +232,31 @@ export class AggregateBlock {
     /**
      * Tick aggregate
      * @param ref
-     * @param owner
+     * @param document
      * @private
      */
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    private async tickAggregate(ref: AnyBlockType, owner: string, group: string) {
+    private async tickAggregate(ref: AnyBlockType, document: any) {
         const { expressions, condition } = ref.options;
 
-        const rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid, owner, group);
+        const filters: any = {};
+        if (document.owner) {
+            if (document.group) {
+                filters.owner = document.owner;
+                filters.group = document.group;
+            } else {
+                filters.owner = document.owner;
+            }
+        }
+        if (ref.options.groupByFields) {
+            for (const groupByField of ref.options.groupByFields) {
+                filters[groupByField.fieldPath] = ObjGet(document, groupByField.fieldPath);
+            }
+        }
+
+        const rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid, filters);
 
         const scopes: any[] = [];
         for (const doc of rawEntities) {
@@ -189,13 +266,13 @@ export class AggregateBlock {
         const result = PolicyUtils.evaluateFormula(condition, scope);
 
         if (result === 'Incorrect formula') {
-            ref.error(`tick aggregate: ${owner}, '${condition}' (${JSON.stringify(scope)}) = ${result}`);
+            ref.error(`tick aggregate: ${document.owner}, '${condition}' (${JSON.stringify(scope)}) = ${result}`);
         } else {
-            ref.log(`tick aggregate: ${owner}, '${condition}' (${JSON.stringify(scope)}) = ${result}`);
+            ref.log(`tick aggregate: ${document.owner}, '${condition}' (${JSON.stringify(scope)}) = ${result}`);
         }
 
         if (result === true) {
-            const user = PolicyUtils.getPolicyUser(ref, owner, group);
+            const user = PolicyUtils.getPolicyUser(ref, document.owner, document.group);
             await ref.databaseServer.removeAggregateDocuments(rawEntities);
             const state = { data: rawEntities };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
@@ -226,22 +303,18 @@ export class AggregateBlock {
         const { aggregateType } = ref.options;
 
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
-        let owner: string = null;
-        let group: string = null;
         if (Array.isArray(docs)) {
             for (const doc of docs) {
-                owner = doc.owner;
-                group = doc.group;
                 await this.saveDocuments(ref, doc);
+                if (aggregateType === 'cumulative') {
+                    await this.tickAggregate(ref, doc);
+                }
             }
         } else {
-            owner = docs.owner;
-            group = docs.group;
             await this.saveDocuments(ref, docs);
-        }
-
-        if (aggregateType === 'cumulative') {
-            this.tickAggregate(ref, owner, group).then();
+            if (aggregateType === 'cumulative') {
+                await this.tickAggregate(ref, docs);
+            }
         }
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
@@ -281,6 +354,17 @@ export class AggregateBlock {
                 }
             } else {
                 resultsContainer.addBlockError(ref.uuid, 'Option "aggregateType" must be one of period, cumulative');
+            }
+            if (
+                ref.options.groupByFields &&
+                ref.options.groupByFields.length > 0
+            ) {
+                if (ref.options.groupByFields.find((item) => !item.fieldPath)) {
+                    resultsContainer.addBlockError(
+                        ref.uuid,
+                        'Field path in group fields can not be empty'
+                    );
+                }
             }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);

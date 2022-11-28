@@ -843,6 +843,15 @@ export class PolicyUtils {
     }
 
     /**
+     * Get Policy User By Id
+     * @param ref
+     * @param userId
+     */
+     public static getPolicyUserById(ref: AnyBlockType, userId: string): IPolicyUser {
+        return PolicyUser.fromUserId(userId, null, !!ref.dryRun);
+    }
+
+    /**
      * Get Policy User
      * @param ref
      * @param document
