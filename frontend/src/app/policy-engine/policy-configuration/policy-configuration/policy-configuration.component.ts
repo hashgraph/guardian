@@ -794,7 +794,7 @@ export class PolicyConfigurationComponent implements OnInit {
     errorMessage(errors: string[]) {
         if(errors && errors.length) {
             const text = errors.map((text) => `<div>${text}</div>`).join('');
-            this.informService.errorMessage(text, 'The policy is invalid');
+            this.informService.errorShortMessage(text, 'The policy is invalid');
         }
     }
 }
