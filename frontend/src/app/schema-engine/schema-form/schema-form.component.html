@@ -4,7 +4,7 @@
         <div *ngIf="!item.hide" class="form-field-container">
             <div *ngIf="!item.isArray && !item.isRef" class="form-field">
                 <div class="invalid-field-label"
-                    *ngIf="options.controls[item.name] && !options.controls[item.name].valid">
+                    *ngIf="options.controls[item.name] && !options.controls[item.name].valid && !options.controls[item.name].disabled">
                     <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
                     <span>
                         <b>{{GetInvalidMessageByFieldType(item)}}</b>
@@ -21,7 +21,7 @@
                         <div *ngIf="isIPFS(item)">
                             <input type="file" class="file-input" style="display:none;" accept="image/*"
                                 (change)="onFileSelected($event, options.controls[item.name], item)" #fileUpload>
-                            <div class="file-upload" style="position: absolute; right:0; top:0;">
+                            <div class="file-upload">
                                 <ng-container [ngSwitch]="item.fileUploading">
                                     <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
                                     <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
@@ -56,7 +56,7 @@
                     </mat-form-field>
 
                     <div *ngIf="isBoolean(item)" class="boolean-form-field"
-                        [ngClass]="{'required-boolean-field': item.required && !options.controls[item.name].valid}">
+                        [ngClass]="{'required-boolean-field': item.required && !options.controls[item.name].valid && !options.controls[item.name].disabled }">
                         <mat-radio-group [formControlName]="item.name">
                             <mat-radio-button color="primary" [value]="true">True</mat-radio-button>
                             <mat-radio-button color="primary" [value]="false">False</mat-radio-button>
@@ -69,6 +69,9 @@
                             <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue">
                                 {{enumValue}}
                             </mat-option>
+                            <mat-option *ngIf="item.fileUploading">
+                                <mat-spinner class="loading-enum-values" [diameter]="35"></mat-spinner>
+                            </mat-option>
                         </mat-select>
                     </mat-form-field>
 
@@ -77,7 +80,7 @@
             </div>
 
             <div *ngIf="!item.isArray && item.isRef" class="form-field-group">
-                <div class="invalid-field-label" *ngIf="item.control && !item.control.valid">
+                <div class="invalid-field-label" *ngIf="item.control && !item.control.valid && !item.control.disabled">
                     <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
                     <span>
                         <b>Please make sure all fields in schema contain a valid value</b>
@@ -98,7 +101,7 @@
                         <mat-icon>add</mat-icon> Add Entity
                     </span>
                 </div>
-                <div *ngIf="item.control && !item.required" class="remove-btn" (click)="removeGroup(item)">
+                <div *ngIf="item.control && !item.required && !item.control.disabled" class="remove-btn" (click)="removeGroup(item)">
                     <span>
                         <mat-icon>remove</mat-icon> Remove Entity
                     </span>
@@ -106,7 +109,7 @@
             </div>
 
             <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
-                <div class="invalid-field-label" *ngIf="item.control && !item.control.valid">
+                <div class="invalid-field-label" *ngIf="item.control && !item.control.valid && !item.control.disabled">
                     <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
                     <span>
                         <b>{{GetInvalidMessageByFieldType(item)}}</b>
@@ -128,7 +131,7 @@
                                 <div *ngIf="isIPFS(item)">
                                     <input type="file" class="file-input" style="display:none;" accept="image/*"
                                         (change)="onFileSelected($event, listItem.control, listItem)" #fileUpload>
-                                    <div class="file-upload" style="position: absolute; right:0; top:0;">
+                                    <div class="file-upload">
                                         <ng-container [ngSwitch]="listItem.fileUploading">
                                             <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>
                                             <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
@@ -179,17 +182,20 @@
                                     <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue">
                                         {{enumValue}}
                                     </mat-option>
+                                    <mat-option *ngIf="item.fileUploading">
+                                        <mat-spinner class="loading-enum-values" [diameter]="35"></mat-spinner>
+                                    </mat-option>
                                 </mat-select>
                             </mat-form-field>
 
                             <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
                         </div>
                     </div>
-                    <div class="fields-remove" (click)="removeItem(item, listItem)">
+                    <div class="fields-remove" *ngIf="!item.control.disabled" (click)="removeItem(item, listItem)">
                         <mat-icon>delete</mat-icon>
                     </div>
                 </div>
-                <div class="add-btn" (click)="addItem(item)">
+                <div class="add-btn" *ngIf="!item.control.disabled" (click)="addItem(item)">
                     <span>
                         <mat-icon>add</mat-icon> Add Field
                     </span>
@@ -197,7 +203,7 @@
             </div>
 
             <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group">
-                <div class="invalid-field-label" *ngIf="!item.control.valid">
+                <div class="invalid-field-label" *ngIf="!item.control.valid && !item.control.disabled">
                     <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
                     <span>
                         <b>Please make sure all fields in schemas contain a valid value</b>
@@ -212,7 +218,7 @@
                             [private-fields]="hide" [delimiter-hide]="true" [conditions]="item.conditions"
                             [preset]="listItem.preset">
                         </app-schema-form>
-                        <div class="remove-btn" (click)="removeItem(item, listItem)">
+                        <div class="remove-btn" *ngIf="!item.control.disabled" (click)="removeItem(item, listItem)">
                             <span>
                                 <mat-icon>remove</mat-icon> Remove Entity
                             </span>
@@ -222,7 +228,7 @@
                         <div class="delimiter"></div>
                     </div>
                 </div>
-                <div class="add-btn" (click)="addItem(item)">
+                <div class="add-btn" *ngIf="!item.control.disabled" (click)="addItem(item)">
                     <span>
                         <mat-icon>add</mat-icon> Add Entity
                     </span>

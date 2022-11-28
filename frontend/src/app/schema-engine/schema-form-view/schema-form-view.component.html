@@ -18,7 +18,10 @@
                                     Copy CID
                                 </button>
                             </div>
-                            <img class="ipfs-image" [src]="item.value" [alt]="item.value">
+                            <img *ngIf="!item.loading; else loading" class="ipfs-image" [src]="item.imgSrc" [alt]="item.value">
+                            <ng-template #loading>
+                                <mat-spinner class="loading"></mat-spinner>
+                            </ng-template>
                         </div>
                     </mat-form-field>
 
@@ -76,46 +79,49 @@
                             <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
 
                             <mat-form-field *ngIf="isInput(item)" class="example-full-width" appearance="outline">
-                                <input readonly matInput [value]="listItem" [ngClass]="{'hidden-item':  isIPFS(item) }">
+                                <input readonly matInput [value]="listItem.value" [ngClass]="{'hidden-item':  isIPFS(item) }">
                                 <div *ngIf=" isIPFS(item)">
                                     <div class="image-action-buttons">
-                                        <button mat-button type="button" [cdkCopyToClipboard]="listItem">
+                                        <button mat-button type="button" [cdkCopyToClipboard]="listItem.value">
                                             Copy Link
                                         </button>
-                                        <button mat-button color="accent" [cdkCopyToClipboard]="getCID(listItem)">
+                                        <button mat-button color="accent" [cdkCopyToClipboard]="getCID(listItem.value)">
                                             Copy CID
                                         </button>
                                     </div>
-                                    <img class="ipfs-image" [src]="listItem" [alt]="listItem">
+                                    <img *ngIf="!listItem.loading; else loading" class="ipfs-image" [src]="listItem.imgSrc" [alt]="listItem.value">
+                                    <ng-template #loading>
+                                        <mat-spinner class="loading"></mat-spinner>
+                                    </ng-template>
                                 </div>
                             </mat-form-field>
 
                             <mat-form-field *ngIf="isTime(item)" class="example-full-width" appearance="outline">
-                                <input readonly matInput type="time" step="1" [value]="listItem">
+                                <input readonly matInput type="time" step="1" [value]="listItem.value">
                             </mat-form-field>
 
                             <mat-form-field *ngIf="isDateTime(item)" class="example-full-width" appearance="outline">
-                                <input readonly matInput [ngxMatDatetimePicker]="dateTimePicker" [value]="listItem">
+                                <input readonly matInput [ngxMatDatetimePicker]="dateTimePicker" [value]="listItem.value">
                                 <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
                                 <ngx-mat-datetime-picker [disabled]="true" #dateTimePicker [enableMeridian]="true">
                                 </ngx-mat-datetime-picker>
                             </mat-form-field>
 
                             <mat-form-field *ngIf="isDate(item)" class="example-full-width" appearance="outline">
-                                <input readonly [value]="listItem" matInput [matDatepicker]="dateItem">
+                                <input readonly [value]="listItem.value" matInput [matDatepicker]="dateItem">
                                 <mat-datepicker-toggle matSuffix [for]="dateItem"></mat-datepicker-toggle>
                                 <mat-datepicker [disabled]="true" #dateItem></mat-datepicker>
                             </mat-form-field>
 
                             <div *ngIf="isBoolean(item)" class="boolean-form-field">
-                                <mat-radio-group [value]="listItem" [disabled]="true">
+                                <mat-radio-group [value]="listItem.value" [disabled]="true">
                                     <mat-radio-button color="primary" [value]="true">True</mat-radio-button>
                                     <mat-radio-button color="primary" [value]="false">False</mat-radio-button>
                                     <mat-radio-button color="primary" *ngIf="!item.required" value="">Unset
                                     </mat-radio-button>
                                 </mat-radio-group>
                             </div>
-                            
+
                             <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
                         </div>
                     </div>

@@ -2,7 +2,7 @@ import { FlatTreeControl } from '@angular/cdk/tree';
 import { Component, ElementRef, EventEmitter, Injectable, Input, Output, SimpleChanges } from '@angular/core';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
 import { BehaviorSubject, Observable, of as observableOf } from 'rxjs';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { SelectionModel } from '@angular/cdk/collections';
 import { BlockNode } from 'src/app/policy-engine/helpers/tree-data-source/tree-data-source';
 import { RegisteredBlocks } from '../../registered-blocks';
@@ -34,6 +34,7 @@ export class FlatBlockNode {
 export class TreeFlatOverview {
     @Input('blocks') blocks!: BlockNode[];
     @Input('errors') errors!: any;
+    @Input('readonly') readonly!: boolean;
 
     @Output('delete') delete = new EventEmitter();
     @Output('select') select = new EventEmitter();
@@ -55,6 +56,7 @@ export class TreeFlatOverview {
     validateDrop = false;
     isCollapseAll = true;
     eventsDisabled = false;
+    visibleMoveActions = false;
 
     public readonly context: ElementRef;
 
@@ -124,13 +126,60 @@ export class TreeFlatOverview {
         return a.id == b.id;
     }
 
+    onMoveBlockUpDown(position: number) {
+        const currentBlockParent = this.currentBlock?.parent;
+        if (currentBlockParent && currentBlockParent.children) {
+            const currentBlockIndex = currentBlockParent.children.indexOf(this.currentBlock);
+            moveItemInArray(currentBlockParent.children, currentBlockIndex, currentBlockIndex + position);
+            this.reorder.emit(this.dataSource.data);
+        }
+    }
+
+    onMoveBlockLeft() {
+        const currentBlockParent = this.currentBlock?.parent;
+        if (currentBlockParent &&
+            currentBlockParent.children &&
+            currentBlockParent.parent &&
+            currentBlockParent.parent.children
+        ) {
+            const currentBlockIndex = currentBlockParent.children.indexOf(this.currentBlock);
+            const currentBlockParentIndex = currentBlockParent.parent.children.indexOf(currentBlockParent);
+            this.currentBlock.parent = currentBlockParent.parent;
+            transferArrayItem(
+                currentBlockParent.children,
+                currentBlockParent.parent.children,
+                currentBlockIndex,
+                currentBlockParentIndex
+            );
+            this.reorder.emit(this.dataSource.data);
+        }
+    }
+
+    onMoveBlockRight() {
+        const currentBlockParent = this.currentBlock?.parent;
+        if (currentBlockParent && currentBlockParent.children) {
+            const currentBlockIndex = currentBlockParent.children.indexOf(this.currentBlock);
+            const nextBlock = currentBlockParent.children[currentBlockIndex + 1];
+            if (nextBlock && nextBlock.children) {
+                transferArrayItem(currentBlockParent.children, nextBlock.children, currentBlockIndex, 0);
+                this.expansionModel.select(nextBlock.id);
+                this.reorder.emit(this.dataSource.data);
+            }
+        }
+    }
+
     /**
      * Handle the drop - here we rearrange the data based on the drop event,
      * then rebuild the tree.
      * */
     drop(event: CdkDragDrop<string[]>) {
         // ignore drops outside of the tree
-        if (!event.isPointerOverContainer) return;
+        if (
+            !event.isPointerOverContainer ||
+            event.previousIndex === event.currentIndex
+        ) {
+            return;
+        }
 
         // construct a list of visible nodes, this will match the DOM.
         // the cdkDragDrop event.currentIndex jives with visible nodes.
@@ -157,13 +206,21 @@ export class TreeFlatOverview {
         }
 
         // determine where to insert the node
-        const nodeAtDest = visibleNodes[event.currentIndex];
+        const lastElement =
+            event.previousIndex < event.currentIndex &&
+            !visibleNodes[event.currentIndex + 1];
+        const nodeAtDest =
+            event.previousIndex < event.currentIndex
+                ? visibleNodes[event.currentIndex + 1] ||
+                  visibleNodes[event.currentIndex]
+                : visibleNodes[event.currentIndex];
         const newSiblings = findNodeSiblings(changedData, nodeAtDest, this.compare);
         if (!newSiblings) return;
+        const node = event.item.data as FlatBlockNode;
+        const sameContainer = newSiblings.includes(node.node);
         const insertIndex = newSiblings.findIndex(s => this.compare(s, nodeAtDest));
 
         // remove the node from its old place
-        const node = event.item.data as FlatBlockNode;
         const siblings = findNodeSiblings(changedData, node.node, this.compare);
         const siblingIndex = siblings.findIndex(n => this.compare(n, node.node));
         const nodeToInsert: BlockNode = siblings.splice(siblingIndex, 1)[0];
@@ -177,7 +234,19 @@ export class TreeFlatOverview {
         }
 
         // insert node
-        newSiblings.splice(insertIndex, 0, nodeToInsert);
+        newSiblings.splice(
+            event.previousIndex < event.currentIndex &&
+                sameContainer &&
+                !lastElement
+                ? insertIndex - 1 < 0
+                    ? 0
+                    : insertIndex - 1
+                : lastElement
+                ? insertIndex + 1
+                : insertIndex,
+            0,
+            nodeToInsert
+        );
 
         // rebuild tree with mutated data
         // this.rebuildTreeForData(changedData);
@@ -235,7 +304,10 @@ export class TreeFlatOverview {
     /**
      * Experimental - opening tree nodes as you drag over them
      */
-    dragStart() {
+    dragStart(node?: any) {
+        if (node) {
+            this.treeControl.collapse(node);
+        }
         this.dragging = true;
     }
 
@@ -283,6 +355,7 @@ export class TreeFlatOverview {
         } else {
             this.currentBlock = this.root;
         }
+        this.select.emit(this.currentBlock);
         setTimeout(() => {
             this.eventsDisabled = false;
             this.change.emit();
@@ -326,6 +399,10 @@ export class TreeFlatOverview {
         return this.currentBlock == node.node;
     }
 
+    isFinal(node: FlatBlockNode) {
+        return node.node?.isFinal();
+    }
+
     isError(node: FlatBlockNode) {
         if (this.errors && this.errors[node.node.id]) {
             return true;
@@ -356,6 +433,15 @@ export class TreeFlatOverview {
             }
         } else {
             this.currentBlock = this.root;
+        }
+    }
+
+    onVisibleMoreActions(event: MouseEvent, node: FlatBlockNode) {
+        this.visibleMoveActions = !this.visibleMoveActions;
+        if (this.currentBlock !== node.node) {
+            this.onSelect(event, node)
+        } else {
+            setTimeout(() => this.change.emit(), 10);
         }
     }
 }

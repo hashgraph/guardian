@@ -42,6 +42,7 @@ export class RequestDocumentBlockComponent implements OnInit {
     rowDocument: any;
     needPreset: any;
     presetFields: any;
+    presetReadonlyFields: any;
     buttonClass: any;
     user!: IUser;
     restoreData: any;
@@ -167,6 +168,9 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.needPreset = !!data.presetSchema;
             this.presetFields = data.presetFields || [];
             this.restoreData = data.restoreData;
+            this.presetReadonlyFields = this.presetFields.filter(
+                (item: any) => item.readonly && item.value
+            );
             if (this.needPreset && row) {
                 this.rowDocument = this.getJson(row, this.presetFields);
                 this.preset(this.rowDocument);
@@ -182,7 +186,7 @@ export class RequestDocumentBlockComponent implements OnInit {
 
     onSubmit() {
         if (this.dataForm.valid) {
-            const data = this.dataForm.value;
+            const data = this.dataForm.getRawValue();
             this.prepareDataFrom(data);
             this.dialogLoading = true;
             this.policyEngineService.setBlockData(this.id, this.policyId, {

@@ -3,12 +3,13 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { VcHelper } from '@helpers/vc-helper';
 import { MessageAction, MessageServer, VCMessage } from '@hedera-modules';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * User Group
@@ -329,10 +330,7 @@ export class PolicyRolesBlock {
 
         const mintVC = await vcHelper.createVC(groupOwner.did, groupOwner.hederaAccountKey, vcSubject);
 
-        const rootTopic = await ref.databaseServer.getTopic({
-            policyId: ref.policyId,
-            type: TopicType.InstancePolicyTopic
-        });
+        const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
         const messageServer = new MessageServer(groupOwner.hederaAccountId, groupOwner.hederaAccountKey, ref.dryRun);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
@@ -428,6 +426,12 @@ export class PolicyRolesBlock {
             PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag),
             PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance)
         ]);
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
+            group: group.uuid,
+            role: group.role
+        }));
+
         return true;
     }
 }

@@ -82,12 +82,19 @@ const PORT = process.env.PORT || 3005;
                     }
                     break;
             }
-           
-            vcSubject.policyId = policyId;
-            vcSubject.accountId = hederaAccountId;
+            
+            const fields = schema['@context'][type]['@context'];
+            if(fields.policyId) {
+                vcSubject.policyId = policyId;
+            }
+            if(fields.accountId) {
+                vcSubject.accountId = hederaAccountId;
+            }
+            if(fields.ref) {
+                vcSubject.ref = ref;
+            }
 
             document = await vcHelper.createVC(vcSubject, didDocument, did);
-
             console.log("created vc", document);
         } catch (error) {
             console.error(error);

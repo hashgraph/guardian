@@ -1,22 +1,21 @@
 import { Token } from '@entity/token';
 import { Topic } from '@entity/topic';
-import { VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument } from '@hedera-modules';
+import { VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument, TopicConfig } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import {
     DidDocumentStatus,
     DocumentSignature,
     DocumentStatus,
-    ExternalMessageEvents,
     IRootConfig,
     Schema,
     SchemaEntity,
     TopicType,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { ExternalEventChannel, IAuthUser } from '@guardian/common';
+import { IAuthUser } from '@guardian/common';
 import { Schema as SchemaCollection } from '@entity/schema';
-import { TopicId } from '@hashgraph/sdk';
+import { TokenId, TopicId } from '@hashgraph/sdk';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
@@ -65,6 +64,33 @@ export class PolicyUtils {
      * Wallet service
      */
     private static readonly wallet = new Wallet();
+    /**
+     * Custom Functions
+     */
+    private static readonly customFunctions = mathjs.create({
+        ...mathjs.all,
+        createEqual: mathjs.factory('equal', [], () => function equal(a: any, b: any) {
+            return a === b
+        }),
+        createUnequal: mathjs.factory('unequal', [], () => function unequal(a: any, b: any) {
+            return a !== b
+        }),
+        createSmaller: mathjs.factory('smaller', [], () => function smaller(a: any, b: any) {
+            return a < b
+        }),
+        createSmallerEq: mathjs.factory('smallerEq', [], () => function smallerEq(a: any, b: any) {
+            return a <= b
+        }),
+        createLarger: mathjs.factory('larger', [], () => function larger(a: any, b: any) {
+            return a > b
+        }),
+        createLargerEq: mathjs.factory('largerEq', [], () => function largerEq(a: any, b: any) {
+            return a >= b
+        }),
+        createCompare: mathjs.factory('compare', [], () => function compare(a: any, b: any) {
+            return a > b ? 1 : a < b ? -1 : 0
+        })
+    });
 
     /**
      * Variables
@@ -98,6 +124,22 @@ export class PolicyUtils {
                 return 'Incorrect formula';
             }
         }).call(null, mathjs, formula, scope);
+    }
+
+    /**
+     * Evaluate
+     * @param formula
+     * @param scope
+     */
+    public static evaluateCustomFormula(formula: string, scope: any) {
+        // tslint:disable-next-line:only-arrow-functions
+        return (function (math: any, _formula: string, _scope: any) {
+            try {
+                return math.evaluate(_formula, _scope);
+            } catch (error) {
+                return 'Incorrect formula';
+            }
+        }).call(null, PolicyUtils.customFunctions, formula, scope);
     }
 
     /**
@@ -231,167 +273,16 @@ export class PolicyUtils {
     }
 
     /**
-     * Mint
+     * Get Schema Context
      * @param ref
-     * @param token
-     * @param tokenValue
-     * @param root
-     * @param targetAccount
-     * @param uuid
+     * @param schema
      */
-    public static async mint(
-        ref: AnyBlockType,
-        token: Token,
-        tokenValue: number,
-        root: IRootConfig,
-        targetAccount: string,
-        uuid: string,
-        transactionMemo: string
-    ): Promise<void> {
-        const mintId = Date.now();
-        ref.log(`Mint(${mintId}): Start (Count: ${tokenValue})`);
-
-        const workers = new Workers();
-
-        const tokenId = token.tokenId;
-        const supplyKey = token.supplyKey;
-        const adminId = token.adminId;
-        const adminKey = token.adminKey;
-
-        if (token.tokenType === 'non-fungible') {
-            const data = new Array<string>(Math.floor(tokenValue));
-            data.fill(uuid);
-            const serials: number[] = [];
-            const dataChunk = PolicyUtils.splitChunk(data, 10);
-            const mintPromiseArray: Promise<any>[] = [];
-            for (let i = 0; i < dataChunk.length; i++) {
-                const metaData = dataChunk[i];
-                if (i % 100 === 0) {
-                    ref.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`);
-                }
-
-                mintPromiseArray.push(workers.addTask({
-                    type: WorkerTaskType.MINT_NFT,
-                    data: {
-                        hederaAccountId: root.hederaAccountId,
-                        hederaAccountKey: root.hederaAccountKey,
-                        dryRun: ref.dryRun,
-                        tokenId,
-                        supplyKey,
-                        metaData,
-                        transactionMemo
-                    }
-                }, 1));
-
-            }
-            try {
-                for (const newSerials of await Promise.all(mintPromiseArray)) {
-                    for (const serial of newSerials) {
-                        serials.push(serial)
-                    }
-                }
-            } catch (error) {
-                ref.error(`Mint(${mintId}): Mint Error (${error.message})`);
-            }
-
-            ref.log(`Mint(${mintId}): Minted (Count: ${serials.length})`);
-            ref.log(`Mint(${mintId}): Transfer ${adminId} -> ${targetAccount} `);
-
-            const serialsChunk = PolicyUtils.splitChunk(serials, 10);
-            const transferPromiseArray: Promise<any>[] = [];
-            for (let i = 0; i < serialsChunk.length; i++) {
-                const element = serialsChunk[i];
-                if (i % 100 === 0) {
-                    ref.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`);
-                }
-                transferPromiseArray.push(workers.addTask({
-                    type: WorkerTaskType.TRANSFER_NFT,
-                    data: {
-                        hederaAccountId: root.hederaAccountId,
-                        hederaAccountKey: root.hederaAccountKey,
-                        dryRun: ref.dryRun,
-                        tokenId,
-                        targetAccount,
-                        adminId,
-                        adminKey,
-                        element,
-                        transactionMemo
-                    }
-                }, 1));
-
-            }
-            try {
-                await Promise.all(transferPromiseArray);
-            } catch (error) {
-                ref.error(`Mint(${mintId}): Transfer Error (${error.message})`);
-            }
+    public static getSchemaContext(ref: AnyBlockType, schema: SchemaCollection): string {
+        if (ref.dryRun) {
+            return `schema${schema.iri}`;
         } else {
-            try {
-                await workers.addTask({
-                    type: WorkerTaskType.MINT_FT,
-                    data: {
-                        hederaAccountId: root.hederaAccountId,
-                        hederaAccountKey: root.hederaAccountKey,
-                        dryRun: ref.dryRun,
-                        tokenId,
-                        supplyKey,
-                        tokenValue,
-                        transactionMemo
-                    }
-                }, 1);
-                await workers.addTask({
-                    type: WorkerTaskType.TRANSFER_FT,
-                    data: {
-                        hederaAccountId: root.hederaAccountId,
-                        hederaAccountKey: root.hederaAccountKey,
-                        dryRun: ref.dryRun,
-                        tokenId,
-                        targetAccount,
-                        adminId,
-                        adminKey,
-                        tokenValue,
-                        transactionMemo
-                    }
-                }, 1);
-            } catch (error) {
-                ref.error(`Mint FT(${mintId}): Mint/Transfer Error (${error.message})`);
-            }
+            return schema.contextURL;
         }
-
-        new ExternalEventChannel().publishMessage(ExternalMessageEvents.TOKEN_MINTED, { tokenId, tokenValue, memo: transactionMemo });
-
-        ref.log(`Mint(${mintId}): End`);
-    }
-
-    /**
-     * Wipe
-     * @param token
-     * @param tokenValue
-     * @param root
-     * @param targetAccount
-     * @param uuid
-     */
-    public static async wipe(
-        ref: AnyBlockType,
-        token: Token,
-        tokenValue: number,
-        root: IRootConfig,
-        targetAccount: string,
-        uuid: string
-    ): Promise<void> {
-        const workers = new Workers();
-        await workers.addTask({
-            type: WorkerTaskType.WIPE_TOKEN,
-            data: {
-                hederaAccountId: root.hederaAccountId,
-                hederaAccountKey: root.hederaAccountKey,
-                dryRun: ref.dryRun,
-                token,
-                targetAccount,
-                tokenValue,
-                uuid
-            }
-        }, 1);
     }
 
     /**
@@ -405,6 +296,25 @@ export class PolicyUtils {
                     return data.document.credentialSubject[0].id;
                 } else {
                     return data.document.credentialSubject.id;
+                }
+            }
+        } catch (error) {
+            return null;
+        }
+        return null;
+    }
+
+    /**
+     * Get subject id
+     * @param data
+     */
+    public static getCredentialSubject(data: any): any {
+        try {
+            if (data && data.document) {
+                if (Array.isArray(data.document.credentialSubject)) {
+                    return data.document.credentialSubject[0];
+                } else {
+                    return data.document.credentialSubject;
                 }
             }
         } catch (error) {
@@ -441,12 +351,13 @@ export class PolicyUtils {
 
     /**
      * Check Document Schema
+     * @param ref
      * @param document
      * @param schema
      */
-    public static checkDocumentSchema(document: any, schema: SchemaCollection): boolean {
+    public static checkDocumentSchema(ref: AnyBlockType, document: any, schema: SchemaCollection): boolean {
         const iri = schema.iri ? schema.iri.slice(1) : null;
-        const context = schema.contextURL;
+        const context = PolicyUtils.getSchemaContext(ref, schema);
         if (document && document.document) {
             if (Array.isArray(document.document.credentialSubject)) {
                 return (
@@ -542,7 +453,7 @@ export class PolicyUtils {
             return await ref.databaseServer.getVirtualHederaAccountInfo(hederaAccountId);
         } else {
             const workers = new Workers();
-            return await workers.addTask({
+            return await workers.addNonRetryableTask({
                 type: WorkerTaskType.GET_ACCOUNT_INFO,
                 data: {
                     userID: user.hederaAccountId,
@@ -563,7 +474,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualAssociate(user.hederaAccountId, token);
         } else {
             const workers = new Workers();
-            return await workers.addTask({
+            return await workers.addNonRetryableTask({
                 type: WorkerTaskType.ASSOCIATE_TOKEN,
                 data: {
                     tokenId: token.tokenId,
@@ -586,7 +497,7 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualDissociate(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            return await workers.addTask({
+            return await workers.addNonRetryableTask({
                 type: WorkerTaskType.ASSOCIATE_TOKEN,
                 data: {
                     tokenId: token.tokenId,
@@ -615,12 +526,13 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualFreeze(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            return await workers.addTask({
+            const freezeKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId);
+            return await workers.addNonRetryableTask({
                 type: WorkerTaskType.FREEZE_TOKEN,
                 data: {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
-                    freezeKey: token.freezeKey,
+                    freezeKey,
                     tokenId: token.tokenId,
                     freeze: true,
                     dryRun: ref.dryRun
@@ -645,12 +557,13 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualUnfreeze(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            return await workers.addTask({
+            const freezeKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_FREEZE_KEY, token.tokenId);
+            return await workers.addRetryableTask({
                 type: WorkerTaskType.FREEZE_TOKEN,
                 data: {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
-                    freezeKey: token.freezeKey,
+                    freezeKey,
                     tokenId: token.tokenId,
                     freeze: false,
                     dryRun: ref.dryRun
@@ -675,14 +588,15 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualGrantKyc(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            return await workers.addTask({
+            const kycKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId);
+            return await workers.addRetryableTask({
                 type: WorkerTaskType.GRANT_KYC_TOKEN,
                 data: {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     userHederaAccountId: user.hederaAccountId,
                     tokenId: token.tokenId,
-                    kycKey: token.kycKey,
+                    kycKey,
                     grant: true,
                     dryRun: ref.dryRun
                 }
@@ -706,14 +620,15 @@ export class PolicyUtils {
             return await ref.databaseServer.virtualRevokeKyc(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            return await workers.addTask({
+            const kycKey = await PolicyUtils.wallet.getUserKey(token.owner, KeyType.TOKEN_KYC_KEY, token.tokenId);
+            return await workers.addRetryableTask({
                 type: WorkerTaskType.GRANT_KYC_TOKEN,
                 data: {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     userHederaAccountId: user.hederaAccountId,
                     tokenId: token.tokenId,
-                    kycKey: token.kycKey,
+                    kycKey,
                     grant: false,
                     dryRun: ref.dryRun
                 }
@@ -722,12 +637,92 @@ export class PolicyUtils {
     }
 
     /**
+     * Create token by template
+     * @param ref
+     * @param tokenTemplate
+     * @param user
+     * @returns
+     */
+    public static async createTokenByTemplate(
+        ref: AnyBlockType,
+        tokenTemplate: any,
+        user: IHederaAccount
+    ): Promise<Token> {
+        let tokenId;
+        const owner = user.did;
+        const policyId = ref.policyId;
+        const adminId = user.hederaAccountId;
+        if (!ref.dryRun) {
+            const workers = new Workers();
+            const createdToken = await workers.addRetryableTask({
+                type: WorkerTaskType.CREATE_TOKEN,
+                data: {
+                    operatorId: user.hederaAccountId,
+                    operatorKey: user.hederaAccountKey,
+                    ...tokenTemplate
+                }
+            }, 1);
+            tokenId = createdToken.tokenId;
+
+            const wallet = new Wallet();
+            await Promise.all([
+                wallet.setUserKey(
+                    user.did,
+                    KeyType.TOKEN_TREASURY_KEY,
+                    createdToken.tokenId,
+                    createdToken.adminKey
+                ),
+                wallet.setUserKey(
+                    user.did,
+                    KeyType.TOKEN_ADMIN_KEY,
+                    createdToken.tokenId,
+                    createdToken.adminKey
+                ),
+                wallet.setUserKey(
+                    user.did,
+                    KeyType.TOKEN_FREEZE_KEY,
+                    createdToken.tokenId,
+                    createdToken.freezeKey
+                ),
+                wallet.setUserKey(
+                    user.did,
+                    KeyType.TOKEN_KYC_KEY,
+                    createdToken.tokenId,
+                    createdToken.kycKey
+                ),
+                wallet.setUserKey(
+                    user.did,
+                    KeyType.TOKEN_SUPPLY_KEY,
+                    createdToken.tokenId,
+                    createdToken.supplyKey
+                ),
+                wallet.setUserKey(
+                    user.did,
+                    KeyType.TOKEN_WIPE_KEY,
+                    createdToken.tokenId,
+                    createdToken.wipeKey
+                ),
+            ]);
+        } else {
+            tokenId = new TokenId(Date.now()).toString();
+        }
+
+        return await ref.databaseServer.createToken({
+            ...tokenTemplate,
+            tokenId,
+            owner,
+            policyId,
+            adminId
+        });
+    }
+
+    /**
      * revokeKyc
      * @param account
      */
     public static async checkAccountId(account: IHederaAccount): Promise<void> {
         const workers = new Workers();
-        return await workers.addTask({
+        return await workers.addNonRetryableTask({
             type: WorkerTaskType.CHECK_ACCOUNT,
             data: {
                 hederaAccountId: account.hederaAccountId,
@@ -748,11 +743,12 @@ export class PolicyUtils {
         root: IRootConfig,
         user: any,
         memoObj?: any
-    ): Promise<Topic> {
-        const rootTopic = await ref.databaseServer.getTopic({
-            policyId: ref.policyId,
-            type: TopicType.InstancePolicyTopic
-        });
+    ): Promise<TopicConfig> {
+        const rootTopic = await TopicConfig.fromObject(
+            await ref.databaseServer.getTopic({
+                policyId: ref.policyId,
+                type: TopicType.InstancePolicyTopic
+            }), !ref.dryRun);
 
         if (!topicName) {
             return rootTopic;
@@ -762,7 +758,7 @@ export class PolicyUtils {
             return rootTopic;
         }
 
-        let topic: Topic;
+        let topic: TopicConfig;
 
         const policyTopics = ref.policyInstance.policyTopics || [];
         const config = policyTopics.find(e => e.name === topicName);
@@ -771,12 +767,13 @@ export class PolicyUtils {
         }
 
         const topicOwner = config.static ? root.did : user.did;
-        topic = await ref.databaseServer.getTopic({
-            policyId: ref.policyId,
-            type: TopicType.DynamicTopic,
-            name: topicName,
-            owner: topicOwner
-        });
+        topic = await TopicConfig.fromObject(
+            await ref.databaseServer.getTopic({
+                policyId: ref.policyId,
+                type: TopicType.DynamicTopic,
+                name: topicName,
+                owner: topicOwner
+            }), !ref.dryRun);
 
         if (!topic) {
             const topicAccountId = config.static ? root.hederaAccountId : user.hederaAccountId;
@@ -794,8 +791,11 @@ export class PolicyUtils {
                     ? memoObj
                     : config
             });
+            if(!ref.dryRun) {
+                await topic.saveKeys();
+            }
             await topicHelper.twoWayLink(topic, rootTopic, null);
-            topic = await ref.databaseServer.saveTopic(topic);
+            await ref.databaseServer.saveTopic(topic.toObject());
         }
 
         return topic;
@@ -806,10 +806,7 @@ export class PolicyUtils {
      * @param ref
      * @param topicId
      */
-    public static async getTopicById(
-        ref: AnyBlockType,
-        topicId: string | TopicId
-    ): Promise<Topic> {
+    public static async getPolicyTopic(ref: AnyBlockType, topicId: string | TopicId): Promise<TopicConfig> {
         let topic: Topic;
         if (topicId) {
             topic = await ref.databaseServer.getTopic({ policyId: ref.policyId, topicId: topicId.toString() });
@@ -820,7 +817,19 @@ export class PolicyUtils {
         if (!topic) {
             throw new Error(`Topic does not exist`);
         }
-        return topic;
+        return await TopicConfig.fromObject(topic, !ref.dryRun);
+    }
+
+    /**
+     * Get topic
+     * @param ref
+     */
+    public static async getInstancePolicyTopic(ref: AnyBlockType): Promise<TopicConfig> {
+        const topic = await ref.databaseServer.getTopic({ policyId: ref.policyId, type: TopicType.InstancePolicyTopic });
+        if (!topic) {
+            throw new Error(`Topic does not exist`);
+        }
+        return await TopicConfig.fromObject(topic, !ref.dryRun);
     }
 
     /**
@@ -831,6 +840,15 @@ export class PolicyUtils {
     public static getPolicyUser(ref: AnyBlockType, did: string, uuid: string): IPolicyUser {
         const user = new PolicyUser(did, !!ref.dryRun);
         return user.setGroup({ role: null, uuid });
+    }
+
+    /**
+     * Get Policy User By Id
+     * @param ref
+     * @param userId
+     */
+     public static getPolicyUserById(ref: AnyBlockType, userId: string): IPolicyUser {
+        return PolicyUser.fromUserId(userId, null, !!ref.dryRun);
     }
 
     /**
@@ -1157,6 +1175,7 @@ export class PolicyUtils {
             relationships: document.relationships || null,
             comment: document.comment || null,
             accounts: document.accounts || null,
+            tokens: document.tokens || null
         } as VcDocumentCollection;
     }
 
@@ -1177,6 +1196,10 @@ export class PolicyUtils {
 
         if (ref && ref.accounts) {
             document.accounts = Object.assign({}, ref.accounts, document.accounts);
+        }
+
+        if (ref && ref.tokens) {
+            document.tokens = Object.assign({}, ref.tokens, document.tokens);
         }
 
         return document;

@@ -34,6 +34,15 @@ export enum PropertyType {
 }
 
 /**
+ * Property Type
+ */
+export enum SelectItemType {
+    Schemas = 'Schemas',
+    Block = 'Block',
+    Children = 'Children'
+}
+
+/**
  * Block Properties
  */
 export interface BlockProperties {
@@ -99,7 +108,7 @@ export interface SelectProperties extends BlockProperties {
          * Item value
          */
         value: string
-    }[]
+    }[] | SelectItemType
 }
 
 /**
@@ -110,6 +119,19 @@ export interface MultipleSelectProperties extends BlockProperties {
      * Property type
      */
     type: PropertyType.MultipleSelect;
+    /**
+     * Select data
+     */
+    items: {
+        /**
+         * Item label
+         */
+        label: string,
+        /**
+         * Item value
+         */
+        value: string
+    }[] | SelectItemType
 }
 
 /**

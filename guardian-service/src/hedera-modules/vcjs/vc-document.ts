@@ -441,4 +441,41 @@ export class VcDocument {
     public proofFromJson(json: any): void {
         this.setProof(json[VcDocument.PROOF]);
     }
+
+    /**
+     * To Static Object
+     * @param f - clear function
+     */
+    public toStaticObject(f?: Function): any {
+        const map = {};
+        map[VcDocument.ISSUER] = this.issuer.getId();
+        map[VcDocument.CREDENTIAL_SUBJECT] = [];
+        for (const subject of this.subject) {
+            map[VcDocument.CREDENTIAL_SUBJECT].push(subject.toStaticObject(f));
+        }
+        return map;
+    }
+
+    /**
+     * To credential hash
+     * @param docs
+     * @param f - clear function
+     */
+    public static toCredentialHash(docs: VcDocument | VcDocument[], f?: (item: any) => any): string {
+        if (docs) {
+            let obj: any = null;
+            if (Array.isArray(docs)) {
+                obj = [];
+                for (const doc of docs) {
+                    obj.push(doc.toStaticObject(f));
+                }
+            } else {
+                obj = docs.toStaticObject(f);
+            }
+            const json: string = JSON.stringify(obj);
+            const hash: Uint8Array = Hashing.sha256.digest(json);
+            return Hashing.base58.encode(hash);
+        }
+        return null
+    }
 }

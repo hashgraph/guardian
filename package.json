@@ -9,10 +9,10 @@
     "api-gateway",
     "auth-service",
     "guardian-service",
-    "ipfs-client",
     "logger-service",
     "mrv-sender",
     "worker-service"
   ],
-  "version": "2.6.1"
+  "version": "2.7.0-prerelease",
+  "stableVersion": "2.6.1"
 }

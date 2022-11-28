@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { PolicyModel, PolicyGroupModel, PolicyRoleModel, PolicyTopicModel } from '../../structures/policy-model';
+import { PolicyModel, PolicyGroupModel, PolicyRoleModel, PolicyTopicModel, PolicyTokenModel } from '../../structures/policy-model';
 
 /**
  * Settings for policy.
@@ -25,10 +25,12 @@ export class PolicyPropertiesComponent implements OnInit {
         metaData: false,
         rolesGroup: false,
         groupsGroup: {},
-        topicsGroup: {}
+        topicsGroup: {},
+        tokensGroup: {}
     };
     policyGroups: PolicyGroupModel[] = [];
     topics: PolicyTopicModel[] = [];
+    tokens: PolicyTokenModel[] = [];
     roles: any[] = [];
 
     constructor() {
@@ -42,6 +44,7 @@ export class PolicyPropertiesComponent implements OnInit {
         this.roles = this.policy.policyRoles;
         this.policyGroups = this.policy.policyGroups;
         this.topics = this.policy.policyTopics;
+        this.tokens = this.policy.policyTokens;
     }
 
     onHide(item: any, prop: any) {
@@ -93,5 +96,22 @@ export class PolicyPropertiesComponent implements OnInit {
 
     onRemoveTopic(topic: PolicyTopicModel) {
         this.policy.removeTopic(topic)
+    }
+
+    addToken() {
+        this.policy.createToken({
+            templateTokenTag: `token_template_${this.tokens.length}`,
+            tokenName: '',
+            tokenSymbol: '',
+            decimals: ''
+        });
+    }
+
+    onRemoveToken(topic: PolicyTokenModel) {
+        this.policy.removeToken(topic)
+    }
+
+    onTokenTypeChange(item: any) {
+        item.decimals = '';
     }
 }

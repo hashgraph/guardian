@@ -15,12 +15,14 @@ This block is responsible in performing automatic actions on the token.
 | Account Type       | <p>The type of the account under which the action is performed. If set to ‘Default’ the account of the currently logged in user is used (i.e. the owner of the document).</p><p>If set to ‘Custom’ the account specified in the ‘accountId’ field is used.</p> | Custom                                                                                                                     |        |
 | Account Id (Field) | The value from this field is used as the ID of the account under which the action is performed when ‘Account Type’ is set to ‘Custom’.                                                                                                                         | field0                                                                                                                     |        |
 | Action             | Action to be performed on Token                                                                                                                                                                                                                                | <p></p><ul><li>Associate</li><li>Dissociate</li><li>Freeze</li><li>Unfreeze</li><li>Grant Kyc</li><li>Revoke Kyc</li></ul> |        |
+| Use Template       | This needs to be enabled if we need to use token template, which is created already.                                                                                                                                                                           | Enabled or Disabled                                                                                                        |        |
+| Token Template     | Which will take created tokenId from input document by template name                                                                                                                                                                                           | token\_template_\__0                                                                                                       |        |
 
 
 
 ![](<../.gitbook/assets/image (12).png>)
 
-![](<../.gitbook/assets/image (3).png>)
+![](<../.gitbook/assets/image (3) (5).png>)
 
 {% hint style="info" %}
 **Note:**

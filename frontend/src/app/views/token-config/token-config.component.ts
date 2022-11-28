@@ -10,9 +10,10 @@ import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 
 enum OperationMode {
-    None, Create, Kyc
+    None, Create, Kyc, Freeze
 }
 
 /**
@@ -31,6 +32,8 @@ export class TokenConfigComponent implements OnInit {
         'tokenSymbol',
         'policies',
         'users',
+        'edit',
+        'delete'
     ];
     tokens: any[] = [];
     loading: boolean = true;
@@ -89,12 +92,7 @@ export class TokenConfigComponent implements OnInit {
 
     loadTokens() {
         this.tokenService.getTokens(this.currentPolicy).subscribe((data: any) => {
-            this.tokens = data.map((e: any) => {
-                return {
-                    ...new Token(e),
-                    policies: e.policies
-                }
-            });
+            this.tokens = data.map((e: any) => new Token(e));
             this.loading = false;
         }, (e) => {
             console.error(e.error);
@@ -148,7 +146,8 @@ export class TokenConfigComponent implements OnInit {
 
     newToken() {
         const dialogRef = this.dialog.open(TokenDialog, {
-            width: '500px',
+            width: '750px',
+            panelClass: 'g-dialog',
             disableClose: true
         });
 
@@ -192,6 +191,14 @@ export class TokenConfigComponent implements OnInit {
                         this.user = null;
                     });
                     break;
+                case OperationMode.Freeze:
+                    this.taskService.get(taskId).subscribe((task) => {
+                        this.loading = false;
+                        const { result } = task;
+                        this.refreshUser(this.user, result);
+                        this.user = null;
+                    });
+                    break;
                 default:
                     console.log('Unsupported operation mode');
             }
@@ -205,7 +212,15 @@ export class TokenConfigComponent implements OnInit {
         user.hBarBalance = "n/a";
         user.frozen = "n/a";
         user.kyc = "n/a";
+        user.enableAdmin = false;
+        user.enableFreeze = false;
+        user.enableKYC = false;
+        user.enableWipe = false;
         if (res) {
+            user.enableAdmin = res.enableAdmin;
+            user.enableFreeze = res.enableFreeze;
+            user.enableKYC = res.enableKYC;
+            user.enableWipe = res.enableWipe;
             user.associated = res.associated ? "Yes" : "No";
             if (res.associated) {
                 user.balance = res.balance;
@@ -244,9 +259,12 @@ export class TokenConfigComponent implements OnInit {
 
     freeze(user: any, freeze: boolean) {
         this.loading = true;
-        this.tokenService.freeze(this.tokenId, user.username, freeze).subscribe((res) => {
-            this.refreshUser(user, res);
-            this.loading = false;
+        this.tokenService.pushFreeze(this.tokenId, user.username, freeze).subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.operationMode = OperationMode.Freeze;
+            this.user = user;
         }, (e) => {
             console.error(e.error);
             this.loading = false;
@@ -274,5 +292,56 @@ export class TokenConfigComponent implements OnInit {
         return policies.length === 1
             ? policies[0]
             : `Used in ${policies.length} policies`;
+    }
+
+    deleteToken(element: any) {
+        const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+            data: {
+                dialogTitle: 'Delete token',
+                dialogText: 'Are you sure to delete token?'
+            },
+            autoFocus: false
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                this.loading = true;
+                this.tokenService.pushDelete(element.tokenId).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
+                    this.operationMode = OperationMode.Create;
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
+        });
+    }
+
+    editToken(element: any) {
+        const dialogRef = this.dialog.open(TokenDialog, {
+            width: '750px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            data: {
+                token: element
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.loading = true;
+                result.tokenId = element.tokenId;
+                this.tokenService.pushUpdate(result).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
+                    this.operationMode = OperationMode.Create;
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
+        });
     }
 }

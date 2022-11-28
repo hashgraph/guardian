@@ -1,4 +1,4 @@
-# Verra Redd+ Demo Guide
+# 💻 Verra Redd+ Demo UI Guide
 
 This folder contains a sample file that is referenced in the Demo Usage Guide
 
@@ -17,7 +17,7 @@ This folder contains a sample file that is referenced in the Demo Usage Guide
 
 3\. You'll now be prompted to configure your Verra account. Enter the details and then press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../.gitbook/assets/Verra\_2.2.png)
+![](../.gitbook/assets/iREC\_4.2.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the import button and enter the one of the following Hedera message IDs:
 
@@ -27,7 +27,7 @@ REDD 2.2.2 = 1661882417.772439852
 Verra REDD Policy 3 groups (1665667787.019450003).policy
 ```
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (5).png" alt=""><figcaption></figcaption></figure>
 
 Once Policy is imported successfully, you get two options : Publish and Dry Run mode.
 
@@ -59,7 +59,7 @@ Once, VVB name is submitted, its waiting for the approval.
 
 9\. Now, we logout as VVB and login as Standard Registry and review the document and approve VVB by clicking on Approve button.
 
-<figure><img src="../.gitbook/assets/3_9.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/3_9 (1).png" alt=""><figcaption></figcaption></figure>
 
 10\. Now we login as Project Proponent and repeat same steps as Step 5, Step 6.
 
@@ -105,7 +105,7 @@ Note: If there are more than one VVB, we need atleast 70% consensus to get the f
 
 <figure><img src="../.gitbook/assets/3_18.png" alt=""><figcaption></figcaption></figure>
 
-17\. Once, Monitoring report is verified, you log out as VVBNew and login as Standard Registry. Navigate to the Policies tab and click the Open button on the far right. You will be able to see Monitoring Reports tab, where you have an option to click on Mint button.
+18\. Once, Monitoring report is verified, you log out as VVBNew and login as Standard Registry. Navigate to the Policies tab and click the Open button on the far right. You will be able to see Monitoring Reports tab, where you have an option to click on Mint button.
 
 <figure><img src="../.gitbook/assets/3_19.png" alt=""><figcaption></figcaption></figure>
 

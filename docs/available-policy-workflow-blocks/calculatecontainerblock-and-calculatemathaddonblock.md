@@ -16,6 +16,8 @@ This Block accepts source VC as input and generates output as new VC document.
 | title    | Title of the operation                   | Summary          |
 | value    | Variable to store the value of the field | E0               |
 
+
+
 ```
 "inputFields": [
                     {
@@ -43,6 +45,8 @@ New variable "E0" would be created with a value set to one from the "field0" in 
 | name     | Variable that refers to specified field   | field0           |
 | title    | Title of the operation                    | Summary          |
 | value    | Points to the value of specified variable | E1               |
+
+
 
 ```
 outputFields: [

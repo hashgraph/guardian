@@ -5,6 +5,7 @@ import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';
 import { IReportItem } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Report item block
@@ -141,6 +142,8 @@ export class ReportItemBlock {
             }
             item.documents = documents;
         }
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, null, null));
 
         return resultFields;
     }

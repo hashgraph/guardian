@@ -8,8 +8,11 @@ export enum MessageAPI {
     SET_VC_DOCUMENT = 'set-vc-document',
     GET_SCHEMAS = 'get-schemas',
     GET_TOKENS = 'get-tokens',
+    GET_TOKEN = 'get-token',
     SET_TOKEN = 'set-token',
     SET_TOKEN_ASYNC = 'set-token-async',
+    UPDATE_TOKEN_ASYNC = 'update-token-async',
+    DELETE_TOKEN_ASYNC = 'delete-token-async',
     IMPORT_TOKENS = 'import-tokens',
     LOAD_DID_DOCUMENT = 'load-did-document',
     LOAD_SCHEMA_DOCUMENT = 'load-schema-document',
@@ -42,6 +45,7 @@ export enum MessageAPI {
     WRITE_LOG = 'WRITE_LOG',
     GET_LOGS = 'GET_LOGS',
     FREEZE_TOKEN = 'FREEZE_TOKEN',
+    FREEZE_TOKEN_ASYNC = 'FREEZE_TOKEN_ASYNC',
     KYC_TOKEN = 'KYC_TOKEN',
     KYC_TOKEN_ASYNC = 'KYC_TOKEN_ASYNC',
     ASSOCIATE_TOKEN = 'ASSOCIATE_TOKEN',
@@ -71,17 +75,18 @@ export enum MessageAPI {
     UPDATE_TASK_STATUS = 'UPDATE_TASK_STATUS',
     UPLOAD_ARTIFACT = 'UPLOAD_ARTIFACT',
     GET_ARTIFACTS = 'GET_ARTIFACTS',
-    DELETE_ARTIFACT = 'DELETE_ARTIFACT'
+    DELETE_ARTIFACT = 'DELETE_ARTIFACT',
+    GET_ALL_USER_TOPICS_ASYNC = 'GET_ALL_USER_TOPICS_ASYNC'
 }
 
 /**
  * External message api events
  */
 export enum ExternalMessageEvents {
-    IPFS_ADDED_FILE = 'external-events.ipfs_added_file',
     TOKEN_MINTED = 'external-events.token_minted',
     ERROR_LOG = 'external-events.error_logs',
-    BLOCK_RUN_EVENTS = 'external-events.block_run_action_event',
+    BLOCK_EVENTS = 'external-events.block_event',
+    IPFS_ADDED_FILE = 'external-events.ipfs_added_file',
     IPFS_BEFORE_UPLOAD_CONTENT = 'external-events.ipfs_before_upload_content',
     IPFS_AFTER_READ_CONTENT = 'external-events.ipfs_after_read_content',
     IPFS_LOADED_FILE = 'external-events.ipfs_loaded_file',

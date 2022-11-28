@@ -14,17 +14,17 @@ export class VcHelper extends VCJS {
     constructor() {
         super();
         const defaultDocumentLoader = new DefaultDocumentLoader();
-        const contextDocumentLoader = new ContextDocumentLoader('https://ipfs.io/ipfs/');
         const didDocumentLoader = new DIDDocumentLoader();
         const schemaDocumentLoader = new SchemaDocumentLoader();
+        const contextDocumentLoader = new ContextDocumentLoader('');
 
-        const vcSchemaObjectLoader = new VCSchemaLoader('https://ipfs.io/ipfs/');
-        const subjectSchemaObjectLoader = new SubjectSchemaLoader('https://ipfs.io/ipfs/');
+        const vcSchemaObjectLoader = new VCSchemaLoader('');
+        const subjectSchemaObjectLoader = new SubjectSchemaLoader('');
 
         this.addDocumentLoader(defaultDocumentLoader);
-        this.addDocumentLoader(contextDocumentLoader);
         this.addDocumentLoader(didDocumentLoader);
         this.addDocumentLoader(schemaDocumentLoader);
+        this.addDocumentLoader(contextDocumentLoader);
 
         this.addSchemaLoader(vcSchemaObjectLoader);
         this.addSchemaLoader(subjectSchemaObjectLoader);

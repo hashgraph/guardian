@@ -116,24 +116,6 @@ jobs:
           push: true
           tags: 'gcr.io/hedera-registry/guardian-service:${{ steps.package-version.outputs.current-version}}'
 
-      - name: ipfs-client-latest
-        if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./ipfs-client/Dockerfile
-          push: true
-          tags: 'gcr.io/hedera-registry/ipfs-client:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/ipfs-client:latest'
-
-      - name: ipfs-client
-        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./ipfs-client/Dockerfile
-          push: true
-          tags: 'gcr.io/hedera-registry/ipfs-client:${{ steps.package-version.outputs.current-version}}'
-
       - name: worker-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@v2
@@ -170,6 +152,24 @@ jobs:
           push: true
           tags: 'gcr.io/hedera-registry/topic-viewer:${{ steps.package-version.outputs.current-version}}'
 
+      - name: mrv-sender-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./mrv-sender/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/mrv-sender:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/mrv-sender:latest'
+
+      - name: mrv-sender
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./mrv-sender/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/mrv-sender:${{ steps.package-version.outputs.current-version}}'
+
       - name: api-docs-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@v2
@@ -205,3 +205,21 @@ jobs:
           file: ./web-proxy/Dockerfile.ci
           push: true
           tags: 'gcr.io/hedera-registry/frontend:${{ steps.package-version.outputs.current-version}}'
+
+      - name: web-proxy-demo-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./web-proxy/Dockerfile.demo
+          push: true
+          tags: 'gcr.io/hedera-registry/frontend-demo:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/frontend-demo:latest'
+
+      - name: web-proxy-demo
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./web-proxy/Dockerfile.demo
+          push: true
+          tags: 'gcr.io/hedera-registry/frontend-demo:${{ steps.package-version.outputs.current-version}}'

@@ -38,7 +38,7 @@ To know more information about events, please look at [events.md](events.md "men
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="blockType: 'InterfaceStepBlock'" summary="" %}
+{% swagger method="get" path="" baseUrl="blockType: " summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}

@@ -9,6 +9,7 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { Token as TokenCollection } from '@entity/token';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser } from '@policy-engine/policy-user';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Information block
@@ -104,6 +105,10 @@ export class TokenConfirmationBlock {
 
         ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data);
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, blockState.user, {
+            userAction: data.action,
+            action: ref.options.action
+        }));
     }
 
     /**
@@ -119,7 +124,18 @@ export class TokenConfirmationBlock {
             hederaAccountKey: data.hederaAccountKey
         }
 
-        const token = await this.getToken();
+        let token;
+        if (ref.options.useTemplate) {
+            if (state.tokenId) {
+                token = await ref.databaseServer.getTokenById(state.tokenId, ref.dryRun);
+            }
+        } else {
+            token = await this.getToken();
+        }
+
+        if (!token) {
+            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
+        }
 
         await PolicyUtils.checkAccountId(account);
         const policyOwner = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
@@ -193,6 +209,7 @@ export class TokenConfirmationBlock {
             const doc = Array.isArray(documents) ? documents[0] : documents;
 
             let hederaAccountId: string = null;
+            let tokenId;
             if (doc) {
                 if (field) {
                     if (doc.accounts) {
@@ -201,11 +218,18 @@ export class TokenConfirmationBlock {
                 } else {
                     hederaAccountId = await PolicyUtils.getHederaAccountId(ref, doc.owner);
                 }
+
+                if (ref.options.useTemplate) {
+                    if (doc.tokens) {
+                        tokenId = doc.tokens[ref.options.template];
+                    }
+                }
             }
             this.state[id] = {
                 accountId: hederaAccountId,
                 data: event.data,
-                user: event.user
+                user: event.user,
+                tokenId
             };
             await ref.saveState();
         }
@@ -226,12 +250,23 @@ export class TokenConfirmationBlock {
             if (types.indexOf(ref.options.action) === -1) {
                 resultsContainer.addBlockError(ref.uuid, 'Option "action" must be one of ' + types.join(','));
             }
-            if (!ref.options.tokenId) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
-            } else if (typeof ref.options.tokenId !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-            } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
-                resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+            if (ref.options.useTemplate) {
+                if (!ref.options.template) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "template" does not set');
+                }
+                const policyTokens = ref.policyInstance.policyTokens || [];
+                const tokenConfig = policyTokens.find(e => e.templateTokenTag === ref.options.template);
+                if (!tokenConfig) {
+                    resultsContainer.addBlockError(ref.uuid, `Token "${ref.options.template}" does not exist`);
+                }
+            } else {
+                if (!ref.options.tokenId) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
+                } else if (typeof ref.options.tokenId !== 'string') {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
+                } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
+                    resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+                }
             }
             if (ref.options.accountType === 'custom' && !ref.options.accountId) {
                 resultsContainer.addBlockError(ref.uuid, 'Option "accountId" does not set');

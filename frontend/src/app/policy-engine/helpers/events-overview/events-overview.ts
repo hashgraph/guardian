@@ -142,18 +142,20 @@ export class EventsOverview {
                 next: block.next?.tag,
                 prev: block.prev?.tag,
             }
-            const div = document.querySelector(`*[block-instance="${block.tag}"]`);
+            const div = document.querySelector(`*[block-instance-container="${block.tag}"]`);
             if (div) {
                 const box = div.getBoundingClientRect();
+                const center = box.top + (box.height / 2);
                 item.div = div;
+                item.minWidth = 150;
                 item.leftOffset = boxCanvas.left;
                 item.topOffset = boxCanvas.top;
                 item.left = box.left || 0;
+                item.top = center - 16;
                 item.right = box.right || 0;
-                item.top = box.top || 0;
-                item.bottom = box.bottom || 0;
+                item.bottom = center - 16;
                 item.width = box.width || 0;
-                item.height = box.height || 0;
+                item.height = 32;
             }
             blockMap[item.tag] = item;
         }
@@ -221,6 +223,27 @@ export class EventsOverview {
         return false;
     }
 
+    private getPointTop(element: any): any {
+        return {
+            x: Math.round(element.left + (element.minWidth / 2) - element.leftOffset),
+            y: Math.round(element.top - element.topOffset - 6),
+        }
+    }
+
+    private getPointBottom(element: any): any {
+        return {
+            x: Math.round(element.left + (element.minWidth / 2) - element.leftOffset),
+            y: Math.round(element.top + element.height - element.topOffset + 2),
+        }
+    }
+
+    private getPointRight(element: any, offset: number): any {
+        return {
+            x: Math.round(element.right - element.leftOffset + 12),
+            y: Math.round(element.top - element.topOffset + (element.height / 2) + offset),
+        }
+    }
+
     private createLine(blockMap: any, startTag: string, endTag: string): any {
         if (!startTag || !endTag) {
             return null;
@@ -230,20 +253,13 @@ export class EventsOverview {
         if (!start || !start.div || !end || !end.div) {
             return null;
         }
-        const minWidth = 150;
         return {
-            start_top_x: Math.round(start.left + (minWidth / 2) - start.leftOffset),
-            start_top_y: Math.round(start.top - start.topOffset - 6),
-            start_bottom_x: Math.round(start.left + (minWidth / 2) - start.leftOffset),
-            start_bottom_y: Math.round(start.top + start.height - start.topOffset + 2),
-            start_right_x: Math.round(start.right - start.leftOffset + 32),
-            start_right_y: Math.round(start.top - start.topOffset + 16 + 6),
-            end_top_x: Math.round(end.left + (minWidth / 2) - start.leftOffset),
-            end_top_y: Math.round(end.top - start.topOffset - 6),
-            end_bottom_x: Math.round(end.left + (minWidth / 2) - start.leftOffset),
-            end_bottom_y: Math.round(end.top + end.height - start.topOffset + 2),
-            end_right_x: Math.round(end.right - start.leftOffset + 32),
-            end_right_y: Math.round(end.top - start.topOffset + 16 - 6),
+            start_top: this.getPointTop(start),
+            start_bottom: this.getPointBottom(start),
+            start_right: this.getPointRight(start, +6),
+            end_top: this.getPointTop(end),
+            end_bottom: this.getPointBottom(end),
+            end_right: this.getPointRight(end, -6),
             startTag: startTag,
             endTag: endTag,
             offset: 4,
@@ -297,13 +313,13 @@ export class EventsOverview {
         for (const line of defaultLines) {
             if (line.direction) {
                 line.points = [
-                    line.start_bottom_x, line.start_bottom_y,
-                    line.end_top_x, line.end_top_y
+                    line.start_bottom.x, line.start_bottom.y,
+                    line.end_top.x, line.end_top.y
                 ]
             } else {
                 line.points = [
-                    line.start_top_x, line.start_top_y,
-                    line.end_bottom_x, line.end_bottom_y
+                    line.start_top.x, line.start_top.y,
+                    line.end_bottom.x, line.end_bottom.y
                 ]
             }
             if (line.selected) {
@@ -314,10 +330,10 @@ export class EventsOverview {
         }
         for (const line of shortLines) {
             line.points = [
-                line.start_right_x, line.start_right_y,
-                line.widthOffset, line.start_right_y,
-                line.widthOffset, line.end_right_y,
-                line.end_right_x, line.end_right_y
+                line.start_right.x, line.start_right.y,
+                line.widthOffset, line.start_right.y,
+                line.widthOffset, line.end_right.y,
+                line.end_right.x, line.end_right.y
             ]
 
             if (line.selected) {
@@ -328,10 +344,10 @@ export class EventsOverview {
         }
         for (const line of otherLines) {
             line.points = [
-                line.start_right_x, line.start_right_y,
-                line.widthOffset, line.start_right_y,
-                line.widthOffset, line.end_right_y,
-                line.end_right_x, line.end_right_y
+                line.start_right.x, line.start_right.y,
+                line.widthOffset, line.start_right.y,
+                line.widthOffset, line.end_right.y,
+                line.end_right.x, line.end_right.y
             ]
 
             if (line.selected) {
@@ -433,7 +449,7 @@ export class EventsOverview {
                     const line = this.lastImages.lines[this.lastImages.index - 1];
                     this._tooltip.innerHTML = `
                         <div class="s1"><span>Source (Block Tag)</span>: ${line.startTag}</div>
-                        <div class="s2"><span>Output (Event)</span>: ${line.output}</div> 
+                        <div class="s2"><span>Output (Event)</span>: ${line.output}</div>
                         <div class="s3"><span>Target (Block Tag)</span>: ${line.endTag}</div>
                         <div class="s4"><span>Input (Event)</span>: ${line.input}</div>
                         <div class="s5"><span>Event Actor</span>: ${this.actorMap[line.actor]}</div>

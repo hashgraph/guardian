@@ -55,10 +55,6 @@ jobs:
           npm install
           npm run build
           popd
-          pushd ipfs-client
-          npm install
-          npm run build
-          popd
           pushd api-gateway
           npm install
           npm run build

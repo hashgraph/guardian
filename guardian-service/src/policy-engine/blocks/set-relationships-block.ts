@@ -3,6 +3,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyDocument, IPolicyEventState, IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Set document relationships action
@@ -31,6 +32,12 @@ import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfac
             type: PropertyType.Checkbox,
             default: false
         }, {
+            name: 'includeTokens',
+            label: 'Include Tokens',
+            title: 'Include Related Documents Tokens',
+            type: PropertyType.Checkbox,
+            default: false
+        }, {
             name: 'changeOwner',
             label: 'Change Owner',
             title: 'Change Document Owner',
@@ -53,9 +60,11 @@ export class SetRelationshipsBlock {
         const owner = data[0] && data[0].owner || null;
         const group = data[0] && data[0].group || null;
         let accounts = {};
+        let tokens = {};
         const relationships = [];
         for (const doc of data) {
             accounts = Object.assign(accounts, doc.accounts);
+            tokens = Object.assign(tokens, doc.tokens);
             if (doc.messageId && !relationships.includes(doc.messageId)) {
                 relationships.push(doc.messageId);
             }
@@ -66,11 +75,18 @@ export class SetRelationshipsBlock {
         if (documents) {
             if (Array.isArray(documents)) {
                 for (const doc of documents) {
-                    doc.relationships = doc.relationships ? doc.relationships.concat(relationships) : relationships;
-                    if (doc.accounts && ref.options.includeAccounts) {
-                        Object.assign(doc.accounts, accounts);
-                    } else if (ref.options.includeAccounts) {
-                        doc.accounts = accounts;
+                    doc.relationships = doc.relationships
+                        ? doc.relationships.concat(relationships)
+                        : relationships;
+                    if (ref.options.includeAccounts) {
+                        doc.accounts = doc.accounts
+                            ? Object.assign(doc.accounts, accounts)
+                            : accounts;
+                    }
+                    if (ref.options.includeTokens) {
+                        doc.tokens = doc.tokens
+                            ? Object.assign(doc.tokens, tokens)
+                            : tokens;
                     }
                     if (owner && ref.options.changeOwner) {
                         doc.owner = owner;
@@ -80,11 +96,22 @@ export class SetRelationshipsBlock {
                     }
                 }
             } else {
-                documents.relationships = documents.relationships ? documents.relationships.concat(relationships) : relationships;
-                if (documents.accounts && ref.options.includeAccounts) {
-                    Object.assign(documents.accounts, accounts);
-                } else if (ref.options.includeAccounts) {
-                    documents.accounts = accounts;
+                documents.relationships = documents.relationships
+                    ? documents.relationships.concat(relationships)
+                    : relationships;
+                if (ref.options.includeAccounts) {
+                    documents.accounts = Object.assign(
+                        {},
+                        documents.accounts,
+                        accounts
+                    );
+                }
+                if (ref.options.includeTokens) {
+                    documents.tokens = Object.assign(
+                        {},
+                        documents.tokens,
+                        tokens
+                    );
                 }
                 if (owner && ref.options.changeOwner) {
                     documents.owner = owner;
@@ -96,5 +123,10 @@ export class SetRelationshipsBlock {
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+            documents: ExternalDocuments(event.data?.data),
+        }));
     }
 }

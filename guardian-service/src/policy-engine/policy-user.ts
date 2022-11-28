@@ -123,6 +123,27 @@ export class PolicyUser implements IPolicyUser {
     }
 
     /**
+     * Create User by Id
+     * @param userId
+     * @param role
+     * @param virtual
+     */
+    public static fromUserId(userId: string, role?: string, virtual: boolean = false): PolicyUser {
+        const parsedUserId = userId.split(':');
+        let did;
+        let group;
+        if (parsedUserId[0] === 'did') {
+            group = null;
+            did = userId;
+        } else {
+            group = parsedUserId.splice(0, 1)[0];
+            did = parsedUserId.join(':');
+        }
+        const user = new PolicyUser(did, virtual);
+        return user.setGroup({ role, uuid: group });
+    }
+
+    /**
      * Set username
      * @param username
      */

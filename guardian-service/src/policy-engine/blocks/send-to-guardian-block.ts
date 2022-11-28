@@ -10,6 +10,7 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Send to guardian
@@ -17,7 +18,6 @@ import { IPolicyUser } from '@policy-engine/policy-user';
 @BasicBlock({
     blockType: 'sendToGuardianBlock',
     commonBlock: true,
-    publishExternalEvent: true,
     about: {
         label: 'Send',
         title: `Add 'Send' Block`,
@@ -265,7 +265,12 @@ export class SendToGuardianBlock {
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
+            type: (ref.options.dataSource || ref.options.dataType),
+            documents: ExternalDocuments(event.data?.data),
+        }));
     }
 
     /**

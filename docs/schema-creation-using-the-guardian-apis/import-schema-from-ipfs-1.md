@@ -1,4 +1,4 @@
-# Import schema from IPFS
+# Import Schema from IPFS (Cancelled)
 
 ### IMPORTING SCHEMA FROM IPFS FILE
 

@@ -13,6 +13,7 @@ import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-m
 import { KeyType } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { DatabaseServer } from '@database-modules';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Custom logic block
@@ -65,7 +66,11 @@ export class CustomLogicBlock {
         try {
             event.data.data = await this.execute(event.data, event.user);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+                documents: ExternalDocuments(event?.data?.data)
+            }));
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
         }
@@ -92,7 +97,7 @@ export class CustomLogicBlock {
                     const owner = PolicyUtils.getDocumentOwner(ref, documents[0]);
                     const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
                     let root;
-                    switch(ref.options.documentSigner) {
+                    switch (ref.options.documentSigner) {
                         case 'owner':
                             root = await PolicyUtils.getHederaAccount(ref, owner.did);
                             break;
@@ -106,8 +111,18 @@ export class CustomLogicBlock {
                     }
                     const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
                     const context = SchemaHelper.getContext(outputSchema);
-                    const relationships = documents.filter(d => !!d.messageId).map(d => d.messageId);
-                    const accounts = documents.reduce((a: any, b: any) => Object.assign(a, b.accounts), {});
+
+                    const relationships = [];
+                    let accounts = {};
+                    let tokens = {};
+                    for (const doc of documents) {
+                        accounts = Object.assign(accounts, doc.accounts);
+                        tokens = Object.assign(tokens, doc.tokens);
+                        if (doc.messageId) {
+                            relationships.push(doc.messageId);
+                        }
+                    }
+
                     const VCHelper = new VcHelper();
 
                     const processing = async (document) => {
@@ -140,7 +155,8 @@ export class CustomLogicBlock {
                         item.type = outputSchema.iri;
                         item.schema = outputSchema.iri;
                         item.relationships = relationships.length ? relationships : null;
-                        item.accounts = Object.keys(accounts).length ? accounts : null;;
+                        item.accounts = Object.keys(accounts).length ? accounts : null;
+                        item.tokens = Object.keys(tokens).length ? tokens : null;
                         return item;
                     }
 
@@ -185,7 +201,7 @@ export class CustomLogicBlock {
      * @param userHederaAccount
      * @param userHederaKey
      */
-     async generateId(idType: string, user: IPolicyUser, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
+    async generateId(idType: string, user: IPolicyUser, userHederaAccount: string, userHederaKey: string): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (idType === 'UUID') {

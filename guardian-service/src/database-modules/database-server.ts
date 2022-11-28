@@ -19,6 +19,8 @@ import { Artifact as ArtifactCollection } from '@entity/artifact';
 import { ArtifactChunk as ArtifactChunkCollection } from '@entity/artifact-chunk';
 import { Binary } from 'bson';
 import { SplitDocuments } from '@entity/split-documents';
+import { MultiPolicy } from '@entity/multi-policy';
+import { MultiPolicyTransaction } from '@entity/multi-policy-transaction';
 
 /**
  * Database server
@@ -328,16 +330,16 @@ export class DatabaseServer {
                 throw new Error('Token already associated')
             } else {
                 item.tokenMap[token.tokenId] = {
-                    frozen: token.freezeKey ? false : null,
-                    kyc: token.kycKey ? false : null
+                    frozen: token.enableFreeze ? false : null,
+                    kyc: token.enableKYC ? false : null
                 };
                 await new DataBaseHelper(DryRun).update(item);
             }
         } else {
             const tokenMap = {};
             tokenMap[token.tokenId] = {
-                frozen: token.freezeKey ? false : null,
-                kyc: token.kycKey ? false : null
+                frozen: token.enableFreeze ? false : null,
+                kyc: token.enableKYC ? false : null
             };
             await new DataBaseHelper(DryRun).save({
                 dryRunId: this.dryRun,
@@ -604,6 +606,7 @@ export class DatabaseServer {
             item.topicId = row.topicId || item.topicId;
             item.comment = row.comment;
             item.relationships = row.relationships;
+            item.tokens = row.tokens;
 
             await this.update(VcDocumentCollection, item.id, item);
         } else {
@@ -620,6 +623,16 @@ export class DatabaseServer {
             }));
         }
         return item;
+    }
+
+    /**
+     * Create Token
+     * @param token
+     * @returns
+     */
+    public async createToken(token: any): Promise<TokenCollection> {
+        const newToken = this.create(TokenCollection, token);
+        return await this.save(TokenCollection, newToken);
     }
 
     /**
@@ -684,7 +697,7 @@ export class DatabaseServer {
      * @virtual
      */
     public async getPolicy(policyId: string): Promise<Policy> {
-        return await this.findOne(Policy, policyId);
+        return await new DataBaseHelper(Policy).findOne(policyId);
     }
 
     /**
@@ -699,18 +712,9 @@ export class DatabaseServer {
     public async getAggregateDocuments(
         policyId: string,
         blockId: string,
-        owner?: string,
-        group?: string
+        filters: any = {},
     ): Promise<AggregateVC[]> {
-        if (owner) {
-            if (group) {
-                return await this.find(AggregateVC, { policyId, blockId, owner, group });
-            } else {
-                return await this.find(AggregateVC, { policyId, blockId, owner });
-            }
-        } else {
-            return await this.find(AggregateVC, { policyId, blockId });
-        }
+        return await this.find(AggregateVC, { policyId, blockId, ...filters });
     }
 
     /**
@@ -952,8 +956,12 @@ export class DatabaseServer {
      * Get Token
      * @param tokenId
      */
-    public async getTokenById(tokenId: string): Promise<TokenCollection> {
-        return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
+    public async getTokenById(tokenId: string, dryRun: any = null): Promise<TokenCollection> {
+        if (dryRun) {
+            return this.findOne(TokenCollection, { tokenId });
+        } else {
+            return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
+        }
     }
 
     /**
@@ -1521,9 +1529,10 @@ export class DatabaseServer {
     /**
      * Get policies
      * @param filters
+     * @param options
      */
-    public static async getPolicies(filters?: any): Promise<Policy[]> {
-        return await new DataBaseHelper(Policy).find(filters);
+    public static async getPolicies(filters?: any, options?: any): Promise<Policy[]> {
+        return await new DataBaseHelper(Policy).find(filters, options);
     }
 
     /**
@@ -1681,6 +1690,7 @@ export class DatabaseServer {
         model.topicDescription = data.topicDescription;
         model.policyRoles = data.policyRoles;
         model.policyTopics = data.policyTopics;
+        model.policyTokens = data.policyTokens;
         model.policyGroups = data.policyGroups;
         return await new DataBaseHelper(Policy).save(model);
     }
@@ -2027,5 +2037,75 @@ export class DatabaseServer {
             }
         })).map(item => item.data.buffer);
         return artifactChunks.length > 0 ? Buffer.concat(artifactChunks) : Buffer.from('');
+    }
+
+    /**
+     * Get Multi Policy link
+     * @param instanceTopicId
+     * @param owner
+     * @returns MultiPolicy
+     */
+    public static async getMultiPolicy(instanceTopicId: string, owner: string): Promise<MultiPolicy> {
+        return await new DataBaseHelper(MultiPolicy).findOne({ instanceTopicId, owner });
+    }
+
+    /**
+     * Create Multi Policy object
+     * @param multiPolicy
+     * @returns MultiPolicy
+     */
+    public static createMultiPolicy(multiPolicy: any): MultiPolicy {
+        return new DataBaseHelper(MultiPolicy).create(multiPolicy);
+    }
+
+    /**
+     * Save Multi Policy object
+     * @param multiPolicy
+     * @returns multiPolicy
+     */
+    public static async saveMultiPolicy(multiPolicy: MultiPolicy): Promise<MultiPolicy> {
+        return await new DataBaseHelper(MultiPolicy).save(multiPolicy);
+    }
+
+    /**
+     * Get Token
+     * @param tokenId
+     */
+    public static async getTokenById(tokenId: string): Promise<TokenCollection> {
+        return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
+    }
+
+    /**
+     * Create MultiPolicyTransaction
+     * @param transaction
+     */
+    public static async createMultiPolicyTransaction(transaction:any): Promise<MultiPolicyTransaction> {
+        const item = new DataBaseHelper(MultiPolicyTransaction).create(transaction);
+        return await new DataBaseHelper(MultiPolicyTransaction).save(item);
+    }
+
+    /**
+     * Get MultiPolicyTransaction
+     * @param policyId
+     * @param owner
+     */
+    public static async getMultiPolicyTransactions(policyId: string, user: string): Promise<MultiPolicyTransaction[]> {
+        return await new DataBaseHelper(MultiPolicyTransaction).find({ policyId, user, status: 'Waiting' });
+    }
+
+    /**
+     * Update MultiPolicyTransaction
+     * @param item
+     */
+    public static async updateMultiPolicyTransactions(item: MultiPolicyTransaction): Promise<void> {
+        await new DataBaseHelper(MultiPolicyTransaction).update(item);
+    }
+
+    /**
+     * Get MultiPolicyTransaction count
+     * @param policyId
+     */
+    public static async countMultiPolicyTransactions(policyId: string) {
+        return await new DataBaseHelper(MultiPolicyTransaction).count({ policyId, status: 'Waiting' });
     }
 }

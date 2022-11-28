@@ -1,4 +1,4 @@
-# Creation of a schema
+# Creation of a Schema (Cancelled)
 
 ### SCHEMA CREATION
 

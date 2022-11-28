@@ -4,7 +4,6 @@
 export enum SchemaEntity {
     NONE = 'NONE',
     VC = 'VC',
-    MRV = 'MRV',
     STANDARD_REGISTRY = 'STANDARD_REGISTRY',
     USER = 'USER',
     POLICY = 'POLICY',

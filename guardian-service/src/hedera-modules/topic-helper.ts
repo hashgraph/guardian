@@ -1,6 +1,5 @@
 import { TopicType, WorkerTaskType } from '@guardian/interfaces';
-import { MessageAction, MessageServer, TopicMessage } from '@hedera-modules';
-import { Topic } from '@entity/topic';
+import { TopicConfig, MessageAction, MessageServer, TopicMessage } from '@hedera-modules';
 import { TopicMemo } from './memo-mappings/topic-memo';
 import { Workers } from '@helpers/workers';
 
@@ -75,40 +74,59 @@ export class TopicHelper {
              * Policy UUID
              */
             policyUUID?: string,
-
             /**
              * Topic Memo
              */
             memo?: string,
-
             /**
              * Memo parameters object
              */
             memoObj?: any
+        },
+        keys?: {
+            /**
+             * Need admin key
+             */
+            admin: boolean,
+            /**
+             * Need submit key
+             */
+            submit: boolean
         }
-    ): Promise<Topic> {
-
+    ): Promise<TopicConfig> {
         const workers = new Workers();
-        const topicId = await workers.addTask({
+        const topicId = await workers.addRetryableTask({
             type: WorkerTaskType.NEW_TOPIC,
             data: {
                 hederaAccountId: this.hederaAccountId,
                 hederaAccountKey: this.hederaAccountKey,
                 dryRun: this.dryRun,
-                topicMemo: TopicMemo.parseMemo(true, config.memo, config.memoObj) || TopicMemo.getTopicMemo(config)
+                topicMemo: TopicMemo.parseMemo(true, config.memo, config.memoObj) || TopicMemo.getTopicMemo(config),
+                keys
             }
         }, 1);
-
-        return {
+        let adminKey: any = null;
+        let submitKey: any = null;
+        if (keys) {
+            if (keys.admin) {
+                adminKey = this.hederaAccountKey;
+            }
+            if (keys.submit) {
+                submitKey = this.hederaAccountKey;
+            }
+        } else {
+            adminKey = this.hederaAccountKey;
+            submitKey = this.hederaAccountKey;
+        }
+        return new TopicConfig({
             topicId,
             name: config.name,
             description: config.description,
             owner: config.owner,
             type: config.type,
-            key: this.hederaAccountKey,
             policyId: config.policyId,
-            policyUUID: config.policyUUID
-        } as Topic;
+            policyUUID: config.policyUUID,
+        }, adminKey, submitKey);
     }
 
     /**
@@ -117,7 +135,8 @@ export class TopicHelper {
      * @param parent
      * @param rationale
      */
-    public async oneWayLink(topic: Topic, parent: Topic, rationale: string) {
+    // tslint:disable-next-line:completed-docs
+    public async oneWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string) {
         const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
@@ -142,7 +161,7 @@ export class TopicHelper {
      * @param parent
      * @param rationale
      */
-    public async twoWayLink(topic: Topic, parent: Topic, rationale: string) {
+    public async twoWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string) {
         const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);

@@ -1,10 +1,21 @@
 version: "3.8"
 services:
   mongo:
-    image: mongo
+    image: mongo:6
+    command: "--setParameter allowDiskUseByDefault=true"
     restart: always
     expose:
       - 27017
+
+  ipfs-node:
+    image: yeasy/ipfs:latest
+    ports:
+      - "5001:5001"
+      - "5002:5002"
+      - "4001:4001"
+      - "4002:4002"
+      - "8080:8080"
+      - "8081:8081"
 
   api-docs:
     build:
@@ -48,7 +59,7 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-client
+      - ipfs-node
     environment:
       - SERVICE_CHANNEL="worker.1"
 
@@ -57,7 +68,7 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - ipfs-client
+      - ipfs-node
     environment:
       - SERVICE_CHANNEL="worker.2"
 
@@ -95,22 +106,6 @@ services:
       - logger-service
       - worker-service-1
       - worker-service-2
-
-  ipfs-client:
-    build:
-      context: .
-      dockerfile: ./ipfs-client/Dockerfile
-    ports:
-      - "5001:5001"
-      - "5002:5002"
-      - "4001:4001"
-      - "4002:4002"
-      - "8080:8080"
-      - "8081:8081"
-    depends_on:
-      - message-broker
-      - logger-service
-      - auth-service
 
   mrv-sender:
     build:

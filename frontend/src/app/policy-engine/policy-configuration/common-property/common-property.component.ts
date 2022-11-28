@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema } from '@guardian/interfaces';
+import { RegisteredBlocks } from '../../registered-blocks';
+import { PolicyModel } from '../../structures/policy-model';
 
 /**
  * common property
@@ -11,6 +13,7 @@ import { Schema } from '@guardian/interfaces';
     encapsulation: ViewEncapsulation.None
 })
 export class CommonPropertyComponent implements OnInit {
+    @Input('policy') policy!: PolicyModel;
     @Input('property') property!: any;
     @Input('collapse') collapse!: any;
     @Input('readonly') readonly!: boolean;
@@ -40,12 +43,20 @@ export class CommonPropertyComponent implements OnInit {
     itemCollapse: any = {};
     needUpdate: boolean = true;
 
-    constructor() {
+    allBlocks: any[] = [];
+    childrenBlocks: any[] = [];
+    loaded: boolean = false;
+
+    constructor(public registeredBlocks: RegisteredBlocks) {
 
     }
 
     ngOnInit(): void {
         this.needUpdate = true;
+    }
+
+    getIcon(block: any) {
+        return this.registeredBlocks.getIcon(block.blockType);
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -58,12 +69,29 @@ export class CommonPropertyComponent implements OnInit {
                 if (!Array.isArray(this.data[this.property.name])) {
                     this.data[this.property.name] = [];
                 }
+            } else if (this.property.type === 'Select' || this.property.type === 'MultipleSelect') {
+                if (this.policy?.allBlocks) {
+                    this.allBlocks = this.policy.allBlocks.map(item => {
+                        return {
+                            name: item.tag,
+                            icon: this.getIcon(item),
+                            value: item.tag,
+                            parent: item?.parent?.id
+                        }
+                    });
+                } else {
+                    this.allBlocks = [];
+                }
+                this.childrenBlocks = this.allBlocks.filter(item => item.parent === this.data?.id);
             } else {
                 if (this.property.default && !this.data.hasOwnProperty(this.property.name)) {
                     this.data[this.property.name] = this.property.default;
                 }
             }
         }
+        setTimeout(() => {
+            this.loaded = true;
+        }, 0);
     }
 
     customPropCollapse(property: any) {

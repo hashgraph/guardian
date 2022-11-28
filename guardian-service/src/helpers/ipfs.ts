@@ -7,6 +7,15 @@ import { Workers } from '@helpers/workers';
  */
 export class IPFS {
     /**
+     * IPFS Protocol
+     */
+    public static readonly IPFS_PROTOCOL = 'ipfs://';
+
+    /**
+     * CID Pattern
+     */
+    public static  readonly CID_PATTERN: RegExp = /Qm[1-9A-HJ-NP-Za-km-z]{44,}|b[A-Za-z2-7]{58,}|B[A-Z2-7]{58,}|z[1-9A-HJ-NP-Za-km-z]{48,}|F[0-9A-F]{50,}/;
+    /**
      * Message broker channel
      * @private
      */
@@ -48,7 +57,7 @@ export class IPFS {
          */
         url: string
     }> {
-        const res = await new Workers().addTask({
+        const res = await new Workers().addRetryableTask({
             type: WorkerTaskType.ADD_FILE,
             data: {
                 target: [IPFS.target, MessageAPI.IPFS_ADD_FILE].join('.'),
@@ -60,7 +69,10 @@ export class IPFS {
         if (!res) {
             throw new Error('Invalid response');
         }
-        return res;
+        return {
+            cid: res,
+            url: IPFS.IPFS_PROTOCOL + res
+        };
     }
 
     /**
@@ -70,7 +82,7 @@ export class IPFS {
      * @returns File
      */
     public static async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
-        const res = await new Workers().addTask({
+        const res = await new Workers().addRetryableTask({
             type: WorkerTaskType.GET_FILE,
             data: {
                 target: [IPFS.target, MessageAPI.IPFS_GET_FILE].join('.'),

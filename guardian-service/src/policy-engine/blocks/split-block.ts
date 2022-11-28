@@ -14,6 +14,7 @@ import { VcDocument } from '@hedera-modules';
 import { SchemaEntity } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
 import { Schema as SchemaCollection } from '@entity/schema';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Split block
@@ -115,8 +116,9 @@ export class SplitBlock {
         let vc = VcDocument.fromJsonTree(clone.document);
         if (document.messageId) {
             const evidenceSchema = await this.getSchema();
+            const context = PolicyUtils.getSchemaContext(ref, evidenceSchema);
             vc.addType(evidenceSchema.name);
-            vc.addContext(evidenceSchema.contextURL);
+            vc.addContext(context);
             vc.addEvidence({
                 type: ['SourceDocument'],
                 messageId: document.messageId,
@@ -255,6 +257,9 @@ export class SplitBlock {
                 })
             };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Chunk, ref, user, {
+                documents: ExternalDocuments(state.data)
+            }));
         }
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, { data: documents });
     }
@@ -276,6 +281,9 @@ export class SplitBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+            documents: ExternalDocuments(docs)
+        }));
         if (Array.isArray(docs)) {
             await this.addDocs(ref, event.user, docs);
         } else {

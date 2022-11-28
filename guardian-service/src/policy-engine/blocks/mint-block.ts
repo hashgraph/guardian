@@ -4,7 +4,7 @@ import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage, VpDocument, MessageMemo } from '@hedera-modules';
+import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage, MessageMemo } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
@@ -12,6 +12,8 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { MintService } from '@policy-engine/multi-policy-service/mint-service';
 
 /**
  * Mint block
@@ -19,7 +21,6 @@ import { IPolicyUser } from '@policy-engine/policy-user';
 @BasicBlock({
     blockType: 'mintDocumentBlock',
     commonBlock: true,
-    publishExternalEvent: true,
     about: {
         label: 'Mint',
         title: `Add 'Mint' Block`,
@@ -99,7 +100,7 @@ export class MintBlock {
         root: IHederaAccount,
         user: IPolicyUser,
         targetAccountId: string
-    ): Promise<VpDocument> {
+    ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
         const uuid = GenerateUUIDv4();
@@ -111,16 +112,14 @@ export class MintBlock {
 
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
         const mintVC = await this.createMintVC(root, token, tokenAmount, ref);
-        const vcs = [].concat(documents, mintVC);
+        const vcs = documents.slice();
+        vcs.push(mintVC);
         const vp = await this.createVP(root, uuid, vcs);
 
-        console.log('!!!!! [tokenValue, tokenAmount]', [tokenValue, tokenAmount])
-
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
-        ref.log(`Topic Id: ${topicId}`);
-        const topic = await PolicyUtils.getTopicById(ref, topicId);
-        ref.log(`Topic Id: ${topic?.id}`);
 
+        ref.log(`Topic Id: ${topicId}`);
+        const topic = await PolicyUtils.getPolicyTopic(ref, topicId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
         vcMessage.setRelationships(relationships);
@@ -152,20 +151,21 @@ export class MintBlock {
         vpDocument.topicId = vpMessageResult.getTopicId();
 
         const savedVp = await ref.databaseServer.saveVP(vpDocument);
+        const transactionMemo = `${vpMessageId} ${MessageMemo.parseMemo(true, ref.options.memo, savedVp)}`.trimEnd();
 
-        await PolicyUtils.mint(
+        await MintService.mint(
             ref,
             token,
             tokenValue,
+            user,
             root,
             targetAccountId,
             vpMessageId,
-            vpMessageId
-                .concat(' ', MessageMemo.parseMemo(true, ref.options.memo, savedVp))
-                .trimEnd()
+            transactionMemo,
+            documents
         );
 
-        return vp;
+        return [savedVp, tokenValue];
     }
 
     /**
@@ -184,11 +184,6 @@ export class MintBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        const token = await ref.databaseServer.getTokenById(ref.options.tokenId);
-        if (!token) {
-            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
-        }
-
         const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);
         if (!docs.length && docs[0]) {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
@@ -197,6 +192,20 @@ export class MintBlock {
         const docOwner = PolicyUtils.getDocumentOwner(ref, docs[0]);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
+        }
+
+        let token;
+        if (ref.options.useTemplate) {
+            if (docs[0].tokens) {
+                const tokenId = docs[0].tokens[ref.options.template];
+                token = await ref.databaseServer.getTokenById(tokenId, ref.dryRun);
+            }
+        } else {
+            token = await ref.databaseServer.getTokenById(ref.options.tokenId);
+        }
+
+        if (!token) {
+            throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
         const vcs: VcDocument[] = [];
@@ -244,9 +253,25 @@ export class MintBlock {
 
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
 
-        await this.mintProcessing(token, vcs, vsMessages, topicId, root, docOwner, targetAccountId);
+        const [vp, tokenValue] = await this.mintProcessing(
+            token,
+            vcs,
+            vsMessages,
+            topicId,
+            root,
+            docOwner,
+            targetAccountId
+        );
         ref.triggerEvents(PolicyOutputEventType.RunEvent, docOwner, event.data);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, docOwner, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, docOwner, event.data);
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, docOwner, {
+            tokenId: token.tokenId,
+            accountId: targetAccountId,
+            amount: tokenValue,
+            documents: ExternalDocuments(docs),
+            result: ExternalDocuments(vp),
+        }));
     }
 
     /**
@@ -256,12 +281,23 @@ export class MintBlock {
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
-            if (!ref.options.tokenId) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
-            } else if (typeof ref.options.tokenId !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-            } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
-                resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+            if (ref.options.useTemplate) {
+                if (!ref.options.template) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "template" does not set');
+                }
+                const policyTokens = ref.policyInstance.policyTokens || [];
+                const tokenConfig = policyTokens.find(e => e.templateTokenTag === ref.options.template);
+                if (!tokenConfig) {
+                    resultsContainer.addBlockError(ref.uuid, `Token "${ref.options.template}" does not exist`);
+                }
+            } else {
+                if (!ref.options.tokenId) {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
+                } else if (typeof ref.options.tokenId !== 'string') {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
+                } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
+                    resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
+                }
             }
 
             if (!ref.options.rule) {

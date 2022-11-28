@@ -7,12 +7,31 @@
         <td class="propHeaderCell cellName">UI</td>
         <td class="propHeaderCell"></td>
     </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
+    <tr class="propRow"
+        [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Use Template</td>
+        <td class="propRowCell">
+            <input class="prop-input" type="checkbox" (change)="onUseTemplateChange()" [(ngModel)]="block.useTemplate" [readonly]="readonly">
+        </td>
+    </tr>
+    <tr *ngIf="!block.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.tokenId" [disabled]="readonly">
                 <mat-option *ngFor="let token of tokens" [value]="token.tokenId">{{token.tokenName}}</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr *ngIf="block.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Token Template</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="block.template" [disabled]="readonly">
+                <mat-option *ngFor="let token of policy.policyTokens" [value]="token.templateTokenTag">
+                    {{token.templateTokenTag}}
+                </mat-option>
             </mat-select>
         </td>
     </tr>

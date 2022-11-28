@@ -1,7 +1,8 @@
 import {
     PolicyEngineEvents,
     TopicType,
-    PolicyType
+    PolicyType,
+    ExternalMessageEvents
 } from '@guardian/interfaces';
 import {
     IAuthUser,
@@ -9,10 +10,11 @@ import {
     MessageResponse,
     MessageError,
     BinaryMessageResponse,
-    Logger
+    Logger,
+    ExternalEventChannel
 } from '@guardian/common';
 import {
-    DIDDocument,
+    DIDDocument, TopicConfig,
 } from '@hedera-modules'
 import { IPolicyBlock, IPolicyInterfaceBlock } from './policy-engine.interface';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
@@ -50,6 +52,11 @@ export class PolicyEngineService {
     private readonly apiGatewayChannel: MessageBrokerChannel;
 
     /**
+     * External event channel
+     */
+    private readonly externalEventChannel: ExternalEventChannel;
+
+    /**
      * Policy Engine
      * @private
      */
@@ -59,6 +66,7 @@ export class PolicyEngineService {
         this.channel = channel;
         this.apiGatewayChannel = apiGatewayChannel;
         this.policyEngine = new PolicyEngine()
+        this.externalEventChannel = new ExternalEventChannel()
     }
 
     /**
@@ -171,6 +179,14 @@ export class PolicyEngineService {
             await this.updateUserInfo.apply(this, args);
         }
 
+        PolicyComponentsUtils.ExternalEventFn = async (...args: any[]) => {
+            try {
+                this.externalEventChannel.publishMessage(ExternalMessageEvents.BLOCK_EVENTS, args);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
         this.channel.response<any, any>('mrv-data', async (msg) => {
             await PolicyComponentsUtils.ReceiveExternalData(msg);
             return new MessageResponse({})
@@ -235,7 +251,8 @@ export class PolicyEngineService {
                         'policyTag',
                         'messageId',
                         'codeVersion',
-                        'createDate'
+                        'createDate',
+                        'instanceTopicId'
                     ]
                 };
                 const _pageSize = parseInt(pageSize, 10);
@@ -892,7 +909,9 @@ export class PolicyEngineService {
                     throw new Error(`Policy is not in Dry Run`);
                 }
 
-                const topic = await DatabaseServer.getTopicByType(did, TopicType.UserTopic);
+                const topic = await TopicConfig.fromObject(
+                    await DatabaseServer.getTopicByType(did, TopicType.UserTopic), false
+                );
 
                 const newPrivateKey = PrivateKey.generate();
                 const newAccountId = new AccountId(Date.now());
@@ -999,6 +1018,51 @@ export class PolicyEngineService {
                 const documents = await DatabaseServer.getVirtualDocuments(policyId, type, pageIndex, pageSize);
                 return new MessageResponse(documents);
             } catch (error) {
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.GET_MULTI_POLICY, async (msg) => {
+            try {
+                const { user, policyId } = msg;
+
+                const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
+                const userFull = await this.policyEngine.getUser(policyInstance, user);
+                const item = await DatabaseServer.getMultiPolicy(policyInstance.instanceTopicId, userFull.did);
+                if (item) {
+                    return new MessageResponse(item);
+                } else {
+                    return new MessageResponse({
+                        uuid: null,
+                        instanceTopicId: policyInstance.instanceTopicId,
+                        mainPolicyTopicId: policyInstance.instanceTopicId,
+                        synchronizationTopicId: policyInstance.synchronizationTopicId,
+                        owner: userFull.did,
+                        type: null
+                    });
+                }
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.SET_MULTI_POLICY, async (msg) => {
+            try {
+                const { user, policyId, data } = msg;
+                const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
+                const userDID = await this.getUserDid(user.username);
+                const item = await DatabaseServer.getMultiPolicy(policyInstance.instanceTopicId, userDID);
+                const userAccount = await this.users.getHederaAccount(userDID);
+                if (item) {
+                    return new MessageError(new Error('Policy is already bound'));
+                } else {
+                    const root = await this.users.getHederaAccount(policyInstance.owner);
+                    const result = await this.policyEngine.createMultiPolicy(policyInstance, userAccount, root, data);
+                    return new MessageResponse(result);
+                }
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

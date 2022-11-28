@@ -636,8 +636,9 @@ export interface IPolicyValidatorBlock extends IPolicyBlock {
     /**
      * Run block logic
      * @param event
+     * @returns error
      */
-    run(event: IPolicyEvent<any>): Promise<boolean>;
+    run(event: IPolicyEvent<any>): Promise<string>;
 }
 
 /**
@@ -722,7 +723,7 @@ export interface IPolicyInstance {
     /**
      * Policy id
      */
-    readonly policyId?: string;
+    readonly policyId: string;
 
     /**
      * Dry-run
@@ -738,4 +739,19 @@ export interface IPolicyInstance {
      * Is Multiple Group
      */
     readonly isMultipleGroup: boolean;
+
+    /**
+     * Policy Instance Topic Id
+     */
+    readonly instanceTopicId: string;
+
+    /**
+     * Synchronization Topic Id
+     */
+    readonly synchronizationTopicId: string;
+
+    /**
+     * Policy Owner
+     */
+    readonly owner: string;
 }

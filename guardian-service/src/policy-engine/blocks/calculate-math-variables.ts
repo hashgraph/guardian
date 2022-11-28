@@ -6,6 +6,7 @@ import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfac
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser } from '@policy-engine/policy-user';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Calculate math Variables
@@ -206,6 +207,11 @@ export class CalculateMathVariables {
                 scope[variable.variableName] = PolicyUtils.getObjectValue(data, variable.variablePath);
             }
         }
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
+            scope
+        }));
+
         return scope;
     }
 

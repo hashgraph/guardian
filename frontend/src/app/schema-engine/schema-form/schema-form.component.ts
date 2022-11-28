@@ -6,7 +6,7 @@ import { Schema, SchemaCondition, SchemaField, UnitSystem } from '@guardian/inte
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { API_IPFS_GATEWAY_URL } from 'src/app/services/api';
+import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 
 export const DATETIME_FORMATS = {
@@ -27,7 +27,8 @@ enum PlaceholderByFieldType {
     URL = "example.com",
     String = "Please enter text here",
     IPFS = 'ipfs.io/ipfs/example-hash',
-    HederaAccount= '0.0.1'
+    HederaAccount = '0.0.1',
+    Duration = 'P1D'
 }
 
 enum ErrorFieldMessageByFieldType {
@@ -66,6 +67,7 @@ enum ErrorArrayMessageByFieldType {
 })
 export class SchemaFormComponent implements OnInit {
     @Input('private-fields') hide!: { [x: string]: boolean };
+    @Input('readonly-fields') readonly?: any;
     @Input('schema') schema!: Schema;
     @Input('fields') schemaFields!: SchemaField[];
     @Input('context') context!: {
@@ -86,7 +88,6 @@ export class SchemaFormComponent implements OnInit {
     conditionFields: SchemaField[] = [];
 
     private _patternByNumberType: any = {
-        duration: /^[0-9]+$/,
         number: /^-?\d*(\.\d+)?$/,
         integer: /^-?\d*$/
     };
@@ -191,11 +192,13 @@ export class SchemaFormComponent implements OnInit {
             const validators = this.getValidators(item);
             item.control = new FormControl(item.preset === null || item.preset === undefined ? "" : item.preset, validators);
             if (field.remoteLink) {
-                fetch(field.remoteLink)
-                    .then(r => r.json())
+                item.fileUploading = true;
+                this.ipfs
+                    .getJsonFileByLink(field.remoteLink)
                     .then((res: any) => {
                         item.enumValues = res.enum;
-                    });
+                    })
+                    .finally(() => item.fileUploading = false);
             }
             if (field.enum) {
                 item.enumValues = field.enum;
@@ -205,8 +208,8 @@ export class SchemaFormComponent implements OnInit {
 
         if (!field.isArray && field.isRef) {
             item.fields = field.fields;
-            item.displayRequired = item.fields.some((field: any) => field.required);
-            if (field.required) {
+            item.displayRequired = item.fields.some((refField: any) => refField.required);
+            if (field.required || item.preset) {
                 item.control = new FormGroup({});
             }
         }
@@ -215,11 +218,13 @@ export class SchemaFormComponent implements OnInit {
             item.control = new FormArray([]);
             item.list = [];
             if (field.remoteLink) {
-                fetch(field.remoteLink)
-                    .then(r => r.json())
+                item.fileUploading = true;
+                this.ipfs
+                    .getJsonFileByLink(field.remoteLink)
                     .then((res: any) => {
                         item.enumValues = res.enum;
-                    });
+                    })
+                    .finally(() => item.fileUploading = false);
             }
             if (field.enum) {
                 item.enumValues = field.enum;
@@ -265,7 +270,17 @@ export class SchemaFormComponent implements OnInit {
                 this.change.emit();
             }
         }
-
+        if (
+            this.readonly &&
+            this.readonly.find(
+                (readonlyItem: any) => readonlyItem.name === field.name
+            )
+        ) {
+            setTimeout(() => {
+                item.control?.disable();
+                item.control?.disable();
+            });
+        }
         return item;
     }
 
@@ -308,7 +323,11 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (item.format === 'duration') {
-            validators.push(this.isNumberOrEmptyValidator());
+            validators.push(
+                Validators.pattern(
+                    /^(-?)P(?=\d|T\d)(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)([DW]))?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/
+                )
+            );
         }
 
         if (item.type === 'integer') {
@@ -347,7 +366,7 @@ export class SchemaFormComponent implements OnInit {
                     } else {
                         valueToSet = "";
                     }
-                } else if (type === 'number' || type === 'integer' || format === 'duration') {
+                } else if (type === 'number' || type === 'integer') {
                     if (typeof (val) === 'string') {
                         if (
                             (!pattern && !this._patternByNumberType[type].test(val)) ||
@@ -356,7 +375,7 @@ export class SchemaFormComponent implements OnInit {
                             valueToSet = null;
                         } else if (type == 'integer') {
                             valueToSet = parseInt(val);
-                        } else if (type == 'number' || type == 'duration') {
+                        } else if (type == 'number') {
                             valueToSet = parseFloat(val);
                         }
                     }
@@ -420,7 +439,11 @@ export class SchemaFormComponent implements OnInit {
         item.fileUploading = true;
         this.ipfs.addFile(file)
             .subscribe(res => {
-                control.patchValue(API_IPFS_GATEWAY_URL + res);
+                if (item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+') {
+                    control.patchValue(API_IPFS_GATEWAY_URL + res);
+                } else {
+                    control.patchValue(IPFS_SCHEMA + res);
+                }
                 item.fileUploading = false;
             }, error => {
                 item.fileUploading = false;
@@ -470,7 +493,7 @@ export class SchemaFormComponent implements OnInit {
             case 'number':
                 return PlaceholderByFieldType.Number;
             case 'duration':
-                return PlaceholderByFieldType.Number;
+                return PlaceholderByFieldType.Duration;
             case 'integer':
                 return PlaceholderByFieldType.Number;
             case 'url':
@@ -565,7 +588,8 @@ export class SchemaFormComponent implements OnInit {
     }
 
     isIPFS(item: SchemaField): boolean {
-        return item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+';
+        return item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+'
+            || item.pattern === '^ipfs:\/\/.+';
     }
 
     isInput(item: SchemaField): boolean {

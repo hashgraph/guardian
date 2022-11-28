@@ -1,7 +1,6 @@
 <ng-container *ngIf="property.type === 'Group'">
     <tr class="propHeader" [attr.collapse]="collapse">
-        <td class="propRowCol" (click)="onHide()"
-            [attr.collapse]="groupCollapse">
+        <td class="propRowCol" (click)="onHide()" [attr.collapse]="groupCollapse">
             <mat-icon>
                 expand_more
             </mat-icon>
@@ -12,21 +11,14 @@
         <td class="propHeaderCell"></td>
     </tr>
 
-    <div *ngFor="let p of property.properties" 
-        common-property 
-        class="custom-properties"
-        [data]="group"
-        [property]="p" 
-        [readonly]="readonly"
-        [collapse]="collapse || groupCollapse"
-        (update)="onSave()"
-    ></div>
+    <div *ngFor="let p of property.properties" common-property class="custom-properties" [data]="group" [property]="p"
+        [readonly]="readonly" [collapse]="collapse || groupCollapse" [schemas]="schemas" [policy]="policy"
+        (update)="onSave()"></div>
 </ng-container>
 
 <ng-container *ngIf="property.type === 'Array'">
     <tr class="propHeader" [attr.collapse]="collapse">
-        <td class="propRowCol" (click)="onHide()"
-            [attr.collapse]="groupCollapse">
+        <td class="propRowCol" (click)="onHide()" [attr.collapse]="groupCollapse">
             <mat-icon>
                 expand_more
             </mat-icon>
@@ -60,16 +52,9 @@
                 </span>
             </td>
         </tr>
-        <div *ngFor="let p of property.items.properties" 
-            common-property 
-            class="custom-properties"
-            [data]="item"
-            [property]="p" 
-            [readonly]="readonly"
-            [collapse]="collapse || groupCollapse || itemCollapse[i]"
-            [offset]="1"
-            (update)="onSave()"
-        ></div>
+        <div *ngFor="let p of property.items.properties" common-property class="custom-properties" [data]="item"
+            [property]="p" [readonly]="readonly" [collapse]="collapse || groupCollapse || itemCollapse[i]" [offset]="1"
+            [schemas]="schemas" [policy]="policy" (update)="onSave()"></div>
     </ng-container>
 </ng-container>
 
@@ -99,6 +84,51 @@
         <td class="propRowCell cellName" [title]="property.title">{{property.label}}</td>
         <td class="propRowCell ns">
             <mat-select [(value)]="value" [disabled]="readonly" (change)="onSave()">
+                <mat-option *ngFor="let item of property.items" [value]="item.value">{{item.label}}</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+</ng-container>
+
+<ng-container *ngIf="property.type === 'MultipleSelect'">
+    <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [title]="property.title">{{property.label}}</td>
+        <td *ngIf="loaded" [ngSwitch]="property.items" class="propRowCell ns">
+            <mat-select *ngSwitchCase="'Schemas'" multiple [(value)]="value" [disabled]="readonly" (change)="onSave()">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
+                    {{schema.name}}
+                    <span *ngIf="schema.version"> ({{schema.version}})</span>
+                    <span *ngIf="schema.status"> ({{schema.status}})</span>
+                </mat-option>
+            </mat-select>
+            <mat-select *ngSwitchCase="'Block'" multiple [(value)]="value" [disabled]="readonly"  (valueChange)="onSave()">
+                <mat-select-trigger>
+                    <span class="select-custom">{{value}}</span>
+                </mat-select-trigger>
+                <mat-option *ngFor="let item of allBlocks" [value]="item.value">
+                    <div class="select-block-name">
+                        <div class="select-block-icon">
+                            <mat-icon>{{item.icon}}</mat-icon>
+                        </div>
+                        {{item.name}}
+                    </div>
+                </mat-option>
+            </mat-select>
+            <mat-select *ngSwitchCase="'Children'" multiple [(value)]="value" [disabled]="readonly" (valueChange)="onSave()">
+                <mat-select-trigger>
+                    <span class="select-custom">{{value}}</span>
+                </mat-select-trigger>
+                <mat-option *ngFor="let item of childrenBlocks" [value]="item.value">
+                    <div class="select-block-name">
+                        <div class="select-block-icon">
+                            <mat-icon>{{item.icon}}</mat-icon>
+                        </div>
+                        {{item.name}}
+                    </div>
+                </mat-option>
+            </mat-select>
+            <mat-select *ngSwitchDefault multiple [(value)]="value" [disabled]="readonly" (change)="onSave()">
                 <mat-option *ngFor="let item of property.items" [value]="item.value">{{item.label}}</mat-option>
             </mat-select>
         </td>

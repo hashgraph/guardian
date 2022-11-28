@@ -1,12 +1,22 @@
 version: '3.8'
 services:
     mongo:
-        image: mongo
+        image: mongo:6
+        command: "--setParameter allowDiskUseByDefault=true"
         restart: always
         expose:
             - 27017
         ports:
             - 27017:27017
+    ipfs-node:
+        image: yeasy/ipfs:latest
+        ports:
+            - "5001:5001"
+            - "5002:5002"
+            - "4001:4001"
+            - "4002:4002"
+            - "8080:8080"
+            - "8081:8081"
     message-broker:
         image: nats
         expose:
@@ -124,29 +134,6 @@ services:
         volumes:
             - ./:/app
         command: npm run dev:docker --prefix /app/guardian-service
-
-    ipfs-client:
-        image: guardian-development
-        restart: always
-        ports:
-            - '5001:5001'
-            - '5002:5002'
-            - '4001:4001'
-            - '4002:4002'
-            - '8080:8080'
-            - '8081:8081'
-        depends_on:
-            - dev-tools
-            - message-broker
-            - logger-service
-        volumes:
-            - ./:/app
-        environment:
-            - MQ_ADDRESS=message-broker
-            - DB_HOST=mongo
-            - IPFS_STORAGE_API_KEY=${IPFS_STORAGE_API_KEY}
-        command: npm run dev:docker --prefix /app/ipfs-client
-
     mrv-sender:
         image: guardian-development
         expose:

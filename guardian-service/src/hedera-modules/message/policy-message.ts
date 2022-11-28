@@ -4,6 +4,7 @@ import { IURL, UrlType } from './url.interface';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { PolicyMessageBody } from './message-body.interface';
+import { IPFS } from '@helpers/ipfs';
 
 /**
  * Policy message
@@ -47,6 +48,10 @@ export class PolicyMessage extends Message {
      */
     public instanceTopicId: string;
     /**
+     * Synchronization topic ID
+     */
+    public synchronizationTopicId: string;
+    /**
      * Policy topic ID
      * @private
      */
@@ -73,6 +78,7 @@ export class PolicyMessage extends Message {
         this.owner = model.owner;
         this.policyTopicId = model.topicId;
         this.instanceTopicId = model.instanceTopicId;
+        this.synchronizationTopicId = model.synchronizationTopicId;
         this.document = zip;
     }
 
@@ -102,8 +108,9 @@ export class PolicyMessage extends Message {
             owner: this.owner,
             topicId: this.policyTopicId?.toString(),
             instanceTopicId: this.instanceTopicId,
+            synchronizationTopicId: this.synchronizationTopicId,
             cid: this.getDocumentUrl(UrlType.cid),
-            url: this.getDocumentUrl(UrlType.url),
+            uri: this.getDocumentUrl(UrlType.url)
         }
     }
 
@@ -171,10 +178,10 @@ export class PolicyMessage extends Message {
         message.policyTopicId = json.topicId;
         message.instanceTopicId = json.instanceTopicId;
 
-        if (json.cid && json.url) {
+        if (json.cid) {
             const urls = [{
                 cid: json.cid,
-                url: json.url
+                url: IPFS.IPFS_PROTOCOL + json.cid
             }];
             message.setUrls(urls);
         } else {

@@ -35,25 +35,33 @@ export interface IToken {
      */
     adminId?: string;
     /**
-     * Admin key
+     * Enable admin
      */
-    adminKey?: string;
+    enableAdmin?: boolean;
     /**
-     * KYC key
+     * Enable KYC
      */
-    kycKey?: string;
+    enableKYC?: boolean;
     /**
-     * Freeze key
+     * Enable freeze
      */
-    freezeKey?: string;
+    enableFreeze?: boolean;
     /**
-     * Wipe key
+     * Enable wipe
      */
-    wipeKey?: string;
+    enableWipe?: boolean;
     /**
-     * Supply key
+     * Change supply
      */
-    supplyKey?: string;
+    changeSupply?: boolean;
+    /**
+     * Owner
+     */
+    owner?: string;
+    /**
+     * Owner
+     */
+    policyId?: string;
 }
 
 /**
