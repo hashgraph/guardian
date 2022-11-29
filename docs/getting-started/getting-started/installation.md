@@ -27,33 +27,39 @@ in `guardian-service/.env.docker`:
 **Note:** You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 {% endhint %}
 
-3\. Update the following files with your Web3.Storage API KEY. Please follow the steps from [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart) to obtain it. To know complete information on generating API Key please check : [how-to-generate-web3.storage-api-key.md](how-to-generate-web3.storage-api-key.md "mention")
+3\. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node.
 
-For example:
+#### 3.1 Setting up IPFS Local node:
 
-in `ipfs-client/.env`:
+3.1.1 We need to install and configure any IPFS node.&#x20;
 
-```
-IPFS_STORAGE_API_KEY=""
-```
+For example: [https://github.com/yeasy/docker-ipfs](https://github.com/yeasy/docker-ipfs)
 
-or in `ipfs-client/.env.docker`:
+3.1.2 For setup IPFS local node you need to set variables in `worker-service` folder
 
 ```
-IPFS_STORAGE_API_KEY=""
+IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5002"
+IPFS_PUBLIC_GATEWAY="..." # Default IPFS_PUBLIC_GATEWAY="https://localhost:8080/ipfs/${cid}"
+IPFS_PROVIDER="local"
 ```
 
-in `worker-service/ .env`:
+{% hint style="info" %}
+Note:
+
+1. Default IPFS\_NODE\_ADDRESS="[http://localhost:5002](http://localhost:5002/)"
+2. Default IPFS\_PUBLIC\_GATEWAY="[https://localhost:8080/ipfs/${cid}](https://localhost:8080/ipfs/$%7Bcid%7D)"
+{% endhint %}
+
+#### 3.2 Setting up IPFS Web3Storage node:
+
+3.2.1 For setup IPFS web3storage node you need to set variables in `worker-service`:
 
 ```
-IPFS_STORAGE_API_KEY=""
+IPFS_STORAGE_API_KEY="..."
+IPFS_PROVIDER="web3storage"
 ```
 
-or in `worker-service/ .env.docker`:
-
-```
-IPFS_STORAGE_API_KEY=""
-```
+To generate Web3.Storage API KEY. Please follow the steps from [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart) to obtain it. To know complete information on generating API Key please check : [how-to-generate-web3.storage-api-key.md](how-to-generate-web3.storage-api-key.md "mention")
 
 4\. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
@@ -342,7 +348,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 **Note**: Restore Data can be restored from Hedera if data is available for setting up the Registry.
 
-<figure><img src="../../.gitbook/assets/image (2) (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Limitations on restoring the data:**\
@@ -353,7 +359,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
-![](<../../.gitbook/assets/image (23) (1).png>)
+![](<../../.gitbook/assets/image (14).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
