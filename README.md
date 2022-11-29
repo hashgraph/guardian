@@ -62,32 +62,36 @@ If you build with docker [MongoDB](https://www.mongodb.com), [NodeJS](https://no
    ```
 
    **Note**. You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
+   
+3. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node.
 
-3. Update the following files with your Web3.Storage API KEY. Please follow the steps from <https://web3.storage/docs/#quickstart> to obtain it.To know complete information on generating API Key please check [How to Create Web3.Storage API Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-web3.storage-api-key).
+   **3.1 Setting up IPFS Local node:**
 
-   For example:
+   3.1.1 We need to install and configure any IPFS node. 
 
-   in `ipfs-client/.env`:
+   For example: https://github.com/yeasy/docker-ipfs
 
-   ```plaintext
-   IPFS_STORAGE_API_KEY=""
+   3.1.2 For setup IPFS local node you need to set variables in `worker-service` folder
+
    ```
-
-   or in `ipfs-client/.env.docker`:
-
-   ```plaintext
-   IPFS_STORAGE_API_KEY=""
+   IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5002"
+   IPFS_PUBLIC_GATEWAY="..." # Default IPFS_PUBLIC_GATEWAY="https://localhost:8080/ipfs/${cid}"
+   IPFS_PROVIDER="local"
    ```
-   in `worker-service/.env`:
-
-   ```plaintext
-   IPFS_STORAGE_API_KEY=""
+   **Note**
+   1. Default IPFS_NODE_ADDRESS="http://localhost:5002"
+   2. Default IPFS_PUBLIC_GATEWAY="https://localhost:8080/ipfs/${cid}"
+   
+   **3.2 Setting up IPFS Web3Storage node:**
+   
+   3.2.1 For setup IPFS web3storage node you need to set variables in `worker-service` folder:
+   
    ```
-  in `worker-service/.env.docker`:
-
-   ```plaintext
-   IPFS_STORAGE_API_KEY=""
+   IPFS_STORAGE_API_KEY="..."
+   IPFS_PROVIDER="web3storage"
    ```
+ 
+   To generate Web3.Storage API KEY. Please follow the steps from <https://web3.storage/docs/#quickstart> to obtain it.To know complete information on    generating API Key please check [How to Create Web3.Storage API Key](https://docs.hedera.com/guardian/getting-started/getting-started/how-to-create-web3.storage-api-key).
   
 4. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
