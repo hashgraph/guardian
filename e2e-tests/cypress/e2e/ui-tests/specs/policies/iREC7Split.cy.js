@@ -14,7 +14,7 @@ const tokens = new TokensPage();
 describe("Workflow iREC 7 Policy", () => {
     const authorization = Cypress.env("authorization");
 
-    it("checks iREC 7 policy workflow", () => {
+    it("checks iREC 7 policy workflow",{ tags: '@ui' },  () => {
         cy.viewport(1230, 800);
 
         home.visit();

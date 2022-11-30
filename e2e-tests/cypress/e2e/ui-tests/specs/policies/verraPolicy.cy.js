@@ -16,7 +16,7 @@ const verra = new VerraPage();
 const projectProponent = new PPPage();
 
 
-describe("Workflow Verra Policy", () => {
+describe("Workflow Verra Policy", { tags: '@ui' },  () => {
     it("checks verra policy workflow", () => {
         cy.viewport(1230, 800);
 

@@ -82,3 +82,22 @@ To run in Docker
    ```shell
    TAG=<TEST-TAG> docker-compose run --entrypoint="npm run test-tag" cypress-tests
    ```
+
+## UI tests (Policies)
+
+Only iREC5, iREC7 and Verra3 policies are covered.
+
+A command
+
+   ```shell
+    npm run ui-only
+   ```
+
+runs all ui tests in a interactive dashboard that allows you to see the status of the tests while they are running and at the same time view the application under test. 
+
+
+To run a UI test for specific policy you can open Cypress dashboard by running the following command from /e2e-tests folder:
+
+`npx cypress open`
+
+and then select test under ui-tests/specs/policies 
