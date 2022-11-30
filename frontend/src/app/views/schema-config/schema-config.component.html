@@ -61,7 +61,7 @@
             <ng-container matColumnDef="topic">
                 <th mat-header-cell *matHeaderCellDef> Topic </th>
                 <td mat-cell *matCellDef="let element">
-                    <dragonglass type="topics" [params]="element.topicId">{{element.topicId}}</dragonglass>
+                    <hedera-explorer type="topics" [params]="element.topicId">{{element.topicId}}</hedera-explorer>
                 </td>
             </ng-container>
             <ng-container matColumnDef="version">
