@@ -4,6 +4,7 @@ import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { EventConfig, IPolicyEvent } from './interfaces';
 import { DatabaseServer } from '@database-modules';
 import { IPolicyUser } from './policy-user';
+import { IHederaAccount } from './helpers/utils';
 
 /**
  * Policy roles interface
@@ -642,6 +643,27 @@ export interface IPolicyValidatorBlock extends IPolicyBlock {
 }
 
 /**
+ * Policy token block interface
+ */
+export interface IPolicyTokenBlock extends IPolicyBlock {
+    /**
+     * Get addons
+     */
+    getAddons(): IPolicyTokenAddon[];
+}
+
+/**
+ * Policy token addon interface
+ */
+export interface IPolicyTokenAddon extends IPolicyBlock {
+    /**
+     * Run logic
+     * @param scope
+     */
+    run(scope: any, root: IHederaAccount, user: IPolicyUser): Promise<any>;
+}
+
+/**
  * Any block type
  */
 export type AnyBlockType =
@@ -652,6 +674,8 @@ export type AnyBlockType =
     | IPolicyAddonBlock
     | IPolicyCalculateBlock
     | IPolicyCalculateAddon
+    | IPolicyTokenBlock
+    | IPolicyTokenAddon
     | IPolicyRequestBlock
     | IPolicyValidatorBlock;
 

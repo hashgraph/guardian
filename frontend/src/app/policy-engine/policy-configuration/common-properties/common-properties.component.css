@@ -468,20 +468,20 @@
 
 .grid-setting::ng-deep *[offset="1"] .propRowCell.cellName {
     padding-left: 20px;
-    width: 145px;
-    max-width: 145px !important;
+    width: 130px;
+    max-width: 130px !important;
 }
 
 .grid-setting::ng-deep *[offset="2"] .propRowCell.cellName {
     padding-left: 40px;
-    width: 125px;
-    max-width: 125px !important;
+    width: 110px;
+    max-width: 110px !important;
 }
 
 .grid-setting::ng-deep *[offset="3"] .propRowCell.cellName {
     padding-left: 60px;
-    width: 105px;
-    max-width: 105px !important;
+    width: 90px;
+    max-width: 90px !important;
 }
 
 .block-name {

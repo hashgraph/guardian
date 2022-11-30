@@ -1,4 +1,4 @@
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, TokenBlock } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
@@ -8,9 +8,9 @@ import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage, Message
 import { VcHelper } from '@helpers/vc-helper';
 import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
-import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyTokenBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
+import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 import { MintService } from '@policy-engine/multi-policy-service/mint-service';
@@ -18,7 +18,7 @@ import { MintService } from '@policy-engine/multi-policy-service/mint-service';
 /**
  * Mint block
  */
-@BasicBlock({
+@TokenBlock({
     blockType: 'mintDocumentBlock',
     commonBlock: true,
     about: {
@@ -65,6 +65,33 @@ export class MintBlock {
     }
 
     /**
+     * Create report VC
+     * @param documents
+     * @param root
+     * @param user
+     * @param ref
+     * @private
+     */
+    private async createReportVC(
+        documents: VcDocument[],
+        root: IHederaAccount,
+        user: IPolicyUser,
+        ref: IPolicyTokenBlock
+    ): Promise<VcDocument[]> {
+        const addons = ref.getAddons();
+        if (addons && addons.length) {
+            const result: VcDocument[] = [];
+            for (const addon of addons) {
+                const vc = await addon.run(documents, root, user);
+                result.push(vc);
+            }
+            return result;
+        } else {
+            return [];
+        }
+    }
+
+    /**
      * Create VP
      * @param root
      * @param uuid
@@ -101,7 +128,7 @@ export class MintBlock {
         user: IPolicyUser,
         targetAccountId: string
     ): Promise<[IPolicyDocument, number]> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
         const uuid = GenerateUUIDv4();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
@@ -111,14 +138,17 @@ export class MintBlock {
         }
 
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
+
         const mintVC = await this.createMintVC(root, token, tokenAmount, ref);
-        const vcs = documents.slice();
-        vcs.push(mintVC);
+        const reportVC = await this.createReportVC(documents, root, user, ref);
+        const vcs = [...documents, ...reportVC, mintVC];
         const vp = await this.createVP(root, uuid, vcs);
 
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
 
         ref.log(`Topic Id: ${topicId}`);
+
+        // #region Save Mint VC
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(mintVC);
@@ -126,21 +156,21 @@ export class MintBlock {
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vcMessage);
-
-        const vcDocument = PolicyUtils.createVC(ref, user, mintVC);
-        vcDocument.type = DataTypes.MINT;
-        vcDocument.schema = `#${mintVC.getSubjectType()}`;
-        vcDocument.messageId = vcMessageResult.getId();
-        vcDocument.topicId = vcMessageResult.getTopicId();
-        vcDocument.relationships = relationships;
-
-        await ref.databaseServer.saveVC(vcDocument);
+        const mintVcDocument = PolicyUtils.createVC(ref, user, mintVC);
+        mintVcDocument.type = DataTypes.MINT;
+        mintVcDocument.schema = `#${mintVC.getSubjectType()}`;
+        mintVcDocument.messageId = vcMessageResult.getId();
+        mintVcDocument.topicId = vcMessageResult.getTopicId();
+        mintVcDocument.relationships = relationships;
+        await ref.databaseServer.saveVC(mintVcDocument);
+        // #endregion
 
         relationships.push(vcMessageResult.getId());
+
+        // #region Save Mint VP
         const vpMessage = new VPMessage(MessageAction.CreateVP);
         vpMessage.setDocument(vp);
         vpMessage.setRelationships(relationships);
-
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vpMessage);
@@ -149,10 +179,10 @@ export class MintBlock {
         vpDocument.type = DataTypes.MINT;
         vpDocument.messageId = vpMessageId;
         vpDocument.topicId = vpMessageResult.getTopicId();
-
         const savedVp = await ref.databaseServer.saveVP(vpDocument);
-        const transactionMemo = `${vpMessageId} ${MessageMemo.parseMemo(true, ref.options.memo, savedVp)}`.trimEnd();
+        // #endregion
 
+        const transactionMemo = `${vpMessageId} ${MessageMemo.parseMemo(true, ref.options.memo, savedVp)}`.trimEnd();
         await MintService.mint(
             ref,
             token,
@@ -164,7 +194,6 @@ export class MintBlock {
             transactionMemo,
             documents
         );
-
         return [savedVp, tokenValue];
     }
 
@@ -182,7 +211,7 @@ export class MintBlock {
     })
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
         const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);
         if (!docs.length && docs[0]) {

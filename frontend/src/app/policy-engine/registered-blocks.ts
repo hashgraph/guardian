@@ -421,6 +421,10 @@ export class RegisteredBlocks {
             header: BlockHeaders.ServerBlocks,
             factory: null,
             property: MintConfigComponent,
+            allowedChildren: [{
+                type: BlockType.TokenAddon,
+                group: BlockGroup.UnGrouped,
+            }]
         });
         this.registerBlock({
             type: BlockType.Wipe,
@@ -448,6 +452,17 @@ export class RegisteredBlocks {
         });
         // #endregion
 
+        // #region Calculate, Addons
+        this.registerBlock({
+            type: BlockType.TokenAddon,
+            icon: 'receipt',
+            group: BlockGroup.Tokens,
+            header: BlockHeaders.Addons,
+            factory: null,
+            property: null,
+        });
+        // #endregion
+
         // #region Calculate, Server Blocks
         this.registerBlock({
             type: BlockType.Calculate,
@@ -459,7 +474,7 @@ export class RegisteredBlocks {
             allowedChildren: [{
                 type: BlockType.CalculateMathAddon,
                 group: BlockGroup.UnGrouped,
-            },{
+            }, {
                 type: BlockType.CalculateMathVariables,
                 group: BlockGroup.UnGrouped,
             }]
