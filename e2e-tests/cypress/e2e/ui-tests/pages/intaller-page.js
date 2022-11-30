@@ -37,6 +37,7 @@ export class InstallerPage {
         cy.contains("Sign").click({ force: true });
     }
 
+
     createGroup(role) {
         cy.contains("Policies").click({ force: true });
 
@@ -83,4 +84,3 @@ export class InstallerPage {
             });
     }
 }
-
