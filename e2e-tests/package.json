@@ -6,6 +6,7 @@
   "scripts": {
     "test": "npx cypress run",
     "e2e": "cypress run",
+    "ui-only": "cypress run --headed --env grepTags=@ui,grepFilterSpecs=true",
     "test-tag": "./run-test-by-tag.sh"
   },
   "keywords": [

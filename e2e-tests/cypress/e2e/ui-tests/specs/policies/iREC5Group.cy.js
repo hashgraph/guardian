@@ -10,7 +10,7 @@ const registrant = new RegistrantPage();
 const installer = new InstallerPage();
 const tokens = new TokensPage();
 
-describe("Workflow iREC 5 Policy", () => {
+describe("Workflow iREC 5 Policy",  { tags: '@ui' }, () => {
     it("checks iREC 5 policy workflow", () => {
         cy.viewport(1230, 800);
 
