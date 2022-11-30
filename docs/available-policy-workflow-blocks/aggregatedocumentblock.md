@@ -6,15 +6,16 @@ Input - a document or an array of documents which will be aggregated
 
 Output - an array of documents, after the reporting period expired or the condition is met
 
-| Block Property   | Definition                                                                        | Example Input                                                                  | Status                                     |
-| ---------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------ |
-| tag              | Unique name for the logic block.                                                  | aggregateDocumentBlock                                                         |                                            |
-| permissions      | Which entity has rights to interact at this part of the workflow.                 | Standard Registry.                                                             |                                            |
-| defaultActive    | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                                                          |                                            |
-| dependencies     | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown.                                | <mark style="color:red;">Deprecated</mark> |
-| On errors        | Called if the system error has occurs in the Block                                | <ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul> |                                            |
-| stop Propagation | End processing here, don't pass control to the next block.                        | Checked or unchecked.                                                          |                                            |
-| AggregateType    | Type of Aggregate                                                                 | <ul><li>Cumulative Dimension</li><li>Period</li></ul>                          |                                            |
+| Block Property   | Definition                                                                                  | Example Input                                                                  | Status                                     |
+| ---------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------ |
+| tag              | Unique name for the logic block.                                                            | aggregateDocumentBlock                                                         |                                            |
+| permissions      | Which entity has rights to interact at this part of the workflow.                           | Standard Registry.                                                             |                                            |
+| defaultActive    | Shows whether this block is active at this time and whether it needs to be shown.           | Checked or unchecked.                                                          |                                            |
+| dependencies     | Establish workflow dependancies that need to be completed prior.                            | Select the appropriate block from the dropdown.                                | <mark style="color:red;">Deprecated</mark> |
+| On errors        | Called if the system error has occurs in the Block                                          | <ul><li>No action</li><li>Retry</li><li>Go to step</li><li>Go to tag</li></ul> |                                            |
+| stop Propagation | End processing here, don't pass control to the next block.                                  | Checked or unchecked.                                                          |                                            |
+| GroupByFields    | We can set additional fields to group documents. Also documents are always grouped by user. | Field Path                                                                     |                                            |
+| AggregateType    | Type of Aggregate                                                                           | <ul><li>Cumulative Dimension</li><li>Period</li></ul>                          |                                            |
 
 
 

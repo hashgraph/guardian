@@ -230,7 +230,11 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                     const block = invalidBlocks[i];
                     for (let j = 0; j < block.errors.length; j++) {
                         const error = block.errors[j];
-                        text.push(`<div>${block.id}: ${error}</div>`);
+                        if(block.id) {
+                            text.push(`<div>${block.id}: ${error}</div>`);
+                        } else {
+                            text.push(`<div>${error}</div>`);
+                        }
                     }
                 }
                 this.informService.errorMessage(text.join(''), 'The policy is invalid');
@@ -427,9 +431,11 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                             j++
                         ) {
                             const error = block.errors[j];
-                            text.push(
-                                `<div>${block.id}: ${error}</div>`
-                            );
+                            if(block.id) {
+                                text.push(`<div>${block.id}: ${error}</div>`);
+                            } else {
+                                text.push(`<div>${error}</div>`);
+                            }
                         }
                     }
                     this.informService.errorMessage(text.join(''), 'The policy is invalid');

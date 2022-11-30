@@ -504,6 +504,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     const element = invalidBlocks[i];
                     this.errorsMap[element.id] = element.errors;
                 }
+                this.errorMessage(errors.errors);
                 this.loading = false;
             }
         }, (e) => {
@@ -548,7 +549,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 const element = errors[i];
                 this.errorsMap[element.id] = element.errors;
             }
-
+            this.errorMessage(results.errors);
             this.onSelect(this.policyModel.root);
             this.loading = false;
         }, (e) => {
@@ -644,6 +645,7 @@ export class PolicyConfigurationComponent implements OnInit {
                                 const element = invalidBlocks[i];
                                 this.errorsMap[element.id] = element.errors;
                             }
+                            this.errorMessage(errors.errors);
                             this.loading = false;
                         }
                         break;
@@ -786,6 +788,13 @@ export class PolicyConfigurationComponent implements OnInit {
                 console.warn("Block data is incorrect");
                 return;
             }
+        }
+    }
+
+    errorMessage(errors: string[]) {
+        if(errors && errors.length) {
+            const text = errors.map((text) => `<div>${text}</div>`).join('');
+            this.informService.errorShortMessage(text, 'The policy is invalid');
         }
     }
 }
