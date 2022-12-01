@@ -14,6 +14,8 @@ import { KeyType } from '@helpers/wallet';
 import { BlockActionError } from '@policy-engine/errors';
 import { DatabaseServer } from '@database-modules';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { IPFS } from '@helpers/ipfs';
+import XLSX from 'xlsx';
 
 /**
  * Custom logic block
@@ -182,7 +184,15 @@ export class CustomLogicBlock {
             for (const execCodeArtifact of execCodeArtifacts) {
                 execCode += (await DatabaseServer.getArtifactFileByUUID(execCodeArtifact.uuid)).toString();
             }
-            const func = Function(`const [done, user, documents, mathjs, artifacts] = arguments;${execCode}${ref.options.expression}`);
+
+            async function getFileFromIPFS(link: string): Promise<Buffer> {
+                const regex = /Qm[1-9A-HJ-NP-Za-km-z]{44,}|b[A-Za-z2-7]{58,}|B[A-Z2-7]{58,}|z[1-9A-HJ-NP-Za-km-z]{48,}|F[0-9A-F]{50,}/;
+                const cid = link.match(regex)[0];
+                const file = await IPFS.getFile(cid, 'raw');
+                return Buffer.from(file);
+            }
+
+            const func = Function(`const [done, user, documents, mathjs, artifacts, XLSX, getFileFromIPFS] = arguments;${execCode}${ref.options.expression}`);
 
             const artifacts = [];
             const jsonArtifacts = ref.options.artifacts?.filter(artifact => artifact.type === ArtifactType.JSON) || [];
@@ -190,7 +200,11 @@ export class CustomLogicBlock {
 
                 artifacts.push(JSON.parse((await DatabaseServer.getArtifactFileByUUID(jsonArtifact.uuid)).toString()));
             }
-            func.apply(documents, [done, user, documents, mathjs, artifacts]);
+            try {
+                func.apply(documents, [done, user, documents, mathjs, artifacts, XLSX, getFileFromIPFS.bind(this)]);
+            } catch(error) {
+                reject(error);
+            }
         });
     }
 
