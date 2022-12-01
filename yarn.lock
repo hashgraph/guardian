@@ -246,24 +246,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hashgraph/proto@npm:2.10.0":
-  version: 2.10.0
-  resolution: "@hashgraph/proto@npm:2.10.0"
+"@hashgraph/proto@npm:2.11.0":
+  version: 2.11.0
+  resolution: "@hashgraph/proto@npm:2.11.0"
   dependencies:
     long: ^4.0.0
     protobufjs: ^6.11.3
-  checksum: 0e94246a6c9fd7bafde9f9f86f0a81a473493ff15742cc3978108c906439ae2ab2e4b38f1af1895286d07974dea5e94193919e5b882d9b37f97abf65aa2e74d3
+  checksum: c05cd2d29b6c17ce8a3e1066c68d217df7a36c2d812b0176344364b91c1f46d8e8a7a384a944fc1a56af2e8297e1e7f013cb992fe00bb5bac7091bc34d23065e
   languageName: node
   linkType: hard
 
-"@hashgraph/sdk@npm:^2.18.3":
-  version: 2.18.3
-  resolution: "@hashgraph/sdk@npm:2.18.3"
+"@hashgraph/sdk@npm:^2.19.0":
+  version: 2.19.0
+  resolution: "@hashgraph/sdk@npm:2.19.0"
   dependencies:
     "@ethersproject/rlp": ^5.7.0
     "@grpc/grpc-js": ^1.7.0
     "@hashgraph/cryptography": ^1.4.1
-    "@hashgraph/proto": 2.10.0
+    "@hashgraph/proto": 2.11.0
     axios: ^0.27.2
     bignumber.js: ^9.1.0
     crypto-js: ^4.1.1
@@ -277,7 +277,7 @@ __metadata:
   peerDependenciesMeta:
     expo:
       optional: true
-  checksum: 8970f19ccb5f66ce7ff2a25d34c83d7d9a98b49915e5c1a8336d74d4bf6a5f8483f08cc798c79896c7794eff32436da82ea4fc15ea30c19cb1ef2b7b236fd7fa
+  checksum: a584925f827acab8b07bd5e6fb814181d120629867d8a7ae793cfad7cf4b18b6726bf0ae4371dfcec621dec2d8f5cd0e0c3cef8a3a0927357c200891679aaaf6
   languageName: node
   linkType: hard
 
@@ -4487,7 +4487,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.7.0
     "@guardian/interfaces": ^2.7.0
-    "@hashgraph/sdk": ^2.18.3
+    "@hashgraph/sdk": ^2.19.0
     "@mikro-orm/core": ~5.3.0
     "@mikro-orm/mongodb": ~5.3.0
     "@transmute/credentials-context": ^0.7.0-unstable.60
@@ -10174,7 +10174,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.7.0
     "@guardian/interfaces": ^2.7.0
-    "@hashgraph/sdk": ^2.18.3
+    "@hashgraph/sdk": ^2.19.0
     "@transmute/credentials-context": ^0.7.0-unstable.60
     "@transmute/did-context": ^0.7.0-unstable.60
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.60
