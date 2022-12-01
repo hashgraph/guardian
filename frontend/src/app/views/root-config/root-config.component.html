@@ -82,7 +82,7 @@
                             <mat-option *ngFor="let topic of userTopics" [value]="topic.topicId">
                                 <div class="topic-item">
                                     <span>{{topic.topicId}}</span>
-                                    <span><dragonglass type="topics" [params]="topic.topicId">{{topic.date}}</dragonglass></span>
+                                    <span><hedera-explorer type="topics" [params]="topic.topicId">{{topic.date}}</hedera-explorer></span>
                                 </div>
                             </mat-option>
                         </mat-select>

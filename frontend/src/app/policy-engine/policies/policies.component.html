@@ -26,7 +26,7 @@
                 <ng-container matColumnDef="topic">
                     <th mat-header-cell *matHeaderCellDef> Hedera Topic Id </th>
                     <td mat-cell *matCellDef="let element">
-                        <dragonglass type="topics" [params]="element.topicId">{{element.topicId}}</dragonglass>
+                        <hedera-explorer type="topics" [params]="element.topicId">{{element.topicId}}</hedera-explorer>
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="tokens">
@@ -104,13 +104,13 @@
                                 </div>
                             </div>
                             <div *ngIf="role === 'USER'">
-                                <div *ngIf="element.status =='PUBLISH'" 
+                                <div *ngIf="element.status =='PUBLISH'"
                                     class="btn-icon-import"
                                     [attr.status]="element.multiPolicyStatus"
-                                    (click)="createMultiPolicy(element)" 
-                                    [title]="element.multiPolicyStatus ? 'Show Multi Policy' : 'Create Multi Policy'" 
-                                    [matTooltip]="element.multiPolicyStatus ? 'Show Multi Policy' : 'Create Multi Policy'" 
-                                    matTooltipPosition="above" 
+                                    (click)="createMultiPolicy(element)"
+                                    [title]="element.multiPolicyStatus ? 'Show Multi Policy' : 'Create Multi Policy'"
+                                    [matTooltip]="element.multiPolicyStatus ? 'Show Multi Policy' : 'Create Multi Policy'"
+                                    matTooltipPosition="above"
                                     matTooltipClass="guardian-tooltip">
                                     <mat-icon>share</mat-icon>
                                 </div>

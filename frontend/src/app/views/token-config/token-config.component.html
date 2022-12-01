@@ -27,7 +27,7 @@
                     <ng-container matColumnDef="tokenId">
                         <th mat-header-cell *matHeaderCellDef> Token Id </th>
                         <td mat-cell *matCellDef="let element">
-                            <dragonglass type="tokens" [params]="element.tokenId">{{element.tokenId}}</dragonglass>
+                            <hedera-explorer type="tokens" [params]="element.tokenId">{{element.tokenId}}</hedera-explorer>
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="tokenName">
