@@ -6,7 +6,7 @@
             </mat-icon>
         </td>
         <td class="propHeaderCell cellName" [title]="property.title">
-            <span *ngIf="property.required" class="required-fields">*</span>{{property.label}}
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td class="propHeaderCell"></td>
     </tr>
@@ -24,7 +24,7 @@
             </mat-icon>
         </td>
         <td class="propHeaderCell cellName" [title]="property.title">
-            <span *ngIf="property.required" class="required-fields">*</span>{{property.label}}
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td class="propHeaderCell">
             <div class="propAdd" (click)="addItems()">
@@ -62,7 +62,7 @@
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [title]="property.title">
-            <span *ngIf="property.required" class="required-fields">*</span>{{property.label}}
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td class="propRowCell">
             <input class="prop-input" [(ngModel)]="value" [readonly]="readonly" (blur)="onSave()">
@@ -74,7 +74,7 @@
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [title]="property.title">
-            <span *ngIf="property.required" class="required-fields">*</span>{{property.label}}
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="value" [readonly]="readonly" (change)="onSave()">
@@ -86,7 +86,7 @@
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [title]="property.title">
-            <span *ngIf="property.required" class="required-fields">*</span>{{property.label}}
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td class="propRowCell ns">
             <mat-select [(value)]="value" [disabled]="readonly" (change)="onSave()">
@@ -100,7 +100,7 @@
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [title]="property.title">
-            <span *ngIf="property.required" class="required-fields">*</span>{{property.label}}
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td *ngIf="loaded" [ngSwitch]="property.items" class="propRowCell ns">
             <mat-select *ngSwitchCase="'Schemas'" multiple [(value)]="value" [disabled]="readonly" (change)="onSave()">
@@ -149,7 +149,7 @@
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [title]="property.title">
-            <span *ngIf="property.required" class="required-fields">*</span>{{property.label}}
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td class="propRowCell ns">
             <mat-select [(value)]="value" [disabled]="readonly" (change)="onSave()">
@@ -167,7 +167,7 @@
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [title]="property.title">
-            <span *ngIf="property.required" class="required-fields">*</span>{{property.label}}
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td class="propRowCell">
             <document-path [(value)]="value" [readonly]="readonly" (change)="onSave()"></document-path>

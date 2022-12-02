@@ -5,7 +5,7 @@ import { AnyBlockType, IPolicyCalculateAddon } from '@policy-engine/policy-engin
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { DocumentSignature, GenerateUUIDv4, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { VcDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
 import { BlockActionError } from '@policy-engine/errors';
@@ -14,11 +14,11 @@ import { BlockActionError } from '@policy-engine/errors';
  * Calculate math addon
  */
 @TokenAddon({
-    blockType: 'tokenAddon',
+    blockType: 'benefitAddon',
     commonBlock: true,
     about: {
-        label: 'Token Addon',
-        title: `Add 'Token' Addon`,
+        label: 'Benefit',
+        title: `Add 'Benefit'`,
         post: false,
         get: false,
         children: ChildrenType.None,
@@ -27,6 +27,20 @@ import { BlockActionError } from '@policy-engine/errors';
         output: null,
         defaultEvent: false,
         properties: [{
+            name: 'benefitType',
+            label: 'Benefit type',
+            title: 'Benefit type',
+            type: PropertyType.Select,
+            items: [{
+                label: 'Issuing benefit',
+                value: 'issuing benefit'
+            }, {
+                label: 'Co-benefit',
+                value: 'co-benefit'
+            }],
+            default: 'co-benefit',
+            required: true
+        }, {
             name: 'label',
             label: 'Label',
             title: 'Label',
@@ -63,7 +77,7 @@ export class TokenOperationAddon {
     async getSchema(): Promise<Schema> {
         if (!this.schema) {
             const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-            this.schema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.MINT_TOKEN);
+            this.schema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.ACTIVITY_BENEFIT);
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
             }
@@ -79,18 +93,25 @@ export class TokenOperationAddon {
     public async run(documents: VcDocument[], root: IHederaAccount, user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const policySchema = await this.getSchema();
-        const amount = PolicyUtils.aggregate(ref.options.rule, documents);
+        const amount = PolicyUtils.aggregate(ref.options.amount, documents);
         const vcHelper = new VcHelper();
-        const vcSubject = {
+        const vcSubject: any = {
             ...SchemaHelper.getContext(policySchema),
+            benefitType: ref.options.benefitType === 'issuing benefit' ? 'issuing benefit' : 'co-benefit',
             date: (new Date()).toISOString(),
             amount: amount.toString(),
-            label: ref.options.label,
-            description: ref.options.description,
-            unit: ref.options.unit,
         }
-        const mintVC = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
-        return mintVC;
+        if (ref.options.unit) {
+            vcSubject.unit = ref.options.unit;
+        }
+        if (ref.options.label) {
+            vcSubject.label = ref.options.label;
+        }
+        if (ref.options.description) {
+            vcSubject.description = ref.options.description;
+        }
+        const vc = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+        return vc;
     }
 
     /**

@@ -74,16 +74,25 @@ export class MintBlock {
      */
     private async createReportVC(
         documents: VcDocument[],
+        relationships: string[],
         root: IHederaAccount,
         user: IPolicyUser,
         ref: IPolicyTokenBlock
     ): Promise<VcDocument[]> {
         const addons = ref.getAddons();
         if (addons && addons.length) {
-            const result: VcDocument[] = [];
+            const vcHelper = new VcHelper();
+            const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.TOKEN_DATA_SOURCE);
+            const vcSubject = {
+                ...SchemaHelper.getContext(policySchema),
+                dataSource: relationships.slice()
+            }
+            const vc = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+            const result: VcDocument[] = [vc];
             for (const addon of addons) {
                 const vc = await addon.run(documents, root, user);
                 result.push(vc);
+                
             }
             return result;
         } else {
@@ -140,13 +149,19 @@ export class MintBlock {
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
 
         const mintVC = await this.createMintVC(root, token, tokenAmount, ref);
-        const reportVC = await this.createReportVC(documents, root, user, ref);
-        const vcs = [...documents, ...reportVC, mintVC];
-        const vp = await this.createVP(root, uuid, vcs);
-
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
+        const reportVC = await this.createReportVC(documents, relationships, root, user, ref);
+        let vp: any;
+        if (reportVC && reportVC.length) {
+            const vcs = [...reportVC, mintVC];
+            vp = await this.createVP(root, uuid, vcs);
+        } else {
+            const vcs = [...documents, mintVC];
+            vp = await this.createVP(root, uuid, vcs);
+        }
 
         ref.log(`Topic Id: ${topicId}`);
+
+        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
 
         // #region Save Mint VC
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId);

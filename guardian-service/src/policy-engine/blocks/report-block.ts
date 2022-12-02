@@ -3,6 +3,7 @@ import { Report } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
 import {
+    IBenefitReport,
     IPolicyReport,
     IReport,
     IReportItem,
@@ -17,6 +18,8 @@ import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { VpDocument } from '@entity/vp-document';
+import { VcDocument } from '@entity/vc-document';
 
 /**
  * Report block
@@ -92,11 +95,178 @@ export class ReportBlock {
         }
     }
 
+    private async addReportByVP(report: IReport, variables: any, vp: VpDocument): Promise<IReport> {
+        const vcs = vp.document.verifiableCredential || [];
+        const mintIndex = Math.max(1, vcs.length - 1);
+        const mint = vcs[mintIndex];
+        report.vpDocument = {
+            type: 'VP',
+            title: 'Verified Presentation',
+            tag: vp.tag,
+            hash: vp.hash,
+            issuer: vp.owner,
+            username: vp.owner,
+            document: vp
+        }
+        report.mintDocument = {
+            type: 'VC',
+            tokenId: getVCField(mint, 'tokenId'),
+            date: getVCField(mint, 'date'),
+            amount: getVCField(mint, 'amount'),
+            tag: vp.tag,
+            issuer: vp.owner,
+            username: vp.owner,
+            document: {
+                owner: null,
+                hash: null,
+                type: null,
+                policyId: null,
+                tag: null,
+                option: null,
+                document: mint
+            }
+        }
+        variables.actionId = mint.id;
+        variables.actionSubjectId = mint.credentialSubject[0].id;
+
+        report = await this.addReportByVCs(report, variables, vcs, vp);
+
+        return report;
+    }
+
+    private async addReportByVCs(
+        report: IReport,
+        variables: any,
+        vcs: any[],
+        vp: VpDocument
+    ): Promise<IReport> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
+
+        const dataSource: any[] = [];
+        const benefits: IBenefitReport[] = [];
+        const documentIds: string[] = [];
+        const documentSubjectIds: string[] = [];
+        for (let i = 0; i < vcs.length - 1; i++) {
+            const doc = vcs[i];
+            const credentialSubject = doc.credentialSubject[0];
+            if (credentialSubject.type === 'TokenDataSource') {
+                dataSource.push(doc);
+            } else if (credentialSubject.type === 'ActivityBenefit') {
+                benefits.push({
+                    type: 'VC',
+                    benefitType: getVCField(doc, 'benefitType'),
+                    label: getVCField(doc, 'label'),
+                    description: getVCField(doc, 'description'),
+                    amount: getVCField(doc, 'amount'),
+                    unit: getVCField(doc, 'unit'),
+                    date: getVCField(doc, 'date'),
+                    tag: vp.tag,
+                    issuer: vp.owner,
+                    username: vp.owner,
+                    document: {
+                        owner: null,
+                        hash: null,
+                        type: null,
+                        policyId: null,
+                        tag: null,
+                        option: null,
+                        document: doc
+                    }
+                });
+            } else {
+                documentIds.push(doc.id);
+                documentSubjectIds.push(credentialSubject.id);
+            }
+        }
+        if (dataSource.length) {
+            const messageIds = [];
+            for (const item of dataSource) {
+                const ids = item.credentialSubject[0].dataSource;
+                if (Array.isArray(ids)) {
+                    for (const id of ids) {
+                        messageIds.push(id);
+                    }
+                } else {
+                    messageIds.push(ids);
+                }
+            }
+            const items = await ref.databaseServer.getVcDocuments<VcDocument[]>({
+                where: { messageId: { $in: messageIds } }
+            });
+            for (const item of items) {
+                documentIds.push(item.document.id);
+                documentSubjectIds.push(item.document.credentialSubject[0].id);
+            }
+        }
+        if (benefits.length) {
+            report.benefits = benefits;
+        }
+        variables.documentId = documentIds[0];
+        variables.documentSubjectId = documentSubjectIds[0];
+        variables.documentIds = documentIds;
+        variables.documentSubjectIds = documentSubjectIds;
+        return report;
+    }
+
+    private async addReportByVC(report: IReport, variables: any, vc: VcDocument): Promise<IReport> {
+        const vcDocument: IVCReport = {
+            type: 'VC',
+            title: 'Verifiable Credential',
+            tag: vc.tag,
+            hash: vc.hash,
+            issuer: vc.owner,
+            username: vc.owner,
+            document: vc
+        }
+        report.vcDocument = vcDocument;
+        variables.documentId = vc.document.id;
+        variables.documentSubjectId = vc.document.credentialSubject[0].id;
+
+        return report;
+    }
+
+    private async addReportByPolicy(report: IReport, variables: any, policy: VcDocument): Promise<IReport> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
+
+        const policyDocument: IPolicyReport = {
+            type: 'VC',
+            name: getVCField(policy.document, 'name'),
+            description: getVCField(policy.document, 'description'),
+            version: getVCField(policy.document, 'version'),
+            tag: 'Policy Created',
+            issuer: policy.owner,
+            username: policy.owner,
+            document: policy
+        }
+        report.policyDocument = policyDocument;
+
+        const policyCreator = await ref.databaseServer.getVcDocument({
+            type: SchemaEntity.POLICY,
+            owner: policy.owner
+        });
+
+        if (policyCreator) {
+            const policyCreatorDocument: IReportItem = {
+                type: 'VC',
+                title: 'StandardRegistry',
+                description: 'Account Creation',
+                visible: true,
+                tag: 'Account Creation',
+                issuer: policy.owner,
+                username: policy.owner,
+                document: policyCreator
+            }
+            report.policyCreatorDocument = policyCreatorDocument;
+        }
+
+        return report;
+    }
+
     /**
      * Report user map
      * @param report
      */
-    async reportUserMap(report: IReport) {
+    private async reportUserMap(report: IReport): Promise<IReport> {
         const map: any = {};
         if (report.vpDocument) {
             report.vpDocument.username = await this.getUserName(report.vpDocument.username, map);
@@ -114,6 +284,8 @@ export class ReportBlock {
             report.policyCreatorDocument.username = await this.getUserName(report.policyCreatorDocument.username, map);
         }
         await this.itemUserMap(report.documents, map);
+
+        return report
     }
 
     /**
@@ -141,9 +313,10 @@ export class ReportBlock {
                 owner: user.did
             };
 
-            const report: IReport = {
+            let report: IReport = {
                 vpDocument: null,
                 vcDocument: null,
+                benefits: null,
                 mintDocument: null,
                 policyDocument: null,
                 policyCreatorDocument: null,
@@ -151,69 +324,12 @@ export class ReportBlock {
             }
 
             const vp = await ref.databaseServer.getVpDocument({ hash, policyId: ref.policyId });
-
             if (vp) {
-                const vpDocument: IVPReport = {
-                    type: 'VP',
-                    title: 'Verified Presentation',
-                    tag: vp.tag,
-                    hash: vp.hash,
-                    issuer: vp.owner,
-                    username: vp.owner,
-                    document: vp
-                }
-                report.vpDocument = vpDocument;
-
-                const mintIndex = Math.max(1, vp.document.verifiableCredential.length - 1);
-                const mint = vp.document.verifiableCredential[mintIndex];
-                const mintDocument: ITokenReport = {
-                    type: 'VC',
-                    tokenId: getVCField(mint, 'tokenId'),
-                    date: getVCField(mint, 'date'),
-                    tag: vp.tag,
-                    issuer: vp.owner,
-                    username: vp.owner,
-                    document: {
-                        owner: null,
-                        hash: null,
-                        type: null,
-                        policyId: null,
-                        tag: null,
-                        option: null,
-                        document: mint
-                    }
-                }
-                report.mintDocument = mintDocument;
-                variables.actionId = mint.id;
-                variables.actionSubjectId = mint.credentialSubject[0].id;
-
-                const documentIds = [];
-                const documentSubjectIds = [];
-                for (let i = 0; i < vp.document.verifiableCredential.length - 1; i++) {
-                    const doc = vp.document.verifiableCredential[i];
-                    documentIds.push(doc.id);
-                    documentSubjectIds.push(doc.credentialSubject[0].id);
-                }
-                variables.documentId = documentIds[0];
-                variables.documentSubjectId = documentSubjectIds[0];
-                variables.documentIds = documentIds;
-                variables.documentSubjectIds = documentSubjectIds;
+                report = await this.addReportByVP(report, variables, vp);
             } else {
                 const vc = await ref.databaseServer.getVcDocument({ hash, policyId: ref.policyId })
-
                 if (vc) {
-                    const vcDocument: IVCReport = {
-                        type: 'VC',
-                        title: 'Verifiable Credential',
-                        tag: vc.tag,
-                        hash: vc.hash,
-                        issuer: vc.owner,
-                        username: vc.owner,
-                        document: vc
-                    }
-                    report.vcDocument = vcDocument;
-                    variables.documentId = vc.document.id;
-                    variables.documentSubjectId = vc.document.credentialSubject[0].id;
+                    report = await this.addReportByVC(report, variables, vc);
                 }
             }
 
@@ -223,36 +339,7 @@ export class ReportBlock {
             });
 
             if (policy) {
-                const policyDocument: IPolicyReport = {
-                    type: 'VC',
-                    name: getVCField(policy.document, 'name'),
-                    description: getVCField(policy.document, 'description'),
-                    version: getVCField(policy.document, 'version'),
-                    tag: 'Policy Created',
-                    issuer: policy.owner,
-                    username: policy.owner,
-                    document: policy
-                }
-                report.policyDocument = policyDocument;
-
-                const policyCreator = await ref.databaseServer.getVcDocument({
-                    type: SchemaEntity.POLICY,
-                    owner: policy.owner
-                });
-
-                if (policyCreator) {
-                    const policyCreatorDocument: IReportItem = {
-                        type: 'VC',
-                        title: 'StandardRegistry',
-                        description: 'Account Creation',
-                        visible: true,
-                        tag: 'Account Creation',
-                        issuer: policy.owner,
-                        username: policy.owner,
-                        document: policyCreator
-                    }
-                    report.policyCreatorDocument = policyCreatorDocument;
-                }
+                report = await this.addReportByPolicy(report, variables, policy);
             }
 
             const reportItems = ref.getItems();
@@ -260,7 +347,7 @@ export class ReportBlock {
                 await reportItem.run(documents, variables);
             }
 
-            await this.reportUserMap(report);
+            report = await this.reportUserMap(report);
 
             return {
                 hash,

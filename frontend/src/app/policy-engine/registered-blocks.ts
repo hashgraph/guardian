@@ -422,7 +422,7 @@ export class RegisteredBlocks {
             factory: null,
             property: MintConfigComponent,
             allowedChildren: [{
-                type: BlockType.TokenAddon,
+                type: BlockType.BenefitAddon,
                 group: BlockGroup.UnGrouped,
             }]
         });
@@ -454,7 +454,7 @@ export class RegisteredBlocks {
 
         // #region Calculate, Addons
         this.registerBlock({
-            type: BlockType.TokenAddon,
+            type: BlockType.BenefitAddon,
             icon: 'receipt',
             group: BlockGroup.Tokens,
             header: BlockHeaders.Addons,

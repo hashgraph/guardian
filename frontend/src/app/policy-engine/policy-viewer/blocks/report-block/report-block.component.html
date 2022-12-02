@@ -55,9 +55,59 @@
                             <div class="vp-field-value" [title]="mintDocument.issuer">{{mintDocument.username}}</div>
                         </div>
                         <div class="vp-field">
+                            <div class="vp-field-label">Token amount</div>
+                            <div class="vp-field-value">{{mintDocument.amount}}</div>
+                        </div>
+                        <div class="vp-field">
                             <div class="vp-field-label">Mint date</div>
                             <div class="vp-field-value">{{mintDocument.date}}</div>
                         </div>
+                    </div>
+                </div>
+
+                <div *ngIf="benefits" class="vp-section">
+                    <div class="vp-section-header">
+                        Benefits
+                    </div>
+                    <div class="vp-table">
+
+                        <div class="cards">
+                            <div class="cards-left">
+
+                            </div>
+                            <div class="cards-container">
+                                <div *ngFor="let item of benefits" class="card-item"
+                                    [attr.main]="item.benefitType==='issuing benefit'">
+                                    <div class="card-title">
+                                        <div class="card-icon">
+                                            <mat-icon class="">workspace_premium</mat-icon>
+                                        </div>
+                                        <span>{{item.label}}</span>
+                                    </div>
+                                    <div class="card-right">
+                                        <a *ngIf="item.document" (click)="openVCDocument(item, item.document.document)"
+                                            class="open-vc">VC File</a>
+                                    </div>
+                                    <div class="card-body">
+                                        <div style="
+                                            border-bottom: 1px solid rgb(112 112 112 / 64%);
+                                            margin-bottom: 10px;
+                                            padding-bottom: 10px;
+                                        ">
+                                            <span>{{item.description}}</span>
+                                        </div>
+                                        <div>
+                                            <span>{{item.amount}}</span>
+                                            <span> {{item.unit}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="cards-right">
+
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -93,11 +143,13 @@
 
                 <div *ngIf="vpDocument" class="vp-signature">
                     <div class="vp-field-label">Verified Signature:</div>
-                    <div class="vp-field-value" style="max-width: 70vw;overflow-wrap: break-word;">{{vpDocument.document.document?.proof?.jws}}</div>
+                    <div class="vp-field-value" style="max-width: 70vw;overflow-wrap: break-word;">
+                        {{vpDocument.document.document?.proof?.jws}}</div>
                 </div>
                 <div *ngIf="vcDocument" class="vp-signature">
                     <div class="vp-field-label">Verified Signature:</div>
-                    <div class="vp-field-value" style="max-width: 70vw;overflow-wrap: break-word;">{{vcDocument.document.document?.proof?.jws}}</div>
+                    <div class="vp-field-value" style="max-width: 70vw;overflow-wrap: break-word;">
+                        {{vcDocument.document.document?.proof?.jws}}</div>
                 </div>
             </div>
 
@@ -114,7 +166,8 @@
                                     'opacity': document.index === 0 && item.dynamicFilters.length && item.document.length > 1 ? 1 : 0,
                                     'transform': document.index === 0 && item.dynamicFilters.length && item.document.length > 1 ? 'scale(1, 1) translate(0, 0)' : 'scale(1, 0) translate(20px, 0)'
                                 }"></div>
-                                <mat-icon *ngIf="document.index === 0 && item.dynamicFilters.length && item.document.length > 1"
+                                <mat-icon
+                                    *ngIf="document.index === 0 && item.dynamicFilters.length && item.document.length > 1"
                                     class="item-relationships-icon material-icons-outlined">account_tree</mat-icon>
                                 <div class="chain-item item-type-{{item.type}}" [ngClass]="{
                                     'active-multiple-document': document.index === 0 && item.document.length > 1,
@@ -130,7 +183,8 @@
                                         </ng-container>
                                         {{item.title}}
                                     </div>
-                                    <div *ngIf="document.document && document.document.comment" class="revoke-container">
+                                    <div *ngIf="document.document && document.document.comment"
+                                        class="revoke-container">
                                         <mat-icon class="revoke-icon">warning</mat-icon>
                                         <b>Revoked with reason: "{{document.document.comment}}"</b>
                                     </div>
@@ -147,7 +201,8 @@
                                     </div>
                                     <div class="nested-documents">
                                         <ng-container *ngFor="let link of item.documents">
-                                            <a class="nested-documents-value" (click)="openVCDocument(link)" [title]="link.description">
+                                            <a class="nested-documents-value" (click)="openVCDocument(link)"
+                                                [title]="link.description">
                                                 {{link.title}}
                                             </a>
                                         </ng-container>
@@ -157,9 +212,11 @@
                                     </div>
                                     <div class="multiple-documents-count"
                                         *ngIf="item.activeDocumentIndex && item.document && item.document.length > 1">
-                                        <mat-icon (click)="onPrevDocumentClick($event, item, document)">chevron_left</mat-icon>
+                                        <mat-icon (click)="onPrevDocumentClick($event, item, document)">chevron_left
+                                        </mat-icon>
                                         {{item.activeDocumentIndex}} in {{item.document.length}}
-                                        <mat-icon (click)="onNextDocumentClick($event, item, document)">chevron_right</mat-icon>
+                                        <mat-icon (click)="onNextDocumentClick($event, item, document)">chevron_right
+                                        </mat-icon>
                                     </div>
                                 </div>
                             </div>

@@ -34,5 +34,5 @@ export enum BlockType {
     CalculateMathVariables = 'calculateMathVariables',
     CreateToken = 'createTokenBlock',
     SplitBlock = 'splitBlock',
-    TokenAddon = 'tokenAddon'
+    BenefitAddon = 'benefitAddon'
 }

@@ -3,7 +3,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import { IconType, IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport } from '@guardian/interfaces';
+import { IBenefitReport, IconType, IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -31,6 +31,7 @@ export class ReportBlockComponent implements OnInit {
     vpDocument: IVPReport | undefined;
     vcDocument: IVCReport | undefined;
     mintDocument: ITokenReport | undefined;
+    benefits: IBenefitReport[] | undefined;
     policyDocument: IPolicyReport | undefined;
     documents: any;
     policyCreatorDocument: IReportItem | undefined;
@@ -103,6 +104,7 @@ export class ReportBlockComponent implements OnInit {
             this.vpDocument = undefined;
             this.vcDocument = undefined;
             this.mintDocument = undefined;
+            this.benefits = undefined;
             this.policyDocument = undefined;
             this.documents = undefined;
             this.hash = "";
@@ -119,6 +121,7 @@ export class ReportBlockComponent implements OnInit {
         this.vpDocument = report.vpDocument;
         this.vcDocument = report.vcDocument;
         this.mintDocument = report.mintDocument;
+        this.benefits = report.benefits;
         this.policyDocument = report.policyDocument;
         this.policyCreatorDocument = report.policyCreatorDocument;
         this.documents = report.documents || [];
@@ -137,7 +140,7 @@ export class ReportBlockComponent implements OnInit {
         if (this.policyCreatorDocument) {
             this.documents.push(this.policyCreatorDocument);
         }
-        this.documents = this.documents.filter((e: any)=>e.visible);
+        this.documents = this.documents.filter((e: any) => e.visible);
         this.documents = this.documents.reverse();
         this.documents.forEach((reportItem: any) => {
             if (!Array.isArray(reportItem.document) && reportItem.document) {
@@ -163,7 +166,7 @@ export class ReportBlockComponent implements OnInit {
     }
 
 
-    openVCDocument(item: IVCReport | ITokenReport | IPolicyReport | IReportItem, document?: any) {
+    openVCDocument(item: IVCReport | ITokenReport | IPolicyReport | IReportItem | IBenefitReport, document?: any) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
             width: '850px',
             data: {

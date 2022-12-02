@@ -107,6 +107,56 @@ export interface IVCReport {
 }
 
 /**
+ * Benefit report interface
+ */
+export interface IBenefitReport {
+    /**
+     * Report type
+     */
+    type: string;
+    /**
+     * Report tag
+     */
+    tag: string;
+    /**
+     * Report issuer
+     */
+    issuer: string;
+    /**
+     * Report username
+     */
+    username: string;
+    /**
+     * Report document instance
+     */
+    document: IVCDocument;
+    /**
+     * Benefit type
+     */
+    benefitType: string;
+    /**
+     * Benefit label
+     */
+    label: string;
+    /**
+     * Benefit description
+     */
+    description: string;
+    /**
+     * Benefit amount
+     */
+    amount: string;
+    /**
+     * Benefit amount unit
+     */
+    unit: string;
+    /**
+     * Benefit date
+     */
+    date: string;
+}
+
+/**
  * Token report interface
  */
 export interface ITokenReport {
@@ -122,6 +172,10 @@ export interface ITokenReport {
      * Report date
      */
     date: string;
+    /**
+     * Token amount
+     */
+    amount: string;
     /**
      * Report tag
      */
@@ -256,4 +310,8 @@ export interface IReport {
      * Report items
      */
     documents?: IReportItem[];
+    /**
+     * Benefits
+     */
+    benefits?: IBenefitReport[];
 }
