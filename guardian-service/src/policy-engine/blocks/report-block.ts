@@ -7,9 +7,7 @@ import {
     IPolicyReport,
     IReport,
     IReportItem,
-    ITokenReport,
     IVCReport,
-    IVPReport,
     SchemaEntity,
 } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
@@ -95,6 +93,12 @@ export class ReportBlock {
         }
     }
 
+    /**
+     * Add report item by VP
+     * @param report
+     * @param variables
+     * @param vp
+     */
     private async addReportByVP(report: IReport, variables: any, vp: VpDocument): Promise<IReport> {
         const vcs = vp.document.verifiableCredential || [];
         const mintIndex = Math.max(1, vcs.length - 1);
@@ -134,6 +138,13 @@ export class ReportBlock {
         return report;
     }
 
+    /**
+     * Add report item by VCs
+     * @param report
+     * @param variables
+     * @param vcs
+     * @param vp
+     */
     private async addReportByVCs(
         report: IReport,
         variables: any,
@@ -208,6 +219,13 @@ export class ReportBlock {
         return report;
     }
 
+    /**
+     * Add report item by VC
+     * @param report
+     * @param variables
+     * @param vcs
+     * @param vp
+     */
     private async addReportByVC(report: IReport, variables: any, vc: VcDocument): Promise<IReport> {
         const vcDocument: IVCReport = {
             type: 'VC',
@@ -225,6 +243,12 @@ export class ReportBlock {
         return report;
     }
 
+    /**
+     * Add report item by Policy
+     * @param report
+     * @param variables
+     * @param policy
+     */
     private async addReportByPolicy(report: IReport, variables: any, policy: VcDocument): Promise<IReport> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
 

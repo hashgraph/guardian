@@ -135,7 +135,7 @@ a[disabled="true"] {
     user-select: none;
     cursor: pointer;
     height: 220px;
-    margin-top: 50px;
+    margin-top: 80px;
 }
 
 .scroll-right:hover {

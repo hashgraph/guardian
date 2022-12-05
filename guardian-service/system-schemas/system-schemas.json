@@ -727,12 +727,11 @@
                             }
                         }
                     ],
-                    "readOnly": true
+                    "readOnly": false
                 }
             },
             "required": [
-                "date",
-                "amount"
+                "dataSource"
             ],
             "additionalProperties": false
         }

@@ -434,6 +434,7 @@ export async function publishSchema(
  * @param item
  * @param messageServer
  * @param type
+ * @param notifier
  */
 export async function publishSystemSchema(
     item: SchemaCollection,
@@ -456,6 +457,13 @@ export async function publishSystemSchema(
     return result;
 }
 
+/**
+ * Publish system schemas
+ * @param systemSchemas
+ * @param messageServer
+ * @param owner
+ * @param notifier
+ */
 export async function publishSystemSchemas(
     systemSchemas: SchemaCollection[],
     messageServer: MessageServer,

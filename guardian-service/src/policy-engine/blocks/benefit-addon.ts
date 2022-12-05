@@ -9,6 +9,7 @@ import { Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { VcDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
 import { BlockActionError } from '@policy-engine/errors';
+import { PropertyValidator } from '@policy-engine/helpers/property-validator';
 
 /**
  * Calculate math addon
@@ -121,6 +122,12 @@ export class TokenOperationAddon {
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
         try {
+            resultsContainer.checkBlockError(ref.uuid,
+                PropertyValidator.inputValidator('amount', ref.options.amount, 'string')
+            );
+            resultsContainer.checkBlockError(ref.uuid,
+                PropertyValidator.selectValidator('benefitType', ref.options.benefitType, ['issuing benefit', 'co-benefit'])
+            );
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }

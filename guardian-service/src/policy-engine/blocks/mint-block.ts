@@ -10,7 +10,7 @@ import { Token as TokenCollection } from '@entity/token';
 import { DataTypes, IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyTokenBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
+import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 import { MintService } from '@policy-engine/multi-policy-service/mint-service';
@@ -90,9 +90,8 @@ export class MintBlock {
             const vc = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
             const result: VcDocument[] = [vc];
             for (const addon of addons) {
-                const vc = await addon.run(documents, root, user);
-                result.push(vc);
-                
+                const benefit = await addon.run(documents, root, user);
+                result.push(benefit);
             }
             return result;
         } else {
