@@ -737,14 +737,14 @@
         }
     },
     {
-        "uuid": "ActivityBenefit",
-        "name": "ActivityBenefit",
-        "entity": "ACTIVITY_BENEFIT",
+        "uuid": "ActivityImpact",
+        "name": "ActivityImpact",
+        "entity": "ACTIVITY_IMPACT",
         "document": {
-            "$id": "#ActivityBenefit",
-            "$comment": "{ \"term\": \"ActivityBenefit\", \"@id\": \"#ActivityBenefit\" }",
-            "title": "ActivityBenefit",
-            "description": "ActivityBenefit",
+            "$id": "#ActivityImpact",
+            "$comment": "{ \"term\": \"ActivityImpact\", \"@id\": \"#ActivityImpact\" }",
+            "title": "ActivityImpact",
+            "description": "ActivityImpact",
             "type": "object",
             "properties": {
                 "@context": {
@@ -779,10 +779,10 @@
                     "type": "string",
                     "readOnly": true
                 },
-                "benefitType": {
-                    "$comment": "{\"term\": \"benefitType\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "benefitType",
-                    "description": "benefitType",
+                "impactType": {
+                    "$comment": "{\"term\": \"impactType\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "impactType",
+                    "description": "impactType",
                     "type": "string",
                     "readOnly": false
                 },
@@ -825,7 +825,7 @@
             "required": [
                 "date",
                 "amount",
-                "benefitType"
+                "impactType"
             ],
             "additionalProperties": false
         }

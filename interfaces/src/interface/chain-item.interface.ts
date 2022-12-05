@@ -107,9 +107,9 @@ export interface IVCReport {
 }
 
 /**
- * Benefit report interface
+ * Impact report interface
  */
-export interface IBenefitReport {
+export interface IImpactReport {
     /**
      * Report type
      */
@@ -131,27 +131,27 @@ export interface IBenefitReport {
      */
     document: IVCDocument;
     /**
-     * Benefit type
+     * Impact Type
      */
-    benefitType: string;
+    impactType: string;
     /**
-     * Benefit label
+     * Impact label
      */
     label: string;
     /**
-     * Benefit description
+     * Impact description
      */
     description: string;
     /**
-     * Benefit amount
+     * Impact amount
      */
     amount: string;
     /**
-     * Benefit amount unit
+     * Impact amount unit
      */
     unit: string;
     /**
-     * Benefit date
+     * Impact date
      */
     date: string;
 }
@@ -311,7 +311,7 @@ export interface IReport {
      */
     documents?: IReportItem[];
     /**
-     * Benefits
+     * Impacts
      */
-    benefits?: IBenefitReport[];
+    impacts?: IImpactReport[];
 }

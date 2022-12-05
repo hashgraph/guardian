@@ -35,7 +35,7 @@ export {
     ITokenReport, 
     IVCReport, 
     IVPReport, 
-    IBenefitReport 
+    IImpactReport 
 } from './interface/chain-item.interface';
 export { Token } from './models/token';
 export { Schema } from './models/schema';

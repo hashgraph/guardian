@@ -15,11 +15,11 @@ import { PropertyValidator } from '@policy-engine/helpers/property-validator';
  * Calculate math addon
  */
 @TokenAddon({
-    blockType: 'benefitAddon',
+    blockType: 'impactAddon',
     commonBlock: true,
     about: {
-        label: 'Benefit',
-        title: `Add 'Benefit'`,
+        label: 'Impact',
+        title: `Add 'Impact'`,
         post: false,
         get: false,
         children: ChildrenType.None,
@@ -28,18 +28,18 @@ import { PropertyValidator } from '@policy-engine/helpers/property-validator';
         output: null,
         defaultEvent: false,
         properties: [{
-            name: 'benefitType',
-            label: 'Benefit type',
-            title: 'Benefit type',
+            name: 'impactType',
+            label: 'Impact type',
+            title: 'Impact type',
             type: PropertyType.Select,
             items: [{
-                label: 'Issuing benefit',
-                value: 'issuing benefit'
+                label: 'Primary Impacts',
+                value: 'Primary Impacts'
             }, {
-                label: 'Co-benefit',
-                value: 'co-benefit'
+                label: 'Secondary Impacts',
+                value: 'Secondary Impacts'
             }],
-            default: 'co-benefit',
+            default: 'Secondary Impacts',
             required: true
         }, {
             name: 'label',
@@ -78,7 +78,7 @@ export class TokenOperationAddon {
     async getSchema(): Promise<Schema> {
         if (!this.schema) {
             const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-            this.schema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.ACTIVITY_BENEFIT);
+            this.schema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.ACTIVITY_IMPACT);
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
             }
@@ -98,7 +98,7 @@ export class TokenOperationAddon {
         const vcHelper = new VcHelper();
         const vcSubject: any = {
             ...SchemaHelper.getContext(policySchema),
-            benefitType: ref.options.benefitType === 'issuing benefit' ? 'issuing benefit' : 'co-benefit',
+            impactType: ref.options.impactType === 'Primary Impacts' ? 'Primary Impacts' : 'Secondary Impacts',
             date: (new Date()).toISOString(),
             amount: amount.toString(),
         }
@@ -126,7 +126,7 @@ export class TokenOperationAddon {
                 PropertyValidator.inputValidator('amount', ref.options.amount, 'string')
             );
             resultsContainer.checkBlockError(ref.uuid,
-                PropertyValidator.selectValidator('benefitType', ref.options.benefitType, ['issuing benefit', 'co-benefit'])
+                PropertyValidator.selectValidator('impactType', ref.options.impactType, ['Primary Impacts', 'Secondary Impacts'])
             );
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);

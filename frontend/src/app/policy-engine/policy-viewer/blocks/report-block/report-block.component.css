@@ -578,3 +578,8 @@ a.open-vp {
     top: -3px;
     left: -3px;
 }
+
+
+.impact-section {
+    display: flex;
+}

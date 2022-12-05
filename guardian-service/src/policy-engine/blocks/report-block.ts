@@ -3,7 +3,7 @@ import { Report } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
 import {
-    IBenefitReport,
+    IImpactReport,
     IPolicyReport,
     IReport,
     IReportItem,
@@ -154,7 +154,7 @@ export class ReportBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
 
         const dataSource: any[] = [];
-        const benefits: IBenefitReport[] = [];
+        const impacts: IImpactReport[] = [];
         const documentIds: string[] = [];
         const documentSubjectIds: string[] = [];
         for (let i = 0; i < vcs.length - 1; i++) {
@@ -162,10 +162,10 @@ export class ReportBlock {
             const credentialSubject = doc.credentialSubject[0];
             if (credentialSubject.type === 'TokenDataSource') {
                 dataSource.push(doc);
-            } else if (credentialSubject.type === 'ActivityBenefit') {
-                benefits.push({
+            } else if (credentialSubject.type === 'ActivityImpact') {
+                impacts.push({
                     type: 'VC',
-                    benefitType: getVCField(doc, 'benefitType'),
+                    impactType: getVCField(doc, 'impactType'),
                     label: getVCField(doc, 'label'),
                     description: getVCField(doc, 'description'),
                     amount: getVCField(doc, 'amount'),
@@ -209,8 +209,8 @@ export class ReportBlock {
                 documentSubjectIds.push(item.document.credentialSubject[0].id);
             }
         }
-        if (benefits.length) {
-            report.benefits = benefits;
+        if (impacts.length) {
+            report.impacts = impacts;
         }
         variables.documentId = documentIds[0];
         variables.documentSubjectId = documentSubjectIds[0];
@@ -340,7 +340,7 @@ export class ReportBlock {
             let report: IReport = {
                 vpDocument: null,
                 vcDocument: null,
-                benefits: null,
+                impacts: null,
                 mintDocument: null,
                 policyDocument: null,
                 policyCreatorDocument: null,

@@ -65,49 +65,75 @@
                     </div>
                 </div>
 
-                <div *ngIf="benefits" class="vp-section">
-                    <div class="vp-section-header">
-                        Benefits
-                    </div>
-                    <div class="vp-table">
-
-                        <div class="cards">
-                            <div class="cards-left">
-
-                            </div>
-                            <div class="cards-container">
-                                <div *ngFor="let item of benefits" class="card-item"
-                                    [attr.main]="item.benefitType==='issuing benefit'">
-                                    <div class="card-title">
-                                        <div class="card-icon">
-                                            <mat-icon class="">workspace_premium</mat-icon>
+                <div *ngIf="primaryImpacts && primaryImpacts.length" class="vp-section impact-section">
+                    <div>
+                        <div class="vp-section-header">
+                            Primary Impact
+                        </div>
+                        <div class="vp-table">
+                            <div class="cards">
+                                <div class="cards-container">
+                                    <div *ngFor="let item of primaryImpacts" class="card-item" [attr.main]="true">
+                                        <div class="card-title">
+                                            <div class="card-icon">
+                                                <mat-icon class="">workspace_premium</mat-icon>
+                                            </div>
+                                            <span>{{item.label}}</span>
                                         </div>
-                                        <span>{{item.label}}</span>
-                                    </div>
-                                    <div class="card-right">
-                                        <a *ngIf="item.document" (click)="openVCDocument(item, item.document.document)"
-                                            class="open-vc">VC File</a>
-                                    </div>
-                                    <div class="card-body">
-                                        <div style="
-                                            border-bottom: 1px solid rgb(112 112 112 / 64%);
-                                            margin-bottom: 10px;
-                                            padding-bottom: 10px;
-                                        ">
-                                            <span>{{item.description}}</span>
+                                        <div class="card-right">
+                                            <a *ngIf="item.document"
+                                                (click)="openVCDocument(item, item.document.document)"
+                                                class="open-vc">VC File</a>
                                         </div>
-                                        <div>
-                                            <span>{{item.amount}}</span>
-                                            <span> {{item.unit}}</span>
+                                        <div class="card-body">
+                                            <div
+                                                style="border-bottom: 1px solid rgb(112 112 112 / 64%);margin-bottom: 10px;padding-bottom: 10px;">
+                                                <span>{{item.description}}</span>
+                                            </div>
+                                            <div>
+                                                <span>{{item.amount}}</span>
+                                                <span> {{item.unit}}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="cards-right">
-
+                        </div>
+                    </div>
+                    <div *ngIf="secondaryImpacts && secondaryImpacts.length"
+                        style="border-left: 1px solid rgb(112 112 112 / 64%);padding-left: 28px;">
+                        <div class="vp-section-header">
+                            Secondary Impacts
+                        </div>
+                        <div class="vp-table">
+                            <div class="cards">
+                                <div class="cards-container">
+                                    <div *ngFor="let item of secondaryImpacts" class="card-item" [attr.main]="false">
+                                        <div class="card-title">
+                                            <div class="card-icon">
+                                                <mat-icon class="">workspace_premium</mat-icon>
+                                            </div>
+                                            <span>{{item.label}}</span>
+                                        </div>
+                                        <div class="card-right">
+                                            <a *ngIf="item.document"
+                                                (click)="openVCDocument(item, item.document.document)"
+                                                class="open-vc">VC File</a>
+                                        </div>
+                                        <div class="card-body">
+                                            <div
+                                                style="border-bottom: 1px solid rgb(112 112 112 / 64%);margin-bottom: 10px;padding-bottom: 10px;">
+                                                <span>{{item.description}}</span>
+                                            </div>
+                                            <div>
+                                                <span>{{item.amount}}</span>
+                                                <span> {{item.unit}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
 

@@ -154,7 +154,7 @@ export class PolicyImportExportHelper {
             DatabaseServer.getSystemSchema(SchemaEntity.ISSUER),
             DatabaseServer.getSystemSchema(SchemaEntity.USER_ROLE),
             DatabaseServer.getSystemSchema(SchemaEntity.CHUNK),
-            DatabaseServer.getSystemSchema(SchemaEntity.ACTIVITY_BENEFIT),
+            DatabaseServer.getSystemSchema(SchemaEntity.ACTIVITY_IMPACT),
             DatabaseServer.getSystemSchema(SchemaEntity.TOKEN_DATA_SOURCE)
         ]);
 

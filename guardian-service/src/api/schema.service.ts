@@ -85,7 +85,7 @@ export async function setDefaultSchema() {
     await fn(map[SchemaEntity.ISSUER]);
     await fn(map[SchemaEntity.USER_ROLE]);
     await fn(map[SchemaEntity.CHUNK]);
-    await fn(map[SchemaEntity.ACTIVITY_BENEFIT]);
+    await fn(map[SchemaEntity.ACTIVITY_IMPACT]);
     await fn(map[SchemaEntity.TOKEN_DATA_SOURCE]);
 }
 

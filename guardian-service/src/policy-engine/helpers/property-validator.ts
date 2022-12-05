@@ -10,7 +10,7 @@ export class PropertyValidator {
      */
     public static selectValidator(name: string, value: string, requirements: any[]): string {
         if (!requirements.find(item => item === value)) {
-            return `Option "${name}" must be one of ${requirements.join(',')}`;
+            return `Option "${name}" must be one of [${requirements.join(', ')}]`;
         }
         return null;
     }

@@ -90,8 +90,8 @@ export class MintBlock {
             const vc = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
             const result: VcDocument[] = [vc];
             for (const addon of addons) {
-                const benefit = await addon.run(documents, root, user);
-                result.push(benefit);
+                const impact = await addon.run(documents, root, user);
+                result.push(impact);
             }
             return result;
         } else {
