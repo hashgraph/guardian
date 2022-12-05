@@ -169,7 +169,7 @@
       * [Importing a Policy from file](policy-related-apis-for-asynchronous-execution/importing-a-policy-from-file.md)
       * [Policy Review](policy-related-apis-for-asynchronous-execution/policy-review.md)
     * [💻 Creating Roles and Groups using Policy Configurator UI](multi-user-roles/roles-and-groups.md)
-    * [Page 1](guardian/standard-registry/policies/page-1.md)
+    * [💻 Configuring Multi Policy using UI](guardian/standard-registry/policies/page-1.md)
   * [📒 Artifacts](guardian/standard-registry/artifacts/README.md)
     * [💻 Importing/Deleting Artifacts using UI](artifacts-demo/how-to-import-delete-artifacts.md)
   * [⚙ TrustChain APIs](guardian/standard-registry/trustchain-apis/README.md)
