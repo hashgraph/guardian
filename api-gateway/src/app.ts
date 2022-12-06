@@ -28,6 +28,7 @@ import { artifactAPI } from '@api/service/artifact';
 import fileupload from 'express-fileupload';
 
 const PORT = process.env.PORT || 3002;
+const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
 
 Promise.all([
     MessageBrokerChannel.connect('API_GATEWAY'),
@@ -37,7 +38,7 @@ Promise.all([
         app.use(express.json());
         app.use(express.raw({
             inflate: true,
-            limit: '1gb',
+            limit: RAW_REQUEST_LIMIT,
             type: 'binary/octet-stream'
         }));
         app.use(fileupload());
