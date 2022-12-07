@@ -31,7 +31,7 @@ Import from file: You can select the required Schema .schema file from your loca
 Files with **.schema** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.
 {% endhint %}
 
-![](<../../../.gitbook/assets/image (17) (1) (1).png>)
+![](<../../../.gitbook/assets/image (17) (1).png>)
 
 Import from IPFS: You can also import Schema from IPFS by entering the correct Schema timestamp. Sample iREC Schema timestamp is below:\\
 
@@ -39,7 +39,7 @@ Import from IPFS: You can also import Schema from IPFS by entering the correct S
 1644847084.945541771 (iREC 3 Policy)
 ```
 
-![](<../../../.gitbook/assets/image (14) (1) (1).png>)
+![](<../../../.gitbook/assets/image (14) (1) (1) (1).png>)
 
 Once the Schema is imported, we need to select the Policy from the Policy dropdown to connect the Schema and the Policy.
 
