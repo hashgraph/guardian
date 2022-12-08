@@ -229,6 +229,7 @@
       * [Unsetting KYC for the User](token-related-apis-for-asynchronous-execution/unsetting-kyc-for-the-user.md)
 * [👾 Automation Testing](guardian/automation-testing/README.md)
   * [💻 Performing API Automation Testing](api-automation-testing/how-to-perform-api-automation-testing.md)
+  * [💻 Performing UI Automation Testing](guardian/automation-testing/performing-ui-automation-testing.md)
 * [📝 Demo Guide](guardian/demo-guide/README.md)
   * [💻 iREC 5 Demo UI Guide](demo-guide/irec-demo-guide.md)
   * [💻 iREC 7 Demo UI Guide](demo-guide/irec-7-demo-guide.md)
