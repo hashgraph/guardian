@@ -741,6 +741,20 @@ export interface IPolicyState<T> {
 export type IPolicyEventState = IPolicyState<IPolicyDocument | IPolicyDocument[]>;
 
 /**
+ * Policy document
+ */
+export interface IPolicyMintEventState {
+    /**
+     * Data
+     */
+    data: IPolicyDocument | IPolicyDocument[];
+    /**
+     * Data
+     */
+    result: IPolicyDocument | IPolicyDocument[];
+}
+
+/**
  * Policy instance
  */
 export interface IPolicyInstance {

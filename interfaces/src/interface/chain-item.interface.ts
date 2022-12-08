@@ -314,4 +314,25 @@ export interface IReport {
      * Impacts
      */
     impacts?: IImpactReport[];
+    /**
+     * Additional Documents
+     */
+    additionalDocuments?: {
+        /**
+         * VP document instance
+         */
+        vpDocument?: IVPReport;
+        /**
+         * VC document instance
+         */
+        vcDocument?: IVCReport;
+        /**
+         * Mint document instance
+         */
+        mintDocument?: ITokenReport;
+        /**
+         * Impacts
+         */
+        impacts?: IImpactReport[];
+    }[];
 }

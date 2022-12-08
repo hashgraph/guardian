@@ -3,12 +3,29 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import { IImpactReport, IconType, IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport } from '@guardian/interfaces';
+import {
+    IImpactReport,
+    IconType,
+    IPolicyReport,
+    IReport,
+    IReportItem,
+    ITokenReport,
+    IVCReport,
+    IVPReport
+} from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { IconsArray } from './iconsArray';
+
+interface IAdditionalDocument {
+    vpDocument?: IVPReport | undefined;
+    vcDocument?: IVCReport | undefined;
+    mintDocument?: ITokenReport | undefined;
+    primaryImpacts?: IImpactReport[] | undefined;
+    secondaryImpacts?: IImpactReport[] | undefined;
+}
 
 /**
  * Component for display block of 'ReportBlock' types.
@@ -28,17 +45,13 @@ export class ReportBlockComponent implements OnInit {
     socket: any;
     content: string | null = null;
     chainVisible: boolean = false;
-    vpDocument: IVPReport | undefined;
-    vcDocument: IVCReport | undefined;
-    mintDocument: ITokenReport | undefined;
+    mainDocuments: IAdditionalDocument[] | undefined;
     policyDocument: IPolicyReport | undefined;
     documents: any;
     policyCreatorDocument: IReportItem | undefined;
     searchForm = this.fb.group({
         value: ['', Validators.required],
     });
-    primaryImpacts: IImpactReport[] | undefined;
-    secondaryImpacts: IImpactReport[] | undefined;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -102,11 +115,7 @@ export class ReportBlockComponent implements OnInit {
             this.loadTrustChainData(data);
         } else {
             this.chainVisible = false;
-            this.vpDocument = undefined;
-            this.vcDocument = undefined;
-            this.mintDocument = undefined;
-            this.primaryImpacts = undefined;
-            this.secondaryImpacts = undefined;
+            this.mainDocuments = undefined;
             this.policyDocument = undefined;
             this.documents = undefined;
             this.hash = "";
@@ -120,15 +129,24 @@ export class ReportBlockComponent implements OnInit {
         this.searchForm.patchValue({
             value: this.hash
         });
-        this.vpDocument = report.vpDocument;
-        this.vcDocument = report.vcDocument;
-        this.mintDocument = report.mintDocument;
         this.policyDocument = report.policyDocument;
         this.policyCreatorDocument = report.policyCreatorDocument;
         this.documents = report.documents || [];
-        const impacts = report.impacts;
-        this.primaryImpacts = impacts?.filter(i => i.impactType === 'Primary Impacts');
-        this.secondaryImpacts = impacts?.filter(i => i.impactType !== 'Primary Impacts');
+
+        const mainDocument = this.createAdditionalDocument(report);
+        if (mainDocument) {
+            this.mainDocuments = [mainDocument];
+            if (report.additionalDocuments) {
+                for (const doc of report.additionalDocuments) {
+                    const additionalDocument = this.createAdditionalDocument(doc);
+                    if (additionalDocument) {
+                        this.mainDocuments.push(additionalDocument);
+                    }
+                }
+            }
+        } else {
+            this.mainDocuments = undefined;
+        }
 
         if (this.policyDocument) {
             this.documents.push({
@@ -170,6 +188,19 @@ export class ReportBlockComponent implements OnInit {
         this.loading = false;
     }
 
+    createAdditionalDocument(report: any): IAdditionalDocument | null {
+        if (!(report.vpDocument || report.vcDocument)) {
+            return null;
+        }
+        const result: IAdditionalDocument = {};
+        result.vpDocument = report.vpDocument;
+        result.vcDocument = report.vcDocument;
+        result.mintDocument = report.mintDocument;
+        const impacts: any[] = report.impacts;
+        result.primaryImpacts = impacts?.filter(i => i.impactType === 'Primary Impacts');
+        result.secondaryImpacts = impacts?.filter(i => i.impactType !== 'Primary Impacts');
+        return result;
+    }
 
     openVCDocument(item: IVCReport | ITokenReport | IPolicyReport | IReportItem | IImpactReport, document?: any) {
         const dialogRef = this.dialog.open(VCViewerDialog, {

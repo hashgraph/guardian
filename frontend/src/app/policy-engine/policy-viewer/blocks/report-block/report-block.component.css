@@ -364,7 +364,7 @@ a.open-vp {
 }
 
 .vp-signature {
-    margin: 20px 50px;
+    margin: 20px 50px 20px 4px;
     display: flex;
     align-items: center;
     gap: 20px;
@@ -582,4 +582,13 @@ a.open-vp {
 
 .impact-section {
     display: flex;
+}
+
+*[offset="true"] {
+    border-left: 1px solid rgb(112 112 112 / 64%);
+    padding-left: 28px;
+}
+
+*[vp-section-offset="true"] {
+    margin: 0 54px 30px 104px;
 }

@@ -728,6 +728,20 @@
                         }
                     ],
                     "readOnly": false
+                },
+                "relationships": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": false
                 }
             },
             "required": [
