@@ -1,14 +1,14 @@
 version: "3.8"
 services:
   mongo:
-    image: mongo:6
+    image: mongo:6.0.3
     command: "--setParameter allowDiskUseByDefault=true"
     restart: always
     expose:
       - 27017
 
   ipfs-node:
-    image: yeasy/ipfs:latest
+    image: ipfs/kubo:v0.17.0
     ports:
       - "5001:5001"
       - "5002:5002"
@@ -25,7 +25,7 @@ services:
       - 3001
 
   message-broker:
-    image: nats
+    image: nats:2.9.8
     expose:
       - 4222
     ports:
@@ -33,7 +33,7 @@ services:
     command: '--http_port 8222'
 
   vault:
-    image: vault
+    image: vault:1.12.2
     expose:
       - 8200
     ports:
