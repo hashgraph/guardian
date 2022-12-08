@@ -100,6 +100,7 @@
       * [splitBlock](available-policy-workflow-blocks/splitblock.md)
       * [wipeDocumentBlock](available-policy-workflow-blocks/token-wipe-workflow-block.md)
       * [Create Token Block](available-policy-workflow-blocks/create-token-block.md)
+      * [impactAddon](guardian/standard-registry/policies/introduction/impactaddon.md)
     * [💻 Creating Policy using UI](policy-flow/policy-demo.md)
     * [💻 Creating a Policy through Policy Configurator](guardian/standard-registry/policies/creating-a-policy-through-policy-configurator/README.md)
       * [Getting Started with the Policy Workflows](policy-workflow-creation-using-the-guardian-user-interface/getting-started-with-the-policy-workflows.md)
