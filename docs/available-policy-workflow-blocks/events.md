@@ -94,6 +94,17 @@ Input Events are received and processed by the egress interface of the ‘Target
 
 * RestoreEvent - Which receive input vc document to restore data.
 
+#### mintDocumentBlock:
+
+* AdditionalMintEvent - allows linking of the result of one mint block with another mint block.
+
+{% hint style="info" %}
+**Note:**
+
+1. The link starts with “RunEvent” of the main Mint Block and ends with “AdditionalMintEvent” of the secondary Mint Block
+2. “Default Event” of the main Mint Block must be switched off if linked Mint Blocks follow each other
+{% endhint %}
+
 ### Event Actor
 
 Allows to change the user-context of the execution
