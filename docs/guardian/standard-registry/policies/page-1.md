@@ -25,7 +25,7 @@ Step 2: We get a policy linking pop up to create a link for the primary policy o
 
 After the ‘primary’ policy is registered a special ‘link’ becomes accessible which can be used to ‘connect’ additional ‘secondary’ policies.
 
-<figure><img src="../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Connecting Secondary Policies
 
