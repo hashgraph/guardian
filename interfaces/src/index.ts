@@ -27,15 +27,15 @@ export { IVPDocument } from './interface/vp-document.interface';
 export { IVP } from './interface/vp.interface';
 export { IUser, ISession } from './interface/user.interface';
 export { IWalletAccount } from './interface/wallet-account.interface';
-export { 
-    IChainItem, 
-    IReport, 
-    IReportItem, 
-    IPolicyReport, 
-    ITokenReport, 
-    IVCReport, 
-    IVPReport, 
-    IImpactReport 
+export {
+    IChainItem,
+    IReport,
+    IReportItem,
+    IPolicyReport,
+    ITokenReport,
+    IVCReport,
+    IVPReport,
+    IImpactReport
 } from './interface/chain-item.interface';
 export { Token } from './models/token';
 export { Schema } from './models/schema';
