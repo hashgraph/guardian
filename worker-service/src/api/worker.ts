@@ -92,14 +92,9 @@ export class Worker {
      */
     private readonly taskTimeout: number;
 
-    /**
-     * Channel Name
-     * @private
-     */
-    private readonly _channelName: string;
-
     constructor(
-        private readonly channel: MessageBrokerChannel
+        private readonly channel: MessageBrokerChannel,
+        private readonly channelName: string
     ) {
         const { IPFS_STORAGE_API_KEY } = new SettingsContainer().settings;
 
@@ -109,7 +104,6 @@ export class Worker {
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
         this.taskTimeout = parseInt(process.env.TASK_TIMEOUT, 10) * 1000; // env in seconds
-        this._channelName = process.env.SERVICE_CHANNEL.toUpperCase();
     }
 
     /**
@@ -617,7 +611,7 @@ export class Worker {
     public async getItem(): Promise<any> {
         this.isInUse = true;
 
-        this.logger.info(`Search task`, [this._channelName]);
+        this.logger.info(`Search task`, [this.channelName]);
 
         let task: any = null;
         try {
@@ -637,7 +631,7 @@ export class Worker {
         if (!task) {
             this.isInUse = false;
 
-            this.logger.info(`Task not found`, [this._channelName]);
+            this.logger.info(`Task not found`, [this.channelName]);
 
             if (this.updateEventReceived) {
                 this.updateEventReceived = false;
@@ -649,19 +643,19 @@ export class Worker {
 
         this.currentTaskId = task.id;
 
-        this.logger.info(`Task started: ${task.id}, ${task.type}`, [this._channelName]);
+        this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.channelName]);
 
         const result = await this.processTaskWithTimeout(task);
 
         try {
             await this.request(WorkerEvents.TASK_COMPLETE, result);
             if (result?.error) {
-                this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this._channelName]);
+                this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this.channelName]);
             } else {
-                this.logger.info(`Task completed: ${this.currentTaskId}`, [this._channelName]);
+                this.logger.info(`Task completed: ${this.currentTaskId}`, [this.channelName]);
             }
         } catch (error) {
-            this.logger.error(error.message, [this._channelName]);
+            this.logger.error(error.message, [this.channelName]);
             this.clearState();
 
         }

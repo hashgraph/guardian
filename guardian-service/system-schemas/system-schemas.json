@@ -671,5 +671,177 @@
                 }
             }
         }
+    },
+    {
+        "uuid": "TokenDataSource",
+        "name": "TokenDataSource",
+        "entity": "TOKEN_DATA_SOURCE",
+        "document": {
+            "$id": "#TokenDataSource",
+            "$comment": "{ \"term\": \"TokenDataSource\", \"@id\": \"#TokenDataSource\" }",
+            "title": "TokenDataSource",
+            "description": "TokenDataSource",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "dataSource": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": false
+                },
+                "relationships": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": false
+                }
+            },
+            "required": [
+                "dataSource"
+            ],
+            "additionalProperties": false
+        }
+    },
+    {
+        "uuid": "ActivityImpact",
+        "name": "ActivityImpact",
+        "entity": "ACTIVITY_IMPACT",
+        "document": {
+            "$id": "#ActivityImpact",
+            "$comment": "{ \"term\": \"ActivityImpact\", \"@id\": \"#ActivityImpact\" }",
+            "title": "ActivityImpact",
+            "description": "ActivityImpact",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "impactType": {
+                    "$comment": "{\"term\": \"impactType\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "impactType",
+                    "description": "impactType",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "date": {
+                    "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "date",
+                    "description": "date",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "amount": {
+                    "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "amount",
+                    "description": "amount",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "unit": {
+                    "$comment": "{\"term\": \"unit\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "unit",
+                    "description": "unit",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "label": {
+                    "$comment": "{\"term\": \"label\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "label",
+                    "description": "label",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "description": {
+                    "$comment": "{\"term\": \"description\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "description",
+                    "description": "description",
+                    "type": "string",
+                    "readOnly": false
+                }
+            },
+            "required": [
+                "date",
+                "amount",
+                "impactType"
+            ],
+            "additionalProperties": false
+        }
     }
 ]

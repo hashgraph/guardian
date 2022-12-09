@@ -34,3 +34,4 @@ export { MultiSignBlock } from './multi-sign-block';
 export { CalculateMathVariables } from './calculate-math-variables';
 export { CreateTokenBlock } from './create-token-block';
 export { SplitBlock } from './split-block';
+export { TokenOperationAddon } from './impact-addon';

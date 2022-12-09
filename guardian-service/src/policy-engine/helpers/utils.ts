@@ -159,6 +159,7 @@ export class PolicyUtils {
         let amount = 0;
         for (const element of vcs) {
             const scope = PolicyUtils.getVCScope(element);
+            console.log(' ^^^^^^^^', rule, scope)
             const value = parseFloat(PolicyUtils.evaluateFormula(rule, scope));
             amount += value;
         }
@@ -315,6 +316,25 @@ export class PolicyUtils {
                     return data.document.credentialSubject[0];
                 } else {
                     return data.document.credentialSubject;
+                }
+            }
+        } catch (error) {
+            return null;
+        }
+        return null;
+    }
+
+    /**
+     * Get subject type
+     * @param document
+     */
+     public static getCredentialSubjectType(document: any): any {
+        try {
+            if (document) {
+                if (Array.isArray(document.credentialSubject)) {
+                    return document.credentialSubject[0];
+                } else {
+                    return document.credentialSubject;
                 }
             }
         } catch (error) {

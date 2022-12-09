@@ -6,7 +6,7 @@
             </mat-icon>
         </td>
         <td class="propHeaderCell cellName" [title]="property.title">
-            {{property.label}}
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td class="propHeaderCell"></td>
     </tr>
@@ -24,7 +24,7 @@
             </mat-icon>
         </td>
         <td class="propHeaderCell cellName" [title]="property.title">
-            {{property.label}}
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
         </td>
         <td class="propHeaderCell">
             <div class="propAdd" (click)="addItems()">
@@ -61,7 +61,9 @@
 <ng-container *ngIf="property.type === 'Input'">
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName" [title]="property.title">{{property.label}}</td>
+        <td class="propRowCell cellName" [title]="property.title">
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
+        </td>
         <td class="propRowCell">
             <input class="prop-input" [(ngModel)]="value" [readonly]="readonly" (blur)="onSave()">
         </td>
@@ -71,7 +73,9 @@
 <ng-container *ngIf="property.type === 'Checkbox'">
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName" [title]="property.title">{{property.label}}</td>
+        <td class="propRowCell cellName" [title]="property.title">
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
+        </td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="value" [readonly]="readonly" (change)="onSave()">
         </td>
@@ -81,7 +85,9 @@
 <ng-container *ngIf="property.type === 'Select'">
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName" [title]="property.title">{{property.label}}</td>
+        <td class="propRowCell cellName" [title]="property.title">
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
+        </td>
         <td class="propRowCell ns">
             <mat-select [(value)]="value" [disabled]="readonly" (change)="onSave()">
                 <mat-option *ngFor="let item of property.items" [value]="item.value">{{item.label}}</mat-option>
@@ -93,7 +99,9 @@
 <ng-container *ngIf="property.type === 'MultipleSelect'">
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName" [title]="property.title">{{property.label}}</td>
+        <td class="propRowCell cellName" [title]="property.title">
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
+        </td>
         <td *ngIf="loaded" [ngSwitch]="property.items" class="propRowCell ns">
             <mat-select *ngSwitchCase="'Schemas'" multiple [(value)]="value" [disabled]="readonly" (change)="onSave()">
                 <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
@@ -102,7 +110,8 @@
                     <span *ngIf="schema.status"> ({{schema.status}})</span>
                 </mat-option>
             </mat-select>
-            <mat-select *ngSwitchCase="'Block'" multiple [(value)]="value" [disabled]="readonly"  (valueChange)="onSave()">
+            <mat-select *ngSwitchCase="'Block'" multiple [(value)]="value" [disabled]="readonly"
+                (valueChange)="onSave()">
                 <mat-select-trigger>
                     <span class="select-custom">{{value}}</span>
                 </mat-select-trigger>
@@ -115,7 +124,8 @@
                     </div>
                 </mat-option>
             </mat-select>
-            <mat-select *ngSwitchCase="'Children'" multiple [(value)]="value" [disabled]="readonly" (valueChange)="onSave()">
+            <mat-select *ngSwitchCase="'Children'" multiple [(value)]="value" [disabled]="readonly"
+                (valueChange)="onSave()">
                 <mat-select-trigger>
                     <span class="select-custom">{{value}}</span>
                 </mat-select-trigger>
@@ -138,7 +148,9 @@
 <ng-container *ngIf="property.type === 'Schemas'">
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName" [title]="property.title">{{property.label}}</td>
+        <td class="propRowCell cellName" [title]="property.title">
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
+        </td>
         <td class="propRowCell ns">
             <mat-select [(value)]="value" [disabled]="readonly" (change)="onSave()">
                 <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
@@ -154,7 +166,9 @@
 <ng-container *ngIf="property.type === 'Path'">
     <tr class="propRow" [attr.offset]="offset" [attr.collapse]="collapse">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName" [title]="property.title">{{property.label}}</td>
+        <td class="propRowCell cellName" [title]="property.title">
+            <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
+        </td>
         <td class="propRowCell">
             <document-path [(value)]="value" [readonly]="readonly" (change)="onSave()"></document-path>
         </td>

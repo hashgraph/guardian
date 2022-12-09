@@ -57,9 +57,21 @@ export class Token {
      */
     public url: string;
     /**
-     * URL
+     * policies
      */
     public policies: string[];
+    /**
+     * Token type
+     */
+    public tokenType?: string;
+    /**
+     * Token decimals
+     */
+    public decimals: any;
+    /**
+     * Initial supply
+     */
+    public initialSupply?: any;
     /**
      * Token constructor
      * @param data
@@ -69,6 +81,9 @@ export class Token {
         this.tokenId = data.tokenId;
         this.tokenName = data.tokenName;
         this.tokenSymbol = data.tokenSymbol;
+        this.tokenType = data.tokenType;
+        this.decimals = data.decimals;
+        this.initialSupply = data.initialSupply;
         this.enableAdmin = data.enableAdmin;
         this.enableFreeze = data.enableFreeze;
         this.enableKYC = data.enableKYC;
