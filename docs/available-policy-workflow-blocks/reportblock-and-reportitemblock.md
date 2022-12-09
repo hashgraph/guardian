@@ -2,7 +2,7 @@
 
 ## reportBlock
 
-### Properties
+### 1. Properties
 
 | Block Property | Definition                                                                        | Example Input                                   | Status                                     |
 | -------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------ |
@@ -11,6 +11,31 @@
 | permissions    | Which entity has rights to interact at this part of the workflow.                 | Standard Registry.                              |                                            |
 | defaultActive  | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                           |                                            |
 | dependencies   | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown. | <mark style="color:red;">Deprecated</mark> |
+
+### 2. Impacts Section
+
+We have added new Impacts Section to display Primary/Secondary Impacts token details in Trustchain:
+
+<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+In the case when multiple linked mint blocks are used then the system displays all linked VPs as shown below:
+
+<figure><img src="../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+
+#### 2.1 Data Format:
+
+Ingress Document has following sections:
+
+| Document Type         | Description                                                   |
+| --------------------- | ------------------------------------------------------------- |
+| vpDocument            | VP document found based on its hash                           |
+| vcDocument            | VC document found based on its hash                           |
+| impacts (new)         | array of Impacts (VCs) if exist                               |
+| mintDocument          | VC document describing the mint                               |
+| policyDocument        | VC document describing the policy                             |
+| policyCreatorDocument | VC document describing the Standard Registry                  |
+| documents             | collection of VC documents retrieved from the reportItemBlock |
+| additionalDocuments   | array of VPs linked with the selected document                |
 
 ### Events
 

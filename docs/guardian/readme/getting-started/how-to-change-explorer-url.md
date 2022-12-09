@@ -15,4 +15,4 @@ As we see the above demonstrates setting of Ledger Works explorer.
 1. Change the url to [https://${network}.dragonglass.me/hedera/${type}/${value}](https://${network}.dragonglass.me/hedera/$%7Btype%7D/$%7Bvalue%7D)
 2. Change networkMap mainnet to app
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (8).png" alt=""><figcaption></figcaption></figure>
