@@ -61,4 +61,4 @@ Once the above details are added, click on the Create button.
 
 Once the System Schema is created, we have options for activating, deleting, editing and viewing JSON documents.
 
-![](<../../../.gitbook/assets/image (9) (3).png>)
+![](<../../../.gitbook/assets/image (9) (3) (1).png>)
