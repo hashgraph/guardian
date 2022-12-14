@@ -19,6 +19,9 @@ const PoliciesPageLocators = {
     dropDawnPublishBtn: "Release version into public domain.",
     submitBtn: 'button[type="submit"]',
     addBtn:  "*[class^='btn-approve btn-option ng-star-inserted']",
+    createPolicyBtn: "Create Policy",
+    inputName: "*[formcontrolname^='name']",
+    draftBtn: 'ng-reflect-menu="[object Object]"',
 };
 
 export class PoliciesPage {
@@ -29,6 +32,35 @@ export class PoliciesPage {
     importPolicyButton() {
         cy.contains(PoliciesPageLocators.importBtn).click();
     }
+
+    createPolicyButton() {
+        cy.contains(PoliciesPageLocators.createPolicyBtn).click();
+    }
+
+    fillNewPolicyForm(name) {
+        const inputName = cy.get(PoliciesPageLocators.inputName);
+        cy.wait(5000);
+        inputName.type(name);
+
+        cy.get(PoliciesPageLocators.submitBtn).click();
+        cy.wait(80000);
+    }
+
+    checkDraftStatus(name) {
+        cy.contains("td", name).siblings().contains('div', 'Draft').should('be.visible');
+    }
+
+    startDryRun(name) {
+        cy.contains("td", name).siblings().contains('div', 'Draft').click();
+        cy.contains('Dry Run').click({force: true});
+    }
+
+    stopDryRun(name) {
+        cy.wait(5000);
+        cy.contains("td", name).siblings().contains('div','In Dry Run').click();
+        cy.contains('Stop').click({force: true});
+    }
+
 
     importPolicyFile(file) {
         cy.contains(PoliciesPageLocators.importFileBtn).click();
