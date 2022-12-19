@@ -28,6 +28,7 @@ import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from './policy-engine';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { findAllEntities } from '@helpers/utils';
+import { PolicyComparator } from '@analytics';
 
 /**
  * Policy engine service
@@ -1061,6 +1062,25 @@ export class PolicyEngineService {
                     const result = await this.policyEngine.createMultiPolicy(policyInstance, userAccount, root, data);
                     return new MessageResponse(result);
                 }
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+        this.channel.response<any, any>(PolicyEngineEvents.COMPARE_POLICY, async (msg) => {
+            try {
+                const { user, policyId1, policyId2 } = msg;
+                const model1 = await DatabaseServer.getPolicyById(policyId1);
+                const model2 = await DatabaseServer.getPolicyById(policyId2);
+                if (!model1 || !model2) {
+                    throw new Error('Unknown policies');
+                }
+
+                const comparator = new PolicyComparator();
+                const result: any = comparator.compare(model1, model2);
+
+                return new MessageResponse(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

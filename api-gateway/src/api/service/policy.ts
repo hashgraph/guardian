@@ -635,3 +635,29 @@ policyAPI.post('/:policyId/multiple/', async (req: AuthenticatedRequest, res: Re
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
 });
+
+policyAPI.post('/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
+    try {
+        const policies = await engineService.importMessage(req.user, req.body.messageId, versionOfTopicId);
+        res.status(201).send(policies);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
+policyAPI.get('/analytics/compare', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    const policyId1 = req.query ? req.query.policyId1 : null;
+    const policyId2 = req.query ? req.query.policyId2 : null;
+    const user = req.user;
+    try {
+        const result = await engineService.comparePolicy(user, policyId1, policyId2);
+        res.send(result);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message });
+    }
+});

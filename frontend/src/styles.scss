@@ -195,3 +195,24 @@ button.mat-button {
 .error-message-toastr .toast-close-button {
     color: #fa1905 !important;
 }
+
+.info-message-toastr {
+    background-color: #ffffff !important;
+    border: 1px solid #3f51b5 !important;
+    color: #3f51b5 !important;
+    background-image: none !important;
+    box-shadow: 0 0 0px 1px #ffffff, 1px 1px 8px 1px #999999 !important;
+    margin: 1px 1px 6px 1px !important;
+    padding: 15px 15px 15px 15px !important;
+}
+
+.info-message-toastr .toast-close-button {
+    color: #3f51b5 !important;
+}
+
+.info-message-toastr a {
+    color: #3f51b5 !important;
+    font-weight: bold !important;
+    padding: 0px 2px !important;
+    text-decoration: underline !important;
+}

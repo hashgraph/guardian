@@ -46,6 +46,7 @@ import { WebSocketService } from './services/web-socket.service';
 import { MessageTranslationService } from './services/message-translation-service/message-translation-service';
 import { TasksService } from './services/tasks.service';
 import { ArtifactService } from './services/artifact.service';
+import { CompareModule } from './analytics/analytics.module';
 
 @NgModule({
     declarations: [
@@ -81,7 +82,8 @@ import { ArtifactService } from './services/artifact.service';
         HttpClientModule,
         FormsModule,
         ToastrModule.forRoot(),
-        PolicyEngineModule
+        PolicyEngineModule,
+        CompareModule
     ],
     exports: [],
     providers: [

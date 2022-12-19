@@ -23,6 +23,7 @@ import { InfoComponent } from './components/info/info/info.component';
 import { WebSocketService } from './services/web-socket.service';
 import { PoliciesComponent } from './policy-engine/policies/policies.component';
 import { ArtifactConfigComponent } from './artifact-engine/artifact-config/artifact-config.component';
+import { CompareComponent } from './analytics/compare/compare.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -164,6 +165,8 @@ const routes: Routes = [
     { path: 'policy-viewer', component: PoliciesComponent, canActivate: [ServicesStatusGuard] },
     { path: 'policy-viewer/:id', component: PolicyViewerComponent, canActivate: [ServicesStatusGuard] },
     { path: 'policy-configuration', component: PolicyConfigurationComponent, canActivate: [ServicesStatusGuard] },
+    
+    { path: 'compare', component: CompareComponent, canActivate: [ServicesStatusGuard] },
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

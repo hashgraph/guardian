@@ -1,0 +1,91 @@
+<div class="content">
+    <div *ngIf="policy1 && policy2">
+        <mat-accordion multi>
+            <mat-expansion-panel expanded>
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <div class="header">Info</div>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="info-container">
+                    <ng-container *ngTemplateOutlet="policyInfo; context: {policy:policy1}"></ng-container>
+                    <ng-container *ngTemplateOutlet="policyInfo; context: {policy:policy2}"></ng-container>
+                </div>
+            </mat-expansion-panel>
+            <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false" expanded>
+                <mat-expansion-panel-header>
+                    <div class="header">Compare</div>
+                </mat-expansion-panel-header>
+    
+                <div class="merge-container">
+                    <div class="merge-options">
+                        <div class="merge-type">
+                            <div class="f1">
+                                <mat-label>Type:</mat-label>
+                                <mat-select [(value)]="type">
+                                    <mat-option value="tree">Tree</mat-option>
+                                    <mat-option value="table">Table</mat-option>
+                                </mat-select>
+                            </div>
+                        </div>
+                        <div class="merge-lvl">
+                            <div class="f1">
+                                <mat-label>Events:</mat-label>
+                                <mat-select [(value)]="eventsLvl">
+                                    <mat-option value="0">0</mat-option>
+                                    <mat-option value="1">1</mat-option>
+                                </mat-select>
+                            </div>
+                            <div class="f1">
+                                <mat-label>Prop:</mat-label>
+                                <mat-select [(value)]="propLvl">
+                                    <mat-option value="0">0</mat-option>
+                                    <mat-option value="1">1</mat-option>
+                                    <mat-option value="2">2</mat-option>
+                                </mat-select>
+                            </div>
+                            <div class="f1">
+                                <mat-label>Children:</mat-label>
+                                <mat-select [(value)]="childrenLvl">
+                                    <mat-option value="0">0</mat-option>
+                                    <mat-option value="1">1</mat-option>
+                                    <mat-option value="2">2</mat-option>
+                                </mat-select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="merge-tree">
+
+                    
+    
+                    </div>
+                </div>
+            </mat-expansion-panel>
+        </mat-accordion>
+    </div>
+</div>
+
+<ng-template #policyInfo let-policy="policy">
+    <div class="policy-info">
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">ID</div>
+            <div class="policy-info-field-value">{{policy.id}}</div>
+        </div>
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">Name</div>
+            <div class="policy-info-field-value">{{policy.name}}</div>
+        </div>
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">Description</div>
+            <div class="policy-info-field-value">{{policy.description}}</div>
+        </div>
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">Topic</div>
+            <div class="policy-info-field-value">{{policy.instanceTopicId}}</div>
+        </div>
+        <div class="policy-info-field">
+            <div class="policy-info-field-name">Version</div>
+            <div class="policy-info-field-value">{{policy.version}}</div>
+        </div>
+    </div>
+</ng-template>

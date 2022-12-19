@@ -15,6 +15,8 @@ import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 import { MultiPolicyDialogComponent } from '../helpers/multi-policy-dialog/multi-policy-dialog.component';
+import { ToastrService } from 'ngx-toastr';
+import { ComparePolicyDialog } from '../helpers/compare-policy-dialog/compare-policy-dialog.component';
 
 enum OperationMode {
     None,
@@ -81,7 +83,8 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         private router: Router,
         private dialog: MatDialog,
         private taskService: TasksService,
-        private informService: InformService
+        private informService: InformService,
+        private toastr: ToastrService
     ) {
         this.policies = null;
         this.pageIndex = 0;
@@ -230,7 +233,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                     const block = invalidBlocks[i];
                     for (let j = 0; j < block.errors.length; j++) {
                         const error = block.errors[j];
-                        if(block.id) {
+                        if (block.id) {
                             text.push(`<div>${block.id}: ${error}</div>`);
                         } else {
                             text.push(`<div>${error}</div>`);
@@ -431,7 +434,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                             j++
                         ) {
                             const error = block.errors[j];
-                            if(block.id) {
+                            if (block.id) {
                                 text.push(`<div>${block.id}: ${error}</div>`);
                             } else {
                                 text.push(`<div>${error}</div>`);
@@ -458,6 +461,28 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.importPolicyDetails(result);
+            }
+        });
+    }
+
+    comparePolicy(element: any) {
+        const dialogRef = this.dialog.open(ComparePolicyDialog, {
+            width: '650px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
+            data: {
+                policy: element,
+                policies: this.policies
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.router.navigate(['/compare'], { queryParams: { 
+                    type: 'policy',
+                    policyId1: result.policyId1,
+                    policyId2: result.policyId2
+                } });
             }
         });
     }

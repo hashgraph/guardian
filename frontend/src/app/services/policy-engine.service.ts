@@ -212,4 +212,8 @@ export class PolicyEngineService {
     public setMultiPolicy(policyId: string, data: any): Observable<any> {
         return this.http.post<void>(`${this.url}/${policyId}/multiple`, data);
     }
+
+    public comparePolicy(policyId1: string, policyId2: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/analytics/compare?policyId1=${policyId1}&policyId2=${policyId2}`);
+    }
 }

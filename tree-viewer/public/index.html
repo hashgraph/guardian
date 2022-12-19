@@ -20,8 +20,19 @@
                 display: grid;
                 height: 20vh;
                 overflow: auto;
-                margin-bottom: 3vh;
                 grid-template-columns: 50% 50%;
+            }
+            .config-container {
+                width: 100%;
+                position: relative;
+                display: flex;
+                height: 3vh;
+                overflow: auto;
+                padding: 10px 10px 0px 0px;
+                margin-bottom: 2px;
+                box-sizing: border-box;
+                border: 1px solid #000;
+                background: #f3f3f3;
             }
             .container-2 {
                 width: 100%;
@@ -35,6 +46,10 @@
                 border: 1px solid #000;
                 box-sizing: border-box;
             } 
+            .config-name {
+                font-weight: 500;
+                padding: 0 10px;
+            }
             .json-container textarea{
                 width: 90%;
                 height: 125px;
@@ -51,6 +66,7 @@
                 display: flex;
                 border-radius: 3px;
                 cursor: default;
+                position: relative;
             }
             .block-children {
                 padding-left: 30px;
@@ -98,6 +114,7 @@
             .block[fantom="true"],
             *[fantom="true"] .block {
                 opacity: 0.08;
+                pointer-events: all;
             }
             .block[fantom="true"]:hover,
             *[fantom="true"] .block:hover {
@@ -106,6 +123,100 @@
             .block-children[fantom="true"],
             *[fantom="true"] .block-children {
                 border-left: 1px dashed rgb(0 0 0 / 8%);
+            }
+
+
+            .block[propRate]::after {
+                display: block;
+                content: attr(totalRate) '% ('  attr(propRate) '%, ' attr(eventRate) '%)';
+                color: black;
+                position: absolute;
+                right: -150px;
+                top: 11px;
+                width: 140px;
+                height: 20px;
+            }
+            .block[propRate='-1']::after {
+                content: attr(totalRate) '% (-, ' attr(eventRate) '%)' !important;
+            }
+            .block[eventRate='-1']::after {
+                content: attr(totalRate) '% ('  attr(propRate) '%, -)' !important;
+            }
+            .block[totalRate='-1']::after {
+                content: '' !important;
+            }
+
+            .placeholder:hover {
+                grid-column: 1 / 3;
+                grid-row-start: 1;
+                background: white;
+                z-index: 0;
+                position: relative;
+                border: 1px solid #b7b7b7;
+                border-radius: 6px;
+                box-shadow: 1px 1px 1px 0 #00000012;
+            }
+
+            .block-tooltip {
+                top: 0;
+                display: none;
+                position: absolute;
+                width: 600px;
+                min-height: 100px;
+                background: #fff;
+                border: 1px solid #000;
+                border-radius: 6px;
+                z-index: 99;
+                grid-template-columns: 50% 50%;
+                font-size: 12px;
+            }
+
+            .block:hover .block-tooltip{
+                display: grid;
+            }
+
+            .left-block .block-tooltip {
+                right: -10px;
+                transform: translate(100%, 0px);
+            }
+
+            .right-block .block-tooltip {
+                left: -10px;
+                transform: translate(-100%, 0px);
+            }
+
+            .prop-name-tooltip {
+                padding: 1px 1px 1px 8px;
+                font-weight: bold;
+                color: #626262;
+            }
+
+            .prop-value-tooltip {
+                padding: 1px 1px 1px 16px;
+            }
+
+            .merge-table {
+                display: table;
+                border-right: 1px solid #919191;
+                border-bottom: 1px solid #919191;
+            }
+
+            .merge-row {
+                display: table-row;
+            }
+
+            .merge-col {
+                display: table-cell;
+                border-left: 1px solid #919191;
+                border-top: 1px solid #919191;
+                padding: 6px;
+            }
+            .merge-header {
+                font-weight: bold;
+                text-transform: capitalize;
+            }
+            .merge-col[name="prop_rate"] {
+                border-left: 3px solid #919191;
             }
         </style>
     </head>
@@ -122,7 +233,6 @@
 
                 </div>
             </div>
-
             <div id="container_2" class="policy-container">
                 <div id="json_container_2" class="json-container">
                     <textarea id="json_2">
@@ -134,6 +244,31 @@
                 </div>
             </div>
 
+        </div>
+        <div class="config-container">
+            <div class="config-name">Events: </div>
+            <div>
+                <select id="event_rate">
+                    <option value="0">0</option>
+                    <option selected value="1">1</option>
+                </select>
+            </div>
+            <div class="config-name">Prop: </div>
+            <div>
+                <select id="prop_rate">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option selected value="2">2</option>
+                </select>
+            </div>
+            <div class="config-name">Children: </div>
+            <div>
+                <select id="child_rate">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option selected value="2">2</option>
+                </select>
+            </div>
         </div>
         <div class="container-2">
             <div id="tree_container_3" class="tree-container">
