@@ -21,7 +21,9 @@ import {
     MessageServer,
     MessageType,
     PolicyMessage,
+    SynchronizationMessage,
     TokenMessage,
+    TopicConfig,
     TopicHelper
 } from '@hedera-modules'
 import { findAllEntities, getArtifactType, replaceAllEntities, replaceArtifactProperties, SchemaFields } from '@helpers/utils';
@@ -40,6 +42,7 @@ import { IPolicyUser, PolicyUser } from './policy-user';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from './policy-validation-results-container';
 import { Artifact } from '@entity/artifact';
+import { MultiPolicy } from '@entity/multi-policy';
 
 /**
  * Result of publishing
@@ -155,10 +158,11 @@ export class PolicyEngine {
         if (!model.topicId) {
             notifier.start('Create topic');
             logger.info('Create Policy: Create New Topic', ['GUARDIAN_SERVICE']);
-            const parent = await DatabaseServer.getTopicByType(owner, TopicType.UserTopic);
+            const parent = await TopicConfig.fromObject(
+                await DatabaseServer.getTopicByType(owner, TopicType.UserTopic), true
+            );
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
-
-            let topic = await topicHelper.create({
+            const topic = await topicHelper.create({
                 type: TopicType.PolicyTopic,
                 name: model.name || TopicType.PolicyTopic,
                 description: model.topicDescription || TopicType.PolicyTopic,
@@ -166,7 +170,8 @@ export class PolicyEngine {
                 policyId: null,
                 policyUUID: null
             });
-            topic = await DatabaseServer.saveTopic(topic);
+            await topic.saveKeys();
+
             model.topicId = topic.topicId;
 
             notifier.completedAndStart('Create policy in Hedera');
@@ -197,7 +202,7 @@ export class PolicyEngine {
                 notifier.info(`Schema ${num} (${name || '-'}) published`);
             }
 
-            newTopic = topic;
+            newTopic = await DatabaseServer.saveTopic(topic.toObject());
             notifier.completed();
         }
 
@@ -333,7 +338,7 @@ export class PolicyEngine {
         }
 
         notifier.completedAndStart('Publishing delete policy message');
-        const topic = await DatabaseServer.getTopicById(policyToDelete.topicId);
+        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policyToDelete.topicId), true);
         const users = new Users();
         const root = await users.getHederaAccount(policyToDelete.owner);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey);
@@ -417,7 +422,7 @@ export class PolicyEngine {
         const root = await this.users.getHederaAccount(owner);
         notifier.completedAndStart('Find topic');
 
-        const topic = await DatabaseServer.getTopicById(model.topicId);
+        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
             .setTopicObject(topic);
 
@@ -447,9 +452,9 @@ export class PolicyEngine {
                 .sendMessage(tokenMessage);
         }
 
-        notifier.completedAndStart('Create topic');
+        notifier.completedAndStart('Create instance topic');
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
-        let rootTopic = await topicHelper.create({
+        const rootTopic = await topicHelper.create({
             type: TopicType.InstancePolicyTopic,
             name: model.name || TopicType.InstancePolicyTopic,
             description: model.topicDescription || TopicType.InstancePolicyTopic,
@@ -457,8 +462,22 @@ export class PolicyEngine {
             policyId: model.id.toString(),
             policyUUID: model.uuid
         });
-        rootTopic = await DatabaseServer.saveTopic(rootTopic);
+        await rootTopic.saveKeys();
+        await DatabaseServer.saveTopic(rootTopic.toObject());
         model.instanceTopicId = rootTopic.topicId;
+
+        notifier.completedAndStart('Create synchronization topic');
+        const synchronizationTopic = await topicHelper.create({
+            type: TopicType.SynchronizationTopic,
+            name: model.name || TopicType.SynchronizationTopic,
+            description: model.topicDescription || TopicType.InstancePolicyTopic,
+            owner,
+            policyId: model.id.toString(),
+            policyUUID: model.uuid
+        }, { admin: true, submit: false });
+        await synchronizationTopic.saveKeys();
+        await DatabaseServer.saveTopic(synchronizationTopic.toObject());
+        model.synchronizationTopicId = synchronizationTopic.topicId;
 
         notifier.completedAndStart('Publish policy');
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
@@ -520,8 +539,7 @@ export class PolicyEngine {
         logger.info('Dry-run Policy', ['GUARDIAN_SERVICE']);
 
         const root = await this.users.getHederaAccount(owner);
-        const topic = await DatabaseServer.getTopicById(model.topicId);
-
+        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true);
         const dryRunId = model.id.toString();
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, dryRunId)
             .setTopicObject(topic);
@@ -550,7 +568,8 @@ export class PolicyEngine {
             policyId: model.id.toString(),
             policyUUID: model.uuid
         });
-        databaseServer.saveTopic(rootTopic)
+        await rootTopic.saveKeys();
+        await databaseServer.saveTopic(rootTopic.toObject());
         model.instanceTopicId = rootTopic.topicId;
 
         const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
@@ -791,5 +810,40 @@ export class PolicyEngine {
      */
     public getRoot(policyId: string): IPolicyInterfaceBlock {
         return this.policyGenerator.getRoot(policyId);;
+    }
+
+    /**
+     * Create Multi Policy
+     * @param policyInstance
+     * @param userAccount
+     * @param data
+     */
+    public async createMultiPolicy(
+        policyInstance: IPolicyInstance,
+        userAccount: IRootConfig,
+        root: IRootConfig,
+        data: any,
+    ): Promise<MultiPolicy> {
+
+        const multipleConfig = DatabaseServer.createMultiPolicy({
+            uuid: GenerateUUIDv4(),
+            instanceTopicId: policyInstance.instanceTopicId,
+            mainPolicyTopicId: data.mainPolicyTopicId,
+            synchronizationTopicId: data.synchronizationTopicId,
+            owner: userAccount.did,
+            user: userAccount.hederaAccountId,
+            policyOwner: root.hederaAccountId,
+            type: data.mainPolicyTopicId === policyInstance.instanceTopicId ? 'Main' : 'Sub',
+        });
+
+        const message = new SynchronizationMessage(MessageAction.CreateMultiPolicy);
+        message.setDocument(multipleConfig);
+        const messageServer = new MessageServer(userAccount.hederaAccountId, userAccount.hederaAccountKey);
+        const topic = new TopicConfig({ topicId: multipleConfig.synchronizationTopicId }, null, null);
+        await messageServer
+            .setTopicObject(topic)
+            .sendMessage(message);
+
+        return await DatabaseServer.saveMultiPolicy(multipleConfig);
     }
 }

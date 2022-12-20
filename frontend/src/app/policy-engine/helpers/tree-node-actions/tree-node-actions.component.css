@@ -1,0 +1,68 @@
+.block-actions {
+    display: flex;
+    align-items: center;
+}
+
+.action-button {
+    background-color: white;
+    font-size: 10px;
+    border-radius: 5px;
+    width: 31px;
+    height: 31px;
+    line-height: 0px;
+    box-shadow: 0px 0px 7px -1px #3f51b5a6, 0px 0px 5px 5px #eeeeee;
+    margin: 2px;
+    color: #3f51b5;
+    z-index: 2;
+}
+
+.delete-action {
+    color: red;
+}
+
+.actions-container {
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0px 0px 7px -1px #3f51b5a6;
+}
+
+.actions-container > .action-button {
+    box-shadow: unset;
+    border: 1px solid rgb(220 220 220);
+}
+
+.move-actions-container {
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    grid-template-columns: 1fr 1fr 1fr;
+    margin-right: 10px;
+    grid-gap: 3px;
+}
+
+.move-more-action-button {
+    box-shadow: 0px 0px 7px -1px #3f51b5a6, 0px 0px 20px 20px #eeeeee !important;
+    z-index: 1 !important;
+    grid-row: 2;
+    grid-column: 2;
+}
+
+.move-action-up {
+    grid-row: 1;
+    grid-column: 1/4;
+}
+
+.move-action-left {
+    grid-row: 2;
+    grid-column: 1;
+}
+
+.move-action-right {
+    grid-row: 2;
+    grid-column: 3;
+}
+
+.move-action-down {
+    grid-row: 3;
+    grid-column: 1/4;
+}

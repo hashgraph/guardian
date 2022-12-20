@@ -7,6 +7,7 @@ import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Filters addon
@@ -121,6 +122,7 @@ export class FiltersAddonBlock {
             this.state[user.id] = blockState;
         }
         ref.setFilters(filter, user);
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, data));
     }
 
     /**

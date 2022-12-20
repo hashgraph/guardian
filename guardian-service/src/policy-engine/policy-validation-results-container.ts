@@ -47,7 +47,17 @@ export interface ISerializedErrors {
     /**
      * Blocks
      */
-    blocks: IInstanceErrors[]
+    blocks?: IInstanceErrors[];
+
+    /**
+     * Common errors
+     */
+    errors?: string[];
+
+    /**
+     * Is bad policy
+     */
+    isBadPolicy?: boolean;
 }
 
 /**
@@ -70,9 +80,15 @@ export class PolicyValidationResultsContainer {
      * @private
      */
     private readonly blocks: Map<string, IValidatedInstance<IPolicyBlock>>;
+    /**
+     * Common errors
+     * @private
+     */
+    private readonly errors: string[];
 
     constructor() {
         this.blocks = new Map();
+        this.errors = [];
         this.tags = [];
         this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
     }
@@ -100,6 +116,14 @@ export class PolicyValidationResultsContainer {
         const block = this.blocks.get(uuid);
         block.isValid = false;
         block.errors.push(error);
+    }
+
+    /**
+     * Add error
+     * @param error
+     */
+    public addError(error: string): void {
+        this.errors.push(error);
     }
 
     /**
@@ -173,15 +197,26 @@ export class PolicyValidationResultsContainer {
      * Get serialized errors
      */
     public getSerializedErrors(): ISerializedErrors {
+        const blocks = [];
+        for (const item of this.blocks.values()) {
+            blocks.push({
+                id: item.block.uuid,
+                name: item.block.blockType,
+                errors: item.errors,
+                isValid: !item.errors.length
+            });
+        }
+        for (const item of this.errors) {
+            blocks.push({
+                id: null,
+                name: null,
+                errors: [item],
+                isValid: false
+            });
+        }
         return {
-            blocks: [...this.blocks.values()].map(item => {
-                return {
-                    id: item.block.uuid,
-                    name: item.block.blockType,
-                    errors: item.errors,
-                    isValid: !item.errors.length
-                }
-            })
+            errors: this.errors,
+            blocks,
         }
     }
 }

@@ -25,4 +25,7 @@ Promise.all([
     w.init();
 
     logger.info('Worker started', [process.env.SERVICE_CHANNEL.toUpperCase()]);
+}, (reason) => {
+    console.log(reason);
+    process.exit(0);
 })

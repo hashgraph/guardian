@@ -185,7 +185,8 @@
                     </tr>
                     <div *ngFor="let property of customProperties" common-property class="custom-properties"
                         [data]="block.properties" [property]="property" [readonly]="readonly"
-                        [collapse]="propHidden.customProperties" [schemas]="schemas" (update)="onSave()">
+                        [collapse]="propHidden.customProperties" [schemas]="schemas" [policy]="policy"
+                        (update)="onSave()">
                     </div>
                 </ng-container>
             </table>

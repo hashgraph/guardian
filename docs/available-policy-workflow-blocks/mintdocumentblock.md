@@ -22,8 +22,8 @@ This block is responsible for adding configurations on calculating the amount of
 | Account Id (Field) | The value from this field is used as the ID of the account which is used for token transfer action when ‘Account Type’ is set to ‘Custom’.                          | field5                                                                            |
 | Account Id (Value) | Allow users to set custom Hedera account id directly in policy configuration (for token transferring). This field is displayed only when Custom Account Value type. | 0.0.48640912                                                                      |
 | Memo               | The value in this filed is used to customize the Memo field name.                                                                                                   | "mint date is $ {document.verifiableCredential\[0],credentialSubject\[0].field5}" |
-
-
+| Use Template       | This needs to be enabled if we need to use token template, which is created already.                                                                                | Enabled/Disabled                                                                  |
+| Token Template     | Which will take created tokenId from input document by template name                                                                                                | token\_template_\__0                                                              |
 
 <figure><img src="../.gitbook/assets/image (31) (2).png" alt=""><figcaption></figcaption></figure>
 

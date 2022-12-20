@@ -43,6 +43,11 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { ipfsAPI } from '@api/ipfs.service';
 import { Workers } from '@helpers/workers';
 import { artifactAPI } from '@api/artifact.service';
+import { Policy } from '@entity/policy';
+import { sendKeysToVault } from '@helpers/send-keys-to-vault';
+import { SynchronizationService } from '@policy-engine/multi-policy-service';
+
+export const obj = {};
 
 Promise.all([
     Migration({
@@ -57,7 +62,7 @@ Promise.all([
         driverOptions: {
             useUnifiedTopology: true
         },
-        ensureIndexes: true
+        ensureIndexes: true,
     }),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE')
 ]).then(async values => {
@@ -80,13 +85,13 @@ Promise.all([
         AccountId.fromString(OPERATOR_ID);
     } catch (error) {
         await new Logger().error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
-        throw new Error('OPERATOR_ID field in settings: ' + error.message);
+        process.exit(0);
     }
     try {
         PrivateKey.fromString(OPERATOR_KEY);
     } catch (error) {
         await new Logger().error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        throw new Error('OPERATOR_KEY field in .env file: ' + error.message);
+        process.exit(0);
     }
     try {
         if (process.env.INITIALIZATION_TOPIC_ID) {
@@ -94,7 +99,7 @@ Promise.all([
         }
     } catch (error) {
         await new Logger().error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        throw new Error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message);
+        process.exit(0);
     }
     try {
         if (process.env.INITIALIZATION_TOPIC_KEY) {
@@ -102,7 +107,7 @@ Promise.all([
         }
     } catch (error) {
         await new Logger().error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        throw new Error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message);
+        process.exit(0);
     }
 
     /////////////
@@ -124,7 +129,7 @@ Promise.all([
     workersHelper.initListeners();
 
     if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
-        process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addTask({
+        process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
             type: WorkerTaskType.NEW_TOPIC,
             data: {
                 hederaAccountId: OPERATOR_ID,
@@ -135,10 +140,16 @@ Promise.all([
         }, 1);
     }
 
-    const policyGenerator = new BlockTreeGenerator();
-    const policyService = new PolicyEngineService(channel, apiGatewayChannel);
-    await policyGenerator.init();
-    policyService.registerListeners();
+    try {
+        const policyGenerator = new BlockTreeGenerator();
+        const policyService = new PolicyEngineService(channel, apiGatewayChannel);
+        policyService.registerListeners();
+        await policyGenerator.init();
+        SynchronizationService.start();
+    } catch (error) {
+        console.error(error.message);
+        process.exit(0);
+    }
 
     const didDocumentRepository = new DataBaseHelper(DidDocument);
     const vcDocumentRepository = new DataBaseHelper(VcDocument);
@@ -147,23 +158,51 @@ Promise.all([
     const schemaRepository = new DataBaseHelper(Schema);
     const settingsRepository = new DataBaseHelper(Settings);
     const topicRepository = new DataBaseHelper(Topic);
+    const policyRepository = new DataBaseHelper(Policy);
 
     state.updateState(ApplicationStates.INITIALIZING);
 
-    await configAPI(channel, settingsRepository, topicRepository);
-    await schemaAPI(channel, apiGatewayChannel);
-    await tokenAPI(channel, apiGatewayChannel, tokenRepository);
-    await loaderAPI(channel, didDocumentRepository, schemaRepository);
-    await profileAPI(channel, apiGatewayChannel);
-    await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
-    await demoAPI(channel, apiGatewayChannel, settingsRepository);
-    await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
-    await artifactAPI(channel);
-    await setDefaultSchema();
+    try {
+        await configAPI(channel, settingsRepository, topicRepository);
+        await schemaAPI(channel, apiGatewayChannel);
+        await tokenAPI(channel, apiGatewayChannel, tokenRepository);
+        await loaderAPI(channel, didDocumentRepository, schemaRepository);
+        await profileAPI(channel, apiGatewayChannel);
+        await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository, policyRepository);
+        await demoAPI(channel, apiGatewayChannel, settingsRepository);
+        await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
+        await artifactAPI(channel);
+    } catch (error) {
+        console.error(error.message);
+        process.exit(0);
+    }
 
-    await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'));
+    try {
+        await setDefaultSchema();
+    } catch (error) {
+        console.error(error.message);
+        process.exit(0);
+    }
+
+    try {
+        await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'), channel);
+    } catch (error) {
+        console.error(error.message);
+        // process.exit(0);
+    }
 
     await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
 
     await state.updateState(ApplicationStates.READY);
+
+    try {
+        if (process.env.SEND_KEYS_TO_VAULT?.toLowerCase() === 'true') {
+            await sendKeysToVault(db.em);
+        }
+    } catch (error) {
+        console.error(error.message);
+    }
+}, (reason) => {
+    console.log(reason);
+    process.exit(0);
 });

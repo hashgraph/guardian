@@ -1,4 +1,4 @@
-# Installation
+# 🛠 Installation
 
 1.  Clone the repo
 
@@ -27,33 +27,39 @@ in `guardian-service/.env.docker`:
 **Note:** You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 {% endhint %}
 
-3\. Update the following files with your Web3.Storage API KEY. Please follow the steps from [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart) to obtain it. To know complete information on generating API Key please check : [how-to-generate-web3.storage-api-key.md](how-to-generate-web3.storage-api-key.md "mention")
+3\. Now, we have two options to setup IPFS node : 1. Local node 2. IPFS Web3Storage node.
 
-For example:
+#### 3.1 Setting up IPFS Local node:
 
-in `ipfs-client/.env`:
+3.1.1 We need to install and configure any IPFS node.
 
-```
-IPFS_STORAGE_API_KEY=""
-```
+For example: [https://github.com/yeasy/docker-ipfs](https://github.com/yeasy/docker-ipfs)
 
-or in `ipfs-client/.env.docker`:
+3.1.2 For setup IPFS local node you need to set variables in `worker-service/.env` folder
 
 ```
-IPFS_STORAGE_API_KEY=""
+IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5002"
+IPFS_PUBLIC_GATEWAY="..." # Default IPFS_PUBLIC_GATEWAY="https://localhost:8080/ipfs/${cid}"
+IPFS_PROVIDER="local"
 ```
 
-in `worker-service/ .env`:
+{% hint style="info" %}
+Note:
+
+1. Default IPFS\_NODE\_ADDRESS="[http://localhost:5002](http://localhost:5002/)"
+2. Default IPFS\_PUBLIC\_GATEWAY="[https://localhost:8080/ipfs/${cid}](https://localhost:8080/ipfs/$%7Bcid%7D)"
+{% endhint %}
+
+#### 3.2 Setting up IPFS Web3Storage node:
+
+3.2.1 For setup IPFS web3storage node you need to set variables in `worker-service/.env`:
 
 ```
-IPFS_STORAGE_API_KEY=""
+IPFS_STORAGE_API_KEY="..."
+IPFS_PROVIDER="web3storage"
 ```
 
-or in `worker-service/ .env.docker`:
-
-```
-IPFS_STORAGE_API_KEY=""
-```
+To generate Web3.Storage API KEY. Please follow the steps from [https://web3.storage/docs/#quickstart](https://web3.storage/docs/#quickstart) to obtain it. To know complete information on generating API Key please check : [how-to-generate-web3.storage-api-key.md](how-to-generate-web3.storage-api-key.md "mention")
 
 4\. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
 
@@ -243,7 +249,8 @@ Note:
 
 1. Configure .env/.env.docker files in **auth-service** folder
 
-<pre><code><strong>VAULT_PROVIDER = "hashicorp"</strong></code></pre>
+<pre><code><strong>VAULT_PROVIDER = "hashicorp"
+</strong></code></pre>
 
 {% hint style="info" %}
 **Note**: VAULT\_PROVIDER can be set to "database" or "hashicorp" to select Database instance or a hashicorp vault instance correspondingly.
@@ -342,11 +349,18 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 **Note**: Restore Data can be restored from Hedera if data is available for setting up the Registry.
 
-<figure><img src="../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (6).png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="info" %}
+**Limitations on restoring the data:**\
+1\. The state of policy workflows is not persisted onto any decentralised storage used by Guardian (such as IPFS and/or Hedera blockchain), and therefore not available for restoring. This means that while all artifacts produced by projects and their respective Policy workflows will be discovered and made accessible through the restored Guardian, the policy execution state will not be restored.
+
+2\. Similarly, dynamic filled ‘options’ from VCs is not available at restoration time. This results in the limitation that some document grids will not be restored.
+{% endhint %}
 
 If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
-![](<../../.gitbook/assets/image (14).png>)
+![](<../../.gitbook/assets/image (23) (1).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
@@ -407,6 +421,40 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | INITIALIZATION\__TOPIC\_ID_            | The ID of the initialisation topic.                                                | 0.0.46022543                |
 | MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                       |
 | LOG\_LEVEL                             | level of the Logs                                                                  | 2                           |
+
+### Restoring account from Database/Hashicorp vault during Setup.
+
+For backup all data, we need to create dump of all used mongodb databases and hashicorp vault (if it use)
+
+#### Mongo DB:
+
+Mongo DB databases set in .env (.env.docker) files or via environment variables named DB\_DATABASE Default names:
+
+* auth-service - auth\_db
+* guardian-service - guardian\_db
+* logger-service (not nesessary) - logger\_db
+
+Example using mongo utils:
+
+Creating dump:
+
+```
+mongodump --db auth_db --out ./dump
+mongodump --db guardian_db --out ./dump
+mongodump --db logger_db --out ./dump
+```
+
+Restoring dump:
+
+```
+mongorestore --db auth_db ./dump/auth_db
+mongorestore --db guardian_db ./dump/guardian_db
+mongorestore --db logger_db ./dump/logger_db
+```
+
+#### Hashicorp Vault:
+
+For Hashicorp vault backup and restore use this instructions: [https://developer.hashicorp.com/vault/tutorials/standard-procedures/sop-backup](https://developer.hashicorp.com/vault/tutorials/standard-procedures/sop-backup)
 
 ### Summary of URLs and Ports
 

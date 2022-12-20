@@ -47,9 +47,17 @@ export class BlockTreeGenerator {
      * @param policy
      * @param skipRegistration
      */
-    public async generate(policy: Policy | string, skipRegistration?: boolean): Promise<IPolicyBlock>;
+    public async generate(
+        policy: Policy | string,
+        skipRegistration?: boolean,
+        resultsContainer?: PolicyValidationResultsContainer
+    ): Promise<IPolicyBlock>;
 
-    public async generate(arg: any, skipRegistration?: boolean): Promise<IPolicyBlock> {
+    public async generate(
+        arg: any,
+        skipRegistration?: boolean,
+        resultsContainer?: PolicyValidationResultsContainer
+    ): Promise<IPolicyBlock> {
         let policy: Policy;
         let policyId: string;
         if (typeof arg === 'string') {
@@ -58,6 +66,10 @@ export class BlockTreeGenerator {
         } else {
             policy = arg;
             policyId = PolicyComponentsUtils.GenerateNewUUID();
+        }
+
+        if (!policy || (typeof policy !== 'object')) {
+            throw new Error('Policy was not exist');
         }
 
         new Logger().info('Start policy', ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
@@ -74,6 +86,9 @@ export class BlockTreeGenerator {
             return model as IPolicyInterfaceBlock;
         } catch (error) {
             new Logger().error(`Error build policy ${error}`, ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
+            if (resultsContainer) {
+                resultsContainer.addError(typeof error === 'string' ? error : error.message)
+            }
             return null;
         }
     }
@@ -98,10 +113,18 @@ export class BlockTreeGenerator {
             policyConfig = policy.config;
         }
 
-        const policyInstance = await this.generate(arg, true);
+        if (!policy || (typeof policy !== 'object')) {
+            return {
+                isBadPolicy: true
+            };
+        }
+
+        const policyInstance = await this.generate(arg, true, resultsContainer);
         this.tagFinder(policyConfig, resultsContainer);
         resultsContainer.addPermissions(policy.policyRoles);
-        await policyInstance.validate(resultsContainer);
+        if (policyInstance) {
+            await policyInstance.validate(resultsContainer);
+        }
         return resultsContainer.getSerializedErrors();
     }
 

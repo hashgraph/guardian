@@ -1,0 +1,19 @@
+FROM node:16 as frontendBuilder
+WORKDIR /usr/interfaces
+COPY ./interfaces/package*.json ./
+COPY ./interfaces/tsconfig.json ./
+ADD ./interfaces/src ./src/.
+RUN npm install
+RUN npm pack
+WORKDIR /usr/local/frontend
+COPY ./frontend/. /usr/local/frontend
+RUN npm install /usr/interfaces/guardian-interfaces-*.tgz
+RUN npm install
+RUN npm run build:demo
+
+FROM nginx:latest
+ENV PLATFORM="docker"
+COPY ./web-proxy/configs/demo.conf /etc/nginx/templates/default.conf.template
+COPY --from=frontendBuilder /usr/local/frontend/dist/guardian /usr/share/nginx/html
+
+EXPOSE 80

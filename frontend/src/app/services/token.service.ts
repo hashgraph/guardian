@@ -24,6 +24,14 @@ export class TokenService {
         return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/`, data);
     }
 
+    public pushUpdate(data: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/`, data);
+    }
+
+    public pushDelete(tokenId: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.delete<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}`);
+    }
+
     public getTokens(policyId?: string): Observable<ITokenInfo[]> {
         if (policyId) {
             return this.http.get<ITokenInfo[]>(`${this.url}?policy=${policyId}`);
@@ -70,6 +78,14 @@ export class TokenService {
             return this.http.put<void>(`${this.url}/${tokenId}/${username}/unfreeze`, null);
         }
     }
+
+    public pushFreeze(tokenId: string, username: string, freeze: boolean): Observable<{ taskId: string, expectation: number }> {
+        if (freeze) {
+            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/freeze`, null);
+        } else {
+            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/unfreeze`, null);
+        }
+    };
 
     public info(tokenId: string, username: string): Observable<ITokenInfo> {
         return this.http.get<ITokenInfo>(`${this.url}/${tokenId}/${username}/info`);

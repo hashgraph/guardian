@@ -43,4 +43,9 @@ export class TokenConfirmationConfigComponent implements OnInit {
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
+
+    onUseTemplateChange() {
+        delete this.block.tokenId;
+        delete this.block.template;
+    }
 }

@@ -1,5 +1,4 @@
 import { Schema as SchemaCollection } from '@entity/schema';
-import { Topic } from '@entity/topic';
 import {
     ISchema,
     MessageAPI,
@@ -15,13 +14,14 @@ import {
 import path from 'path';
 import { readJSON } from 'fs-extra';
 import { schemasToContext } from '@transmute/jsonld-schema';
-import { MessageAction, MessageServer, MessageType, SchemaMessage, TopicHelper, UrlType } from '@hedera-modules';
+import { MessageAction, MessageServer, MessageType, SchemaMessage, TopicConfig, TopicHelper, UrlType } from '@hedera-modules';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
+import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
 
 export const schemaCache = {};
 
@@ -121,7 +121,8 @@ async function loadSchema(messageId: string, owner: string) {
             messageId,
             documentURL: message.getDocumentUrl(UrlType.url),
             contextURL: message.getContextUrl(UrlType.url),
-            iri: null
+            iri: null,
+            codeVersion: message.codeVersion
         }
         SchemaHelper.updateIRI(schemaToImport);
         log.info(`loadSchema end: ${messageId}`, ['GUARDIAN_SERVICE']);
@@ -229,9 +230,9 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
     }
     const schemaObject = DatabaseServer.createSchema(newSchema);
     notifier.completedAndStart('Resolve Topic');
-    let topic: Topic;
+    let topic: TopicConfig;
     if (newSchema.topicId) {
-        topic = await DatabaseServer.getTopicById(newSchema.topicId);
+        topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(newSchema.topicId), true);
     }
 
     if (!topic) {
@@ -244,8 +245,8 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
             policyId: null,
             policyUUID: null
         });
-        topic = await DatabaseServer.saveTopic(topic);
-
+        await topic.saveKeys();
+        await DatabaseServer.saveTopic(topic.toObject());
         await topicHelper.twoWayLink(topic, null, null);
     }
 
@@ -253,7 +254,7 @@ async function createSchema(newSchema: ISchema, owner: string, notifier: INotifi
     schemaObject.status = SchemaStatus.DRAFT;
     schemaObject.topicId = topic.topicId;
     schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
-
+    schemaObject.codeVersion = SchemaConverterUtils.VERSION;
     const errorsCount = await DatabaseServer.getSchemasCount({
         where: {
             iri: {
@@ -351,9 +352,10 @@ export async function importSchemaByFiles(
     }
 
     let num: number = 0;
-    for (const file of files) {
+    for (let file of files) {
         const parsedSchema = updatedSchemasMap[file.iri];
         file.document = parsedSchema.document;
+        file = SchemaConverterUtils.SchemaConverter(file);
         await createSchema(file, owner, emptyNotifier());
         num++;
         notifier.info(`Schema ${num} (${file.name || '-'}) created`);
@@ -599,7 +601,7 @@ export async function findAndPublishSchema(
     item = await DatabaseServer.getSchema(id);
 
     notifier.completedAndStart('Resolve topic');
-    const topic = await DatabaseServer.getTopicById(item.topicId);
+    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
         .setTopicObject(topic);
     notifier.completedAndStart('Publish schema');
@@ -756,7 +758,7 @@ export async function deleteSchema(schemaId: any, notifier: INotifier) {
 
     notifier.info(`Delete schema ${item.name}`);
     if (item.topicId) {
-        const topic = await DatabaseServer.getTopicById(item.topicId);
+        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
         if (topic) {
             const users = new Users();
             const root = await users.getHederaAccount(item.owner);

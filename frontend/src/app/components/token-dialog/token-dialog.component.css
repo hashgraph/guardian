@@ -1,18 +1,19 @@
 .mat-button-base:not([started]) {
     background-color: rgba(0,0,0,.12);
 }
-form {
-    display: flex;
-    flex-direction: column;
-    width: 452px;
-    height: 470px;
+
+.mat-dialog-content {
     overflow: visible;
 }
 
-form[ft='false'] {
-    height: 510px
+.mat-dialog-actions {
+    padding: 15px 0;
 }
 
-form[ft='true'] {
-    height: 510px;
+.description {
+    margin-bottom: 20px;
+}
+
+.g-dialog-actions-btn {
+    min-width: 210px !important;
 }

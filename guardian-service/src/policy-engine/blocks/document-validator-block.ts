@@ -7,6 +7,7 @@ import { IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '@poli
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Document Validator
@@ -44,12 +45,12 @@ export class DocumentValidatorBlock {
         ref: IPolicyValidatorBlock,
         event: IPolicyEvent<IPolicyEventState>,
         document: IPolicyDocument
-    ): Promise<boolean> {
-        const documentRef = PolicyUtils.getDocumentRef(document);
-
+    ): Promise<string> {
         if (!document) {
-            return false;
+            return `Invalid document`;
         }
+
+        const documentRef = PolicyUtils.getDocumentRef(document);
 
         if (ref.options.documentType === 'related-vc-document') {
             if (documentRef) {
@@ -78,26 +79,26 @@ export class DocumentValidatorBlock {
         }
 
         if (!document) {
-            return false;
+            return `Document does not exist`;
         }
 
         const documentType = PolicyUtils.getDocumentType(document);
 
         if (ref.options.documentType === 'vc-document') {
             if (documentType !== 'VerifiableCredential') {
-                return false;
+                return `Invalid document type`;
             }
         } else if (ref.options.documentType === 'vp-document') {
             if (documentType !== 'VerifiablePresentation') {
-                return false;
+                return `Invalid document type`;
             }
         } else if (ref.options.documentType === 'related-vc-document') {
             if (documentType !== 'VerifiableCredential') {
-                return false;
+                return `Invalid document type`;
             }
         } else if (ref.options.documentType === 'related-vp-document') {
             if (documentType !== 'VerifiablePresentation') {
-                return false;
+                return `Invalid document type`;
             }
         }
 
@@ -106,63 +107,64 @@ export class DocumentValidatorBlock {
 
         if (ref.options.checkOwnerDocument) {
             if (document.owner !== userDID) {
-                return false;
+                return `Invalid owner`;
             }
         }
         if (ref.options.checkOwnerByGroupDocument) {
             if (document.group !== userGroup) {
-                return false;
+                return `Invalid group`;
             }
         }
         if (ref.options.checkAssignDocument) {
             if (document.assignedTo !== userDID) {
-                return false;
+                return `Invalid assigned user`;
             }
         }
         if (ref.options.checkAssignByGroupDocument) {
             if (document.assignedToGroup !== userGroup) {
-                return false;
+                return `Invalid assigned group`;
             }
         }
 
         if (ref.options.schema) {
             const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
-            if (!PolicyUtils.checkDocumentSchema(document, schema)) {
-                return false;
+            if (!PolicyUtils.checkDocumentSchema(ref, document, schema)) {
+                return `Invalid document schema`;
             }
         }
 
         if (ref.options.conditions) {
             for (const filter of ref.options.conditions) {
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
-                    return false;
+                    return `Invalid document`;
                 }
             }
         }
 
-        return true;
+        return null;
     }
 
     /**
      * Run block logic
      * @param event
      */
-    public async run(event: IPolicyEvent<IPolicyEventState>): Promise<boolean> {
+    public async run(event: IPolicyEvent<IPolicyEventState>): Promise<string> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
 
         const document = event?.data?.data;
 
         if (!document) {
-            return false;
+            return `Invalid document`;
         }
 
         if (Array.isArray(document)) {
             for (const doc of document) {
-                if (!(await this.validateDocument(ref, event, doc))) {
-                    return false;
+                const error = await this.validateDocument(ref, event, doc);
+                if (error) {
+                    return error;
                 }
             }
-            return true;
+            return null;
         } else {
             return await this.validateDocument(ref, event, document);
         }
@@ -185,13 +187,17 @@ export class DocumentValidatorBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
         ref.log(`runAction`);
 
-        const valid = await ref.run(event);
-        if (!valid) {
-            throw new BlockActionError(`Invalid document`, ref.blockType, ref.uuid);
+        const error = await ref.run(event);
+        if (error) {
+            throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+            documents: ExternalDocuments(event?.data?.data)
+        }));
     }
 
     /**

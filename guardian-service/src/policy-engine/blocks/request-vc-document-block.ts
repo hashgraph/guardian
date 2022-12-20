@@ -13,6 +13,8 @@ import { VcHelper } from '@helpers/vc-helper';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import deepEqual from 'deep-equal';
 
 /**
  * Request VC document block
@@ -71,10 +73,10 @@ export class RequestVcDocumentBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IPolicyUser, state: any): Promise<boolean> {
+    protected async validateDocuments(user: IPolicyUser, state: any): Promise<string> {
         const validators = this.getValidators();
         for (const validator of validators) {
-            const valid = await validator.run({
+            const error = await validator.run({
                 type: null,
                 inputType: null,
                 outputType: null,
@@ -86,11 +88,11 @@ export class RequestVcDocumentBlock {
                 user,
                 data: state
             });
-            if (!valid) {
-                return false;
+            if (error) {
+                return error;
             }
         }
-        return true;
+        return null;
     }
 
     /**
@@ -198,7 +200,7 @@ export class RequestVcDocumentBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     async setData(user: IPolicyUser, _data: IPolicyDocument): Promise<any> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         ref.log(`setData`);
 
         if (this.state.hasOwnProperty(user.id)) {
@@ -221,6 +223,7 @@ export class RequestVcDocumentBlock {
 
             const document = _data.document;
             const documentRef = await this.getRelationships(ref, _data.ref);
+            await this.checkPreset(ref, document, documentRef);
 
             const credentialSubject = document;
             const schemaIRI = ref.options.schema;
@@ -270,14 +273,19 @@ export class RequestVcDocumentBlock {
 
             const state = { data: item };
 
-            const valid = await this.validateDocuments(user, state);
-            if (!valid) {
-                throw new BlockActionError('Invalid document', ref.blockType, ref.uuid);
+            const error = await this.validateDocuments(user, state);
+            if (error) {
+                throw new BlockActionError(error, ref.blockType, ref.uuid);
             }
 
             await this.changeActive(user, true);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
+            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
+
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
+                documents: ExternalDocuments(item)
+            }));
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             await this.changeActive(user, true);
@@ -356,6 +364,29 @@ export class RequestVcDocumentBlock {
         } catch (error) {
             ref.error(`generateId: ${idType} : ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
+        }
+    }
+
+    /**
+     * Check modified readonly fields
+     * @param ref
+     * @param document Current document
+     * @param documentRef Preset document
+     */
+    private async checkPreset(ref: AnyBlockType, document: any, documentRef: VcDocumentCollection) {
+        if (ref.options.presetFields && ref.options.presetFields.length && ref.options.presetSchema) {
+            const readonly = ref.options.presetFields.filter((item: any) => item.readonly && item.value);
+            if (readonly.length && document && documentRef) {
+                const presetDocument = PolicyUtils.getCredentialSubject(documentRef);
+                if (!presetDocument) {
+                    throw new BlockActionError(`Readonly preset fields can not be verified.`, ref.blockType, ref.uuid);
+                }
+                for (const field of readonly) {
+                    if (!deepEqual(presetDocument[field.value], document[field.name])) {
+                        throw new BlockActionError(`Readonly preset field (${field.name}) can not be modified.`, ref.blockType, ref.uuid);
+                    }
+                }
+            }
         }
     }
 

@@ -14,7 +14,7 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { UnitSystem } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
-import { API_IPFS_GATEWAY_URL } from 'src/app/services/api';
+import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { EnumEditorDialog } from '../enum-editor-dialog/enum-editor-dialog.component';
 import { FieldControl } from "../field-control";
@@ -28,13 +28,14 @@ import { FieldControl } from "../field-control";
     styleUrls: ['./schema-field-configuration.component.css'],
 })
 export class SchemaFieldConfigurationComponent implements OnInit {
+    @Input('readonly') readonly!: boolean;
     @Input('form') form!: FormGroup;
     @Input('field') field!: FieldControl;
-
     @Input('types') types!: any[];
     @Input('measureTypes') measureTypes!: any[];
     @Input('schemaTypes') schemaTypes!: any[];
     @Input('extended') extended!: boolean;
+    @Input('value') value!: any;
 
     @Output('remove') remove = new EventEmitter<any>();
 
@@ -50,16 +51,17 @@ export class SchemaFieldConfigurationComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        const enumValues = this.field.controlEnum.value
-        if (enumValues && enumValues.length) {
-            for (let i=0;i<enumValues.length && i<5; i++) {
-                this.keywords.push(enumValues[i]);
+        if (this.field) {
+            const enumValues = this.field.controlEnum.value
+            if (enumValues && enumValues.length) {
+                for (let i = 0; i < enumValues.length && i < 5; i++) {
+                    this.keywords.push(enumValues[i]);
+                }
             }
-        }
-
-        const remoteLinkValue = this.field.controlRemoteLink.value;
-        if (remoteLinkValue) {
-            this.loadRemoteEnumData(remoteLinkValue);
+            const remoteLinkValue = this.field.controlRemoteLink.value;
+            if (remoteLinkValue) {
+                this.loadRemoteEnumData(remoteLinkValue);
+            }
         }
     }
 
@@ -81,26 +83,27 @@ export class SchemaFieldConfigurationComponent implements OnInit {
         }
     }
 
-    loadRemoteEnumData(link:string) {
+    loadRemoteEnumData(link: string) {
         this.loading = true;
-        fetch(link)
-            .then(r=> r.json())
+        this.ipfs
+            .getJsonFileByLink(link)
             .then((res: any) => {
                 if (!res) {
                     return;
                 }
                 this.updateControlEnum(res.enum);
             })
-            .catch((err) => this.errorHandler(err.message, 'Can not load remote enum data'))
-            .finally(() => this.loading = false);
+            .finally(() => (this.loading = false));
     }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.extended && Object.keys(changes).length === 1) {
             return;
-        } 
-        const type = this.field.controlType.value;
-        this.onTypeChange(type);
+        }
+        if(this.field) {
+            const type = this.field.controlType.value;
+            this.onTypeChange(type);
+        }
     }
 
     ngOnDestroy() {
@@ -161,10 +164,10 @@ export class SchemaFieldConfigurationComponent implements OnInit {
                     })
                 ])).subscribe(cid => {
                     this.loading = false;
-                    const link = API_IPFS_GATEWAY_URL + cid;
+                    const link = IPFS_SCHEMA + cid;
                     this.field.controlRemoteLink.patchValue(link);
                     this.loadRemoteEnumData(link);
-                }, (err) => { 
+                }, (err) => {
                     this.loading = false;
                     this.errorHandler(err.message, 'Enum data can not be loaded to IPFS');
                     this.updateControlEnum(uniqueTrimmedEnumValues);

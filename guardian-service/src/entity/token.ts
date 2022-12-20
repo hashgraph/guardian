@@ -36,13 +36,13 @@ export class Token extends BaseEntity implements IToken {
      * Token decimals
      */
     @Property({ nullable: true })
-    decimals: string;
+    decimals: any;
 
     /**
      * Initial supply
      */
     @Property({ nullable: true })
-    initialSupply?: string;
+    initialSupply?: any;
 
     /**
      * Admin id
@@ -51,38 +51,44 @@ export class Token extends BaseEntity implements IToken {
     adminId?: string;
 
     /**
-     * Admin key
+     * Change supply
      */
     @Property({ nullable: true })
-    adminKey?: string;
+    changeSupply?: boolean;
 
     /**
-     * KYC key
+     * Enable admin
      */
     @Property({ nullable: true })
-    kycKey?: string;
+    enableAdmin?: boolean;
 
     /**
-     * Freeze key
+     * Enable KYC
      */
     @Property({ nullable: true })
-    freezeKey?: string;
+    enableKYC?: boolean;
 
     /**
-     * Wipe key
+     * Enable freeze
      */
     @Property({ nullable: true })
-    wipeKey?: string;
+    enableFreeze?: boolean;
 
     /**
-     * Supply key
+     * Enable wipe
      */
     @Property({ nullable: true })
-    supplyKey?: string;
+    enableWipe?: boolean;
 
     /**
      * Owner
      */
     @Property({ nullable: true })
     owner?: string;
+
+    /**
+     * Owner
+     */
+    @Property({ nullable: true })
+    policyId?: string;
 }

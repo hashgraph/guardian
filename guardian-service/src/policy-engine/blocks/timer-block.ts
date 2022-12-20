@@ -8,6 +8,7 @@ import { PolicyInputEventType as PolicyInputEventType, PolicyOutputEventType } f
 import { IPolicyEvent } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Timer block
@@ -15,7 +16,6 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
 @BasicBlock({
     blockType: 'timerBlock',
     commonBlock: true,
-    publishExternalEvent: true,
     about: {
         label: 'Timer',
         title: `Add 'Timer' Block`,
@@ -169,6 +169,7 @@ export class TimerBlock {
                     if (_now.getTime() > this.endTime) {
                         ref.log(`stop scheduler: ${_now.getTime()}, ${this.endTime}`);
                         this.job.stop();
+                        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.StopCron, ref, null, null));
                         return;
                     }
                     this.tickCount++;
@@ -185,6 +186,7 @@ export class TimerBlock {
                     if (_now.getTime() > this.endTime) {
                         ref.log(`stop scheduler: ${_now.getTime()}, ${this.endTime}`);
                         this.job.stop();
+                        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.StopCron, ref, null, null));
                         return;
                     }
                     this.tickCron(ref).then();
@@ -195,6 +197,8 @@ export class TimerBlock {
             ref.log(`start scheduler fail ${PolicyUtils.getErrorMessage(error)}`);
             throw new Error(`start scheduler fail ${PolicyUtils.getErrorMessage(error)}`);
         }
+
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.StartCron, ref, null, null));
     }
 
     /**
@@ -217,6 +221,7 @@ export class TimerBlock {
         }
 
         ref.triggerEvents(PolicyOutputEventType.TimerEvent, null, map);
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickCron, ref, null, null));
     }
 
     /**
@@ -237,7 +242,9 @@ export class TimerBlock {
         await ref.saveState();
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, null));
     }
 
     /**

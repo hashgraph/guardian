@@ -23,7 +23,7 @@
     border: 1px solid #000;
     border-radius: 6px;
     padding: 4px 12px;
-    margin: 10px 8px 10px 2px;
+    margin: 0px 8px 0px 2px;
     cursor: pointer;
     position: relative;
     height: 22px;
@@ -237,3 +237,35 @@
     margin: 1px;
     color: #000000;
 }
+
+.block-node-actions {
+    display: flex;
+    min-height: 37px;
+    margin: 7px 0px;
+}
+
+
+.final-step-icon {
+    display: inline-block;
+    color: #ff0000;
+    height: 16px;
+    width: 22px;
+    font-size: 22px;
+    overflow: visible;
+    line-height: 16px;
+    position: relative;
+    top: 3px;
+}
+
+.final-step-icon mat-icon {
+    display: block;
+    width: 22px;
+    height: 16px;
+    line-height: 16px;
+    font-size: 21px;
+    position: absolute;
+    left: -6px;
+    top: 0px;
+}
+
+

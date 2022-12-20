@@ -1,4 +1,4 @@
-# How to establish Token Authenticity
+# ℹ Establishing Token Authenticity
 
 1. Get the serial number from the Token and check if the Token ID is compatible with Guardian
 2. Find the Transaction ID of the minted token.

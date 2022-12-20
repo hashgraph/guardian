@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
 import { SchemaService } from 'src/app/services/schema.service';
 import { Schema, SchemaHelper, SchemaStatus, Token } from '@guardian/interfaces';
@@ -107,7 +107,8 @@ export class PolicyConfigurationComponent implements OnInit {
         private router: Router,
         private dialog: MatDialog,
         private taskService: TasksService,
-        private informService: InformService
+        private informService: InformService,
+        private changeDetector: ChangeDetectorRef
     ) {
         this.newBlockType = 'interfaceContainerBlock';
         this.policyModel = new PolicyModel();
@@ -270,7 +271,8 @@ export class PolicyConfigurationComponent implements OnInit {
     public onSelect(block: any) {
         this.currentBlock = this.policyModel.getBlock(block);
         this.policyModel.checkChange();
-        this.updateTopMenu(this.currentBlock)
+        this.updateTopMenu(this.currentBlock);
+        this.changeDetector.detectChanges();
         return false;
     }
 
@@ -285,10 +287,6 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public onDelete(block: BlockNode) {
         this.policyModel.removeBlock(block);
-        this.onSelect(this.policyModel.root);
-        if (this.treeFlatOverview) {
-            this.treeFlatOverview.selectItem(this.currentBlock);
-        }
         return false;
     }
 
@@ -298,10 +296,6 @@ export class PolicyConfigurationComponent implements OnInit {
             this.policyModel.rebuild(root.getJSON());
         } else {
             this.policyModel.rebuild();
-        }
-        this.onSelect(this.policyModel.root);
-        if (this.treeFlatOverview) {
-            this.treeFlatOverview.selectItem(this.currentBlock);
         }
     }
 
@@ -510,6 +504,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     const element = invalidBlocks[i];
                     this.errorsMap[element.id] = element.errors;
                 }
+                this.errorMessage(errors.errors);
                 this.loading = false;
             }
         }, (e) => {
@@ -537,6 +532,7 @@ export class PolicyConfigurationComponent implements OnInit {
             policyRoles: json?.policyRoles,
             policyGroups: json?.policyGroups,
             policyTopics: json?.policyTopics,
+            policyTokens: json?.policyTokens,
             config: json?.config
         }
         this.policyEngineService.validate(object).subscribe((data: any) => {
@@ -553,7 +549,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 const element = errors[i];
                 this.errorsMap[element.id] = element.errors;
             }
-
+            this.errorMessage(results.errors);
             this.onSelect(this.policyModel.root);
             this.loading = false;
         }, (e) => {
@@ -649,6 +645,7 @@ export class PolicyConfigurationComponent implements OnInit {
                                 const element = invalidBlocks[i];
                                 this.errorsMap[element.id] = element.errors;
                             }
+                            this.errorMessage(errors.errors);
                             this.loading = false;
                         }
                         break;
@@ -791,6 +788,13 @@ export class PolicyConfigurationComponent implements OnInit {
                 console.warn("Block data is incorrect");
                 return;
             }
+        }
+    }
+
+    errorMessage(errors: string[]) {
+        if(errors && errors.length) {
+            const text = errors.map((text) => `<div>${text}</div>`).join('');
+            this.informService.errorShortMessage(text, 'The policy is invalid');
         }
     }
 }

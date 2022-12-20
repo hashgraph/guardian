@@ -85,8 +85,17 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {IVPDocument[]} - VP Documents
      */
-    public async getVpDocuments(params?: IFilter): Promise<IVPDocument[]> {
-        return await this.request<IVPDocument[]>(MessageAPI.GET_VP_DOCUMENTS, params);
+    public async getVpDocuments(params?: IFilter): Promise<{
+        /**
+         * Return VP Documents
+         */
+        vp: IVPDocument[],
+        /**
+         * Return count
+         */
+        count: number
+    }> {
+        return await this.request<any>(MessageAPI.GET_VP_DOCUMENTS, params);
     }
 
     /**
@@ -100,6 +109,17 @@ export class Guardians extends ServiceRequestsBase {
      */
     public async getTokens(params?: IFilter): Promise<IToken[]> {
         return await this.request<IToken[]>(MessageAPI.GET_TOKENS, params);
+    }
+
+    /**
+     * Return token
+     *
+     * @param {string} [tokenId] - token id
+     *
+     * @returns {IToken} - token
+     */
+    public async getTokenById(tokenId: string): Promise<IToken> {
+        return await this.request<IToken>(MessageAPI.GET_TOKEN, { tokenId });
     }
 
     /**
@@ -134,6 +154,24 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Async create new token
+     * @param token
+     * @param taskId
+     */
+    public async updateTokenAsync(token: IToken | any, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.UPDATE_TOKEN_ASYNC, { token, taskId });
+    }
+
+    /**
+     * Async create new token
+     * @param item
+     * @param taskId
+     */
+    public async deleteTokenAsync(tokenId: string, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.DELETE_TOKEN_ASYNC, { tokenId, taskId });
+    }
+
+    /**
      * Freeze token
      * @param tokenId
      * @param username
@@ -150,6 +188,23 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Async Unfreeze token
+     * @param tokenId
+     * @param username
+     * @param owner
+     * @param taskId
+     */
+    public async freezeTokenAsync(tokenId: string, username: string, owner: string, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.FREEZE_TOKEN_ASYNC, {
+            tokenId,
+            username,
+            owner,
+            freeze: true,
+            taskId,
+        });
+    }
+
+    /**
      * Unfreeze token
      * @param tokenId
      * @param username
@@ -161,6 +216,23 @@ export class Guardians extends ServiceRequestsBase {
             username,
             owner,
             freeze: false,
+        });
+    }
+
+    /**
+     * Async Unfreeze token
+     * @param tokenId
+     * @param username
+     * @param owner
+     * @param taskId
+     */
+    public async unfreezeTokenAsync(tokenId: string, username: string, owner: string, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.FREEZE_TOKEN_ASYNC, {
+            tokenId,
+            username,
+            owner,
+            freeze: false,
+            taskId,
         });
     }
 
@@ -349,6 +421,16 @@ export class Guardians extends ServiceRequestsBase {
      */
     public async restoreUserProfileCommonAsync(username: string, profile: IUser, taskId: string): Promise<any> {
         return await this.request<any>(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, { username, profile, taskId });
+    }
+
+    /**
+     * Get all user topics
+     * @param username
+     * @param profile
+     * @param taskId
+     */
+    public async getAllUserTopicsAsync(username: string, profile: IUser, taskId: string): Promise<any> {
+        return await this.request<any>(MessageAPI.GET_ALL_USER_TOPICS_ASYNC, { username, profile, taskId });
     }
 
     /**
@@ -776,6 +858,36 @@ export class Guardians extends ServiceRequestsBase {
         return await this.request<any>(MessageAPI.DELETE_ARTIFACT, {
             owner,
             artifactId
+        });
+    }
+
+    /**
+     * Add file to IPFS
+     * @param buffer File
+     * @returns CID, URL
+     */
+    public async addFileIpfs(buffer: any): Promise<{
+        /**
+         * CID
+         */
+        cid,
+        /**
+         * URL
+         */
+        url
+    }> {
+        return await this.request<any>(MessageAPI.IPFS_ADD_FILE, buffer);
+    }
+
+    /**
+     * Get file from IPFS
+     * @param cid CID
+     * @param responseType Response type
+     * @returns File
+     */
+    public async getFileIpfs(cid: string, responseType: any): Promise<any> {
+        return await this.request<any>(MessageAPI.IPFS_GET_FILE, {
+            cid, responseType
         });
     }
 }

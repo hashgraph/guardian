@@ -153,11 +153,11 @@ iRec Application Form
 VC
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="owner" type="String" %}
+{% swagger-parameter in="body" name="owner" type="String" required="false" %}
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="version" type="String" %}
+{% swagger-parameter in="body" name="version" type="String" required="false" %}
 
 {% endswagger-parameter %}
 
@@ -217,23 +217,23 @@ fungible
 0
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="enableAdmin" type="Boolean" %}
+{% swagger-parameter in="body" name="enableAdmin" type="Boolean" required="false" %}
 true
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="changeSupply" type="Boolean" %}
+{% swagger-parameter in="body" name="changeSupply" type="Boolean" required="false" %}
 true
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="enableFreeze" type="Boolean" %}
+{% swagger-parameter in="body" name="enableFreeze" type="Boolean" required="false" %}
 true
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="enableKYC" type="Boolean" %}
+{% swagger-parameter in="body" name="enableKYC" type="Boolean" required="false" %}
 true
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="enableWipe" type="Boolean" %}
+{% swagger-parameter in="body" name="enableWipe" type="Boolean" required="false" %}
 true
 {% endswagger-parameter %}
 

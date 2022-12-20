@@ -49,6 +49,8 @@ import { ControlType } from "./structures/types/control-type.type";
 import { BlockAbout } from "./structures/block-about";
 import { IBlockSetting } from "./structures/interfaces/block-setting.interface";
 import { MultiSignBlockComponent } from "./policy-viewer/blocks/multi-sign-block/multi-sign-block.component";
+import { CreateTokenConfigComponent } from "./policy-configuration/blocks/tokens/create-token-config/create-token-config.component";
+import { CreateTokenBlockComponent } from "./policy-viewer/blocks/create-token-block/create-token-block.component";
 
 @Injectable()
 export class RegisteredBlocks {
@@ -114,10 +116,11 @@ export class RegisteredBlocks {
             { type: BlockType.TokenConfirmationBlock },
             { type: BlockType.DocumentValidatorBlock },
             { type: BlockType.MultiSignBlock },
+            { type: BlockType.CreateToken },
             { type: BlockType.SplitBlock }
         ];
 
-        // Main, UI Components
+        // #region Main, UI Components
         this.registerBlock({
             type: BlockType.Container,
             icon: 'tab',
@@ -133,7 +136,7 @@ export class RegisteredBlocks {
             group: BlockGroup.Main,
             header: BlockHeaders.UIComponents,
             factory: StepBlockComponent,
-            property: ContainerConfigComponent,
+            property: null,
             allowedChildren: allowedChildrenStepContainerBlocks
         });
         this.registerBlock({
@@ -214,8 +217,9 @@ export class RegisteredBlocks {
                 }
             }
         });
+        // #endregion
 
-        // Main, Server Blocks
+        // #region Main, Server Blocks
         this.registerBlock({
             type: BlockType.Switch,
             icon: 'rule',
@@ -237,8 +241,9 @@ export class RegisteredBlocks {
                 }
             }
         });
+        // #endregion
 
-        // Documents, UI Components
+        // #region Documents, UI Components
         this.registerBlock({
             type: BlockType.DocumentsViewer,
             icon: 'table_view',
@@ -277,8 +282,9 @@ export class RegisteredBlocks {
             factory: MultiSignBlockComponent,
             property: null,
         });
+        // #endregion
 
-        // Documents, Server Blocks
+        // #region Documents, Server Blocks
         this.registerBlock({
             type: BlockType.SendToGuardian,
             icon: 'send',
@@ -343,8 +349,9 @@ export class RegisteredBlocks {
             factory: null,
             property: null,
         });
+        // #endregion
 
-        // Documents, Addons
+        // #region Documents, Addons
         this.registerBlock({
             type: BlockType.FiltersAddon,
             icon: 'filter_alt',
@@ -393,8 +400,20 @@ export class RegisteredBlocks {
             factory: null,
             property: DocumentValidatorConfigComponent
         });
+        // #endregion
 
-        // Tokens, Server Blocks
+        // #region Tokens, UI blocks
+        this.registerBlock({
+            type: BlockType.CreateToken,
+            icon: 'token',
+            group: BlockGroup.Tokens,
+            header: BlockHeaders.UIComponents,
+            factory: CreateTokenBlockComponent,
+            property: CreateTokenConfigComponent,
+        });
+        // #endregion
+
+        // #region Tokens, Server Blocks
         this.registerBlock({
             type: BlockType.Mint,
             icon: 'paid',
@@ -427,8 +446,9 @@ export class RegisteredBlocks {
             factory: TokenConfirmationBlockComponent,
             property: TokenConfirmationConfigComponent,
         });
+        // #endregion
 
-        // Calculate, Server Blocks
+        // #region Calculate, Server Blocks
         this.registerBlock({
             type: BlockType.Calculate,
             icon: 'bar_chart',
@@ -452,8 +472,9 @@ export class RegisteredBlocks {
             factory: null,
             property: CustomLogicConfigComponent,
         });
+        // #endregion
 
-        // Calculate, Addons
+        // #region Calculate, Addons
         this.registerBlock({
             type: BlockType.CalculateMathAddon,
             icon: 'calculate',
@@ -470,8 +491,9 @@ export class RegisteredBlocks {
             factory: null,
             property: null,
         });
+        // #endregion
 
-        // Report, UIComponents
+        // #region Report, UIComponents
         this.registerBlock({
             type: BlockType.Report,
             icon: 'addchart',
@@ -484,8 +506,9 @@ export class RegisteredBlocks {
                 group: BlockGroup.UnGrouped
             }]
         });
+        // #endregion
 
-        // Report, Addons
+        // #region Report, Addons
         this.registerBlock({
             type: BlockType.ReportItem,
             icon: 'list_alt',
@@ -494,6 +517,7 @@ export class RegisteredBlocks {
             factory: null,
             property: ReportItemConfigComponent
         });
+        // #endregion
     }
 
     public registerBlock(setting: IBlockSetting) {

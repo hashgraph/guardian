@@ -13,7 +13,7 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
     const engineService = new PolicyEngine();
     try {
         const user = await users.getUser(req.user.username);
-        if (!user.did) {
+        if (!user.did && user.role !== UserRole.AUDITOR) {
             res.status(200).setHeader('X-Total-Count', 0).json([]);
             return;
         }
@@ -29,6 +29,16 @@ policyAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
                 filters: {
                     owner: user.did,
                 },
+                userDid: user.did,
+                pageIndex,
+                pageSize
+            });
+        } else if (user.role === UserRole.AUDITOR) {
+            const filters: any = {
+                status: PolicyType.PUBLISH,
+            }
+            result = await engineService.getPolicies({
+                filters,
                 userDid: user.did,
                 pageIndex,
                 pageSize
@@ -149,6 +159,7 @@ policyAPI.put('/:policyId', async (req: AuthenticatedRequest, res: Response) => 
         model.topicDescription = policy.topicDescription;
         model.policyRoles = policy.policyRoles;
         model.policyTopics = policy.policyTopics;
+        model.policyTokens = policy.policyTokens;
         model.policyGroups = policy.policyGroups;
         const result = await engineService.savePolicy(model, req.user, req.params.policyId);
         res.json(result);
@@ -602,5 +613,25 @@ policyAPI.get('/:policyId/dry-run/ipfs', permissionHelper(UserRole.STANDARD_REGI
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+policyAPI.get('/:policyId/multiple', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.send(await engineService.getMultiPolicy(req.user, req.params.policyId));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
+policyAPI.post('/:policyId/multiple/', async (req: AuthenticatedRequest, res: Response) => {
+    const engineService = new PolicyEngine();
+    try {
+        res.send(await engineService.setMultiPolicy(req.user, req.params.policyId, req.body));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
 });

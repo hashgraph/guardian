@@ -199,10 +199,13 @@ export abstract class Message {
      */
     public getUrlValue(index: number, type: UrlType): string | null {
         if (this.urls && this.urls[index]) {
-            if (type === UrlType.cid) {
-                return this.urls[index].cid;
-            } else {
-                return this.urls[index].url;
+            switch (type) {
+                case UrlType.cid:
+                    return this.urls[index].cid;
+                case UrlType.url:
+                    return this.urls[index].url;
+                default:
+                    break;
             }
         }
         return null;

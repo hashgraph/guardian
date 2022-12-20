@@ -54,6 +54,20 @@ describe('Hedera SDK Helper', function () {
         this.timeout(transactionTimeout);
 
         if (!accountId) assert.fail('Account not created');
+
+        // @param {string} name - Token name
+        // @param {string} symbol - Token symbol
+        // @param {boolean} nft - Fungible or NonFungible Token
+        // @param {number} decimals - Decimals
+        // @param {number} initialSupply - Initial Supply
+        // @param {string} tokenMemo - Memo field
+        // @param {AccountId} treasuryId - treasury account
+        // @param {PrivateKey} treasuryKey - treasury account
+        // @param {PrivateKey} [supplyKey] - set supply key
+        // @param {PrivateKey} [adminKey] - set admin key
+        // @param {PrivateKey} [kycKey] - set kyc key
+        // @param {PrivateKey} [freezeKey] - set freeze key
+        // @param {PrivateKey} [wipeKey] - set wipe key
         const token = await sdk.newToken(
             'Test Token',
             'T',
@@ -61,15 +75,13 @@ describe('Hedera SDK Helper', function () {
             2,
             0,
             'memo',
-            {
-                id: accountId,
-                key: accountKey,
-            },
+            accountId,
             accountKey,
             accountKey,
             accountKey,
             accountKey,
-            accountKey
+            accountKey,
+            accountKey,
         );
         assert.exists(token);
         tokenId = token ? token.toString() : null;
@@ -204,15 +216,13 @@ describe('Hedera SDK Helper', function () {
             0,
             0,
             'memo',
-            {
-                id: accountId,
-                key: accountKey,
-            },
+            accountId,
             accountKey,
             accountKey,
             accountKey,
             accountKey,
-            accountKey
+            accountKey,
+            accountKey,
         );
         assert.exists(token);
         token2Id = token ? token.toString() : null;

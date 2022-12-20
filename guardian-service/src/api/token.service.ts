@@ -22,7 +22,11 @@ function getTokenInfo(info: any, token: any) {
         tokenSymbol: token.tokenSymbol,
         tokenType: token.tokenType,
         decimals: token.decimals,
-        policies: null,
+        policyId: token.policyId,
+        enableAdmin: !!token.enableAdmin,
+        enableFreeze: !!token.enableFreeze,
+        enableKYC: !!token.enableKYC,
+        enableWipe: !!token.enableWipe,
         associated: false,
         balance: null,
         hBarBalance: null,
@@ -84,7 +88,7 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
     notifier.completedAndStart('Create token');
 
     const workers = new Workers();
-    const tokenData = await workers.addTask({
+    const tokenData = await workers.addNonRetryableTask({
         type: WorkerTaskType.CREATE_TOKEN,
         data: {
             operatorId: root.hederaAccountId,
@@ -100,14 +104,202 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
             tokenSymbol,
             tokenType
         }
-    }, 1, 1);
-    tokenData.owner = root.did;
+    }, 1);
 
     notifier.completedAndStart('Save token in DB');
-    const tokenObject = tokenRepository.create(tokenData);
+    const tokenObject = tokenRepository.create({
+        tokenId: tokenData.tokenId,
+        tokenName: tokenData.tokenName,
+        tokenSymbol: tokenData.tokenSymbol,
+        tokenType: tokenData.tokenType,
+        decimals: tokenData.decimals,
+        initialSupply: tokenData.initialSupply,
+        adminId: tokenData.treasuryId,
+        changeSupply: !!tokenData.supplyKey,
+        enableAdmin: !!tokenData.adminKey,
+        enableKYC: !!tokenData.kycKey,
+        enableFreeze: !!tokenData.freezeKey,
+        enableWipe: !!tokenData.wipeKey,
+        owner: root.did,
+        policyId: null
+    });
     const result = await tokenRepository.save(tokenObject);
+    const wallet = new Wallet();
+    await Promise.all([
+        wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_TREASURY_KEY,
+            tokenData.tokenId,
+            tokenData.treasuryKey
+        ),
+        wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_ADMIN_KEY,
+            tokenData.tokenId,
+            tokenData.adminKey
+        ),
+        wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_FREEZE_KEY,
+            tokenData.tokenId,
+            tokenData.freezeKey
+        ),
+        wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_KYC_KEY,
+            tokenData.tokenId,
+            tokenData.kycKey
+        ),
+        wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_SUPPLY_KEY,
+            tokenData.tokenId,
+            tokenData.supplyKey
+        ),
+        wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_WIPE_KEY,
+            tokenData.tokenId,
+            tokenData.wipeKey
+        )
+    ]);
+
     notifier.completed();
     return result;
+}
+
+/**
+ * Update token
+ * @param oldToken
+ * @param newToken
+ * @param tokenRepository
+ * @param notifier
+ */
+async function updateToken(oldToken: Token, newToken: Token, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<Token> {
+    if (!newToken.tokenName) {
+        throw new Error('Invalid Token Name');
+    }
+
+    if (!newToken.tokenSymbol) {
+        throw new Error('Invalid Token Symbol');
+    }
+
+    if (!oldToken.enableAdmin) {
+        throw new Error('Invalid Admin Key');
+    }
+
+    const changes: { [x: string]: any } = {};
+    if (oldToken.tokenName !== newToken.tokenName) {
+        changes.tokenName = newToken.tokenName;
+    }
+    if (oldToken.tokenSymbol !== newToken.tokenSymbol) {
+        changes.tokenSymbol = newToken.tokenSymbol;
+    }
+
+    notifier.start('Resolve Hedera account');
+    const users = new Users();
+    const wallet = new Wallet();
+    const workers = new Workers();
+
+    const root = await users.getHederaAccount(oldToken.owner);
+
+    const adminKey = await wallet.getUserKey(
+        oldToken.owner,
+        KeyType.TOKEN_ADMIN_KEY,
+        oldToken.tokenId
+    );
+
+    notifier.completedAndStart('Update token');
+
+    const tokenData = await workers.addNonRetryableTask({
+        type: WorkerTaskType.UPDATE_TOKEN,
+        data: {
+            tokenId: oldToken.tokenId,
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            adminKey,
+            changes
+        }
+    }, 1);
+
+    notifier.completedAndStart('Save token in DB');
+
+    oldToken.tokenName = newToken.tokenName;
+    oldToken.tokenSymbol = newToken.tokenSymbol;
+
+    const result = await tokenRepository.update(oldToken);
+
+    const saveKeys = [];
+    if (changes.enableFreeze) {
+        saveKeys.push(wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_FREEZE_KEY,
+            tokenData.tokenId,
+            tokenData.freezeKey
+        ));
+    }
+    if (changes.enableKYC) {
+        saveKeys.push(wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_KYC_KEY,
+            tokenData.tokenId,
+            tokenData.kycKey
+        ));
+    }
+    if (changes.enableWipe) {
+        saveKeys.push(wallet.setUserKey(
+            root.did,
+            KeyType.TOKEN_WIPE_KEY,
+            tokenData.tokenId,
+            tokenData.wipeKey
+        ));
+    }
+    await Promise.all(saveKeys);
+
+    notifier.completed();
+    return result;
+}
+
+/**
+ * Delete token
+ * @param token
+ * @param tokenRepository
+ * @param notifier
+ */
+async function deleteToken(token: Token, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<boolean> {
+    notifier.start('Resolve Hedera account');
+    const users = new Users();
+    const wallet = new Wallet();
+    const workers = new Workers();
+
+    const root = await users.getHederaAccount(token.owner);
+    const adminKey = await wallet.getUserKey(
+        token.owner,
+        KeyType.TOKEN_ADMIN_KEY,
+        token.tokenId
+    );
+
+    notifier.completedAndStart('Delete token');
+
+    const tokenData = await workers.addNonRetryableTask({
+        type: WorkerTaskType.DELETE_TOKEN,
+        data: {
+            tokenId: token.tokenId,
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            adminKey
+        }
+    }, 1);
+
+    notifier.completedAndStart('Save token in DB');
+
+    if (tokenData) {
+        await tokenRepository.delete(token);
+    }
+
+    notifier.completed();
+
+    return true;
 }
 
 /**
@@ -143,7 +335,7 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
     notifier.completedAndStart(associate ? 'Associate' : 'Dissociate');
 
     const workers = new Workers();
-    const status = await workers.addTask({
+    const status = await workers.addNonRetryableTask({
         type: WorkerTaskType.ASSOCIATE_TOKEN,
         data: {
             tokenId,
@@ -151,7 +343,7 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
             userKey,
             associate
         }
-    }, 1, 1);
+    }, 1);
 
     notifier.completed();
     return status;
@@ -166,7 +358,14 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
  * @param tokenRepository
  * @param notifier
  */
-async function grantKycToken(tokenId, username, owner, grant, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<any> {
+async function grantKycToken(
+    tokenId: any,
+    username: string,
+    owner: string,
+    grant: boolean,
+    tokenRepository: DataBaseHelper<Token>,
+    notifier: INotifier
+): Promise<any> {
     notifier.start('Find token data');
     const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
     if (!token) {
@@ -187,28 +386,101 @@ async function grantKycToken(tokenId, username, owner, grant, tokenRepository: D
 
     notifier.completedAndStart(grant ? 'Grant KYC' : 'Revoke KYC');
     const workers = new Workers();
-    await workers.addTask({
+    const kycKey = await new Wallet().getUserKey(
+        token.owner,
+        KeyType.TOKEN_KYC_KEY,
+        token.tokenId
+    );
+    await workers.addNonRetryableTask({
         type: WorkerTaskType.GRANT_KYC_TOKEN,
         data: {
             hederaAccountId: root.hederaAccountId,
             hederaAccountKey: root.hederaAccountKey,
             userHederaAccountId: user.hederaAccountId,
             tokenId,
-            kycKey: token.kycKey,
+            kycKey,
             grant
         }
-    }, 10, 1);
+    }, 10);
 
-    const info = await workers.addTask({
+    const info = await workers.addNonRetryableTask({
         type: WorkerTaskType.GET_ACCOUNT_INFO,
         data: {
             userID: root.hederaAccountId,
             userKey: root.hederaAccountKey,
             hederaAccountId: user.hederaAccountId,
         }
-    }, 10, 1);
+    }, 10);
 
-    const result = getTokenInfo(info, { tokenId });
+    const result = getTokenInfo(info, token);
+    notifier.completed();
+    return result;
+}
+
+/**
+ * Freeze/unfreeze token
+ * @param tokenId
+ * @param username
+ * @param owner
+ * @param freeze
+ * @param tokenRepository
+ * @param notifier
+ */
+async function freezeToken(
+    tokenId: any,
+    username: string,
+    owner: string,
+    freeze: boolean,
+    tokenRepository: DataBaseHelper<Token>,
+    notifier: INotifier
+): Promise<any> {
+    notifier.start('Find token data');
+    const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+    if (!token) {
+        throw new Error('Token not found');
+    }
+
+    notifier.completedAndStart('Resolve Hedera account');
+    const users = new Users();
+    const user = await users.getUser(username);
+    if (!user) {
+        throw new Error('User not found');
+    }
+    if (!user.hederaAccountId) {
+        throw new Error('User is not linked to an Hedera Account');
+    }
+
+    const root = await users.getHederaAccount(owner);
+
+    notifier.completedAndStart(freeze ? 'Freeze Token' : 'Unfreeze Token');
+    const workers = new Workers();
+    const freezeKey = await new Wallet().getUserKey(
+        token.owner,
+        KeyType.TOKEN_FREEZE_KEY,
+        token.tokenId
+    );
+    await workers.addNonRetryableTask({
+        type: WorkerTaskType.FREEZE_TOKEN,
+        data: {
+            hederaAccountId: root.hederaAccountId,
+            hederaAccountKey: root.hederaAccountKey,
+            userHederaAccountId: user.hederaAccountId,
+            freezeKey,
+            tokenId,
+            freeze
+        }
+    }, 1);
+
+    const info = await workers.addNonRetryableTask({
+        type: WorkerTaskType.GET_ACCOUNT_INFO,
+        data: {
+            userID: root.hederaAccountId,
+            userKey: root.hederaAccountKey,
+            hederaAccountId: user.hederaAccountId,
+        }
+    }, 10);
+
+    const result = getTokenInfo(info, token);
     notifier.completed();
     return result;
 }
@@ -258,7 +530,6 @@ export async function tokenAPI(
                 if (!msg) {
                     throw new Error('Invalid Params');
                 }
-
                 const result = await createToken(token, owner, tokenRepository, notifier);
                 notifier.result(result);
             } catch (error) {
@@ -270,53 +541,77 @@ export async function tokenAPI(
         return new MessageResponse({ taskId });
     });
 
+    ApiResponse(channel, MessageAPI.UPDATE_TOKEN_ASYNC, async (msg) => {
+        const { token, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+        setImmediate(async () => {
+            try {
+                if (!msg) {
+                    throw new Error('Invalid Params');
+                }
+                const item = await tokenRepository.findOne({ tokenId: token.tokenId });
+                if (!item) {
+                    throw new Error('Token not found');
+                }
+                const result = await updateToken(item, token, tokenRepository, notifier);
+                notifier.result(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
+    });
+
+    ApiResponse(channel, MessageAPI.DELETE_TOKEN_ASYNC, async (msg) => {
+        const { tokenId, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+        setImmediate(async () => {
+            try {
+                if (!msg) {
+                    throw new Error('Invalid Params');
+                }
+                const item = await tokenRepository.findOne({ tokenId });
+                if (!item) {
+                    throw new Error('Token not found');
+                }
+                const result = await deleteToken(item, tokenRepository, notifier);
+                notifier.result(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+        return new MessageResponse({ taskId });
+    });
+
     ApiResponse(channel, MessageAPI.FREEZE_TOKEN, async (msg) => {
         try {
             const { tokenId, username, owner, freeze } = msg;
-
-            const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
-            if (!token) {
-                throw new Error('Token not found');
-            }
-
-            const users = new Users();
-            const user = await users.getUser(username);
-            if (!user) {
-                throw new Error('User not found');
-            }
-            if (!user.hederaAccountId) {
-                throw new Error('User is not linked to an Hedera Account');
-            }
-
-            const root = await users.getHederaAccount(owner);
-
-            const workers = new Workers();
-            await workers.addTask({
-                type: WorkerTaskType.FREEZE_TOKEN,
-                data: {
-                    hederaAccountId: root.hederaAccountId,
-                    hederaAccountKey: root.hederaAccountKey,
-                    freezeKey: token.freezeKey,
-                    tokenId,
-                    freeze
-                }
-            }, 1, 1);
-
-            const info = await workers.addTask({
-                type: WorkerTaskType.GET_ACCOUNT_INFO,
-                data: {
-                    userID: root.hederaAccountId,
-                    userKey: root.hederaAccountKey,
-                    hederaAccountId: user.hederaAccountId,
-                }
-            }, 10, 1);
-
-            const result = getTokenInfo(info, { tokenId });
+            const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, emptyNotifier());
             return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error, 400);
         }
+    });
+
+    ApiResponse(channel, MessageAPI.FREEZE_TOKEN_ASYNC, async (msg) => {
+        const { tokenId, username, owner, freeze, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+
+        setImmediate(async () => {
+            try {
+                const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, notifier);
+                notifier.result(result);
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
     });
 
     ApiResponse(channel, MessageAPI.KYC_TOKEN, async (msg) => {
@@ -396,14 +691,14 @@ export async function tokenAPI(
 
             const root = await users.getHederaAccount(owner);
             const workers = new Workers();
-            const info = await workers.addTask({
+            const info = await workers.addNonRetryableTask({
                 type: WorkerTaskType.GET_ACCOUNT_INFO,
                 data: {
                     userID: root.hederaAccountId,
                     userKey: root.hederaAccountKey,
                     hederaAccountId: user.hederaAccountId
                 }
-            }, 1, 1);
+            }, 1);
 
             const result = getTokenInfo(info, token);
 
@@ -434,14 +729,14 @@ export async function tokenAPI(
             }
 
             const workers = new Workers();
-            const info = await workers.addTask({
+            const info = await workers.addNonRetryableTask({
                 type: WorkerTaskType.GET_ACCOUNT_INFO,
                 data: {
                     userID,
                     userKey,
                     hederaAccountId: user.hederaAccountId
                 }
-            }, 1, 1);
+            }, 1);
 
             const tokens: any = await tokenRepository.find(user.parent
                 ? {
@@ -499,6 +794,21 @@ export async function tokenAPI(
                 ]
             }
         }));
+    })
+
+    /**
+     * Return token
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {IToken} - token
+     */
+    ApiResponse(channel, MessageAPI.GET_TOKEN, async (msg) => {
+        if (msg) {
+            const token = await tokenRepository.findOne(msg);
+            return new MessageResponse(token);
+        }
+        return new MessageResponse(null);
     })
 
     /**

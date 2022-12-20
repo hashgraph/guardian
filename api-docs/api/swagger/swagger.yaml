@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: "Guardian"
   description: "The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation."
-  version: "2.6.1"
+  version: "2.7.0"
   contact:
     name: "API developer"
     url: "https://envisionblockchain.com"
@@ -221,6 +221,14 @@ components:
         frozen:
           type: boolean
         kyc:
+          type: boolean
+        enableAdmin:
+          type: boolean
+        enableKYC:
+          type: boolean
+        enableFreeze:
+          type: boolean
+        enableWipe:
           type: boolean
     PolicyConfig:
       type: object
@@ -582,6 +590,27 @@ components:
         extention:
           type: string
         type:
+          type: string
+    MultiPolicyConfig:
+      type: object
+      properties:
+        id:
+          type: string
+        uuid:
+          type: string
+        owner:
+          type: string
+        type:
+          type: string
+        instanceTopicId:
+          type: string
+        mainPolicyTopicId:
+          type: string
+        synchronizationTopicId:
+          type: string
+        policyOwner:
+          type: string
+        user:
           type: string
 tags:
   - name: "accounts"
@@ -1892,7 +1921,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /schemas/{schemaId}/active:
+  /schemas/system/{schemaId}/active:
     put:
       tags:
         - schemas
@@ -2464,6 +2493,45 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /tokens/push/{tokenId}/{username}/freeze:
+    put:
+      tags:
+        - tokens
+      description: Freezes transfers of the specified token for the user. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Freeze transfers of the specified token for the user.
+      parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: string
+          required: true
+          description: Token ID.
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /tokens/{tokenId}/{username}/unfreeze:
     put:
       tags:
@@ -2509,6 +2577,45 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /tokens/push/{tokenId}/{username}/unfreeze:
+    put:
+      tags:
+        - tokens
+      description: Unfreezes transfers of the specified token for the user. Only users with the Standard Registry role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Unfreezes transfers of the specified token for the user.
+      parameters:
+        - in: path
+          name: tokenId
+          schema:
+            type: string
+          required: true
+          description: Token ID.
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: Username.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /trustchains:
     get:
       tags:
@@ -2517,9 +2624,43 @@ paths:
       security:
       - bearerAuth: []
       summary: Returns a list of all VP documents.
+      parameters:
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
+        - in: query
+          name: policyId
+          schema:
+            type: string
+          description: Selected policy ID.
+        - in: query
+          name: policyOwner
+          schema:
+            type: string
+          description: Selected Standard Registry (DID).
       responses:
         200:
           description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
           content:
             application/json:
               schema:
@@ -3884,7 +4025,84 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
+  /policies/{policyId}/multiple:
+    post:
+      tags:
+        - policies
+      description: Creates a link between the current policy and the main policy. Or creates a group making the current policy the main one.
+      security:
+        - bearerAuth: []
+      summary: Requests Multi policy config.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      requestBody:
+        description: Multi policy config.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - mainPolicyTopicId
+                - synchronizationTopicId
+              properties:
+                mainPolicyTopicId:
+                  type: string
+                synchronizationTopicId:
+                  type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultiPolicyConfig'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - policies
+      description: Requests Multi policy config.
+      security:
+        - bearerAuth: []
+      summary: Requests Multi policy config.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultiPolicyConfig'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /external:
     post:
       tags:
@@ -4000,7 +4218,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /ipfs/file:
+  /ipfs/file/{cid}:
+    get:
+      tags:
+        - ipfs
+      description: Get file from ipfs.
+      summary: Get file from ipfs.
+      parameters:
+        - in: path
+          name: cid
+          schema:
+            type: string
+          required: true
+          description: File CID.
+      security:
+      - bearerAuth: []
+      responses:
+        201:
+          description: Successful operation.
+          content:
+            binary/octet-stream:
+              schema:
+                type: string
+                format: binary
+        401:
+          description: Unauthorized.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ipfs/file/:
     post:
       tags:
         - ipfs

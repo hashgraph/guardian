@@ -26,7 +26,7 @@
             </mat-select>
         </td>
     </tr>
-    
+
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Preset</td>
@@ -173,7 +173,7 @@
                 </mat-select>
             </td>
         </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.preset || propHidden.presetFields[i]">
+        <tr *ngIf="field.value" class="propRow subRow" [attr.collapse]="propHidden.preset || propHidden.presetFields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">
                 Readonly

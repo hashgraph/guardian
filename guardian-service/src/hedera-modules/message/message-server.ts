@@ -21,13 +21,15 @@ import { Environment } from '../environment';
 import { MessageMemo } from '../memo-mappings/message-memo';
 import { RegistrationMessage } from './registration-message';
 import { TopicMessage } from './topic-message';
+import { TopicConfig } from 'hedera-modules/topic';
+import { TokenMessage } from './token-message';
 
 /**
  * Message server
  */
 export class MessageServer {
     /**
-     * Submit key
+     * Key
      * @private
      */
     private submitKey: PrivateKey | string;
@@ -60,7 +62,7 @@ export class MessageServer {
         dryRun: string = null
     ) {
 
-        this.clientOptions = {operatorId, operatorKey, dryRun};
+        this.clientOptions = { operatorId, operatorKey, dryRun };
 
         this.dryRun = dryRun || null;
     }
@@ -129,17 +131,8 @@ export class MessageServer {
      * Set topic object
      * @param topic
      */
-    public setTopicObject(topic: {
-        /**
-         * Topic ID
-         */
-        topicId?: string,
-        /**
-         * Key
-         */
-        key?: string
-    }): MessageServer {
-        this.submitKey = topic.key;
+    public setTopicObject(topic: TopicConfig): MessageServer {
+        this.submitKey = topic.submitKey;
         this.topicId = topic.topicId;
         return this;
     }
@@ -171,15 +164,18 @@ export class MessageServer {
      * @private
      */
     private async sendIPFS<T extends Message>(message: T): Promise<T> {
-        const time = await this.messageStartLog('IPFS');
         const buffers = await message.toDocuments();
-
-        const promises = buffers.map(buffer => {
-            return this.addFile(buffer);
-        });
-        const urls = await Promise.all(promises);
-        await this.messageEndLog(time, 'IPFS');
-        message.setUrls(urls);
+        if (buffers && buffers.length) {
+            const time = await this.messageStartLog('IPFS');
+            const promises = buffers.map(buffer => {
+                return this.addFile(buffer);
+            });
+            const urls = await Promise.all(promises);
+            await this.messageEndLog(time, 'IPFS');
+            message.setUrls(urls);
+        } else {
+            message.setUrls([]);
+        }
         return message;
     }
 
@@ -207,8 +203,8 @@ export class MessageServer {
         const urls = message.getUrls();
         const promises = urls
             .map(url => {
-            return IPFS.getFile(url.cid, message.responseType);
-        });
+                return IPFS.getFile(url.cid, message.responseType);
+            });
         const documents = await Promise.all(promises);
         message = message.loadDocuments(documents) as T;
         return message;
@@ -226,7 +222,7 @@ export class MessageServer {
         message.setLang(MessageServer.lang);
         const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
-        const id = await new Workers().addTask({
+        const id = await new Workers().addRetryableTask({
             type: WorkerTaskType.SEND_HEDERA,
             data: {
                 topicId: this.topicId,
@@ -236,7 +232,7 @@ export class MessageServer {
                 network: Environment.network,
                 localNodeAddress: Environment.localNodeAddress,
                 localNodeProtocol: Environment.localNodeProtocol,
-                memo:  memo || MessageMemo.getMessageMemo(message)
+                memo: memo || MessageMemo.getMessageMemo(message)
             }
         }, 0);
         await this.messageEndLog(time, 'Hedera');
@@ -288,6 +284,9 @@ export class MessageServer {
             case MessageType.Topic:
                 message = TopicMessage.fromMessageObject(json);
                 break;
+            case MessageType.Token:
+                message = TokenMessage.fromMessageObject(json);
+                break;
             // Default schemas
             case 'schema-document':
                 message = SchemaMessage.fromMessageObject(json);
@@ -310,10 +309,10 @@ export class MessageServer {
      * @private
      */
     private async getTopicMessage<T extends Message>(timeStamp: string, type?: MessageType): Promise<T> {
-        const {operatorId, operatorKey, dryRun} = this.clientOptions;
+        const { operatorId, operatorKey, dryRun } = this.clientOptions;
 
         const workers = new Workers();
-        const { topicId, message } = await workers.addTask({
+        const { topicId, message } = await workers.addRetryableTask({
             type: WorkerTaskType.GET_TOPIC_MESSAGE,
             data: {
                 operatorId,
@@ -338,11 +337,11 @@ export class MessageServer {
      * @private
      */
     private async getTopicMessages(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<Message[]> {
-        const {operatorId, operatorKey, dryRun} = this.clientOptions;
+        const { operatorId, operatorKey, dryRun } = this.clientOptions;
 
         const topic = topicId.toString();
         const workers = new Workers();
-        const messages = await workers.addTask({
+        const messages = await workers.addRetryableTask({
             type: WorkerTaskType.GET_TOPIC_MESSAGES,
             data: {
                 operatorId,
@@ -386,7 +385,7 @@ export class MessageServer {
             message = await this.sendIPFS(message);
         }
         message = await this.sendHedera(message, memo);
-        if(this.dryRun) {
+        if (this.dryRun) {
             await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
         }
         return message;
@@ -398,8 +397,8 @@ export class MessageServer {
      * @param type
      */
     public async getMessage<T extends Message>(id: string, type?: MessageType): Promise<T> {
-        if(this.dryRun) {
-            const message =  await DatabaseServer.getVirtualMessage(this.dryRun, id);
+        if (this.dryRun) {
+            const message = await DatabaseServer.getVirtualMessage(this.dryRun, id);
             const result = MessageServer.fromMessage<T>(message.document, type);
             result.setId(message.messageId);
             result.setTopicId(message.topicId);
@@ -418,7 +417,7 @@ export class MessageServer {
      * @param action
      */
     public async getMessages<T extends Message>(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<T[]> {
-        if(this.dryRun) {
+        if (this.dryRun) {
             const messages = await DatabaseServer.getVirtualMessages(this.dryRun, topicId);
             const result: T[] = [];
             for (const message of messages) {
@@ -462,10 +461,10 @@ export class MessageServer {
     public async findTopic(messageId: string): Promise<string> {
         try {
             if (messageId) {
-                const {operatorId, operatorKey, dryRun} = this.clientOptions;
+                const { operatorId, operatorKey, dryRun } = this.clientOptions;
 
                 const workers = new Workers();
-                const { topicId } = await workers.addTask({
+                const { topicId } = await workers.addRetryableTask({
                     type: WorkerTaskType.GET_TOPIC_MESSAGE,
                     data: {
                         operatorId,

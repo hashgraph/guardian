@@ -1,3 +1,3 @@
-# Policies,Projects and Topics Mapping Architecture
+# 👏 Policies,Projects and Topics Mapping Architecture
 
 ![](<../.gitbook/assets/Token Authenticity.png>)

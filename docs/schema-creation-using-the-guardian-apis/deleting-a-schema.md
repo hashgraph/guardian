@@ -1,4 +1,4 @@
-# Deleting a schema
+# Deleting a Schema
 
 ### DELETING SCHEMA BASED ON SCHEMA ID
 

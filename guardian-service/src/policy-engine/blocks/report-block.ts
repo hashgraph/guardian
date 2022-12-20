@@ -16,6 +16,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
  * Report block
@@ -283,6 +284,9 @@ export class ReportBlock {
             const blockState = this.state[user.id] || {};
             blockState.lastValue = value;
             this.state[user.id] = blockState;
+            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
+                value
+            }));
         } catch (error) {
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }

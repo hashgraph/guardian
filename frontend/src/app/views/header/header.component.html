@@ -10,7 +10,7 @@
             </nav>
         </div>
 
-        <div class="user-content-info">
+        <div class="user-content-info" *ngIf="isLogin || displayDemoAccounts">
             <div *ngIf="username" class="user-balance" [attr.balance-type]="balanceType">{{balance}}</div>
             <div class="user-content-button" [matMenuTriggerFor]="menu">
                 <ng-container *ngIf="username; else notLogged">

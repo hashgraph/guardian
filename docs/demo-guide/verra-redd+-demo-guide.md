@@ -1,4 +1,4 @@
-# Verra Redd+ Demo Guide
+# 💻 Verra Redd+ Demo UI Guide
 
 This folder contains a sample file that is referenced in the Demo Usage Guide
 
@@ -31,7 +31,7 @@ Verra REDD Policy 3 groups (1665667787.019450003).policy
 >>>>>>> main
 ```
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (5).png" alt=""><figcaption></figcaption></figure>
 
 Once Policy is imported successfully, you get two options : Publish and Dry Run mode.
 
@@ -109,7 +109,7 @@ Note: If there are more than one VVB, we need atleast 70% consensus to get the f
 
 <figure><img src="../.gitbook/assets/3_18.png" alt=""><figcaption></figcaption></figure>
 
-17\. Once, Monitoring report is verified, you log out as VVBNew and login as Standard Registry. Navigate to the Policies tab and click the Open button on the far right. You will be able to see Monitoring Reports tab, where you have an option to click on Mint button.
+18\. Once, Monitoring report is verified, you log out as VVBNew and login as Standard Registry. Navigate to the Policies tab and click the Open button on the far right. You will be able to see Monitoring Reports tab, where you have an option to click on Mint button.
 
 <figure><img src="../.gitbook/assets/3_19.png" alt=""><figcaption></figcaption></figure>
 

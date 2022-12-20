@@ -79,11 +79,11 @@ export class SchemaConfigurationComponent implements OnInit {
         private fb: FormBuilder,
         private ipfs: IPFSService
     ) {
-
         this.defaultFieldsMap = {};
         this.defaultFieldsMap[SchemaEntity.VC] = [{
             name: 'policyId',
-            description: '',
+            title: 'Policy Id',
+            description: 'Policy Id',
             required: true,
             isArray: false,
             isRef: false,
@@ -93,29 +93,9 @@ export class SchemaConfigurationComponent implements OnInit {
             readOnly: true
         }, {
             name: 'ref',
-            description: '',
+            title: 'Relationships',
+            description: 'Relationships',
             required: false,
-            isArray: false,
-            isRef: false,
-            type: 'string',
-            format: undefined,
-            pattern: undefined,
-            readOnly: true
-        }];
-        this.defaultFieldsMap[SchemaEntity.MRV] = [{
-            name: 'accountId',
-            description: '',
-            required: true,
-            isArray: false,
-            isRef: false,
-            type: 'string',
-            format: undefined,
-            pattern: undefined,
-            readOnly: true
-        }, {
-            name: 'policyId',
-            description: '',
-            required: true,
             isArray: false,
             isRef: false,
             type: 'string',
@@ -158,6 +138,10 @@ export class SchemaConfigurationComponent implements OnInit {
             isRef: false,
             customType: 'hederaAccount'
         };
+    }
+
+    get currentEntity(): any {
+        return this.dataForm?.get('entity')?.value;
     }
 
     getId(type: 'default' | 'measure' | 'schemas'): string {

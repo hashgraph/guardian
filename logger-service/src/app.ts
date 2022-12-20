@@ -35,4 +35,7 @@ Promise.all([
 
     state.updateState(ApplicationStates.READY);
     console.log('logger service started', await state.getState());
+}, (reason) => {
+    console.log(reason);
+    process.exit(0);
 })

@@ -17,6 +17,7 @@ import {
     MessageAction,
     MessageServer,
     RegistrationMessage,
+    TopicConfig,
     TopicHelper,
     VCMessage
 } from '@hedera-modules';
@@ -30,7 +31,8 @@ import {
     MessageResponse,
     MessageError,
     Logger,
-    DataBaseHelper
+    DataBaseHelper,
+    IAuthUser
 } from '@guardian/common';
 import { publishSystemSchema } from './schema.service';
 import { Settings } from '@entity/settings';
@@ -41,7 +43,8 @@ import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
 /**
  * Get global topic
  */
-async function getGlobalTopic(): Promise<Topic | null> {
+// tslint:disable-next-line:completed-docs
+async function getGlobalTopic(): Promise<TopicConfig | null> {
     try {
         const topicId = await new DataBaseHelper(Settings).findOne({
             name: 'INITIALIZATION_TOPIC_ID'
@@ -51,10 +54,7 @@ async function getGlobalTopic(): Promise<Topic | null> {
         });
         const INITIALIZATION_TOPIC_ID = topicId?.value || process.env.INITIALIZATION_TOPIC_ID;
         const INITIALIZATION_TOPIC_KEY = topicKey?.value || process.env.INITIALIZATION_TOPIC_KEY;
-        return {
-            topicId: INITIALIZATION_TOPIC_ID,
-            key: INITIALIZATION_TOPIC_KEY
-        } as Topic
+        return new TopicConfig({ topicId: INITIALIZATION_TOPIC_ID }, null, INITIALIZATION_TOPIC_KEY);
     } catch (error) {
         console.log(error);
         return null;
@@ -77,10 +77,10 @@ async function setupUserProfile(username: string, profile: any, notifier: INotif
     let did: string;
     if (user.role === UserRole.STANDARD_REGISTRY) {
         profile.entity = SchemaEntity.STANDARD_REGISTRY;
-        did = await createUserProfile(profile, notifier);
+        did = await createUserProfile(profile, notifier, user);
     } else if (user.role === UserRole.USER) {
         profile.entity = SchemaEntity.USER;
-        did = await createUserProfile(profile, notifier);
+        did = await createUserProfile(profile, notifier, user);
     } else {
         throw new Error('Unknow user role');
     }
@@ -103,7 +103,7 @@ async function setupUserProfile(username: string, profile: any, notifier: INotif
  * @param profile
  * @param notifier
  */
-async function createUserProfile(profile: any, notifier: INotifier): Promise<string> {
+async function createUserProfile(profile: any, notifier: INotifier, user?: IAuthUser): Promise<string> {
     const logger = new Logger();
 
     const {
@@ -114,8 +114,8 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
         entity
     } = profile;
 
-    let topic: Topic = null;
-    let newTopic = false;
+    let topicConfig: TopicConfig = null;
+    let newTopic: Topic = null;
 
     notifier.start('Resolve topic');
     const globalTopic = await getGlobalTopic();
@@ -123,17 +123,18 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
 
     if (parent) {
-        topic = await new DataBaseHelper(Topic).findOne({
-            owner: parent,
-            type: TopicType.UserTopic
-        });
+        topicConfig = await TopicConfig.fromObject(
+            await new DataBaseHelper(Topic).findOne({
+                owner: parent,
+                type: TopicType.UserTopic
+            }), true);
     }
 
-    if (!topic) {
+    if (!topicConfig) {
         notifier.info('Create user topic');
         logger.info('Create User Topic', ['GUARDIAN_SERVICE']);
         const topicHelper = new TopicHelper(hederaAccountId, hederaAccountKey);
-        topic = await topicHelper.create({
+        topicConfig = await topicHelper.create({
             type: TopicType.UserTopic,
             name: TopicType.UserTopic,
             description: TopicType.UserTopic,
@@ -141,19 +142,18 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
             policyId: null,
             policyUUID: null
         });
-        topic = await new DataBaseHelper(Topic).save(topic);
-        await topicHelper.oneWayLink(topic, globalTopic, null);
-        newTopic = true;
+        await topicHelper.oneWayLink(topicConfig, globalTopic, null);
+        newTopic = await new DataBaseHelper(Topic).save(topicConfig.toObject());
     }
 
-    messageServer.setTopicObject(topic);
+    messageServer.setTopicObject(topicConfig);
 
     // ------------------------
     // <-- Publish DID Document
     // ------------------------
     notifier.completedAndStart('Publish DID Document');
     logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
-    const didObject = DIDDocument.create(hederaAccountKey, topic.topicId);
+    const didObject = DIDDocument.create(hederaAccountKey, topicConfig.topicId);
     const userDID = didObject.getDid();
     const didMessage = new DIDMessage(MessageAction.CreateDID);
     didMessage.setDocument(didObject);
@@ -163,7 +163,7 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
     });
     try {
         const didMessageResult = await messageServer
-            .setTopicObject(topic)
+            .setTopicObject(topicConfig)
             .sendMessage(didMessage)
         didDoc.status = DidDocumentStatus.CREATE;
         didDoc.messageId = didMessageResult.getId();
@@ -189,7 +189,7 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
         schema = await new DataBaseHelper(SchemaCollection).findOne({
             entity: SchemaEntity.STANDARD_REGISTRY,
             readonly: true,
-            topicId: topic.topicId
+            topicId: topicConfig.topicId
         });
         if (!schema) {
             schema = await new DataBaseHelper(SchemaCollection).findOne({
@@ -210,7 +210,7 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
         schema = await new DataBaseHelper(SchemaCollection).findOne({
             entity: SchemaEntity.USER,
             readonly: true,
-            topicId: topic.topicId
+            topicId: topicConfig.topicId
         });
         if (!schema) {
             schema = await new DataBaseHelper(SchemaCollection).findOne({
@@ -232,7 +232,7 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
             schema = await new DataBaseHelper(SchemaCollection).findOne({
                 entity,
                 readonly: true,
-                topicId: topic.topicId
+                topicId: topicConfig.topicId
             });
             if (schema) {
                 schemaObject = new Schema(schema);
@@ -272,7 +272,7 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
 
         try {
             const vcMessageResult = await messageServer
-                .setTopicObject(topic)
+                .setTopicObject(topicConfig)
                 .sendMessage(vcMessage);
             vcDoc.hederaStatus = DocumentStatus.ISSUE;
             vcDoc.messageId = vcMessageResult.getId();
@@ -290,9 +290,12 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
 
     notifier.completedAndStart('Save changes');
     if (newTopic) {
-        topic.owner = didMessage.did;
-        topic.parent = globalTopic?.topicId;
-        await new DataBaseHelper(Topic).update(topic);
+        newTopic.owner = didMessage.did;
+        newTopic.parent = globalTopic?.topicId;
+        await new DataBaseHelper(Topic).update(newTopic);
+        topicConfig.owner = didMessage.did;
+        topicConfig.parent = globalTopic?.topicId;
+        await topicConfig.saveKeysByUser(user);
     }
 
     if (globalTopic && newTopic) {
@@ -300,7 +303,7 @@ async function createUserProfile(profile: any, notifier: INotifier): Promise<str
         delete attributes.type;
         delete attributes['@context'];
         const regMessage = new RegistrationMessage(MessageAction.Init);
-        regMessage.setDocument(didMessage.did, topic?.topicId, attributes);
+        regMessage.setDocument(didMessage.did, topicConfig?.topicId, attributes);
         await messageServer
             .setTopicObject(globalTopic)
             .sendMessage(regMessage)
@@ -334,13 +337,13 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
             }
 
             const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-            const balance = await workers.addTask({
+            const balance = await workers.addNonRetryableTask({
                 type: WorkerTaskType.GET_USER_BALANCE,
                 data: {
                     hederaAccountId: user.hederaAccountId,
                     hederaAccountKey: key
                 }
-            }, 1, 1);
+            }, 1);
             return new MessageResponse({
                 balance,
                 unit: 'Hbar',
@@ -375,13 +378,13 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
             }
 
             const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-            const balance = await workers.addTask({
+            const balance = await workers.addNonRetryableTask({
                 type: WorkerTaskType.GET_USER_BALANCE,
                 data: {
                     hederaAccountId: user.hederaAccountId,
                     hederaAccountKey: key
                 }
-            }, 1, 1);
+            }, 1);
 
             return new MessageResponse(balance);
         } catch (error) {
@@ -468,9 +471,39 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
                 }
 
                 const restore = new RestoreDataFromHedera();
-                await restore.restoreRootAuthority(username, profile.hederaAccountId, profile.hederaAccountKey)
+                await restore.restoreRootAuthority(username, profile.hederaAccountId, profile.hederaAccountKey, profile.topicId)
+                console.log(username, profile.hederaAccountId, profile.hederaAccountKey, profile.topicId)
 
                 notifier.result('did');
+            } catch (error) {
+                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            }
+        });
+
+        return new MessageResponse({ taskId });
+    });
+
+    ApiResponse(channel, MessageAPI.GET_ALL_USER_TOPICS_ASYNC, async (msg) => {
+        const { username, profile, taskId } = msg;
+        const notifier = initNotifier(apiGatewayChannel, taskId);
+
+        setImmediate(async () => {
+            console.log(username, profile, taskId);
+            try {
+                if (!profile.hederaAccountId) {
+                    notifier.error('Invalid Hedera Account Id');
+                    return;
+                }
+                if (!profile.hederaAccountKey) {
+                    notifier.error('Invalid Hedera Account Key');
+                    return;
+                }
+
+                const restore = new RestoreDataFromHedera();
+                const result = await restore.findAllUserTopics(username, profile.hederaAccountId, profile.hederaAccountKey)
+
+                notifier.result(result);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
