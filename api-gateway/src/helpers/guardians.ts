@@ -757,11 +757,7 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns - Artifact
      */
-<<<<<<< HEAD
-     public async getArtifacts(owner, policyId, pageIndex, pageSize): Promise<any> {
-=======
     public async getArtifacts(owner, policyId, pageIndex, pageSize): Promise<any> {
->>>>>>> main
         return await this.request<any>(MessageAPI.GET_ARTIFACTS, {
             owner,
             policyId,

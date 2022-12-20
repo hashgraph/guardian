@@ -701,11 +701,7 @@ capacity
 
 ![](../.gitbook/assets/API\_9.png)
 
-<<<<<<< HEAD
-<figure><img src="../.gitbook/assets/API_10 (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
-=======
 <figure><img src="../.gitbook/assets/API_10 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
->>>>>>> main
 
 ### 3.4 Refresh the Blocks
 

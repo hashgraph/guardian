@@ -65,13 +65,6 @@ export class PolicyImportExportHelper {
         for (const artifact of artifacts) {
             zip.file(`artifacts/${artifact.uuid}`, await DatabaseServer.getArtifactFileByUUID(artifact.uuid));
         }
-<<<<<<< HEAD
-        zip.file(`artifacts/metadata.json`, JSON.stringify(artifacts.map(item => { return {
-            name: item.name,
-            uuid: item.uuid,
-            extention: item.extention
-        }})));
-=======
         zip.file(`artifacts/metadata.json`, JSON.stringify(artifacts.map(item => {
             return {
                 name: item.name,
@@ -79,7 +72,6 @@ export class PolicyImportExportHelper {
                 extention: item.extention
             }
         })));
->>>>>>> main
         zip.folder('tokens')
         for (const token of tokens) {
             delete token.adminId;
@@ -191,9 +183,6 @@ export class PolicyImportExportHelper {
         versionOfTopicId: string,
         notifier: INotifier,
         additionalPolicyConfig?: Partial<Policy>
-<<<<<<< HEAD
-    ): Promise<Policy> {
-=======
     ): Promise<{
         /**
          * New Policy
@@ -204,7 +193,6 @@ export class PolicyImportExportHelper {
          */
         errors: any[]
     }> {
->>>>>>> main
         const { policy, tokens, schemas, artifacts } = policyToImport;
         delete policy._id;
         delete policy.id;
@@ -341,17 +329,11 @@ export class PolicyImportExportHelper {
 
         // Upload Artifacts
         notifier.start('Upload Artifacts');
-<<<<<<< HEAD
-        const artifactsMap = new Map<string,string>();
-        const addedArtifacts = [];
-        for (const artifact of artifacts) {
-=======
         const artifactsMap = new Map<string, string>();
         const addedArtifacts = [];
         for (const artifact of artifacts) {
             delete artifact._id;
             delete artifact.id;
->>>>>>> main
             const newArtifactUUID = GenerateUUIDv4();
             artifactsMap.set(artifact.uuid, newArtifactUUID);
             artifact.owner = policyOwner;

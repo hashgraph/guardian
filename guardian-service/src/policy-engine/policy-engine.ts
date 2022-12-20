@@ -430,11 +430,7 @@ export class PolicyEngine {
         this.policyGenerator.regenerateIds(model.config);
         const zip = await PolicyImportExportHelper.generateZipFile(model);
         const buffer = await zip.generateAsync({
-<<<<<<< HEAD
-            type: 'arraybuffer' ,
-=======
             type: 'arraybuffer',
->>>>>>> main
             compression: 'DEFLATE',
             compressionOptions: {
                 level: 3
@@ -539,11 +535,7 @@ export class PolicyEngine {
         this.policyGenerator.regenerateIds(model.config);
         const zip = await PolicyImportExportHelper.generateZipFile(model);
         const buffer = await zip.generateAsync({
-<<<<<<< HEAD
-            type: 'arraybuffer' ,
-=======
             type: 'arraybuffer',
->>>>>>> main
             compression: 'DEFLATE',
             compressionOptions: {
                 level: 3

@@ -649,11 +649,7 @@ export class PolicyEngineService {
                 const zip = await PolicyImportExportHelper.generateZipFile(policy);
                 const file = await zip.generateAsync({
                     type: 'arraybuffer',
-<<<<<<< HEAD
-                    compression:'DEFLATE',
-=======
                     compression: 'DEFLATE',
->>>>>>> main
                     compressionOptions: {
                         level: 3,
                     },
@@ -712,16 +708,12 @@ export class PolicyEngineService {
                 new Logger().info(`Import policy by file`, ['GUARDIAN_SERVICE']);
                 const did = await this.getUserDid(user.username);
                 const policyToImport = await PolicyImportExportHelper.parseZipFile(Buffer.from(zip.data), true);
-<<<<<<< HEAD
-                await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, emptyNotifier());
-=======
                 const result = await PolicyImportExportHelper.importPolicy(policyToImport, did, versionOfTopicId, emptyNotifier());
                 if (result?.errors?.length) {
                     const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`;
                     new Logger().warn(message, ['GUARDIAN_SERVICE']);
                     return new MessageError(message);
                 }
->>>>>>> main
                 const policies = await DatabaseServer.getListOfPolicies({ owner: did });
                 return new MessageResponse(policies);
             } catch (error) {
@@ -802,9 +794,6 @@ export class PolicyEngineService {
 
                 const root = await this.users.getHederaAccount(did);
 
-<<<<<<< HEAD
-                await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, emptyNotifier());
-=======
                 const result = await this.policyEngine.importPolicyMessage(messageId, did, root, versionOfTopicId, emptyNotifier());
                 if (result?.errors?.length) {
                     const message = `Failed to import schemas: ${JSON.stringify(result.errors.map(e => e.name))}`
@@ -812,7 +801,6 @@ export class PolicyEngineService {
                     return new MessageError(message);
                 }
 
->>>>>>> main
                 const policies = await DatabaseServer.getListOfPolicies({ owner: did });
                 return new MessageResponse(policies);
             } catch (error) {

@@ -98,10 +98,7 @@
 * [groupManagerBlock](available-policy-workflow-blocks/groupmanagerblock.md)
 * [multiSignBlock](available-policy-workflow-blocks/multisignblock.md)
 * [customLogicBlock](available-policy-workflow-blocks/customlogicblock.md)
-<<<<<<< HEAD
-=======
 * [splitBlock](available-policy-workflow-blocks/splitblock.md)
->>>>>>> main
 
 ## Policy Workflow Creation using the Guardian User Interface
 
@@ -287,10 +284,7 @@
 ## Task APIs
 
 * [Returning Task Statuses](task-apis/returning-task-statuses.md)
-<<<<<<< HEAD
-=======
 
 ## Artifacts Demo
 
 * [How to Import/Delete Artifacts](artifacts-demo/how-to-import-delete-artifacts.md)
->>>>>>> main
