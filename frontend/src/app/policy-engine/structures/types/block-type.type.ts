@@ -34,5 +34,6 @@ export enum BlockType {
     CalculateMathVariables = 'calculateMathVariables',
     CreateToken = 'createTokenBlock',
     SplitBlock = 'splitBlock',
-    ImpactAddon = 'impactAddon'
+    ImpactAddon = 'impactAddon',
+    HttpRequest = 'httpRequestBlock'
 }

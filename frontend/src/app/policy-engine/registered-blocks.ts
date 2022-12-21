@@ -1,56 +1,103 @@
-import { Injectable } from "@angular/core";
-import { ActionConfigComponent } from "./policy-configuration/blocks/main/action-config/action-config.component";
-import { AggregateConfigComponent } from "./policy-configuration/blocks/documents/aggregate-config/aggregate-config.component";
-import { ContainerConfigComponent } from "./policy-configuration/blocks/main/container-config/container-config.component";
-import { DocumentSourceComponent } from "./policy-configuration/blocks/documents/document-viewer-config/document-viewer-config.component";
-import { ExternalDataConfigComponent } from "./policy-configuration/blocks/documents/external-data-config/external-data-config.component";
-import { FiltersAddonConfigComponent } from "./policy-configuration/blocks/documents/filters-addon-config/filters-addon-config.component";
-import { InformationConfigComponent } from "./policy-configuration/blocks/main/information-config/information-config.component";
-import { MintConfigComponent } from "./policy-configuration/blocks/tokens/mint-config/mint-config.component";
-import { RequestConfigComponent } from "./policy-configuration/blocks/documents/request-config/request-config.component";
-import { RolesConfigComponent } from "./policy-configuration/blocks/main/roles-config/roles-config.component";
-import { SendConfigComponent } from "./policy-configuration/blocks/documents/send-config/send-config.component";
-import { SourceAddonConfigComponent } from "./policy-configuration/blocks/documents/source-addon-config/source-addon-config.component";
-import { ActionBlockComponent } from "./policy-viewer/blocks/action-block/action-block.component";
-import { ContainerBlockComponent } from "./policy-viewer/blocks/container-block/container-block.component";
-import { DocumentsSourceBlockComponent } from "./policy-viewer/blocks/documents-source-block/documents-source-block.component";
-import { FiltersAddonBlockComponent } from "./policy-viewer/blocks/filters-addon-block/filters-addon-block.component";
-import { InformationBlockComponent } from "./policy-viewer/blocks/information-block/information-block.component";
-import { RequestDocumentBlockComponent } from "./policy-viewer/blocks/request-document-block/request-document-block.component";
-import { RolesBlockComponent } from "./policy-viewer/blocks/roles-block/roles-block.component";
-import { StepBlockComponent } from "./policy-viewer/blocks/step-block/step-block.component";
-import { CalculateConfigComponent } from './policy-configuration/blocks/calculate/calculate-config/calculate-config.component';
-import { CalculateMathConfigComponent } from './policy-configuration/blocks/calculate/calculate-math-config/calculate-math-config.component';
-import { BlockNode } from "./helpers/tree-data-source/tree-data-source";
-import { ReportBlockComponent } from "./policy-viewer/blocks/report-block/report-block.component";
-import { ReportItemConfigComponent } from "./policy-configuration/blocks/report/report-item-config/report-item-config.component";
-import { PaginationAddonBlockComponent } from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
-import { ReassigningConfigComponent } from "./policy-configuration/blocks/documents/reassigning-config/reassigning-config.component";
-import { TimerConfigComponent } from "./policy-configuration/blocks/documents/timer-config/timer-config.component";
-import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
-import { SwitchConfigComponent } from "./policy-configuration/blocks/main/switch-config/switch-config.component";
-import { PolicyBlockModel } from "./structures/policy-model";
-import { RevokeConfigComponent } from "./policy-configuration/blocks/documents/revoke-config/revoke-config.component";
-import { ButtonConfigComponent } from "./policy-configuration/blocks/main/button-config/button-config.component";
-import { ButtonBlockComponent } from "./policy-viewer/blocks/button-block/button-block.component";
+import { Injectable } from '@angular/core';
+import { ActionConfigComponent } from './policy-configuration/blocks/main/action-config/action-config.component';
+import {
+    AggregateConfigComponent
+} from './policy-configuration/blocks/documents/aggregate-config/aggregate-config.component';
+import {
+    ContainerConfigComponent
+} from './policy-configuration/blocks/main/container-config/container-config.component';
+import {
+    DocumentSourceComponent
+} from './policy-configuration/blocks/documents/document-viewer-config/document-viewer-config.component';
+import {
+    ExternalDataConfigComponent
+} from './policy-configuration/blocks/documents/external-data-config/external-data-config.component';
+import {
+    FiltersAddonConfigComponent
+} from './policy-configuration/blocks/documents/filters-addon-config/filters-addon-config.component';
+import {
+    InformationConfigComponent
+} from './policy-configuration/blocks/main/information-config/information-config.component';
+import { MintConfigComponent } from './policy-configuration/blocks/tokens/mint-config/mint-config.component';
+import {
+    RequestConfigComponent
+} from './policy-configuration/blocks/documents/request-config/request-config.component';
+import { RolesConfigComponent } from './policy-configuration/blocks/main/roles-config/roles-config.component';
+import { SendConfigComponent } from './policy-configuration/blocks/documents/send-config/send-config.component';
+import {
+    SourceAddonConfigComponent
+} from './policy-configuration/blocks/documents/source-addon-config/source-addon-config.component';
+import { ActionBlockComponent } from './policy-viewer/blocks/action-block/action-block.component';
+import { ContainerBlockComponent } from './policy-viewer/blocks/container-block/container-block.component';
+import {
+    DocumentsSourceBlockComponent
+} from './policy-viewer/blocks/documents-source-block/documents-source-block.component';
+import { FiltersAddonBlockComponent } from './policy-viewer/blocks/filters-addon-block/filters-addon-block.component';
+import { InformationBlockComponent } from './policy-viewer/blocks/information-block/information-block.component';
+import {
+    RequestDocumentBlockComponent
+} from './policy-viewer/blocks/request-document-block/request-document-block.component';
+import { RolesBlockComponent } from './policy-viewer/blocks/roles-block/roles-block.component';
+import { StepBlockComponent } from './policy-viewer/blocks/step-block/step-block.component';
+import {
+    CalculateConfigComponent
+} from './policy-configuration/blocks/calculate/calculate-config/calculate-config.component';
+import {
+    CalculateMathConfigComponent
+} from './policy-configuration/blocks/calculate/calculate-math-config/calculate-math-config.component';
+import { BlockNode } from './helpers/tree-data-source/tree-data-source';
+import { ReportBlockComponent } from './policy-viewer/blocks/report-block/report-block.component';
+import {
+    ReportItemConfigComponent
+} from './policy-configuration/blocks/report/report-item-config/report-item-config.component';
+import {
+    PaginationAddonBlockComponent
+} from './policy-viewer/blocks/pagination-addon-block/pagination-addon-block.component';
+import {
+    ReassigningConfigComponent
+} from './policy-configuration/blocks/documents/reassigning-config/reassigning-config.component';
+import { TimerConfigComponent } from './policy-configuration/blocks/documents/timer-config/timer-config.component';
+import {
+    CustomLogicConfigComponent
+} from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
+import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
+import { PolicyBlockModel } from './structures/policy-model';
+import { RevokeConfigComponent } from './policy-configuration/blocks/documents/revoke-config/revoke-config.component';
+import { ButtonConfigComponent } from './policy-configuration/blocks/main/button-config/button-config.component';
+import { ButtonBlockComponent } from './policy-viewer/blocks/button-block/button-block.component';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { TokenActionConfigComponent } from "./policy-configuration/blocks/tokens/token-action-config/token-action-config.component";
-import { DocumentValidatorConfigComponent } from "./policy-configuration/blocks/documents/document-validator-config/document-validator-config.component";
-import { TokenConfirmationConfigComponent } from "./policy-configuration/blocks/tokens/token-confirmation-config/token-confirmation-config.component";
-import { TokenConfirmationBlockComponent } from "./policy-viewer/blocks/token-confirmation-block/token-confirmation-block.component";
-import { GroupManagerConfigComponent } from './policy-configuration/blocks/main/group-manager-config/group-manager-config.component';
+import {
+    TokenActionConfigComponent
+} from './policy-configuration/blocks/tokens/token-action-config/token-action-config.component';
+import {
+    DocumentValidatorConfigComponent
+} from './policy-configuration/blocks/documents/document-validator-config/document-validator-config.component';
+import {
+    TokenConfirmationConfigComponent
+} from './policy-configuration/blocks/tokens/token-confirmation-config/token-confirmation-config.component';
+import {
+    TokenConfirmationBlockComponent
+} from './policy-viewer/blocks/token-confirmation-block/token-confirmation-block.component';
+import {
+    GroupManagerConfigComponent
+} from './policy-configuration/blocks/main/group-manager-config/group-manager-config.component';
 import { GroupManagerBlockComponent } from './policy-viewer/blocks/group-manager-block/group-manager-block.component';
-import { BlockType } from "./structures/types/block-type.type";
-import { BlockGroup } from "./structures/types/block-group.type";
-import { BlockHeaders } from "./structures/types/block-headers.type";
-import { IBlockAbout } from "./structures/interfaces/block-about.interface";
-import { ChildrenType } from "./structures/types/children-type.type";
-import { ControlType } from "./structures/types/control-type.type";
-import { BlockAbout } from "./structures/block-about";
-import { IBlockSetting } from "./structures/interfaces/block-setting.interface";
-import { MultiSignBlockComponent } from "./policy-viewer/blocks/multi-sign-block/multi-sign-block.component";
-import { CreateTokenConfigComponent } from "./policy-configuration/blocks/tokens/create-token-config/create-token-config.component";
-import { CreateTokenBlockComponent } from "./policy-viewer/blocks/create-token-block/create-token-block.component";
+import { BlockType } from './structures/types/block-type.type';
+import { BlockGroup } from './structures/types/block-group.type';
+import { BlockHeaders } from './structures/types/block-headers.type';
+import { IBlockAbout } from './structures/interfaces/block-about.interface';
+import { ChildrenType } from './structures/types/children-type.type';
+import { ControlType } from './structures/types/control-type.type';
+import { BlockAbout } from './structures/block-about';
+import { IBlockSetting } from './structures/interfaces/block-setting.interface';
+import { MultiSignBlockComponent } from './policy-viewer/blocks/multi-sign-block/multi-sign-block.component';
+import {
+    CreateTokenConfigComponent
+} from './policy-configuration/blocks/tokens/create-token-config/create-token-config.component';
+import { CreateTokenBlockComponent } from './policy-viewer/blocks/create-token-block/create-token-block.component';
+import {
+    HttpRequestConfigComponent
+} from './policy-configuration/blocks/main/http-request-config/http-request-config.component';
 
 @Injectable()
 export class RegisteredBlocks {
@@ -97,6 +144,7 @@ export class RegisteredBlocks {
             { type: BlockType.Container },
             { type: BlockType.Step },
             { type: BlockType.Switch },
+            { type: BlockType.HttpRequest },
             { type: BlockType.DocumentsViewer },
             { type: BlockType.Request },
             { type: BlockType.SendToGuardian },
@@ -117,7 +165,7 @@ export class RegisteredBlocks {
             { type: BlockType.DocumentValidatorBlock },
             { type: BlockType.MultiSignBlock },
             { type: BlockType.CreateToken },
-            { type: BlockType.SplitBlock }
+            { type: BlockType.SplitBlock },
         ];
 
         // #region Main, UI Components
@@ -240,6 +288,17 @@ export class RegisteredBlocks {
                     return result;
                 }
             }
+        });
+        // #endregion
+
+        // #region Main, Server Blocks
+        this.registerBlock({
+            type: BlockType.HttpRequest,
+            icon: 'http',
+            group: BlockGroup.Main,
+            header: BlockHeaders.ServerBlocks,
+            factory: null,
+            property: HttpRequestConfigComponent,
         });
         // #endregion
 
