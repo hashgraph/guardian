@@ -27,15 +27,15 @@ in `guardian-service/.env.docker`:
 **Note:** You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 {% endhint %}
 
-3\. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node.
+3\. Now, we have two options to setup IPFS node : 1. Local node 2. IPFS Web3Storage node.
 
 #### 3.1 Setting up IPFS Local node:
 
-3.1.1 We need to install and configure any IPFS node.&#x20;
+3.1.1 We need to install and configure any IPFS node.
 
 For example: [https://github.com/yeasy/docker-ipfs](https://github.com/yeasy/docker-ipfs)
 
-3.1.2 For setup IPFS local node you need to set variables in `worker-service` folder
+3.1.2 For setup IPFS local node you need to set variables in `worker-service/.env` folder
 
 ```
 IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5002"
@@ -52,7 +52,7 @@ Note:
 
 #### 3.2 Setting up IPFS Web3Storage node:
 
-3.2.1 For setup IPFS web3storage node you need to set variables in `worker-service`:
+3.2.1 For setup IPFS web3storage node you need to set variables in `worker-service/.env`:
 
 ```
 IPFS_STORAGE_API_KEY="..."
@@ -249,7 +249,8 @@ Note:
 
 1. Configure .env/.env.docker files in **auth-service** folder
 
-<pre><code><strong>VAULT_PROVIDER = "hashicorp"</strong></code></pre>
+<pre><code><strong>VAULT_PROVIDER = "hashicorp"
+</strong></code></pre>
 
 {% hint style="info" %}
 **Note**: VAULT\_PROVIDER can be set to "database" or "hashicorp" to select Database instance or a hashicorp vault instance correspondingly.
@@ -476,4 +477,3 @@ For Hashicorp vault backup and restore use this instructions: [https://developer
 | MRV\_SENDER    | [http://localhost:3005/](http://localhost:3005/) |
 | TOPIC\_VIEWER  | [http://localhost:3006/](http://localhost:3006/) |
 | API\_DOCS      | [http://localhost:3001/](http://localhost:3001/) |
-
