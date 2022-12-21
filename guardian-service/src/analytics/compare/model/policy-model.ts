@@ -23,17 +23,18 @@ export class PolicyModel {
         this.version = policy.version;
 
         if (policy.config) {
-            this.tree = this.createBlock(policy.config, this.options);
+            this.tree = this.createBlock(policy.config, 0, this.options);
             this.list = this.getAllBlocks(this.tree);
             this.createEvents(this.tree, this.list, this.options);
         }
     }
 
-    private createBlock(json: any, options: ICompareOptions): BlockModel {
-        const result = new BlockModel(json);
+    private createBlock(json: any, index: number, options: ICompareOptions): BlockModel {
+        const result = new BlockModel(json, index + 1);
         if (Array.isArray(json.children)) {
-            for (const child of json.children) {
-                result.children.push(this.createBlock(child, options));
+            for (let i = 0; i < json.children.length; i++) {
+                const child = json.children[i];
+                result.children.push(this.createBlock(child, i, options));
             }
         }
         result.calcWeight(options);

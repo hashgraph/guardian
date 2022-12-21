@@ -53,13 +53,23 @@ export class PolicyComparator {
             table = new ReportTable([
                 'lvl',
                 'type',
+                'block_type',
                 'left_type',
                 'left_tag',
+                'left_index',
                 'right_type',
                 'right_tag',
+                'right_index',
                 'prop_rate',
                 'event_rate',
-                'total_rate'
+                'permission_rate',
+                'index_rate',
+                'total_rate',
+                'left',
+                'right',
+                'properties',
+                'events',
+                'permissions'
             ]);
             lvl = 1;
         }
@@ -69,20 +79,37 @@ export class PolicyComparator {
         const row = table.createRow();
 
         row.set('lvl', lvl);
-        row.set('type', tree.difference);
+        row.set('type', tree.type);
+        row.set('block_type', tree.blockType);
+        row.set('properties', tree.properties);
+        row.set('events', tree.events);
+        row.set('permissions', tree.permissions);
+
+        row.set('left', item_1?.toObject());
+        row.set('right', item_2?.toObject());
 
         if (item_1) {
             row.set('left_type', item_1.blockType);
             row.set('left_tag', item_1.tag);
+            row.set('left_index', item_1.index);
         }
         if (item_2) {
             row.set('right_type', item_2.blockType);
             row.set('right_tag', item_2.tag);
+            row.set('right_index', item_2.index);
         }
         if (item_1 && item_2) {
             row.set('prop_rate', `${tree.propRate}%`);
             row.set('event_rate', `${tree.eventRate}%`);
+            row.set('index_rate', `${tree.indexRate}%`);
+            row.set('permission_rate', `${tree.permissionRate}%`);
             row.set('total_rate', `${tree.totalRate}%`);
+        } else {
+            row.set('prop_rate', `-`);
+            row.set('event_rate', `-`);
+            row.set('index_rate', `-`);
+            row.set('permission_rate', `-`);
+            row.set('total_rate', `-`);
         }
         for (const child of tree.children) {
             table = this.treeToTable(child, table, lvl + 1);
@@ -92,31 +119,31 @@ export class PolicyComparator {
 
     private compareTree(block1: BlockModel, block2: BlockModel, options: ICompareOptions): BlockRate {
         const rate = new BlockRate(block1, block2);
+        rate.calcRate(options);
         if (!block1 && !block2) {
             return rate;
         }
         if (block1 && !block2) {
-            rate.difference = Status.LEFT;
+            rate.type = Status.LEFT;
             rate.children = this.compareChildren(Status.LEFT, block1.children, null, options);
             return rate;
         }
         if (!block1 && block2) {
-            rate.difference = Status.RIGHT;
+            rate.type = Status.RIGHT;
             rate.children = this.compareChildren(Status.RIGHT, null, block2.children, options);
             return rate;
         }
-        rate.calcRate(options);
         if (block1.equal(block2)) {
-            rate.difference = Status.FULL;
+            rate.type = Status.FULL;
             rate.children = this.compareChildren(Status.FULL, block1.children, block2.children, options);
             return rate;
         }
         if (block1.blockType == block2.blockType) {
-            rate.difference = Status.PARTLY;
+            rate.type = Status.PARTLY;
             rate.children = this.compareChildren(Status.PARTLY, block1.children, block2.children, options);
             return rate;
         } else {
-            rate.difference = Status.LEFT_AND_RIGHT;
+            rate.type = Status.LEFT_AND_RIGHT;
             rate.children = this.compareChildren(Status.LEFT_AND_RIGHT, block1.children, block2.children, options);
             return rate;
         }
@@ -145,17 +172,19 @@ export class PolicyComparator {
 
     private mergeChildren1(children1: BlockModel[], children2: BlockModel[]): IBlockMap[] {
         const result: IBlockMap[] = [];
+
         let max = 0;
         for (const child of children1) {
             max = child.maxWeight();
             result.push({ blockType: child.blockType, left: child, right: null, rate: 0 });
         }
+        max++;
+
         const m = new Array(children2.length);
         for (let iteration = 0; iteration < max; iteration++) {
             for (let i = 0; i < children2.length; i++) {
                 if (!m[i]) {
-                    const child: BlockModel = children2[i];
-                    m[i] = this.mapping(result, child, iteration);
+                    m[i] = this.mapping(result, children2[i], iteration);
                 }
             }
         }

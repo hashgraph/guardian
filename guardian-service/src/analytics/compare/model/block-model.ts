@@ -2,9 +2,11 @@ import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from "./compare-options.interface";
 import { EventModel } from "./event-model";
 import { PropModel } from './prop-model';
+import { IProperties } from "./properties.interface";
 import { WeightType } from './weight.type';
 
 export class BlockModel {
+    public readonly index: number;
     public readonly children: BlockModel[];
     public readonly blockType: string;
     public readonly tag: string;
@@ -14,10 +16,11 @@ export class BlockModel {
     private _weight: string[];
     private _weightMap: { [key: string]: string };
 
-    constructor(json: any) {
+    constructor(json: any, index: number) {
         this.children = [];
         this.blockType = json.blockType;
         this.tag = json.tag;
+        this.index = index;
         this.prop = new PropModel(json);
         this.events = this.copyEvents(json);
         this._weight = [];
@@ -38,36 +41,55 @@ export class BlockModel {
         let hashState: any;
 
         if (options.childLvl > 0) {
-            //children
-            hashState = MurmurHash3();
-            hashState.hash(this.blockType);
-            for (const child of this.children) {
-                hashState.hash(child.blockType);
+            if (this.children.length) {
+                //children
+                hashState = MurmurHash3();
+                hashState.hash(this.blockType);
+                for (const child of this.children) {
+                    hashState.hash(child.blockType);
+                }
+                const weight = String(hashState.result());
+                weights.push(weight);
+                weightMap[WeightType.CHILD_LVL_1] = weight;
+            } else {
+                weights.push('0');
+                weightMap[WeightType.CHILD_LVL_1] = '0';
             }
-            const weight = String(hashState.result());
-            weights.push(weight);
-            weightMap[WeightType.CHILD_LVL_1] = weight;
-        }
-
-        if (options.childLvl > 1) {
-            //all children
-            hashState = MurmurHash3();
-            hashState.hash(this.blockType);
-            for (const child of this.children) {
-                hashState.hash(child.getWeight(WeightType.CHILD_LVL_2));
-            }
-            const weight = String(hashState.result());
-            weights.push(weight);
-            weightMap[WeightType.CHILD_LVL_2] = weight;
         }
 
         if (options.propLvl > 0) {
             //prop
             hashState = MurmurHash3();
+            hashState.hash(this.blockType + this.tag);
+            const weight = String(hashState.result());
+            weights.push(weight);
+            weightMap[WeightType.PROP_LVL_1] = weight;
+        }
+
+        if (options.childLvl > 1) {
+            if (this.children.length) {
+                //all children
+                hashState = MurmurHash3();
+                hashState.hash(this.blockType);
+                for (const child of this.children) {
+                    hashState.hash(child.getWeight(WeightType.CHILD_LVL_2));
+                }
+                const weight = String(hashState.result());
+                weights.push(weight);
+                weightMap[WeightType.CHILD_LVL_2] = weight;
+            } else {
+                weights.push('0');
+                weightMap[WeightType.CHILD_LVL_2] = '0';
+            }
+        }
+
+        if (options.propLvl > 1) {
+            //prop
+            hashState = MurmurHash3();
             hashState.hash(this.blockType + this.prop.toString(options.propLvl));
             const weight = String(hashState.result());
             weights.push(weight);
-            weightMap[WeightType.PROP] = weight;
+            weightMap[WeightType.PROP_LVL_2] = weight;
         }
 
         if (options.propLvl > 0 && options.childLvl > 0) {
@@ -117,9 +139,37 @@ export class BlockModel {
             return this.blockType === block.blockType;
         }
         if (iteration) {
-            return this._weight[iteration] === block._weight[iteration];
+            if (this._weight[iteration] === '0' && block._weight[iteration] === '0') {
+                return false;
+            } else {
+                return this._weight[iteration] === block._weight[iteration];
+            }
         } else {
             return this._weight[0] === block._weight[0];
         }
+    }
+
+    public toObject(): any {
+        const properties = this.prop.getPropList();
+        const events = this.events.map(e => e.toObject());
+        return {
+            index: this.index,
+            blockType: this.blockType,
+            tag: this.tag,
+            properties,
+            events
+        }
+    }
+
+    public getPropList(): IProperties<any>[] {
+        return this.prop.getPropList();
+    }
+
+    public getEventList(): EventModel[] {
+        return this.events;
+    }
+
+    public getPermissionsList(): string[] {
+        return this.prop.getPermissionsList();
     }
 }

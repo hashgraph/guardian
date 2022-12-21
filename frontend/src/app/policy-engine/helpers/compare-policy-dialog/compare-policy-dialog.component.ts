@@ -25,7 +25,7 @@ export class ComparePolicyDialog {
         
         this.policy = data.policy;
         this.policies = data.policies || [];
-        this.policyId1 = this.policy.id;
+        this.policyId1 = this.policy?.id;
     }
 
     ngOnInit() {

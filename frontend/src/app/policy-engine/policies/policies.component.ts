@@ -200,27 +200,6 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         this.mode = OperationMode.None;
     }
 
-    newPolicy() {
-        const dialogRef = this.dialog.open(NewPolicyDialog, {
-            width: '500px',
-            data: {}
-        });
-
-        dialogRef.afterClosed().subscribe(async (result) => {
-            if (result) {
-                this.loading = true;
-                this.policyEngineService.pushCreate(result).subscribe((result) => {
-                    const { taskId, expectation } = result;
-                    this.taskId = taskId;
-                    this.expectedTaskMessages = expectation;
-                    this.mode = OperationMode.Create;
-                }, (e) => {
-                    this.loading = false;
-                });
-            }
-        });
-    }
-
     dryRun(element: any) {
         this.loading = true;
         this.policyEngineService.dryRun(element.id).subscribe((data: any) => {
@@ -465,7 +444,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         });
     }
 
-    comparePolicy(element: any) {
+    comparePolicy(element?: any) {
         const dialogRef = this.dialog.open(ComparePolicyDialog, {
             width: '650px',
             panelClass: 'g-dialog',
@@ -483,6 +462,30 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                     policyId1: result.policyId1,
                     policyId2: result.policyId2
                 } });
+            }
+        });
+    }
+
+    newPolicy() {
+        const dialogRef = this.dialog.open(NewPolicyDialog, {
+            width: '650px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
+            data: {}
+        });
+
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.loading = true;
+                this.policyEngineService.pushCreate(result).subscribe((result) => {
+                    const { taskId, expectation } = result;
+                    this.taskId = taskId;
+                    this.expectedTaskMessages = expectation;
+                    this.mode = OperationMode.Create;
+                }, (e) => {
+                    this.loading = false;
+                });
             }
         });
     }

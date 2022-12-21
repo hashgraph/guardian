@@ -22,7 +22,7 @@
 
             <mat-form-field appearance="outline" style="width: 100%">
                 <mat-label>First policy:</mat-label>
-                <mat-select [value]="policyId1">
+                <mat-select [(value)]="policyId1">
                     <mat-option>None</mat-option>
                     <mat-option *ngFor="let policy of policies" [value]="policy.id">{{policy.name}}</mat-option>
                 </mat-select>

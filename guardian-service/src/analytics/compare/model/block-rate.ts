@@ -1,113 +1,204 @@
 import { BlockModel } from "./block-model";
-import { PropModel } from "./prop-model";
 import { ICompareOptions } from "./compare-options.interface";
 import { Status } from "./status.type";
-
+import { IProperties } from "./properties.interface";
+import { EventModel } from "./event-model";
+import { PropertiesRate } from "./PropertiesRate";
+import { EventsRate } from "./EventsRate";
+import { PermissionsRate } from "./PermissionsRate";
 
 export class BlockRate {
+    public indexRate: number;
     public propRate: number;
     public eventRate: number;
+    public permissionRate: number;
     public totalRate: number;
-    public difference: Status;
+    public type: Status;
+    public blockType: string;
     public items: BlockModel[];
     public children: BlockRate[];
+    public properties: PropertiesRate[];
+    public events: EventsRate[];
+    public permissions: PermissionsRate[];
 
     constructor(block1: BlockModel, block2: BlockModel) {
+        this.indexRate = -1;
         this.propRate = -1;
         this.eventRate = -1;
+        this.permissionRate = -1;
         this.totalRate = -1;
-        this.difference = Status.NONE;
+        this.type = Status.NONE;
         this.items = [block1, block2];
         this.children = [];
+        this.properties = [];
+        this.events = [];
+        this.permissions = [];
+        if (block1) {
+            this.blockType = block1.blockType;
+        } else if (block2) {
+            this.blockType = block2.blockType;
+        }
+    }
+
+    private compareProp(block1: BlockModel, block2: BlockModel): void {
+        const list: string[] = [];
+        const map: any = {};
+
+        let tag1: IProperties<any>;
+        if (block1) {
+            tag1 = { type: 'property', name: 'tag', lvl: 1, path: 'tag', value: block1.tag };
+            const list1 = block1.getPropList();
+            for (const item of list1) {
+                list.push(item.path);
+                map[item.path] = [item, null];
+            }
+        }
+
+        let tag2: IProperties<any>;
+        if (block2) {
+            tag2 = { type: 'property', name: 'tag', lvl: 1, path: 'tag', value: block2.tag };
+            const list2 = block2.getPropList();
+            for (const item of list2) {
+                if (map[item.path]) {
+                    map[item.path][1] = item;
+                } else {
+                    list.push(item.path);
+                    map[item.path] = [null, item];
+                }
+            }
+        }
+
+        list.sort();
+
+        this.properties = [];
+        for (const path of list) {
+            this.properties.push(new PropertiesRate(map[path][0], map[path][1]));
+        }
+
+        this.properties.unshift(new PropertiesRate(tag1, tag2));
+    }
+
+    private mapEvents(list: EventModel[][], item: EventModel) {
+        for (const el of list) {
+            if (el[0] && !el[1] && el[0].weight === item.weight) {
+                el[1] = item;
+                return;
+            }
+        }
+        list.push([null, item])
+    }
+
+    private compareEvents(block1: BlockModel, block2: BlockModel): void {
+        const list: EventModel[][] = [];
+
+        if (block1) {
+            const list1 = block1.getEventList();
+            for (const item of list1) {
+                list.push([item, null]);
+            }
+        }
+
+        if (block2) {
+            const list2 = block2.getEventList();
+            for (const item of list2) {
+                this.mapEvents(list, item);
+            }
+        }
+
+        this.events = [];
+        for (const item of list) {
+            this.events.push(new EventsRate(item[0], item[1]));
+        }
+    }
+
+    private comparePermissions(block1: BlockModel, block2: BlockModel): void {
+        const list: string[] = [];
+        const map: any = [];
+
+        if (block1) {
+            const list1 = block1.getPermissionsList();
+            for (const item of list1) {
+                list.push(item);
+                map[item] = [item, null];
+            }
+        }
+
+        if (block2) {
+            const list2 = block2.getPermissionsList();
+            for (const item of list2) {
+                if (map[item]) {
+                    map[item][1] = item;
+                } else {
+                    list.push(item);
+                    map[item] = [null, item];
+                }
+            }
+        }
+
+        list.sort();
+
+        this.permissions = [];
+        for (const item of list) {
+            this.permissions.push(new PermissionsRate(map[item][0], map[item][1]));
+        }
     }
 
     public calcRate(options: ICompareOptions): void {
         const block1 = this.items[0];
         const block2 = this.items[1];
 
+        this.compareProp(block1, block2);
+        this.compareEvents(block1, block2);
+        this.comparePermissions(block1, block2);
+
         if (!block1 || !block2) {
             return;
         }
 
-        let propCount = 0;
-        const propKeys =  PropModel.keys(block1.prop, block2.prop);
-        for (const key of propKeys) {
-            if (this.compareProp(block1.prop.get(key), block2.prop.get(key), options)) {
-                propCount++;
+        let propRate = 0;
+        for (const p of this.properties) {
+            if (p.totalRate > 0) {
+                propRate += p.totalRate;
             }
         }
-
-        const events = {};
-        for (const event of block1.events) {
-            if (event.weight) {
-                events[event.weight] = 1;
-            }
-        }
-        for (const event of block2.events) {
-            if (event.weight) {
-                if (events[event.weight]) {
-                    events[event.weight] = 2;
-                } else {
-                    events[event.weight] = 1;
-                }
-            }
-        }
-
-        const eventKeys = Object.keys(events);
-        let eventCount = 0;
-        for (const key of eventKeys) {
-            if (events[key] == 2) {
-                eventCount++;
-            }
-        }
-
-        let k1 = 0;
-        let k2 = 0;
-        let k3s = [];
-        if (options.propLvl == 0) {
-            k1 = -1;
+        if (this.properties.length) {
+            propRate = propRate / this.properties.length;
         } else {
-            k1 = propKeys.length == 0 ? 100 : (propCount) / (propKeys.length) * 100;
-            k3s.push(k1);
+            propRate = 100;
         }
+        propRate = Math.min(Math.max(-1, Math.floor(propRate)), 100);
 
-        if (options.eventLvl == 0) {
-            k2 = -1;
-        } else {
-            k2 = eventKeys.length == 0 ? 100 : (eventCount) / (eventKeys.length) * 100;
-            k3s.push(k2);
-        }
-        let k3 = 0;
-        for (const v of k3s) {
-            k3 += v;
-        }
-        k3 = k3s.length == 0 ? 100 : (k3) / (k3s.length);
 
-        const p1 = Math.min(Math.max(-1, Math.floor(k1)), 100);
-        const p2 = Math.min(Math.max(-1, Math.floor(k2)), 100);
-        const p3 = Math.min(Math.max(-1, Math.floor(k3)), 100);
-
-        this.propRate = p1;
-        this.eventRate = p2;
-        this.totalRate = p3;
-    }
-
-    private compareProp(prop1: any, prop2: any, options: ICompareOptions) {
-        if (options.propLvl == 0) {
-            return true;
-        }
-        if (prop1 && prop2) {
-            if (typeof prop1 == 'object') {
-                if (options.propLvl == 1) {
-                    return true;
-                } else {
-                    return JSON.stringify(prop1) == JSON.stringify(prop2);
-                }
-            } else {
-                return prop1 == prop2;
+        let eventRate = 0;
+        for (const e of this.events) {
+            if (e.totalRate > 0) {
+                eventRate += e.totalRate;
             }
-        } else {
-            return prop1 == prop2;
         }
+        if (this.events.length) {
+            eventRate = eventRate / this.events.length;
+        } else {
+            eventRate = 100;
+        }
+        eventRate = Math.min(Math.max(-1, Math.floor(eventRate)), 100);
+
+        let permissionRate = 0;
+        for (const e of this.permissions) {
+            if (e.totalRate > 0) {
+                permissionRate += e.totalRate;
+            }
+        }
+        if (this.permissions.length) {
+            permissionRate = permissionRate / this.permissions.length;
+        } else {
+            permissionRate = 100;
+        }
+        permissionRate = Math.min(Math.max(-1, Math.floor(permissionRate)), 100);
+
+        this.indexRate = block1.index === block2.index ? 100 : 0;
+        this.propRate = propRate;
+        this.eventRate = eventRate;
+        this.permissionRate = permissionRate;
+        this.totalRate = Math.floor((propRate + eventRate) / 2);
     }
 }

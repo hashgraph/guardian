@@ -58,4 +58,18 @@ export class EventModel {
         }
         this._weight = weight;
     }
+
+    public toObject(): any {
+        return {
+            actor: this.actor,
+            source: this.source,
+            target: this.target,
+            input: this.input,
+            output: this.output,
+            disabled: this.disabled,
+            weight: this._weight,
+            startWeight: this.start,
+            endWeight: this.end,
+        }
+    }
 }
