@@ -1,4 +1,4 @@
-import { IProperties } from "./properties.interface";
+import { IProperties } from "../interfaces/properties.interface";
 
 export class PropModel {
     private prop: any;

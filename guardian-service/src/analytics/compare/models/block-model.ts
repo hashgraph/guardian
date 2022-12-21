@@ -1,9 +1,9 @@
 import MurmurHash3 from 'imurmurhash';
-import { ICompareOptions } from "./compare-options.interface";
+import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { EventModel } from "./event-model";
 import { PropModel } from './prop-model';
-import { IProperties } from "./properties.interface";
-import { WeightType } from './weight.type';
+import { IProperties } from "../interfaces/properties.interface";
+import { WeightType } from '../types/weight.type';
 
 export class BlockModel {
     public readonly index: number;

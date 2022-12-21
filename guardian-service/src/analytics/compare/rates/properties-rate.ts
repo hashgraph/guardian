@@ -1,5 +1,5 @@
-import { Status } from "./status.type";
-import { IProperties } from "./properties.interface";
+import { Status } from "../types/status.type";
+import { IProperties } from "../interfaces/properties.interface";
 
 
 export class PropertiesRate {

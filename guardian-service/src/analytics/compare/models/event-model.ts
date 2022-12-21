@@ -1,6 +1,6 @@
 import MurmurHash3 from 'imurmurhash';
 import { BlockModel } from "./block-model";
-import { ICompareOptions } from "./compare-options.interface";
+import { ICompareOptions } from "../interfaces/compare-options.interface";
 
 
 export class EventModel {

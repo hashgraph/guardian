@@ -1,5 +1,5 @@
-import { Status } from "./status.type";
-import { EventModel } from "./event-model";
+import { Status } from "../types/status.type";
+import { EventModel } from "../models/event-model";
 
 
 export class EventsRate {

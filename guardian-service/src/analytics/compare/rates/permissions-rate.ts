@@ -1,4 +1,4 @@
-import { Status } from "./status.type";
+import { Status } from "../types/status.type";
 
 
 export class PermissionsRate {

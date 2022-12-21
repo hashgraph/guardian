@@ -1,11 +1,11 @@
-import { BlockModel } from "./block-model";
-import { ICompareOptions } from "./compare-options.interface";
-import { Status } from "./status.type";
-import { IProperties } from "./properties.interface";
-import { EventModel } from "./event-model";
-import { PropertiesRate } from "./PropertiesRate";
-import { EventsRate } from "./EventsRate";
-import { PermissionsRate } from "./PermissionsRate";
+import { BlockModel } from "../models/block-model";
+import { ICompareOptions } from "../interfaces/compare-options.interface";
+import { Status } from "../types/status.type";
+import { IProperties } from "../interfaces/properties.interface";
+import { EventModel } from "../models/event-model";
+import { PropertiesRate } from "./properties-rate";
+import { EventsRate } from "./events-rate";
+import { PermissionsRate } from "./permissions-rate";
 
 export class BlockRate {
     public indexRate: number;

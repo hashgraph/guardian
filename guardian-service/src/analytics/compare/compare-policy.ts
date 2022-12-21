@@ -1,11 +1,11 @@
 import { Policy } from "@entity/policy";
-import { BlockModel } from "./model/block-model";
-import { BlockRate } from "./model/block-rate";
-import { ICompareOptions } from "./model/compare-options.interface";
-import { PolicyModel } from "./model/policy-model";
+import { BlockModel } from "./models/block-model";
+import { BlockRate } from "./rates/block-rate";
+import { ICompareOptions } from "./interfaces/compare-options.interface";
+import { PolicyModel } from "./models/policy-model";
 import { ReportTable } from "../table/report-table";
-import { Status } from "./model/status.type";
-import { IBlockMap } from "./model/block-map.interface";
+import { Status } from "./types/status.type";
+import { IBlockMap } from "./interfaces/block-map.interface";
 
 export class PolicyComparator {
     private readonly propLvl: number;
