@@ -20,7 +20,7 @@ After executing this command, you will see a welcome window where you need to se
 
 Click on the button ' Start E2E Testing in Electron '.
 
-<figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
 
 and then select test under ui-tests/specs/policies
 
