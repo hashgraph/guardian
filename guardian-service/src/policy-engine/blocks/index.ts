@@ -35,4 +35,4 @@ export { CalculateMathVariables } from './calculate-math-variables';
 export { CreateTokenBlock } from './create-token-block';
 export { SplitBlock } from './split-block';
 export { TokenOperationAddon } from './impact-addon';
-export { HttpRequestBlock } from '@policy-engine/blocks/http-request-block';
+export { HttpRequestBlock } from './http-request-block';
