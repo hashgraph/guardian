@@ -322,7 +322,7 @@
 
 .toolbar-btn {
     margin: 15px;
-    width: 150px;
+    min-width: 120px;
     cursor: pointer;
     font-weight: 500;
     text-align: left;
@@ -332,6 +332,7 @@
     padding: 0;
     font-size: 14px;
     padding-left: 48px !important;
+    padding-right: 30px;
 }
 
 .toolbar-btn mat-icon {

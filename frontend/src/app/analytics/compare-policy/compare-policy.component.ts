@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuditService } from 'src/app/services/audit.service';
@@ -19,13 +19,16 @@ export class ComparePolicyComponent implements OnInit {
     panelOpenState = true;
 
     type = 'tree';
-    eventsLvl = '1';
-    propLvl = '2';
-    childrenLvl = '2';
 
     policy1: any;
     policy2: any;
     report!: any[];
+
+    @Input() eventsLvl: string = '1';
+    @Input() propLvl: string = '2';
+    @Input() childrenLvl: string = '2';
+
+    @Output() change = new EventEmitter<any>();
 
     displayedColumns: string[] = [
         'offset',
@@ -42,7 +45,7 @@ export class ComparePolicyComponent implements OnInit {
         'total_rate'
     ];
 
-    icons:any = {
+    icons: any = {
         "interfaceContainerBlock": "tab",
         "interfaceStepBlock": "vertical_split",
         "policyRolesBlock": "manage_accounts",
@@ -102,5 +105,13 @@ export class ComparePolicyComponent implements OnInit {
 
     onRender() {
         console.log(this.policy1);
+    }
+
+    onApply() {
+        this.change.emit({
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl
+        })
     }
 }

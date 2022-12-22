@@ -421,7 +421,16 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param policyId1
      * @param policyId2
      */
-    public async comparePolicy(user: any, policyId1: any, policyId2: any) {
-        return await this.request(PolicyEngineEvents.COMPARE_POLICY, { user, policyId1, policyId2 });
+    public async comparePolicy(
+        user: any, 
+        policyId1: any, 
+        policyId2: any,
+        eventsLvl: any,
+        propLvl: any,
+        childrenLvl: any,
+    ) {
+        return await this.request(PolicyEngineEvents.COMPARE_POLICY, { 
+            user, policyId1, policyId2, eventsLvl, propLvl, childrenLvl
+        });
     }
 }

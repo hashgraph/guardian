@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { webSocket, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
@@ -213,7 +213,19 @@ export class PolicyEngineService {
         return this.http.post<void>(`${this.url}/${policyId}/multiple`, data);
     }
 
-    public comparePolicy(policyId1: string, policyId2: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/analytics/compare?policyId1=${policyId1}&policyId2=${policyId2}`);
+    public comparePolicy(
+        policyId1: string,
+        policyId2: string,
+        eventsLvl: string,
+        propLvl: string,
+        childrenLvl: string,
+    ): Observable<any> {
+        const params = new HttpParams()
+            .set('policyId1', policyId1)
+            .set('policyId2', policyId2)
+            .set('eventsLvl', eventsLvl)
+            .set('propLvl', propLvl)
+            .set('childrenLvl', childrenLvl);
+        return this.http.get<any>(`${this.url}/analytics/compare`, { params });
     }
 }

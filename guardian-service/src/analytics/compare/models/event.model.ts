@@ -1,7 +1,6 @@
 import MurmurHash3 from 'imurmurhash';
-import { BlockModel } from "./block-model";
+import { BlockModel } from "./block.model";
 import { ICompareOptions } from "../interfaces/compare-options.interface";
-
 
 export class EventModel {
     public readonly actor: any;
@@ -19,6 +18,7 @@ export class EventModel {
 
     private start: string;
     private end: string;
+    private hash: string;
 
     constructor(json: any) {
         this.actor = json.actor;
@@ -41,22 +41,27 @@ export class EventModel {
         if (target) {
             this.end = target.getWeight();
         }
-        let weight = '';
-        if (options.eventLvl > 0) {
-            let hashState = MurmurHash3();
-            if (this.start) {
-                hashState.hash(this.start);
-            }
-            if (this.end) {
-                hashState.hash(this.end);
-            }
-            hashState.hash(this.actor);
-            hashState.hash(this.disabled);
-            hashState.hash(this.input);
-            hashState.hash(this.output);
-            weight = String(hashState.result());
+
+
+        let hashState = MurmurHash3();
+        if (this.start) {
+            hashState.hash(this.start);
         }
-        this._weight = weight;
+        if (this.end) {
+            hashState.hash(this.end);
+        }
+        hashState.hash(this.actor);
+        hashState.hash(this.disabled);
+        hashState.hash(this.input);
+        hashState.hash(this.output);
+        const weight = String(hashState.result());
+
+        if (options.eventLvl > 0) {
+            this._weight = weight;
+        } else {
+            this._weight = '';
+        }
+        this.hash = weight;
     }
 
     public toObject(): any {
@@ -71,5 +76,9 @@ export class EventModel {
             startWeight: this.start,
             endWeight: this.end,
         }
+    }
+
+    public equal(event: EventModel): boolean {
+        return this.hash === event.hash;
     }
 }

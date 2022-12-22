@@ -1,7 +1,8 @@
+import { IRate } from "../interfaces/rate.interface";
 import { Status } from "../types/status.type";
 
 
-export class PermissionsRate {
+export class PermissionsRate implements IRate<string> {
     public items: string[];
     public type: Status;
     public totalRate: number;

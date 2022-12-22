@@ -20,6 +20,10 @@ export class CompareComponent implements OnInit {
     policyId2: any;
     result: any;
 
+    eventsLvl = '1';
+    propLvl = '2';
+    childrenLvl = '2';
+
     constructor(
         private auth: AuthService,
         private route: ActivatedRoute,
@@ -44,7 +48,13 @@ export class CompareComponent implements OnInit {
             this.loading = false;
         }
 
-        this.policyEngineService.comparePolicy(this.policyId1, this.policyId2).subscribe((value) => {
+        this.policyEngineService.comparePolicy(
+            this.policyId1, 
+            this.policyId2,
+            this.eventsLvl,
+            this.propLvl,
+            this.childrenLvl,
+        ).subscribe((value) => {
             this.result = value;
             setTimeout(() => {
                 this.loading = false;
@@ -57,5 +67,12 @@ export class CompareComponent implements OnInit {
 
     loadPolicy() {
 
+    }
+
+    onFilters(event: any) {
+        this.eventsLvl = event.eventsLvl;
+        this.propLvl = event.propLvl;
+        this.childrenLvl = event.childrenLvl;
+        this.loadData();
     }
 }

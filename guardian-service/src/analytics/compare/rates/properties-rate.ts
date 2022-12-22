@@ -1,8 +1,9 @@
 import { Status } from "../types/status.type";
 import { IProperties } from "../interfaces/properties.interface";
+import { IRate } from "../interfaces/rate.interface";
 
 
-export class PropertiesRate {
+export class PropertiesRate implements IRate<any> {
     public name: string;
     public path: string;
     public lvl: number;

@@ -10,10 +10,11 @@ export class PropModel {
         } else {
             this.permissions = [];
         }
-        this.permissions.sort()
+        this.permissions.sort();
         this.prop = Object.assign({}, json, {
             id: undefined,
             permissions: undefined,
+            artifacts: undefined,
             events: undefined,
             children: undefined,
             tokenId: undefined,

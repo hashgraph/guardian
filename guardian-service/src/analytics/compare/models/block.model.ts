@@ -1,9 +1,11 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { EventModel } from "./event-model";
-import { PropModel } from './prop-model';
+import { EventModel } from "./event.model";
+import { PropModel } from './prop.model';
 import { IProperties } from "../interfaces/properties.interface";
 import { WeightType } from '../types/weight.type';
+import { ArtifactModel } from './artifact.model';
+import { IArtifacts } from '../interfaces/artifacts.interface';
 
 export class BlockModel {
     public readonly index: number;
@@ -12,6 +14,7 @@ export class BlockModel {
     public readonly tag: string;
     public readonly prop: PropModel;
     public readonly events: EventModel[];
+    public readonly artifacts: ArtifactModel[];
 
     private _weight: string[];
     private _weightMap: { [key: string]: string };
@@ -23,6 +26,7 @@ export class BlockModel {
         this.index = index;
         this.prop = new PropModel(json);
         this.events = this.copyEvents(json);
+        this.artifacts = this.copyArtifacts(json);
         this._weight = [];
         this._weightMap = {};
     }
@@ -34,7 +38,14 @@ export class BlockModel {
         return [];
     }
 
-    public calcWeight(options: ICompareOptions): void {
+    private copyArtifacts(json: any): ArtifactModel[] {
+        if (Array.isArray(json.artifacts)) {
+            return json.artifacts.map((e: any) => new ArtifactModel(e));
+        }
+        return [];
+    }
+
+    public calcBaseWeight(options: ICompareOptions): void {
         const weights = [];
         const weightMap = {};
 
@@ -114,6 +125,23 @@ export class BlockModel {
         this._weight = weights.reverse();
     }
 
+    public calcEventsWeight(map: { [tag: string]: BlockModel; }, options: ICompareOptions) {
+        for (const event of this.events) {
+            event.calcWeight(map[event.source], map[event.target], options);
+        }
+    }
+
+    public calcArtifactsWeight(artifacts: IArtifacts[], options: ICompareOptions) {
+        for (const artifact of this.artifacts) {
+            const row = artifacts.find(e => e.uuid === artifact.uuid);
+            if (row && row.data) {
+                artifact.calcWeight(row.data, options);
+            } else {
+                artifact.calcWeight('', options);
+            }
+        }
+    }
+
     public getWeight(type?: WeightType): string {
         if (type) {
             return this._weightMap[type];
@@ -171,5 +199,9 @@ export class BlockModel {
 
     public getPermissionsList(): string[] {
         return this.prop.getPermissionsList();
+    }
+
+    public getArtifactsList(): ArtifactModel[] {
+        return this.artifacts;
     }
 }

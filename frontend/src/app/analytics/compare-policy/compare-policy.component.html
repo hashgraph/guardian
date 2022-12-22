@@ -19,38 +19,50 @@
 
                 <div class="merge-container">
                     <div class="merge-options">
-                        <div class="merge-type">
-                            <div class="f1">
-                                <mat-label>Type:</mat-label>
-                                <mat-select [(value)]="type">
-                                    <mat-option value="tree">Tree</mat-option>
-                                    <mat-option value="table">Table</mat-option>
-                                </mat-select>
-                            </div>
-                        </div>
                         <div class="merge-lvl">
                             <div class="f1">
-                                <mat-label>Events:</mat-label>
-                                <mat-select [(value)]="eventsLvl">
-                                    <mat-option value="0">None</mat-option>
-                                    <mat-option value="1">Full</mat-option>
-                                </mat-select>
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Events:</mat-label>
+                                    <mat-select [(value)]="eventsLvl">
+                                        <mat-option value="0">None</mat-option>
+                                        <mat-option value="1">Full</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
                             </div>
                             <div class="f1">
-                                <mat-label>Prop:</mat-label>
-                                <mat-select [(value)]="propLvl">
-                                    <mat-option value="0">None</mat-option>
-                                    <mat-option value="1">Simple</mat-option>
-                                    <mat-option value="2">Full</mat-option>
-                                </mat-select>
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Prop:</mat-label>
+                                    <mat-select [(value)]="propLvl">
+                                        <mat-option value="0">None</mat-option>
+                                        <mat-option value="1">Simple</mat-option>
+                                        <mat-option value="2">Full</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+
                             </div>
                             <div class="f1">
-                                <mat-label>Children:</mat-label>
-                                <mat-select [(value)]="childrenLvl">
-                                    <mat-option value="0">None</mat-option>
-                                    <mat-option value="1">First Lvl</mat-option>
-                                    <mat-option value="2">Full</mat-option>
-                                </mat-select>
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Children:</mat-label>
+                                    <mat-select [(value)]="childrenLvl">
+                                        <mat-option value="0">None</mat-option>
+                                        <mat-option value="1">First Lvl</mat-option>
+                                        <mat-option value="2">Full</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                            </div>
+                        </div>
+                        <div class="merge-lvl-apply">
+                            <div class="merge-lvl-btn" (click)="onApply()">Apply</div>
+                        </div>
+                        <div class="merge-type">
+                            <div class="f2">
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Type:</mat-label>
+                                    <mat-select [(value)]="type">
+                                        <mat-option value="tree">Tree</mat-option>
+                                        <mat-option value="table">Table</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
                             </div>
                         </div>
                     </div>
@@ -120,7 +132,7 @@
                                 [style.padding-left.px]="30*item.lvl">
                                 <ng-container *ngIf="item.left">
                                     <ng-container
-                                        *ngTemplateOutlet="propInfo; context: {report:item, index:0}"></ng-container>
+                                        *ngTemplateOutlet="propInfo; context: { report:item, index:0 }"></ng-container>
                                 </ng-container>
                             </div>
                             <div class="middle-compare-result compare-result" [attr.open]="item._open"></div>
@@ -128,7 +140,7 @@
                                 [style.padding-left.px]="30*item.lvl">
                                 <ng-container *ngIf="item.right">
                                     <ng-container
-                                        *ngTemplateOutlet="propInfo; context: {report:item, index:1}"></ng-container>
+                                        *ngTemplateOutlet="propInfo; context: { report:item, index:1 }"></ng-container>
                                 </ng-container>
                             </div>
                         </div>
@@ -238,6 +250,10 @@
         <div class="prop-value" [attr.rate]="report.event_rate">{{report.event_rate}}</div>
     </div>
     <div class="prop">
+        <div class="prop-name">Artifacts Rate: </div>
+        <div class="prop-value" [attr.rate]="report.artifacts_rate">{{report.artifacts_rate}}</div>
+    </div>
+    <div class="prop">
         <div class="prop-name">Total Rate: </div>
         <div class="prop-value" [attr.rate]="report.total_rate">{{report.total_rate}}</div>
     </div>
@@ -327,6 +343,44 @@
                     <div class="prop-table-name" [style.padding-left.px]="20">disabled:</div>
                     <div class="prop-table-value">
                         <span *ngIf="event.items[index]">{{event.items[index].disabled}}</span>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+
+    <div class="prop-table">
+        <div class="prop-table-header">Artifacts: </div>
+        <div class="prop-table-body">
+            <ng-container *ngFor="let artifact of report.artifacts">
+                <div class="prop-table-row" [attr.type]="artifact.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="10">Artifact:</div>
+                    <div class="prop-table-value"><span></span></div>
+                </div>
+                <div class="prop-table-row" [attr.type]="artifact.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">name:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="artifact.items[index]">{{artifact.items[index].name}}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" [attr.type]="artifact.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">extension:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="artifact.items[index]">{{artifact.items[index].extension}}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" [attr.type]="artifact.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">type:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="artifact.items[index]">{{artifact.items[index].type}}</span>
+                    </div>
+                </div>
+                <div class="prop-table-row" [attr.type]="artifact.type" [attr.index]="index">
+                    <div class="prop-table-name" [style.padding-left.px]="20">hash:</div>
+                    <div class="prop-table-value">
+                        <span *ngIf="artifact.items[index]">{{artifact.items[index].weight}}</span>
                     </div>
                 </div>
             </ng-container>

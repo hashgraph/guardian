@@ -1,31 +1,37 @@
-import { BlockModel } from "../models/block-model";
+import { BlockModel } from "../models/block.model";
 import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { Status } from "../types/status.type";
 import { IProperties } from "../interfaces/properties.interface";
-import { EventModel } from "../models/event-model";
+import { EventModel } from "../models/event.model";
 import { PropertiesRate } from "./properties-rate";
 import { EventsRate } from "./events-rate";
 import { PermissionsRate } from "./permissions-rate";
+import { ArtifactsRate } from "./artifacts-rate";
+import { IRate } from "../interfaces/rate.interface";
+import { ArtifactModel } from "../models/artifact.model";
 
-export class BlockRate {
+export class BlocksRate implements IRate<any> {
     public indexRate: number;
-    public propRate: number;
-    public eventRate: number;
-    public permissionRate: number;
+    public propertiesRate: number;
+    public eventsRate: number;
+    public permissionsRate: number;
+    public artifactsRate: number;
     public totalRate: number;
     public type: Status;
     public blockType: string;
     public items: BlockModel[];
-    public children: BlockRate[];
+    public children: BlocksRate[];
     public properties: PropertiesRate[];
     public events: EventsRate[];
     public permissions: PermissionsRate[];
+    public artifacts: ArtifactsRate[];
 
     constructor(block1: BlockModel, block2: BlockModel) {
         this.indexRate = -1;
-        this.propRate = -1;
-        this.eventRate = -1;
-        this.permissionRate = -1;
+        this.propertiesRate = -1;
+        this.eventsRate = -1;
+        this.permissionsRate = -1;
+        this.artifactsRate = -1;
         this.totalRate = -1;
         this.type = Status.NONE;
         this.items = [block1, block2];
@@ -37,6 +43,8 @@ export class BlockRate {
             this.blockType = block1.blockType;
         } else if (block2) {
             this.blockType = block2.blockType;
+        } else {
+            throw new Error('Empty block model');
         }
     }
 
@@ -78,9 +86,72 @@ export class BlockRate {
         this.properties.unshift(new PropertiesRate(tag1, tag2));
     }
 
-    private mapEvents(list: EventModel[][], item: EventModel) {
+    private comparePermissions(block1: BlockModel, block2: BlockModel): void {
+        const list: string[][] = [];
+        if (block1) {
+            const list1 = block1.getPermissionsList();
+            for (const item of list1) {
+                list.push([item, null]);
+            }
+        }
+        if (block2) {
+            const list2 = block2.getPermissionsList();
+            for (const item of list2) {
+                this._mapping<string>(list, item);
+            }
+        }
+        const rates: IRate<any>[] = [];
+        for (const item of list) {
+            rates.push(new PermissionsRate(item[0], item[1]));
+        }
+        this.permissions = rates;
+    }
+
+    private compareEvents(block1: BlockModel, block2: BlockModel): void {
+        const list: EventModel[][] = [];
+        if (block1) {
+            const list1 = block1.getEventList();
+            for (const item of list1) {
+                list.push([item, null]);
+            }
+        }
+        if (block2) {
+            const list2 = block2.getEventList();
+            for (const item of list2) {
+                this._mapping<EventModel>(list, item);
+            }
+        }
+        const rates: IRate<any>[] = [];
+        for (const item of list) {
+            rates.push(new EventsRate(item[0], item[1]));
+        }
+        this.events = rates;
+    }
+
+    private compareArtifacts(block1: BlockModel, block2: BlockModel): void {
+        const list: ArtifactModel[][] = [];
+        if (block1) {
+            const list1 = block1.getArtifactsList();
+            for (const item of list1) {
+                list.push([item, null]);
+            }
+        }
+        if (block2) {
+            const list2 = block2.getArtifactsList();
+            for (const item of list2) {
+                this._mapping<ArtifactModel>(list, item);
+            }
+        }
+        const rates: IRate<any>[] = [];
+        for (const item of list) {
+            rates.push(new ArtifactsRate(item[0], item[1]));
+        }
+        this.artifacts = rates;
+    }
+
+    private _mapping<T>(list: T[][], item: T) {
         for (const el of list) {
-            if (el[0] && !el[1] && el[0].weight === item.weight) {
+            if (el[0] && !el[1] && this._equal(el[0], item)) {
                 el[1] = item;
                 return;
             }
@@ -88,59 +159,27 @@ export class BlockRate {
         list.push([null, item])
     }
 
-    private compareEvents(block1: BlockModel, block2: BlockModel): void {
-        const list: EventModel[][] = [];
-
-        if (block1) {
-            const list1 = block1.getEventList();
-            for (const item of list1) {
-                list.push([item, null]);
-            }
+    private _equal(e1: any, e2: any): boolean {
+        if (typeof e1.equal === 'function') {
+            return e1.equal(e2);
         }
-
-        if (block2) {
-            const list2 = block2.getEventList();
-            for (const item of list2) {
-                this.mapEvents(list, item);
-            }
-        }
-
-        this.events = [];
-        for (const item of list) {
-            this.events.push(new EventsRate(item[0], item[1]));
-        }
+        return e1 === e2;
     }
 
-    private comparePermissions(block1: BlockModel, block2: BlockModel): void {
-        const list: string[] = [];
-        const map: any = [];
-
-        if (block1) {
-            const list1 = block1.getPermissionsList();
-            for (const item of list1) {
-                list.push(item);
-                map[item] = [item, null];
+    private _calcRate<T>(rates: IRate<T>[]): number {
+        let sum = 0;
+        for (const item of rates) {
+            if (item.totalRate > 0) {
+                sum += item.totalRate;
             }
         }
-
-        if (block2) {
-            const list2 = block2.getPermissionsList();
-            for (const item of list2) {
-                if (map[item]) {
-                    map[item][1] = item;
-                } else {
-                    list.push(item);
-                    map[item] = [null, item];
-                }
-            }
+        if (rates.length) {
+            sum = sum / rates.length;
+        } else {
+            sum = 100;
         }
-
-        list.sort();
-
-        this.permissions = [];
-        for (const item of list) {
-            this.permissions.push(new PermissionsRate(map[item][0], map[item][1]));
-        }
+        sum = Math.min(Math.max(-1, Math.floor(sum)), 100);
+        return sum;
     }
 
     public calcRate(options: ICompareOptions): void {
@@ -150,55 +189,23 @@ export class BlockRate {
         this.compareProp(block1, block2);
         this.compareEvents(block1, block2);
         this.comparePermissions(block1, block2);
+        this.compareArtifacts(block1, block2);
 
         if (!block1 || !block2) {
             return;
         }
 
-        let propRate = 0;
-        for (const p of this.properties) {
-            if (p.totalRate > 0) {
-                propRate += p.totalRate;
-            }
-        }
-        if (this.properties.length) {
-            propRate = propRate / this.properties.length;
-        } else {
-            propRate = 100;
-        }
-        propRate = Math.min(Math.max(-1, Math.floor(propRate)), 100);
-
-
-        let eventRate = 0;
-        for (const e of this.events) {
-            if (e.totalRate > 0) {
-                eventRate += e.totalRate;
-            }
-        }
-        if (this.events.length) {
-            eventRate = eventRate / this.events.length;
-        } else {
-            eventRate = 100;
-        }
-        eventRate = Math.min(Math.max(-1, Math.floor(eventRate)), 100);
-
-        let permissionRate = 0;
-        for (const e of this.permissions) {
-            if (e.totalRate > 0) {
-                permissionRate += e.totalRate;
-            }
-        }
-        if (this.permissions.length) {
-            permissionRate = permissionRate / this.permissions.length;
-        } else {
-            permissionRate = 100;
-        }
-        permissionRate = Math.min(Math.max(-1, Math.floor(permissionRate)), 100);
-
         this.indexRate = block1.index === block2.index ? 100 : 0;
-        this.propRate = propRate;
-        this.eventRate = eventRate;
-        this.permissionRate = permissionRate;
-        this.totalRate = Math.floor((propRate + eventRate) / 2);
+        this.propertiesRate = this._calcRate(this.properties);
+        this.eventsRate = this._calcRate(this.events);
+        this.permissionsRate = this._calcRate(this.permissions);
+        this.artifactsRate = this._calcRate(this.artifacts);
+
+        this.totalRate = Math.floor((
+            this.propertiesRate +
+            this.eventsRate +
+            this.permissionsRate +
+            this.artifactsRate
+        ) / 4);
     }
 }

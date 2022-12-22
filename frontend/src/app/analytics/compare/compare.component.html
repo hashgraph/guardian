@@ -4,6 +4,6 @@
     </div>
 
     <div *ngIf="type === 'policy'">
-        <app-compare-policy [value]="result"></app-compare-policy>
+        <app-compare-policy [value]="result" [eventsLvl]="eventsLvl" [propLvl]="propLvl" [childrenLvl]="childrenLvl" (change)="onFilters($event)"></app-compare-policy>
     </div>
 </div>

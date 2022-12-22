@@ -29,6 +29,7 @@ import { PolicyEngine } from './policy-engine';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { findAllEntities } from '@helpers/utils';
 import { PolicyComparator } from '@analytics';
+import * as crypto from 'crypto';
 
 /**
  * Policy engine service
@@ -1070,15 +1071,46 @@ export class PolicyEngineService {
 
         this.channel.response<any, any>(PolicyEngineEvents.COMPARE_POLICY, async (msg) => {
             try {
-                const { user, policyId1, policyId2 } = msg;
-                const model1 = await DatabaseServer.getPolicyById(policyId1);
-                const model2 = await DatabaseServer.getPolicyById(policyId2);
-                if (!model1 || !model2) {
+                const { user, policyId1, policyId2, eventsLvl, propLvl, childrenLvl } = msg;
+
+                const policy1 = await DatabaseServer.getPolicyById(policyId1);
+                const policy2 = await DatabaseServer.getPolicyById(policyId2);
+                if (!policy1 || !policy2) {
                     throw new Error('Unknown policies');
                 }
 
-                const comparator = new PolicyComparator();
-                const result: any = comparator.compare(model1, model2);
+                const artifacts1 = await DatabaseServer.getArtifacts({ policyId: policyId1 });
+                const artifacts2 = await DatabaseServer.getArtifacts({ policyId: policyId2 });
+
+                const artifacts1Data = [];
+                for (const artifact of artifacts1) {
+                    const data = await DatabaseServer.getArtifactFileByUUID(artifact.uuid);
+                    const sha256 = crypto
+                        .createHash('sha256')
+                        .update(data)
+                        .digest()
+                        .toString();
+                    artifacts1Data.push({ uuid: artifact.uuid, data: sha256 });
+                }
+                const artifacts2Data = [];
+                for (const artifact of artifacts2) {
+                    const data = await DatabaseServer.getArtifactFileByUUID(artifact.uuid);
+                    const sha256 = crypto
+                        .createHash('sha256')
+                        .update(data)
+                        .digest()
+                        .toString();
+                    artifacts2Data.push({ uuid: artifact.uuid, data: sha256 });
+                }
+
+                const comparator = new PolicyComparator({
+                    propLvl: parseInt(propLvl, 10),
+                    childLvl: parseInt(childrenLvl, 10),
+                    eventLvl: parseInt(eventsLvl, 10),
+                });
+                const model1 = comparator.createModel(policy1, artifacts1Data);
+                const model2 = comparator.createModel(policy2, artifacts2Data);
+                const result = comparator.compare(model1, model2);
 
                 return new MessageResponse(result);
             } catch (error) {

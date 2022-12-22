@@ -1,19 +1,19 @@
 import { Status } from "../types/status.type";
-import { EventModel } from "../models/event.model";
 import { IRate } from "../interfaces/rate.interface";
+import { ArtifactModel } from "../models/artifact.model";
 
-export class EventsRate implements IRate<any> {
-    public items: any[];
+export class ArtifactsRate implements IRate<ArtifactModel> {
+    public items: ArtifactModel[];
     public type: Status;
     public totalRate: number;
 
-    constructor(event1: EventModel, event2: EventModel) {
-        this.items = [event1?.toObject(), event2?.toObject()];
-        if (event1 && event2) {
+    constructor(artifact1: ArtifactModel, artifact2: ArtifactModel) {
+        this.items = [artifact1?.toObject(), artifact2?.toObject()];
+        if (artifact1 && artifact2) {
             this.totalRate = 100;
             this.type = Status.FULL;
         } else {
-            if (event1) {
+            if (artifact1) {
                 this.type = Status.LEFT;
             } else {
                 this.type = Status.RIGHT;

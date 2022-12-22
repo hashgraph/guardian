@@ -1,4 +1,4 @@
-import { BlockModel } from "../models/block-model";
+import { BlockModel } from "../models/block.model";
 
 
 export interface IBlockMap {
