@@ -3,6 +3,8 @@ import { Schema, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
 import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
+import { CodeEditorDialogComponent } from '../../../../helpers/code-editor-dialog/code-editor-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 /**
  * Settings for block of 'switch' and 'interfaceStepBlock' types.
@@ -30,7 +32,10 @@ export class HttpRequestConfigComponent implements OnInit {
 
     block!: any;
 
-    constructor(public registeredBlocks: RegisteredBlocks) {
+    constructor(
+        public registeredBlocks: RegisteredBlocks,
+        private dialog: MatDialog
+        ) {
     }
 
     ngOnInit(): void {
@@ -67,5 +72,23 @@ export class HttpRequestConfigComponent implements OnInit {
 
     getIcon(block: any) {
         return this.registeredBlocks.getIcon(block.blockType);
+    }
+
+    editBody($event: MouseEvent) {
+        const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
+            width: '80%',
+            panelClass: 'g-dialog',
+            data: {
+                mode: 'json',
+                expression: this.block.messageBody,
+                readonly: this.readonly
+            },
+            autoFocus: true,
+            disableClose: true
+        })
+        dialogRef.afterClosed().subscribe(result => {
+            console.log(result);
+            this.block.messageBody = result.expression;
+        })
     }
 }

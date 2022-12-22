@@ -45,6 +45,9 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     ngOnInit() {
+        if (this.data.mode) {
+            this.codeMirrorOptions.mode = this.data.mode;
+        }
         this.expression = this.data.expression;
         this.codeMirrorOptions.readOnly = this.data.readonly;
     }

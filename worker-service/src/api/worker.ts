@@ -13,6 +13,7 @@ import { IpfsClient } from './ipfs-client';
 import Blob from 'cross-blob';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { HederaUtils } from './helpers/utils';
+import axios from 'axios';
 
 /**
  * Sleep helper
@@ -227,6 +228,18 @@ export class Worker {
                                 result.data = fileContent
                         }
                     }
+                    break;
+                }
+
+                case WorkerTaskType.HTTP_REQUEST: {
+                    const { method, url, headers, body } = task.data.payload;
+                    const response = await axios({
+                        method,
+                        url,
+                        headers,
+                        data: body
+                    });
+                    result.data = response.data;
                     break;
                 }
 

@@ -33,7 +33,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Body</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.messageBody" [readonly]="readonly">
+            <input class="prop-input" type="text" [(ngModel)]="block.messageBody" [readonly]="true" (click)="editBody($event)">
         </td>
     </tr>
     <tr class="propHeader">
