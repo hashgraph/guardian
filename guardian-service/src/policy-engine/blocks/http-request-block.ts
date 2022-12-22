@@ -3,7 +3,12 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ActionCallback } from '@policy-engine/helpers/decorators';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
+import {
+    IPolicyBlock,
+    IPolicyCalculateBlock,
+    IPolicyDocument,
+    IPolicyEventState
+} from '@policy-engine/policy-engine.interface';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -11,6 +16,7 @@ import { Workers } from '@helpers/workers';
 import { WorkerTaskType } from '@guardian/interfaces';
 import { VcHelper } from '@helpers/vc-helper';
 import { VcDocument } from '@hedera-modules';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 /**
  * Http request block
@@ -175,6 +181,22 @@ export class HttpRequestBlock {
             }));
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
+        }
+    }
+
+    /**
+     * Validate block data
+     * @param resultsContainer
+     */
+    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
+
+        if (!ref.options.url?.trim()) {
+            resultsContainer.addBlockError(ref.uuid, 'Option "url" must be set');
+        }
+
+        if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].find(item => item === ref.options.method?.toUpperCase())) {
+            resultsContainer.addBlockError(ref.uuid, `Option "method" must be "GET", "POST", "PUT", "PATCH" or "DELETE"`);
         }
     }
 
