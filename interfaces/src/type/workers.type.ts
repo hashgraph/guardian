@@ -22,7 +22,8 @@ export enum WorkerTaskType {
     NEW_TOPIC = 'new-topic',
     CHECK_ACCOUNT = 'check-account',
     GET_TOPIC_MESSAGE = 'get-topic-message',
-    GET_TOPIC_MESSAGES = 'get-topic-messages'
+    GET_TOPIC_MESSAGES = 'get-topic-messages',
+    HTTP_REQUEST = 'http-request'
 }
 
 /**
