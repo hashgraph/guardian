@@ -46,8 +46,6 @@ import { artifactAPI } from '@api/artifact.service';
 import { Policy } from '@entity/policy';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
 import { SynchronizationService } from '@policy-engine/multi-policy-service';
-import { Worker } from 'node:worker_threads';
-import path from 'path'
 
 export const obj = {};
 

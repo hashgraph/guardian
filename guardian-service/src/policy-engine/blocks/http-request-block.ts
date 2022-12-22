@@ -8,7 +8,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { Workers } from '@helpers/workers';
-import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
+import { WorkerTaskType } from '@guardian/interfaces';
 import { VcHelper } from '@helpers/vc-helper';
 import { VcDocument } from '@hedera-modules';
 
@@ -37,12 +37,6 @@ import { VcDocument } from '@hedera-modules';
     }
 })
 export class HttpRequestBlock {
-
-    /**
-     * After init
-     */
-    public afterInit() {
-    }
 
     /**
      * Get object property by path
