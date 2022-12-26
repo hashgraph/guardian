@@ -75,9 +75,9 @@
 
 .table-container .mat-column-retire {
     padding-left: 8px;
-    width: 200px;
-    min-width: 200px;
-    max-width: 200px;
+    width: 137px;
+    min-width: 137px;
+    max-width: 137px;
 }
 
 .table-container .mat-column-owner {
@@ -120,7 +120,7 @@
 }
 
 .action-btn.view-btn {
-    width: 208px;
+    width: 143px;
 }
 
 .refresh-action-container {

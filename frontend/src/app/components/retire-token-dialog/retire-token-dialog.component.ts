@@ -24,6 +24,8 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class RetireTokenDialogComponent {
     tokens: any[] = [];
+    baseTokens: any[] = [];
+    oppositeTokens: any = [];
 
     chooseTokensForm = this.fb.group({
         baseTokenId: ['', Validators.required],
@@ -61,6 +63,8 @@ export class RetireTokenDialogComponent {
     ) {
         if (data) {
             this.tokens = data.tokens || [];
+            this.baseTokens = this.tokens;
+            this.oppositeTokens = this.tokens;
             const baseTokenControl = this.chooseTokensForm.get('baseTokenId');
             const oppositeTokenControl =
                 this.chooseTokensForm.get('oppositeTokenId');
@@ -73,6 +77,9 @@ export class RetireTokenDialogComponent {
             baseTokenControl?.valueChanges
                 .pipe(takeUntil(this.destroy$))
                 .subscribe((value) => {
+                    this.oppositeTokens = this.tokens.filter(
+                        (item) => item.tokenId != value
+                    );
                     const baseToken = this.tokens.find(
                         (item: any) => item.tokenId === value
                     );
@@ -109,6 +116,9 @@ export class RetireTokenDialogComponent {
             oppositeTokenControl?.valueChanges
                 .pipe(takeUntil(this.destroy$))
                 .subscribe((value) => {
+                    this.baseTokens = this.tokens.filter(
+                        (item) => item.tokenId != value
+                    );
                     const oppositeToken = this.tokens.find(
                         (item: any) => item.tokenId === value
                     );
@@ -193,6 +203,10 @@ export class RetireTokenDialogComponent {
     }
 
     validateCountValues() {
+        if (!this.baseTokenRate || !this.oppositeTokenRate) {
+            return false;
+        }
+
         const {
             baseTokenCount,
             oppositeTokenCount,

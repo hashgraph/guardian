@@ -136,13 +136,18 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.contractsService.import(result).subscribe(
-                    (res) => {
-                        this.loading = false;
-                        this.loadContracts();
-                    },
-                    () => (this.loading = false)
-                );
+                this.contractsService
+                    .import(
+                        result.contractId?.trim(),
+                        result.description?.trim()
+                    )
+                    .subscribe(
+                        () => {
+                            this.loading = false;
+                            this.loadContracts();
+                        },
+                        () => (this.loading = false)
+                    );
             }
         });
     }
@@ -168,7 +173,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 return;
             }
             this.loading = true;
-            this.contractsService.create(result.description).subscribe(
+            this.contractsService.create(result.description?.trim()).subscribe(
                 (res) => {
                     this.loading = false;
                     this.loadContracts();
@@ -199,7 +204,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 return;
             }
             this.loading = true;
-            this.contractsService.addUser(result.userId, contractId).subscribe(
+            this.contractsService.addUser(result.userId?.trim(), contractId).subscribe(
                 (res) => {
                     this.loading = false;
                     this.loadContracts();

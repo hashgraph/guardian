@@ -29,6 +29,8 @@ export class AddPairDialogComponent {
     loading: boolean = false;
     existsPairs: any = [];
     tokens: any[] = [];
+    baseTokens: any[] = [];
+    oppositeTokens: any[] = [];
     destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
@@ -38,6 +40,8 @@ export class AddPairDialogComponent {
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         this.tokens = data?.tokens || [];
+        this.baseTokens = this.tokens;
+        this.oppositeTokens = this.tokens;
         this.dataForm.get('contractId')?.patchValue(data?.contractId || '');
         this.dataForm
             .get('baseTokenId')
@@ -49,9 +53,14 @@ export class AddPairDialogComponent {
             .subscribe(this.onTokenChange('baseTokenId', true));
     }
 
-    onTokenChange(controlName: string, isReverse: boolean = false) {
+    onTokenChange(controlName: string, isOppositeToken: boolean = false) {
         return (value: any) => {
             const tokenId = this.dataForm.get(controlName)?.value;
+            if (isOppositeToken) {
+                this.baseTokens = this.tokens.filter(item => item.tokenId !== value)
+            } else {
+                this.oppositeTokens = this.tokens.filter(item => item.tokenId !== value);
+            }
             this.existsPairs = [];
             if (!value || !tokenId) {
                 return;
@@ -59,8 +68,8 @@ export class AddPairDialogComponent {
             this.loading = true;
             this.contractService
                 .getPair(
-                    isReverse ? tokenId : value,
-                    isReverse ? value : tokenId
+                    isOppositeToken ? tokenId : value,
+                    isOppositeToken ? value : tokenId
                 )
                 .subscribe(
                     (result) => {

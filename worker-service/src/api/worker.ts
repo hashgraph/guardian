@@ -652,7 +652,15 @@ export class Worker {
                         hederaAccountId,
                         hederaAccountKey
                     );
-                    result.data = (await client.getContractInfo(contractId)).accountId.toString();
+                    result.data = AccountId.fromSolidityAddress(
+                        (
+                            await client.contractQuery(
+                                contractId,
+                                'getOwner',
+                                new ContractFunctionParameters()
+                            )
+                        ).getAddress()
+                    ).toString();
                     break;
                 }
 
