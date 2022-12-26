@@ -1,3 +1,5 @@
+import { TokenType } from '../type/token.type';
+
 /**
  * Token interface
  */
@@ -21,7 +23,7 @@ export interface IToken {
     /**
      * Type
      */
-    tokenType?: string;
+    tokenType?: TokenType;
     /**
      * Decimals
      */

@@ -85,7 +85,7 @@ form {
 }
 
 
-.token-table {
+.token-table, .retire-table {
     table-layout: fixed;
     width: 100%;
     min-width: 900px;
@@ -279,4 +279,32 @@ a[disabled="true"]{
     display: flex;
     flex-direction: column;
     margin-bottom: 20px;
+}
+
+.cancel-action-btn, .view-action-btn {
+    color: #fff;
+    border-radius: 6px;
+    display: inline-block;
+    padding: 6px 0;
+    width: 140px;
+    margin: 0px 5px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: center;
+    -webkit-user-select: none;
+    user-select: none;
+    position: relative;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.view-action-btn {
+    background: #4caf50;
+}
+
+.cancel-action-btn {
+    background: darkred;
 }

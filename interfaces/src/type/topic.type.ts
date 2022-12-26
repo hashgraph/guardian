@@ -7,5 +7,6 @@ export enum TopicType {
     InstancePolicyTopic = 'INSTANCE_POLICY_TOPIC',
     DynamicTopic = 'DYNAMIC_TOPIC',
     SchemaTopic = 'SCHEMA_TOPIC',
-    SynchronizationTopic = 'SYNCHRONIZATION_TOPIC'
+    SynchronizationTopic = 'SYNCHRONIZATION_TOPIC',
+    RetireTopic = 'RETIRE_TOPIC',
 }

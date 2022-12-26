@@ -79,6 +79,7 @@ export async function setDefaultSchema() {
 
     await fn(map[SchemaEntity.MINT_NFTOKEN]);
     await fn(map[SchemaEntity.MINT_TOKEN]);
+    await fn(map[SchemaEntity.RETIRE_TOKEN]);
     await fn(map[SchemaEntity.POLICY]);
     await fn(map[SchemaEntity.STANDARD_REGISTRY]);
     await fn(map[SchemaEntity.WIPE_TOKEN]);

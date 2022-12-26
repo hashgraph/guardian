@@ -23,6 +23,8 @@ import { InfoComponent } from './components/info/info/info.component';
 import { WebSocketService } from './services/web-socket.service';
 import { PoliciesComponent } from './policy-engine/policies/policies.component';
 import { ArtifactConfigComponent } from './artifact-engine/artifact-config/artifact-config.component';
+import { ContractConfigComponent } from './views/contract-config/contract-config.component';
+import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -147,6 +149,8 @@ const routes: Routes = [
 
     { path: 'config', component: RootConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'tokens', component: TokenConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'contracts', component: ContractConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'contracts/pairs', component: ContractRequestConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'schemas', component: SchemaConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'artifacts', component: ArtifactConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     {

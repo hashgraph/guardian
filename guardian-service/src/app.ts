@@ -46,6 +46,9 @@ import { artifactAPI } from '@api/artifact.service';
 import { Policy } from '@entity/policy';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
 import { SynchronizationService } from '@policy-engine/multi-policy-service';
+import { Contract } from '@entity/contract';
+import { contractAPI } from '@api/contract.service';
+import { RetireRequest } from '@entity/retire-request';
 
 export const obj = {};
 
@@ -159,6 +162,8 @@ Promise.all([
     const settingsRepository = new DataBaseHelper(Settings);
     const topicRepository = new DataBaseHelper(Topic);
     const policyRepository = new DataBaseHelper(Policy);
+    const contractRepository = new DataBaseHelper(Contract);
+    const retireRequestRepository = new DataBaseHelper(RetireRequest);
 
     state.updateState(ApplicationStates.INITIALIZING);
 
@@ -172,6 +177,7 @@ Promise.all([
         await demoAPI(channel, apiGatewayChannel, settingsRepository);
         await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
         await artifactAPI(channel);
+        await contractAPI(channel, contractRepository, retireRequestRepository);
     } catch (error) {
         console.error(error.message);
         process.exit(0);

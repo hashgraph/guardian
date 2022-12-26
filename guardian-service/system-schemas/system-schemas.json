@@ -149,6 +149,116 @@
         }
     },
     {
+        "uuid": "RetireToken",
+        "name": "RetireToken",
+        "entity": "RETIRE_TOKEN",
+        "document": {
+            "$id": "#RetireToken",
+            "$comment": "{ \"term\": \"RetireToken\", \"@id\": \"#RetireToken\" }",
+            "title": "RetireToken",
+            "description": "RetireToken",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "userId": {
+                    "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "userId",
+                    "description": "userId",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "baseTokenId": {
+                    "$comment": "{\"term\": \"date\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "baseTokenId",
+                    "description": "baseTokenId",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "oppositeTokenId": {
+                    "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "oppositeTokenId",
+                    "description": "oppositeTokenId",
+                    "type": "string",
+                    "readOnly": false
+                },
+                "baseTokenCount": {
+                    "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "baseTokenCount",
+                    "description": "baseTokenCount",
+                    "type": "number",
+                    "readOnly": false
+                },
+                "baseTokenSerials": {
+                    "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "baseTokenSerials",
+                    "description": "baseTokenSerials",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "readOnly": false
+                },
+                "oppositeTokenCount": {
+                    "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "oppositeTokenCount",
+                    "description": "oppositeTokenCount",
+                    "type": "number",
+                    "readOnly": false
+                },
+                "oppositeTokenSerials": {
+                    "$comment": "{\"term\": \"amount\", \"@id\": \"https://www.schema.org/text\"}",
+                    "title": "oppositeTokenSerials",
+                    "description": "oppositeTokenSerials",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "readOnly": false
+                }
+            },
+            "required": [
+                "baseTokenId",
+                "oppositeTokenId",
+                "baseTokenCount",
+                "baseTokenSerials",
+                "oppositeTokenCount",
+                "oppositeTokenSerials"
+            ],
+            "additionalProperties": false
+        }
+    },
+    {
         "uuid": "Policy",
         "name": "Policy",
         "entity": "POLICY",

@@ -23,7 +23,18 @@ export enum WorkerTaskType {
     CHECK_ACCOUNT = 'check-account',
     GET_TOPIC_MESSAGE = 'get-topic-message',
     GET_TOPIC_MESSAGES = 'get-topic-messages',
-    HTTP_REQUEST = 'http-request'
+    CREATE_CONTRACT = 'create-contract',
+    ADD_CONTRACT_USER = 'add-contract-user',
+    CHECK_STATUS = 'check-status',
+    GET_CONTRACT_INFO = 'get-contract-info',
+    ADD_CONTRACT_PAIR = 'add-contract-pair',
+    GET_CONTRACT_PAIR = 'get-contract-pair',
+    ADD_RETIRE_REQUEST = 'add-retire-request',
+    GET_RETIRE_REQUEST = 'get-retire-request',
+    RETIRE_TOKENS = 'retire-tokens',
+    CANCEL_RETIRE_REQUEST = 'cancel-retire-request',
+    GET_USER_NFTS_SERIALS = 'get-user-nfts-serials',
+    HTTP_REQUEST = 'http-request',
 }
 
 /**
