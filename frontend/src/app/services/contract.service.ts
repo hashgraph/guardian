@@ -35,11 +35,14 @@ export class ContractService {
         });
     }
 
-    public import(parameters: {
-        contractId: string;
-        description: string;
-    }): Observable<HttpResponse<any>> {
-        return this.http.post<any>(`${this.url}/import`, parameters);
+    public import(
+        contractId: string,
+        description: string
+    ): Observable<HttpResponse<any>> {
+        return this.http.post<any>(`${this.url}/import`, {
+            contractId,
+            description,
+        });
     }
 
     public addUser(

@@ -23,14 +23,16 @@
                         <mat-form-field appearance="outline" class="contract-form-base-token">
                             <mat-icon matPrefix>generating_tokens</mat-icon>
                             <mat-select formControlName="baseTokenId" placeholder="Choose Base Token">
-                                <mat-option *ngFor="let token of tokens"
+                                <mat-option></mat-option>
+                                <mat-option *ngFor="let token of baseTokens"
                                     [value]="token.tokenId">{{token.tokenName}}</mat-option>
                             </mat-select>
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="contract-form-opposite-token">
                             <mat-icon matPrefix>generating_tokens</mat-icon>
                             <mat-select formControlName="oppositeTokenId" placeholder="Choose Opposite Token">
-                                <mat-option *ngFor="let token of tokens"
+                                <mat-option></mat-option>
+                                <mat-option *ngFor="let token of oppositeTokens"
                                     [value]="token.tokenId">{{token.tokenName}}</mat-option>
                             </mat-select>
                         </mat-form-field>

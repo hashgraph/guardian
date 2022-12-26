@@ -308,3 +308,7 @@ a[disabled="true"]{
 .cancel-action-btn {
     background: darkred;
 }
+
+.approved-request {
+    background-color: #d1f1c8;
+}

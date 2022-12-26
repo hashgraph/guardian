@@ -105,33 +105,33 @@
                         <table mat-table [dataSource]="contractRequests" class="retire-table">
                             <ng-container matColumnDef="contractId">
                                 <th mat-header-cell *matHeaderCellDef> Contract Id </th>
-                                <td mat-cell *matCellDef="let element">
+                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }">
                                    <hedera-explorer type="accounts" [params]="element.contractId">{{element.contractId}}</hedera-explorer>
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="baseTokenId">
                                 <th mat-header-cell *matHeaderCellDef> Base Token Id </th>
-                                <td mat-cell *matCellDef="let element">
+                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }">
                                     <hedera-explorer type="tokens" [params]="element.baseTokenId">{{element.baseTokenId}}</hedera-explorer>
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="oppositeTokenId">
                                 <th mat-header-cell *matHeaderCellDef> Opposite Token Id </th>
-                                <td mat-cell *matCellDef="let element">
+                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }">
                                     <hedera-explorer type="tokens" [params]="element.oppositeTokenId">{{element.oppositeTokenId}}</hedera-explorer>
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="baseTokenCount">
                                 <th mat-header-cell *matHeaderCellDef> Base Token Count </th>
-                                <td mat-cell *matCellDef="let element"> {{element.baseTokenCount}} </td>
+                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }"> {{element.baseTokenCount}} </td>
                             </ng-container>
                             <ng-container matColumnDef="oppositeTokenCount">
                                 <th mat-header-cell *matHeaderCellDef> Opposite Token Count </th>
-                                <td mat-cell *matCellDef="let element"> {{element.oppositeTokenCount}} </td>
+                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }"> {{element.oppositeTokenCount}} </td>
                             </ng-container>
                             <ng-container matColumnDef="cancel">
                                 <th mat-header-cell *matHeaderCellDef> Operations </th>
-                                <td mat-cell *matCellDef="let element">
+                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }">
                                     <div *ngIf="!element.vcDocument" class="cancel-action-btn" (click)="cancelContractRequest(element.id)">
                                         <span>Cancel Request</span>
                                         <mat-icon>cancel</mat-icon>

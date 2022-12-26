@@ -74,7 +74,7 @@ export async function contractAPI(
             );
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error.message);
+            return new MessageError(error);
         }
     });
 
@@ -137,7 +137,7 @@ export async function contractAPI(
             return new MessageResponse(retireRequestsAndCount);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error.message);
+            return new MessageError(error);
         }
     });
 
@@ -183,7 +183,7 @@ export async function contractAPI(
             );
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error.message);
+            return new MessageError(error);
         }
     });
 
@@ -235,7 +235,7 @@ export async function contractAPI(
             return new MessageResponse(checkStatusResult);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error.message);
+            return new MessageError(error);
         }
     });
 
@@ -280,7 +280,7 @@ export async function contractAPI(
             );
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error.message);
+            return new MessageError(error);
         }
     });
 
@@ -365,7 +365,7 @@ export async function contractAPI(
                 did
             );
 
-            const contractOwner = await workers.addRetryableTask(
+            const contractOwner = await workers.addNonRetryableTask(
                 {
                     type: WorkerTaskType.GET_CONTRACT_INFO,
                     data: {
