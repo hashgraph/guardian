@@ -79,12 +79,15 @@ export async function setDefaultSchema() {
 
     await fn(map[SchemaEntity.MINT_NFTOKEN]);
     await fn(map[SchemaEntity.MINT_TOKEN]);
+    await fn(map[SchemaEntity.RETIRE_TOKEN]);
     await fn(map[SchemaEntity.POLICY]);
     await fn(map[SchemaEntity.STANDARD_REGISTRY]);
     await fn(map[SchemaEntity.WIPE_TOKEN]);
     await fn(map[SchemaEntity.ISSUER]);
     await fn(map[SchemaEntity.USER_ROLE]);
     await fn(map[SchemaEntity.CHUNK]);
+    await fn(map[SchemaEntity.ACTIVITY_IMPACT]);
+    await fn(map[SchemaEntity.TOKEN_DATA_SOURCE]);
 }
 
 /**
@@ -432,11 +435,13 @@ export async function publishSchema(
  * @param item
  * @param messageServer
  * @param type
+ * @param notifier
  */
 export async function publishSystemSchema(
     item: SchemaCollection,
     messageServer: MessageServer,
-    type?: MessageAction
+    type?: MessageAction,
+    notifier?: INotifier
 ): Promise<SchemaCollection> {
     delete item.id;
     delete item._id;
@@ -446,7 +451,43 @@ export async function publishSystemSchema(
     item.version = undefined;
     item.topicId = messageServer.getTopic();
     SchemaHelper.setVersion(item, undefined, undefined);
-    return await publishSchema(item, messageServer, type);
+    const result = await publishSchema(item, messageServer, type);
+    if (notifier) {
+        notifier.info(`Schema ${result.name || '-'} published`);
+    }
+    return result;
+}
+
+/**
+ * Publish system schemas
+ * @param systemSchemas
+ * @param messageServer
+ * @param owner
+ * @param notifier
+ */
+export async function publishSystemSchemas(
+    systemSchemas: SchemaCollection[],
+    messageServer: MessageServer,
+    owner: string,
+    notifier: INotifier
+): Promise<void> {
+    const tasks = [];
+    for (const schema of systemSchemas) {
+        if (schema) {
+            schema.creator = owner;
+            schema.owner = owner;
+            tasks.push(publishSystemSchema(
+                schema,
+                messageServer,
+                MessageAction.PublishSystemSchema,
+                notifier
+            ));
+        }
+    }
+    const items = await Promise.all(tasks);
+    for (const schema of items) {
+        await DatabaseServer.createAndSaveSchema(schema);
+    }
 }
 
 /**

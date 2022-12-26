@@ -6,9 +6,9 @@
         <div class="title">Token {{action}}</div>
         <div class="description">
             Please enter the private key for the account
-            (<dragonglass type="accounts" [params]="accountId">{{accountId}}</dragonglass>)
+            (<hedera-explorer type="accounts" [params]="accountId">{{accountId}}</hedera-explorer>)
             to <span>{{action}}</span> it with the token <span>{{tokenName}}</span>
-            (<dragonglass type="tokens" [params]="tokenId">{{tokenId}}</dragonglass>)
+            (<hedera-explorer type="tokens" [params]="tokenId">{{tokenId}}</hedera-explorer>)
         </div>
         <form class="form" [formGroup]="dataForm">
             <mat-form-field appearance="outline">

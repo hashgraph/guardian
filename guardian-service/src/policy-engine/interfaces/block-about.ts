@@ -66,6 +66,10 @@ export interface BlockProperties {
      * Default value
      */
     default?: any;
+    /**
+     * Required fields
+     */
+    required?:boolean;
 }
 
 /**

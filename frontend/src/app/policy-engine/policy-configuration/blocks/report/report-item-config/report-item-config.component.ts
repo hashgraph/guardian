@@ -27,9 +27,11 @@ export class ReportItemConfigComponent implements OnInit {
 
     propHidden: any = {
         main: false,
+        properties: false,
         filterGroup: false,
         filters: {},
         variableGroup: false,
+        commonVariableGroup: true,
         variables: {},
         dynamicFilterGroup: false,
         dynamicFilters: {}

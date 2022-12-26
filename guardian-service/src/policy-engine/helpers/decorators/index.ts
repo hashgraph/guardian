@@ -11,3 +11,5 @@ export { Report } from './report-block';
 export { ReportItem } from './report-item-block';
 export { ActionCallback } from './event-callback';
 export { ValidatorBlock } from './validator-block';
+export { TokenAddon } from './token-addon';
+export { TokenBlock } from './token-block';
