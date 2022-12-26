@@ -20,7 +20,6 @@ import { Workers } from '@helpers/workers';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { DatabaseServer } from '@database-modules';
-import { TokenId } from '@hashgraph/sdk';
 import { RetireRequest } from '@entity/retire-request';
 import { Schema as SchemaCollection } from '@entity/schema';
 import {
@@ -315,10 +314,24 @@ export async function contractAPI(
             const oppositeToken = await new DatabaseServer().getTokenById(
                 oppositeTokenId
             );
-            const baseTokenAddress =
-                TokenId.fromString(baseTokenId).toSolidityAddress();
-            const oppositeTokenAddress =
-                TokenId.fromString(oppositeTokenId).toSolidityAddress();
+
+            const grantKycKeys = [];
+            const baseTokenKycKey = await wallet.getUserKey(
+                did,
+                KeyType.TOKEN_KYC_KEY,
+                baseTokenId
+            );
+            if (baseTokenKycKey) {
+                grantKycKeys.push(baseTokenKycKey);
+            }
+            const oppositeTokenKycKey = await wallet.getUserKey(
+                did,
+                KeyType.TOKEN_KYC_KEY,
+                oppositeTokenId
+            );
+            if (oppositeTokenKycKey) {
+                grantKycKeys.push(oppositeTokenKycKey);
+            }
             return new MessageResponse(
                 await workers.addNonRetryableTask(
                     {
@@ -327,8 +340,8 @@ export async function contractAPI(
                             contractId,
                             hederaAccountId: root.hederaAccountId,
                             hederaAccountKey: rootKey,
-                            baseTokenAddress,
-                            oppositeTokenAddress,
+                            baseTokenId,
+                            oppositeTokenId,
                             baseTokenCount: baseToken.decimals
                                 ? Math.pow(10, baseToken.decimals) *
                                   baseTokenCount
@@ -337,6 +350,7 @@ export async function contractAPI(
                                 ? Math.pow(10, oppositeToken.decimals) *
                                   oppositeTokenCount
                                 : oppositeTokenCount,
+                            grantKycKeys
                         },
                     },
                     1

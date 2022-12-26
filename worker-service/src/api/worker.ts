@@ -622,10 +622,11 @@ export class Worker {
                         hederaAccountId,
                         hederaAccountKey,
                         contractId,
-                        baseTokenAddress,
-                        oppositeTokenAddress,
+                        baseTokenId,
+                        oppositeTokenId,
                         baseTokenCount,
-                        oppositeTokenCount
+                        oppositeTokenCount,
+                        grantKycKeys,
                     } = task.data;
                     const client = new HederaSDKHelper(
                         hederaAccountId,
@@ -634,10 +635,11 @@ export class Worker {
                     result.data = await client.contractCall(
                         contractId, 'addPair',
                         new ContractFunctionParameters()
-                            .addAddress(baseTokenAddress)
-                            .addAddress(oppositeTokenAddress)
+                            .addAddress(TokenId.fromString(baseTokenId).toSolidityAddress())
+                            .addAddress(TokenId.fromString(oppositeTokenId).toSolidityAddress())
                             .addUint32(Math.floor(baseTokenCount))
-                            .addUint32(Math.floor(oppositeTokenCount))
+                            .addUint32(Math.floor(oppositeTokenCount)),
+                        grantKycKeys
                     );
                     break;
                 }
