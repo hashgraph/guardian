@@ -1,4 +1,4 @@
-import { IToken } from '@guardian/interfaces';
+import { IToken, TokenType } from '@guardian/interfaces';
 import { Entity, Property, Unique } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
@@ -30,7 +30,7 @@ export class Token extends BaseEntity implements IToken {
      * Token type
      */
     @Property({ nullable: true })
-    tokenType?: string;
+    tokenType?: TokenType;
 
     /**
      * Token decimals

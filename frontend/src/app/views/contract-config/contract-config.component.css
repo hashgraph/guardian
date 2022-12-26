@@ -1,0 +1,152 @@
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+}
+
+.loading {
+    background: #fff;
+    position: fixed;
+    z-index: 99;
+    top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.table {
+    width: 100%;
+}
+
+.btn-publish::ng-deep > * {
+    background: #4caf50 !important;
+    color: #fff !important;
+    min-width: 121px;
+    cursor: pointer !important;
+}
+
+.not-exist {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: darkgrey;
+}
+
+.table-container {
+    max-height: calc(100vh - var(--header-height) - 170px);
+    min-height: 100px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 0;
+    border-top: 1px solid #eee;
+}
+
+.table-container .mat-column-contractId {
+    padding-left: 8px;
+    width: 150px;
+    max-width: 150px;
+}
+
+.table-container .mat-column-description {
+    border-right: 1px solid #dddddd;
+    padding-left: 8px;
+    max-width: 500px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table-container .mat-column-operations {
+    padding-left: 8px;
+    width: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    border-right: 1px solid #dddddd;
+}
+
+.table-container .mat-column-retire {
+    padding-left: 8px;
+    width: 200px;
+    min-width: 200px;
+    max-width: 200px;
+}
+
+.table-container .mat-column-owner {
+    width: 300px;
+    max-width: 500px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.actions-container {
+    display: block;
+    z-index: 1;
+}
+
+.table-paginator {
+    height: 60px;
+    border-top: 1px solid #eee;
+    margin-top: 5px;
+}
+
+.action-btn {
+    background: #4caf50;
+    color: #fff;
+    border-radius: 6px;
+    display: inline-block;
+    padding: 6px 0;
+    width: 173px;
+    margin: 0px 5px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: center;
+    -webkit-user-select: none;
+    user-select: none;
+    position: relative;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.action-btn.view-btn {
+    width: 208px;
+}
+
+.refresh-action-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.refresh-action-btn {
+    color: #3f51b5;
+    background-color: none;
+}
+
+.spin {
+    animation-name: spin;
+    animation-duration: 3000ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+@keyframes spin {
+    from {
+        transform:rotate(360deg);
+    }
+    to {
+        transform:rotate(0deg);
+    }
+}

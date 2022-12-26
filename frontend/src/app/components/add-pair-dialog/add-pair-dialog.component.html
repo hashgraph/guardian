@@ -1,0 +1,71 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onNoClick()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div class="g-dialog-title">
+            Create Pair
+        </div>
+        <div class="g-dialog-actions">
+            <div class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="loading || !this.dataForm.valid">
+                Create
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div style="padding: 20px 35px 30px 35px">
+            <div class="exists-pairs" *ngIf="existsPairs?.length">
+                <div class="exists-pairs-warn-info"><mat-icon>warning</mat-icon>
+                    <div><b>Pair already exists in {{existsPairs.length}} contract[s]:</b></div>
+                </div>
+                <div>{{existsPairs.join(", ")}}</div>
+            </div>
+            <div class="contract-info" *ngIf="!loading">{{this.dataForm.value?.baseTokenCount || 0}} token[s]
+                <b>{{this.dataForm.value?.baseTokenId || '...'}}</b> will be retired by
+                {{this.dataForm.value?.oppositeTokenCount || 0}} token[s] <b>{{this.dataForm.value?.oppositeTokenId ||
+                    '...'}}</b>
+            </div>
+            <mat-spinner class="pair-loading" *ngIf="loading" [diameter]="64"></mat-spinner>
+            <form *ngIf="dataForm" [formGroup]="dataForm" class="contract-form">
+                <div class="block-delimiter" data-label="Your token to retire"></div>
+                <mat-form-field appearance="outline" class="contract-form-base-token">
+                    <mat-label>Token</mat-label>
+                    <mat-select formControlName="baseTokenId" placeholder="Choose Token">
+                        <mat-option *ngFor="let token of tokens"
+                            [value]="token.tokenId">{{token.tokenName}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <div class="contract-form-base-token-count-container">
+                    <div class="contract-from-token-info"><mat-icon>generating_tokens</mat-icon>
+                        <div class="contract-from-token-info-label">{{dataForm.value?.baseTokenId || '...'}} Token</div>
+                    </div>
+                    <mat-form-field appearance="outline" class="contract-form-base-token-count">
+                        <mat-icon matPrefix>account_balance_wallet</mat-icon>
+                        <input matInput type="number" placeholder="Count" formControlName="baseTokenCount">
+                    </mat-form-field>
+                </div>
+
+                <div class="block-delimiter" data-label="Token to pair with"></div>
+                <mat-form-field appearance="outline" class="contract-form-base-token">
+                    <mat-label>Token</mat-label>
+                    <mat-select formControlName="oppositeTokenId" placeholder="Choose Token">
+                        <mat-option *ngFor="let token of tokens"
+                            [value]="token.tokenId">{{token.tokenName}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <div class="contract-form-base-token-count-container">
+                    <div class="contract-from-token-info"><mat-icon>generating_tokens</mat-icon>
+                        <div class="contract-from-token-info-label">{{dataForm.value?.oppositeTokenId || '...'}} Token
+                        </div>
+                    </div>
+                    <mat-form-field appearance="outline" class="contract-form-opposite-token-count">
+                        <mat-icon matPrefix>account_balance_wallet</mat-icon>
+                        <input matInput type="number" placeholder="Count" formControlName="oppositeTokenCount">
+                    </mat-form-field>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
