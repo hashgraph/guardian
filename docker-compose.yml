@@ -60,6 +60,7 @@ services:
       dockerfile: ./worker-service/Dockerfile
     depends_on:
       - ipfs-node
+      - auth-service
     environment:
       - SERVICE_CHANNEL="worker.1"
 
@@ -69,6 +70,7 @@ services:
       dockerfile: ./worker-service/Dockerfile
     depends_on:
       - ipfs-node
+      - auth-service
     environment:
       - SERVICE_CHANNEL="worker.2"
 
