@@ -46,9 +46,9 @@
 
 .table-container .mat-column-retire {
     padding-left: 8px;
-    width: 115px;
-    max-width: 115px;
-    min-width: 115px;
+    width: 172px;
+    max-width: 172px;
+    min-width: 172px;
 }
 
 .table-container .mat-column-oppositeTokenCount {
@@ -72,7 +72,7 @@
     border-radius: 6px;
     display: inline-block;
     padding: 6px 0;
-    width: 120px;
+    width: 180px;
     margin: 0px 5px;
     cursor: pointer;
     font-weight: 500;

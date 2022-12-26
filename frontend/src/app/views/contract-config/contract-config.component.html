@@ -60,7 +60,7 @@
                     <td mat-cell *matCellDef="let element">
                         <div *ngIf="element.status === 'APPROVED' || element.isOwnerCreator" class="action-btn view-btn"
                             [routerLink]="'pairs'" [queryParams]="{contractId: element.contractId}">
-                            <span>View</span>
+                            <span>View Requests</span>
                             <mat-icon>visibility</mat-icon>
                         </div>
                     </td>

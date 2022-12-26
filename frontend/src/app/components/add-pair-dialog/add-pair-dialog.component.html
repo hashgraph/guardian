@@ -18,9 +18,9 @@
         <div style="padding: 20px 35px 30px 35px">
             <div class="exists-pairs" *ngIf="existsPairs?.length">
                 <div class="exists-pairs-warn-info"><mat-icon>warning</mat-icon>
-                    <div><b>Pair already exists in {{existsPairs.length}} contract[s]</b></div>
+                    <div><b>Pair already exists in {{existsPairs.length}} contract[s]:</b></div>
                 </div>
-                <div>{{existsPairs.join(" , ")}}</div>
+                <div>{{existsPairs.join(", ")}}</div>
             </div>
             <div class="contract-info" *ngIf="!loading">{{this.dataForm.value?.baseTokenCount || 0}} token[s]
                 <b>{{this.dataForm.value?.baseTokenId || '...'}}</b> will be retired by

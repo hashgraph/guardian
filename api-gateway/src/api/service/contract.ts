@@ -66,15 +66,15 @@ contractAPI.post(
 );
 
 contractAPI.post(
-    '/user',
+    '/:contractId/user',
     permissionHelper(UserRole.STANDARD_REGISTRY),
     async (req: AuthenticatedRequest, res: Response) => {
         try {
             const user = req.user;
-            const { userId, contractId } = req.body;
+            const { userId } = req.body;
             const guardians = new Guardians();
             res.status(200).json(
-                await guardians.addUser(user.did, userId, contractId)
+                await guardians.addUser(user.did, userId, req.params.contractId)
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -84,15 +84,14 @@ contractAPI.post(
 );
 
 contractAPI.post(
-    '/status',
+    '/:contractId/status',
     permissionHelper(UserRole.STANDARD_REGISTRY),
     async (req: AuthenticatedRequest, res: Response) => {
         try {
             const user = req.user;
-            const { contractId } = req.body;
             const guardians = new Guardians();
             res.status(200).json(
-                await guardians.updateStatus(user.did, contractId)
+                await guardians.updateStatus(user.did, req.params.contractId)
             );
         } catch (error) {
             new Logger().error(error, ['API_GATEWAY']);
@@ -120,7 +119,7 @@ contractAPI.get('/pair', async (req: AuthenticatedRequest, res: Response) => {
 });
 
 contractAPI.post(
-    '/pair',
+    '/:contractId/pair',
     permissionHelper(UserRole.STANDARD_REGISTRY),
     async (req: AuthenticatedRequest, res: Response) => {
         try {
@@ -130,13 +129,12 @@ contractAPI.post(
                 oppositeTokenId,
                 baseTokenCount,
                 oppositeTokenCount,
-                contractId,
             } = req.body;
             const guardians = new Guardians();
             res.status(200).json(
                 await guardians.addContractPair(
                     user.did,
-                    contractId,
+                    req.params.contractId,
                     baseTokenId,
                     oppositeTokenId,
                     baseTokenCount,
@@ -157,6 +155,7 @@ contractAPI.get(
             const user = req.user;
             const guardians = new Guardians();
             const [requests, count] = await guardians.getRetireRequests(
+                user.parent || user.did,
                 user.role === UserRole.USER ? user.did : null,
                 req.query?.contractId as string,
                 req.query?.pageIndex as any,
@@ -171,7 +170,7 @@ contractAPI.get(
 );
 
 contractAPI.post(
-    '/retire/request',
+    '/:contractId/retire/request',
     async (req: AuthenticatedRequest, res: Response) => {
         try {
             const user = req.user;
@@ -179,7 +178,6 @@ contractAPI.post(
                 baseTokenId,
                 oppositeTokenId,
                 baseTokenCount,
-                contractId,
                 oppositeTokenCount,
                 baseTokenSerials,
                 oppositeTokenSerials,
@@ -188,7 +186,7 @@ contractAPI.post(
             res.status(200).json(
                 await guardians.retireRequest(
                     user.did,
-                    contractId,
+                    req.params.contractId,
                     baseTokenId,
                     oppositeTokenId,
                     baseTokenCount,

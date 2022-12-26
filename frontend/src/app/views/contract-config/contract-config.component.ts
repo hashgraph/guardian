@@ -130,7 +130,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                         required: false,
                     },
                 ],
-                title: 'Create Contract',
+                title: 'Import Contract',
             },
         });
         dialogRef.afterClosed().subscribe(async (result) => {
@@ -157,7 +157,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                         name: 'description',
                         label: 'Description',
                         placeholder: 'Description',
-                        required: true,
+                        required: false,
                     },
                 ],
                 title: 'Create Contract',
@@ -236,7 +236,13 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 dialogRef.afterClosed().subscribe(async (result) => {
                     if (result) {
                         this.loading = true;
-                        this.contractsService.createPair(result).subscribe(
+                        this.contractsService.createPair(
+                            result.contractId,
+                            result.baseTokenId,
+                            result.oppositeTokenId,
+                            result.baseTokenCount,
+                            result.oppositeTokenCount,
+                        ).subscribe(
                             () => (this.loading = false),
                             () => (this.loading = false)
                         );

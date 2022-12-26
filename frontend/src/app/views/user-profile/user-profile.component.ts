@@ -323,20 +323,30 @@ export class UserProfileComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.contractService.createRetireRequest(result).subscribe(
-                    () => {
-                        this.loadDate();
-                        this.loading = false;
-                    },
-                    () => (this.loading = false)
-                );
+                this.contractService
+                    .createRetireRequest(
+                        result.contractId,
+                        result.baseTokenId,
+                        result.oppositeTokenId,
+                        result.baseTokenCount,
+                        result.oppositeTokenCount,
+                        result.baseTokenSerials,
+                        result.oppositeTokenSerials
+                    )
+                    .subscribe(
+                        () => {
+                            this.loadDate();
+                            this.loading = false;
+                        },
+                        () => (this.loading = false)
+                    );
             }
         });
     }
 
     viewRetireRequest(document: any) {
         this.dialog.open(VCViewerDialog, {
-            width: '850px',
+            width: '600px',
             data: {
                 document: document.document,
                 title: 'View Retire Request Result',

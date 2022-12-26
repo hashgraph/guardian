@@ -1058,465 +1058,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /contracts:
-    get:
-      tags:
-        - contracts
-      description: Returns all contracts.
-      security:
-      - bearerAuth: []
-      summary: Returns all contracts.
-      parameters:
-        - in: query
-          name: pageIndex
-          schema:
-            type: integer
-          description: The number of pages to skip before starting to collect the result set
-          examples:
-            pageIndex:
-              summary: Example of a pageIndex
-              value: 0
-        - in: query
-          name: pageSize
-          schema:
-            type: integer
-          description: The numbers of items to return
-          examples:
-            pageSize:
-              summary: Example of a pageSize
-              value: 100
-      responses:
-        200:
-          description: Successful operation.
-          headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Contract'
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    post:
-      tags:
-        - contracts
-      description: Creates new contract. Only users with the Standard Registry role are allowed to make the request.
-      security:
-      - bearerAuth: []
-      summary: Create new contract.
-      requestBody:
-        description: Request Object Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                description:
-                  type: string
-      responses:
-        200:
-          description: Successful operation.
-          content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Contract"
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /contracts/import:
-    post:
-      tags:
-        - contracts
-      description: Creates new contract. Only users with the Standard Registry role are allowed to make the request.
-      security:
-      - bearerAuth: []
-      summary: Import new contract.
-      requestBody:
-        description: Request Object Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                contractId:
-                  type: string
-                description:
-                  type: string
-      responses:
-        200:
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Contract'
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /contracts/user:
-    post:
-      tags:
-        - contracts
-      description: Add new contract user. Only users with the Standard Registry role are allowed to make the request.
-      security:
-      - bearerAuth: []
-      summary: Add new contract user.
-      requestBody:
-        description: Request Object Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                userId:
-                  type: string
-                contractId:
-                  type: string
-      responses:
-        200:
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: boolean
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /contracts/status:
-    post:
-      tags:
-        - contracts
-      description: Update contract status. Only users with the Standard Registry role are allowed to make the request.
-      security:
-      - bearerAuth: []
-      summary: Update contract status.
-      requestBody:
-        description: Request Object Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                contractId:
-                  type: string
-      responses:
-        200:
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: boolean
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /contracts/pair:
-    post:
-      tags:
-        - contracts
-      description: Creates new contract pair. Only users with the Standard Registry role are allowed to make the request.
-      security:
-      - bearerAuth: []
-      summary: Creates new contract pair.
-      requestBody:
-        description: Request Object Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                baseTokenId:
-                  type: string
-                oppositeTokenId:
-                  type: string
-                baseTokenCount:
-                  type: string
-                oppositeTokenCount:
-                  type: string
-                contractId:
-                  type: string
-      responses:
-        200:
-          description: Successful operation.
-          content:
-          application/json:
-            schema:
-              type: boolean
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    get:
-      tags:
-        - contracts
-      description: Returns all contracts pairs.
-      security:
-      - bearerAuth: []
-      summary: Returns all contracts pairs.
-      parameters:
-        - in: query
-          name: pageIndex
-          schema:
-            type: integer
-          description: The number of pages to skip before starting to collect the result set
-          examples:
-            pageIndex:
-              summary: Example of a pageIndex
-              value: 0
-        - in: query
-          name: pageSize
-          schema:
-            type: integer
-          description: The numbers of items to return
-          examples:
-            pageSize:
-              summary: Example of a pageSize
-              value: 100
-      responses:
-        200:
-          description: Successful operation.
-          headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    baseTokenRate:
-                      type: string
-                    oppositeTokenRate:
-                      type: string
-                    contractId:
-                      type: string
-                    description:
-                      type: string
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  
-  /contracts/retire/request:
-    post:
-      tags:
-        - contracts
-      description: Creates new contract retire request.
-      security:
-      - bearerAuth: []
-      summary: Creates new contract retire request.
-      requestBody:
-        description: Request Object Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                contractId:
-                  type: string
-                baseTokenId:
-                  type: string
-                oppositeTokenId:
-                  type: string
-                baseTokenCount:
-                  type: string
-                oppositeTokenCount:
-                  type: string
-                baseTokenSerials:
-                  type: string
-                oppositeTokenSerials:
-                  type: string
-      responses:
-        200:
-          description: Successful operation.
-          content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RetireRequest"
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    get:
-      tags:
-        - contracts
-      description: Returns all contract requests.
-      security:
-      - bearerAuth: []
-      summary: Returns all contract requests.
-      parameters:
-        - in: query
-          name: pageIndex
-          schema:
-            type: integer
-          description: The number of pages to skip before starting to collect the result set
-          examples:
-            pageIndex:
-              summary: Example of a pageIndex
-              value: 0
-        - in: query
-          name: pageSize
-          schema:
-            type: integer
-          description: The numbers of items to return
-          examples:
-            pageSize:
-              summary: Example of a pageSize
-              value: 100
-      responses:
-        200:
-          description: Successful operation.
-          headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/RetireRequest"
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    delete:
-      tags:
-        - contracts
-      description: Cancel contract requests.
-      security:
-      - bearerAuth: []
-      summary: Cancel contract requests.
-      parameters:
-        - in: query
-          name: requestId
-          schema:
-            type: string
-          description: Request Identifier
-          required: true
-      responses:
-        200:
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: boolean
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /contracts/retire:
-    post:
-      tags:
-        - contracts
-      description: Retire tokens. Only users with the Standard Registry role are allowed to make the request.
-      security:
-      - bearerAuth: []
-      summary: Retire tokens.
-      requestBody:
-        description: Request Object Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                requestId:
-                  type: string
-      responses:
-        200:
-          description: Successful operation.
-          content:
-          application/json:
-            schema:
-              type: boolean
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
   /schema/{schemaId}:
     get:
       tags:
@@ -5078,6 +4619,487 @@ paths:
             application/json:
               schema:
                 type: boolean
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /contracts:
+    get:
+      tags:
+        - contracts
+      description: Returns all contracts.
+      security:
+      - bearerAuth: []
+      summary: Returns all contracts.
+      parameters:
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
+      responses:
+        200:
+          description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Contract'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - contracts
+      description: Creates new contract. Only users with the Standard Registry role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Create new contract.
+      requestBody:
+        description: Request Object Parameters.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Contract"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /contracts/import:
+    post:
+      tags:
+        - contracts
+      description: Creates new contract. Only users with the Standard Registry role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Import new contract.
+      requestBody:
+        description: Request Object Parameters.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contractId:
+                  type: string
+                description:
+                  type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contract'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /contracts/{contractId}/user:
+    post:
+      tags:
+        - contracts
+      description: Add new contract user. Only users with the Standard Registry role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Add new contract user.
+      parameters:
+        - in: path
+          name: contractId
+          schema:
+            type: string
+          description: Contract identifier
+          required: true
+      requestBody:
+        description: Request Object Parameters.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /contracts/{contractId}/status:
+    post:
+      tags:
+        - contracts
+      description: Update contract status. Only users with the Standard Registry role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Update contract status.
+      parameters:
+        - in: path
+          name: contractId
+          schema:
+            type: string
+          description: Contract identifier
+          required: true
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /contracts/{contractId}/pair:
+    post:
+      tags:
+        - contracts
+      description: Creates new contract pair. Only users with the Standard Registry role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Creates new contract pair.
+      parameters:
+        - in: path
+          name: contractId
+          schema:
+            type: string
+          description: Contract identifier
+          required: true
+      requestBody:
+        description: Request Object Parameters.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                baseTokenId:
+                  type: string
+                oppositeTokenId:
+                  type: string
+                baseTokenCount:
+                  type: string
+                oppositeTokenCount:
+                  type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+          application/json:
+            schema:
+              type: boolean
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /contracts/pair:
+    get:
+      tags:
+        - contracts
+      description: Returns all contracts pairs.
+      security:
+      - bearerAuth: []
+      summary: Returns all contracts pairs.
+      parameters:
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
+      responses:
+        200:
+          description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    baseTokenRate:
+                      type: string
+                    oppositeTokenRate:
+                      type: string
+                    contractId:
+                      type: string
+                    description:
+                      type: string
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /contracts/{contractId}/retire/request:
+    post:
+      tags:
+        - contracts
+      description: Creates new contract retire request.
+      security:
+      - bearerAuth: []
+      summary: Creates new contract retire request.
+      parameters:
+        - in: path
+          name: contractId
+          schema:
+            type: string
+          description: Contract identifier
+          required: true
+      requestBody:
+        description: Request Object Parameters.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                baseTokenId:
+                  type: string
+                oppositeTokenId:
+                  type: string
+                baseTokenCount:
+                  type: string
+                oppositeTokenCount:
+                  type: string
+                baseTokenSerials:
+                  type: string
+                oppositeTokenSerials:
+                  type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RetireRequest"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /contracts/retire/request:
+    get:
+      tags:
+        - contracts
+      description: Returns all contract requests.
+      security:
+      - bearerAuth: []
+      summary: Returns all contract requests.
+      parameters:
+        - in: query
+          name: contractId
+          schema:
+            type: string
+          description: Contract Identifier
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
+      responses:
+        200:
+          description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RetireRequest"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - contracts
+      description: Cancel contract requests.
+      security:
+      - bearerAuth: []
+      summary: Cancel contract requests.
+      parameters:
+        - in: query
+          name: requestId
+          schema:
+            type: string
+          description: Request Identifier
+          required: true
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /contracts/retire:
+    post:
+      tags:
+        - contracts
+      description: Retire tokens. Only users with the Standard Registry role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Retire tokens.
+      requestBody:
+        description: Request Object Parameters.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requestId:
+                  type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+          application/json:
+            schema:
+              type: boolean
         401:
           description: Unauthorized.
         403:

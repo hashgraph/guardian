@@ -46,25 +46,28 @@ export class ContractService {
         userId: string,
         contractId: string
     ): Observable<HttpResponse<any>> {
-        return this.http.post<any>(`${this.url}/user`, {
+        return this.http.post<any>(`${this.url}/${contractId}/user`, {
             userId,
-            contractId,
         });
     }
 
     public updateStatus(contractId: string): Observable<any> {
-        return this.http.post<any[]>(`${this.url}/status`, {
-            contractId,
-        });
+        return this.http.post<any[]>(`${this.url}/${contractId}/status`, null);
     }
 
-    public createPair(pairParameters: {
-        baseTokenId: string;
-        oppositeTokenId: string;
-        baseTokenCount: number;
-        oppositeTokenCount: number;
-    }) {
-        return this.http.post<any>(`${this.url}/pair`, pairParameters);
+    public createPair(
+        contractId: string,
+        baseTokenId: string,
+        oppositeTokenId: string,
+        baseTokenCount: number,
+        oppositeTokenCount: number
+    ) {
+        return this.http.post<any>(`${this.url}/${contractId}/pair`, {
+            baseTokenId,
+            oppositeTokenId,
+            baseTokenCount,
+            oppositeTokenCount,
+        });
     }
 
     public getPair(baseTokenId: string, oppositeTokenId: string) {
@@ -76,8 +79,23 @@ export class ContractService {
         });
     }
 
-    public createRetireRequest(paramters: any) {
-        return this.http.post<any>(`${this.url}/retire/request`, paramters);
+    public createRetireRequest(
+        contractId: string,
+        baseTokenId: string,
+        oppositeTokenId: string,
+        baseTokenCount: string,
+        oppositeTokenCount: string,
+        baseTokenSerials: number[],
+        oppositeTokenSerials: number[]
+    ) {
+        return this.http.post<any>(`${this.url}/${contractId}/retire/request`, {
+            baseTokenId,
+            oppositeTokenId,
+            baseTokenCount,
+            oppositeTokenCount,
+            baseTokenSerials,
+            oppositeTokenSerials,
+        });
     }
 
     public getRetireRequestsAll(): Observable<any[]> {

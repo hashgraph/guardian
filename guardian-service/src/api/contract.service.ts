@@ -84,14 +84,27 @@ export async function contractAPI(
                 return new MessageError('Invalid get contract parameters');
             }
 
-            const { pageIndex, pageSize, owner, contractId } = msg;
+            const { pageIndex, pageSize, owner, contractId, did } = msg;
 
             const filters: any = {};
             if (owner) {
                 filters.owner = owner;
             }
             if (contractId) {
+                const contracts = await contractRepository.findOne({
+                    owner: did
+                });
+                if (contracts.owner !== did) {
+                    throw new Error('You are not contract owner');
+                }
                 filters.contractId = contractId;
+            } else {
+                const contracts = await contractRepository.find({
+                    owner: did
+                });
+                filters.contractId = {
+                    $in: contracts.map(contract => contract.contractId)
+                }
             }
 
             const otherOptions: any = {};
@@ -182,6 +195,10 @@ export async function contractAPI(
 
             const { did, contractId } = msg;
 
+            if (!contractId) {
+                throw new Error('Invalid contract identifier');
+            }
+
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
@@ -229,6 +246,13 @@ export async function contractAPI(
             }
 
             const { userId, contractId, did } = msg;
+
+            if (!contractId) {
+                throw new Error('Invalid contract identifier');
+            }
+            if (!userId) {
+                throw new Error('Invalid user identifier')
+            }
 
             const users = new Users();
             const wallet = new Wallet();
@@ -533,6 +557,7 @@ export async function contractAPI(
                     baseTokenId,
                     oppositeTokenId,
                     owner: did,
+                    vcDocumentHash: null
                 }
             );
 
@@ -554,6 +579,10 @@ export async function contractAPI(
             const retireRequest = await retireRequestRepository.findOne({
                 id: requestId,
             });
+
+            if (did !== retireRequest.owner) {
+                throw new Error('You are not owner of retire request');
+            }
 
             const users = new Users();
             const wallet = new Wallet();

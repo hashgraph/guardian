@@ -1082,6 +1082,7 @@ export class Guardians extends ServiceRequestsBase {
 
     /**
      * Get Retire Requests
+     * @param did
      * @param owner
      * @param contractId
      * @param pageIndex
@@ -1089,12 +1090,14 @@ export class Guardians extends ServiceRequestsBase {
      * @returns Retire Requests And Count
      */
     public async getRetireRequests(
+        did: string,
         owner?: string,
         contractId?: string,
         pageIndex?: any,
         pageSize?: any
     ): Promise<[any, number]> {
         return await this.request<any>(MessageAPI.GET_RETIRE_REQUEST, {
+            did,
             owner,
             contractId,
             pageIndex,
