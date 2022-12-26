@@ -736,7 +736,7 @@ export async function contractAPI(
                 root.hederaAccountId,
                 rootKey
             );
-            messageServer.setTopicObject(parent);
+            messageServer.setTopicObject(topicConfig);
             if (!schema) {
                 schema = await new DataBaseHelper(SchemaCollection).findOne({
                     entity: SchemaEntity.RETIRE_TOKEN,
@@ -784,7 +784,6 @@ export async function contractAPI(
             const vcMessage = new VCMessage(MessageAction.CreateVC);
             vcMessage.setDocument(vcObject);
             await messageServer
-                .setTopicObject(topicConfig)
                 .sendMessage(vcMessage);
 
             const vcDoc = await new DataBaseHelper(VcDocumentCollection).save({
