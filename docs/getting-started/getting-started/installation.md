@@ -343,7 +343,7 @@ npm run test
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to first generate Operator ID and Operator Key by clicking on Generate button as shown below:
 
-<figure><img src="../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (18) (3).png" alt=""><figcaption></figcaption></figure>
 
 Once you generated Operator ID and Operator Key, we can either click on Next or restore the Data, by selecting Restore Data from the Next button dropdown to setup Registry as shown below.
 

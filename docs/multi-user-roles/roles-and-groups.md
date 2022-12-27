@@ -44,9 +44,9 @@ Groups are separate sets of documents access , which can be limited to users who
 
 
 
-<figure><img src="../.gitbook/assets/image (22).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (22) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (17) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 2.2 Usage
 
@@ -61,7 +61,7 @@ Groups are separate sets of documents access , which can be limited to users who
 
 <figure><img src="../.gitbook/assets/image (23) (3).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (16) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (16) (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 3. Switching between Groups
 
