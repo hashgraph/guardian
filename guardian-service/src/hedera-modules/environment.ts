@@ -13,13 +13,21 @@ export class Environment {
      */
     public static readonly HEDERA_MAINNET_TOPIC_API: string = 'https://mainnet-public.mirrornode.hedera.com/api/v1/topics/';
     /**
-     * Testnar message API
+     * Testnet message API
      */
     public static readonly HEDERA_TESTNET_MESSAGE_API: string = 'https://testnet.mirrornode.hedera.com/api/v1/topics/messages';
     /**
      * Testnet topic API
      */
     public static readonly HEDERA_TESTNET_TOPIC_API: string = 'https://testnet.mirrornode.hedera.com/api/v1/topics/';
+    /**
+     * Previewnet message API
+     */
+    public static readonly HEDERA_PREVIEW_MESSAGE_API: string = 'https://Previewnet.mirrornode.hedera.com/api/v1/topics/messages';
+    /**
+     * Previewnet topic API
+     */
+    public static readonly HEDERA_PREVIEW_TOPIC_API: string = 'https://Previewnet.mirrornode.hedera.com/api/v1/topics/';
     /**
      * Localnode message API
      */
@@ -72,6 +80,12 @@ export class Environment {
                 Environment._topicsApi = Environment.HEDERA_TESTNET_TOPIC_API;
                 break;
 
+            case 'previewnet':
+                Environment._network = 'previewnet';
+                Environment._messagesApi = Environment.HEDERA_PREVIEW_MESSAGE_API;
+                Environment._topicsApi = Environment.HEDERA_PREVIEW_TOPIC_API;
+                break;
+
             case 'localnode':
                 Environment._network = 'localnode';
                 Environment._messagesApi = Environment.HEDERA_LOCALNODE_MESSAGE_API;
@@ -79,7 +93,7 @@ export class Environment {
                 break;
 
             default:
-                throw new Error(`Unknown network: ${Environment._network}`)
+                throw new Error(`Unknown network: ${network}`)
         }
 
         if (mirrornode) {
@@ -114,6 +128,9 @@ export class Environment {
 
             case 'testnet':
                 return Client.forTestnet();
+
+            case 'previewnet':
+                return Client.forPreviewnet();
 
             case 'localnode':
                 const node = {} as any;
