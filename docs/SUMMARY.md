@@ -174,7 +174,7 @@
     * [💻 Configuring Multi Policy using UI](guardian/standard-registry/policies/page-1.md)
   * [📔 Retirement Contract](guardian/standard-registry/retirement-contract/README.md)
     * [💻 Creating / Importing Contract UI](guardian/standard-registry/retirement-contract/creating-importing-contract-ui.md)
-    * [💻 Creating Token Repair UI](guardian/standard-registry/retirement-contract/creating-token-repair-ui.md)
+    * [💻 Creating Token Pair UI](guardian/standard-registry/retirement-contract/creating-token-pair-ui.md)
     * [🧑 Adding User to Contract UI](guardian/standard-registry/retirement-contract/adding-user-to-contract-ui.md)
     * [⚒ Creating Retire Request](guardian/standard-registry/retirement-contract/creating-retire-request.md)
     * [⚙ Retirement APIs](guardian/standard-registry/retirement-contract/retirement-apis/README.md)

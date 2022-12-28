@@ -1,6 +1,6 @@
-# 💻 Creating Token Repair UI
+# 💻 Creating Token Pair UI
 
-Once the contract is created, we have an option to create Token Repair by selecting first option in the Operations drop down:
+Once the contract is created, we have an option to create Token Pair by selecting first option in the Operations drop down:
 
 <figure><img src="../../../.gitbook/assets/image (15).png" alt=""><figcaption></figcaption></figure>
 
