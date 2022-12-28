@@ -17,10 +17,10 @@ RefreshEvents are used to refreshing the UI, instead of "dependencies" property.
 
 ### UI Properties
 
-| UI Property | Definition                                                                                                         |
-| ----------- | ------------------------------------------------------------------------------------------------------------------ |
-| Type BLANK  | Does not contain any frame, will render all child elements one after the other.                                    |
-| Type TABS   | A container which has a tab for each of the child element. It will render the first child element as type "blank". |
+| UI Property | Definition                                                                                                         | Status                                     |
+| ----------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------ |
+| Type BLANK  | Does not contain any frame, will render all child elements one after the other.                                    | <mark style="color:red;">Deprecated</mark> |
+| Type TABS   | A container which has a tab for each of the child element. It will render the first child element as type "blank". | <mark style="color:red;">Deprecated</mark> |
 
 ### Events
 

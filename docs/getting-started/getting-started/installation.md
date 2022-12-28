@@ -349,7 +349,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 **Note**: Restore Data can be restored from Hedera if data is available for setting up the Registry.
 
-<figure><img src="../../.gitbook/assets/image (2) (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (21) (3).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Limitations on restoring the data:**\
@@ -360,7 +360,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
-![](<../../.gitbook/assets/image (23) (1).png>)
+![](<../../.gitbook/assets/image (14) (3).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
@@ -410,7 +410,6 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | SERVICE\_CHANNEL                       | Version of the Guardian                                                            | guardian.1                  |
 | DB\_HOST                               | Hostname of the Database                                                           | localhost                   |
 | DB\_DATABASE                           | Database Name                                                                      | guardian\_db                |
-| MAX\__TRANSACTION\_FEE_                | Maximum Transaction Fees Value                                                     | 10                          |
 | INITIAL\_BALANCE                       | Initial Balance Value                                                              | 500                         |
 | INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                         |
 | OPERATOR\_ID                           | The ID of the operation                                                            | -                           |
