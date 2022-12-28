@@ -45,7 +45,7 @@ Once the Schema is imported, we need to select the Policy from the Policy dropdo
 
 ![](<../../../.gitbook/assets/image (2) (2).png>)
 
-![](<../../../.gitbook/assets/image (11) (2).png>)
+![](<../../../.gitbook/assets/image (11) (2) (1).png>)
 
 After selecting the required Policy, click on the Import button.
 

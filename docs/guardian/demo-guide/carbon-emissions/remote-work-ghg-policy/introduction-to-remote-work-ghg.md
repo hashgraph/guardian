@@ -12,4 +12,4 @@ Heating and cooling energy consumption defaults were calculated based on Energy 
 
 The workflow begins with each employee completing a survey to help refine their GHG estimates based on location; actual office, heating, and cooling equipment; and other important variables. Based on the responses, a verified credentials (VC) document is created. Then, employees track hours worked and GHG emissions are auto-calculated by customized schemas featuring built-in equations, defaults, and emission factors. Workforce emissions are calculated as the sum of all employee emissions and the resulting emissions are tokenized.
 
-<figure><img src="../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
