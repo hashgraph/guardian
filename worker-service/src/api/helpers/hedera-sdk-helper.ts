@@ -46,7 +46,7 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger';
 
-export const MAX_FEE = 10;
+export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 10;
 export const INITIAL_BALANCE = 30;
 
 /**
@@ -232,7 +232,8 @@ export class HederaSDKHelper {
             .setTreasuryAccountId(treasuryId)
             .setDecimals(decimals)
             .setInitialSupply(initialSupply)
-            .setTokenMemo(tokenMemo);
+            .setTokenMemo(tokenMemo)
+            .setMaxTransactionFee(MAX_FEE);
 
         if (adminKey) {
             transaction = transaction.setAdminKey(adminKey);
@@ -287,6 +288,7 @@ export class HederaSDKHelper {
         const client = this.client;
         let transaction = new TokenUpdateTransaction()
             .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
 
         if (changes.hasOwnProperty('tokenName')) {
             transaction = transaction.setTokenName(changes.tokenName);
@@ -329,6 +331,7 @@ export class HederaSDKHelper {
         const client = this.client;
         const transaction = new TokenDeleteTransaction()
             .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
 
         let signTx: Transaction = transaction;
@@ -404,6 +407,7 @@ export class HederaSDKHelper {
         const transaction = new TokenAssociateTransaction()
             .setAccountId(accountId)
             .setTokenIds([tokenId])
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(accountKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenAssociateTransaction');
@@ -430,6 +434,7 @@ export class HederaSDKHelper {
         const transaction = new TokenDissociateTransaction()
             .setAccountId(accountId)
             .setTokenIds([tokenId])
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(accountKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenDissociateTransaction');
@@ -455,6 +460,7 @@ export class HederaSDKHelper {
         const transaction = new TokenFreezeTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_freezeKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenFreezeTransaction');
@@ -480,6 +486,7 @@ export class HederaSDKHelper {
         const transaction = new TokenUnfreezeTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_freezeKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenUnfreezeTransaction');
@@ -505,6 +512,7 @@ export class HederaSDKHelper {
         const transaction = new TokenGrantKycTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_kycKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenGrantKycTransaction');
@@ -530,6 +538,7 @@ export class HederaSDKHelper {
         const transaction = new TokenRevokeKycTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_kycKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenRevokeKycTransaction');
@@ -562,6 +571,7 @@ export class HederaSDKHelper {
             .setTokenId(tokenId)
             .setAmount(amount)
             .setTransactionMemo(transactionMemo)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_supplyKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenMintTransaction');
@@ -595,6 +605,7 @@ export class HederaSDKHelper {
             .setTokenId(tokenId)
             .setMetadata(data)
             .setTransactionMemo(transactionMemo)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_supplyKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenMintNFTTransaction');
@@ -634,6 +645,7 @@ export class HederaSDKHelper {
             .setTokenId(tokenId)
             .setAmount(amount)
             .setTransactionMemo(transactionMemo)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_wipeKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenWipeTransaction');
@@ -670,6 +682,7 @@ export class HederaSDKHelper {
             .addTokenTransfer(tokenId, scoreId, -amount)
             .addTokenTransfer(tokenId, targetId, amount)
             .setTransactionMemo(transactionMemo)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_scoreKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TransferTransaction', amount);
@@ -703,7 +716,8 @@ export class HederaSDKHelper {
 
         const _scoreKey = HederaUtils.parsPrivateKey(scoreKey);
         let transaction = new TransferTransaction()
-            .setTransactionMemo(transactionMemo);
+            .setTransactionMemo(transactionMemo)
+            .setMaxTransactionFee(MAX_FEE);
 
         for (const serial of serials) {
             transaction = transaction
@@ -741,6 +755,7 @@ export class HederaSDKHelper {
         const newPrivateKey = PrivateKey.generate();
         const transaction = new AccountCreateTransaction()
             .setKey(newPrivateKey.publicKey)
+            .setMaxTransactionFee(MAX_FEE)
             .setInitialBalance(new Hbar(initialBalance || INITIAL_BALANCE));
         const receipt = await this.executeAndReceipt(client, transaction, 'AccountCreateTransaction');
         const newAccountId = receipt.accountId;
@@ -779,6 +794,7 @@ export class HederaSDKHelper {
         const client = this.client;
 
         let transaction: any = new TopicCreateTransaction()
+            .setMaxTransactionFee(MAX_FEE);
 
         if (topicMemo) {
             transaction = transaction.setTopicMemo(topicMemo.substring(0, 100));
@@ -827,7 +843,7 @@ export class HederaSDKHelper {
         let messageTransaction: Transaction = new TopicMessageSubmitTransaction({
             topicId,
             message,
-        });
+        }).setMaxTransactionFee(MAX_FEE);
 
         if (transactionMemo) {
             messageTransaction = messageTransaction.setTransactionMemo(transactionMemo.substring(0, 100));
@@ -1067,7 +1083,8 @@ export class HederaSDKHelper {
         const contractInstantiateTx = new ContractCreateTransaction()
             .setBytecodeFileId(bytecodeFileId)
             .setGas(1000000)
-            .setConstructorParameters(parameters);
+            .setConstructorParameters(parameters)
+            .setMaxTransactionFee(MAX_FEE);
         const contractInstantiateSubmit = await contractInstantiateTx.execute(
             client
         );
@@ -1123,6 +1140,7 @@ export class HederaSDKHelper {
             .setContractId(contractId)
             .setGas(2000000)
             .setFunction(functionName, parameters)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         if (additionalKeys && additionalKeys.length) {
             for (const key of additionalKeys) {
