@@ -46,7 +46,7 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger';
 
-export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 10;
+export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
 
 /**
