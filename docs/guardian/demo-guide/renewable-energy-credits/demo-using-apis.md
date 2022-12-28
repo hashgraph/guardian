@@ -28,7 +28,7 @@
 
 ### 1.2 In the policy config there is a root block which is the top of the structure
 
-![](<../.gitbook/assets/API\_1 (1).png>)
+![](<../../../.gitbook/assets/API\_1 (1).png>)
 
 ### 1.3 Request the config for the root block
 
@@ -70,7 +70,7 @@
 {% endswagger-response %}
 {% endswagger %}
 
-![](<../.gitbook/assets/API\_2 (1) (1).png>)
+![](<../../../.gitbook/assets/API\_2 (1) (1).png>)
 
 ### 1.5 At present only PolicyRolesBlock is available to the user. Select the "INSTALLER" role.
 
@@ -84,7 +84,7 @@ INSTALLER
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](../.gitbook/assets/API\_3.png)
+![](../../../.gitbook/assets/API\_3.png)
 
 ### 1.6 Request the root block and all contained blocks.
 
@@ -235,7 +235,7 @@ Years of registration
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/API\_4 (1) (1).png>)
+![](<../../../.gitbook/assets/API\_4 (1) (1).png>)
 
 ### 1.8 Request the root block and all contained blocks again.
 
@@ -297,7 +297,7 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image 1.png>)
+![](<../../../.gitbook/assets/image 1.png>)
 
 ## 2. Login as a Standard Registry
 
@@ -323,7 +323,7 @@ Years of registration
 {% endswagger-response %}
 {% endswagger %}
 
-![](../.gitbook/assets/API\_6.png)
+![](../../../.gitbook/assets/API\_6.png)
 
 ### 2.2 Request the root block and all contained blocks.
 
@@ -471,9 +471,9 @@ POST  /api/v1/policies/621376c8e6763a0014fb0de4/blocks/6f0f37c0-b62b-4be5-b1d0-e
 				
 ```
 
-![](../.gitbook/assets/API\_7.png)
+![](../../../.gitbook/assets/API\_7.png)
 
-![](<../.gitbook/assets/image 2.png>)
+![](<../../../.gitbook/assets/image 2.png>)
 
 ## 3. Login as the User
 
@@ -699,9 +699,9 @@ capacity
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](../.gitbook/assets/Sensor.png)
+![](../../../.gitbook/assets/Sensor.png)
 
-<figure><img src="../.gitbook/assets/API_10 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/API_10 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 3.4 Refresh the Blocks
 
@@ -717,7 +717,7 @@ record in the grid (data[0])
 {% endswagger-parameter %}
 {% endswagger %}
 
-![](<../.gitbook/assets/image 4.png>)
+![](<../../../.gitbook/assets/image 4.png>)
 
 ### 3.6 Sample MRV Sender Data
 

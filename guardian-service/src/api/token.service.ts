@@ -13,7 +13,7 @@ import { Workers } from '@helpers/workers';
  * @param info
  * @param token
  */
-function getTokenInfo(info: any, token: any) {
+function getTokenInfo(info: any, token: any, serials?: any[]) {
     const tokenId = token.tokenId;
     const result: any = {
         id: token.id,
@@ -31,7 +31,8 @@ function getTokenInfo(info: any, token: any) {
         balance: null,
         hBarBalance: null,
         frozen: null,
-        kyc: null
+        kyc: null,
+        serials
     }
     if (info && info[tokenId]) {
         result.associated = true;
@@ -750,9 +751,21 @@ export async function tokenAPI(
                 : {}
             );
 
+            const serials =
+                (await workers.addNonRetryableTask(
+                    {
+                        type: WorkerTaskType.GET_USER_NFTS_SERIALS,
+                        data: {
+                            operatorId: userID,
+                            operatorKey: userKey,
+                        },
+                    },
+                    1
+                )) || {};
+
             const result: any[] = [];
             for (const token of tokens) {
-                result.push(getTokenInfo(info, token));
+                result.push(getTokenInfo(info, token, serials[token.tokenId]));
             }
             return new MessageResponse(result);
         } catch (error) {

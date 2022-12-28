@@ -70,8 +70,8 @@ In the guardian a VP is a VP. It's just an object with schemas and dids inside o
 
 Here are the steps you should follow to get a VP from a token mint transaction.
 
-Look for a token mint transaction on [DragonGlass](https://app.dragonglass.me/).\
-For the transaction `00341948921649942497135549961` the link will be [https://testnet.dragonglass.me/transactions/00341948921649942497135549961](https://testnet.dragonglass.me/transactions/00341948921649942497135549961)\
+Look for a token mint transaction on [Ledger Works](https://explore.lworks.io/).\
+For the transaction `00341948921649942497135549961` the link will be [https://explore.lworks.io/testnet/transactions/0.0.34194892-1649942497-135549961](https://explore.lworks.io/testnet/transactions/0.0.34194892-1649942497-135549961)\
 Transaction data will contain data similar to this:
 
 ```
@@ -246,12 +246,12 @@ DID is the the DID of the RA, i.e. is a globally unique reference linking to a D
 
 When sending messages to the header, the Message Id and Topic Id are written to the database You can view them using the messageId and topicId fields&#x20;
 
-All messages in the topic can be viewed at the link https://testnet.dragonglass.me/hedera/topics/{topicId}&#x20;
+All messages in the topic can be viewed at the link [https://explore.lworks.io/testnet/topics/0.0.47802089](https://explore.lworks.io/testnet/topics/0.0.47802089)
 
 for example**:**
 
-https://testnet.dragonglass.me/hedera/topics/0.0.47802089&#x20;
+[https://explore.lworks.io/testnet/topics/{topicId}](https://explore.lworks.io/testnet/topics/%7BtopicId%7D)
 
-Unfortunately, dragonglass does not have a search by messageId, but messages can be obtained using mirrornode&#x20;
+Unfortunately, Ledger Works does not have a search by messageId, but messages can be obtained using mirrornode&#x20;
 
 for example https://testnet.mirrornode.hedera.com/api/v1/topics/messages/1659539040.128851003

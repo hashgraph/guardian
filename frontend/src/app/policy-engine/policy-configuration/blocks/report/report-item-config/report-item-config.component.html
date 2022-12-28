@@ -1,35 +1,45 @@
 <!-- Config Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="block">
-    <tr class="propRow">
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'properties')"
+            [attr.collapse]="propHidden.properties">
+            <mat-icon>expand_more</mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Properties</td>
+        <td class="propHeaderCell"></td>
+    </tr>
+
+    <tr class="propRow" [attr.collapse]="propHidden.properties">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
             <input class="prop-input" [(ngModel)]="block.title" [readonly]="readonly">
         </td>
     </tr>
-    <tr class="propRow">
+    <tr class="propRow" [attr.collapse]="propHidden.properties">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Description</td>
         <td class="propRowCell">
             <input class="prop-input" [(ngModel)]="block.description" [readonly]="readonly">
         </td>
     </tr>
-    <tr class="propRow">
+    <tr class="propRow" [attr.collapse]="propHidden.properties">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Visible</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="block.visible" [readonly]="readonly">
         </td>
     </tr>
-    <tr class="propRow">
+    <tr class="propRow" [attr.collapse]="propHidden.properties">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Multiple</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.multiple" [readonly]="readonly" (change)="onMultipleChange()">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.multiple" [readonly]="readonly"
+                (change)="onMultipleChange()">
         </td>
     </tr>
 
-    <tr class="propRow">
+    <tr class="propRow" [attr.collapse]="propHidden.properties">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Icon Type</td>
         <td class="propRowCell">
@@ -40,27 +50,28 @@
         </td>
     </tr>
 
-    <tr class="propRow">
+    <tr class="propRow" [attr.collapse]="propHidden.properties">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Icon</td>
-        <td class="propRowCell" >
+        <td class="propRowCell">
             <div class="icon-container">
                 <input class="prop-input" [(ngModel)]="block.icon" [readonly]="readonly" class="icon-input">
                 <input class="prop-input" type="file" class="file-input" accept="image/*"
                     (change)="onFileSelected($event, block)" #fileUpload>
                 <ng-container [ngSwitch]="fileLoading" *ngIf="block.iconType === 'custom' && !readonly">
-                    <div *ngSwitchCase="true" >
+                    <div *ngSwitchCase="true">
                         <mat-spinner [diameter]="20" class="file-spinner"></mat-spinner>
                     </div>
 
                     <div *ngSwitchCase="false">
-                        <button mat-icon-button class="upload-btn" class="file-action-button" (click)="fileUpload.click()">
+                        <button mat-icon-button class="upload-btn" class="file-action-button"
+                            (click)="fileUpload.click()">
                             <mat-icon class="file-action-icon">attach_file</mat-icon>
                         </button>
                     </div>
                 </ng-container>
                 <div *ngIf="block.icon">
-                    <button  mat-icon-button class="upload-btn" class="file-action-button" (click)="iconPreview()">
+                    <button mat-icon-button class="upload-btn" class="file-action-button" (click)="iconPreview()">
                         <mat-icon class="file-action-icon">remove_red_eye</mat-icon>
                     </button>
                 </div>
@@ -70,7 +81,8 @@
 
     <ng-template [ngIf]="block.multiple">
         <tr class="propHeader">
-            <td class="propRowCol" (click)="onHide(propHidden, 'dynamicFilterGroup')" [attr.collapse]="propHidden.dynamicFilterGroup">
+            <td class="propRowCol" (click)="onHide(propHidden, 'dynamicFilterGroup')"
+                [attr.collapse]="propHidden.dynamicFilterGroup">
                 <mat-icon>expand_more</mat-icon>
             </td>
             <td class="propHeaderCell cellName">Dynamic Filters</td>
@@ -83,15 +95,19 @@
         </tr>
         <ng-container *ngFor="let item of block.dynamicFilters; let i=index">
             <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup">
-                <td class="propRowCol" (click)="onHide(propHidden.dynamicFilters, i)" [attr.collapse]="propHidden.dynamicFilters[i]">
+                <td class="propRowCol" (click)="onHide(propHidden.dynamicFilters, i)"
+                    [attr.collapse]="propHidden.dynamicFilters[i]">
                     <mat-icon>
                         expand_more
                     </mat-icon>
                 </td>
                 <td class="propRowCell cellName">Dynamic Filter {{i}}</td>
                 <td class="propRowCell">
-                    <span *ngIf="block.dynamicFilters[i].field&&block.dynamicFilters[i].type&&block.dynamicFilters[i].nextItemField" class="not-editable-text">
-                        {{block.dynamicFilters[i].nextItemField}} {{block.dynamicFilters[i].type}} {{block.dynamicFilters[i].field}}
+                    <span
+                        *ngIf="block.dynamicFilters[i].field&&block.dynamicFilters[i].type&&block.dynamicFilters[i].nextItemField"
+                        class="not-editable-text">
+                        {{block.dynamicFilters[i].nextItemField}} {{block.dynamicFilters[i].type}}
+                        {{block.dynamicFilters[i].field}}
                     </span>
                     <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveDynamicFilter(i)">
                         <mat-icon>delete</mat-icon>
@@ -122,78 +138,61 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Next Item Field Path</td>
                 <td class="propRowCell">
-                    <document-path [(value)]="block.dynamicFilters[i].nextItemField" [readonly]="readonly"></document-path>
+                    <document-path [(value)]="block.dynamicFilters[i].nextItemField" [readonly]="readonly">
+                    </document-path>
                 </td>
             </tr>
         </ng-container>
     </ng-template>
+
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'filterGroup')" [attr.collapse]="propHidden.filterGroup">
+        <td class="propRowCol" (click)="onHide(propHidden, 'commonVariableGroup')"
+            [attr.collapse]="propHidden.commonVariableGroup">
             <mat-icon>expand_more</mat-icon>
         </td>
-        <td class="propHeaderCell cellName">Filters</td>
-        <td class="propHeaderCell">
-            <div class="propAdd" (click)="addFilter()">
-                <mat-icon>add</mat-icon>
-                <span>Add Filter</span>
-            </div>
-        </td>
+        <td class="propHeaderCell cellName">Common Variables</td>
+        <td class="propHeaderCell"></td>
     </tr>
-    <ng-container *ngFor="let item of block.filters; let i=index">
-        <tr class="propRow" [attr.collapse]="propHidden.filterGroup">
-            <td class="propRowCol" (click)="onHide(propHidden.filters, i)" [attr.collapse]="propHidden.filters[i]">
-                <mat-icon>
-                    expand_more
-                </mat-icon>
-            </td>
-            <td class="propRowCell cellName">Filter {{i}}</td>
-            <td class="propRowCell">
-                <span *ngIf="block.filters[i].field&&block.filters[i].type&&block.filters[i].value" class="not-editable-text">
-                    {{block.filters[i].field}} {{block.filters[i].type}} {{block.filters[i].value}}
-                </span>
-                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveFilter(i)">
-                    <mat-icon>delete</mat-icon>
-                </span>
-            </td>
-        </tr>
-
-        <tr class="propRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Type</td>
-            <td class="propRowCell">
-                <mat-select [(value)]="block.filters[i].type" [disabled]="readonly">
-                    <mat-option value="equal">Equal</mat-option>
-                    <mat-option value="not_equal">Not Equal</mat-option>
-                    <mat-option value="in">In</mat-option>
-                    <mat-option value="not_in">Not In</mat-option>
-                </mat-select>
-            </td>
-        </tr>
-        <tr class="propRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Variable Type</td>
-            <td class="propRowCell">
-                <mat-select [(value)]="block.filters[i].typeValue" [disabled]="readonly">
-                    <mat-option value="value">Value</mat-option>
-                    <mat-option value="variable">Variable</mat-option>
-                </mat-select>
-            </td>
-        </tr>
-        <tr class="propRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Field</td>
-            <td class="propRowCell">
-                <document-path [(value)]="block.filters[i].field" [readonly]="readonly"></document-path>
-            </td>
-        </tr>
-        <tr class="propRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Value</td>
-            <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.filters[i].value" [readonly]="readonly">
-            </td>
-        </tr>
-    </ng-container>
+    <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">policyId</td>
+        <td class="propRowCell not-editable-text">Current Policy ID</td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">owner</td>
+        <td class="propRowCell not-editable-text">Document Owner</td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">actionId</td>
+        <td class="propRowCell not-editable-text">Mint VC Document ID</td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">actionSubjectId</td>
+        <td class="propRowCell not-editable-text">Mint Credential Subject ID</td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">documentId</td>
+        <td class="propRowCell not-editable-text">First Source VC Document id</td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">documentSubjectId</td>
+        <td class="propRowCell not-editable-text">First Source Credential Subject id</td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">documentIds</td>
+        <td class="propRowCell not-editable-text">Source VC Document ids</td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">documentSubjectIds</td>
+        <td class="propRowCell not-editable-text">Source Credential Subject ids</td>
+    </tr>
 
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'variableGroup')" [attr.collapse]="propHidden.variableGroup">
@@ -233,7 +232,77 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Value</td>
             <td class="propRowCell">
-                <document-path [(value)]="block.variables[i].value" [readonly]="readonly" [displayTooltip]="true"></document-path>
+                <document-path [(value)]="block.variables[i].value" [readonly]="readonly" [displayTooltip]="true">
+                </document-path>
+            </td>
+        </tr>
+    </ng-container>
+
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'filterGroup')" [attr.collapse]="propHidden.filterGroup">
+            <mat-icon>expand_more</mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Filters</td>
+        <td class="propHeaderCell">
+            <div class="propAdd" (click)="addFilter()">
+                <mat-icon>add</mat-icon>
+                <span>Add Filter</span>
+            </div>
+        </td>
+    </tr>
+    <ng-container *ngFor="let item of block.filters; let i=index">
+        <tr class="propRow" [attr.collapse]="propHidden.filterGroup">
+            <td class="propRowCol" (click)="onHide(propHidden.filters, i)" [attr.collapse]="propHidden.filters[i]">
+                <mat-icon>
+                    expand_more
+                </mat-icon>
+            </td>
+            <td class="propRowCell cellName">Filter {{i}}</td>
+            <td class="propRowCell">
+                <span *ngIf="block.filters[i].field&&block.filters[i].type&&block.filters[i].value"
+                    class="not-editable-text">
+                    {{block.filters[i].field}} {{block.filters[i].type}} {{block.filters[i].value}}
+                </span>
+                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveFilter(i)">
+                    <mat-icon>delete</mat-icon>
+                </span>
+            </td>
+        </tr>
+
+        <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Type</td>
+            <td class="propRowCell">
+                <mat-select [(value)]="block.filters[i].type" [disabled]="readonly">
+                    <mat-option value="equal">Equal</mat-option>
+                    <mat-option value="not_equal">Not Equal</mat-option>
+                    <mat-option value="in">In</mat-option>
+                    <mat-option value="not_in">Not In</mat-option>
+                </mat-select>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Variable Type</td>
+            <td class="propRowCell">
+                <mat-select [(value)]="block.filters[i].typeValue" [disabled]="readonly">
+                    <mat-option value="value">Value</mat-option>
+                    <mat-option value="variable">Variable</mat-option>
+                </mat-select>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Field</td>
+            <td class="propRowCell">
+                <document-path [(value)]="block.filters[i].field" [readonly]="readonly"></document-path>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Value</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="block.filters[i].value" [readonly]="readonly">
             </td>
         </tr>
     </ng-container>

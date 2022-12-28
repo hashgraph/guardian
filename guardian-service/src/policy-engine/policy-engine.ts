@@ -28,7 +28,7 @@ import {
 } from '@hedera-modules'
 import { findAllEntities, getArtifactType, replaceAllEntities, replaceArtifactProperties, SchemaFields } from '@helpers/utils';
 import { IPolicyInstance, IPolicyInterfaceBlock } from './policy-engine.interface';
-import { incrementSchemaVersion, findAndPublishSchema, publishSystemSchema, findAndDryRunSchema, deleteSchema } from '@api/schema.service';
+import { incrementSchemaVersion, findAndPublishSchema, findAndDryRunSchema, deleteSchema, publishSystemSchemas } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { VcHelper } from '@helpers/vc-helper';
 import { Users } from '@helpers/users';
@@ -189,18 +189,9 @@ export class PolicyEngine {
             const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
 
             notifier.info(`Found ${systemSchemas.length} schemas`);
-            let num: number = 0;
-            for (const schema of systemSchemas) {
-                logger.info('Create Policy: Publish System Schema', ['GUARDIAN_SERVICE']);
-                messageServer.setTopicObject(topic);
-                schema.creator = owner;
-                schema.owner = owner;
-                const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
-                await DatabaseServer.createAndSaveSchema(item);
-                const name = item.name;
-                num++;
-                notifier.info(`Schema ${num} (${name || '-'}) published`);
-            }
+            messageServer.setTopicObject(topic);
+
+            await publishSystemSchemas(systemSchemas, messageServer, owner, notifier);
 
             newTopic = await DatabaseServer.saveTopic(topic.toObject());
             notifier.completed();

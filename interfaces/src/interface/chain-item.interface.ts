@@ -107,6 +107,56 @@ export interface IVCReport {
 }
 
 /**
+ * Impact report interface
+ */
+export interface IImpactReport {
+    /**
+     * Report type
+     */
+    type: string;
+    /**
+     * Report tag
+     */
+    tag: string;
+    /**
+     * Report issuer
+     */
+    issuer: string;
+    /**
+     * Report username
+     */
+    username: string;
+    /**
+     * Report document instance
+     */
+    document: IVCDocument;
+    /**
+     * Impact Type
+     */
+    impactType: string;
+    /**
+     * Impact label
+     */
+    label: string;
+    /**
+     * Impact description
+     */
+    description: string;
+    /**
+     * Impact amount
+     */
+    amount: string;
+    /**
+     * Impact amount unit
+     */
+    unit: string;
+    /**
+     * Impact date
+     */
+    date: string;
+}
+
+/**
  * Token report interface
  */
 export interface ITokenReport {
@@ -122,6 +172,10 @@ export interface ITokenReport {
      * Report date
      */
     date: string;
+    /**
+     * Token amount
+     */
+    amount: string;
     /**
      * Report tag
      */
@@ -256,4 +310,29 @@ export interface IReport {
      * Report items
      */
     documents?: IReportItem[];
+    /**
+     * Impacts
+     */
+    impacts?: IImpactReport[];
+    /**
+     * Additional Documents
+     */
+    additionalDocuments?: {
+        /**
+         * VP document instance
+         */
+        vpDocument?: IVPReport;
+        /**
+         * VC document instance
+         */
+        vcDocument?: IVCReport;
+        /**
+         * Mint document instance
+         */
+        mintDocument?: ITokenReport;
+        /**
+         * Impacts
+         */
+        impacts?: IImpactReport[];
+    }[];
 }

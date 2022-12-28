@@ -825,11 +825,15 @@ export class DatabaseServer {
      * @param countResult
      * @virtual
      */
-    public async getVcDocuments(filters: any, options?: any, countResult?: boolean): Promise<VcDocumentCollection[] | number> {
+    public async getVcDocuments<T extends VcDocumentCollection[] | number>(
+        filters: any,
+        options?: any,
+        countResult?: boolean
+    ): Promise<T> {
         if (countResult) {
-            return await this.count(VcDocumentCollection, filters, options);
+            return await this.count(VcDocumentCollection, filters, options) as T;
         }
-        return await this.find(VcDocumentCollection, filters, options);
+        return await this.find(VcDocumentCollection, filters, options) as T;
     }
 
     /**
@@ -840,11 +844,15 @@ export class DatabaseServer {
      * @param countResult
      * @virtual
      */
-    public async getVpDocuments(filters: any, options?: any, countResult?: boolean): Promise<VpDocumentCollection[] | number> {
+    public async getVpDocuments<T extends VpDocumentCollection[] | number>(
+        filters: any,
+        options?: any,
+        countResult?: boolean
+    ): Promise<T> {
         if (countResult) {
-            return await this.count(VpDocumentCollection, filters, options);
+            return await this.count(VpDocumentCollection, filters, options) as T;
         }
-        return await this.find(VpDocumentCollection, filters, options);
+        return await this.find(VpDocumentCollection, filters, options) as T;
     }
 
     /**
@@ -2079,7 +2087,7 @@ export class DatabaseServer {
      * Create MultiPolicyTransaction
      * @param transaction
      */
-    public static async createMultiPolicyTransaction(transaction:any): Promise<MultiPolicyTransaction> {
+    public static async createMultiPolicyTransaction(transaction: any): Promise<MultiPolicyTransaction> {
         const item = new DataBaseHelper(MultiPolicyTransaction).create(transaction);
         return await new DataBaseHelper(MultiPolicyTransaction).save(item);
     }

@@ -119,6 +119,19 @@ export class PolicyValidationResultsContainer {
     }
 
     /**
+     * Check block error
+     * @param uuid
+     * @param error
+     */
+    public checkBlockError(uuid: string, error: string): void {
+        if (error !== null) {
+            const block = this.blocks.get(uuid);
+            block.isValid = false;
+            block.errors.push(error);
+        }
+    }
+
+    /**
      * Add error
      * @param error
      */

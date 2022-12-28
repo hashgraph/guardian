@@ -25,7 +25,7 @@ We have two options to create Policy :
 
 1.4 You can even edit the Policy by clicking Edit button.
 
-![](<../.gitbook/assets/image (2) (1) (1).png>)
+![](<../.gitbook/assets/image (2) (1) (1) (1).png>)
 
 1.5 When clicked on Edit, the screen is navigated to Policies configuration tab, which gives an option to add/remove any block from the Policy.
 

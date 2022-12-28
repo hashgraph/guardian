@@ -1,10 +1,11 @@
+import { Worker } from 'node:worker_threads';
+import path from 'path'
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { VcHelper } from '@helpers/vc-helper';
 import { ArtifactType, GenerateUUIDv4, SchemaHelper } from '@guardian/interfaces';
-import * as mathjs from 'mathjs';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
@@ -182,15 +183,33 @@ export class CustomLogicBlock {
             for (const execCodeArtifact of execCodeArtifacts) {
                 execCode += (await DatabaseServer.getArtifactFileByUUID(execCodeArtifact.uuid)).toString();
             }
-            const func = Function(`const [done, user, documents, mathjs, artifacts] = arguments;${execCode}${ref.options.expression}`);
 
             const artifacts = [];
             const jsonArtifacts = ref.options.artifacts?.filter(artifact => artifact.type === ArtifactType.JSON) || [];
             for (const jsonArtifact of jsonArtifacts) {
-
                 artifacts.push(JSON.parse((await DatabaseServer.getArtifactFileByUUID(jsonArtifact.uuid)).toString()));
             }
-            func.apply(documents, [done, user, documents, mathjs, artifacts]);
+
+            const worker = new Worker(path.join(path.dirname(__filename), '..', 'helpers', 'custom-logic-worker.js'), {
+                workerData: {
+                    execFunc: `const [done, user, documents, mathjs, artifacts] = arguments;${execCode}${ref.options.expression}`,
+                    user,
+                    documents,
+                    artifacts
+                },
+            });
+            worker.on('error', (error) => {
+                reject(error);
+                // worker.terminate()
+            });
+            worker.on('message', (result) => {
+                done(result);
+                console.log(result);
+                // worker.terminate()
+            });
+            // worker.on('exit', (code) => {
+            //     console.log('Worker exit with code', code);
+            // });
         });
     }
 

@@ -21,11 +21,11 @@ Step 1: Need to click on the linking icon for the policy, which you wanted to be
 
 Step 2: We get a policy linking pop up to create a link for the primary policy or joining an existing policy:
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
 
 After the ‘primary’ policy is registered a special ‘link’ becomes accessible which can be used to ‘connect’ additional ‘secondary’ policies.
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Connecting Secondary Policies
 
