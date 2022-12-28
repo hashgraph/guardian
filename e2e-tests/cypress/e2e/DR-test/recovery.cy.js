@@ -8,6 +8,9 @@ const Locators = {
     username: '[formcontrolname="login"]',
     nextBtn: "Next",
     connectBtn: "Connect",
+    inputGeo: '[ng-reflect-name="geography"]',
+    inputLaw:  '[ng-reflect-name="law"]',
+    inputTags:  '[ng-reflect-name="tags"]',
 };
 
 describe("Disaster Recovery Testing", { tags: "@recovery" }, () => {
@@ -46,6 +49,16 @@ describe("Disaster Recovery Testing", { tags: "@recovery" }, () => {
                                 let accountKey = hederaAccountKey;
 
                                 cy.contains(Locators.nextBtn).click();
+
+
+                                const inputGeography = cy.get(Locators.inputGeo);
+                                inputGeography.type('test');
+                                const inputLaw = cy.get(Locators.inputLaw);
+                                inputLaw.type('test');
+                                const inputTags = cy.get(Locators.inputTags);
+                                inputTags.type('test');
+
+
                                 cy.contains(Locators.connectBtn).click();
                                 cy.wait(16000);
 
