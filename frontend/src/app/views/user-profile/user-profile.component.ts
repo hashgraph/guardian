@@ -5,7 +5,7 @@ import { forkJoin } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
-import { IUser, Token, IToken, SchemaEntity, Schema } from '@guardian/interfaces';
+import { IUser, Token, SchemaEntity, Schema } from '@guardian/interfaces';
 import { DemoService } from 'src/app/services/demo.service';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -302,8 +302,7 @@ export class UserProfileComponent implements OnInit {
         this.loading = true;
         this.contractService.cancelContractRequest(id).subscribe(
             () => {
-                this.loadDate();
-                this.loading = false;
+                setTimeout(this.loadDate.bind(this), 2000);
             },
             () => (this.loading = false)
         );
@@ -335,8 +334,7 @@ export class UserProfileComponent implements OnInit {
                     )
                     .subscribe(
                         () => {
-                            this.loadDate();
-                            this.loading = false;
+                            setTimeout(this.loadDate.bind(this), 2000);
                         },
                         () => (this.loading = false)
                     );

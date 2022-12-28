@@ -45,7 +45,7 @@
                     <ng-template matStepLabel>Choose contract</ng-template>
                     <mat-form-field appearance="outline" class="contract-form-base-token"
                         *ngIf="!contractsLoading; else spinner">
-                        <mat-label>contract</mat-label>
+                        <mat-label>Contract</mat-label>
                         <mat-select [formControl]="contractForm" placeholder="Choose Contract">
                             <mat-option></mat-option>
                             <mat-option [matTooltip]="contract.description" matTooltipPosition="below"
