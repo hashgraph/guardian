@@ -644,6 +644,10 @@ components:
           type: number
         oppositeTokenCount:
           type: number
+        vcDocumentHash:
+          type: string
+        vcDocument:
+          type: object
 tags:
   - name: "accounts"
     description: "Operations related to Guardian users"
@@ -4643,19 +4647,19 @@ paths:
           name: pageIndex
           schema:
             type: integer
-          description: The number of pages to skip before starting to collect the result set
+          description: The number of pages to skip before starting to collect the result set.
           examples:
             pageIndex:
-              summary: Example of a pageIndex
+              summary: Example of a pageIndex.
               value: 0
         - in: query
           name: pageSize
           schema:
             type: integer
-          description: The numbers of items to return
+          description: The numbers of items to return.
           examples:
             pageSize:
-              summary: Example of a pageSize
+              summary: Example of a pageSize.
               value: 100
       responses:
         200:
@@ -4697,13 +4701,15 @@ paths:
               properties:
                 description:
                   type: string
+            example:
+              description: "Smart Contract Description"
       responses:
         200:
           description: Successful operation.
           content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Contract"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contract"
         401:
           description: Unauthorized.
         403:
@@ -4734,6 +4740,10 @@ paths:
                   type: string
                 description:
                   type: string
+            example:
+              contractId: "0.0.49176956"
+              description: "Smart Contract Description"
+
       responses:
         200:
           description: Successful operation.
@@ -4767,6 +4777,7 @@ paths:
             type: string
           description: Contract identifier
           required: true
+          example: "0.0.49176956"
       requestBody:
         description: Request Object Parameters.
         content:
@@ -4776,6 +4787,8 @@ paths:
               properties:
                 userId:
                   type: string
+            example:
+              userId: "0.0.49176949"
       responses:
         200:
           description: Successful operation.
@@ -4809,9 +4822,10 @@ paths:
             type: string
           description: Contract identifier
           required: true
+          example: "0.0.49176956"
       responses:
         200:
-          description: Successful operation.
+          description: Successful operation. Returns true if you are added to contract else false.
           content:
             application/json:
               schema:
@@ -4842,6 +4856,7 @@ paths:
             type: string
           description: Contract identifier
           required: true
+          example: "0.0.49176956"
       requestBody:
         description: Request Object Parameters.
         content:
@@ -4854,9 +4869,14 @@ paths:
                 oppositeTokenId:
                   type: string
                 baseTokenCount:
-                  type: string
+                  type: integer
                 oppositeTokenCount:
-                  type: string
+                  type: integer
+            example:
+              baseTokenId: "0.0.49179655"
+              oppositeTokenId: "0.0.49179656"
+              baseTokenCount: 1
+              oppositeTokenCount: 3
       responses:
         200:
           description: Successful operation.
@@ -4885,23 +4905,17 @@ paths:
       summary: Returns all contracts pairs.
       parameters:
         - in: query
-          name: pageIndex
+          name: baseTokenId
           schema:
-            type: integer
-          description: The number of pages to skip before starting to collect the result set
-          examples:
-            pageIndex:
-              summary: Example of a pageIndex
-              value: 0
+            type: string
+          description: Base token identifier
+          example: "0.0.49179655"
         - in: query
-          name: pageSize
+          name: oppositeTokenId
           schema:
-            type: integer
-          description: The numbers of items to return
-          examples:
-            pageSize:
-              summary: Example of a pageSize
-              value: 100
+            type: string
+          description: Opposite token identifier
+          example: "0.0.49179656"
       responses:
         200:
           description: Successful operation.
@@ -4918,9 +4932,9 @@ paths:
                   type: object
                   properties:
                     baseTokenRate:
-                      type: string
+                      type: integer
                     oppositeTokenRate:
-                      type: string
+                      type: integer
                     contractId:
                       type: string
                     description:
@@ -4951,6 +4965,7 @@ paths:
             type: string
           description: Contract identifier
           required: true
+          example: "0.0.49176956"
       requestBody:
         description: Request Object Parameters.
         content:
@@ -4963,13 +4978,24 @@ paths:
                 oppositeTokenId:
                   type: string
                 baseTokenCount:
-                  type: string
+                  type: integer
                 oppositeTokenCount:
-                  type: string
+                  type: integer
                 baseTokenSerials:
-                  type: string
+                  type: array
+                  items:
+                    type: integer
                 oppositeTokenSerials:
-                  type: string
+                  type: array
+                  items:
+                    type: integer
+            example:
+              baseTokenId: "0.0.49179655"
+              oppositeTokenId: "0.0.49179656"
+              baseTokenCount: 2
+              oppositeTokenCount: 6
+              baseTokenSerials: []
+              oppositeTokenSerials: []
       responses:
         200:
           description: Successful operation.
@@ -5001,24 +5027,25 @@ paths:
           name: contractId
           schema:
             type: string
-          description: Contract Identifier
+          description: Contract Identifier.
+          example: "0.0.49176956"
         - in: query
           name: pageIndex
           schema:
             type: integer
-          description: The number of pages to skip before starting to collect the result set
+          description: The number of pages to skip before starting to collect the result set.
           examples:
             pageIndex:
-              summary: Example of a pageIndex
+              summary: Example of a pageIndex.
               value: 0
         - in: query
           name: pageSize
           schema:
             type: integer
-          description: The numbers of items to return
+          description: The numbers of items to return.
           examples:
             pageSize:
-              summary: Example of a pageSize
+              summary: Example of a pageSize.
               value: 100
       responses:
         200:
@@ -5056,8 +5083,9 @@ paths:
           name: requestId
           schema:
             type: string
-          description: Request Identifier
+          description: Request Identifier.
           required: true
+          example: "507f1f77bcf86cd799439011"
       responses:
         200:
           description: Successful operation.
@@ -5093,6 +5121,8 @@ paths:
               properties:
                 requestId:
                   type: string
+            example: 
+              requestId: "507f1f77bcf86cd799439011"
       responses:
         200:
           description: Successful operation.

@@ -93,7 +93,7 @@ export async function contractAPI(
                 const contracts = await contractRepository.findOne({
                     owner: did
                 });
-                if (contracts.owner !== did) {
+                if (contracts?.owner !== did) {
                     throw new Error('You are not contract owner');
                 }
                 filters.contractId = contractId;
@@ -594,7 +594,7 @@ export async function contractAPI(
                 id: requestId,
             });
 
-            if (did !== retireRequest.owner) {
+            if (did !== retireRequest?.owner) {
                 throw new Error('You are not owner of retire request');
             }
 
@@ -655,10 +655,7 @@ export async function contractAPI(
                 did
             );
             const retireRequestUser = await users.getUserById(
-                retireRequest.owner
-            );
-            const retireRequestOwner = await users.getUserById(
-                retireRequest.owner
+                retireRequest?.owner
             );
             const wipeKeys = [];
             wipeKeys.push(
@@ -763,7 +760,7 @@ export async function contractAPI(
                 oppositeTokenId: retireRequest.oppositeTokenId,
                 baseTokenCount: retireRequest.baseTokenCount,
                 oppositeTokenCount: retireRequest.oppositeTokenCount,
-                userId: retireRequestOwner.hederaAccountId,
+                userId: retireRequestUser.hederaAccountId,
                 baseTokenSerials: retireRequest.baseTokenSerials,
                 oppositeTokenSerials: retireRequest.oppositeTokenSerials,
             };
