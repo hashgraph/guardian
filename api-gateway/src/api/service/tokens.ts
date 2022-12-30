@@ -2,9 +2,10 @@ import { Guardians } from '@helpers/guardians';
 import { permissionHelper } from '@auth/authorization-helper';
 import { Response, Router } from 'express';
 import { IToken, ITokenInfo, UserRole } from '@guardian/interfaces';
-import { AuthenticatedRequest, Logger } from '@guardian/common';
+import { AuthenticatedRequest, Logger, RunFunctionAsync } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { TaskManager } from '@helpers/task-manager';
+import { ServiceError } from '@helpers/service-requests-base';
 
 /**
  * Token route
@@ -130,14 +131,12 @@ tokenAPI.post('/push/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req
     }
 
     const token = req.body;
-    setImmediate(async () => {
-        try {
-            const guardians = new Guardians();
-            await guardians.setTokenAsync(token, user.did, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const guardians = new Guardians();
+        await guardians.setTokenAsync(token, user.did, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: error.code || 500, message: error.message });
     });
 
     res.status(201).send({ taskId, expectation });
@@ -174,13 +173,11 @@ tokenAPI.put('/push/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req:
             return;
         }
 
-        setImmediate(async () => {
-            try {
-                await guardians.updateTokenAsync(token, taskId);
-            } catch (error) {
-                new Logger().error(error, ['API_GATEWAY']);
-                taskManager.addError(taskId, { code: error.code || 500, message: error.message });
-            }
+        RunFunctionAsync<ServiceError>(async () => {
+            await guardians.updateTokenAsync(token, taskId);
+        }, async (error) => {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
         });
 
         res.status(201).send({ taskId, expectation });
@@ -221,13 +218,11 @@ tokenAPI.delete('/push/:tokenId', permissionHelper(UserRole.STANDARD_REGISTRY), 
             return;
         }
 
-        setImmediate(async () => {
-            try {
-                await guardians.deleteTokenAsync(tokenId, taskId);
-            } catch (error) {
-                new Logger().error(error, ['API_GATEWAY']);
-                taskManager.addError(taskId, { code: error.code || 500, message: error.message });
-            }
+        RunFunctionAsync<ServiceError>(async () => {
+            await guardians.deleteTokenAsync(tokenId, taskId);
+        }, async (error) => {
+            new Logger().error(error, ['API_GATEWAY']);
+            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
         });
 
         res.status(201).send({ taskId, expectation });
@@ -265,14 +260,12 @@ tokenAPI.put('/push/:tokenId/associate', permissionHelper(UserRole.USER), async 
         return;
     }
 
-    setImmediate(async () => {
-        try {
-            const guardians = new Guardians();
-            await guardians.associateTokenAsync(tokenId, userDID, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const guardians = new Guardians();
+        await guardians.associateTokenAsync(tokenId, userDID, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: error.code || 500, message: error.message });
     });
 
     res.status(200).send({ taskId, expectation });
@@ -305,14 +298,12 @@ tokenAPI.put('/push/:tokenId/dissociate', permissionHelper(UserRole.USER), async
         res.status(500).json({ code: 500, message: 'User not registered' });
         return;
     }
-    setImmediate(async () => {
-        try {
-            const guardians = new Guardians();
-            await guardians.dissociateTokenAsync(tokenId, userDID, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const guardians = new Guardians();
+        await guardians.dissociateTokenAsync(tokenId, userDID, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: error.code || 500, message: error.message });
     });
 
     res.status(200).send({ taskId, expectation });
@@ -348,14 +339,12 @@ tokenAPI.put('/push/:tokenId/:username/grantKyc', permissionHelper(UserRole.STAN
         return;
     }
 
-    setImmediate(async () => {
-        try {
-            const guardians = new Guardians();
-            await guardians.grantKycTokenAsync(tokenId, username, owner, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const guardians = new Guardians();
+        await guardians.grantKycTokenAsync(tokenId, username, owner, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: error.code || 500, message: error.message });
     });
 
     res.status(200).send({ taskId, expectation });
@@ -391,14 +380,12 @@ tokenAPI.put('/push/:tokenId/:username/revokeKyc', permissionHelper(UserRole.STA
         return;
     }
 
-    setImmediate(async () => {
-        try {
-            const guardians = new Guardians();
-            await guardians.revokeKycTokenAsync(tokenId, username, owner, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const guardians = new Guardians();
+        await guardians.revokeKycTokenAsync(tokenId, username, owner, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: error.code || 500, message: error.message });
     });
 
     res.status(200).send({ taskId, expectation });
@@ -452,14 +439,12 @@ tokenAPI.put('/push/:tokenId/:username/freeze', permissionHelper(UserRole.STANDA
         return;
     }
 
-    setImmediate(async () => {
-        try {
-            const guardians = new Guardians();
-            await guardians.freezeTokenAsync(tokenId, username, owner, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const guardians = new Guardians();
+        await guardians.freezeTokenAsync(tokenId, username, owner, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: error.code || 500, message: error.message });
     });
 
     res.status(200).send({ taskId, expectation });
@@ -477,14 +462,12 @@ tokenAPI.put('/push/:tokenId/:username/unfreeze', permissionHelper(UserRole.STAN
         return;
     }
 
-    setImmediate(async () => {
-        try {
-            const guardians = new Guardians();
-            await guardians.unfreezeTokenAsync(tokenId, username, owner, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const guardians = new Guardians();
+        await guardians.unfreezeTokenAsync(tokenId, username, owner, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: error.code || 500, message: error.message });
     });
 
     res.status(200).send({ taskId, expectation });
