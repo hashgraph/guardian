@@ -18,7 +18,7 @@ import { MessageAction, MessageServer, MessageType, SchemaMessage, TopicConfig, 
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger, RunFunctionAsync } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
@@ -844,16 +844,14 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
     ApiResponse(channel, MessageAPI.CREATE_SCHEMA_ASYNC, async (msg) => {
         const { item, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
-        setImmediate(async () => {
-            try {
-                const schemaObject = item as ISchema;
-                SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
-                const schema = await createSchema(schemaObject, schemaObject.owner, notifier);
-                notifier.result(schema.id);
-            } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
-            }
+        RunFunctionAsync(async () => {
+            const schemaObject = item as ISchema;
+            SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
+            const schema = await createSchema(schemaObject, schemaObject.owner, notifier);
+            notifier.result(schema.id);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
         });
         return new MessageResponse({ taskId });
     });
@@ -1003,21 +1001,19 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
     ApiResponse(channel, MessageAPI.PUBLISH_SCHEMA_ASYNC, async (msg) => {
         const { id, version, owner, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
-        setImmediate(async () => {
-            try {
-                if (!msg) {
-                    notifier.error('Invalid id');
-                }
-
-                notifier.completedAndStart('Resolve Hedera account');
-                const users = new Users();
-                const root = await users.getHederaAccount(owner);
-                const item = await findAndPublishSchema(id, version, owner, root, notifier);
-                notifier.result(item.id);
-            } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
+        RunFunctionAsync(async () => {
+            if (!msg) {
+                notifier.error('Invalid id');
             }
+
+            notifier.completedAndStart('Resolve Hedera account');
+            const users = new Users();
+            const root = await users.getHederaAccount(owner);
+            const item = await findAndPublishSchema(id, version, owner, root, notifier);
+            notifier.result(item.id);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
         });
         return new MessageResponse({ taskId });
     });
@@ -1071,21 +1067,19 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
     ApiResponse(channel, MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, async (msg) => {
         const { owner, messageIds, topicId, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
-        setImmediate(async () => {
-            try {
-                if (!msg) {
-                    notifier.error('Invalid import schema parameter');
-                }
-                if (!owner || !messageIds) {
-                    notifier.error('Invalid import schema parameter');
-                }
-
-                const schemasMap = await importSchemasByMessages(owner, messageIds, topicId, notifier);
-                notifier.result(schemasMap);
-            } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
+        RunFunctionAsync(async () => {
+            if (!msg) {
+                notifier.error('Invalid import schema parameter');
             }
+            if (!owner || !messageIds) {
+                notifier.error('Invalid import schema parameter');
+            }
+
+            const schemasMap = await importSchemasByMessages(owner, messageIds, topicId, notifier);
+            notifier.result(schemasMap);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
         });
         return new MessageResponse({ taskId });
     });
@@ -1119,21 +1113,19 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
     ApiResponse(channel, MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, async (msg) => {
         const { owner, files, topicId, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
-        setImmediate(async () => {
-            try {
-                if (!msg) {
-                    notifier.error('Invalid import schema parameter');
-                }
-                if (!owner || !files) {
-                    notifier.error('Invalid import schema parameter');
-                }
-
-                const result = await importSchemaByFiles(owner, files, topicId, notifier);
-                notifier.result(result);
-            } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
+        RunFunctionAsync(async () => {
+            if (!msg) {
+                notifier.error('Invalid import schema parameter');
             }
+            if (!owner || !files) {
+                notifier.error('Invalid import schema parameter');
+            }
+
+            const result = await importSchemaByFiles(owner, files, topicId, notifier);
+            notifier.result(result);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
         });
         return new MessageResponse({ taskId });
     });
@@ -1188,23 +1180,21 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             taskId: string;
         };
         const notifier = initNotifier(apiGatewayChannel, taskId);
-        setImmediate(async () => {
-            try {
-                if (!msg) {
-                    notifier.error('Invalid preview schema parameters');
-                    return;
-                }
-                if (!messageIds) {
-                    notifier.error('Invalid preview schema parameters');
-                    return;
-                }
-
-                const result = await prepareSchemaPreview(messageIds, notifier);
-                notifier.result(result);
-            } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
+        RunFunctionAsync(async () => {
+            if (!msg) {
+                notifier.error('Invalid preview schema parameters');
+                return;
             }
+            if (!messageIds) {
+                notifier.error('Invalid preview schema parameters');
+                return;
+            }
+
+            const result = await prepareSchemaPreview(messageIds, notifier);
+            notifier.result(result);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
         });
 
         return new MessageResponse({ taskId });

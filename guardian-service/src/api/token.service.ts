@@ -3,7 +3,14 @@ import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 // import { HederaSDKHelper } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger, DataBaseHelper } from '@guardian/common';
+import {
+    MessageBrokerChannel,
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper,
+    RunFunctionAsync
+} from '@guardian/common';
 import { MessageAPI, IToken, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { Workers } from '@helpers/workers';
@@ -526,17 +533,15 @@ export async function tokenAPI(
         const { token, owner, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
 
-        setImmediate(async () => {
-            try {
-                if (!msg) {
-                    throw new Error('Invalid Params');
-                }
-                const result = await createToken(token, owner, tokenRepository, notifier);
-                notifier.result(result);
-            } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
+        RunFunctionAsync(async () => {
+            if (!msg) {
+                throw new Error('Invalid Params');
             }
+            const result = await createToken(token, owner, tokenRepository, notifier);
+            notifier.result(result);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
         });
 
         return new MessageResponse({ taskId });
@@ -545,21 +550,19 @@ export async function tokenAPI(
     ApiResponse(channel, MessageAPI.UPDATE_TOKEN_ASYNC, async (msg) => {
         const { token, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
-        setImmediate(async () => {
-            try {
-                if (!msg) {
-                    throw new Error('Invalid Params');
-                }
-                const item = await tokenRepository.findOne({ tokenId: token.tokenId });
-                if (!item) {
-                    throw new Error('Token not found');
-                }
-                const result = await updateToken(item, token, tokenRepository, notifier);
-                notifier.result(result);
-            } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
+        RunFunctionAsync(async () => {
+            if (!msg) {
+                throw new Error('Invalid Params');
             }
+            const item = await tokenRepository.findOne({ tokenId: token.tokenId });
+            if (!item) {
+                throw new Error('Token not found');
+            }
+            const result = await updateToken(item, token, tokenRepository, notifier);
+            notifier.result(result);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
         });
 
         return new MessageResponse({ taskId });
@@ -568,21 +571,19 @@ export async function tokenAPI(
     ApiResponse(channel, MessageAPI.DELETE_TOKEN_ASYNC, async (msg) => {
         const { tokenId, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
-        setImmediate(async () => {
-            try {
-                if (!msg) {
-                    throw new Error('Invalid Params');
-                }
-                const item = await tokenRepository.findOne({ tokenId });
-                if (!item) {
-                    throw new Error('Token not found');
-                }
-                const result = await deleteToken(item, tokenRepository, notifier);
-                notifier.result(result);
-            } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
+        RunFunctionAsync(async () => {
+            if (!msg) {
+                throw new Error('Invalid Params');
             }
+            const item = await tokenRepository.findOne({ tokenId });
+            if (!item) {
+                throw new Error('Token not found');
+            }
+            const result = await deleteToken(item, tokenRepository, notifier);
+            notifier.result(result);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
         });
         return new MessageResponse({ taskId });
     });
@@ -602,14 +603,12 @@ export async function tokenAPI(
         const { tokenId, username, owner, freeze, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
 
-        setImmediate(async () => {
-            try {
-                const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, notifier);
-                notifier.result(result);
-            } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
-            }
+        RunFunctionAsync(async () => {
+            const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, notifier);
+            notifier.result(result);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
         });
 
         return new MessageResponse({ taskId });
@@ -630,14 +629,12 @@ export async function tokenAPI(
         const { tokenId, username, owner, grant, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
 
-        setImmediate(async () => {
-            try {
-                const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, notifier);
-                notifier.result(result);
-            } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
-            }
+        RunFunctionAsync(async () => {
+            const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, notifier);
+            notifier.result(result);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
         });
 
         return new MessageResponse({ taskId });
@@ -658,14 +655,12 @@ export async function tokenAPI(
         const { tokenId, did, associate, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
 
-        setImmediate(async () => {
-            try {
-                const status = await associateToken(tokenId, did, associate, tokenRepository, notifier);
-                notifier.result(status);
-            } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
-            }
+        RunFunctionAsync(async () => {
+            const status = await associateToken(tokenId, did, associate, tokenRepository, notifier);
+            notifier.result(status);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
         });
 
         return new MessageResponse({ taskId });

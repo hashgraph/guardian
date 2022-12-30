@@ -1,6 +1,6 @@
 import { WorkerTaskType } from '@guardian/interfaces';
 import { Workers } from '@helpers/workers';
-import { Logger, MessageResponse, SettingsContainer } from '@guardian/common';
+import { Logger, MessageResponse, RunFunctionAsync, SettingsContainer } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 
 /**
@@ -228,7 +228,7 @@ export class TransactionLogger {
      */
     public static workerSubscribe(channel: any): void {
         channel.response('guardians.transaction-log-event', async (data: any) => {
-            setImmediate(async () => {
+            RunFunctionAsync(async () => {
                 switch (data.type) {
                     case 'start-log': {
                         const { id, operatorAccountId, transactionName } = data.data;

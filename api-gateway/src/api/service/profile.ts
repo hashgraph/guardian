@@ -7,9 +7,10 @@ import {
     SchemaEntity,
     TopicType, UserRole
 } from '@guardian/interfaces';
-import { AuthenticatedRequest, Logger } from '@guardian/common';
+import { AuthenticatedRequest, Logger, RunFunctionAsync } from '@guardian/common';
 import { TaskManager } from '@helpers/task-manager';
 import { permissionHelper } from '@auth/authorization-helper';
+import { ServiceError } from '@helpers/service-requests-base';
 
 /**
  * User profile route
@@ -107,14 +108,12 @@ profileAPI.put('/push/:username', async (req: AuthenticatedRequest, res: Respons
 
     const profile: any = req.body;
     const username: string = req.user.username;
-    setImmediate(async () => {
-        try {
-            const guardians = new Guardians();
-            await guardians.createUserProfileCommonAsync(username, profile, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const guardians = new Guardians();
+        await guardians.createUserProfileCommonAsync(username, profile, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: error.code || 500, message: error.message });
     });
 
     res.status(200).send({ taskId, expectation });
@@ -127,14 +126,12 @@ profileAPI.put('/restore/:username', permissionHelper(UserRole.STANDARD_REGISTRY
     const profile: any = req.body;
     const username: string = req.user.username;
 
-    setImmediate(async () => {
-        try {
-            const guardians = new Guardians();
-            await guardians.restoreUserProfileCommonAsync(username, profile, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const guardians = new Guardians();
+        await guardians.restoreUserProfileCommonAsync(username, profile, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: error.code || 500, message: error.message });
     })
 
     res.status(200).send({ taskId, expectation });
@@ -147,14 +144,12 @@ profileAPI.put('/restore/topics/:username', permissionHelper(UserRole.STANDARD_R
     const profile: any = req.body;
     const username: string = req.user.username;
 
-    setImmediate(async () => {
-        try {
-            const guardians = new Guardians();
-            await guardians.getAllUserTopicsAsync(username, profile, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: error.code || 500, message: error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const guardians = new Guardians();
+        await guardians.getAllUserTopicsAsync(username, profile, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: error.code || 500, message: error.message });
     })
 
     res.status(200).send({ taskId, expectation });
