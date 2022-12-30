@@ -244,10 +244,11 @@
                 <app-schema-form
                     *ngIf="condition.ifCondition.fieldValue === options.controls[item.name]?.value; else elseCondition"
                     [fields]="condition.thenFields" [formGroup]="condition.conditionForm" [preset]="condition.preset"
+                    [readonly-fields]="readonly"
                     (destroy)="removeConditionFields(condition.thenFields, condition)"></app-schema-form>
                 <ng-template #elseCondition>
                     <app-schema-form *ngIf="condition.elseFields && condition.elseFields.length > 0"
-                        [fields]="condition.elseFields" [formGroup]="condition.conditionForm"
+                        [readonly-fields]="readonly" [fields]="condition.elseFields" [formGroup]="condition.conditionForm"
                         [preset]="condition.preset" (destroy)="removeConditionFields(condition.elseFields, condition)">
                     </app-schema-form>
                 </ng-template>

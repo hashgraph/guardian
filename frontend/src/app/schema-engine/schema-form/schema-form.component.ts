@@ -126,6 +126,17 @@ export class SchemaFormComponent implements OnInit {
 
         if (this.conditions) {
             this.conditions.forEach((cond: any) => {
+                if (this.presetDocument) {
+                    cond.preset = {};
+                    for (const thenField of cond.thenFields) {
+                        cond.preset[thenField?.name] =
+                            this.presetDocument[thenField?.name];
+                    }
+                    for (const elseField of cond.elseFields) {
+                        cond.preset[elseField?.name] =
+                            this.presetDocument[elseField?.name];
+                    }
+                }
                 cond.conditionForm = new FormGroup({});
                 this.subscribeCondition(cond.conditionForm);
                 this.conditionFields.push(...cond.thenFields);
