@@ -343,7 +343,7 @@ npm run test
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to first generate Operator ID and Operator Key by clicking on Generate button as shown below:
 
-<figure><img src="../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (18) (3).png" alt=""><figcaption></figcaption></figure>
 
 Once you generated Operator ID and Operator Key, we can either click on Next or restore the Data, by selecting Restore Data from the Next button dropdown to setup Registry as shown below.
 
@@ -402,7 +402,7 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | law       | Country Law                        | USA                                                            |
 | tags      | Policy Tags                        | Verra, iREC                                                    |
 
-### .env Parameters
+### .env / .env.docker Parameters in `guardian-service`
 
 | Parameter                              | Purpose                                                                            | Example                     |
 | -------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------- |
@@ -418,9 +418,13 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                     |
 | LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                  |
 | HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet |
-| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialisation topic.                                                | 0.0.46022543                |
+| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialization topic.                                                | 0.0.46022543                |
 | MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                       |
-| LOG\_LEVEL                             | level of the Logs                                                                  | 2                           |
+| LOG\_LEVEL                             | Level of the Logs                                                                  | 2                           |
+| SEND\_KEYS\_TO\_VAULT                  | Checked if keys to be sent to vault                                                | True/False                  |
+| MULTI\_POLICY\_SCHEDULER               | to set custom cron mask (timer mask) for sync job                                  | 0 0 \* \* \*                |
+| CONTRACT\_FILE\_ID                     | Defines the file identifier in hedera to create smart-contract.                    | 0.0.49153795                |
+| MQ\_MESSAGE\_CHUNK                     | To set up the message chunk size                                                   | 500000                      |
 
 ### Restoring account from Database/Hashicorp vault during Setup.
 
