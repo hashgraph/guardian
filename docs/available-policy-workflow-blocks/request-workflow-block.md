@@ -27,8 +27,6 @@ RefreshEvents are used to refreshing the UI, instead of "dependencies" property.
 | Button Content       | Text to fill inside a button. Needs the Dialogue box to be selected from the "Type."                                                                                          |
 | Dialogue Text        | Provides a tile inside the Dialogue box. Needs the dialogue box to be selected from the "Type."                                                                               |
 | Dialogue Description | Provides a description inside the Dialogue box. Needs the dialogue box to be selected from the "Type."                                                                        |
-| Dialogue Class       | Need to fill out.                                                                                                                                                             |
-| Fields               | Need to fill out.                                                                                                                                                             |
 
 ### Events
 
