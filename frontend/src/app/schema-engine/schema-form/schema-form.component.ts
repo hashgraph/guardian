@@ -3,6 +3,7 @@ import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Schema, SchemaCondition, SchemaField, UnitSystem } from '@guardian/interfaces';
+import { fullFormats } from 'ajv-formats/dist/formats';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -326,7 +327,7 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (item.format === 'email') {
-            validators.push(Validators.email);
+            validators.push(Validators.pattern(fullFormats.email as RegExp));
         }
 
         if (item.type === 'number') {
@@ -334,11 +335,7 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (item.format === 'duration') {
-            validators.push(
-                Validators.pattern(
-                    /^(-?)P(?=\d|T\d)(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)([DW]))?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/
-                )
-            );
+            validators.push(Validators.pattern(fullFormats.duration as RegExp));
         }
 
         if (item.type === 'integer') {
@@ -346,7 +343,7 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (item.format === 'url') {
-            validators.push(Validators.pattern(/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/));
+            validators.push(Validators.pattern(fullFormats.url as RegExp));
         }
 
         return validators;
