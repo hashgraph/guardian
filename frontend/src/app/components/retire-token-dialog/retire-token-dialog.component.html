@@ -68,7 +68,7 @@
                                 {{oppositeTokenRate}}</b></div>
                     </div>
                     <ng-template matStepLabel>Set count</ng-template>
-                    <form [formGroup]="tokenCountForm">
+                    <form autocomplete="off" [formGroup]="tokenCountForm">
                         <div class="block-delimiter" data-label="Base Token"></div>
                         <mat-form-field appearance="outline" class="contract-form-opposite-token-count"
                             *ngIf="baseTokenType === 'non-fungible'">

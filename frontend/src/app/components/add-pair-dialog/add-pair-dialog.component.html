@@ -28,7 +28,7 @@
                     '...'}}</b>
             </div>
             <mat-spinner class="pair-loading" *ngIf="loading" [diameter]="64"></mat-spinner>
-            <form *ngIf="dataForm" [formGroup]="dataForm" class="contract-form">
+            <form autocomplete="off" *ngIf="dataForm" [formGroup]="dataForm" class="contract-form">
                 <div class="block-delimiter" data-label="Your token to retire"></div>
                 <mat-form-field appearance="outline" class="contract-form-base-token">
                     <mat-label>Token</mat-label>
