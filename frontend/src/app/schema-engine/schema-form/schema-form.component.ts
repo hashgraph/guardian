@@ -25,7 +25,7 @@ export const DATETIME_FORMATS = {
 enum PlaceholderByFieldType {
     Email = "example@email.com",
     Number = "123",
-    URL = "example.com",
+    URL = "https://example.com",
     String = "Please enter text here",
     IPFS = 'ipfs.io/ipfs/example-hash',
     HederaAccount = '0.0.1',
