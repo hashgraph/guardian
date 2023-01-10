@@ -82,7 +82,7 @@ Promise.all([
             new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);
         });
     } catch (error) {
-        console.log(error.message);
+        console.error(error.message);
         process.exit(1);
     }
 }, (reason) => {

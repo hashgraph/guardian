@@ -204,7 +204,6 @@ export class CustomLogicBlock {
             });
             worker.on('message', (result) => {
                 done(result);
-                console.log(result);
                 // worker.terminate()
             });
             // worker.on('exit', (code) => {

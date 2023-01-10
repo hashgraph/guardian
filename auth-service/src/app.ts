@@ -46,7 +46,7 @@ Promise.all([
         state.updateState(ApplicationStates.READY);
         new Logger().info('auth service started', ['AUTH_SERVICE']);
     } catch (error) {
-        console.log(error.message);
+        console.error(error.message);
         process.exit(1);
     }
 }, (reason) => {

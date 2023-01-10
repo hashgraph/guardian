@@ -159,7 +159,6 @@ export class PolicyUtils {
         let amount = 0;
         for (const element of vcs) {
             const scope = PolicyUtils.getVCScope(element);
-            console.log(' ^^^^^^^^', rule, scope)
             const value = parseFloat(PolicyUtils.evaluateFormula(rule, scope));
             amount += value;
         }
@@ -1080,7 +1079,7 @@ export class PolicyUtils {
         } else if (error.name) {
             return error.name;
         } else {
-            console.log(error);
+            console.error(error);
             return 'Unidentified error';
         }
     }
