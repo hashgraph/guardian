@@ -122,8 +122,6 @@ export class RootConfigComponent implements OnInit {
                 });
             }
         );
-
-        console.log(this);
     }
 
     ngOnInit() {

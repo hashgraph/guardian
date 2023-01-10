@@ -598,7 +598,6 @@ export async function publishDefsSchemas(defs: any, owner: string, root: IRootCo
             'document.$id': schemaId
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
-            console.log(schema.iri, schema.owner, owner);
             schema = await incrementSchemaVersion(schema.iri, owner);
             await findAndPublishSchema(schema.id, schema.version, owner, root, emptyNotifier());
         }

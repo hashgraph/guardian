@@ -56,7 +56,7 @@ async function getGlobalTopic(): Promise<TopicConfig | null> {
         const INITIALIZATION_TOPIC_KEY = topicKey?.value || process.env.INITIALIZATION_TOPIC_KEY;
         return new TopicConfig({ topicId: INITIALIZATION_TOPIC_ID }, null, INITIALIZATION_TOPIC_KEY);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return null;
     }
 }
@@ -469,7 +469,6 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
 
             const restore = new RestoreDataFromHedera();
             await restore.restoreRootAuthority(username, profile.hederaAccountId, profile.hederaAccountKey, profile.topicId)
-            console.log(username, profile.hederaAccountId, profile.hederaAccountKey, profile.topicId)
 
             notifier.result('did');
         }, async (error) => {

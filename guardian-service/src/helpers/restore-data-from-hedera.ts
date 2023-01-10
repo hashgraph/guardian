@@ -245,8 +245,6 @@ export class RestoreDataFromHedera {
         try {
             const policyMessages = await this.readTopicMessages(policyTopicId);
 
-            console.log(policyTopicId);
-
             await this.restoreTopic({
                 topicId: policyTopicId,
                 name: policyMessages[0].name,
@@ -285,10 +283,7 @@ export class RestoreDataFromHedera {
 
             // Restore policy
             const publishedPolicies = policyMessages.filter(m => m._action === 'publish-policy');
-            console.log(policyMessages);
-            console.log(publishedPolicies);
             for (const policy of publishedPolicies) {
-                console.log(policy);
                 const parsedPolicyFile = await PolicyImportExportHelper.parseZipFile(policy.document);
                 const policyObject = parsedPolicyFile.policy;
 
@@ -436,8 +431,6 @@ export class RestoreDataFromHedera {
         if (!currentRAMessage) {
             throw new Error('User not found');
         }
-
-        console.log(currentRAMessage);
 
         const RAMessages = await this.readTopicMessages(currentRAMessage.registrantTopicId);
 

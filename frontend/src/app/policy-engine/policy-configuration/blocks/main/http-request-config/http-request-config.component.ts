@@ -48,7 +48,6 @@ export class HttpRequestConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        console.log(this);
         this.block = block.properties;
         this.block.headers = this.block.headers || [];
     }
@@ -87,7 +86,6 @@ export class HttpRequestConfigComponent implements OnInit {
             disableClose: true
         })
         dialogRef.afterClosed().subscribe(result => {
-            console.log(result);
             this.block.messageBody = result.expression;
         })
     }

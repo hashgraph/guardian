@@ -183,7 +183,7 @@ export class PolicyEngineService {
             try {
                 this.externalEventChannel.publishMessage(ExternalMessageEvents.BLOCK_EVENTS, args);
             } catch (error) {
-                console.log(error);
+                console.error(error);
             }
         };
 
@@ -667,7 +667,7 @@ export class PolicyEngineService {
                 return new BinaryMessageResponse(file);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
-                console.log(error);
+                console.error(error);
                 return new MessageError(error);
             }
         });
@@ -703,7 +703,6 @@ export class PolicyEngineService {
                 return new MessageResponse(policyToImport);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
-                console.log(error, error.message);
                 return new MessageError(error);
             }
         });
