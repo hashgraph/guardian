@@ -27,6 +27,7 @@ import { TaskManager } from '@helpers/task-manager';
 import { singleSchemaRoute } from '@api/service/schema';
 import { artifactAPI } from '@api/service/artifact';
 import fileupload from 'express-fileupload';
+import { contractAPI } from '@api/service/contract';
 
 const PORT = process.env.PORT || 3002;
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -76,13 +77,14 @@ Promise.all([
         app.use('/logs', authorizationHelper, loggerAPI);
         app.use('/tasks/', taskAPI);
         app.use('/analytics/', authorizationHelper, analyticsAPI);
+        app.use('/contracts', authorizationHelper, contractAPI);
         /////////////////////////////////////////
 
         server.listen(PORT, () => {
             new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);
         });
     } catch (error) {
-        console.log(error.message);
+        console.error(error.message);
         process.exit(1);
     }
 }, (reason) => {

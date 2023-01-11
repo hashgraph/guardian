@@ -5,7 +5,7 @@ import { forkJoin } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
-import { IUser, Token, IToken, SchemaEntity, Schema } from '@guardian/interfaces';
+import { IUser, Token, SchemaEntity, Schema } from '@guardian/interfaces';
 import { DemoService } from 'src/app/services/demo.service';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -13,6 +13,8 @@ import { HeaderPropsService } from 'src/app/services/header-props.service';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dialog/retire-token-dialog.component';
+import { ContractService } from 'src/app/services/contract.service';
 
 enum OperationMode {
     None, Generate, SetProfile, Associate
@@ -41,6 +43,7 @@ export class UserProfileComponent implements OnInit {
     profile?: IUser | null;
     balance?: string | null;
     tokens?: Token[] | null;
+    contractRequests?: any[];
     didDocument?: any;
     vcDocument?: any;
     standardRegistries?: IUser[];
@@ -59,6 +62,15 @@ export class UserProfileComponent implements OnInit {
         'frozen',
         'kyc',
         'policies'
+    ];
+
+    displayedColumnsContractRequests: string[] = [
+        'contractId',
+        'baseTokenId',
+        'oppositeTokenId',
+        'baseTokenCount',
+        'oppositeTokenCount',
+        'cancel'
     ];
 
     private interval: any;
@@ -81,6 +93,7 @@ export class UserProfileComponent implements OnInit {
         private informService: InformService,
         private taskService: TasksService,
         private webSocketService: WebSocketService,
+        private contractService: ContractService,
         private fb: FormBuilder,
         public dialog: MatDialog,
         private headerProps: HeaderPropsService) {
@@ -118,14 +131,17 @@ export class UserProfileComponent implements OnInit {
             this.profileService.getBalance(),
             this.tokenService.getTokens(),
             this.auth.getStandardRegistries(),
-            this.schemaService.getSystemSchemasByEntity(SchemaEntity.USER)
+            this.schemaService.getSystemSchemasByEntity(SchemaEntity.USER),
+            this.contractService.getRetireRequestsAll()
         ]).subscribe((value) => {
             this.profile = value[0] as IUser;
             this.balance = value[1] as string;
             this.tokens = value[2].map((e: any) => {
                 return {
                     ...new Token(e),
-                    policies: e.policies
+                    policies: e.policies,
+                    serials: e.serials,
+                    decimals: e.decimals
                 }
             });
             this.standardRegistries = value[3] || [];
@@ -150,6 +166,7 @@ export class UserProfileComponent implements OnInit {
                 this.schema = null;
             }
 
+            this.contractRequests = value[5] as any[];
             setTimeout(() => {
                 this.loading = false;
                 this.headerProps.setLoading(false);
@@ -279,6 +296,62 @@ export class UserProfileComponent implements OnInit {
 
     onChangeForm() {
         this.vcForm.updateValueAndValidity();
+    }
+
+    cancelContractRequest(id: string) {
+        this.loading = true;
+        this.contractService.cancelContractRequest(id).subscribe(
+            () => {
+                setTimeout(this.loadDate.bind(this), 2000);
+            },
+            () => (this.loading = false)
+        );
+    }
+
+    createRetireRequest() {
+        const dialogRef = this.dialog.open(RetireTokenDialogComponent, {
+            width: '650px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
+            data: {
+                tokens: this.tokens,
+            },
+        });
+        this.loading = false;
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.loading = true;
+                this.contractService
+                    .createRetireRequest(
+                        result.contractId,
+                        result.baseTokenId,
+                        result.oppositeTokenId,
+                        result.baseTokenCount,
+                        result.oppositeTokenCount,
+                        result.baseTokenSerials,
+                        result.oppositeTokenSerials
+                    )
+                    .subscribe(
+                        () => {
+                            setTimeout(this.loadDate.bind(this), 2000);
+                        },
+                        () => (this.loading = false)
+                    );
+            }
+        });
+    }
+
+    viewRetireRequest(document: any) {
+        this.dialog.open(VCViewerDialog, {
+            width: '600px',
+            data: {
+                document: document.document,
+                title: 'View Retire Request Result',
+                type: 'VC',
+                viewDocument: true
+            }
+        });
     }
 
     onAsyncError(error: any) {

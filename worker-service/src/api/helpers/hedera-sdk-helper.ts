@@ -4,6 +4,15 @@ import {
     AccountId,
     AccountInfoQuery,
     Client,
+    ContractCallQuery,
+    ContractCreateTransaction,
+    ContractExecuteTransaction,
+    ContractFunctionParameters,
+    ContractFunctionResult,
+    ContractId,
+    ContractInfo,
+    ContractInfoQuery,
+    FileId,
     Hbar,
     HbarUnit,
     PrivateKey,
@@ -37,7 +46,7 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger';
 
-export const MAX_FEE = 10;
+export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
 
 /**
@@ -223,7 +232,8 @@ export class HederaSDKHelper {
             .setTreasuryAccountId(treasuryId)
             .setDecimals(decimals)
             .setInitialSupply(initialSupply)
-            .setTokenMemo(tokenMemo);
+            .setTokenMemo(tokenMemo)
+            .setMaxTransactionFee(MAX_FEE);
 
         if (adminKey) {
             transaction = transaction.setAdminKey(adminKey);
@@ -278,6 +288,7 @@ export class HederaSDKHelper {
         const client = this.client;
         let transaction = new TokenUpdateTransaction()
             .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
 
         if (changes.hasOwnProperty('tokenName')) {
             transaction = transaction.setTokenName(changes.tokenName);
@@ -320,6 +331,7 @@ export class HederaSDKHelper {
         const client = this.client;
         const transaction = new TokenDeleteTransaction()
             .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
 
         let signTx: Transaction = transaction;
@@ -395,6 +407,7 @@ export class HederaSDKHelper {
         const transaction = new TokenAssociateTransaction()
             .setAccountId(accountId)
             .setTokenIds([tokenId])
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(accountKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenAssociateTransaction');
@@ -421,6 +434,7 @@ export class HederaSDKHelper {
         const transaction = new TokenDissociateTransaction()
             .setAccountId(accountId)
             .setTokenIds([tokenId])
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(accountKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenDissociateTransaction');
@@ -446,6 +460,7 @@ export class HederaSDKHelper {
         const transaction = new TokenFreezeTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_freezeKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenFreezeTransaction');
@@ -471,6 +486,7 @@ export class HederaSDKHelper {
         const transaction = new TokenUnfreezeTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_freezeKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenUnfreezeTransaction');
@@ -496,6 +512,7 @@ export class HederaSDKHelper {
         const transaction = new TokenGrantKycTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_kycKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenGrantKycTransaction');
@@ -521,6 +538,7 @@ export class HederaSDKHelper {
         const transaction = new TokenRevokeKycTransaction()
             .setAccountId(accountId)
             .setTokenId(tokenId)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_kycKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenRevokeKycTransaction');
@@ -553,6 +571,7 @@ export class HederaSDKHelper {
             .setTokenId(tokenId)
             .setAmount(amount)
             .setTransactionMemo(transactionMemo)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_supplyKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenMintTransaction');
@@ -586,6 +605,7 @@ export class HederaSDKHelper {
             .setTokenId(tokenId)
             .setMetadata(data)
             .setTransactionMemo(transactionMemo)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_supplyKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenMintNFTTransaction');
@@ -625,6 +645,7 @@ export class HederaSDKHelper {
             .setTokenId(tokenId)
             .setAmount(amount)
             .setTransactionMemo(transactionMemo)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_wipeKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TokenWipeTransaction');
@@ -661,6 +682,7 @@ export class HederaSDKHelper {
             .addTokenTransfer(tokenId, scoreId, -amount)
             .addTokenTransfer(tokenId, targetId, amount)
             .setTransactionMemo(transactionMemo)
+            .setMaxTransactionFee(MAX_FEE)
             .freezeWith(client);
         const signTx = await transaction.sign(_scoreKey);
         const receipt = await this.executeAndReceipt(client, signTx, 'TransferTransaction', amount);
@@ -694,7 +716,8 @@ export class HederaSDKHelper {
 
         const _scoreKey = HederaUtils.parsPrivateKey(scoreKey);
         let transaction = new TransferTransaction()
-            .setTransactionMemo(transactionMemo);
+            .setTransactionMemo(transactionMemo)
+            .setMaxTransactionFee(MAX_FEE);
 
         for (const serial of serials) {
             transaction = transaction
@@ -732,6 +755,7 @@ export class HederaSDKHelper {
         const newPrivateKey = PrivateKey.generate();
         const transaction = new AccountCreateTransaction()
             .setKey(newPrivateKey.publicKey)
+            .setMaxTransactionFee(MAX_FEE)
             .setInitialBalance(new Hbar(initialBalance || INITIAL_BALANCE));
         const receipt = await this.executeAndReceipt(client, transaction, 'AccountCreateTransaction');
         const newAccountId = receipt.accountId;
@@ -770,6 +794,7 @@ export class HederaSDKHelper {
         const client = this.client;
 
         let transaction: any = new TopicCreateTransaction()
+            .setMaxTransactionFee(MAX_FEE);
 
         if (topicMemo) {
             transaction = transaction.setTopicMemo(topicMemo.substring(0, 100));
@@ -818,7 +843,7 @@ export class HederaSDKHelper {
         let messageTransaction: Transaction = new TopicMessageSubmitTransaction({
             topicId,
             message,
-        });
+        }).setMaxTransactionFee(MAX_FEE);
 
         if (transactionMemo) {
             messageTransaction = messageTransaction.setTransactionMemo(transactionMemo.substring(0, 100));
@@ -1039,6 +1064,154 @@ export class HederaSDKHelper {
             return accountBalance.hbars.to(HbarUnit.Hbar).toNumber();
         }
         return NaN;
+    }
+
+    /**
+     * Create Hedera Smart Contract
+     *
+     * @param {string | FileId} bytecodeFileId - Code File Id
+     * @param {ContractFunctionParameters} parameters - Contract Parameters
+     *
+     * @returns {string} - Contract Id
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async createContract(
+        bytecodeFileId: string | FileId,
+        parameters: ContractFunctionParameters
+    ): Promise<string> {
+        const client = this.client;
+        const contractInstantiateTx = new ContractCreateTransaction()
+            .setBytecodeFileId(bytecodeFileId)
+            .setGas(1000000)
+            .setConstructorParameters(parameters)
+            .setMaxTransactionFee(MAX_FEE);
+        const contractInstantiateSubmit = await contractInstantiateTx.execute(
+            client
+        );
+        const contractInstantiateRx =
+            await contractInstantiateSubmit.getReceipt(client);
+        const contractId = contractInstantiateRx.contractId;
+        return `${contractId}`;
+    }
+
+    /**
+     * Query Contract Hedera
+     *
+     * @param {string | ContractId} contractId - Contract Id
+     * @param {string} functionName - Function Name
+     * @param {ContractFunctionParameters} parameters - Contract Parameters
+     *
+     * @returns {ContractFunctionResult} - Contract Query Result
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async contractQuery(
+        contractId: string | ContractId,
+        functionName: string,
+        parameters: ContractFunctionParameters
+    ): Promise<ContractFunctionResult> {
+        const client = this.client;
+        const contractQueryTx = new ContractCallQuery()
+            .setContractId(contractId)
+            .setGas(100000)
+            .setFunction(functionName, parameters);
+        const contractQueryResult = await contractQueryTx.execute(client);
+        return contractQueryResult;
+    }
+
+    /**
+     * Call Contract Hedera
+     *
+     * @param {string | ContractId} contractId - Contract Id
+     * @param {string} functionName - Function Name
+     * @param {ContractFunctionParameters} parameters - Contract Parameters
+     * @param {string[]} additionalKeys - Additional Keys
+     *
+     * @returns {boolean} - Status
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async contractCall(
+        contractId: string | ContractId,
+        functionName: string,
+        parameters: ContractFunctionParameters,
+        additionalKeys?: string[]
+    ): Promise<boolean> {
+        const client = this.client;
+        let contractExecuteTx: any = await new ContractExecuteTransaction()
+            .setContractId(contractId)
+            .setGas(2000000)
+            .setFunction(functionName, parameters)
+            .setMaxTransactionFee(MAX_FEE)
+            .freezeWith(client);
+        if (additionalKeys && additionalKeys.length) {
+            for (const key of additionalKeys) {
+                contractExecuteTx = await contractExecuteTx.sign(
+                    HederaUtils.parsPrivateKey(key, true)
+                );
+            }
+        }
+        const contractExecuteSubmit = await contractExecuteTx.execute(client);
+        const contractExecuteRx = await contractExecuteSubmit.getReceipt(
+            client
+        );
+        return contractExecuteRx.status === Status.Success;
+    }
+
+    /**
+     * Get Contract Info
+     *
+     * @param {string | ContractId} contractId - Contract Id
+     *
+     * @returns {any} - Contract Info
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async getContractInfo(
+        contractId: string | ContractId,
+    ): Promise<ContractInfo> {
+        const client = this.client;
+        const query = new ContractInfoQuery().setContractId(contractId);
+        return await query.execute(client);
+    }
+
+    /**
+     * Get NFT serials
+     * @param tokenId Token identifier
+     * @returns Serials Info
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async getSerialsNFT(tokenId?: string): Promise<any[]> {
+        let goNext = true;
+        const client = this.client;
+        let url = `${Environment.HEDERA_ACCOUNT_API}${client.operatorAccountId}/nfts`;
+        const result = [];
+        const p = {
+            params: {
+                limit: Number.MAX_SAFE_INTEGER,
+                tokenId,
+            },
+            responseType: 'json',
+        };
+        while (goNext) {
+            const res = await axios.get(url, p as any);
+            delete p.params;
+
+            if (!res || !res.data || !res.data.nfts) {
+                throw new Error(`Invalid nfts serials response`);
+            }
+
+            const nfts = res.data.nfts;
+            if (nfts.length === 0) {
+                return result;
+            }
+
+            result.push(...nfts);
+            if (res.data.links?.next) {
+                url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
+            } else {
+                goNext = false;
+            }
+        }
+
+        return result;
     }
 
     /**

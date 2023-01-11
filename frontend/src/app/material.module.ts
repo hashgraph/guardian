@@ -31,6 +31,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CdkTableModule } from '@angular/cdk/table';
+import { MatSliderModule } from '@angular/material/slider';
 
 @NgModule({
     declarations: [],
@@ -62,6 +63,7 @@ import { CdkTableModule } from '@angular/cdk/table';
         MatPaginatorModule,
         MatButtonToggleModule,
         DragDropModule,
+	MatSliderModule,
         CdkTableModule
     ],
     exports: [
@@ -95,6 +97,7 @@ import { CdkTableModule } from '@angular/cdk/table';
         MatAutocompleteModule,
         MatButtonToggleModule,
         DragDropModule,
+	MatSliderModule,
         CdkTableModule
     ]
 })

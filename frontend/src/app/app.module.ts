@@ -45,6 +45,12 @@ import { WebSocketService } from './services/web-socket.service';
 import { MessageTranslationService } from './services/message-translation-service/message-translation-service';
 import { TasksService } from './services/tasks.service';
 import { ArtifactService } from './services/artifact.service';
+import { ContractConfigComponent } from './views/contract-config/contract-config.component';
+import { ContractService } from './services/contract.service';
+import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
+import { AddPairDialogComponent } from './components/add-pair-dialog/add-pair-dialog.component';
+import { RetireTokenDialogComponent } from './components/retire-token-dialog/retire-token-dialog.component';
+import { DataInputDialogComponent } from './components/data-input-dialog/data-input-dialog.component';
 import { CompareModule } from './analytics/analytics.module';
 import { AnalyticsService } from './services/analytics.service';
 
@@ -69,7 +75,12 @@ import { AnalyticsService } from './services/analytics.service';
         DetailsLogDialog,
         ServiceStatusComponent,
         ConfirmationDialogComponent,
-        InfoComponent
+        InfoComponent,
+        ContractConfigComponent,
+        ContractRequestConfigComponent,
+        AddPairDialogComponent,
+        RetireTokenDialogComponent,
+        DataInputDialogComponent,
     ],
     imports: [
         BrowserModule,
@@ -105,6 +116,7 @@ import { AnalyticsService } from './services/analytics.service';
         DemoService,
         MessageTranslationService,
         TasksService,
+        ContractService,
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,

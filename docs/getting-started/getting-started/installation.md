@@ -343,13 +343,13 @@ npm run test
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to first generate Operator ID and Operator Key by clicking on Generate button as shown below:
 
-<figure><img src="../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (18) (3).png" alt=""><figcaption></figcaption></figure>
 
 Once you generated Operator ID and Operator Key, we can either click on Next or restore the Data, by selecting Restore Data from the Next button dropdown to setup Registry as shown below.
 
 **Note**: Restore Data can be restored from Hedera if data is available for setting up the Registry.
 
-<figure><img src="../../.gitbook/assets/image (2) (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (21) (3).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Limitations on restoring the data:**\
@@ -360,7 +360,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
-![](<../../.gitbook/assets/image (23) (1).png>)
+![](<../../.gitbook/assets/image (14) (3).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
@@ -402,7 +402,7 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | law       | Country Law                        | USA                                                            |
 | tags      | Policy Tags                        | Verra, iREC                                                    |
 
-### .env Parameters
+### .env / .env.docker Parameters in `guardian-service`
 
 | Parameter                              | Purpose                                                                            | Example                     |
 | -------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------- |
@@ -410,7 +410,6 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | SERVICE\_CHANNEL                       | Version of the Guardian                                                            | guardian.1                  |
 | DB\_HOST                               | Hostname of the Database                                                           | localhost                   |
 | DB\_DATABASE                           | Database Name                                                                      | guardian\_db                |
-| MAX\__TRANSACTION\_FEE_                | Maximum Transaction Fees Value                                                     | 10                          |
 | INITIAL\_BALANCE                       | Initial Balance Value                                                              | 500                         |
 | INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                         |
 | OPERATOR\_ID                           | The ID of the operation                                                            | -                           |
@@ -418,9 +417,13 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                     |
 | LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                  |
 | HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet |
-| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialisation topic.                                                | 0.0.46022543                |
+| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialization topic.                                                | 0.0.46022543                |
 | MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                       |
-| LOG\_LEVEL                             | level of the Logs                                                                  | 2                           |
+| LOG\_LEVEL                             | Level of the Logs                                                                  | 2                           |
+| SEND\_KEYS\_TO\_VAULT                  | Checked if keys to be sent to vault                                                | True/False                  |
+| MULTI\_POLICY\_SCHEDULER               | to set custom cron mask (timer mask) for sync job                                  | 0 0 \* \* \*                |
+| CONTRACT\_FILE\_ID                     | Defines the file identifier in hedera to create smart-contract.                    | 0.0.49153795                |
+| MQ\_MESSAGE\_CHUNK                     | To set up the message chunk size                                                   | 500000                      |
 
 ### Restoring account from Database/Hashicorp vault during Setup.
 

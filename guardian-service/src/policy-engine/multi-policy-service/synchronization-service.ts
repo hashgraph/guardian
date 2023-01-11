@@ -99,7 +99,7 @@ export class SynchronizationService {
             new Logger().info('Complete synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         } catch (error) {
             SynchronizationService.taskStatus = false;
-            console.log(error);
+            console.error(error);
             new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         }
     }
@@ -172,7 +172,7 @@ export class SynchronizationService {
             }
             await Promise.all<any[][]>(tasks);
         } catch (error) {
-            console.log(error);
+            console.error(error);
             new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         }
     }

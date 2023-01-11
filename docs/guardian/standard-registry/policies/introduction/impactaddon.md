@@ -6,13 +6,6 @@ This Addon for the mint block which allows to add additional info for the token 
 
 | Property Name    | Description                                                                                         | Example                                                                                                   |
 | ---------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Type             | Type of workflow logic block                                                                        | impactAddon Block (Can't be changed)                                                                      |
-| GET              | API Method to display the data                                                                      | No                                                                                                        |
-| POST             | API Method to post the data                                                                         | No                                                                                                        |
-| Server Input     | Server URL to take as an input                                                                      |                                                                                                           |
-| Server Output    | Server URL to take as an output                                                                     |                                                                                                           |
-| Control Type     |                                                                                                     | special                                                                                                   |
-| Children         |                                                                                                     | None                                                                                                      |
 | Tag              | Unique name for the logic block.                                                                    | impactAddon\_1                                                                                            |
 | Permissions      | Which entity has rights to interact at this part of the workflow.                                   | Standard Registry                                                                                         |
 | Default Active   | Shows whether this block is active at this time and whether it needs to be shown.                   | Checked or UnChecked                                                                                      |
@@ -26,7 +19,7 @@ This Addon for the mint block which allows to add additional info for the token 
 
 
 
-<figure><img src="../../../../.gitbook/assets/image (1) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (3) (3).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Data Format
 

@@ -2,9 +2,10 @@ import { Response, Router } from 'express';
 import { PolicyType, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { Users } from '@helpers/users';
-import { AuthenticatedRequest, Logger } from '@guardian/common';
+import { AuthenticatedRequest, Logger, RunFunctionAsync } from '@guardian/common';
 import { permissionHelper } from '@auth/authorization-helper';
 import { TaskManager } from '@helpers/task-manager';
+import { ServiceError } from '@helpers/service-requests-base';
 
 export const policyAPI = Router();
 
@@ -81,14 +82,12 @@ policyAPI.post('/push', permissionHelper(UserRole.STANDARD_REGISTRY), async (req
     const { taskId, expectation } = taskManager.start('Create policy');
     const model = req.body;
     const user = req.user;
-    setImmediate(async () => {
+    RunFunctionAsync<ServiceError>(async () => {
         const engineService = new PolicyEngine();
-        try {
-            await engineService.createPolicyAsync(model, user, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
-        }
+        await engineService.createPolicyAsync(model, user, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: 500, message: error.message });
     });
     res.status(201).send({ taskId, expectation });
 });
@@ -100,14 +99,12 @@ policyAPI.post('/push/:policyId', permissionHelper(UserRole.STANDARD_REGISTRY), 
     const model = req.body;
     const user = req.user;
 
-    setImmediate(async () => {
+    RunFunctionAsync<ServiceError>(async () => {
         const engineService = new PolicyEngine();
-        try {
-            await engineService.clonePolicyAsync(policyId, model, user, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
-        }
+        await engineService.clonePolicyAsync(policyId, model, user, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: 500, message: error.message });
     });
     res.status(201).send({ taskId, expectation });
 });
@@ -118,14 +115,12 @@ policyAPI.delete('/push/:policyId', permissionHelper(UserRole.STANDARD_REGISTRY)
     const policyId = req.params.policyId;
     const user = req.user;
 
-    setImmediate(async () => {
+    RunFunctionAsync<ServiceError>(async () => {
         const engineService = new PolicyEngine();
-        try {
-            await engineService.deletePolicyAsync(policyId, user, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
-        }
+        await engineService.deletePolicyAsync(policyId, user, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: 500, message: error.message });
     });
     res.status(201).send({ taskId, expectation });
 });
@@ -186,14 +181,12 @@ policyAPI.put('/push/:policyId/publish', permissionHelper(UserRole.STANDARD_REGI
     const model = req.body;
     const user = req.user;
     const policyId = req.params.policyId;
-    setImmediate(async () => {
+    RunFunctionAsync<ServiceError>(async () => {
         const engineService = new PolicyEngine();
-        try {
-            await engineService.publishPolicyAsync(model, user, policyId, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message || error });
-        }
+        await engineService.publishPolicyAsync(model, user, policyId, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: 500, message: error.message || error });
     });
 
     res.status(201).send({ taskId, expectation });
@@ -363,14 +356,12 @@ policyAPI.post('/push/import/message', permissionHelper(UserRole.STANDARD_REGIST
     const user = req.user;
     const messageId = req.body.messageId;
     const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
-    setImmediate(async () => {
-        try {
-            const engineService = new PolicyEngine();
-            await engineService.importMessageAsync(user, messageId, versionOfTopicId, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const engineService = new PolicyEngine();
+        await engineService.importMessageAsync(user, messageId, versionOfTopicId, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
     });
     res.status(201).send({ taskId, expectation });
 });
@@ -394,14 +385,12 @@ policyAPI.post('/push/import/file', permissionHelper(UserRole.STANDARD_REGISTRY)
     const user = req.user;
     const zip = req.body;
     const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
-    setImmediate(async () => {
-        try {
-            const engineService = new PolicyEngine();
-            await engineService.importFileAsync(user, zip, versionOfTopicId, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const engineService = new PolicyEngine();
+        await engineService.importFileAsync(user, zip, versionOfTopicId, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
     });
     res.status(201).send({ taskId, expectation });
 });
@@ -422,14 +411,12 @@ policyAPI.post('/push/import/message/preview', permissionHelper(UserRole.STANDAR
 
     const user = req.user;
     const messageId = req.body.messageId;
-    setImmediate(async () => {
-        try {
-            const engineService = new PolicyEngine();
-            await engineService.importMessagePreviewAsync(user, messageId, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const engineService = new PolicyEngine();
+        await engineService.importMessagePreviewAsync(user, messageId, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: 500, message: 'Unknown error: ' + error.message });
     });
 
     res.status(201).send({ taskId, expectation });
@@ -630,18 +617,6 @@ policyAPI.post('/:policyId/multiple/', async (req: AuthenticatedRequest, res: Re
     const engineService = new PolicyEngine();
     try {
         res.send(await engineService.setMultiPolicy(req.user, req.params.policyId, req.body));
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
-    }
-});
-
-policyAPI.post('/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
-    const engineService = new PolicyEngine();
-    const versionOfTopicId = req.query ? req.query.versionOfTopicId : null;
-    try {
-        const policies = await engineService.importMessage(req.user, req.body.messageId, versionOfTopicId);
-        res.status(201).send(policies);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });

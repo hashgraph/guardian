@@ -11,8 +11,9 @@ import { HederaSDKHelper } from './helpers/hedera-sdk-helper';
 import { Environment } from './helpers/environment';
 import { IpfsClient } from './ipfs-client';
 import Blob from 'cross-blob';
-import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
+import { AccountId, ContractFunctionParameters, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { HederaUtils } from './helpers/utils';
+import axios from 'axios';
 
 /**
  * Sleep helper
@@ -227,6 +228,18 @@ export class Worker {
                                 result.data = fileContent
                         }
                     }
+                    break;
+                }
+
+                case WorkerTaskType.HTTP_REQUEST: {
+                    const { method, url, headers, body } = task.data.payload;
+                    const response = await axios({
+                        method,
+                        url,
+                        headers,
+                        data: body
+                    });
+                    result.data = response.data;
                     break;
                 }
 
@@ -565,6 +578,261 @@ export class Worker {
                     const { hederaAccountId } = task.data;
                     result.data = !HederaSDKHelper.checkAccount(hederaAccountId);
 
+                    break;
+                }
+
+                case WorkerTaskType.CREATE_CONTRACT: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        topicKey,
+                        bytecodeFileId,
+                    } = task.data;
+                    const client = new HederaSDKHelper(
+                        hederaAccountId,
+                        hederaAccountKey
+                    );
+                    result.data = await client.createContract(
+                        bytecodeFileId,
+                        new ContractFunctionParameters().addString(topicKey)
+                    );
+                    break;
+                }
+
+                case WorkerTaskType.ADD_CONTRACT_USER: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        userId,
+                        contractId,
+                    } = task.data;
+                    const client = new HederaSDKHelper(
+                        hederaAccountId,
+                        hederaAccountKey
+                    );
+                    result.data = await client.contractCall(
+                        contractId, 'addUser',
+                        new ContractFunctionParameters().addAddress(AccountId.fromString(userId).toSolidityAddress())
+                    );
+                    break;
+                }
+
+                case WorkerTaskType.ADD_CONTRACT_PAIR: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        contractId,
+                        baseTokenId,
+                        oppositeTokenId,
+                        baseTokenCount,
+                        oppositeTokenCount,
+                        grantKycKeys,
+                    } = task.data;
+                    const client = new HederaSDKHelper(
+                        hederaAccountId,
+                        hederaAccountKey
+                    );
+                    result.data = await client.contractCall(
+                        contractId, 'addPair',
+                        new ContractFunctionParameters()
+                            .addAddress(TokenId.fromString(baseTokenId).toSolidityAddress())
+                            .addAddress(TokenId.fromString(oppositeTokenId).toSolidityAddress())
+                            .addUint32(Math.floor(baseTokenCount))
+                            .addUint32(Math.floor(oppositeTokenCount)),
+                        grantKycKeys
+                    );
+                    break;
+                }
+
+                case WorkerTaskType.GET_CONTRACT_INFO: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        contractId,
+                    } = task.data;
+                    const client = new HederaSDKHelper(
+                        hederaAccountId,
+                        hederaAccountKey
+                    );
+                    result.data = AccountId.fromSolidityAddress(
+                        (
+                            await client.contractQuery(
+                                contractId,
+                                'getOwner',
+                                new ContractFunctionParameters()
+                            )
+                        ).getAddress()
+                    ).toString();
+                    break;
+                }
+
+                case WorkerTaskType.CHECK_STATUS: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        contractId,
+                    } = task.data;
+                    const client = new HederaSDKHelper(
+                        hederaAccountId,
+                        hederaAccountKey
+                    );
+                    result.data = (await client.contractQuery(
+                        contractId, 'checkStatus',
+                        new ContractFunctionParameters()
+                    )).getBool();
+                    break;
+                }
+
+                case WorkerTaskType.RETIRE_TOKENS: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        baseTokenId,
+                        oppositeTokenId,
+                        userId,
+                        contractId,
+                        wipeKeys
+                    } = task.data;
+                    const client = new HederaSDKHelper(
+                        hederaAccountId,
+                        hederaAccountKey
+                    );
+                    result.data = await client.contractCall(
+                        contractId, 'retire',
+                        (new ContractFunctionParameters()
+                            .addAddress(AccountId.fromString(userId).toSolidityAddress())
+                            .addAddress(TokenId.fromString(baseTokenId).toSolidityAddress())
+                            .addAddress(TokenId.fromString(oppositeTokenId).toSolidityAddress())
+                        ),
+                        wipeKeys
+                    );
+                    break;
+                }
+
+                case WorkerTaskType.CANCEL_RETIRE_REQUEST: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        baseTokenId,
+                        oppositeTokenId,
+                        contractId
+                    } = task.data;
+                    const client = new HederaSDKHelper(
+                        hederaAccountId,
+                        hederaAccountKey
+                    );
+                    result.data = await client.contractCall(
+                        contractId, 'cancelUserRequest',
+                        (new ContractFunctionParameters()
+                            .addAddress(TokenId.fromString(baseTokenId).toSolidityAddress())
+                            .addAddress(TokenId.fromString(oppositeTokenId).toSolidityAddress())
+                        )
+                    );
+                    break;
+                }
+
+                case WorkerTaskType.GET_CONTRACT_PAIR: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        baseTokenId,
+                        oppositeTokenId,
+                        contractId
+                    } = task.data;
+                    const client = new HederaSDKHelper(
+                        hederaAccountId,
+                        hederaAccountKey
+                    );
+                    const contractQueryResult = await client.contractQuery(
+                        contractId, 'getPair',
+                        (new ContractFunctionParameters()
+                            .addAddress(TokenId.fromString(baseTokenId).toSolidityAddress())
+                            .addAddress(TokenId.fromString(oppositeTokenId).toSolidityAddress())
+                        )
+                    );
+                    result.data = {
+                        baseTokenRate: contractQueryResult.getUint32(0),
+                        oppositeTokenRate: contractQueryResult.getUint32(1),
+                        contractId
+                    };
+                    break;
+                }
+
+                case WorkerTaskType.ADD_RETIRE_REQUEST: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        baseTokenId,
+                        oppositeTokenId,
+                        baseTokenCount,
+                        oppositeTokenCount,
+                        baseTokenSerials,
+                        oppositeTokenSerials,
+                        contractId
+                    } = task.data;
+                    const client = new HederaSDKHelper(
+                        hederaAccountId,
+                        hederaAccountKey
+                    );
+                    result.data = await client.contractCall(
+                        contractId, 'addUserRequest',
+                        (new ContractFunctionParameters()
+                            .addAddress(TokenId.fromString(baseTokenId).toSolidityAddress())
+                            .addAddress(TokenId.fromString(oppositeTokenId).toSolidityAddress())
+                            .addUint32(baseTokenCount)
+                            .addUint32(oppositeTokenCount)
+                            .addInt64Array(baseTokenSerials && baseTokenSerials.length ? baseTokenSerials : [0])
+                            .addInt64Array(oppositeTokenSerials && oppositeTokenSerials.length ? oppositeTokenSerials : [0])
+                        )
+                    );
+                    break;
+                }
+
+                case WorkerTaskType.GET_RETIRE_REQUEST: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        baseTokenId,
+                        oppositeTokenId,
+                        userId,
+                        contractId
+                    } = task.data;
+                    const client = new HederaSDKHelper(
+                        hederaAccountId,
+                        hederaAccountKey
+                    );
+                    const contractQueryResult = await client.contractQuery(
+                        contractId, 'getUserRequest',
+                        (new ContractFunctionParameters()
+                            .addAddress(AccountId.fromString(userId).toSolidityAddress())
+                            .addAddress(TokenId.fromString(baseTokenId).toSolidityAddress())
+                            .addAddress(TokenId.fromString(oppositeTokenId).toSolidityAddress())
+                        )
+                    );
+                    result.data = {
+                        baseTokenCount: contractQueryResult.getUint32(0) || contractQueryResult.getUint32(2),
+                        oppositeTokenCount: contractQueryResult.getUint32(1) || contractQueryResult.getUint32(3)
+                    }
+                    break;
+                }
+
+                case WorkerTaskType.GET_USER_NFTS_SERIALS: {
+                    const {
+                        operatorId,
+                        operatorKey,
+                        tokenId,
+                    } = task.data;
+                    const client = new HederaSDKHelper(operatorId, operatorKey);
+                    const nfts = (await client.getSerialsNFT(tokenId)) || [];
+                    const serials = {};
+                    nfts.forEach(item => {
+                        if (serials[item.token_id]) {
+                            serials[item.token_id].push(item.serial_number);
+                        } else {
+                            serials[item.token_id] = [item.serial_number];
+                        }
+                    });
+                    result.data = serials;
                     break;
                 }
 
