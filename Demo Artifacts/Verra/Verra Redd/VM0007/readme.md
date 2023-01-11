@@ -32,5 +32,5 @@ For Demo purpose, we have uploaded two versions of Verra Policies into IPFS and 
 
 In addition to the above Policy Versions, we have also added Schema Design Template file for demo purpose. Please check : [Sample Design Template](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/Verra/Verra%20Redd/VM0007/REDD%20APD%20Schema%20Design%20Template.xlsx)
 
-For step by step user guide to execute Verra Policy, please refer to https://docs.hedera.com/guardian/demo-guide/verra-redd+-demo-guide.
+For step by step user guide to execute Verra Policy, please refer to https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/verra-redd+-demo-guide.
 
