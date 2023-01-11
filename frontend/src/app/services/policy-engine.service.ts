@@ -212,20 +212,4 @@ export class PolicyEngineService {
     public setMultiPolicy(policyId: string, data: any): Observable<any> {
         return this.http.post<void>(`${this.url}/${policyId}/multiple`, data);
     }
-
-    public comparePolicy(
-        policyId1: string,
-        policyId2: string,
-        eventsLvl: string,
-        propLvl: string,
-        childrenLvl: string,
-    ): Observable<any> {
-        const params = new HttpParams()
-            .set('policyId1', policyId1)
-            .set('policyId2', policyId2)
-            .set('eventsLvl', eventsLvl)
-            .set('propLvl', propLvl)
-            .set('childrenLvl', childrenLvl);
-        return this.http.get<any>(`${this.url}/analytics/compare`, { params });
-    }
 }

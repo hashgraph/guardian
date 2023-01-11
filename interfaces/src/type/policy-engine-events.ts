@@ -42,6 +42,5 @@ export enum PolicyEngineEvents {
     CLONE_POLICY_ASYNC = 'clone-policy-async',
     GET_TOKENS_MAP = 'get-tokens-map',
     SET_MULTI_POLICY = 'set-multi-policy',
-    GET_MULTI_POLICY = 'get-multi-policy',
-    COMPARE_POLICY = 'compare-policy',
+    GET_MULTI_POLICY = 'get-multi-policy'
 }

@@ -1,14 +1,10 @@
 import { Status } from "../types/status.type";
 import { EventModel } from "../models/event.model";
-import { IRate } from "../interfaces/rate.interface";
+import { Rate } from "./rate";
 
-export class EventsRate implements IRate<any> {
-    public items: any[];
-    public type: Status;
-    public totalRate: number;
-
+export class EventsRate extends Rate<EventModel> {
     constructor(event1: EventModel, event2: EventModel) {
-        this.items = [event1?.toObject(), event2?.toObject()];
+        super(event1, event2);
         if (event1 && event2) {
             this.totalRate = 100;
             this.type = Status.FULL;

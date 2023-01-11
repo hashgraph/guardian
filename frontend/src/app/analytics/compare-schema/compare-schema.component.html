@@ -1,0 +1,212 @@
+<div class="content">
+    <div *ngIf="schema1 && schema2">
+        <mat-accordion multi>
+            <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false" expanded>
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <div class="header">Info</div>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="info-container">
+                    <ng-container *ngTemplateOutlet="schemaInfo; context: {schema:schema1}"></ng-container>
+                    <ng-container *ngTemplateOutlet="schemaInfo; context: {schema:schema2}"></ng-container>
+                </div>
+                <div class="total-info">
+                    <div class="schema-info-field">
+                        <div class="schema-info-field-name">Total</div>
+                        <div class="schema-info-field-value">{{total}}%</div>
+                    </div>
+                </div>
+            </mat-expansion-panel>
+            <mat-expansion-panel expanded>
+                <mat-expansion-panel-header>
+                    <div class="header">Compare</div>
+                </mat-expansion-panel-header>
+
+                <div class="merge-container">
+
+                    <div class="merge-options">
+                        <div class="merge-lvl">
+                            <!-- <div class="f1">
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Events:</mat-label>
+                                    <mat-select [(value)]="eventsLvl">
+                                        <mat-option value="0">None</mat-option>
+                                        <mat-option value="1">Full</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                            </div> -->
+                        </div>
+                        <div class="merge-lvl-apply">
+                            <!-- <div class="merge-lvl-btn" (click)="onApply()">Apply</div> -->
+                        </div>
+                        <div class="merge-type">
+                            <div class="f2">
+                                <mat-form-field appearance="outline">
+                                    <mat-label>Type:</mat-label>
+                                    <mat-select [(value)]="type">
+                                        <mat-option value="tree">Tree</mat-option>
+                                        <mat-option value="table">Table</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="type==='tree'" class="merge-tree" [attr.open]="panelOpenState">
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-icon legend-l1"></div>
+                                <div class="legend-text">
+                                    Fields are completely equal.
+                                </div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-icon legend-l2"></div>
+                                <div class="legend-text">
+                                    Sub-Schemas are partially equal.
+                                </div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-icon legend-l3"></div>
+                                <div class="legend-text">
+                                    Fields are partially equal.
+                                </div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-icon legend-l4"></div>
+                                <div class="legend-text">
+                                    Match not found.
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div *ngFor="let item of report" class="report-item" [attr.type]="item.type"
+                            [attr.rate]="item.total_rate">
+
+
+                            <div *ngIf="item.left_name" [attr.offset]="item.lvl" [style.padding-left.px]="30*item.lvl"
+                                class="left-tree">
+                                <div class="field-tree" (click)="item._open = !item._open">
+                                    <div class="field-index" [attr.index-rate]="item.index_rate">
+                                        {{item.left_index}}
+                                    </div>
+                                    <div class="field-type">{{item.left_name}}</div>
+                                </div>
+                            </div>
+                            <div *ngIf="!item.left_name && item.right_name" [attr.offset]="item.lvl"
+                                [style.padding-left.px]="30*item.lvl" class="left-tree fantom-tree">
+                                <div class="field-tree">
+                                    <div class="field-index" [attr.index-rate]="item.index_rate">
+                                        {{item.right_index}}
+                                    </div>
+                                    <div class="field-type">{{item.right_name}}</div>
+                                </div>
+                            </div>
+
+                            <div class="middle-tree">
+                                <div class="compare-btn" (click)="item._open = !item._open">
+                                    <mat-icon *ngIf="!item._open">unfold_more</mat-icon>
+                                    <mat-icon *ngIf="item._open">unfold_less</mat-icon>
+                                </div>
+                            </div>
+
+                            <div *ngIf="item.right_name" [attr.offset]="item.lvl" [style.padding-left.px]="30*item.lvl"
+                                class="right-tree">
+                                <div class="field-tree" (click)="item._open = !item._open">
+                                    <div class="field-index" [attr.index-rate]="item.index_rate">
+                                        {{item.right_index}}
+                                    </div>
+                                    <div class="field-type">{{item.right_name}}</div>
+                                </div>
+                            </div>
+                            <div *ngIf="!item.right_name && item.left_name" [attr.offset]="item.lvl"
+                                [style.padding-left.px]="30*item.lvl" class="right-tree fantom-tree">
+                                <div class="field-tree">
+                                    <div class="field-index" [attr.index-rate]="item.index_rate">
+                                        {{item.left_index}}
+                                    </div>
+                                    <div class="field-type">{{item.left_name}}</div>
+                                </div>
+                            </div>
+
+                            <div class="left-compare-result compare-result" [attr.open]="item._open"
+                                [style.padding-left.px]="30*item.lvl">
+                                <ng-container *ngIf="item.left">
+                                    <ng-container
+                                        *ngTemplateOutlet="propInfo; context: { report:item, index:0 }"></ng-container>
+                                </ng-container>
+                            </div>
+                            <div class="middle-compare-result compare-result" [attr.open]="item._open"></div>
+                            <div class="right-compare-result compare-result" [attr.open]="item._open"
+                                [style.padding-left.px]="30*item.lvl">
+                                <ng-container *ngIf="item.right">
+                                    <ng-container
+                                        *ngTemplateOutlet="propInfo; context: { report:item, index:1 }"></ng-container>
+                                </ng-container>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div *ngIf="type==='table'" class="merge-table" [attr.open]="panelOpenState">
+                        <div class="merge-table-content">
+                            <mat-table *ngIf="report" [dataSource]="report" class="table">
+                                <ng-container *ngFor="let column of columns" [cdkColumnDef]="column.name">
+                                    <mat-header-cell *cdkHeaderCellDef>{{ column.label }}</mat-header-cell>
+                                    <mat-cell *cdkCellDef="let row">{{ row[column.name] }}</mat-cell>
+                                </ng-container>
+                                <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+                                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+                            </mat-table>
+                        </div>
+                    </div>
+                </div>
+            </mat-expansion-panel>
+        </mat-accordion>
+    </div>
+</div>
+
+<ng-template #schemaInfo let-schema="schema">
+    <div class="schema-info">
+        <div class="schema-info-field">
+            <div class="schema-info-field-name">ID</div>
+            <div class="schema-info-field-value">{{schema.id}}</div>
+        </div>
+        <div class="schema-info-field">
+            <div class="schema-info-field-name">Name</div>
+            <div class="schema-info-field-value">{{schema.name}}</div>
+        </div>
+        <div class="schema-info-field">
+            <div class="schema-info-field-name">Description</div>
+            <div class="schema-info-field-value">{{schema.description}}</div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #propInfo let-report="report" let-index="index">
+    <div class="prop">
+        <div class="prop-name">Total Rate: </div>
+        <div class="prop-value" [attr.rate]="report.total_rate">{{report.total_rate}}</div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+
+    <div class="prop-table">
+        <div class="prop-table-header">Properties: </div>
+        <div class="prop-table-body">
+            <div *ngFor="let prop of report.properties" class="prop-table-row" [attr.type]="prop.type"
+                [attr.offset]="prop.lvl" [attr.index]="index">
+                <div class="prop-table-name" [style.padding-left.px]="10*prop.lvl">{{prop.name}}:</div>
+                <div class="prop-table-value">
+                    <span *ngIf="prop.items[index]" [attr.prop-type]="prop.items[index].type">
+                        {{prop.items[index].value}}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="prop-delimiter"></div>
+</ng-template>

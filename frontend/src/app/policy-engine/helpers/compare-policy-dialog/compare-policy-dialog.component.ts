@@ -1,7 +1,5 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-
 
 @Component({
     selector: 'compare-policy-dialog',
@@ -19,7 +17,6 @@ export class ComparePolicyDialog {
 
     constructor(
         public dialogRef: MatDialogRef<ComparePolicyDialog>,
-        private policyEngineService: PolicyEngineService,
         @Inject(MAT_DIALOG_DATA) public data: any) {
 
         

@@ -4,7 +4,8 @@
         <mat-spinner></mat-spinner>
     </div>
     <div *ngIf="loading && taskId" class="loading">
-        <async-progess class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages" (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progess>
+        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
+            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
     </div>
 
     <ng-container *ngIf="isConfirmed; else elseTemplate">
@@ -50,7 +51,8 @@
                             <ng-container matColumnDef="name">
                                 <th mat-header-cell *matHeaderCellDef> TOKEN </th>
                                 <td mat-cell *matCellDef="let element">
-                                    {{element.tokenName}} (<hedera-explorer type="tokens" [params]="element.tokenId">{{element.tokenId}}</hedera-explorer>)
+                                    {{element.tokenName}} (<hedera-explorer type="tokens"
+                                        [params]="element.tokenId">{{element.tokenId}}</hedera-explorer>)
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="associated">
@@ -76,7 +78,8 @@
                             <ng-container matColumnDef="frozen">
                                 <th mat-header-cell *matHeaderCellDef> Frozen </th>
                                 <td mat-cell *matCellDef="let element">
-                                    <div *ngIf="element.enableFreeze" class="item-color-{{getColor(element.frozen,true)}}">
+                                    <div *ngIf="element.enableFreeze"
+                                        class="item-color-{{getColor(element.frozen,true)}}">
                                         {{element.frozen}}
                                     </div>
                                 </td>

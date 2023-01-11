@@ -1,12 +1,4 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AuditService } from 'src/app/services/audit.service';
-import { AuthService } from '../../services/auth.service';
-import { forkJoin } from 'rxjs';
-import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { HttpResponse } from '@angular/common/http';
 
 @Component({
     selector: 'app-compare-policy',
@@ -23,27 +15,16 @@ export class ComparePolicyComponent implements OnInit {
     policy1: any;
     policy2: any;
     report!: any[];
-
+    total!: any;
+    
     @Input() eventsLvl: string = '1';
     @Input() propLvl: string = '2';
     @Input() childrenLvl: string = '2';
 
     @Output() change = new EventEmitter<any>();
 
-    displayedColumns: string[] = [
-        'offset',
-        'left_index',
-        'left_type',
-        'left_tag',
-        'right_index',
-        'right_type',
-        'right_tag',
-        'index_rate',
-        'permission_rate',
-        'prop_rate',
-        'event_rate',
-        'total_rate'
-    ];
+    displayedColumns: string[] = [];
+    columns: any[] = [];
 
     icons: any = {
         "interfaceContainerBlock": "tab",
@@ -97,21 +78,36 @@ export class ComparePolicyComponent implements OnInit {
     }
 
     onInit() {
-        this.policy1 = this.value.policy1;
-        this.policy2 = this.value.policy2;
+        this.total = this.value.total;
+        this.policy1 = this.value.left;
+        this.policy2 = this.value.right;
         this.report = this.value.report;
+        this.columns = this.value.columns || [];
+        this.displayedColumns = this.columns
+            .filter(c => c.label)
+            .map(c => c.name);
         this.onRender();
     }
 
     onRender() {
-        console.log(this.policy1);
     }
 
     onApply() {
         this.change.emit({
+            type: 'params',
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
             childrenLvl: this.childrenLvl
+        })
+    }
+
+    compareSchema(prop: any) {
+        const schema1 = prop?.items[0];
+        const schema2 = prop?.items[1];
+        this.change.emit({
+            type: 'schema',
+            schemaId1: schema1?.schemaId,
+            schemaId2: schema2?.schemaId
         })
     }
 }

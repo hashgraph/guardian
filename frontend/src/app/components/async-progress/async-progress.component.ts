@@ -4,11 +4,11 @@ import { Subscription } from 'rxjs';
 import { IStatus, StatusType } from '@guardian/interfaces';
 
 @Component({
-  selector: 'async-progess',
-  templateUrl: './async-progess.component.html',
-  styleUrls: ['./async-progess.component.css']
+  selector: 'async-progress',
+  templateUrl: './async-progress.component.html',
+  styleUrls: ['./async-progress.component.css']
 })
-export class AsyncProgessComponent implements OnInit, OnDestroy {
+export class AsyncProgressComponent implements OnInit, OnDestroy {
 
   progressValue!: number;
   statusesCount: number = 0;

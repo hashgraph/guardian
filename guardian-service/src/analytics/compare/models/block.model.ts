@@ -1,51 +1,54 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { EventModel } from "./event.model";
-import { PropModel } from './prop.model';
-import { IProperties } from "../interfaces/properties.interface";
+import { PropertiesModel } from './properties.model';
 import { WeightType } from '../types/weight.type';
 import { ArtifactModel } from './artifact.model';
 import { IArtifacts } from '../interfaces/artifacts.interface';
+import { SchemaModel } from './schema.model';
+import { PropertyModel } from './property.model';
+import { IKeyMap } from "../interfaces/key-map.interface";
 
 export class BlockModel {
     public readonly index: number;
     public readonly children: BlockModel[];
     public readonly blockType: string;
     public readonly tag: string;
-    public readonly prop: PropModel;
+
+    public readonly prop: PropertiesModel;
     public readonly events: EventModel[];
     public readonly artifacts: ArtifactModel[];
 
     private _weight: string[];
-    private _weightMap: { [key: string]: string };
+    private _weightMap: IKeyMap<string>;
 
     constructor(json: any, index: number) {
         this.children = [];
         this.blockType = json.blockType;
         this.tag = json.tag;
         this.index = index;
-        this.prop = new PropModel(json);
-        this.events = this.copyEvents(json);
-        this.artifacts = this.copyArtifacts(json);
+        this.prop = new PropertiesModel(json);
+        this.events = this.createEvents(json);
+        this.artifacts = this.createArtifacts(json);
         this._weight = [];
         this._weightMap = {};
     }
 
-    private copyEvents(json: any): EventModel[] {
+    private createEvents(json: any): EventModel[] {
         if (Array.isArray(json.events)) {
             return json.events.map((e: any) => new EventModel(e));
         }
         return [];
     }
 
-    private copyArtifacts(json: any): ArtifactModel[] {
+    private createArtifacts(json: any): ArtifactModel[] {
         if (Array.isArray(json.artifacts)) {
             return json.artifacts.map((e: any) => new ArtifactModel(e));
         }
         return [];
     }
 
-    public calcBaseWeight(options: ICompareOptions): void {
+    public update(options: ICompareOptions): void {
         const weights = [];
         const weightMap = {};
 
@@ -125,13 +128,13 @@ export class BlockModel {
         this._weight = weights.reverse();
     }
 
-    public calcEventsWeight(map: { [tag: string]: BlockModel; }, options: ICompareOptions) {
+    public updateEvents(map: IKeyMap<BlockModel>, options: ICompareOptions) {
         for (const event of this.events) {
             event.calcWeight(map[event.source], map[event.target], options);
         }
     }
 
-    public calcArtifactsWeight(artifacts: IArtifacts[], options: ICompareOptions) {
+    public updateArtifacts(artifacts: IArtifacts[], options: ICompareOptions) {
         for (const artifact of this.artifacts) {
             const row = artifacts.find(e => e.uuid === artifact.uuid);
             if (row && row.data) {
@@ -140,6 +143,10 @@ export class BlockModel {
                 artifact.calcWeight('', options);
             }
         }
+    }
+
+    public updateSchemas(schemaMap: IKeyMap<SchemaModel>, options: ICompareOptions): void {
+        this.prop.updateSchemas(schemaMap, options);
     }
 
     public getWeight(type?: WeightType): string {
@@ -189,7 +196,7 @@ export class BlockModel {
         }
     }
 
-    public getPropList(): IProperties<any>[] {
+    public getPropList(): PropertyModel<any>[] {
         return this.prop.getPropList();
     }
 

@@ -1,14 +1,10 @@
 import { Status } from "../types/status.type";
-import { IRate } from "../interfaces/rate.interface";
 import { ArtifactModel } from "../models/artifact.model";
+import { Rate } from "./rate";
 
-export class ArtifactsRate implements IRate<ArtifactModel> {
-    public items: ArtifactModel[];
-    public type: Status;
-    public totalRate: number;
-
+export class ArtifactsRate extends Rate<ArtifactModel> {
     constructor(artifact1: ArtifactModel, artifact2: ArtifactModel) {
-        this.items = [artifact1?.toObject(), artifact2?.toObject()];
+        super(artifact1, artifact2);
         if (artifact1 && artifact2) {
             this.totalRate = 100;
             this.type = Status.FULL;

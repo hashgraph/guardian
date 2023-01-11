@@ -890,4 +890,39 @@ export class Guardians extends ServiceRequestsBase {
             cid, responseType
         });
     }
+
+    /**
+     * Compare two policies
+     * @param user
+     * @param policyId1
+     * @param policyId2
+     */
+    public async comparePolicies(
+        user: any,
+        policyId1: any,
+        policyId2: any,
+        eventsLvl: any,
+        propLvl: any,
+        childrenLvl: any,
+    ) {
+        return await this.request(MessageAPI.COMPARE_POLICIES, {
+            user, policyId1, policyId2, eventsLvl, propLvl, childrenLvl
+        });
+    }
+
+    /**
+     * Compare two policies
+     * @param user
+     * @param schemaId1
+     * @param schemaId2
+     */
+    public async compareSchemas(
+        user: any,
+        schemaId1: any,
+        schemaId2: any,
+    ) {
+        return await this.request(MessageAPI.COMPARE_SCHEMAS, {
+            user, schemaId1, schemaId2
+        });
+    }
 }

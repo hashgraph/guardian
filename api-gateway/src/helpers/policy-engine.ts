@@ -414,23 +414,4 @@ export class PolicyEngine extends ServiceRequestsBase {
     public async setMultiPolicy(user: any, policyId, data: any) {
         return await this.request(PolicyEngineEvents.SET_MULTI_POLICY, { user, policyId, data });
     }
-
-    /**
-     * Compare two policies
-     * @param user
-     * @param policyId1
-     * @param policyId2
-     */
-    public async comparePolicy(
-        user: any, 
-        policyId1: any, 
-        policyId2: any,
-        eventsLvl: any,
-        propLvl: any,
-        childrenLvl: any,
-    ) {
-        return await this.request(PolicyEngineEvents.COMPARE_POLICY, { 
-            user, policyId1, policyId2, eventsLvl, propLvl, childrenLvl
-        });
-    }
 }

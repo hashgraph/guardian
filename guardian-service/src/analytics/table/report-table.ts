@@ -1,17 +1,23 @@
+import { IKeyMap } from "analytics/compare/interfaces/key-map.interface";
+import { IColumn } from "./report-column";
 import { ReportRow } from "./report-row";
-
 
 export class ReportTable {
     public readonly columns: string[];
     public readonly rows: ReportRow[];
-    public readonly indexes: { [col: string]: number; } = {};
+    public readonly indexes: IKeyMap<number> = {};
     public readonly value: any[][];
 
-    constructor(columns: string[]) {
+    constructor(columns: string[] | IColumn[]) {
+        this.columns = [];
         if (Array.isArray(columns)) {
-            this.columns = columns;
-        } else {
-            this.columns = [];
+            for (const col of columns) {
+                if (typeof col === 'string') {
+                    this.columns.push(col);
+                } else {
+                    this.columns.push(col.name);
+                }
+            }
         }
         this.rows = [];
         for (let index = 0; index < this.columns.length; index++) {
@@ -43,6 +49,6 @@ export class ReportTable {
     }
 
     public object(): any {
-        return this.rows.map(row=>row.object());
+        return this.rows.map(row => row.object());
     }
 }

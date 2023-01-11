@@ -647,22 +647,3 @@ policyAPI.post('/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), 
         res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
     }
 });
-
-policyAPI.get('/analytics/compare', async (req: AuthenticatedRequest, res: Response) => {
-    const engineService = new PolicyEngine();
-    const policyId1 = req.query ? req.query.policyId1 : null;
-    const policyId2 = req.query ? req.query.policyId2 : null;
-    const eventsLvl = req.query ? req.query.eventsLvl : null;
-    const propLvl = req.query ? req.query.propLvl : null;
-    const childrenLvl = req.query ? req.query.childrenLvl : null;
-    const user = req.user;
-    try {
-        const result = await engineService.comparePolicy(
-            user, policyId1, policyId2, eventsLvl, propLvl, childrenLvl
-        );
-        res.send(result);
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: error.message });
-    }
-});

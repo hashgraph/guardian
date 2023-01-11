@@ -180,7 +180,6 @@ export class DidRootKey {
         result.publicKeyBase58 = null;
         result.privateKeyBase58 = null;
         result.type = DidRootKey.DID_ROOT_KEY_TYPE;
-        console.log(result);
         return result;
     }
 

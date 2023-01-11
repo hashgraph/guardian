@@ -23,11 +23,17 @@
 
         </div>
         <div style="text-align: end">
-            <button *ngIf="system || (!system && isConfirmed)" mat-raised-button color="primary" class="g-btn"
-                (click)="newSchemas()">New</button>
-            <button *ngIf="!system&& isConfirmed" mat-raised-button color="primary" class="g-btn"
-                (click)="importSchemas()">
-                Import
+            <button *ngIf="system || (!system && isConfirmed)" mat-raised-button color="primary" (click)="newSchemas()" class="toolbar-btn add">
+                <mat-icon>add</mat-icon>
+                <span>Create New</span>
+            </button>
+            <button *ngIf="!system && isConfirmed" mat-raised-button color="primary" (click)="importSchemas()" class="toolbar-btn">
+                <mat-icon>file_open</mat-icon>
+                <span>Import</span>
+            </button>
+            <button *ngIf="!system && isConfirmed" mat-raised-button color="primary" (click)="compareSchemas()" class="toolbar-btn">
+                <mat-icon>compare</mat-icon>
+                <span>Compare</span>
             </button>
         </div>
     </div>
@@ -224,6 +230,7 @@
         <mat-spinner></mat-spinner>
     </div>
     <div *ngIf="loading && taskId" class="loading">
-        <async-progess class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages" (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progess>
+        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
+            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
     </div>
 </div>

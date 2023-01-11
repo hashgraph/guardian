@@ -2,6 +2,8 @@ import { Policy } from "@entity/policy";
 import { BlockModel } from "./block.model";
 import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { IArtifacts } from "../interfaces/artifacts.interface";
+import { SchemaModel } from "./schema.model";
+import { IKeyMap } from "../interfaces/key-map.interface";
 
 export class PolicyModel {
     public readonly tree: BlockModel;
@@ -16,6 +18,7 @@ export class PolicyModel {
     constructor(
         policy: Policy,
         artifacts: IArtifacts[],
+        schemas: SchemaModel[],
         options: ICompareOptions
     ) {
         this.options = options;
@@ -33,12 +36,19 @@ export class PolicyModel {
         this.tree = this.createBlock(policy.config, 0, this.options);
 
         const list = this.getAllBlocks(this.tree, []);
-        const map: { [tag: string]: BlockModel; } = {};
+        const blockMap: IKeyMap<BlockModel> = {};
         for (const block of list) {
-            map[block.tag] = block;
+            blockMap[block.tag] = block;
         }
-        this.createArtifacts(list, artifacts, options);
-        this.createEvents(list, map, options);
+
+        const schemaMap: IKeyMap<SchemaModel> = {};
+        for (const schema of schemas) {
+            schemaMap[schema.iri] = schema;
+        }
+
+        this.updateArtifacts(list, artifacts, options);
+        this.updateEvents(list, blockMap, options);
+        this.updateSchemas(list, schemaMap, options);
     }
 
 
@@ -49,7 +59,6 @@ export class PolicyModel {
         }
         return list;
     }
-
 
     private createBlock(
         json: any,
@@ -63,27 +72,37 @@ export class PolicyModel {
                 block.children.push(this.createBlock(child, i, options));
             }
         }
-        block.calcBaseWeight(options);
+        block.update(options);
         return block;
     }
 
-    private createArtifacts(
+    private updateArtifacts(
         list: BlockModel[],
         artifacts: IArtifacts[],
         options: ICompareOptions
     ): void {
         for (const block of list) {
-            block.calcArtifactsWeight(artifacts, options);
+            block.updateArtifacts(artifacts, options);
         }
     }
 
-    private createEvents(
+    private updateEvents(
         list: BlockModel[],
-        map: { [tag: string]: BlockModel; },
+        map: IKeyMap<BlockModel>,
         options: ICompareOptions
     ): void {
         for (const block of list) {
-            block.calcEventsWeight(map, options);
+            block.updateEvents(map, options);
+        }
+    }
+
+    private updateSchemas(
+        list: BlockModel[],
+        schemaMap: IKeyMap<SchemaModel>,
+        options: ICompareOptions
+    ): void {
+        for (const block of list) {
+            block.updateSchemas(schemaMap, options);
         }
     }
 

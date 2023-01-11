@@ -45,20 +45,20 @@
     background: #ffffff;
     background-size: 25px 25px;
     background-image: radial-gradient(circle, #bbb 0px, #fff 2px);
-    height: calc(100vh - 420px);
+    height: calc(100vh - 460px);
     overflow: auto;
     transition: height 225ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .merge-table {
-    height: calc(100vh - 420px);
+    height: calc(100vh - 460px);
     transition: height 225ms cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
 }
 
 .merge-tree[open="false"],
 .merge-table[open="false"] {
-    height: calc(100vh - 305px);
+    height: calc(100vh - 303px);
 }
 
 .merge-table-content {
@@ -301,16 +301,32 @@
     padding-bottom: 2px;
     box-sizing: border-box;
     min-width: 175px;
+    height: 30px;
 }
 
 .prop-table-value {
     display: table-cell;
     border-top: 2px solid #fff;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-right: 8px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-right: 36px;
     padding-left: 8px;
     min-width: 250px;
+    position: relative;
+}
+
+.prop-table-value .compare-btn {
+    display: none;
+    position: absolute;
+    top: 0px;
+    right: 1px;
+    left: inherit;
+    bottom: inherit;
+    box-shadow: 0px 0px 0px 2px #fff;
+}
+
+.prop-table-value *[prop-type="schema"] .compare-btn {
+    display: block;
 }
 
 .prop-table-body {
@@ -432,4 +448,67 @@
 
 .merge-options::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
     padding: 10px 0 10px 0;
+}
+
+.legend {
+    display: flex;
+    width: 100%;
+    background: #fff;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    box-sizing: border-box;
+}
+
+.legend-item {
+    display: flex;
+    position: relative;
+    padding-left: 30px;
+    padding-right: 50px;
+    background: white;
+}
+
+.legend-icon {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translate(0px, -11px);
+    background: #fff;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+
+.legend-text {
+    max-width: 300px;
+    display: flex;
+    align-items: center;
+}
+
+.legend-l1.legend-icon {
+    background: #a2ffa5;
+    border: 1px solid #408142;
+}
+
+.legend-l2.legend-icon {
+    background: linear-gradient(45deg, #a2ffa5 48%, #fff6ab 52%);
+    border: 1px solid #648d36;
+}
+
+.legend-l3.legend-icon {
+    background: #fff6ab;
+    border: 1px solid #ab9f3e;
+}
+
+.legend-l4.legend-icon {
+    background: #ffcece;
+    border: 1px solid #b15656;
+}
+
+.total-info {
+    border-top: 1px solid #999;
+    margin-top: 10px;
+    padding-top: 10px;
 }

@@ -1,0 +1,40 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onClose()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div class="g-dialog-title">
+            Compare schemas
+        </div>
+        <div class="g-dialog-actions">
+            <div class="g-dialog-actions-btn" (click)="onCompare()" [attr.disabled]="!schemaId1 || !schemaId2">
+                Compare
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="context">
+            <div *ngIf="loading" class="loading">
+                <mat-spinner></mat-spinner>
+            </div>
+
+            <mat-form-field appearance="outline" style="width: 100%">
+                <mat-label>First schema:</mat-label>
+                <mat-select [(value)]="schemaId1">
+                    <mat-option>None</mat-option>
+                    <mat-option *ngFor="let schema of schemas" [value]="schema.id">{{schema.name}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" style="width: 100%">
+                <mat-label>Secondary schema</mat-label>
+                <mat-select [(value)]="schemaId2">
+                    <mat-option>None</mat-option>
+                    <mat-option *ngFor="let schema of schemas" [value]="schema.id">{{schema.name}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+    </div>
+</div>

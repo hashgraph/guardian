@@ -11,7 +11,7 @@ import { UserProfileComponent } from './views/user-profile/user-profile.componen
 import { LoginComponent } from './views/login/login.component';
 import { RegisterComponent } from './views/register/register.component';
 import { RootConfigComponent } from './views/root-config/root-config.component';
-import { SchemaConfigComponent } from './views/schema-config/schema-config.component';
+import { SchemaConfigComponent } from './schema-engine/schemas/schemas.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
 import { AuthService } from './services/auth.service';

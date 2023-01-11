@@ -100,7 +100,6 @@ export class IpfsClient {
             default:
                 throw new Error(`${this.IPFS_PROVIDER} provider is unknown`);
         }
-        console.log(cid);
         return cid;
     }
 

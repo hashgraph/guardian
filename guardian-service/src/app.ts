@@ -46,6 +46,7 @@ import { artifactAPI } from '@api/artifact.service';
 import { Policy } from '@entity/policy';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
 import { SynchronizationService } from '@policy-engine/multi-policy-service';
+import { analyticsAPI } from '@api/analytics.service';
 
 export const obj = {};
 
@@ -172,6 +173,7 @@ Promise.all([
         await demoAPI(channel, apiGatewayChannel, settingsRepository);
         await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
         await artifactAPI(channel);
+        await analyticsAPI(channel);
     } catch (error) {
         console.error(error.message);
         process.exit(0);

@@ -489,7 +489,6 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
         const notifier = initNotifier(apiGatewayChannel, taskId);
 
         setImmediate(async () => {
-            console.log(username, profile, taskId);
             try {
                 if (!profile.hederaAccountId) {
                     notifier.error('Invalid Hedera Account Id');

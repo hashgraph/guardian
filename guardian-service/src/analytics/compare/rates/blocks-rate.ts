@@ -1,7 +1,6 @@
 import { BlockModel } from "../models/block.model";
 import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { Status } from "../types/status.type";
-import { IProperties } from "../interfaces/properties.interface";
 import { EventModel } from "../models/event.model";
 import { PropertiesRate } from "./properties-rate";
 import { EventsRate } from "./events-rate";
@@ -9,17 +8,18 @@ import { PermissionsRate } from "./permissions-rate";
 import { ArtifactsRate } from "./artifacts-rate";
 import { IRate } from "../interfaces/rate.interface";
 import { ArtifactModel } from "../models/artifact.model";
+import { Rate } from "./rate";
+import { PropertyModel } from "../models/property.model";
 
-export class BlocksRate implements IRate<any> {
+export class BlocksRate extends Rate<BlockModel> {
+    public blockType: string;
+
     public indexRate: number;
     public propertiesRate: number;
     public eventsRate: number;
     public permissionsRate: number;
     public artifactsRate: number;
-    public totalRate: number;
-    public type: Status;
-    public blockType: string;
-    public items: BlockModel[];
+
     public children: BlocksRate[];
     public properties: PropertiesRate[];
     public events: EventsRate[];
@@ -27,6 +27,7 @@ export class BlocksRate implements IRate<any> {
     public artifacts: ArtifactsRate[];
 
     constructor(block1: BlockModel, block2: BlockModel) {
+        super(block1, block2);
         this.indexRate = -1;
         this.propertiesRate = -1;
         this.eventsRate = -1;
@@ -34,7 +35,6 @@ export class BlocksRate implements IRate<any> {
         this.artifactsRate = -1;
         this.totalRate = -1;
         this.type = Status.NONE;
-        this.items = [block1, block2];
         this.children = [];
         this.properties = [];
         this.events = [];
@@ -52,9 +52,9 @@ export class BlocksRate implements IRate<any> {
         const list: string[] = [];
         const map: any = {};
 
-        let tag1: IProperties<any>;
+        let tag1: PropertyModel<any>;
         if (block1) {
-            tag1 = { type: 'property', name: 'tag', lvl: 1, path: 'tag', value: block1.tag };
+            tag1 = new PropertyModel('tag', 'property', block1.tag, 1, 'tag');
             const list1 = block1.getPropList();
             for (const item of list1) {
                 list.push(item.path);
@@ -62,9 +62,9 @@ export class BlocksRate implements IRate<any> {
             }
         }
 
-        let tag2: IProperties<any>;
+        let tag2: PropertyModel<any>;
         if (block2) {
-            tag2 = { type: 'property', name: 'tag', lvl: 1, path: 'tag', value: block2.tag };
+            tag2 = new PropertyModel('tag', 'property', block2.tag, 1, 'tag');
             const list2 = block2.getPropList();
             for (const item of list2) {
                 if (map[item.path]) {
@@ -182,9 +182,9 @@ export class BlocksRate implements IRate<any> {
         return sum;
     }
 
-    public calcRate(options: ICompareOptions): void {
-        const block1 = this.items[0];
-        const block2 = this.items[1];
+    public override calc(options: ICompareOptions): void {
+        const block1 = this.left;
+        const block2 = this.right;
 
         this.compareProp(block1, block2);
         this.compareEvents(block1, block2);
@@ -207,5 +207,44 @@ export class BlocksRate implements IRate<any> {
             this.permissionsRate +
             this.artifactsRate
         ) / 4);
+    }
+
+    public getSubRate(name: string): IRate<any>[] {
+        if (name === 'properties' && this.properties) {
+            return this.properties.map(p => p.toObject());;
+        }
+        if (name === 'events' && this.events) {
+            return this.events.map(p => p.toObject());;
+        }
+        if (name === 'permissions' && this.permissions) {
+            return this.permissions.map(p => p.toObject());;
+        }
+        if (name === 'artifacts' && this.artifacts) {
+            return this.artifacts.map(p => p.toObject());;
+        }
+        return null;
+    }
+
+    public override getChildren<T extends IRate<any>>(): T[] {
+        return this.children as any;
+    }
+
+    public override getRateValue(name: string): number {
+        if (name === 'index') {
+            return this.indexRate;
+        }
+        if (name === 'properties') {
+            return this.propertiesRate;
+        }
+        if (name === 'events') {
+            return this.eventsRate;
+        }
+        if (name === 'permissions') {
+            return this.permissionsRate;
+        }
+        if (name === 'artifacts') {
+            return this.artifactsRate;
+        }
+        return this.totalRate;
     }
 }

@@ -11,6 +11,14 @@
                     <ng-container *ngTemplateOutlet="policyInfo; context: {policy:policy1}"></ng-container>
                     <ng-container *ngTemplateOutlet="policyInfo; context: {policy:policy2}"></ng-container>
                 </div>
+                <div class="total-info">
+                    <div class="policy-info-field">
+                        <div class="policy-info-field-name">Total</div>
+                        <div class="policy-info-field-value">
+                            {{total}}%
+                        </div>
+                    </div>
+                </div>
             </mat-expansion-panel>
             <mat-expansion-panel expanded>
                 <mat-expansion-panel-header>
@@ -69,32 +77,87 @@
 
 
                     <div *ngIf="type==='tree'" class="merge-tree" [attr.open]="panelOpenState">
+                        <div class="legend">
+                            <div class="legend-item">
+                                <div class="legend-icon legend-l1"></div>
+                                <div class="legend-text">
+                                    Blocks and their children are completely equal.
+                                </div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-icon legend-l2"></div>
+                                <div class="legend-text">
+                                    Blocks are completely equal.
+                                </div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-icon legend-l3"></div>
+                                <div class="legend-text">
+                                    Blocks are partially equal.
+                                </div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-icon legend-l4"></div>
+                                <div class="legend-text">
+                                    Match not found.
+                                </div>
+                            </div>
+                        </div>
+
+
                         <div *ngFor="let item of report" class="report-item" [attr.type]="item.type"
                             [attr.rate]="item.total_rate">
-                            <div *ngIf="item.left_type" [attr.offset]="item.lvl" [style.padding-left.px]="30*item.lvl"
-                                class="left-tree">
-                                <div class="block-tree" (click)="item._open = !item._open">
-                                    <div class="block-index" [attr.index-rate]="item.index_rate">
-                                        {{item.left_index}}
+                            <ng-container *ngIf="item.left_type">
+                                <div [attr.offset]="item.lvl" [style.padding-left.px]="30*item.lvl" class="left-tree">
+                                    <div class="block-tree" (click)="item._open = !item._open">
+                                        <div class="block-index" [attr.index-rate]="item.index_rate">
+                                            {{item.left_index}}
+                                        </div>
+                                        <div class="block-icon">
+                                            <mat-icon>{{icons[item.left_type]}}</mat-icon>
+                                        </div>
+                                        <div class="block-type">{{item.left_tag || item.left_type}}</div>
                                     </div>
-                                    <div class="block-icon">
-                                        <mat-icon>{{icons[item.left_type]}}</mat-icon>
-                                    </div>
-                                    <div class="block-type">{{item.left_tag || item.left_type}}</div>
                                 </div>
-                            </div>
-                            <div *ngIf="!item.left_type && item.right_type" [attr.offset]="item.lvl"
-                                [style.padding-left.px]="30*item.lvl" class="left-tree fantom-tree">
-                                <div class="block-tree">
-                                    <div class="block-index" [attr.index-rate]="item.index_rate">
-                                        {{item.right_index}}
+                                <div *ngIf="!item.right_type" [attr.offset]="item.lvl"
+                                    [style.padding-left.px]="30*item.lvl" class="right-tree fantom-tree">
+                                    <div class="block-tree">
+                                        <div class="block-index" [attr.index-rate]="item.index_rate">
+                                            {{item.left_index}}
+                                        </div>
+                                        <div class="block-icon">
+                                            <mat-icon>{{icons[item.left_type]}}</mat-icon>
+                                        </div>
+                                        <div class="block-type">{{item.left_tag || item.left_type}}</div>
                                     </div>
-                                    <div class="block-icon">
-                                        <mat-icon>{{icons[item.right_type]}}</mat-icon>
-                                    </div>
-                                    <div class="block-type">{{item.right_tag || item.right_type}}</div>
                                 </div>
-                            </div>
+                            </ng-container>
+
+                            <ng-container *ngIf="item.right_type">
+                                <div [attr.offset]="item.lvl" [style.padding-left.px]="30*item.lvl" class="right-tree">
+                                    <div class="block-tree" (click)="item._open = !item._open">
+                                        <div class="block-index" [attr.index-rate]="item.index_rate">
+                                            {{item.right_index}}
+                                        </div>
+                                        <div class="block-icon">
+                                            <mat-icon>{{icons[item.right_type]}}</mat-icon>
+                                        </div>
+                                        <div class="block-type">{{item.right_tag || item.right_type}}</div>
+                                    </div>
+                                </div>
+                                <div *ngIf="!item.left_type" [attr.offset]="item.lvl"
+                                    [style.padding-left.px]="30*item.lvl" class="left-tree fantom-tree">
+                                    <div class="block-tree">
+                                        <div class="block-index" [attr.index-rate]="item.index_rate">
+                                            {{item.right_index}}
+                                        </div>
+                                        <div class="block-icon">
+                                            <mat-icon>{{icons[item.right_type]}}</mat-icon>
+                                        </div>
+                                        <div class="block-type">{{item.right_tag || item.right_type}}</div>
+                                    </div>
+                                </div>
+                            </ng-container>
 
                             <div class="middle-tree">
                                 <div class="compare-btn" (click)="item._open = !item._open">
@@ -103,108 +166,39 @@
                                 </div>
                             </div>
 
-                            <div *ngIf="item.right_type" [attr.offset]="item.lvl" [style.padding-left.px]="30*item.lvl"
-                                class="right-tree">
-                                <div class="block-tree" (click)="item._open = !item._open">
-                                    <div class="block-index" [attr.index-rate]="item.index_rate">
-                                        {{item.right_index}}
-                                    </div>
-                                    <div class="block-icon">
-                                        <mat-icon>{{icons[item.right_type]}}</mat-icon>
-                                    </div>
-                                    <div class="block-type">{{item.right_tag || item.right_type}}</div>
+                            <ng-container *ngIf="item._open">
+                                <div class="left-compare-result compare-result" [attr.open]="item._open"
+                                    [style.padding-left.px]="30*item.lvl">
+                                    <ng-container *ngIf="item.left">
+                                        <ng-container
+                                            *ngTemplateOutlet="propInfo; context: { report:item, index:0 }"></ng-container>
+                                    </ng-container>
                                 </div>
-                            </div>
-                            <div *ngIf="!item.right_type && item.left_type" [attr.offset]="item.lvl"
-                                [style.padding-left.px]="30*item.lvl" class="right-tree fantom-tree">
-                                <div class="block-tree">
-                                    <div class="block-index" [attr.index-rate]="item.index_rate">
-                                        {{item.left_index}}
-                                    </div>
-                                    <div class="block-icon">
-                                        <mat-icon>{{icons[item.left_type]}}</mat-icon>
-                                    </div>
-                                    <div class="block-type">{{item.left_tag || item.left_type}}</div>
+                                <div class="middle-compare-result compare-result" [attr.open]="item._open"></div>
+                                <div class="right-compare-result compare-result" [attr.open]="item._open"
+                                    [style.padding-left.px]="30*item.lvl">
+                                    <ng-container *ngIf="item.right">
+                                        <ng-container
+                                            *ngTemplateOutlet="propInfo; context: { report:item, index:1 }"></ng-container>
+                                    </ng-container>
                                 </div>
-                            </div>
-
-                            <div class="left-compare-result compare-result" [attr.open]="item._open"
-                                [style.padding-left.px]="30*item.lvl">
-                                <ng-container *ngIf="item.left">
-                                    <ng-container
-                                        *ngTemplateOutlet="propInfo; context: { report:item, index:0 }"></ng-container>
-                                </ng-container>
-                            </div>
-                            <div class="middle-compare-result compare-result" [attr.open]="item._open"></div>
-                            <div class="right-compare-result compare-result" [attr.open]="item._open"
-                                [style.padding-left.px]="30*item.lvl">
-                                <ng-container *ngIf="item.right">
-                                    <ng-container
-                                        *ngTemplateOutlet="propInfo; context: { report:item, index:1 }"></ng-container>
-                                </ng-container>
-                            </div>
+                            </ng-container>
                         </div>
                     </div>
 
                     <div *ngIf="type==='table'" class="merge-table" [attr.open]="panelOpenState">
                         <div class="merge-table-content">
-                            <table *ngIf="report" mat-table [dataSource]="report" class="table">
-                                <ng-container matColumnDef="offset">
-                                    <th mat-header-cell *matHeaderCellDef> Offset </th>
-                                    <td mat-cell *matCellDef="let element">
-                                        {{element.lvl}}
-                                    </td>
+                            <mat-table *ngIf="report" [dataSource]="report" class="table">
+                                <ng-container *ngFor="let column of columns" [cdkColumnDef]="column.name">
+                                    <mat-header-cell *cdkHeaderCellDef>{{ column.label }}</mat-header-cell>
+                                    <mat-cell *cdkCellDef="let row">{{ row[column.name] }}</mat-cell>
                                 </ng-container>
-                                <ng-container matColumnDef="left_index">
-                                    <th mat-header-cell *matHeaderCellDef> Index </th>
-                                    <td mat-cell *matCellDef="let element">{{element.left_index}}</td>
-                                </ng-container>
-                                <ng-container matColumnDef="left_type">
-                                    <th mat-header-cell *matHeaderCellDef> Type </th>
-                                    <td mat-cell *matCellDef="let element">{{element.left_type}}</td>
-                                </ng-container>
-                                <ng-container matColumnDef="left_tag">
-                                    <th mat-header-cell *matHeaderCellDef> Tag </th>
-                                    <td mat-cell *matCellDef="let element">{{element.left_tag}}</td>
-                                </ng-container>
-                                <ng-container matColumnDef="right_index">
-                                    <th mat-header-cell *matHeaderCellDef> Index </th>
-                                    <td mat-cell *matCellDef="let element">{{element.right_index}}</td>
-                                </ng-container>
-                                <ng-container matColumnDef="right_type">
-                                    <th mat-header-cell *matHeaderCellDef> Type </th>
-                                    <td mat-cell *matCellDef="let element">{{element.right_type}}</td>
-                                </ng-container>
-                                <ng-container matColumnDef="right_tag">
-                                    <th mat-header-cell *matHeaderCellDef> Tag </th>
-                                    <td mat-cell *matCellDef="let element">{{element.right_tag}}</td>
-                                </ng-container>
-                                <ng-container matColumnDef="index_rate">
-                                    <th mat-header-cell *matHeaderCellDef> Index Rate </th>
-                                    <td mat-cell *matCellDef="let element">{{element.index_rate}}</td>
-                                </ng-container>
-                                <ng-container matColumnDef="permission_rate">
-                                    <th mat-header-cell *matHeaderCellDef> Permission Rate </th>
-                                    <td mat-cell *matCellDef="let element">{{element.permission_rate}}</td>
-                                </ng-container>
-                                <ng-container matColumnDef="prop_rate">
-                                    <th mat-header-cell *matHeaderCellDef> Prop Rate </th>
-                                    <td mat-cell *matCellDef="let element">{{element.prop_rate}}</td>
-                                </ng-container>
-                                <ng-container matColumnDef="event_rate">
-                                    <th mat-header-cell *matHeaderCellDef> Event Rate </th>
-                                    <td mat-cell *matCellDef="let element">{{element.event_rate}}</td>
-                                </ng-container>
-                                <ng-container matColumnDef="total_rate">
-                                    <th mat-header-cell *matHeaderCellDef> Total Rate </th>
-                                    <td mat-cell *matCellDef="let element">{{element.total_rate}}</td>
-                                </ng-container>
-
-                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                            </table>
+                                <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+                                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+                            </mat-table>
                         </div>
                     </div>
+
                 </div>
             </mat-expansion-panel>
         </mat-accordion>
@@ -293,6 +287,9 @@
                 <div class="prop-table-value">
                     <span *ngIf="prop.items[index]" [attr.prop-type]="prop.items[index].type">
                         {{prop.items[index].value}}
+                        <div class="compare-btn" (click)="compareSchema(prop)">
+                            <mat-icon>search</mat-icon>
+                        </div>
                     </span>
                 </div>
             </div>

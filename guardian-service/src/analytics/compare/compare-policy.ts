@@ -1,12 +1,11 @@
-import { Policy } from "@entity/policy";
 import { BlockModel } from "./models/block.model";
 import { BlocksRate } from "./rates/blocks-rate";
 import { ICompareOptions } from "./interfaces/compare-options.interface";
 import { PolicyModel } from "./models/policy.model";
 import { ReportTable } from "../table/report-table";
 import { Status } from "./types/status.type";
-import { IBlockMap } from "./interfaces/block-map.interface";
-import { IArtifacts } from "./interfaces/artifacts.interface";
+import { IRateMap } from "./interfaces/rate-map.interface";
+import { ICompareResult } from "./interfaces/compare-result.interface";
 
 export class PolicyComparator {
     private readonly propLvl: number;
@@ -31,66 +30,63 @@ export class PolicyComparator {
         }
     }
 
-    public createModel(policy: Policy, artifacts: IArtifacts[],): PolicyModel {
-        return new PolicyModel(policy, artifacts, this.options);
-    }
-
     public compare(
         policy1: PolicyModel,
         policy2: PolicyModel
-    ): any {
-        const result: any = {};
+    ): ICompareResult {
+        const columns = [
+            { name: 'lvl', label: 'Offset', type: 'number' },
+            { name: 'left_index', label: 'Index', type: 'number' },
+            { name: 'left_type', label: 'Type', type: 'string' },
+            { name: 'left_tag', label: 'Tag', type: 'string' },
+            { name: 'right_index', label: 'Index', type: 'number' },
+            { name: 'right_type', label: 'Type', type: 'string' },
+            { name: 'right_tag', label: 'Tag', type: 'string' },
+            { name: 'index_rate', label: 'Index Rate', type: 'number' },
+            { name: 'permission_rate', label: 'Permission Rate', type: 'number' },
+            { name: 'prop_rate', label: 'Prop Rate', type: 'number' },
+            { name: 'event_rate', label: 'Event Rate', type: 'number' },
+            { name: 'artifacts_rate', label: 'Artifact Rate', type: 'number' },
+            { name: 'total_rate', label: 'Total Rate', type: 'number' },
 
-        result.policy1 = policy1.info();
-        result.policy2 = policy2.info();
+            { name: 'type', label: '', type: 'string' },
+            { name: 'block_type', label: '', type: 'string' },
+            { name: 'left', label: '', type: 'object' },
+            { name: 'right', label: '', type: 'object' },
+            { name: 'properties', label: '', type: 'object' },
+            { name: 'events', label: '', type: 'object' },
+            { name: 'permissions', label: '', type: 'object' },
+            { name: 'artifacts', label: '', type: 'object' }
+        ];
 
+        const table = new ReportTable(columns);
         const tree = this.compareTree(policy1.tree, policy2.tree, this.options);
-        const table = this.treeToTable(tree);
+        this.treeToTable(tree, table, 1);
 
-        result.report = table.object();
+        const result: ICompareResult = {
+            columns,
+            left: policy1.info(),
+            right: policy2.info(),
+            report: table.object(),
+            total: tree.total(),
+        }
 
         return result;
     }
 
-    public treeToTable(tree: BlocksRate, table?: ReportTable, lvl?: number): ReportTable {
-        if (!table) {
-            table = new ReportTable([
-                'lvl',
-                'type',
-                'block_type',
-                'left_type',
-                'left_tag',
-                'left_index',
-                'right_type',
-                'right_tag',
-                'right_index',
-                'prop_rate',
-                'event_rate',
-                'permission_rate',
-                'artifacts_rate',
-                'index_rate',
-                'total_rate',
-                'left',
-                'right',
-                'properties',
-                'events',
-                'permissions',
-                'artifacts'
-            ]);
-            lvl = 1;
-        }
-
-        const item_1 = tree.items[0];
-        const item_2 = tree.items[1];
+    public treeToTable(tree: BlocksRate, table: ReportTable, lvl: number): void {
+        const item_1 = tree.left;
+        const item_2 = tree.right;
         const row = table.createRow();
 
         row.set('lvl', lvl);
         row.set('type', tree.type);
         row.set('block_type', tree.blockType);
-        row.set('properties', tree.properties);
-        row.set('events', tree.events);
-        row.set('permissions', tree.permissions);
-        row.set('artifacts', tree.artifacts);
+
+        row.set('properties', tree.getSubRate('properties'));
+        row.set('events', tree.getSubRate('events'));
+        row.set('permissions', tree.getSubRate('permissions'));
+        row.set('artifacts', tree.getSubRate('artifacts'));
 
         row.set('left', item_1?.toObject());
         row.set('right', item_2?.toObject());
@@ -106,12 +102,12 @@ export class PolicyComparator {
             row.set('right_index', item_2.index);
         }
         if (item_1 && item_2) {
-            row.set('prop_rate', `${tree.propertiesRate}%`);
-            row.set('event_rate', `${tree.eventsRate}%`);
-            row.set('index_rate', `${tree.indexRate}%`);
-            row.set('permission_rate', `${tree.permissionsRate}%`);
-            row.set('artifacts_rate', `${tree.artifactsRate}%`);
-            row.set('total_rate', `${tree.totalRate}%`);
+            row.set('prop_rate', `${tree.getRateValue('properties')}%`);
+            row.set('event_rate', `${tree.getRateValue('events')}%`);
+            row.set('index_rate', `${tree.getRateValue('index')}%`);
+            row.set('permission_rate', `${tree.getRateValue('permissions')}%`);
+            row.set('artifacts_rate', `${tree.getRateValue('artifacts')}%`);
+            row.set('total_rate', `${tree.getRateValue('total')}%`);
         } else {
             row.set('prop_rate', `-`);
             row.set('event_rate', `-`);
@@ -120,15 +116,15 @@ export class PolicyComparator {
             row.set('artifacts_rate', `-`);
             row.set('total_rate', `-`);
         }
-        for (const child of tree.children) {
-            table = this.treeToTable(child, table, lvl + 1);
+
+        for (const child of tree.getChildren<BlocksRate>()) {
+            this.treeToTable(child, table, lvl + 1);
         }
-        return table;
     }
 
     private compareTree(block1: BlockModel, block2: BlockModel, options: ICompareOptions): BlocksRate {
         const rate = new BlocksRate(block1, block2);
-        rate.calcRate(options);
+        rate.calc(options);
         if (!block1 && !block2) {
             return rate;
         }
@@ -164,7 +160,7 @@ export class PolicyComparator {
         children2: BlockModel[],
         options: ICompareOptions
     ): BlocksRate[] {
-        let result: IBlockMap[];
+        let result: IRateMap<BlockModel>[];
         if (type === Status.FULL) {
             result = this.mergeChildren2(children1, children2);
         } else if (type === Status.PARTLY) {
@@ -179,8 +175,8 @@ export class PolicyComparator {
         return children;
     }
 
-    private mergeChildren1(children1: BlockModel[], children2: BlockModel[]): IBlockMap[] {
-        const result: IBlockMap[] = [];
+    private mergeChildren1(children1: BlockModel[], children2: BlockModel[]): IRateMap<BlockModel>[] {
+        const result: IRateMap<BlockModel>[] = [];
 
         let max = 0;
         for (const child of children1) {
@@ -206,8 +202,8 @@ export class PolicyComparator {
         return result;
     }
 
-    private mergeChildren2(children1: BlockModel[], children2: BlockModel[]): IBlockMap[] {
-        const result: IBlockMap[] = [];
+    private mergeChildren2(children1: BlockModel[], children2: BlockModel[]): IRateMap<BlockModel>[] {
+        const result: IRateMap<BlockModel>[] = [];
         const max = Math.max(children1.length, children2.length);
         for (let i = 0; i < max; i++) {
             const left = children1[i];
@@ -217,8 +213,8 @@ export class PolicyComparator {
         return result;
     }
 
-    private mergeChildren3(children1: BlockModel[], children2: BlockModel[]): IBlockMap[] {
-        const result: IBlockMap[] = [];
+    private mergeChildren3(children1: BlockModel[], children2: BlockModel[]): IRateMap<BlockModel>[] {
+        const result: IRateMap<BlockModel>[] = [];
         if (children1) {
             for (let i = 0; i < children1.length; i++) {
                 const left = children1[i];
@@ -234,7 +230,7 @@ export class PolicyComparator {
         return result;
     }
 
-    private mapping(result: IBlockMap[], child: BlockModel, iteration: number) {
+    private mapping(result: IRateMap<BlockModel>[], child: BlockModel, iteration: number) {
         for (const row of result) {
             if (row.blockType === child.blockType && row.left && !row.right) {
                 if (row.left.checkWeight(iteration)) {

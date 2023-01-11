@@ -21,7 +21,6 @@ import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
 import { RootConfigComponent } from './views/root-config/root-config.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
-import { SchemaConfigComponent } from './views/schema-config/schema-config.component';
 import { TokenDialog } from './components/token-dialog/token-dialog.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
@@ -47,6 +46,7 @@ import { MessageTranslationService } from './services/message-translation-servic
 import { TasksService } from './services/tasks.service';
 import { ArtifactService } from './services/artifact.service';
 import { CompareModule } from './analytics/analytics.module';
+import { AnalyticsService } from './services/analytics.service';
 
 @NgModule({
     declarations: [
@@ -59,7 +59,6 @@ import { CompareModule } from './analytics/analytics.module';
         RootConfigComponent,
         TokenConfigComponent,
         TokenDialog,
-        SchemaConfigComponent,
         AuditComponent,
         TrustChainComponent,
         NewPolicyDialog,
@@ -95,6 +94,7 @@ import { CompareModule } from './analytics/analytics.module';
         ProfileService,
         TokenService,
         SchemaService,
+        AnalyticsService,
         AuditService,
         PolicyEngineService,
         PolicyHelper,

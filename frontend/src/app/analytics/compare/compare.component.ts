@@ -1,12 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuditService } from 'src/app/services/audit.service';
 import { AuthService } from '../../services/auth.service';
-import { forkJoin } from 'rxjs';
-import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { HttpResponse } from '@angular/common/http';
+import { AnalyticsService } from 'src/app/services/analytics.service';
 
 @Component({
     selector: 'app-compare',
@@ -18,6 +13,8 @@ export class CompareComponent implements OnInit {
     type: any;
     policyId1: any;
     policyId2: any;
+    schemaId1: any;
+    schemaId2: any;
     result: any;
 
     eventsLvl = '1';
@@ -28,28 +25,36 @@ export class CompareComponent implements OnInit {
         private auth: AuthService,
         private route: ActivatedRoute,
         private router: Router,
-        private policyEngineService: PolicyEngineService
+        private analyticsService: AnalyticsService
     ) {
     }
 
     ngOnInit() {
-        this.loading = true;
-        this.type = this.route.snapshot.queryParams['type'] || '';
-        this.policyId1 = this.route.snapshot.queryParams['policyId1'] || '';
-        this.policyId2 = this.route.snapshot.queryParams['policyId2'] || '';
+        this.route.queryParams.subscribe(queryParams => {
+            this.loadData();
+        });
         this.loadData();
     }
 
     loadData() {
         this.loading = true;
+        this.type = this.route.snapshot.queryParams['type'] || '';
+        this.policyId1 = this.route.snapshot.queryParams['policyId1'] || '';
+        this.policyId2 = this.route.snapshot.queryParams['policyId2'] || '';
+        this.schemaId1 = this.route.snapshot.queryParams['schemaId1'] || '';
+        this.schemaId2 = this.route.snapshot.queryParams['schemaId2'] || '';
         if (this.type === 'policy') {
             this.loadPolicy();
+        } else if (this.type === 'schema') {
+            this.loadSchema();
         } else {
             this.loading = false;
         }
+    }
 
-        this.policyEngineService.comparePolicy(
-            this.policyId1, 
+    loadPolicy() {
+        this.analyticsService.comparePolicy(
+            this.policyId1,
             this.policyId2,
             this.eventsLvl,
             this.propLvl,
@@ -65,8 +70,27 @@ export class CompareComponent implements OnInit {
         });
     }
 
-    loadPolicy() {
+    loadSchema() {
+        this.analyticsService.compareSchema(
+            this.schemaId1,
+            this.schemaId2,
+        ).subscribe((value) => {
+            this.result = value;
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }, (error) => {
+            this.loading = false;
+            console.error(error);
+        });
+    }
 
+    onChange(event: any) {
+        if (event.type === 'params') {
+            this.onFilters(event)
+        } else if (event.type === 'schema') {
+            this.compareSchema(event)
+        }
     }
 
     onFilters(event: any) {
@@ -74,5 +98,17 @@ export class CompareComponent implements OnInit {
         this.propLvl = event.propLvl;
         this.childrenLvl = event.childrenLvl;
         this.loadData();
+    }
+
+    compareSchema(event: any) {
+        this.router.navigate(['/compare'], {
+            queryParams: {
+                type: 'schema',
+                policyId1: undefined,
+                policyId2: undefined,
+                schemaId1: event.schemaId1,
+                schemaId2: event.schemaId2
+            }
+        });
     }
 }

@@ -12,7 +12,8 @@
     </div>
 
     <div *ngIf="loading && taskId" class="loading">
-        <async-progess class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages" (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progess>
+        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
+            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
     </div>
 
     <div class="root-config" *ngIf="isConfirmed && profile">
@@ -72,7 +73,7 @@
                 <mat-form-field class="example-full-width" appearance="outline">
                     <mat-label>OPERATOR KEY (Hedera Account Private Key):</mat-label>
                     <input matInput placeholder="302e020100300506032b657004220420e..."
-                           formControlName="hederaAccountKey">
+                        formControlName="hederaAccountKey">
                 </mat-form-field>
                 <div class="topic-id-field" *ngIf="!showForm && !generated">
                     <mat-form-field class="example-full-width" appearance="outline">
@@ -82,21 +83,22 @@
                             <mat-option *ngFor="let topic of userTopics" [value]="topic.topicId">
                                 <div class="topic-item">
                                     <span>{{topic.topicId}}</span>
-                                    <span><hedera-explorer type="topics" [params]="topic.topicId">{{topic.date}}</hedera-explorer></span>
+                                    <span><hedera-explorer type="topics"
+                                            [params]="topic.topicId">{{topic.date}}</hedera-explorer></span>
                                 </div>
                             </mat-option>
                         </mat-select>
                     </mat-form-field>
                     <div class="list-button">
-                        <button mat-mini-fab [disabled]="!hederaForm.valid" (click)="getAllUserTopics($event)" color="primary" aria-label="Refresh topics">
+                        <button mat-mini-fab [disabled]="!hederaForm.valid" (click)="getAllUserTopics($event)"
+                            color="primary" aria-label="Refresh topics">
                             <mat-icon>refresh</mat-icon>
                         </button>
                     </div>
                 </div>
             </div>
             <div *ngIf="!generated" class="list-button">
-                <button mat-raised-button type="button" class="generate-btn"
-                        (click)="randomKey()">Generate</button>
+                <button mat-raised-button type="button" class="generate-btn" (click)="randomKey()">Generate</button>
             </div>
             <div class="list-item" *ngIf="showForm && generated">
                 <app-schema-form [formGroup]="vcForm" [schema]="schema" [private-fields]="hideVC"
@@ -105,13 +107,15 @@
             </div>
         </div>
         <div class="list-button" *ngIf="!generated">
-            <button [disabled]="!hederaForm.valid || (!selectedTokenId.valid && !showForm && !generated)" mat-raised-button type="button" color="primary" class="generate-btn"
-                    (click)="onActionClick($event)">
+            <button [disabled]="!hederaForm.valid || (!selectedTokenId.valid && !showForm && !generated)"
+                mat-raised-button type="button" color="primary" class="generate-btn" (click)="onActionClick($event)">
                 {{currentKeyAction.label}}
-                <mat-icon (click)="onActionMenuClick($event)" [matMenuTriggerFor]="actionMenu">arrow_drop_down</mat-icon>
+                <mat-icon (click)="onActionMenuClick($event)"
+                    [matMenuTriggerFor]="actionMenu">arrow_drop_down</mat-icon>
             </button>
             <mat-menu #actionMenu="matMenu">
-                <button *ngFor="let actionType of startActions" mat-menu-item (click)="onActionChange(actionType.type)">{{actionType.label}}</button>
+                <button *ngFor="let actionType of startActions" mat-menu-item
+                    (click)="onActionChange(actionType.type)">{{actionType.label}}</button>
             </mat-menu>
         </div>
         <div class="list-button" *ngIf="showForm && generated">

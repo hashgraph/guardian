@@ -4,7 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SchemaService } from '../../services/schema.service';
-import { SchemaDialog } from '../../schema-engine/schema-dialog/schema-dialog.component';
+import { SchemaDialog } from '../schema-dialog/schema-dialog.component';
 import { ISchema, IUser, Schema, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { ImportSchemaDialog } from 'src/app/schema-engine/import-schema/import-schema-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
@@ -17,14 +17,15 @@ import { HttpResponse } from '@angular/common/http';
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
+import { CompareSchemaDialog } from '../compare-schema-dialog/compare-schema-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
  */
 @Component({
     selector: 'app-schema-config',
-    templateUrl: './schema-config.component.html',
-    styleUrls: ['./schema-config.component.css']
+    templateUrl: './schemas.component.html',
+    styleUrls: ['./schemas.component.css']
 })
 export class SchemaConfigComponent implements OnInit {
     loading: boolean = true;
@@ -115,7 +116,7 @@ export class SchemaConfigComponent implements OnInit {
                     this.policies.push(policy);
                 }
             }
-            
+
             if (!this.policyNameByTopic[this.currentTopicPolicy]) {
                 this.currentTopicPolicy = undefined;
             }
@@ -387,7 +388,7 @@ export class SchemaConfigComponent implements OnInit {
             if (!result) {
                 return;
             }
-            
+
             this.loading = true;
             const request = this.system ?
                 this.schemaService.deleteSystemSchemas(element.id) :
@@ -516,6 +517,30 @@ export class SchemaConfigComponent implements OnInit {
             this.loadSchemas();
         }, (e) => {
             this.loading = false;
+        });
+    }
+
+    compareSchemas(element?: any) {
+        const dialogRef = this.dialog.open(CompareSchemaDialog, {
+            width: '650px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
+            data: {
+                schema: element,
+                schemas: this.schemas
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.router.navigate(['/compare'], {
+                    queryParams: {
+                        type: 'schema',
+                        schemaId1: result.schemaId1,
+                        schemaId2: result.schemaId2
+                    }
+                });
+            }
         });
     }
 }

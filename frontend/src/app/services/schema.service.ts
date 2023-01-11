@@ -1,4 +1,4 @@
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema, Schema, SchemaEntity } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
@@ -145,5 +145,15 @@ export class SchemaService {
 
     public getSystemSchemasByEntity(entity: SchemaEntity): Observable<ISchema> {
         return this.http.get<ISchema>(`${this.url}/system/entity/${entity}`);
+    }
+
+    public compareSchema(
+        schemaId1: string,
+        schemaId2: string
+    ): Observable<any> {
+        const params = new HttpParams()
+            .set('schemaId1', schemaId1)
+            .set('schemaId2', schemaId1);
+        return this.http.get<any>(`${this.url}/analytics/compare`, { params });
     }
 }

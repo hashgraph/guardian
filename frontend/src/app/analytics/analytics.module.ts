@@ -6,10 +6,12 @@ import { AppRoutingModule } from '../app-routing.module';
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { CompareComponent } from './compare/compare.component';
 import { ComparePolicyComponent } from './compare-policy/compare-policy.component';
+import { CompareSchemaComponent } from './compare-schema/compare-schema.component';
 
 @NgModule({
     declarations: [
         CompareComponent,
+        CompareSchemaComponent,
         ComparePolicyComponent
     ],
     imports: [
@@ -21,6 +23,7 @@ import { ComparePolicyComponent } from './compare-policy/compare-policy.componen
     ],
     exports: [
         CompareComponent,
+        CompareSchemaComponent,
         ComparePolicyComponent
     ]
 })
