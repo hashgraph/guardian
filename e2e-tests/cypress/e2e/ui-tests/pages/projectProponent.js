@@ -18,6 +18,7 @@ const PPPageLocators = {
 
 export class PPPage {
     createGroup(role) {
+        cy.reload();
         cy.contains("Policies").click({ force: true });
 
         cy.get("td").first().parent().get("td").eq("4").click();

@@ -31,8 +31,9 @@ describe("Workflow iREC 5 Policy",  { tags: '@ui' }, () => {
         // Installer
         home.login("Installer");
         home.checkSetup("Installer");
-        installer.createGroup("Approvers");
-        installer.signApplication();
+        installer.createGroup("Registrant");
+        installer.okButton();
+        // installer.signApplication();
         home.logOut("Installer");
 
         // Registrant
