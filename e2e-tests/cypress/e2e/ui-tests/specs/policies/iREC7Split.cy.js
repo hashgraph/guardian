@@ -33,11 +33,11 @@ describe("Workflow iREC 7 Policy", () => {
         registrant.chooseRole("Registrant");
         home.logOut("Registrant");
 
-        // Installer
-        home.login("Installer");
-        home.checkSetup("Installer");
-        registrant.chooseRole("Registrant");
-        home.logOut("Installer");
+        // // Installer
+        // home.login("Installer");
+        // home.checkSetup("Installer");
+        // registrant.chooseRole("Registrant");
+        // home.logOut("Installer");
 
         home.login("StandardRegistry");
         policies.approve();

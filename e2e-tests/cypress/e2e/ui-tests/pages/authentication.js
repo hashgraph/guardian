@@ -16,7 +16,6 @@ export class AuthenticationPage {
         cy.visit(URL.Root);
     }
 
-
     login(username) {
         const inputName = cy.get(AuthPageLocators.usernameInput);
         inputName.type(username);
@@ -31,7 +30,6 @@ export class AuthenticationPage {
         cy.contains(AuthPageLocators.logoutBtn).click({ force: true });
     }
 
-
     checkSetup(role) {
         cy.wait(2000);
         cy.get("body").then((body) => {
@@ -39,20 +37,16 @@ export class AuthenticationPage {
                 cy.get(AuthPageLocators.role)
                     .click()
                     .then(() => {
-                        cy.get('[role="option"]').click();
+                        cy.get('[role="option"]').contains('StandardRegistry').click();
                         cy.contains(AuthPageLocators.generateBtn).click();
 
                         cy.wait(5000);
                     });
                 cy.contains("Submit").click();
-                cy.intercept("/api/v1/profiles/" + role).as(
-                    "waitForRegister"
-                );
-                cy.wait("@waitForRegister", { timeout: 180000 }).then(
-                    () => {
-                        cy.contains("Policies").click({ force: true });
-                    }
-                );
+                cy.intercept("/api/v1/profiles/" + role).as("waitForRegister");
+                cy.wait("@waitForRegister", { timeout: 180000 }).then(() => {
+                    cy.contains("Policies").click({ force: true });
+                });
             }
         });
     }
@@ -61,12 +55,12 @@ export class AuthenticationPage {
         cy.get(AuthPageLocators.createNewBtn).click();
         cy.contains(AuthPageLocators.roleName, role).click();
         cy.wait(8000);
-        cy.contains( "*[type^='submit']", "Create").click();
+        cy.contains("*[type^='submit']", "Create").click();
         cy.get("body").then((body) => {
             cy.get('[role="combobox"]')
                 .click()
                 .then(() => {
-                    cy.get('[role="option"]').click();
+                    cy.get('[role="option"]').contains('StandardRegistry').click();
                     cy.contains(AuthPageLocators.generateBtn).click();
                     cy.wait(5000);
                 });

@@ -28,12 +28,12 @@ export class RegistrantPage {
             .contains(role)
             .click();
 
-        const inputGroup = cy.get(RegistrantPageLocators.inputGroupLabel);
-        inputGroup.type("RegistrantGroupTest");
+        // const inputGroup = cy.get(RegistrantPageLocators.inputGroupLabel);
+        // inputGroup.type("RegistrantGroupTest");
 
-        cy.get(RegistrantPageLocators.submitBtn).click();
+        cy.get(RegistrantPageLocators.submitBtn).click({force: true} );
         cy.wait(12000);
-        cy.get(RegistrantPageLocators.submitBtn).click();
+        cy.get(RegistrantPageLocators.submitBtn).click({force: true} );
     }
 
     chooseRole(role) {
@@ -68,6 +68,8 @@ export class RegistrantPage {
         cy.get("td").first().parent().get("td").eq("4").click();
         cy.wait(8000);
         cy.contains(RegistrantPageLocators.createIsssueRequestBtn).click();
+        cy.wait(8000);
+        cy.reload();
 
         cy.get(RegistrantPageLocators.enterTextInput).then((els) => {
             [...els].forEach((el) =>

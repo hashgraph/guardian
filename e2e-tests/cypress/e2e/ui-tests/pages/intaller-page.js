@@ -29,6 +29,11 @@ export class InstallerPage {
 
     }
 
+
+    okButton() {
+        cy.get(InstallerPageLocators.submitBtn).click();
+    }
+
     approveDevice() {
         cy.contains("Policies").click({ force: true });
         cy.get("td").first().parent().get("td").eq("4").click();

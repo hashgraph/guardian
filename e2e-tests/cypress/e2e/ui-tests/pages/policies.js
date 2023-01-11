@@ -18,7 +18,7 @@ const PoliciesPageLocators = {
     publishedStatus: "Published",
     dropDawnPublishBtn: "Release version into public domain.",
     submitBtn: 'button[type="submit"]',
-    addBtn:  "*[class^='btn-approve btn-option ng-star-inserted']",
+    addBtn: "*[class^='btn-approve btn-option ng-star-inserted']",
     createPolicyBtn: "Create Policy",
     inputName: "*[formcontrolname^='name']",
     draftBtn: 'ng-reflect-menu="[object Object]"',
@@ -47,20 +47,30 @@ export class PoliciesPage {
     }
 
     checkDraftStatus(name) {
-        cy.contains("td", name).siblings().contains('div', 'Draft').should('be.visible');
+        cy.contains("td", name)
+            .siblings()
+            .contains("div", "Draft")
+            .should("be.visible");
     }
 
     startDryRun(name) {
-        cy.contains("td", name).siblings().contains('div', 'Draft').click();
-        cy.contains('Dry Run').click({force: true});
+        cy.contains("td", name)
+            .siblings()
+            .contains("div", "Draft")
+            .click()
+            .then(() => {
+                cy.get('.cdk-overlay-pane').contains("div","Dry Run").click({ force: true });
+            });
     }
 
     stopDryRun(name) {
         cy.wait(5000);
-        cy.contains("td", name).siblings().contains('div','In Dry Run').click();
-        cy.contains('Stop').click({force: true});
+        cy.contains("td", name)
+            .siblings()
+            .contains("div", "In Dry Run")
+            .click();
+        cy.contains("Stop").click({ force: true });
     }
-
 
     importPolicyFile(file) {
         cy.contains(PoliciesPageLocators.importFileBtn).click();
@@ -158,16 +168,15 @@ export class PoliciesPage {
         cy.contains(" Approve ").click({ force: true });
     }
 
-
     addVVB() {
-      cy.contains("Policies").click({ force: true });
-      cy.get("td").first().parent().get("td").eq("8").click();
-      cy.contains("Project Pipeline").click({ force: true });
-      cy.wait(14000);
-      cy.contains("Approve VVB").click({ force: true });
-      cy.wait(8000);
-      cy.contains("Project Pipeline").click({ force: true });
-      cy.get(PoliciesPageLocators.addBtn).click();
-      cy.wait(12000);
+        cy.contains("Policies").click({ force: true });
+        cy.get("td").first().parent().get("td").eq("8").click();
+        cy.contains("Project Pipeline").click({ force: true });
+        cy.wait(14000);
+        cy.contains("Approve VVB").click({ force: true });
+        cy.wait(8000);
+        cy.contains("Project Pipeline").click({ force: true });
+        cy.get(PoliciesPageLocators.addBtn).click();
+        cy.wait(12000);
     }
 }
