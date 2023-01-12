@@ -3,64 +3,98 @@ import { DatabaseServer } from '@database-modules';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 import * as crypto from 'crypto';
-import { PolicyComparator, PolicyModel, SchemaComparator, SchemaModel } from '@analytics';
-
-async function loadPolicy(policyId: string) {
-    const policy = await DatabaseServer.getPolicyById(policyId);
-    if (!policy) {
-        throw new Error('Unknown policies');
-    }
-    const files = await DatabaseServer.getArtifacts({ policyId });
-    const artifacts: any = [];
-    for (const file of files) {
-        const data = await DatabaseServer.getArtifactFileByUUID(file.uuid);
-        const sha256 = crypto
-            .createHash('sha256')
-            .update(data)
-            .digest()
-            .toString();
-        artifacts.push({ uuid: file.uuid, data: sha256 });
-    }
-    const schemas = await DatabaseServer.getSchemas({ topicId: policy.topicId });
-    return { policy, artifacts, schemas };
-}
+import { PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaModel, TokenModel } from '@analytics';
 
 export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void> {
     ApiResponse(channel, MessageAPI.COMPARE_POLICIES, async (msg) => {
         try {
             const { user, policyId1, policyId2, eventsLvl, propLvl, childrenLvl } = msg;
-
-            const policy1 = await loadPolicy(policyId1);
-            const policy2 = await loadPolicy(policyId2);
-
             const options = {
                 propLvl: parseInt(propLvl, 10),
                 childLvl: parseInt(childrenLvl, 10),
                 eventLvl: parseInt(eventsLvl, 10),
             };
 
-            const schemas1: SchemaModel[] = [];
-            const schemas2: SchemaModel[] = [];
-            for (const schema of policy1.schemas) {
-                schemas1.push(new SchemaModel(schema, options));
+            //Policy
+            const policy1 = await DatabaseServer.getPolicyById(policyId1);
+            const policy2 = await DatabaseServer.getPolicyById(policyId2);
+
+            if (!policy1 || !policy2) {
+                throw new Error('Unknown policies');
             }
-            for (const schema of policy2.schemas) {
-                schemas2.push(new SchemaModel(schema, options));
+
+            const policyModel1 = (new PolicyModel(policy1, options));
+            const policyModel2 = (new PolicyModel(policy2, options));
+
+            //Schemas
+            const schemas1 = await DatabaseServer.getSchemas({ topicId: policy1.topicId });
+            const schemas2 = await DatabaseServer.getSchemas({ topicId: policy2.topicId });
+
+            const schemaModels1: SchemaModel[] = [];
+            const schemaModels2: SchemaModel[] = [];
+            for (const schema of schemas1) {
+                schemaModels1.push(new SchemaModel(schema, options));
             }
-            const model1 = new PolicyModel(
-                policy1.policy,
-                policy1.artifacts,
-                schemas1,
-                options
-            );
-            const model2 = new PolicyModel(
-                policy2.policy,
-                policy2.artifacts,
-                schemas2,
-                options
-            );
+            for (const schema of schemas2) {
+                schemaModels2.push(new SchemaModel(schema, options));
+            }
+            policyModel1.setSchemas(schemaModels1);
+            policyModel2.setSchemas(schemaModels2);
+
+            //Tokens
+            const tokensIds1 = policyModel1.getAllProp<string>(PropertyType.Token)
+                .filter(t => t.value)
+                .map(t => t.value);
+            const tokensIds2 = policyModel2.getAllProp<string>(PropertyType.Token)
+                .filter(t => t.value)
+                .map(t => t.value);
+
+            const tokens1 = await DatabaseServer.getTokens({ where: { tokenId: { $in: tokensIds1 } } });
+            const tokens2 = await DatabaseServer.getTokens({ where: { tokenId: { $in: tokensIds2 } } });
+
+            const tokenModels1: TokenModel[] = [];
+            const tokenModels2: TokenModel[] = [];
+            for (const token of tokens1) {
+                tokenModels1.push(new TokenModel(token));
+            }
+            for (const token of tokens2) {
+                tokenModels2.push(new TokenModel(token));
+            }
+            policyModel1.setTokens(tokenModels1);
+            policyModel2.setTokens(tokenModels2);
+
+            //Artifacts
+            const files1 = await DatabaseServer.getArtifacts({ policyId: policyId1 });
+            const files2 = await DatabaseServer.getArtifacts({ policyId: policyId2 });
+            const artifactsModels1: any[] = [];
+            const artifactsModels2: any[] = [];
+            for (const file of files1) {
+                const data = await DatabaseServer.getArtifactFileByUUID(file.uuid);
+                const sha256 = crypto
+                    .createHash('sha256')
+                    .update(data)
+                    .digest()
+                    .toString();
+                artifactsModels1.push({ uuid: file.uuid, data: sha256 });
+            }
+            for (const file of files2) {
+                const data = await DatabaseServer.getArtifactFileByUUID(file.uuid);
+                const sha256 = crypto
+                    .createHash('sha256')
+                    .update(data)
+                    .digest()
+                    .toString();
+                artifactsModels2.push({ uuid: file.uuid, data: sha256 });
+            }
+            policyModel1.setArtifacts(artifactsModels1);
+            policyModel2.setArtifacts(artifactsModels2);
+
+            //Compare
+            policyModel1.update();
+            policyModel2.update();
+
             const comparator = new PolicyComparator(options);
-            const result = comparator.compare(model1, model2);
+            const result = comparator.compare(policyModel1, policyModel2);
             return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);

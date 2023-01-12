@@ -1,11 +1,11 @@
-import { BlockModel } from "./models/block.model";
-import { BlocksRate } from "./rates/blocks-rate";
-import { ICompareOptions } from "./interfaces/compare-options.interface";
-import { PolicyModel } from "./models/policy.model";
-import { ReportTable } from "../table/report-table";
-import { Status } from "./types/status.type";
-import { IRateMap } from "./interfaces/rate-map.interface";
-import { ICompareResult } from "./interfaces/compare-result.interface";
+import { BlockModel } from "../models/block.model";
+import { BlocksRate } from "../rates/blocks-rate";
+import { ICompareOptions } from "../interfaces/compare-options.interface";
+import { PolicyModel } from "../models/policy.model";
+import { ReportTable } from "../../table/report-table";
+import { Status } from "../types/status.type";
+import { IRateMap } from "../interfaces/rate-map.interface";
+import { ICompareResult } from "../interfaces/compare-result.interface";
 
 export class PolicyComparator {
     private readonly propLvl: number;
@@ -83,10 +83,10 @@ export class PolicyComparator {
         row.set('type', tree.type);
         row.set('block_type', tree.blockType);
 
-        row.set('properties', tree.getSubRate('properties'));
-        row.set('events', tree.getSubRate('events'));
-        row.set('permissions', tree.getSubRate('permissions'));
-        row.set('artifacts', tree.getSubRate('artifacts'));
+        row.setArray('properties', tree.getSubRate('properties'));
+        row.setArray('events', tree.getSubRate('events'));
+        row.setArray('permissions', tree.getSubRate('permissions'));
+        row.setArray('artifacts', tree.getSubRate('artifacts'));
 
         row.set('left', item_1?.toObject());
         row.set('right', item_2?.toObject());
@@ -181,7 +181,7 @@ export class PolicyComparator {
         let max = 0;
         for (const child of children1) {
             max = child.maxWeight();
-            result.push({ blockType: child.blockType, left: child, right: null, rate: 0 });
+            result.push({ key: child.blockType, left: child, right: null });
         }
         max++;
 
@@ -196,7 +196,7 @@ export class PolicyComparator {
         for (let i = 0; i < children2.length; i++) {
             if (!m[i]) {
                 const child: BlockModel = children2[i];
-                result.splice(i, 0, { blockType: child.blockType, left: null, right: child, rate: 0 });
+                result.splice(i, 0, { key: child.blockType, left: null, right: child });
             }
         }
         return result;
@@ -208,7 +208,7 @@ export class PolicyComparator {
         for (let i = 0; i < max; i++) {
             const left = children1[i];
             const right = children2[i];
-            result.push({ blockType: (left || right).blockType, left, right, rate: 100 });
+            result.push({ key: (left || right).blockType, left, right });
         }
         return result;
     }
@@ -218,13 +218,13 @@ export class PolicyComparator {
         if (children1) {
             for (let i = 0; i < children1.length; i++) {
                 const left = children1[i];
-                result.push({ blockType: left.blockType, left, right: null, rate: 100 });
+                result.push({ key: left.blockType, left, right: null });
             }
         }
         if (children2) {
             for (let i = 0; i < children2.length; i++) {
                 const right = children2[i];
-                result.push({ blockType: right.blockType, left: null, right, rate: 100 });
+                result.push({ key: right.blockType, left: null, right });
             }
         }
         return result;
@@ -232,39 +232,18 @@ export class PolicyComparator {
 
     private mapping(result: IRateMap<BlockModel>[], child: BlockModel, iteration: number) {
         for (const row of result) {
-            if (row.blockType === child.blockType && row.left && !row.right) {
+            if (row.key === child.blockType && row.left && !row.right) {
                 if (row.left.checkWeight(iteration)) {
                     if (row.left.equal(child, iteration)) {
                         row.right = child;
-                        row.rate = this.getDiff(row.left, row.right);
                         return true;
                     }
                 } else {
                     row.right = child;
-                    row.rate = this.getDiff(row.left, row.right);
                     return true;
                 }
             }
         }
         return false;
-    }
-
-    private getDiff(item1: BlockModel, item2: BlockModel): number {
-        if (!item1) {
-            return 0;
-        }
-        if (!item2) {
-            return 0;
-        }
-        let result = 1;
-        const weight1 = item1.getWeights();
-        const weight2 = item2.getWeights();
-        const k = 1 / (weight1.length + 1);
-        for (let i = 0; i < weight1.length; i++) {
-            if (weight1[i] !== weight2[i]) {
-                result -= k;
-            }
-        }
-        return Math.floor(Math.max(0, result) * 100);
     }
 }

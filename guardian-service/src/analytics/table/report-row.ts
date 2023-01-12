@@ -18,6 +18,22 @@ export class ReportRow {
         this.value[this.table.indexes[colName]] = value;
     }
 
+    public setObject(colName: string, value: any): void {
+        if (value && typeof value.toObject === 'function') {
+            this.value[this.table.indexes[colName]] = value.toObject();
+        } else {
+            this.value[this.table.indexes[colName]] = value;
+        }
+    }
+
+    public setArray(colName: string, value: any[]): void {
+        if (value) {
+            this.value[this.table.indexes[colName]] = value.map(v => v.toObject());
+        } else {
+            this.value[this.table.indexes[colName]] = value;
+        }
+    }
+
     public getByIndex<T>(index: number): T {
         return this.value[index];
     }

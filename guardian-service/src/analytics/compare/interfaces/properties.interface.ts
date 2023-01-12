@@ -1,8 +1,10 @@
+import { PropertyType } from "../types/property.type";
+
 export interface IProperties<T> {
     name: string;
     lvl: number;
     path: string;
-    type: 'array' | 'object' | 'property' | 'schema';
+    type: PropertyType;
     value?: T;
-    schemaId?: string;
+    [key: string]: any;
 }

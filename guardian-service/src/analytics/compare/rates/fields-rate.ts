@@ -5,6 +5,9 @@ import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { PropertiesRate } from "./properties-rate";
 import { Rate } from "./rate";
 import { ConditionsRate } from "./conditions-rate";
+import { IRateMap } from "../interfaces/rate-map.interface";
+import { PropertyModel } from "../models/property.model";
+import { CompareUtils } from "../utils/utils";
 
 export class FieldsRate extends Rate<FieldModel> {
     public fields: FieldsRate[];
@@ -32,31 +35,19 @@ export class FieldsRate extends Rate<FieldModel> {
         this.propertiesRate = -1;
     }
 
-    private _calcRate<T>(rates: IRate<T>[]): number {
-        let sum = 0;
-        for (const item of rates) {
-            if (item.totalRate > 0) {
-                sum += item.totalRate;
-            }
-        }
-        if (rates.length) {
-            sum = sum / rates.length;
-        } else {
-            sum = 100;
-        }
-        sum = Math.min(Math.max(-1, Math.floor(sum)), 100);
-        return sum;
-    }
-
-    private compareProp(field1: FieldModel, field2: FieldModel): void {
+    private compareProp(
+        field1: FieldModel,
+        field2: FieldModel,
+        options: ICompareOptions
+    ): void {
         const list: string[] = [];
-        const map: any = {};
+        const map: { [key: string]: IRateMap<PropertyModel<any>> } = {};
 
         if (field1) {
             const list1 = field1.getPropList();
             for (const item of list1) {
                 list.push(item.path);
-                map[item.path] = [item, null];
+                map[item.path] = { left: item, right: null };
             }
         }
 
@@ -64,41 +55,44 @@ export class FieldsRate extends Rate<FieldModel> {
             const list2 = field2.getPropList();
             for (const item of list2) {
                 if (map[item.path]) {
-                    map[item.path][1] = item;
+                    map[item.path].right = item;
                 } else {
                     list.push(item.path);
-                    map[item.path] = [null, item];
+                    map[item.path] = { left: null, right: item };
                 }
             }
         }
 
         this.properties = [];
         for (const path of list) {
-            this.properties.push(new PropertiesRate(map[path][0], map[path][1]));
+            const item = map[path];
+            const rate = new PropertiesRate(item.left, item.right);
+            rate.calc(options);
+            this.properties.push(rate);
         }
     }
 
     public override calc(options: ICompareOptions): void {
-        this.compareProp(this.left, this.right);
+        this.compareProp(this.left, this.right, options);
 
         if (!this.left || !this.right) {
             return;
         }
 
         this.indexRate = this.left.index === this.right.index ? 100 : 0;
-        this.propertiesRate = this._calcRate(this.properties);
-        this.totalRate = this.propertiesRate;
+        this.propertiesRate = CompareUtils.calcRate(this.properties);
+        this.totalRate = CompareUtils.calcTotalRate(
+            this.indexRate,
+            this.propertiesRate
+        );
     }
 
     public override getChildren<T extends IRate<any>>(): T[] {
         return this.fields as any;
     }
 
-    public override getSubRate(name: string): IRate<any>[] {
-        if (name === 'properties' && this.properties) {
-            return this.properties.map(p => p.toObject());
-        }
-        return null;
+    public override getSubRate(name?: string): IRate<any>[] {
+        return this.properties;
     }
 
     public override getRateValue(name: string): number {

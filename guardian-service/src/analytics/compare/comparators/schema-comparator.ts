@@ -1,12 +1,12 @@
-import { ICompareOptions } from "./interfaces/compare-options.interface";
-import { ReportTable } from "../table/report-table";
-import { Status } from "./types/status.type";
-import { SchemaModel } from "./models/schema.model";
-import { FieldModel } from "./models/field.model";
-import { FieldsRate } from "./rates/fields-rate";
-import { IRate } from "./interfaces/rate.interface";
-import { IMergeMap } from "./interfaces/merge-map-item.interface";
-import { ICompareResult } from "./interfaces/compare-result.interface";
+import { ICompareOptions } from "../interfaces/compare-options.interface";
+import { ReportTable } from "../../table/report-table";
+import { Status } from "../types/status.type";
+import { SchemaModel } from "../models/schema.model";
+import { FieldModel } from "../models/field.model";
+import { FieldsRate } from "../rates/fields-rate";
+import { IRate } from "../interfaces/rate.interface";
+import { IMergeMap } from "../interfaces/merge-map-item.interface";
+import { ICompareResult } from "../interfaces/compare-result.interface";
 
 export class SchemaComparator {
     private readonly options: ICompareOptions;
@@ -86,7 +86,7 @@ export class SchemaComparator {
 
         row.set('lvl', lvl);
         row.set('type', rate.type);
-        row.set('properties', rate.getSubRate('properties'));
+        row.setArray('properties', rate.getSubRate('properties'));
 
         row.set('left', item_1?.toObject());
         row.set('right', item_2?.toObject());

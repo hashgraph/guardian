@@ -9,7 +9,9 @@ import { ArtifactsRate } from "./artifacts-rate";
 import { IRate } from "../interfaces/rate.interface";
 import { ArtifactModel } from "../models/artifact.model";
 import { Rate } from "./rate";
-import { PropertyModel } from "../models/property.model";
+import { AnyPropertyModel, PropertyModel } from "../models/property.model";
+import { IRateMap } from "../interfaces/rate-map.interface";
+import { CompareUtils } from "../utils/utils";
 
 export class BlocksRate extends Rate<BlockModel> {
     public blockType: string;
@@ -20,11 +22,12 @@ export class BlocksRate extends Rate<BlockModel> {
     public permissionsRate: number;
     public artifactsRate: number;
 
+    public properties: IRate<any>[];
+    public events: IRate<any>[];
+    public permissions: IRate<any>[];
+    public artifacts: IRate<any>[];
+
     public children: BlocksRate[];
-    public properties: PropertiesRate[];
-    public events: EventsRate[];
-    public permissions: PermissionsRate[];
-    public artifacts: ArtifactsRate[];
 
     constructor(block1: BlockModel, block2: BlockModel) {
         super(block1, block2);
@@ -48,179 +51,162 @@ export class BlocksRate extends Rate<BlockModel> {
         }
     }
 
-    private compareProp(block1: BlockModel, block2: BlockModel): void {
+    private compareProp(
+        block1: BlockModel,
+        block2: BlockModel,
+        options: ICompareOptions
+    ): IRate<any>[] {
         const list: string[] = [];
-        const map: any = {};
-
-        let tag1: PropertyModel<any>;
+        const map: { [key: string]: IRateMap<PropertyModel<any>> } = {};
+        map['tag'] = { left: null, right: null };
         if (block1) {
-            tag1 = new PropertyModel('tag', 'property', block1.tag, 1, 'tag');
-            const list1 = block1.getPropList();
-            for (const item of list1) {
+            map['tag'].left = new AnyPropertyModel('tag', block1.tag);
+            for (const item of block1.getPropList()) {
+                map[item.path] = { left: item, right: null };
                 list.push(item.path);
-                map[item.path] = [item, null];
             }
         }
-
-        let tag2: PropertyModel<any>;
         if (block2) {
-            tag2 = new PropertyModel('tag', 'property', block2.tag, 1, 'tag');
-            const list2 = block2.getPropList();
-            for (const item of list2) {
+            map['tag'].right = new AnyPropertyModel('tag', block2.tag);
+            for (const item of block2.getPropList()) {
                 if (map[item.path]) {
-                    map[item.path][1] = item;
+                    map[item.path].right = item;
                 } else {
+                    map[item.path] = { left: null, right: item };
                     list.push(item.path);
-                    map[item.path] = [null, item];
                 }
             }
         }
-
         list.sort();
+        list.unshift('tag');
 
-        this.properties = [];
+        const rates: IRate<any>[] = [];
         for (const path of list) {
-            this.properties.push(new PropertiesRate(map[path][0], map[path][1]));
+            const item = map[path];
+            const rate = new PropertiesRate(item.left, item.right);
+            rate.calc(options);
+            rates.push(rate);
+            const subRates = rate.getSubRate();
+            for (const subRate of subRates) {
+                rates.push(subRate);
+            }
         }
-
-        this.properties.unshift(new PropertiesRate(tag1, tag2));
+        return rates;
     }
 
-    private comparePermissions(block1: BlockModel, block2: BlockModel): void {
-        const list: string[][] = [];
+    private comparePermissions(
+        block1: BlockModel,
+        block2: BlockModel,
+        options: ICompareOptions
+    ): IRate<any>[] {
+        const list: IRateMap<string>[] = [];
         if (block1) {
             const list1 = block1.getPermissionsList();
             for (const item of list1) {
-                list.push([item, null]);
+                list.push({ left: item, right: null });
             }
         }
         if (block2) {
             const list2 = block2.getPermissionsList();
             for (const item of list2) {
-                this._mapping<string>(list, item);
+                CompareUtils.mapping<string>(list, item);
             }
         }
         const rates: IRate<any>[] = [];
         for (const item of list) {
-            rates.push(new PermissionsRate(item[0], item[1]));
+            rates.push(new PermissionsRate(item.left, item.right));
         }
-        this.permissions = rates;
+        return rates;
     }
 
-    private compareEvents(block1: BlockModel, block2: BlockModel): void {
-        const list: EventModel[][] = [];
+    private compareEvents(
+        block1: BlockModel,
+        block2: BlockModel,
+        options: ICompareOptions
+    ): IRate<any>[] {
+        const list: IRateMap<EventModel>[] = [];
         if (block1) {
             const list1 = block1.getEventList();
             for (const item of list1) {
-                list.push([item, null]);
+                list.push({ left: item, right: null });
             }
         }
         if (block2) {
             const list2 = block2.getEventList();
             for (const item of list2) {
-                this._mapping<EventModel>(list, item);
+                CompareUtils.mapping<EventModel>(list, item);
             }
         }
         const rates: IRate<any>[] = [];
         for (const item of list) {
-            rates.push(new EventsRate(item[0], item[1]));
+            rates.push(new EventsRate(item.left, item.right));
         }
-        this.events = rates;
+        return rates;
     }
 
-    private compareArtifacts(block1: BlockModel, block2: BlockModel): void {
-        const list: ArtifactModel[][] = [];
+    private compareArtifacts(
+        block1: BlockModel,
+        block2: BlockModel,
+        options: ICompareOptions
+    ): IRate<any>[] {
+        const list: IRateMap<ArtifactModel>[] = [];
         if (block1) {
             const list1 = block1.getArtifactsList();
             for (const item of list1) {
-                list.push([item, null]);
+                list.push({ left: item, right: null });
             }
         }
         if (block2) {
             const list2 = block2.getArtifactsList();
             for (const item of list2) {
-                this._mapping<ArtifactModel>(list, item);
+                CompareUtils.mapping<ArtifactModel>(list, item);
             }
         }
         const rates: IRate<any>[] = [];
         for (const item of list) {
-            rates.push(new ArtifactsRate(item[0], item[1]));
+            rates.push(new ArtifactsRate(item.left, item.right));
         }
-        this.artifacts = rates;
-    }
-
-    private _mapping<T>(list: T[][], item: T) {
-        for (const el of list) {
-            if (el[0] && !el[1] && this._equal(el[0], item)) {
-                el[1] = item;
-                return;
-            }
-        }
-        list.push([null, item])
-    }
-
-    private _equal(e1: any, e2: any): boolean {
-        if (typeof e1.equal === 'function') {
-            return e1.equal(e2);
-        }
-        return e1 === e2;
-    }
-
-    private _calcRate<T>(rates: IRate<T>[]): number {
-        let sum = 0;
-        for (const item of rates) {
-            if (item.totalRate > 0) {
-                sum += item.totalRate;
-            }
-        }
-        if (rates.length) {
-            sum = sum / rates.length;
-        } else {
-            sum = 100;
-        }
-        sum = Math.min(Math.max(-1, Math.floor(sum)), 100);
-        return sum;
+        return rates;
     }
 
     public override calc(options: ICompareOptions): void {
         const block1 = this.left;
         const block2 = this.right;
 
-        this.compareProp(block1, block2);
-        this.compareEvents(block1, block2);
-        this.comparePermissions(block1, block2);
-        this.compareArtifacts(block1, block2);
+        this.properties = this.compareProp(block1, block2, options);
+        this.events = this.compareEvents(block1, block2, options);
+        this.permissions = this.comparePermissions(block1, block2, options);
+        this.artifacts = this.compareArtifacts(block1, block2, options);
 
         if (!block1 || !block2) {
             return;
         }
 
         this.indexRate = block1.index === block2.index ? 100 : 0;
-        this.propertiesRate = this._calcRate(this.properties);
-        this.eventsRate = this._calcRate(this.events);
-        this.permissionsRate = this._calcRate(this.permissions);
-        this.artifactsRate = this._calcRate(this.artifacts);
-
-        this.totalRate = Math.floor((
-            this.propertiesRate +
-            this.eventsRate +
-            this.permissionsRate +
+        this.propertiesRate = CompareUtils.calcRate(this.properties);
+        this.eventsRate = CompareUtils.calcRate(this.events);
+        this.permissionsRate = CompareUtils.calcRate(this.permissions);
+        this.artifactsRate = CompareUtils.calcRate(this.artifacts);
+        this.totalRate = CompareUtils.calcTotalRate(
+            this.propertiesRate,
+            this.eventsRate,
+            this.permissionsRate,
             this.artifactsRate
-        ) / 4);
+        );
     }
 
     public getSubRate(name: string): IRate<any>[] {
-        if (name === 'properties' && this.properties) {
-            return this.properties.map(p => p.toObject());;
+        if (name === 'properties') {
+            return this.properties;
         }
-        if (name === 'events' && this.events) {
-            return this.events.map(p => p.toObject());;
+        if (name === 'events') {
+            return this.events;
         }
-        if (name === 'permissions' && this.permissions) {
-            return this.permissions.map(p => p.toObject());;
+        if (name === 'permissions') {
+            return this.permissions;
         }
-        if (name === 'artifacts' && this.artifacts) {
-            return this.artifacts.map(p => p.toObject());;
+        if (name === 'artifacts') {
+            return this.artifacts;
         }
         return null;
     }

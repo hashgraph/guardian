@@ -4,6 +4,9 @@ import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { IArtifacts } from "../interfaces/artifacts.interface";
 import { SchemaModel } from "./schema.model";
 import { IKeyMap } from "../interfaces/key-map.interface";
+import { PropertyModel } from "./property.model";
+import { PropertyType } from "../types/property.type";
+import { TokenModel } from "./token.model";
 
 export class PolicyModel {
     public readonly tree: BlockModel;
@@ -12,15 +15,10 @@ export class PolicyModel {
     public readonly name: string;
     public readonly instanceTopicId: string;
     public readonly version: string;
-
     private readonly options: ICompareOptions;
+    private readonly list: BlockModel[];
 
-    constructor(
-        policy: Policy,
-        artifacts: IArtifacts[],
-        schemas: SchemaModel[],
-        options: ICompareOptions
-    ) {
+    constructor(policy: Policy, options: ICompareOptions) {
         this.options = options;
 
         this.id = policy.id;
@@ -34,23 +32,40 @@ export class PolicyModel {
         }
 
         this.tree = this.createBlock(policy.config, 0, this.options);
+        this.list = this.getAllBlocks(this.tree, []);
+    }
 
-        const list = this.getAllBlocks(this.tree, []);
-        const blockMap: IKeyMap<BlockModel> = {};
-        for (const block of list) {
-            blockMap[block.tag] = block;
-        }
+    public setArtifacts(artifacts: IArtifacts[]): PolicyModel {
+        this.updateArtifacts(artifacts, this.options);
+        return this;
+    }
 
+    public setSchemas(schemas: SchemaModel[]): PolicyModel {
         const schemaMap: IKeyMap<SchemaModel> = {};
         for (const schema of schemas) {
             schemaMap[schema.iri] = schema;
         }
-
-        this.updateArtifacts(list, artifacts, options);
-        this.updateEvents(list, blockMap, options);
-        this.updateSchemas(list, schemaMap, options);
+        this.updateSchemas(schemaMap, this.options);
+        return this;
     }
 
+    public setTokens(tokens: TokenModel[]): PolicyModel {
+        const tokenMap: IKeyMap<TokenModel> = {};
+        for (const token of tokens) {
+            tokenMap[token.tokenId] = token;
+        }
+        this.updateTokens(tokenMap, this.options);
+        return this;
+    }
+
+    public update(): PolicyModel {
+        const blockMap: IKeyMap<BlockModel> = {};
+        for (const block of this.list) {
+            blockMap[block.tag] = block;
+        }
+        this.updateEvents(blockMap, this.options);
+        return this;
+    }
 
     private getAllBlocks(root: BlockModel, list: BlockModel[]): BlockModel[] {
         list.push(root)
@@ -76,33 +91,27 @@ export class PolicyModel {
         return block;
     }
 
-    private updateArtifacts(
-        list: BlockModel[],
-        artifacts: IArtifacts[],
-        options: ICompareOptions
-    ): void {
-        for (const block of list) {
+    private updateArtifacts(artifacts: IArtifacts[], options: ICompareOptions): void {
+        for (const block of this.list) {
             block.updateArtifacts(artifacts, options);
         }
     }
 
-    private updateEvents(
-        list: BlockModel[],
-        map: IKeyMap<BlockModel>,
-        options: ICompareOptions
-    ): void {
-        for (const block of list) {
+    private updateEvents(map: IKeyMap<BlockModel>, options: ICompareOptions): void {
+        for (const block of this.list) {
             block.updateEvents(map, options);
         }
     }
 
-    private updateSchemas(
-        list: BlockModel[],
-        schemaMap: IKeyMap<SchemaModel>,
-        options: ICompareOptions
-    ): void {
-        for (const block of list) {
+    private updateSchemas(schemaMap: IKeyMap<SchemaModel>, options: ICompareOptions): void {
+        for (const block of this.list) {
             block.updateSchemas(schemaMap, options);
+        }
+    }
+
+    private updateTokens(tokenMap: IKeyMap<TokenModel>, options: ICompareOptions): void {
+        for (const block of this.list) {
+            block.updateTokens(tokenMap, options);
         }
     }
 
@@ -114,5 +123,13 @@ export class PolicyModel {
             instanceTopicId: this.instanceTopicId,
             version: this.version
         };
+    }
+
+    public getAllProp<T>(type: PropertyType): PropertyModel<T>[] {
+        let prop = [];
+        for (const block of this.list) {
+            prop = [...prop, ...block.getPropList(type)];
+        }
+        return prop;
     }
 }

@@ -2,7 +2,7 @@ import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { IKeyMap } from "../interfaces/key-map.interface";
 import { WeightType } from '../types/weight.type';
-import { PropertyModel } from './property.model';
+import { AnyPropertyModel, ArrayPropertyModel, PropertyModel } from './property.model';
 
 export class ConditionModel {
     public readonly index: number;
@@ -247,52 +247,52 @@ export class FieldModel {
     public getPropList(): PropertyModel<any>[] {
         const properties: PropertyModel<any>[] = [];
         if (this.name) {
-            properties.push(new PropertyModel('name', 'property', this.name));
+            properties.push(new AnyPropertyModel('name', this.name));
         }
         if (this.title) {
-            properties.push(new PropertyModel('title', 'property', this.title));
+            properties.push(new AnyPropertyModel('title', this.title));
         }
         if (this.description) {
-            properties.push(new PropertyModel('description', 'property', this.description));
+            properties.push(new AnyPropertyModel('description', this.description));
         }
         if (this.required !== undefined) {
-            properties.push(new PropertyModel('required', 'property', this.required));
+            properties.push(new AnyPropertyModel('required', this.required));
         }
         if (this.type) {
-            properties.push(new PropertyModel('type', 'property', this.type));
+            properties.push(new AnyPropertyModel('type', this.type));
         }
         if (this.format) {
-            properties.push(new PropertyModel('format', 'property', this.format));
+            properties.push(new AnyPropertyModel('format', this.format));
         }
         if (this.pattern) {
-            properties.push(new PropertyModel('pattern', 'property', this.pattern));
+            properties.push(new AnyPropertyModel('pattern', this.pattern));
         }
         if (this.customType) {
-            properties.push(new PropertyModel('customType', 'property', this.customType));
+            properties.push(new AnyPropertyModel('customType', this.customType));
         }
         if (this.unit) {
-            properties.push(new PropertyModel('unit', 'property', this.unit));
+            properties.push(new AnyPropertyModel('unit', this.unit));
         }
         if (this.unitSystem) {
-            properties.push(new PropertyModel('unitSystem', 'property', this.unitSystem));
+            properties.push(new AnyPropertyModel('unitSystem', this.unitSystem));
         }
         if (this.readOnly !== undefined) {
-            properties.push(new PropertyModel('readOnly', 'property', this.readOnly));
+            properties.push(new AnyPropertyModel('readOnly', this.readOnly));
         }
         if (this.remoteLink) {
-            properties.push(new PropertyModel('remoteLink', 'property', this.remoteLink));
+            properties.push(new AnyPropertyModel('remoteLink', this.remoteLink));
         }
         if (Array.isArray(this.enum)) {
-            properties.push(new PropertyModel('enum', 'array', !!this.enum.length));
+            properties.push(new ArrayPropertyModel('enum', !!this.enum.length));
             if (this.enum.length) {
                 for (let index = 0; index < this.enum.length; index++) {
                     const v = this.enum[index];
-                    properties.push(new PropertyModel(String(index), 'property', v, 2, `enum.${index}`));
+                    properties.push(new AnyPropertyModel(String(index), v, 2, `enum.${index}`));
                 }
             }
         }
         if (this.order !== undefined) {
-            properties.push(new PropertyModel('order', 'property', this.order));
+            properties.push(new AnyPropertyModel('order', this.order));
         }
         return properties;
     }

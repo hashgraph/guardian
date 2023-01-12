@@ -1,7 +1,6 @@
 export interface IRateMap<T> {
-    blockType: string;
+    key?: string;
     left: T;
     right: T;
-    rate: number;
 }
 

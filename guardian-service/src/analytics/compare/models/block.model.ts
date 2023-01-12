@@ -1,13 +1,15 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { EventModel } from "./event.model";
-import { PropertiesModel } from './properties.model';
+import { BlockPropertiesModel } from './properties.model';
 import { WeightType } from '../types/weight.type';
 import { ArtifactModel } from './artifact.model';
 import { IArtifacts } from '../interfaces/artifacts.interface';
 import { SchemaModel } from './schema.model';
 import { PropertyModel } from './property.model';
+import { PropertyType } from "../types/property.type";
 import { IKeyMap } from "../interfaces/key-map.interface";
+import { TokenModel } from './token.model';
 
 export class BlockModel {
     public readonly index: number;
@@ -15,7 +17,7 @@ export class BlockModel {
     public readonly blockType: string;
     public readonly tag: string;
 
-    public readonly prop: PropertiesModel;
+    public readonly prop: BlockPropertiesModel;
     public readonly events: EventModel[];
     public readonly artifacts: ArtifactModel[];
 
@@ -27,7 +29,7 @@ export class BlockModel {
         this.blockType = json.blockType;
         this.tag = json.tag;
         this.index = index;
-        this.prop = new PropertiesModel(json);
+        this.prop = new BlockPropertiesModel(json);
         this.events = this.createEvents(json);
         this.artifacts = this.createArtifacts(json);
         this._weight = [];
@@ -100,7 +102,7 @@ export class BlockModel {
         if (options.propLvl > 1) {
             //prop
             hashState = MurmurHash3();
-            hashState.hash(this.blockType + this.prop.toString(options.propLvl));
+            hashState.hash(this.blockType + this.prop.hash(options.propLvl));
             const weight = String(hashState.result());
             weights.push(weight);
             weightMap[WeightType.PROP_LVL_2] = weight;
@@ -109,14 +111,14 @@ export class BlockModel {
         if (options.propLvl > 0 && options.childLvl > 0) {
             //prop + all children
             hashState = MurmurHash3();
-            hashState.hash(this.blockType + this.prop.toString(options.propLvl));
+            hashState.hash(this.blockType + this.prop.hash(options.propLvl));
             if (options.childLvl > 1) {
                 for (const child of this.children) {
                     hashState.hash(child.getWeight(WeightType.PROP_AND_CHILD));
                 }
             } else {
                 for (const child of this.children) {
-                    hashState.hash(child.prop.toString(options.propLvl));
+                    hashState.hash(child.prop.hash(options.propLvl));
                 }
             }
             const weight = String(hashState.result());
@@ -147,6 +149,10 @@ export class BlockModel {
 
     public updateSchemas(schemaMap: IKeyMap<SchemaModel>, options: ICompareOptions): void {
         this.prop.updateSchemas(schemaMap, options);
+    }
+
+    public updateTokens(tokenMap: IKeyMap<TokenModel>, options: ICompareOptions): void {
+        this.prop.updateTokens(tokenMap, options);
     }
 
     public getWeight(type?: WeightType): string {
@@ -196,8 +202,8 @@ export class BlockModel {
         }
     }
 
-    public getPropList(): PropertyModel<any>[] {
-        return this.prop.getPropList();
+    public getPropList(type?: PropertyType): PropertyModel<any>[] {
+        return this.prop.getPropList(type);
     }
 
     public getEventList(): EventModel[] {
