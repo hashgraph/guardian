@@ -2,6 +2,7 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { GenerateUUIDv4, IActiveTask, ITask, IWorkerRequest, WorkerEvents } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/service-requests-base';
 import { MessageResponse } from '@guardian/common';
+import { Environment } from '@hedera-modules';
 
 /**
  * Workers helper
@@ -37,6 +38,7 @@ export class Workers extends ServiceRequestsBase {
      * @param priority
      */
     public addNonRetryableTask(task: ITask, priority: number): Promise<any> {
+        if(!task.data.network) task.data.network = Environment.network;
         return this.addTask(task, priority, false);
     }
 
@@ -47,6 +49,7 @@ export class Workers extends ServiceRequestsBase {
      * @param attempts
      */
     public addRetryableTask(task: ITask, priority: number, attempts: number = 0): Promise<any> {
+        if(!task.data.network) task.data.network = Environment.network;
         return this.addTask(task, priority, true, attempts);
     }
 

@@ -73,6 +73,15 @@ export interface ITransactionLoggerData {
 }
 
 /**
+ * Network options
+ */
+export class NetworkOptions {
+    public network: string = 'testnet';
+    public localNodeAddress: string = '';
+    public localNodeProtocol: string = '';
+}
+
+/**
  * Contains methods to simplify work with hashgraph sdk
  */
 export class HederaSDKHelper {
@@ -114,9 +123,13 @@ export class HederaSDKHelper {
     constructor(
         operatorId: string | AccountId | null,
         operatorKey: string | PrivateKey | null,
-        dryRun: string = null
+        dryRun: string = null,
+        networkOptions: NetworkOptions
     ) {
-        this.dryRun = dryRun || null;
+        Environment.setNetwork(networkOptions.network);
+        Environment.setLocalNodeAddress(networkOptions.localNodeAddress);
+        Environment.setLocalNodeProtocol(networkOptions.localNodeProtocol);
+        this.dryRun = dryRun || null;        
         this.client = Environment.createClient();
         if (operatorId && operatorKey) {
             this.client.setOperator(operatorId, operatorKey);
