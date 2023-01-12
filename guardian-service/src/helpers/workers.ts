@@ -38,7 +38,9 @@ export class Workers extends ServiceRequestsBase {
      * @param priority
      */
     public addNonRetryableTask(task: ITask, priority: number): Promise<any> {
-        if(!task.data.network) task.data.network = Environment.network;
+        if (!task.data.network) {
+            task.data.network = Environment.network;
+        }
         return this.addTask(task, priority, false);
     }
 
@@ -49,7 +51,9 @@ export class Workers extends ServiceRequestsBase {
      * @param attempts
      */
     public addRetryableTask(task: ITask, priority: number, attempts: number = 0): Promise<any> {
-        if(!task.data.network) task.data.network = Environment.network;
+        if (!task.data.network) {
+            task.data.network = Environment.network;
+        }
         return this.addTask(task, priority, true, attempts);
     }
 

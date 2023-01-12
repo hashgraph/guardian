@@ -182,7 +182,7 @@ export class Worker {
     private async processTask(task: ITask): Promise<ITaskResult> {
         const result: ITaskResult = {
             id: this.currentTaskId
-        }        
+        }
         const networkOptions: NetworkOptions = {
             network: task.data.network,
             localNodeAddress: task.data.localNodeAddress,

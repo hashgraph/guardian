@@ -87,7 +87,7 @@ export class Environment {
      * @param network
      * @param mirrornode
      */
-    public static setNetwork(network: string, mirrornode?: string) {        
+    public static setNetwork(network: string, mirrornode?: string) {
         switch (network) {
             case 'mainnet':
                 Environment._network = 'mainnet';
@@ -200,4 +200,3 @@ export class Environment {
         return Environment._accountsApi;
     }
 }
-

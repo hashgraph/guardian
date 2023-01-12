@@ -76,8 +76,17 @@ export interface ITransactionLoggerData {
  * Network options
  */
 export class NetworkOptions {
+    /**
+     * Network
+     */
     public network: string = 'testnet';
+    /**
+     * Local node address
+     */
     public localNodeAddress: string = '';
+    /**
+     * Local node protocol
+     */
     public localNodeProtocol: string = '';
 }
 
@@ -129,7 +138,7 @@ export class HederaSDKHelper {
         Environment.setNetwork(networkOptions.network);
         Environment.setLocalNodeAddress(networkOptions.localNodeAddress);
         Environment.setLocalNodeProtocol(networkOptions.localNodeProtocol);
-        this.dryRun = dryRun || null;        
+        this.dryRun = dryRun || null;
         this.client = Environment.createClient();
         if (operatorId && operatorKey) {
             this.client.setOperator(operatorId, operatorKey);
