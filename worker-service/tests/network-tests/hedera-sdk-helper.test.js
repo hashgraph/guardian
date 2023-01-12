@@ -23,7 +23,7 @@ describe('Hedera SDK Helper', function () {
     const initialBalance = 5;
     const OPERATOR_ID = process.env.OPERATOR_ID;
     const OPERATOR_KEY = process.env.OPERATOR_KEY;
-    const HEDERA_NET = process.env.HEDERA_NET;
+    const HEDERA_NET = process.env.HEDERA_NET || 'testnet';
 
     this.timeout(60 * transactionTimeout);
 
