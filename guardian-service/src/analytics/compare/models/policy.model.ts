@@ -15,6 +15,7 @@ export class PolicyModel {
     public readonly name: string;
     public readonly instanceTopicId: string;
     public readonly version: string;
+    
     private readonly options: ICompareOptions;
     private readonly list: BlockModel[];
 
@@ -84,7 +85,7 @@ export class PolicyModel {
         if (Array.isArray(json.children)) {
             for (let i = 0; i < json.children.length; i++) {
                 const child = json.children[i];
-                block.children.push(this.createBlock(child, i, options));
+                block.addChildren(this.createBlock(child, i, options));
             }
         }
         block.update(options);

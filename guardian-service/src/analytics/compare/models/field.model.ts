@@ -3,38 +3,7 @@ import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { IKeyMap } from "../interfaces/key-map.interface";
 import { WeightType } from '../types/weight.type';
 import { AnyPropertyModel, ArrayPropertyModel, PropertyModel } from './property.model';
-
-export class ConditionModel {
-    public readonly index: number;
-    public readonly field: FieldModel;
-    public readonly fieldValue: any;
-    public readonly thenFields: FieldModel[];
-    public readonly elseFields: FieldModel[];
-
-    constructor(
-        field: FieldModel,
-        fieldValue: any,
-        thenFields: FieldModel[],
-        elseFields: FieldModel[],
-        index: number
-    ) {
-        this.index = index;
-        this.field = field;
-        this.fieldValue = fieldValue;
-        this.thenFields = thenFields;
-        this.elseFields = elseFields;
-    }
-
-    public toObject(): any {
-        return {
-            index: this.index,
-            // blockType: this.blockType,
-            // tag: this.tag,
-            // properties,
-            // events
-        }
-    }
-}
+import { SubSchemaModel } from './sub-schema-model';
 
 export class FieldModel {
     public readonly index: number;
@@ -57,13 +26,28 @@ export class FieldModel {
     public readonly enum: string[];
     public readonly order: number;
 
-    public fields: FieldModel[]
-    public conditions: ConditionModel[];
-
+    private _condition: string;
+    private _subSchema: SubSchemaModel;
     private _weight: string[];
     private _weightMap: IKeyMap<string>;
 
-    constructor(name: string, property: any, required: boolean, index: number) {
+    public get children(): FieldModel[] {
+        if (this._subSchema) {
+            return this._subSchema.fields;
+        }
+        return [];
+    }
+
+    public get condition(): string {
+        return this._condition;
+    }
+
+    constructor(
+        name: string,
+        property: any,
+        required: boolean,
+        index: number
+    ) {
         let _property = property;
         if (_property.oneOf && _property.oneOf.length) {
             _property = _property.oneOf[0];
@@ -110,9 +94,6 @@ export class FieldModel {
             this.order = -1;
         }
         this.index = this.order === -1 ? null : this.order;
-
-        this.fields = [];
-        this.conditions = [];
 
         this._weight = [];
         this._weightMap = {};
@@ -190,7 +171,8 @@ export class FieldModel {
                 this.readOnly +
                 this.required +
                 this.customType +
-                this.remoteLink
+                this.remoteLink +
+                this.condition
             );
             if (!this.isRef) {
                 hashState.hash(this.type);
@@ -291,6 +273,9 @@ export class FieldModel {
                 }
             }
         }
+        if (this.condition) {
+            properties.push(new AnyPropertyModel('condition', this.condition));
+        }
         if (this.order !== undefined) {
             properties.push(new AnyPropertyModel('order', this.order));
         }
@@ -316,7 +301,23 @@ export class FieldModel {
             comment: this.comment,
             remoteLink: this.remoteLink,
             enum: this.enum,
+            condition: this.condition,
             order: this.order
         }
+    }
+
+    public setSubSchema(subSchema: SubSchemaModel): void {
+        this._subSchema = subSchema;
+    }
+
+    public setCondition(condition: string): void {
+        this._condition = condition;
+    }
+
+    public update(options: ICompareOptions): void {
+        if (this._subSchema) {
+            this._subSchema.update(options);
+        }
+        this.calcBaseWeight(options);
     }
 }

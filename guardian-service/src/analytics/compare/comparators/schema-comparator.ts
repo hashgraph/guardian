@@ -127,21 +127,21 @@ export class SchemaComparator {
         }
         if (field1 && !field2) {
             rate.type = Status.LEFT;
-            rate.fields = this.compareFields(Status.LEFT, field1.fields, null, options);
+            rate.fields = this.compareFields(Status.LEFT, field1.children, null, options);
             return rate;
         }
         if (!field1 && field2) {
             rate.type = Status.RIGHT;
-            rate.fields = this.compareFields(Status.RIGHT, null, field2.fields, options);
+            rate.fields = this.compareFields(Status.RIGHT, null, field2.children, options);
             return rate;
         }
         if (field1.equal(field2)) {
             rate.type = Status.FULL;
-            rate.fields = this.compareFields(Status.FULL, field1.fields, field2.fields, options);
+            rate.fields = this.compareFields(Status.FULL, field1.children, field2.children, options);
             return rate;
         }
         rate.type = Status.PARTLY;
-        rate.fields = this.compareFields(Status.PARTLY, field1.fields, field2.fields, options);
+        rate.fields = this.compareFields(Status.PARTLY, field1.children, field2.children, options);
         return rate;
     }
 

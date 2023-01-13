@@ -1,5 +1,5 @@
 import { Status } from "../types/status.type";
-import { ConditionModel } from "../models/field.model";
+import { ConditionModel } from "../models/condition-model";
 import { Rate } from "./rate";
 
 

@@ -13,25 +13,28 @@ import { TokenModel } from './token.model';
 
 export class BlockModel {
     public readonly index: number;
-    public readonly children: BlockModel[];
     public readonly blockType: string;
     public readonly tag: string;
 
-    public readonly prop: BlockPropertiesModel;
-    public readonly events: EventModel[];
-    public readonly artifacts: ArtifactModel[];
-
+    private _prop: BlockPropertiesModel;
+    private _events: EventModel[];
+    private _artifacts: ArtifactModel[];
+    private _children: BlockModel[];
     private _weight: string[];
     private _weightMap: IKeyMap<string>;
 
+    public get children(): BlockModel[] {
+        return this._children;
+    }
+
     constructor(json: any, index: number) {
-        this.children = [];
         this.blockType = json.blockType;
         this.tag = json.tag;
         this.index = index;
-        this.prop = new BlockPropertiesModel(json);
-        this.events = this.createEvents(json);
-        this.artifacts = this.createArtifacts(json);
+        this._prop = new BlockPropertiesModel(json);
+        this._events = this.createEvents(json);
+        this._artifacts = this.createArtifacts(json);
+        this._children = [];
         this._weight = [];
         this._weightMap = {};
     }
@@ -57,11 +60,11 @@ export class BlockModel {
         let hashState: any;
 
         if (options.childLvl > 0) {
-            if (this.children.length) {
+            if (this._children.length) {
                 //children
                 hashState = MurmurHash3();
                 hashState.hash(this.blockType);
-                for (const child of this.children) {
+                for (const child of this._children) {
                     hashState.hash(child.blockType);
                 }
                 const weight = String(hashState.result());
@@ -83,11 +86,11 @@ export class BlockModel {
         }
 
         if (options.childLvl > 1) {
-            if (this.children.length) {
+            if (this._children.length) {
                 //all children
                 hashState = MurmurHash3();
                 hashState.hash(this.blockType);
-                for (const child of this.children) {
+                for (const child of this._children) {
                     hashState.hash(child.getWeight(WeightType.CHILD_LVL_2));
                 }
                 const weight = String(hashState.result());
@@ -102,7 +105,7 @@ export class BlockModel {
         if (options.propLvl > 1) {
             //prop
             hashState = MurmurHash3();
-            hashState.hash(this.blockType + this.prop.hash(options.propLvl));
+            hashState.hash(this.blockType + this._prop.hash(options.propLvl));
             const weight = String(hashState.result());
             weights.push(weight);
             weightMap[WeightType.PROP_LVL_2] = weight;
@@ -111,14 +114,14 @@ export class BlockModel {
         if (options.propLvl > 0 && options.childLvl > 0) {
             //prop + all children
             hashState = MurmurHash3();
-            hashState.hash(this.blockType + this.prop.hash(options.propLvl));
+            hashState.hash(this.blockType + this._prop.hash(options.propLvl));
             if (options.childLvl > 1) {
-                for (const child of this.children) {
+                for (const child of this._children) {
                     hashState.hash(child.getWeight(WeightType.PROP_AND_CHILD));
                 }
             } else {
-                for (const child of this.children) {
-                    hashState.hash(child.prop.hash(options.propLvl));
+                for (const child of this._children) {
+                    hashState.hash(child._prop.hash(options.propLvl));
                 }
             }
             const weight = String(hashState.result());
@@ -131,13 +134,13 @@ export class BlockModel {
     }
 
     public updateEvents(map: IKeyMap<BlockModel>, options: ICompareOptions) {
-        for (const event of this.events) {
+        for (const event of this._events) {
             event.calcWeight(map[event.source], map[event.target], options);
         }
     }
 
     public updateArtifacts(artifacts: IArtifacts[], options: ICompareOptions) {
-        for (const artifact of this.artifacts) {
+        for (const artifact of this._artifacts) {
             const row = artifacts.find(e => e.uuid === artifact.uuid);
             if (row && row.data) {
                 artifact.calcWeight(row.data, options);
@@ -148,11 +151,11 @@ export class BlockModel {
     }
 
     public updateSchemas(schemaMap: IKeyMap<SchemaModel>, options: ICompareOptions): void {
-        this.prop.updateSchemas(schemaMap, options);
+        this._prop.updateSchemas(schemaMap, options);
     }
 
     public updateTokens(tokenMap: IKeyMap<TokenModel>, options: ICompareOptions): void {
-        this.prop.updateTokens(tokenMap, options);
+        this._prop.updateTokens(tokenMap, options);
     }
 
     public getWeight(type?: WeightType): string {
@@ -191,8 +194,8 @@ export class BlockModel {
     }
 
     public toObject(): any {
-        const properties = this.prop.getPropList();
-        const events = this.events.map(e => e.toObject());
+        const properties = this._prop.getPropList();
+        const events = this._events.map(e => e.toObject());
         return {
             index: this.index,
             blockType: this.blockType,
@@ -203,18 +206,22 @@ export class BlockModel {
     }
 
     public getPropList(type?: PropertyType): PropertyModel<any>[] {
-        return this.prop.getPropList(type);
+        return this._prop.getPropList(type);
     }
 
     public getEventList(): EventModel[] {
-        return this.events;
+        return this._events;
     }
 
     public getPermissionsList(): string[] {
-        return this.prop.getPermissionsList();
+        return this._prop.getPermissionsList();
     }
 
     public getArtifactsList(): ArtifactModel[] {
-        return this.artifacts;
+        return this._artifacts;
+    }
+
+    public addChildren(child: BlockModel): void {
+        this._children.push(child);
     }
 }

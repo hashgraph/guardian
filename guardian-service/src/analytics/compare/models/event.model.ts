@@ -7,7 +7,6 @@ export class EventModel {
     public readonly disabled: any;
     public readonly input: any;
     public readonly output: any;
-
     public readonly source: string;
     public readonly target: string;
 
