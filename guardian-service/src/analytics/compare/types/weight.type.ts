@@ -9,5 +9,10 @@ export enum WeightType {
     SCHEMA_LVL_1 = 'SCHEMA_LVL_1',
     SCHEMA_LVL_2 = 'SCHEMA_LVL_2',
     SCHEMA_LVL_3 = 'SCHEMA_LVL_3',
-    SCHEMA_LVL_4 = 'SCHEMA_LVL_4'
+    SCHEMA_LVL_4 = 'SCHEMA_LVL_4',
+    GROUP_LVL_0 = "GROUP_LVL_0",
+    GROUP_LVL_1 = "GROUP_LVL_1",
+    TOPIC_LVL_0 = "TOPIC_LVL_0",
+    TOPIC_LVL_1 = "TOPIC_LVL_1",
+    ROLE_LVL_0 = "ROLE_LVL_0"
 }

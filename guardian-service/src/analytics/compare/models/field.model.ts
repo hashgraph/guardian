@@ -1,11 +1,12 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { IKeyMap } from "../interfaces/key-map.interface";
+import { IWeightModel } from '../interfaces/model.interface';
 import { WeightType } from '../types/weight.type';
 import { AnyPropertyModel, ArrayPropertyModel, PropertyModel } from './property.model';
 import { SubSchemaModel } from './sub-schema-model';
 
-export class FieldModel {
+export class FieldModel implements IWeightModel {
     public readonly index: number;
 
     public readonly name: string;
@@ -40,6 +41,10 @@ export class FieldModel {
 
     public get condition(): string {
         return this._condition;
+    }
+
+    public get key(): string {
+        return null;
     }
 
     constructor(

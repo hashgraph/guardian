@@ -1,6 +1,5 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { IArtifacts } from '../interfaces/artifacts.interface';
 
 export class ArtifactModel {
     public readonly name: any;
@@ -15,6 +14,10 @@ export class ArtifactModel {
 
     private hash: string;
 
+    public get key(): string {
+        return null;
+    }
+
     constructor(json: any) {
         this.name = json.name;
         this.uuid = json.uuid;
@@ -22,7 +25,7 @@ export class ArtifactModel {
         this.extension = json.extention;
     }
 
-    public calcWeight(data: string, options: ICompareOptions): void {
+    public update(data: string, options: ICompareOptions): void {
         let hashState = MurmurHash3();
         hashState.hash(this.name);
         hashState.hash(this.type);
@@ -47,7 +50,7 @@ export class ArtifactModel {
         };
     }
 
-    public equal(event: ArtifactModel): boolean {
+    public equal(event: ArtifactModel, iteration?: number): boolean {
         return this.hash === event.hash;
     }
 }

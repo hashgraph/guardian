@@ -14,9 +14,14 @@ export class ComparePolicyComponent implements OnInit {
 
     policy1: any;
     policy2: any;
-    report!: any[];
     total!: any;
-    
+
+    blocks!: any[];
+    topics!: any[];
+    tokens!: any[];
+    groups!: any[];
+    roles!: any[];
+
     @Input() eventsLvl: string = '1';
     @Input() propLvl: string = '2';
     @Input() childrenLvl: string = '2';
@@ -81,8 +86,22 @@ export class ComparePolicyComponent implements OnInit {
         this.total = this.value.total;
         this.policy1 = this.value.left;
         this.policy2 = this.value.right;
-        this.report = this.value.report;
-        this.columns = this.value.columns || [];
+
+        const blocks = this.value.blocks;
+        this.blocks = blocks.report;
+        this.columns = blocks.columns || [];
+
+        const roles = this.value.roles;
+        const groups = this.value.groups;
+        const tokens = this.value.tokens;
+        const topics = this.value.topics;
+
+        this.roles = roles.report;
+        this.groups = groups.report;
+        this.tokens = tokens.report;
+        this.topics = topics.report;
+        
+
         this.displayedColumns = this.columns
             .filter(c => c.label)
             .map(c => c.name);

@@ -2,7 +2,7 @@ import { IRateMap } from "../interfaces/rate-map.interface";
 import { IRate } from "../interfaces/rate.interface";
 
 export class CompareUtils {
-    public static equal(e1: any, e2: any): boolean {
+    private static equal(e1: any, e2: any): boolean {
         if (typeof e1.equal === 'function') {
             return e1.equal(e2);
         }

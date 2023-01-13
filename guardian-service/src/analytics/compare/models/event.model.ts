@@ -15,6 +15,10 @@ export class EventModel {
         return this._weight;
     }
 
+    public get key(): string {
+        return null;
+    }
+
     private start: string;
     private end: string;
     private hash: string;
@@ -29,7 +33,7 @@ export class EventModel {
         this.target = json.target;
     }
 
-    public calcWeight(
+    public update(
         source: BlockModel,
         target: BlockModel,
         options: ICompareOptions

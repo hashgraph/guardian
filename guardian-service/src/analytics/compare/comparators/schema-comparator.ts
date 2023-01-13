@@ -5,8 +5,10 @@ import { SchemaModel } from "../models/schema.model";
 import { FieldModel } from "../models/field.model";
 import { FieldsRate } from "../rates/fields-rate";
 import { IRate } from "../interfaces/rate.interface";
-import { IMergeMap } from "../interfaces/merge-map-item.interface";
 import { ICompareResult } from "../interfaces/compare-result.interface";
+import { MergeUtils } from "../utils/merge-utils";
+import { IRateMap } from "../interfaces/rate-map.interface";
+import { IWeightModel } from "../interfaces/model.interface";
 
 export class SchemaComparator {
     private readonly options: ICompareOptions;
@@ -115,7 +117,7 @@ export class SchemaComparator {
     }
 
     private compareSchemas(schema1: SchemaModel, schema2: SchemaModel, options: ICompareOptions): IRate<any>[] {
-        const fields = this.compareFields(Status.PARTLY, schema1.fields, schema2.fields, options);
+        const fields = this.compareArray(Status.PARTLY, schema1.fields, schema2.fields, options);
         return fields;
     }
 
@@ -127,131 +129,42 @@ export class SchemaComparator {
         }
         if (field1 && !field2) {
             rate.type = Status.LEFT;
-            rate.fields = this.compareFields(Status.LEFT, field1.children, null, options);
+            rate.fields = this.compareArray(Status.LEFT, field1.children, null, options);
             return rate;
         }
         if (!field1 && field2) {
             rate.type = Status.RIGHT;
-            rate.fields = this.compareFields(Status.RIGHT, null, field2.children, options);
+            rate.fields = this.compareArray(Status.RIGHT, null, field2.children, options);
             return rate;
         }
         if (field1.equal(field2)) {
             rate.type = Status.FULL;
-            rate.fields = this.compareFields(Status.FULL, field1.children, field2.children, options);
+            rate.fields = this.compareArray(Status.FULL, field1.children, field2.children, options);
             return rate;
         }
         rate.type = Status.PARTLY;
-        rate.fields = this.compareFields(Status.PARTLY, field1.children, field2.children, options);
+        rate.fields = this.compareArray(Status.PARTLY, field1.children, field2.children, options);
         return rate;
     }
 
-    private compareFields(
+    private compareArray(
         type: Status,
         fields1: FieldModel[],
         fields2: FieldModel[],
         options: ICompareOptions
     ): FieldsRate[] {
-        let result: IMergeMap<FieldModel>[];
+        let result: IRateMap<FieldModel>[];
         if (type === Status.FULL) {
-            result = this.fullMerge(fields1, fields2);
+            result = MergeUtils.fullMerge<FieldModel>(fields1, fields2);
         } else if (type === Status.PARTLY) {
-            result = this.partlyMerge(fields1, fields2);
+            result = MergeUtils.partlyMerge<FieldModel>(fields1, fields2, false);
         } else {
-            result = this.notMerge(fields1, fields2);
+            result = MergeUtils.notMerge<FieldModel>(fields1, fields2);
         }
         const children: FieldsRate[] = [];
         for (const item of result) {
             children.push(this.compareField(item.left, item.right, options));
         }
         return children;
-    }
-
-    private partlyMerge(fields1: FieldModel[], fields2: FieldModel[]): IMergeMap<FieldModel>[] {
-        const result: IMergeMap<FieldModel>[] = [];
-
-        let max = 0;
-        for (const child of fields1) {
-            max = child.maxWeight();
-            result.push({ left: child, right: null, rate: 0 });
-        }
-        max++;
-
-        const m = new Array(fields2.length);
-        for (let iteration = 0; iteration < max; iteration++) {
-            for (let i = 0; i < fields2.length; i++) {
-                if (!m[i]) {
-                    m[i] = this.mapping(result, fields2[i], iteration);
-                }
-            }
-        }
-        for (let i = 0; i < fields2.length; i++) {
-            if (!m[i]) {
-                const child: FieldModel = fields2[i];
-                result.push({ left: null, right: child, rate: 0 });
-            }
-        }
-        return result;
-    }
-
-    private fullMerge(fields1: FieldModel[], fields2: FieldModel[]): IMergeMap<FieldModel>[] {
-        const result: IMergeMap<FieldModel>[] = [];
-        const max = Math.max(fields1.length, fields2.length);
-        for (let i = 0; i < max; i++) {
-            const left = fields1[i];
-            const right = fields2[i];
-            result.push({ left, right, rate: 100 });
-        }
-        return result;
-    }
-
-    private notMerge(fields1: FieldModel[], fields2: FieldModel[]): IMergeMap<FieldModel>[] {
-        const result: IMergeMap<FieldModel>[] = [];
-        if (fields1) {
-            for (let i = 0; i < fields1.length; i++) {
-                const left = fields1[i];
-                result.push({ left, right: null, rate: 100 });
-            }
-        }
-        if (fields2) {
-            for (let i = 0; i < fields2.length; i++) {
-                const right = fields2[i];
-                result.push({ left: null, right, rate: 100 });
-            }
-        }
-        return result;
-    }
-
-    private mapping(result: IMergeMap<FieldModel>[], child: FieldModel, iteration: number) {
-        for (const row of result) {
-            if (row.left && !row.right) {
-                if (row.left.checkWeight(iteration)) {
-                    if (row.left.equal(child, iteration)) {
-                        row.right = child;
-                        row.rate = this.getDiff(row.left, row.right);
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private getDiff(item1: FieldModel, item2: FieldModel): number {
-        if (!item1) {
-            return 0;
-        }
-        if (!item2) {
-            return 0;
-        }
-        let result = 1;
-        const weight1 = item1.getWeights();
-        const weight2 = item2.getWeights();
-        const k = 1 / (weight1.length + 1);
-        for (let i = 0; i < weight1.length; i++) {
-            if (weight1[i] !== weight2[i]) {
-                result -= k;
-            }
-        }
-        return Math.floor(Math.max(0, result) * 100);
     }
 }

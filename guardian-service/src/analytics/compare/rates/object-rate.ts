@@ -1,56 +1,47 @@
 import { Status } from "../types/status.type";
 import { IRate } from "../interfaces/rate.interface";
-import { FieldModel } from "../models/field.model";
 import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { PropertiesRate } from "./properties-rate";
 import { Rate } from "./rate";
 import { IRateMap } from "../interfaces/rate-map.interface";
 import { PropertyModel } from "../models/property.model";
 import { CompareUtils } from "../utils/utils";
+import { IWeightModel } from "../interfaces/model.interface";
 
-export class FieldsRate extends Rate<FieldModel> {
-    public fields: FieldsRate[];
-
+export class ObjectRate extends Rate<IWeightModel> {
     public properties: PropertiesRate[];
-
     public propertiesRate: number;
-    public indexRate: number;
 
-    constructor(field1: FieldModel, field2: FieldModel) {
-        super(field1, field2);
-        if (field1 && field2) {
+    constructor(item1: IWeightModel, item2: IWeightModel) {
+        super(item1, item2);
+        if (item1 && item2) {
             this.totalRate = 100;
             this.type = Status.FULL;
         } else {
-            if (field1) {
+            if (item1) {
                 this.type = Status.LEFT;
             } else {
                 this.type = Status.RIGHT;
             }
             this.totalRate = -1;
         }
-        this.indexRate = -1;
         this.propertiesRate = -1;
     }
 
-    private compareProp(
-        field1: FieldModel,
-        field2: FieldModel,
-        options: ICompareOptions
-    ): void {
+    private compareProp(item1: any, item2: any, options: ICompareOptions): void {
         const list: string[] = [];
         const map: { [key: string]: IRateMap<PropertyModel<any>> } = {};
 
-        if (field1) {
-            const list1 = field1.getPropList();
+        if (item1) {
+            const list1 = item1.getPropList();
             for (const item of list1) {
                 list.push(item.path);
                 map[item.path] = { left: item, right: null };
             }
         }
 
-        if (field2) {
-            const list2 = field2.getPropList();
+        if (item2) {
+            const list2 = item2.getPropList();
             for (const item of list2) {
                 if (map[item.path]) {
                     map[item.path].right = item;
@@ -77,16 +68,8 @@ export class FieldsRate extends Rate<FieldModel> {
             return;
         }
 
-        this.indexRate = this.left.index === this.right.index ? 100 : 0;
         this.propertiesRate = CompareUtils.calcRate(this.properties);
-        this.totalRate = CompareUtils.calcTotalRate(
-            this.indexRate,
-            this.propertiesRate
-        );
-    }
-
-    public override getChildren<T extends IRate<any>>(): T[] {
-        return this.fields as any;
+        this.totalRate = CompareUtils.calcTotalRate(this.propertiesRate);
     }
 
     public override getSubRate(name?: string): IRate<any>[] {
@@ -94,9 +77,6 @@ export class FieldsRate extends Rate<FieldModel> {
     }
 
     public override getRateValue(name: string): number {
-        if (name === 'index') {
-            return this.indexRate;
-        }
         if (name === 'properties') {
             return this.propertiesRate;
         }

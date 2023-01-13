@@ -10,8 +10,9 @@ import { PropertyModel } from './property.model';
 import { PropertyType } from "../types/property.type";
 import { IKeyMap } from "../interfaces/key-map.interface";
 import { TokenModel } from './token.model';
+import { IWeightModel } from '../interfaces/model.interface';
 
-export class BlockModel {
+export class BlockModel implements IWeightModel {
     public readonly index: number;
     public readonly blockType: string;
     public readonly tag: string;
@@ -25,6 +26,10 @@ export class BlockModel {
 
     public get children(): BlockModel[] {
         return this._children;
+    }
+
+    public get key(): string {
+        return this.blockType;
     }
 
     constructor(json: any, index: number) {
@@ -135,7 +140,7 @@ export class BlockModel {
 
     public updateEvents(map: IKeyMap<BlockModel>, options: ICompareOptions) {
         for (const event of this._events) {
-            event.calcWeight(map[event.source], map[event.target], options);
+            event.update(map[event.source], map[event.target], options);
         }
     }
 
@@ -143,9 +148,9 @@ export class BlockModel {
         for (const artifact of this._artifacts) {
             const row = artifacts.find(e => e.uuid === artifact.uuid);
             if (row && row.data) {
-                artifact.calcWeight(row.data, options);
+                artifact.update(row.data, options);
             } else {
-                artifact.calcWeight('', options);
+                artifact.update('', options);
             }
         }
     }
@@ -179,6 +184,9 @@ export class BlockModel {
     }
 
     public equal(block: BlockModel, iteration?: number): boolean {
+        if (this.blockType !== block.blockType) {
+            return false;
+        }
         if (!this._weight.length) {
             return this.blockType === block.blockType;
         }

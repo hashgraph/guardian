@@ -7,6 +7,10 @@ import { IKeyMap } from "../interfaces/key-map.interface";
 import { PropertyModel } from "./property.model";
 import { PropertyType } from "../types/property.type";
 import { TokenModel } from "./token.model";
+import { GroupModel } from "./group.model";
+import { TopicModel } from "./topic.model";
+import { TemplateTokenModel } from "./template-token.model";
+import { RoleModel } from "./role.model";
 
 export class PolicyModel {
     public readonly tree: BlockModel;
@@ -15,9 +19,14 @@ export class PolicyModel {
     public readonly name: string;
     public readonly instanceTopicId: string;
     public readonly version: string;
-    
+
     private readonly options: ICompareOptions;
     private readonly list: BlockModel[];
+
+    public readonly groups: GroupModel[];
+    public readonly topics: TopicModel[];
+    public readonly tokens: TemplateTokenModel[];
+    public readonly roles: RoleModel[];
 
     constructor(policy: Policy, options: ICompareOptions) {
         this.options = options;
@@ -34,6 +43,11 @@ export class PolicyModel {
 
         this.tree = this.createBlock(policy.config, 0, this.options);
         this.list = this.getAllBlocks(this.tree, []);
+
+        this.roles = this.createRoles(policy.policyRoles, this.options);
+        this.groups = this.createGroups(policy.policyGroups, this.options);
+        this.topics = this.createTopics(policy.policyTopics, this.options);
+        this.tokens = this.createTokens(policy.policyTokens, this.options);
     }
 
     public setArtifacts(artifacts: IArtifacts[]): PolicyModel {
@@ -90,6 +104,89 @@ export class PolicyModel {
         }
         block.update(options);
         return block;
+    }
+
+    private createRoles(roles: string[], options: ICompareOptions): RoleModel[] {
+        const result: RoleModel[] = [];
+        if (Array.isArray(roles)) {
+            for (const json of roles) {
+                const model = new RoleModel(json);
+                model.update(options);
+                result.push(model);
+            }
+        }
+        return result;
+        // roles = [
+        //     "Employee",
+        //     "Employer"
+        // ]
+    }
+    private createGroups(groups: any[], options: ICompareOptions): GroupModel[] {
+        const result: GroupModel[] = [];
+        if (Array.isArray(groups)) {
+            for (const json of groups) {
+                const model = new GroupModel(json);
+                model.update(options);
+                result.push(model);
+            }
+        }
+        return result;
+        // groups = [
+        //     {
+        //         "name": "Organization",
+        //         "creator": "Employer",
+        //         "members": [
+        //             "Employee"
+        //         ],
+        //         "groupRelationshipType": "Multiple",
+        //         "groupAccessType": "Private"
+        //     }
+        // ]
+    }
+    private createTopics(topics: any[], options: ICompareOptions): TopicModel[] {
+        const result: TopicModel[] = [];
+        if (Array.isArray(topics)) {
+            for (const json of topics) {
+                const model = new TopicModel(json);
+                model.update(options);
+                result.push(model);
+            }
+        }
+        return result;
+        // topics = [
+        //     {
+        //         "type": "any",
+        //         "name": "Remote Work",
+        //         "description": "",
+        //         "static": true,
+        //         "memoObj": "topic"
+        //     }
+        // ]
+    }
+    private createTokens(tokens: any[], options: ICompareOptions): TemplateTokenModel[] {
+        const result: TemplateTokenModel[] = [];
+        if (Array.isArray(tokens)) {
+            for (const json of tokens) {
+                const model = new TemplateTokenModel(json);
+                model.update(options);
+                result.push(model);
+            }
+        }
+        return result;
+        // tokens = [
+        //     {
+        //         "templateTokenTag": "token_template_0",
+        //         "tokenName": "3",
+        //         "tokenSymbol": "2",
+        //         "tokenType": "fungible",
+        //         "decimals": 1,
+        //         "enableAdmin": true,
+        //         "changeSupply": true,
+        //         "enableFreeze": true,
+        //         "enableKYC": true,
+        //         "enableWipe": true
+        //     }
+        // ]
     }
 
     private updateArtifacts(artifacts: IArtifacts[], options: ICompareOptions): void {
