@@ -69,6 +69,11 @@ export class ComparePolicyComponent implements OnInit {
         "reportItemBlock": "list_alt"
     }
 
+    type1 = true;
+    type2 = true;
+    type3 = true;
+    type4 = true;
+
     constructor() {
     }
 
@@ -88,19 +93,30 @@ export class ComparePolicyComponent implements OnInit {
         this.policy2 = this.value.right;
 
         const blocks = this.value.blocks;
-        this.blocks = blocks.report;
-        this.columns = blocks.columns || [];
-
         const roles = this.value.roles;
         const groups = this.value.groups;
         const tokens = this.value.tokens;
         const topics = this.value.topics;
 
-        this.roles = roles.report;
-        this.groups = groups.report;
-        this.tokens = tokens.report;
-        this.topics = topics.report;
-        
+        this.roles = roles?.report;
+        this.groups = groups?.report;
+        this.tokens = tokens?.report;
+        this.topics = topics?.report;
+        this.blocks = blocks?.report;
+
+        for (let i = 0; i < this.blocks.length; i++) {
+            const item1 = this.blocks[i];
+            const item2 = this.blocks[i + 1];
+            if (item1 && item2 && item2.lvl > item1.lvl) {
+                item1._collapse = 1;
+            } else {
+                item1._collapse = 0; 
+            }
+            item1._hidden = false;
+            item1._index = i;
+        }
+
+        this.columns = blocks?.columns || [];
 
         this.displayedColumns = this.columns
             .filter(c => c.label)
@@ -128,5 +144,22 @@ export class ComparePolicyComponent implements OnInit {
             schemaId1: schema1?.schemaId,
             schemaId2: schema2?.schemaId
         })
+    }
+
+    onCollapse(item:any) {
+        const hidden = item._collapse == 1;
+        if(hidden) {
+            item._collapse = 2;
+        } else {
+            item._collapse = 1;
+        }
+        for (let i = item._index+1; i < this.blocks.length; i++) {
+            const item2 = this.blocks[i];
+            if(item2.lvl > item.lvl) {
+                item2._hidden = hidden;
+            } else {
+                break;
+            }
+        }
     }
 }

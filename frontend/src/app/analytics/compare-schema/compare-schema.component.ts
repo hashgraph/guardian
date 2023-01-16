@@ -22,6 +22,11 @@ export class CompareSchemaComponent implements OnInit {
     displayedColumns: string[] = [];
     columns: any[] = [];
 
+    type1 = true;
+    type2 = true;
+    type3 = true;
+    type4 = true;
+
     constructor() {
     }
 
@@ -39,11 +44,14 @@ export class CompareSchemaComponent implements OnInit {
         this.total = this.value.total;
         this.schema1 = this.value.left;
         this.schema2 = this.value.right;
-        this.report = this.value.report;
-        this.columns = this.value.columns || [];
+
+        const fields = this.value.fields;
+        this.report = fields?.report;
+        this.columns = fields?.columns || [];
         this.displayedColumns = this.columns
             .filter(c => c.label)
             .map(c => c.name);
+
         this.onRender();
     }
 

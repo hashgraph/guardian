@@ -28,7 +28,7 @@ export class SchemaComparator {
     public compare(
         schema1: SchemaModel,
         schema2: SchemaModel
-    ): ICompareResult {
+    ): ICompareResult<any> {
         const columns = [
             { name: 'lvl', label: 'Offset', type: 'number' },
             { name: 'left_index', label: 'Index', type: 'number' },
@@ -48,12 +48,14 @@ export class SchemaComparator {
         const rates = this.compareSchemas(schema1, schema2, this.options);
         this.ratesToTable(rates, table);
 
-        const result: ICompareResult = {
-            columns,
+        const result: ICompareResult<any> = {
             left: schema1.info(),
             right: schema2.info(),
-            report: table.object(),
             total: this.total(rates),
+            fields: {
+                columns,
+                report: table.object(),
+            }
         }
 
         return result;

@@ -38,7 +38,7 @@ export class PolicyComparator {
     public compare(
         policy1: PolicyModel,
         policy2: PolicyModel
-    ): any {
+    ): ICompareResult<any> {
         const columns = [
             { name: 'lvl', label: 'Offset', type: 'number' },
             { name: 'left_index', label: 'Index', type: 'number' },
@@ -81,7 +81,7 @@ export class PolicyComparator {
         this.ratesToTable(topics, topicsTable);
         this.ratesToTable(tokens, tokensTable);
 
-        const result = {
+        const result: ICompareResult<any> = {
             left: policy1.info(),
             right: policy2.info(),
             total: tree.total(),

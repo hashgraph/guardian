@@ -66,14 +66,14 @@
     height: calc(100vh - 303px);
 } */
 
-.merge-table-content {
+/* .merge-table-content {
     position: absolute;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
     overflow: auto;
-}
+} */
 
 .merge-table-content table {
     min-width: 100%;
@@ -297,7 +297,7 @@
 
 .report-item[type="LEFT"] .block-tree,
 .report-item[type="RIGHT"] .block-tree {
-    background: #ffcece;
+    background: #ffb5b7;
 }
 
 .report-item[type="PARTLY"][rate="100%"] .block-tree {
@@ -482,6 +482,7 @@
     padding-left: 30px;
     padding-right: 50px;
     background: white;
+    cursor: pointer;
 }
 
 .legend-icon {
@@ -519,7 +520,7 @@
 }
 
 .legend-l4.legend-icon {
-    background: #ffcece;
+    background: #ffb5b7;
     border: 1px solid #b15656;
 }
 
@@ -527,4 +528,152 @@
     border-top: 1px solid #999;
     margin-top: 10px;
     padding-top: 10px;
+}
+
+
+/* *[type-1="false"] .report-item[type="FULL"] {
+    display: none;
+}
+*[type-2="false"] .report-item[type="PARTLY"][rate="100%"] {
+    display: none;
+}
+*[type-3="false"] .report-item[type="PARTLY"]:not([rate="100%"]) {
+    display: none;
+}
+*[type-4="false"] .report-item[type="LEFT"],
+*[type-4="false"] .report-item[type="RIGHT"] {
+    display: none;
+} */
+
+*[type-1="false"] .report-item[type="FULL"] .hidden-item {
+    opacity: 0.15;
+}
+*[type-2="false"] .report-item[type="PARTLY"][rate="100%"] .hidden-item {
+    opacity: 0.15;
+}
+*[type-3="false"] .report-item[type="PARTLY"]:not([rate="100%"]) .hidden-item {
+    opacity: 0.15;
+}
+*[type-4="false"] .report-item[type="LEFT"] .hidden-item ,
+*[type-4="false"] .report-item[type="RIGHT"] .hidden-item {
+    opacity: 0.15;
+}
+.report-item:hover .hidden-item {
+    opacity: 1 !important;
+}
+.report-item:hover {
+    background-color: #f1f1f1;
+    box-shadow: 0px 11px 0px 0px #f1f1f1;
+}
+
+*[type-1="false"] .legend-l1.legend-icon {
+    background: linear-gradient(135deg, #f1f1f1 48%, #ababab 50%, #f1f1f1 52%);
+}
+*[type-2="false"] .legend-l2.legend-icon {
+    background: linear-gradient(135deg, #f1f1f1 48%, #ababab 50%, #f1f1f1 52%);
+}
+*[type-3="false"] .legend-l3.legend-icon {
+    background: linear-gradient(135deg, #f1f1f1 48%, #ababab 50%, #f1f1f1 52%);
+}
+*[type-4="false"] .legend-l4.legend-icon {
+    background: linear-gradient(135deg, #f1f1f1 48%, #ababab 50%, #f1f1f1 52%);
+}
+
+.report-number {
+    position: absolute;
+    left: 0px;
+    top: 18px;
+    width: 30px;
+    padding-right: 4px;
+    box-sizing: border-box;
+    color: #898989;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.report-item-number {
+    padding-left: 30px;
+    grid-template-columns: calc(50% - 33px) 35px calc(50% - 18px);
+    background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, transparent 30px);
+}
+
+.report-collapse {
+    position: absolute;
+    left: 21px;
+    top: 19px;
+    padding-right: 4px;
+    box-sizing: border-box;
+    color: #898989;
+    overflow: hidden;
+    z-index: 2;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #898989;
+    background: #fff;
+    cursor: pointer;
+    display: none;
+}
+.report-collapse mat-icon {
+    position: absolute;
+    pointer-events: none;
+    left: -1px;
+    top: -1px;
+    font-size: 16px;
+    display: none;
+}
+
+.report-item[hidden="true"] {
+    display: none;
+}
+
+.report-collapse[collapse="1"],
+.report-collapse[collapse="2"] {
+    display: block;
+}
+
+.report-collapse[collapse="1"] .open-icon {
+    display: block;
+}
+.report-collapse[collapse="2"] .collapse-icon {
+    display: block;
+}
+
+.merge-table-content::ng-deep mat-row[type="FULL"] {
+    background: #d0ffd6;
+}
+
+.merge-table-content::ng-deep mat-row[type="PARTLY"] {
+    background: #fffada;
+}
+
+.merge-table-content::ng-deep mat-row[type="LEFT"],
+.merge-table-content::ng-deep mat-row[type="RIGHT"] {
+    background: #ffc5c6;
+}
+
+.merge-table-content::ng-deep mat-row[type="PARTLY"][rate="100%"] {
+    background: linear-gradient(45deg, #d0ffd6 48%, #fffada 52%);
+}
+
+
+.cdk-column-lvl {
+    max-width: 60px;
+}
+.cdk-column-left_index {
+    max-width: 60px;
+}
+.cdk-column-right_index  {
+    max-width: 60px;
+}
+
+.cdk-column-permission_rate{
+    max-width: 105px;
+}
+
+.cdk-column-index_rate,
+.cdk-column-prop_rate,
+.cdk-column-event_rate,
+.cdk-column-artifacts_rate,
+.cdk-column-total_rate {
+    max-width: 90px;
 }
