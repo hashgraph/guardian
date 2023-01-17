@@ -11,11 +11,13 @@ import { IWeightModel } from "../interfaces/model.interface";
 import { IRate } from "../interfaces/rate.interface";
 import { Rate } from "../rates/rate";
 import { ObjectRate } from "../rates/object-rate";
+import { CompareUtils } from "../utils/utils";
 
 export class PolicyComparator {
     private readonly propLvl: number;
     private readonly childLvl: number;
     private readonly eventLvl: number;
+    private readonly idLvl: number;
     private readonly options: ICompareOptions;
 
     constructor(options?: ICompareOptions) {
@@ -23,15 +25,18 @@ export class PolicyComparator {
             this.propLvl = options.propLvl;
             this.childLvl = options.childLvl;
             this.eventLvl = options.eventLvl;
+            this.idLvl = options.idLvl;
         } else {
             this.propLvl = 2;
             this.childLvl = 2;
             this.eventLvl = 1;
+            this.idLvl = 1;
         }
         this.options = {
             propLvl: this.propLvl,
             childLvl: this.childLvl,
-            eventLvl: this.eventLvl
+            eventLvl: this.eventLvl,
+            idLvl: this.idLvl,
         }
     }
 
@@ -81,10 +86,23 @@ export class PolicyComparator {
         this.ratesToTable(topics, topicsTable);
         this.ratesToTable(tokens, tokensTable);
 
+        const blockRate = tree.total();
+        const roleRate = this.total(roles);
+        const groupRate = this.total(groups);
+        const topicRate = this.total(topics);
+        const tokenRate = this.total(tokens);
+        const total = CompareUtils.calcTotalRate(
+            blockRate,
+            roleRate,
+            groupRate,
+            topicRate,
+            tokenRate
+        );
+
         const result: ICompareResult<any> = {
             left: policy1.info(),
             right: policy2.info(),
-            total: tree.total(),
+            total,
             blocks: {
                 columns,
                 report: treeTable.object(),
@@ -107,6 +125,22 @@ export class PolicyComparator {
             }
         }
         return result;
+    }
+
+    public total(rates: IRate<any>[]): number {
+        let total = 0;
+        let count = 0;
+
+        for (const child of rates) {
+            total += child.total();
+            count++;
+        }
+
+        if (count) {
+            return Math.floor(total / count);
+        }
+
+        return 100;
     }
 
     public treeToTable(tree: BlocksRate, table: ReportTable, lvl: number): void {

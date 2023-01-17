@@ -1,3 +1,4 @@
+import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { IProperties } from "../interfaces/properties.interface";
 import { PropertyType } from "../types/property.type";
 import { SchemaModel } from "./schema.model";
@@ -11,6 +12,7 @@ export class PropertyModel<T> implements IProperties<T> {
     public readonly value?: T;
 
     protected _subProp: PropertyModel<T>[];
+    protected _weight: string;
 
     constructor(
         name: string,
@@ -25,10 +27,11 @@ export class PropertyModel<T> implements IProperties<T> {
         this.lvl = lvl === undefined ? 1 : lvl;
         this.path = path === undefined ? name : path;
         this._subProp = [];
+        this._weight = String(this.value);
     }
 
     public equal(item: PropertyModel<any>): boolean {
-        return this.type === item.type && this.value === item.value;
+        return this.type === item.type && this._weight === item._weight;
     }
 
     public toObject(): IProperties<T> {
@@ -41,12 +44,38 @@ export class PropertyModel<T> implements IProperties<T> {
         }
     }
 
-    public hash(): string {
-        return `${this.path}:${this.value}`;
+    public hash(options: ICompareOptions): string {
+        if (options.propLvl === 1) {
+            if (this.lvl === 1) {
+                return `${this.path}:${this.value}`;
+            } else {
+                return null;
+            }
+        } else {
+            return `${this.path}:${this.value}`;
+        }
     }
 
     public getPropList(): PropertyModel<T>[] {
         return this._subProp;
+    }
+}
+
+export class UUIDPropertyModel extends PropertyModel<any> {
+    constructor(
+        name: string,
+        value: any,
+        lvl?: number,
+        path?: string
+    ) {
+        super(name, PropertyType.UUID, value, lvl, path);
+    }
+
+    public hash(options: ICompareOptions): string {
+        if (options.idLvl === 0) {
+            return null;
+        }
+        return super.hash(options);
     }
 }
 
@@ -108,6 +137,7 @@ export class TokenPropertyModel extends PropertyModel<string> {
             this._subProp.push(new AnyPropertyModel('enableFreeze', this.token.enableFreeze, this.lvl + 1));
             this._subProp.push(new AnyPropertyModel('enableKYC', this.token.enableKYC, this.lvl + 1));
             this._subProp.push(new AnyPropertyModel('enableWipe', this.token.enableWipe, this.lvl + 1));
+            this._weight = this.token.hash();
         }
     }
 
@@ -128,8 +158,11 @@ export class TokenPropertyModel extends PropertyModel<string> {
         return item;
     }
 
-    public override equal(item: PropertyModel<any>): boolean {
-        return this.type === item.type && this.value === item.value;
+    public hash(options: ICompareOptions): string {
+        if (options.idLvl === 0 && this.token) {
+            return `${this.path}:${this.token.hash(options)}`;
+        }
+        return super.hash(options);
     }
 }
 
@@ -147,6 +180,9 @@ export class SchemaPropertyModel extends PropertyModel<string> {
 
     public setSchema(schema: SchemaModel): void {
         this.schema = schema;
+        if(this.schema) {
+            this._weight = this.schema.hash();
+        }
     }
 
     public override toObject(): IProperties<string> {
@@ -157,7 +193,10 @@ export class SchemaPropertyModel extends PropertyModel<string> {
         return item;
     }
 
-    public override equal(item: PropertyModel<any>): boolean {
-        return this.type === item.type && this.value === item.value;
+    public hash(options: ICompareOptions): string {
+        if (options.idLvl === 0 && this.schema) {
+            return `${this.path}:${this.schema.hash(options)}`;
+        }
+        return super.hash(options);
     }
 }

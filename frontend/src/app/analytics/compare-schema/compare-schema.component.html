@@ -27,18 +27,18 @@
 
                     <div class="merge-options">
                         <div class="merge-lvl">
-                            <!-- <div class="f1">
+                            <div class="f1">
                                 <mat-form-field appearance="outline">
-                                    <mat-label>Events:</mat-label>
-                                    <mat-select [(value)]="eventsLvl">
+                                    <mat-label>UUID:</mat-label>
+                                    <mat-select [(value)]="idLvl">
                                         <mat-option value="0">None</mat-option>
                                         <mat-option value="1">Full</mat-option>
                                     </mat-select>
                                 </mat-form-field>
-                            </div> -->
+                            </div>
                         </div>
                         <div class="merge-lvl-apply">
-                            <!-- <div class="merge-lvl-btn" (click)="onApply()">Apply</div> -->
+                            <div class="merge-lvl-btn" (click)="onApply()">Apply</div>
                         </div>
                         <div class="merge-type">
                             <div class="f2">
@@ -160,7 +160,8 @@
                                     <mat-cell *cdkCellDef="let row">{{ row[column.name] }}</mat-cell>
                                 </ng-container>
                                 <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-                                <mat-row *matRowDef="let row; columns: displayedColumns;" [attr.type]="row.type" [attr.rate]="row.total_rate"></mat-row>
+                                <mat-row *matRowDef="let row; columns: displayedColumns;" [attr.type]="row.type"
+                                    [attr.rate]="row.total_rate"></mat-row>
                             </mat-table>
                         </div>
                     </div>

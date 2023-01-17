@@ -896,6 +896,10 @@ export class Guardians extends ServiceRequestsBase {
      * @param user
      * @param policyId1
      * @param policyId2
+     * @param eventsLvl
+     * @param propLvl
+     * @param childrenLvl
+     * @param idLvl
      */
     public async comparePolicies(
         user: any,
@@ -904,25 +908,34 @@ export class Guardians extends ServiceRequestsBase {
         eventsLvl: any,
         propLvl: any,
         childrenLvl: any,
+        idLvl: any,
     ) {
         return await this.request(MessageAPI.COMPARE_POLICIES, {
-            user, policyId1, policyId2, eventsLvl, propLvl, childrenLvl
+            user,
+            policyId1,
+            policyId2,
+            eventsLvl,
+            propLvl,
+            childrenLvl,
+            idLvl
         });
     }
 
     /**
-     * Compare two policies
+     * Compare two schemas
      * @param user
      * @param schemaId1
      * @param schemaId2
+     * @param idLvl
      */
     public async compareSchemas(
         user: any,
         schemaId1: any,
         schemaId2: any,
+        idLvl: any,
     ) {
         return await this.request(MessageAPI.COMPARE_SCHEMAS, {
-            user, schemaId1, schemaId2
+            user, schemaId1, schemaId2, idLvl
         });
     }
 

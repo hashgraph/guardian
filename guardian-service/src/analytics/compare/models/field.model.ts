@@ -3,7 +3,7 @@ import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { IKeyMap } from "../interfaces/key-map.interface";
 import { IWeightModel } from '../interfaces/model.interface';
 import { WeightType } from '../types/weight.type';
-import { AnyPropertyModel, ArrayPropertyModel, PropertyModel } from './property.model';
+import { AnyPropertyModel, ArrayPropertyModel, PropertyModel, UUIDPropertyModel } from './property.model';
 import { SubSchemaModel } from './sub-schema-model';
 
 export class FieldModel implements IWeightModel {
@@ -142,7 +142,7 @@ export class FieldModel implements IWeightModel {
         if (options.propLvl > 0) {
             hashState = MurmurHash3();
             hashState.hash(this.description);
-            if (!this.isRef) {
+            if (!this.isRef && options.idLvl > 0) {
                 hashState.hash(this.type);
             }
             const weight = String(hashState.result());
@@ -150,7 +150,7 @@ export class FieldModel implements IWeightModel {
             weightMap[WeightType.SCHEMA_LVL_2] = weight;
         }
 
-        if (options.propLvl > 0) {
+        if (options.propLvl > 0 && options.idLvl > 0) {
             hashState = MurmurHash3();
             hashState.hash(this.name + this.description);
             if (!this.isRef) {
@@ -179,7 +179,7 @@ export class FieldModel implements IWeightModel {
                 this.remoteLink +
                 this.condition
             );
-            if (!this.isRef) {
+            if (!this.isRef && options.idLvl > 0) {
                 hashState.hash(this.type);
             }
             if (Array.isArray(this.enum)) {
@@ -246,7 +246,7 @@ export class FieldModel implements IWeightModel {
             properties.push(new AnyPropertyModel('required', this.required));
         }
         if (this.type) {
-            properties.push(new AnyPropertyModel('type', this.type));
+            properties.push(new UUIDPropertyModel('type', this.type));
         }
         if (this.format) {
             properties.push(new AnyPropertyModel('format', this.format));
@@ -324,5 +324,9 @@ export class FieldModel implements IWeightModel {
             this._subSchema.update(options);
         }
         this.calcBaseWeight(options);
+    }
+
+    public hash(options: ICompareOptions): string {
+        return this._weight[0];
     }
 }

@@ -19,14 +19,17 @@ export class PolicyModel {
     public readonly name: string;
     public readonly instanceTopicId: string;
     public readonly version: string;
-
-    private readonly options: ICompareOptions;
-    private readonly list: BlockModel[];
-
     public readonly groups: GroupModel[];
     public readonly topics: TopicModel[];
     public readonly tokens: TemplateTokenModel[];
     public readonly roles: RoleModel[];
+
+
+    private options: ICompareOptions;
+    private _list: BlockModel[];
+    private _artifacts: IArtifacts[];
+    private _schemas: SchemaModel[];
+    private _tokens: TokenModel[];
 
     constructor(policy: Policy, options: ICompareOptions) {
         this.options = options;
@@ -41,8 +44,8 @@ export class PolicyModel {
             throw new Error('Empty policy model');
         }
 
-        this.tree = this.createBlock(policy.config, 0, this.options);
-        this.list = this.getAllBlocks(this.tree, []);
+        this.tree = this.createBlock(policy.config, 0);
+        this._list = this.getAllBlocks(this.tree, []);
 
         this.roles = this.createRoles(policy.policyRoles, this.options);
         this.groups = this.createGroups(policy.policyGroups, this.options);
@@ -51,34 +54,17 @@ export class PolicyModel {
     }
 
     public setArtifacts(artifacts: IArtifacts[]): PolicyModel {
-        this.updateArtifacts(artifacts, this.options);
+        this._artifacts = artifacts;
         return this;
     }
 
     public setSchemas(schemas: SchemaModel[]): PolicyModel {
-        const schemaMap: IKeyMap<SchemaModel> = {};
-        for (const schema of schemas) {
-            schemaMap[schema.iri] = schema;
-        }
-        this.updateSchemas(schemaMap, this.options);
+        this._schemas = schemas;
         return this;
     }
 
     public setTokens(tokens: TokenModel[]): PolicyModel {
-        const tokenMap: IKeyMap<TokenModel> = {};
-        for (const token of tokens) {
-            tokenMap[token.tokenId] = token;
-        }
-        this.updateTokens(tokenMap, this.options);
-        return this;
-    }
-
-    public update(): PolicyModel {
-        const blockMap: IKeyMap<BlockModel> = {};
-        for (const block of this.list) {
-            blockMap[block.tag] = block;
-        }
-        this.updateEvents(blockMap, this.options);
+        this._tokens = tokens;
         return this;
     }
 
@@ -90,20 +76,22 @@ export class PolicyModel {
         return list;
     }
 
-    private createBlock(
-        json: any,
-        index: number,
-        options: ICompareOptions
-    ): BlockModel {
+    private createBlock(json: any, index: number): BlockModel {
         const block = new BlockModel(json, index + 1);
         if (Array.isArray(json.children)) {
             for (let i = 0; i < json.children.length; i++) {
                 const child = json.children[i];
-                block.addChildren(this.createBlock(child, i, options));
+                block.addChildren(this.createBlock(child, i));
             }
         }
-        block.update(options);
         return block;
+    }
+
+    private updateAllBlocks(root: BlockModel, options: ICompareOptions): void {
+        for (const child of root.children) {
+            this.updateAllBlocks(child, options);
+        }
+        root.update(options);
     }
 
     private createRoles(roles: string[], options: ICompareOptions): RoleModel[] {
@@ -116,10 +104,6 @@ export class PolicyModel {
             }
         }
         return result;
-        // roles = [
-        //     "Employee",
-        //     "Employer"
-        // ]
     }
     private createGroups(groups: any[], options: ICompareOptions): GroupModel[] {
         const result: GroupModel[] = [];
@@ -131,17 +115,6 @@ export class PolicyModel {
             }
         }
         return result;
-        // groups = [
-        //     {
-        //         "name": "Organization",
-        //         "creator": "Employer",
-        //         "members": [
-        //             "Employee"
-        //         ],
-        //         "groupRelationshipType": "Multiple",
-        //         "groupAccessType": "Private"
-        //     }
-        // ]
     }
     private createTopics(topics: any[], options: ICompareOptions): TopicModel[] {
         const result: TopicModel[] = [];
@@ -153,15 +126,6 @@ export class PolicyModel {
             }
         }
         return result;
-        // topics = [
-        //     {
-        //         "type": "any",
-        //         "name": "Remote Work",
-        //         "description": "",
-        //         "static": true,
-        //         "memoObj": "topic"
-        //     }
-        // ]
     }
     private createTokens(tokens: any[], options: ICompareOptions): TemplateTokenModel[] {
         const result: TemplateTokenModel[] = [];
@@ -173,44 +137,32 @@ export class PolicyModel {
             }
         }
         return result;
-        // tokens = [
-        //     {
-        //         "templateTokenTag": "token_template_0",
-        //         "tokenName": "3",
-        //         "tokenSymbol": "2",
-        //         "tokenType": "fungible",
-        //         "decimals": 1,
-        //         "enableAdmin": true,
-        //         "changeSupply": true,
-        //         "enableFreeze": true,
-        //         "enableKYC": true,
-        //         "enableWipe": true
-        //     }
-        // ]
     }
 
-    private updateArtifacts(artifacts: IArtifacts[], options: ICompareOptions): void {
-        for (const block of this.list) {
-            block.updateArtifacts(artifacts, options);
+    public update(): PolicyModel {
+        const blockMap: IKeyMap<BlockModel> = {};
+        for (const block of this._list) {
+            blockMap[block.tag] = block;
         }
-    }
+        const schemaMap: IKeyMap<SchemaModel> = {};
+        for (const schema of this._schemas) {
+            schemaMap[schema.iri] = schema;
+        }
+        const tokenMap: IKeyMap<TokenModel> = {};
+        for (const token of this._tokens) {
+            tokenMap[token.tokenId] = token;
+        }
 
-    private updateEvents(map: IKeyMap<BlockModel>, options: ICompareOptions): void {
-        for (const block of this.list) {
-            block.updateEvents(map, options);
+        for (const block of this._list) {
+            block.updateArtifacts(this._artifacts, this.options);
+            block.updateSchemas(schemaMap, this.options);
+            block.updateTokens(tokenMap, this.options);
+            block.updateEvents(blockMap, this.options);
         }
-    }
 
-    private updateSchemas(schemaMap: IKeyMap<SchemaModel>, options: ICompareOptions): void {
-        for (const block of this.list) {
-            block.updateSchemas(schemaMap, options);
-        }
-    }
+        this.updateAllBlocks(this.tree, this.options);
 
-    private updateTokens(tokenMap: IKeyMap<TokenModel>, options: ICompareOptions): void {
-        for (const block of this.list) {
-            block.updateTokens(tokenMap, options);
-        }
+        return this;
     }
 
     public info(): any {
@@ -225,7 +177,7 @@ export class PolicyModel {
 
     public getAllProp<T>(type: PropertyType): PropertyModel<T>[] {
         let prop = [];
-        for (const block of this.list) {
+        for (const block of this._list) {
             prop = [...prop, ...block.getPropList(type)];
         }
         return prop;

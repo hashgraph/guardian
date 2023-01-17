@@ -2,6 +2,7 @@ import { Schema as SchemaCollection } from '@entity/schema';
 import { ICompareOptions } from "../interfaces/compare-options.interface";
 import { FieldModel } from './field.model';
 import { SubSchemaModel } from './sub-schema-model';
+import MurmurHash3 from 'imurmurhash';
 
 export class SchemaModel {
     public readonly id: string;
@@ -14,6 +15,8 @@ export class SchemaModel {
 
     private readonly options: ICompareOptions;
     private readonly subSchema: SubSchemaModel;
+
+    private _weight: string;
 
     public get fields(): FieldModel[] {
         if (this.subSchema) {
@@ -31,6 +34,7 @@ export class SchemaModel {
         this.topicId = '';
         this.version = '';
         this.iri = '';
+        this._weight = '';
         if (schema) {
             this.id = schema.id;
             this.name = schema.name;
@@ -59,5 +63,24 @@ export class SchemaModel {
             version: this.version,
             iri: this.iri,
         };
+    }
+
+    public update(options: ICompareOptions): void {
+        let hashState = MurmurHash3();
+        hashState.hash(this.name || '');
+        hashState.hash(this.description || '');
+        hashState.hash(this.version || '');
+        if (options.idLvl > 0) {
+            hashState.hash(this.uuid || '');
+            hashState.hash(this.iri || '');
+        }
+        if (this.subSchema) {
+            hashState.hash(this.subSchema.hash(options));
+        }
+        this._weight = String(hashState.result());
+    }
+
+    public hash(options?: ICompareOptions): string {
+        return this._weight;
     }
 }

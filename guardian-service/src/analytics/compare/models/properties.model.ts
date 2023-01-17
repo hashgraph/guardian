@@ -12,15 +12,12 @@ export class PropertiesModel {
         this.list = PropertiesModel.createPropList(json);
     }
 
-    public hash(lvl: number): string {
+    public hash(options: ICompareOptions): string {
         let result: string[] = [];
         for (const item of this.list) {
-            if (lvl === 1) {
-                if (item.lvl === 1) {
-                    result.push(item.hash());
-                }
-            } else {
-                result.push(item.hash());
+            const hash = item.hash(options);
+            if(hash) {
+                result.push(hash);
             }
         }
         return result.join(',');

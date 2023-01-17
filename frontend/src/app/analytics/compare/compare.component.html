@@ -5,10 +5,10 @@
 
     <div *ngIf="type === 'policy'">
         <app-compare-policy [value]="result" [eventsLvl]="eventsLvl" [propLvl]="propLvl" [childrenLvl]="childrenLvl"
-            (change)="onChange($event)"></app-compare-policy>
+            [idLvl]="idLvl" (change)="onChange($event)"></app-compare-policy>
     </div>
 
     <div *ngIf="type === 'schema'">
-        <app-compare-schema [value]="result" (change)="onChange($event)"></app-compare-schema>
+        <app-compare-schema [value]="result" [idLvl]="idLvl" (change)="onChange($event)"></app-compare-schema>
     </div>
 </div>

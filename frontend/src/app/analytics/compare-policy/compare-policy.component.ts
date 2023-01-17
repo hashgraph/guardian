@@ -25,6 +25,7 @@ export class ComparePolicyComponent implements OnInit {
     @Input() eventsLvl: string = '1';
     @Input() propLvl: string = '2';
     @Input() childrenLvl: string = '2';
+    @Input() idLvl: string = '1';
 
     @Output() change = new EventEmitter<any>();
 
@@ -74,6 +75,9 @@ export class ComparePolicyComponent implements OnInit {
     type3 = true;
     type4 = true;
 
+    _pOffset = 30;
+    _scroll = 0;
+
     constructor() {
     }
 
@@ -104,16 +108,24 @@ export class ComparePolicyComponent implements OnInit {
         this.topics = topics?.report;
         this.blocks = blocks?.report;
 
+        let max = 0;
         for (let i = 0; i < this.blocks.length; i++) {
             const item1 = this.blocks[i];
             const item2 = this.blocks[i + 1];
             if (item1 && item2 && item2.lvl > item1.lvl) {
                 item1._collapse = 1;
             } else {
-                item1._collapse = 0; 
+                item1._collapse = 0;
             }
             item1._hidden = false;
             item1._index = i;
+            max = Math.max(max, item1.lvl);
+        }
+        if(max > 10) {
+            this._pOffset = 20;
+        }
+        if(max > 15) {
+            this._pOffset = 15;
         }
 
         this.columns = blocks?.columns || [];
@@ -132,7 +144,8 @@ export class ComparePolicyComponent implements OnInit {
             type: 'params',
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl,
         })
     }
 
@@ -146,20 +159,26 @@ export class ComparePolicyComponent implements OnInit {
         })
     }
 
-    onCollapse(item:any) {
+    onCollapse(item: any) {
         const hidden = item._collapse == 1;
-        if(hidden) {
+        if (hidden) {
             item._collapse = 2;
         } else {
             item._collapse = 1;
         }
-        for (let i = item._index+1; i < this.blocks.length; i++) {
+        for (let i = item._index + 1; i < this.blocks.length; i++) {
             const item2 = this.blocks[i];
-            if(item2.lvl > item.lvl) {
+            if (item2.lvl > item.lvl) {
                 item2._hidden = hidden;
             } else {
                 break;
             }
         }
+    }
+
+    onScroll(event:any) {
+        document.querySelectorAll('.left-tree').forEach(el => {
+            el.scrollLeft = event.target.scrollLeft;
+        })
     }
 }

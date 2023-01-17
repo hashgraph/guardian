@@ -8,11 +8,20 @@ import { PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaMo
 export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void> {
     ApiResponse(channel, MessageAPI.COMPARE_POLICIES, async (msg) => {
         try {
-            const { user, policyId1, policyId2, eventsLvl, propLvl, childrenLvl } = msg;
+            const {
+                user,
+                policyId1,
+                policyId2,
+                eventsLvl,
+                propLvl,
+                childrenLvl,
+                idLvl
+            } = msg;
             const options = {
                 propLvl: parseInt(propLvl, 10),
                 childLvl: parseInt(childrenLvl, 10),
                 eventLvl: parseInt(eventsLvl, 10),
+                idLvl: parseInt(idLvl, 10),
             };
 
             //Policy
@@ -33,10 +42,14 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
             const schemaModels1: SchemaModel[] = [];
             const schemaModels2: SchemaModel[] = [];
             for (const schema of schemas1) {
-                schemaModels1.push(new SchemaModel(schema, options));
+                const m = new SchemaModel(schema, options);
+                m.update(options);
+                schemaModels1.push(m);
             }
             for (const schema of schemas2) {
-                schemaModels2.push(new SchemaModel(schema, options));
+                const m = new SchemaModel(schema, options);
+                m.update(options);
+                schemaModels2.push(m);
             }
             policyModel1.setSchemas(schemaModels1);
             policyModel2.setSchemas(schemaModels2);
@@ -55,10 +68,14 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
             const tokenModels1: TokenModel[] = [];
             const tokenModels2: TokenModel[] = [];
             for (const token of tokens1) {
-                tokenModels1.push(new TokenModel(token));
+                const t = new TokenModel(token, options);
+                t.update(options);
+                tokenModels1.push(t);
             }
             for (const token of tokens2) {
-                tokenModels2.push(new TokenModel(token));
+                const t = new TokenModel(token, options);
+                t.update(options);
+                tokenModels2.push(t);
             }
             policyModel1.setTokens(tokenModels1);
             policyModel2.setTokens(tokenModels2);
@@ -104,17 +121,21 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
 
     ApiResponse(channel, MessageAPI.COMPARE_SCHEMAS, async (msg) => {
         try {
-            const { user, schemaId1, schemaId2 } = msg;
+            const { user, schemaId1, schemaId2, idLvl } = msg;
 
             const schema1 = await DatabaseServer.getSchemaById(schemaId1);
             const schema2 = await DatabaseServer.getSchemaById(schemaId2);
             const options = {
                 propLvl: 2,
                 childLvl: 0,
-                eventLvl: 0
+                eventLvl: 0,
+                idLvl: parseInt(idLvl, 10)
             }
+
             const model1 = new SchemaModel(schema1, options);
             const model2 = new SchemaModel(schema2, options);
+            model1.update(options);
+            model2.update(options);
             const comparator = new SchemaComparator(options);
             const result = comparator.compare(model1, model2);
 

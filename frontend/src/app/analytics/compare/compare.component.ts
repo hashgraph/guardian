@@ -20,6 +20,7 @@ export class CompareComponent implements OnInit {
     eventsLvl = '1';
     propLvl = '2';
     childrenLvl = '2';
+    idLvl = '0';
 
     constructor(
         private auth: AuthService,
@@ -33,7 +34,7 @@ export class CompareComponent implements OnInit {
         this.route.queryParams.subscribe(queryParams => {
             this.loadData();
         });
-        this.loadData();
+        // this.loadData();
     }
 
     loadData() {
@@ -43,6 +44,7 @@ export class CompareComponent implements OnInit {
         this.policyId2 = this.route.snapshot.queryParams['policyId2'] || '';
         this.schemaId1 = this.route.snapshot.queryParams['schemaId1'] || '';
         this.schemaId2 = this.route.snapshot.queryParams['schemaId2'] || '';
+        this.result = null;
         if (this.type === 'policy') {
             this.loadPolicy();
         } else if (this.type === 'schema') {
@@ -59,6 +61,7 @@ export class CompareComponent implements OnInit {
             this.eventsLvl,
             this.propLvl,
             this.childrenLvl,
+            this.idLvl
         ).subscribe((value) => {
             this.result = value;
             setTimeout(() => {
@@ -74,6 +77,7 @@ export class CompareComponent implements OnInit {
         this.analyticsService.compareSchema(
             this.schemaId1,
             this.schemaId2,
+            this.idLvl
         ).subscribe((value) => {
             this.result = value;
             setTimeout(() => {
@@ -97,6 +101,7 @@ export class CompareComponent implements OnInit {
         this.eventsLvl = event.eventsLvl;
         this.propLvl = event.propLvl;
         this.childrenLvl = event.childrenLvl;
+        this.idLvl = event.idLvl;
         this.loadData();
     }
 

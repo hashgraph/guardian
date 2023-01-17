@@ -8,7 +8,6 @@ import { IRate } from "../interfaces/rate.interface";
 import { ICompareResult } from "../interfaces/compare-result.interface";
 import { MergeUtils } from "../utils/merge-utils";
 import { IRateMap } from "../interfaces/rate-map.interface";
-import { IWeightModel } from "../interfaces/model.interface";
 
 export class SchemaComparator {
     private readonly options: ICompareOptions;
@@ -20,7 +19,8 @@ export class SchemaComparator {
             this.options = {
                 propLvl: 2,
                 childLvl: 0,
-                eventLvl: 0
+                eventLvl: 0,
+                idLvl: 1,
             }
         }
     }

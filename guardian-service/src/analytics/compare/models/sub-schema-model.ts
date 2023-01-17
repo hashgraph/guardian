@@ -1,13 +1,16 @@
 import { FieldModel } from './field.model';
 import { ConditionModel } from "./condition-model";
 import { ICompareOptions } from '../interfaces/compare-options.interface';
-
+import MurmurHash3 from 'imurmurhash';
 
 export class SubSchemaModel {
     public readonly fields: FieldModel[];
     public readonly conditions: ConditionModel[];
 
+    private _weight: string;
+
     constructor(document: any, index: number, defs?: any) {
+        this._weight = '';
         this.fields = this.parseFields(document, index + 1, defs);
         this.conditions = this.parseConditions(document, index + 1, this.fields, defs);
         this.fields = this.updateConditions();
@@ -107,8 +110,15 @@ export class SubSchemaModel {
     }
 
     public update(options: ICompareOptions): void {
+        let hashState = MurmurHash3();
         for (const field of this.fields) {
             field.update(options);
+            hashState.hash(field.hash(options));
         }
+        this._weight = String(hashState.result());
+    }
+
+    public hash(options: ICompareOptions): string {
+        return this._weight;
     }
 }

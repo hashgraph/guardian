@@ -110,7 +110,7 @@ export class BlockModel implements IWeightModel {
         if (options.propLvl > 1) {
             //prop
             hashState = MurmurHash3();
-            hashState.hash(this.blockType + this._prop.hash(options.propLvl));
+            hashState.hash(this.blockType + this._prop.hash(options));
             const weight = String(hashState.result());
             weights.push(weight);
             weightMap[WeightType.PROP_LVL_2] = weight;
@@ -119,14 +119,14 @@ export class BlockModel implements IWeightModel {
         if (options.propLvl > 0 && options.childLvl > 0) {
             //prop + all children
             hashState = MurmurHash3();
-            hashState.hash(this.blockType + this._prop.hash(options.propLvl));
+            hashState.hash(this.blockType + this._prop.hash(options));
             if (options.childLvl > 1) {
                 for (const child of this._children) {
                     hashState.hash(child.getWeight(WeightType.PROP_AND_CHILD));
                 }
             } else {
                 for (const child of this._children) {
-                    hashState.hash(child._prop.hash(options.propLvl));
+                    hashState.hash(child._prop.hash(options));
                 }
             }
             const weight = String(hashState.result());

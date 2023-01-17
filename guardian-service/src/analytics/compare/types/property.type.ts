@@ -3,5 +3,6 @@ export enum PropertyType {
     Object = 'object',
     Property = 'property',
     Schema = 'schema',
-    Token = 'token'
+    Token = 'token',
+    UUID = 'uuid'
 }

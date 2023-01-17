@@ -142,6 +142,7 @@
     grid-row-start: 1;
     grid-column-start: 1;
     position: relative;
+    overflow: hidden;
 }
 
 .middle-tree {
@@ -160,6 +161,7 @@
     grid-row-start: 1;
     grid-column-start: 3;
     position: relative;
+    overflow: hidden;
 }
 
 .block-tree {
@@ -178,6 +180,7 @@
     border: 1px solid #8b8b8b;
     box-shadow: 1px 1px 3px 0px rgb(0 0 0 / 20%);
     cursor: pointer;
+    max-width: 400px;
 }
 
 .fantom-tree .block-tree {
@@ -341,8 +344,19 @@
     box-shadow: 0px 0px 0px 2px #fff;
 }
 
-.prop-table-value *[prop-type="schema"] .compare-btn {
+.prop-table-value[prop-type="schema"] .compare-btn {
     display: block;
+}
+
+.prop-table-value span {
+    position: absolute;
+    overflow: hidden;
+    white-space: nowrap;
+    top: 4px;
+    bottom: 4px;
+    right: 36px;
+    left: 8px;
+    text-overflow: ellipsis;
 }
 
 .prop-table-body {
@@ -562,8 +576,8 @@
     opacity: 1 !important;
 }
 .report-item:hover {
-    background-color: #f1f1f1;
-    box-shadow: 0px 11px 0px 0px #f1f1f1;
+    background-color: rgb(229 229 229 / 50%);
+    box-shadow: 0px 11px 0px 0px rgb(229 229 229 / 50%);
 }
 
 *[type-1="false"] .legend-l1.legend-icon {
@@ -676,4 +690,14 @@
 .cdk-column-artifacts_rate,
 .cdk-column-total_rate {
     max-width: 90px;
+}
+
+.scroll {
+    margin-left: 30px;
+    height: 16px;
+    overflow-x: auto;
+}
+
+.scroll div {
+    height: 1px;
 }

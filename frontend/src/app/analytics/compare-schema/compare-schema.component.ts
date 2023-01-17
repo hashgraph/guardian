@@ -17,6 +17,8 @@ export class CompareSchemaComponent implements OnInit {
     report!: any[];
     total!: any;
 
+    @Input() idLvl: string = '1';
+
     @Output() change = new EventEmitter<any>();
 
     displayedColumns: string[] = [];
@@ -59,6 +61,9 @@ export class CompareSchemaComponent implements OnInit {
     }
 
     onApply() {
-        this.change.emit({})
+        this.change.emit({
+            type: 'params',
+            idLvl: this.idLvl,
+        })
     }
 }

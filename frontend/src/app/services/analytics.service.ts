@@ -20,7 +20,8 @@ export class AnalyticsService {
 
     public compareSchema(
         schemaId1: string,
-        schemaId2: string
+        schemaId2: string,
+        idLvl: string
     ): Observable<any> {
         let params = new HttpParams();
         if (schemaId1 !== undefined) {
@@ -28,6 +29,9 @@ export class AnalyticsService {
         }
         if (schemaId2 !== undefined) {
             params = params.set('schemaId2', schemaId2);
+        }
+        if (idLvl !== undefined) {
+            params = params.set('idLvl', idLvl);
         }
         return this.http.get<any>(`${this.url}/compare/schemas`, { params });
     }
@@ -38,6 +42,7 @@ export class AnalyticsService {
         eventsLvl: string,
         propLvl: string,
         childrenLvl: string,
+        idLvl: string
     ): Observable<any> {
         let params = new HttpParams()
         if (policyId1 !== undefined) {
@@ -54,6 +59,9 @@ export class AnalyticsService {
         }
         if (childrenLvl !== undefined) {
             params = params.set('childrenLvl', childrenLvl);
+        }
+        if (idLvl !== undefined) {
+            params = params.set('idLvl', idLvl);
         }
         return this.http.get<any>(`${this.url}/compare/policies`, { params });
     }

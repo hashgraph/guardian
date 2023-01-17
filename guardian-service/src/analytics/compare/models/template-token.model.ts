@@ -41,7 +41,7 @@ export class TemplateTokenModel implements IWeightModel {
 
         hashState = MurmurHash3();
         hashState.hash(this.name);
-        hashState.hash(this._prop.hash(options.propLvl));
+        hashState.hash(this._prop.hash(options));
         weight = String(hashState.result());
         weights.push(weight);
         weightMap[WeightType.TOPIC_LVL_1] = weight;

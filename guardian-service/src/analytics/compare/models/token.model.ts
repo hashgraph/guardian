@@ -1,4 +1,6 @@
 import { Token } from "@entity/token";
+import { ICompareOptions } from "../interfaces/compare-options.interface";
+import MurmurHash3 from 'imurmurhash';
 
 export class TokenModel {
     public readonly id: string;
@@ -13,7 +15,11 @@ export class TokenModel {
     public readonly enableKYC: boolean;
     public readonly enableWipe: boolean;
 
-    constructor(token: Token) {
+    private readonly options: ICompareOptions;
+    private _weight: string;
+
+    constructor(token: Token, options: ICompareOptions) {
+        this.options = options;
         this.id = token.id;
         this.tokenId = token.tokenId;
         this.tokenName = token.tokenName;
@@ -25,6 +31,8 @@ export class TokenModel {
         this.enableFreeze = token.enableFreeze;
         this.enableKYC = token.enableKYC;
         this.enableWipe = token.enableWipe;
+        this._weight = '';
+        this.update(this.options);
     }
 
     public equal(item: TokenModel): boolean {
@@ -45,5 +53,26 @@ export class TokenModel {
             enableKYC: this.enableKYC,
             enableWipe: this.enableWipe
         }
+    }
+
+    public hash(options?: ICompareOptions): string {
+        return this._weight;
+    }
+
+    public update(options: ICompareOptions): void {
+        let hashState = MurmurHash3();
+        hashState.hash(String(this.tokenName));
+        hashState.hash(String(this.tokenSymbol));
+        hashState.hash(String(this.tokenType));
+        hashState.hash(String(this.decimals));
+        hashState.hash(String(this.initialSupply));
+        hashState.hash(String(this.enableAdmin));
+        hashState.hash(String(this.enableFreeze));
+        hashState.hash(String(this.enableKYC));
+        hashState.hash(String(this.enableWipe));
+        if (options.idLvl > 0) {
+            hashState.hash(String(this.tokenId));
+        }
+        this._weight = String(hashState.result());
     }
 }
