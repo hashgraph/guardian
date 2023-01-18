@@ -1,5 +1,5 @@
-import { Token } from "@entity/token";
-import { ICompareOptions } from "../interfaces/compare-options.interface";
+import { Token } from '@entity/token';
+import { ICompareOptions } from '../interfaces/compare-options.interface';
 import MurmurHash3 from 'imurmurhash';
 
 export class TokenModel {

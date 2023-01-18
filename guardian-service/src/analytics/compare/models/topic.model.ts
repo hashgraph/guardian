@@ -1,5 +1,5 @@
 import MurmurHash3 from 'imurmurhash';
-import { ICompareOptions } from "../interfaces/compare-options.interface";
+import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { IWeightModel } from '../interfaces/model.interface';
 import { PropertyType } from '../types/property.type';

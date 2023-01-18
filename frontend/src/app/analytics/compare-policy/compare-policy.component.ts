@@ -10,8 +10,6 @@ export class ComparePolicyComponent implements OnInit {
 
     panelOpenState = true;
 
-    type = 'tree';
-
     policy1: any;
     policy2: any;
     total!: any;
@@ -22,6 +20,7 @@ export class ComparePolicyComponent implements OnInit {
     groups!: any[];
     roles!: any[];
 
+    @Input() type: string = 'tree';
     @Input() eventsLvl: string = '1';
     @Input() propLvl: string = '2';
     @Input() childrenLvl: string = '2';
@@ -137,16 +136,6 @@ export class ComparePolicyComponent implements OnInit {
     }
 
     onRender() {
-    }
-
-    onApply() {
-        this.change.emit({
-            type: 'params',
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
-        })
     }
 
     compareSchema(prop: any) {

@@ -1,10 +1,10 @@
-import { Status } from "../types/status.type";
-import { IRate } from "../interfaces/rate.interface";
-import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { PropertyModel } from "../models/property.model";
-import { PropertyType } from "../types/property.type";
-import { CompareUtils } from "../utils/utils";
-import { IRateMap } from "../interfaces/rate-map.interface";
+import { Status } from '../types/status.type';
+import { IRate } from '../interfaces/rate.interface';
+import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { PropertyModel } from '../models/property.model';
+import { PropertyType } from '../types/property.type';
+import { CompareUtils } from '../utils/utils';
+import { IRateMap } from '../interfaces/rate-map.interface';
 
 export class PropertiesRate implements IRate<PropertyModel<any>> {
     public readonly left: PropertyModel<any>;

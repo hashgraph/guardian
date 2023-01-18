@@ -1,5 +1,5 @@
-import { Status } from "../types/status.type";
-import { ICompareOptions } from "./compare-options.interface";
+import { Status } from '../types/status.type';
+import { ICompareOptions } from './compare-options.interface';
 
 export interface IRate<T> {
     readonly left: T;

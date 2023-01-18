@@ -1,6 +1,6 @@
-import { IKeyMap } from "analytics/compare/interfaces/key-map.interface";
-import { IColumn } from "./report-column";
-import { ReportRow } from "./report-row";
+import { IKeyMap } from 'analytics/compare/interfaces/key-map.interface';
+import { IColumn } from './report-column';
+import { ReportRow } from './report-row';
 
 export class ReportTable {
     public readonly columns: string[];
@@ -48,7 +48,7 @@ export class ReportTable {
         };
     }
 
-    public object(): any {
+    public object(): any[] {
         return this.rows.map(row => row.object());
     }
 }

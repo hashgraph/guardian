@@ -1,4 +1,4 @@
-import { PropertyType } from "../types/property.type";
+import { PropertyType } from '../types/property.type';
 
 export interface IProperties<T> {
     name: string;

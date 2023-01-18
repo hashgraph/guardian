@@ -1,5 +1,5 @@
 import { FieldModel } from './field.model';
-import { ConditionModel } from "./condition-model";
+import { ConditionModel } from './condition-model';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import MurmurHash3 from 'imurmurhash';
 

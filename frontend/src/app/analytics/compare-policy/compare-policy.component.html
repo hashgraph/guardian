@@ -132,64 +132,6 @@
                 </mat-expansion-panel-header>
 
                 <div class="merge-container">
-                    <div class="merge-options">
-                        <div class="merge-lvl">
-                            <div class="f1">
-                                <mat-form-field appearance="outline">
-                                    <mat-label>Events:</mat-label>
-                                    <mat-select [(value)]="eventsLvl">
-                                        <mat-option value="0">None</mat-option>
-                                        <mat-option value="1">Full</mat-option>
-                                    </mat-select>
-                                </mat-form-field>
-                            </div>
-                            <div class="f1">
-                                <mat-form-field appearance="outline">
-                                    <mat-label>Prop:</mat-label>
-                                    <mat-select [(value)]="propLvl">
-                                        <mat-option value="0">None</mat-option>
-                                        <mat-option value="1">Simple</mat-option>
-                                        <mat-option value="2">Full</mat-option>
-                                    </mat-select>
-                                </mat-form-field>
-
-                            </div>
-                            <div class="f1">
-                                <mat-form-field appearance="outline">
-                                    <mat-label>Children:</mat-label>
-                                    <mat-select [(value)]="childrenLvl">
-                                        <mat-option value="0">None</mat-option>
-                                        <mat-option value="1">First Lvl</mat-option>
-                                        <mat-option value="2">Full</mat-option>
-                                    </mat-select>
-                                </mat-form-field>
-                            </div>
-                            <div class="f1">
-                                <mat-form-field appearance="outline">
-                                    <mat-label>UUID:</mat-label>
-                                    <mat-select [(value)]="idLvl">
-                                        <mat-option value="0">None</mat-option>
-                                        <mat-option value="1">Full</mat-option>
-                                    </mat-select>
-                                </mat-form-field>
-                            </div>
-                        </div>
-                        <div class="merge-lvl-apply">
-                            <div class="merge-lvl-btn" (click)="onApply()">Apply</div>
-                        </div>
-                        <div class="merge-type">
-                            <div class="f2">
-                                <mat-form-field appearance="outline">
-                                    <mat-label>Type:</mat-label>
-                                    <mat-select [(value)]="type">
-                                        <mat-option value="tree">Tree</mat-option>
-                                        <mat-option value="table">Table</mat-option>
-                                    </mat-select>
-                                </mat-form-field>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="legend" [attr.type-1]="type1" [attr.type-2]="type2" [attr.type-3]="type3"
                         [attr.type-4]="type4">
                         <div class="legend-item" (click)="type1=!type1">

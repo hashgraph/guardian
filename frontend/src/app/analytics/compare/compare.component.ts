@@ -21,6 +21,9 @@ export class CompareComponent implements OnInit {
     propLvl = '2';
     childrenLvl = '2';
     idLvl = '0';
+    visibleType = 'tree';
+
+    total: any;
 
     constructor(
         private auth: AuthService,
@@ -55,15 +58,17 @@ export class CompareComponent implements OnInit {
     }
 
     loadPolicy() {
-        this.analyticsService.comparePolicy(
-            this.policyId1,
-            this.policyId2,
-            this.eventsLvl,
-            this.propLvl,
-            this.childrenLvl,
-            this.idLvl
-        ).subscribe((value) => {
+        const options = {
+            policyId1: this.policyId1,
+            policyId2: this.policyId2,
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl
+        }
+        this.analyticsService.comparePolicy(options).subscribe((value) => {
             this.result = value;
+            this.total = this.result?.total;
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -74,12 +79,17 @@ export class CompareComponent implements OnInit {
     }
 
     loadSchema() {
-        this.analyticsService.compareSchema(
-            this.schemaId1,
-            this.schemaId2,
-            this.idLvl
-        ).subscribe((value) => {
+        const options = {
+            schemaId1: this.schemaId1,
+            schemaId2: this.schemaId2,
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl
+        }
+        this.analyticsService.compareSchema(options).subscribe((value) => {
             this.result = value;
+            this.total = this.result?.total;
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -91,9 +101,9 @@ export class CompareComponent implements OnInit {
 
     onChange(event: any) {
         if (event.type === 'params') {
-            this.onFilters(event)
+            this.onFilters(event);
         } else if (event.type === 'schema') {
-            this.compareSchema(event)
+            this.compareSchema(event);
         }
     }
 
@@ -116,4 +126,72 @@ export class CompareComponent implements OnInit {
             }
         });
     }
+
+    onApply() {
+        this.loadData();
+    }
+
+    onExport() {
+        if (this.type === 'policy') {
+            this.downloadPolicy();
+        } else if (this.type === 'schema') {
+            this.downloadSchema();
+        }
+    }
+
+    downloadPolicy() {
+        const options = {
+            policyId1: this.policyId1,
+            policyId2: this.policyId2,
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl
+        }
+        this.analyticsService.comparePolicyFile(options, 'csv').subscribe((data) => {
+            if (data) {
+                this.downloadObjectAsJson(data, 'report');
+            }
+            this.loading = false;
+        }, (error) => {
+            this.loading = false;
+            console.error(error);
+        });
+    }
+
+    downloadSchema() {
+        const options = {
+            schemaId1: this.schemaId1,
+            schemaId2: this.schemaId2,
+            eventsLvl: this.eventsLvl,
+            propLvl: this.propLvl,
+            childrenLvl: this.childrenLvl,
+            idLvl: this.idLvl
+        }
+        this.analyticsService.compareSchemaFile(options, 'csv').subscribe((data) => {
+            if (data) {
+                this.downloadObjectAsJson(data, 'report');
+            }
+            this.loading = false;
+        }, (error) => {
+            this.loading = false;
+            console.error(error);
+        });
+    }
+
+    downloadObjectAsJson(csvContent: any, exportName: string) {
+        const data = csvContent.replace('text/csv;charset=utf-8;', '');
+        var blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+        var link = document.createElement("a");
+        if (link.download !== undefined) {
+            var url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", exportName + '.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
 }

@@ -1,12 +1,12 @@
-import { Status } from "../types/status.type";
-import { IRate } from "../interfaces/rate.interface";
-import { FieldModel } from "../models/field.model";
-import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { PropertiesRate } from "./properties-rate";
-import { Rate } from "./rate";
-import { IRateMap } from "../interfaces/rate-map.interface";
-import { PropertyModel } from "../models/property.model";
-import { CompareUtils } from "../utils/utils";
+import { Status } from '../types/status.type';
+import { IRate } from '../interfaces/rate.interface';
+import { FieldModel } from '../models/field.model';
+import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { PropertiesRate } from './properties-rate';
+import { Rate } from './rate';
+import { IRateMap } from '../interfaces/rate-map.interface';
+import { PropertyModel } from '../models/property.model';
+import { CompareUtils } from '../utils/utils';
 
 export class FieldsRate extends Rate<FieldModel> {
     public fields: FieldsRate[];

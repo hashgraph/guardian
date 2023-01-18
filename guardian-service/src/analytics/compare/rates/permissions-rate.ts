@@ -1,6 +1,6 @@
-import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { IRate } from "../interfaces/rate.interface";
-import { Status } from "../types/status.type";
+import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { IRate } from '../interfaces/rate.interface';
+import { Status } from '../types/status.type';
 
 export class PermissionsRate implements IRate<string> {
     public readonly left: string;

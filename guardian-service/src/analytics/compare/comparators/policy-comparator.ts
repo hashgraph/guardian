@@ -1,17 +1,17 @@
-import { BlockModel } from "../models/block.model";
-import { BlocksRate } from "../rates/blocks-rate";
-import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { PolicyModel } from "../models/policy.model";
-import { ReportTable } from "../../table/report-table";
-import { Status } from "../types/status.type";
-import { IRateMap } from "../interfaces/rate-map.interface";
-import { ICompareResult } from "../interfaces/compare-result.interface";
-import { MergeUtils } from "../utils/merge-utils";
-import { IWeightModel } from "../interfaces/model.interface";
-import { IRate } from "../interfaces/rate.interface";
-import { Rate } from "../rates/rate";
-import { ObjectRate } from "../rates/object-rate";
-import { CompareUtils } from "../utils/utils";
+import { BlockModel } from '../models/block.model';
+import { BlocksRate } from '../rates/blocks-rate';
+import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { PolicyModel } from '../models/policy.model';
+import { ReportTable } from '../../table/report-table';
+import { Status } from '../types/status.type';
+import { IRateMap } from '../interfaces/rate-map.interface';
+import { ICompareResult, IReportTable } from '../interfaces/compare-result.interface';
+import { MergeUtils } from '../utils/merge-utils';
+import { IWeightModel } from '../interfaces/model.interface';
+import { IRate } from '../interfaces/rate.interface';
+import { ObjectRate } from '../rates/object-rate';
+import { CompareUtils } from '../utils/utils';
+import { CSV } from '../../table/csv';
 
 export class PolicyComparator {
     private readonly propLvl: number;
@@ -44,6 +44,15 @@ export class PolicyComparator {
         policy1: PolicyModel,
         policy2: PolicyModel
     ): ICompareResult<any> {
+        const columnsRoles = [
+            { name: 'left_name', label: 'Name', type: 'string' },
+            { name: 'right_name', label: 'Name', type: 'string' },
+            { name: 'total_rate', label: 'Total Rate', type: 'number' },
+            { name: 'left', label: '', type: 'object' },
+            { name: 'right', label: '', type: 'object' },
+            { name: 'type', label: '', type: 'string' },
+            { name: 'properties', label: '', type: 'object' }
+        ];
         const columns = [
             { name: 'lvl', label: 'Offset', type: 'number' },
             { name: 'left_index', label: 'Index', type: 'number' },
@@ -69,16 +78,17 @@ export class PolicyComparator {
         ];
 
         const treeTable = new ReportTable(columns);
-        const rolesTable = new ReportTable(columns);
-        const groupsTable = new ReportTable(columns);
-        const topicsTable = new ReportTable(columns);
-        const tokensTable = new ReportTable(columns);
+        const rolesTable = new ReportTable(columnsRoles);
+        const groupsTable = new ReportTable(columnsRoles);
+        const topicsTable = new ReportTable(columnsRoles);
+        const tokensTable = new ReportTable(columnsRoles);
 
         const tree = this.compareTree(policy1.tree, policy2.tree, this.options);
         const roles = this.compareArray(policy1.roles, policy2.roles, this.options);
         const groups = this.compareArray(policy1.groups, policy2.groups, this.options);
         const topics = this.compareArray(policy1.topics, policy2.topics, this.options);
         const tokens = this.compareArray(policy1.tokens, policy2.tokens, this.options);
+        const blocks = this.treeToArray(tree, []);
 
         this.treeToTable(tree, treeTable, 1);
         this.ratesToTable(roles, rolesTable);
@@ -86,18 +96,18 @@ export class PolicyComparator {
         this.ratesToTable(topics, topicsTable);
         this.ratesToTable(tokens, tokensTable);
 
-        const blockRate = tree.total();
+        const blockRate = this.total(blocks);
         const roleRate = this.total(roles);
         const groupRate = this.total(groups);
         const topicRate = this.total(topics);
         const tokenRate = this.total(tokens);
-        const total = CompareUtils.calcTotalRate(
-            blockRate,
+        const otherRate = CompareUtils.calcTotalRate(
             roleRate,
             groupRate,
             topicRate,
             tokenRate
         );
+        const total = CompareUtils.calcTotalRate(otherRate, blockRate);
 
         const result: ICompareResult<any> = {
             left: policy1.info(),
@@ -108,19 +118,19 @@ export class PolicyComparator {
                 report: treeTable.object(),
             },
             roles: {
-                columns,
+                columns: columnsRoles,
                 report: rolesTable.object(),
             },
             groups: {
-                columns,
+                columns: columnsRoles,
                 report: groupsTable.object(),
             },
             topics: {
-                columns,
+                columns: columnsRoles,
                 report: topicsTable.object(),
             },
             tokens: {
-                columns,
+                columns: columnsRoles,
                 report: tokensTable.object(),
             }
         }
@@ -132,7 +142,13 @@ export class PolicyComparator {
         let count = 0;
 
         for (const child of rates) {
-            total += child.total();
+            if (child.totalRate > 99) {
+                total += 100;
+            } else if (child.totalRate > 50) {
+                total += 50;
+            } else {
+                total += 0;
+            }
             count++;
         }
 
@@ -141,6 +157,14 @@ export class PolicyComparator {
         }
 
         return 100;
+    }
+
+    public treeToArray(tree: IRate<any>, result: IRate<any>[]): IRate<any>[] {
+        result.push(tree);
+        for (const child of tree.getChildren<BlocksRate>()) {
+            this.treeToArray(child, result);
+        }
+        return result;
     }
 
     public treeToTable(tree: BlocksRate, table: ReportTable, lvl: number): void {
@@ -207,6 +231,12 @@ export class PolicyComparator {
         row.set('type', rate.type);
         row.setArray('properties', rate.getSubRate('properties'));
 
+        if (item_1) {
+            row.set('left_name', item_1.key);
+        }
+        if (item_2) {
+            row.set('right_name', item_2.key);
+        }
         if (item_1 && item_2) {
             row.set('total_rate', `${rate.getRateValue('total')}%`);
         } else {
@@ -285,5 +315,67 @@ export class PolicyComparator {
             rates.push(rate);
         }
         return rates;
+    }
+
+    public csv(result: ICompareResult<any>): string {
+        const csv = new CSV();
+
+        csv.add('Policy 1').addLine();
+        csv
+            .add('Policy ID')
+            .add('Policy Name')
+            .add('Policy Description')
+            .add('Policy Topic')
+            .add('Policy Version')
+            .addLine();
+        csv
+            .add(result.left.id)
+            .add(result.left.name)
+            .add(result.left.description)
+            .add(result.left.instanceTopicId)
+            .add(result.left.version)
+            .addLine();
+        csv.addLine();
+
+        csv.add('Policy 2').addLine();
+        csv
+            .add('Policy ID')
+            .add('Policy Name')
+            .add('Policy Description')
+            .add('Policy Topic')
+            .add('Policy Version')
+            .addLine();
+        csv
+            .add(result.right.id)
+            .add(result.right.name)
+            .add(result.right.description)
+            .add(result.right.instanceTopicId)
+            .add(result.right.version)
+            .addLine();
+        csv.addLine();
+
+        csv.add('Policy Roles').addLine();
+        CompareUtils.tableToCsv(csv, result.roles);
+        csv.addLine();
+
+        csv.add('Policy Groups').addLine();
+        CompareUtils.tableToCsv(csv, result.groups);
+        csv.addLine();
+
+        csv.add('Policy Topics').addLine();
+        CompareUtils.tableToCsv(csv, result.topics);
+        csv.addLine();
+
+        csv.add('Policy Tokens').addLine();
+        CompareUtils.tableToCsv(csv, result.tokens);
+        csv.addLine();
+
+        csv.add('Policy Blocks').addLine();
+        CompareUtils.tableToCsv(csv, result.blocks);
+        csv.addLine();
+
+        csv.add('Total').add(result.total + '%');
+
+        return csv.result();
     }
 }

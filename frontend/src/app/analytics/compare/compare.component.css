@@ -21,3 +21,103 @@
     top: 0;
     display: block;
 }
+
+.content-result {
+    position: absolute;
+    left: 0;
+    top: 80px;
+    right: 0;
+    bottom: 0;
+}
+
+.merge-options {
+    width: 100%;
+    height: 75px;
+    background: #ffffff;
+    border-bottom: 1px solid #c9c9c9;
+    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: min-content auto 130px 180px;
+    padding: 10px;
+    box-sizing: border-box;
+    box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 8%), 0px 2px 2px 0px rgb(0 0 0 / 8%), 0px 1px 5px 0px rgb(0 0 0 / 6%);
+}
+
+.merge-options::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
+    padding: 10px 0 10px 0;
+}
+
+.merge-lvl {
+    display: flex;
+}
+
+.merge-lvl-btn {
+    width: 125px;
+    cursor: pointer;
+    font-weight: 500;
+    user-select: none;
+    position: relative;
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 20%), 0px 2px 2px 0px rgb(0 0 0 / 14%), 0px 1px 5px 0px rgb(0 0 0 / 12%);
+    background-color: #ffffff;
+    color: #0c77ff;
+    height: 40px;
+    box-sizing: border-box;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    border: 1px solid #fdfdfd;
+    margin-top: 5px;
+}
+
+.f1 {
+    width: 160px;
+    display: flex;
+    height: 50px;
+    box-sizing: border-box;
+    margin-right: 20px;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.f2 {
+    width: 225px;
+    display: flex;
+    height: 50px;
+    box-sizing: border-box;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.merge-type {
+    display: flex;
+}
+
+
+.export-btn {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    margin-top: 4px;
+    padding-left: 45px;
+    color: #0c77ff;
+    height: 44px;
+    box-sizing: border-box;
+    display: flex;
+    user-select: none;
+    position: relative;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 115px;
+    cursor: pointer;
+    font-weight: 500;
+    align-items: center;
+
+}
+
+.export-btn mat-icon {
+    position: absolute;
+    left: 10px;
+    top: 8px;
+}

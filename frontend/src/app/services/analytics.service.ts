@@ -18,51 +18,23 @@ export class AnalyticsService {
     ) {
     }
 
-    public compareSchema(
-        schemaId1: string,
-        schemaId2: string,
-        idLvl: string
-    ): Observable<any> {
-        let params = new HttpParams();
-        if (schemaId1 !== undefined) {
-            params = params.set('schemaId1', schemaId1);
-        }
-        if (schemaId2 !== undefined) {
-            params = params.set('schemaId2', schemaId2);
-        }
-        if (idLvl !== undefined) {
-            params = params.set('idLvl', idLvl);
-        }
-        return this.http.get<any>(`${this.url}/compare/schemas`, { params });
+    public compareSchema(options: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/compare/schemas`, options);
     }
 
-    public comparePolicy(
-        policyId1: string,
-        policyId2: string,
-        eventsLvl: string,
-        propLvl: string,
-        childrenLvl: string,
-        idLvl: string
-    ): Observable<any> {
-        let params = new HttpParams()
-        if (policyId1 !== undefined) {
-            params = params.set('policyId1', policyId1);
-        }
-        if (policyId2 !== undefined) {
-            params = params.set('policyId2', policyId2);
-        }
-        if (eventsLvl !== undefined) {
-            params = params.set('eventsLvl', eventsLvl);
-        }
-        if (propLvl !== undefined) {
-            params = params.set('propLvl', propLvl);
-        }
-        if (childrenLvl !== undefined) {
-            params = params.set('childrenLvl', childrenLvl);
-        }
-        if (idLvl !== undefined) {
-            params = params.set('idLvl', idLvl);
-        }
-        return this.http.get<any>(`${this.url}/compare/policies`, { params });
+    public comparePolicy(options: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/compare/policies`, options);
+    }
+
+    public compareSchemaFile(options: any, type: string): Observable<any> {
+        return this.http.post(`${this.url}/compare/schemas/export?type=${type}`, options, { 
+            responseType: 'text' 
+        });
+    }
+
+    public comparePolicyFile(options: any, type: string): Observable<any> {
+        return this.http.post(`${this.url}/compare/policies/export?type=${type}`, options, { 
+            responseType: 'text' 
+        });
     }
 }

@@ -1,5 +1,7 @@
-import { IRateMap } from "../interfaces/rate-map.interface";
-import { IRate } from "../interfaces/rate.interface";
+import { CSV } from '../../table/csv';
+import { IReportTable } from '../interfaces/compare-result.interface';
+import { IRateMap } from '../interfaces/rate-map.interface';
+import { IRate } from '../interfaces/rate.interface';
 
 export class CompareUtils {
     private static equal(e1: any, e2: any): boolean {
@@ -38,5 +40,22 @@ export class CompareUtils {
             total += rate;
         }
         return Math.floor(total / args.length);
+    }
+
+    public static tableToCsv(csv: CSV, table: IReportTable): void {
+        const keys: string[] = [];
+        for (const col of table.columns) {
+            if (col.label) {
+                csv.add(col.label);
+                keys.push(col.name);
+            }
+        }
+        csv.addLine();
+        for (const row of table.report) {
+            for (const key of keys) {
+                csv.add(row[key]);
+            }
+            csv.addLine();
+        }
     }
 }

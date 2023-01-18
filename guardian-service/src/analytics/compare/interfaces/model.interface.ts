@@ -1,4 +1,4 @@
-import { ICompareOptions } from "./compare-options.interface";
+import { ICompareOptions } from './compare-options.interface';
 
 export interface IModel {
     toObject(): any;

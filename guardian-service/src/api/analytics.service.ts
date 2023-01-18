@@ -10,6 +10,7 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
         try {
             const {
                 user,
+                type,
                 policyId1,
                 policyId2,
                 eventsLvl,
@@ -23,6 +24,8 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
                 eventLvl: parseInt(eventsLvl, 10),
                 idLvl: parseInt(idLvl, 10),
             };
+
+            console.log(options);
 
             //Policy
             const policy1 = await DatabaseServer.getPolicyById(policyId1);
@@ -112,7 +115,12 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
 
             const comparator = new PolicyComparator(options);
             const result = comparator.compare(policyModel1, policyModel2);
-            return new MessageResponse(result);
+            if(type === 'csv') {
+                const csv = comparator.csv(result);
+                return new MessageResponse(csv);
+            } else {
+                return new MessageResponse(result);
+            }
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
@@ -121,7 +129,13 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
 
     ApiResponse(channel, MessageAPI.COMPARE_SCHEMAS, async (msg) => {
         try {
-            const { user, schemaId1, schemaId2, idLvl } = msg;
+            const { 
+                user, 
+                type, 
+                schemaId1, 
+                schemaId2, 
+                idLvl 
+            } = msg;
 
             const schema1 = await DatabaseServer.getSchemaById(schemaId1);
             const schema2 = await DatabaseServer.getSchemaById(schemaId2);
@@ -138,8 +152,12 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
             model2.update(options);
             const comparator = new SchemaComparator(options);
             const result = comparator.compare(model1, model2);
-
-            return new MessageResponse(result);
+            if(type === 'csv') {
+                const csv = comparator.csv(result);
+                return new MessageResponse(csv);
+            } else {
+                return new MessageResponse(result);
+            }
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

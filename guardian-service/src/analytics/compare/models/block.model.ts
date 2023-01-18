@@ -1,14 +1,14 @@
 import MurmurHash3 from 'imurmurhash';
-import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { EventModel } from "./event.model";
+import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { EventModel } from './event.model';
 import { BlockPropertiesModel } from './properties.model';
 import { WeightType } from '../types/weight.type';
 import { ArtifactModel } from './artifact.model';
 import { IArtifacts } from '../interfaces/artifacts.interface';
 import { SchemaModel } from './schema.model';
 import { PropertyModel } from './property.model';
-import { PropertyType } from "../types/property.type";
-import { IKeyMap } from "../interfaces/key-map.interface";
+import { PropertyType } from '../types/property.type';
+import { IKeyMap } from '../interfaces/key-map.interface';
 import { TokenModel } from './token.model';
 import { IWeightModel } from '../interfaces/model.interface';
 

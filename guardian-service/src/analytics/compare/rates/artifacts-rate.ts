@@ -1,6 +1,6 @@
-import { Status } from "../types/status.type";
-import { ArtifactModel } from "../models/artifact.model";
-import { Rate } from "./rate";
+import { Status } from '../types/status.type';
+import { ArtifactModel } from '../models/artifact.model';
+import { Rate } from './rate';
 
 export class ArtifactsRate extends Rate<ArtifactModel> {
     constructor(artifact1: ArtifactModel, artifact2: ArtifactModel) {

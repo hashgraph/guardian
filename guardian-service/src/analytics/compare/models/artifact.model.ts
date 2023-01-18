@@ -1,5 +1,5 @@
 import MurmurHash3 from 'imurmurhash';
-import { ICompareOptions } from "../interfaces/compare-options.interface";
+import { ICompareOptions } from '../interfaces/compare-options.interface';
 
 export class ArtifactModel {
     public readonly name: any;

@@ -1,13 +1,15 @@
-import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { ReportTable } from "../../table/report-table";
-import { Status } from "../types/status.type";
-import { SchemaModel } from "../models/schema.model";
-import { FieldModel } from "../models/field.model";
-import { FieldsRate } from "../rates/fields-rate";
-import { IRate } from "../interfaces/rate.interface";
-import { ICompareResult } from "../interfaces/compare-result.interface";
-import { MergeUtils } from "../utils/merge-utils";
-import { IRateMap } from "../interfaces/rate-map.interface";
+import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { ReportTable } from '../../table/report-table';
+import { Status } from '../types/status.type';
+import { SchemaModel } from '../models/schema.model';
+import { FieldModel } from '../models/field.model';
+import { FieldsRate } from '../rates/fields-rate';
+import { IRate } from '../interfaces/rate.interface';
+import { ICompareResult } from '../interfaces/compare-result.interface';
+import { MergeUtils } from '../utils/merge-utils';
+import { IRateMap } from '../interfaces/rate-map.interface';
+import { CSV } from '../../table/csv';
+import { CompareUtils } from '../utils/utils';
 
 export class SchemaComparator {
     private readonly options: ICompareOptions;
@@ -168,5 +170,51 @@ export class SchemaComparator {
             children.push(this.compareField(item.left, item.right, options));
         }
         return children;
+    }
+
+    public csv(result: ICompareResult<any>): string {
+        const csv = new CSV();
+
+        csv.add('Schema 1').addLine();
+        csv
+            .add('Schema ID')
+            .add('Schema Name')
+            .add('Schema Description')
+            .add('Schema Topic')
+            .add('Schema Version')
+            .addLine();
+        csv
+            .add(result.left.iri)
+            .add(result.left.name)
+            .add(result.left.description)
+            .add(result.left.topicId)
+            .add(result.left.version)
+            .addLine();
+        csv.addLine();
+
+        csv.add('Schema 2').addLine();
+        csv
+            .add('Schema ID')
+            .add('Schema Name')
+            .add('Schema Description')
+            .add('Schema Topic')
+            .add('Schema Version')
+            .addLine();
+        csv
+            .add(result.right.iri)
+            .add(result.right.name)
+            .add(result.right.description)
+            .add(result.right.topicId)
+            .add(result.right.version)
+            .addLine();
+        csv.addLine();
+
+        csv.add('Schema Fields').addLine();
+        CompareUtils.tableToCsv(csv, result.fields);
+        csv.addLine();
+
+        csv.add('Total').add(result.total+'%');
+
+        return csv.result();
     }
 }

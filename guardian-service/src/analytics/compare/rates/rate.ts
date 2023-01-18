@@ -1,7 +1,7 @@
-import { Status } from "../types/status.type";
-import { IRate } from "../interfaces/rate.interface";
-import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { IModel } from "../interfaces/model.interface";
+import { Status } from '../types/status.type';
+import { IRate } from '../interfaces/rate.interface';
+import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { IModel } from '../interfaces/model.interface';
 
 export class Rate<T extends IModel> implements IRate<T> {
     public readonly left: T;

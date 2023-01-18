@@ -1,6 +1,6 @@
-import { Status } from "../types/status.type";
-import { EventModel } from "../models/event.model";
-import { Rate } from "./rate";
+import { Status } from '../types/status.type';
+import { EventModel } from '../models/event.model';
+import { Rate } from './rate';
 
 export class EventsRate extends Rate<EventModel> {
     constructor(event1: EventModel, event2: EventModel) {

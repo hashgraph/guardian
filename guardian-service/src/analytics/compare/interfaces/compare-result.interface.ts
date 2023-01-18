@@ -1,9 +1,9 @@
-import { IColumn } from "analytics/table/report-column";
-import { ReportTable } from "analytics/table/report-table";
+import { IColumn } from 'analytics/table/report-column';
+import { ReportTable } from 'analytics/table/report-table';
 
-interface IReportTable {
+export interface IReportTable {
     columns: IColumn[];
-    report: ReportTable;
+    report: any[];
 }
 
 export interface ICompareResult<T> {

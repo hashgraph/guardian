@@ -1,6 +1,6 @@
 import MurmurHash3 from 'imurmurhash';
-import { BlockModel } from "./block.model";
-import { ICompareOptions } from "../interfaces/compare-options.interface";
+import { BlockModel } from './block.model';
+import { ICompareOptions } from '../interfaces/compare-options.interface';
 
 export class EventModel {
     public readonly actor: any;

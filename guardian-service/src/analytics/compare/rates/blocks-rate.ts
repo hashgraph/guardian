@@ -1,17 +1,17 @@
-import { BlockModel } from "../models/block.model";
-import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { Status } from "../types/status.type";
-import { EventModel } from "../models/event.model";
-import { PropertiesRate } from "./properties-rate";
-import { EventsRate } from "./events-rate";
-import { PermissionsRate } from "./permissions-rate";
-import { ArtifactsRate } from "./artifacts-rate";
-import { IRate } from "../interfaces/rate.interface";
-import { ArtifactModel } from "../models/artifact.model";
-import { Rate } from "./rate";
-import { AnyPropertyModel, PropertyModel } from "../models/property.model";
-import { IRateMap } from "../interfaces/rate-map.interface";
-import { CompareUtils } from "../utils/utils";
+import { BlockModel } from '../models/block.model';
+import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { Status } from '../types/status.type';
+import { EventModel } from '../models/event.model';
+import { PropertiesRate } from './properties-rate';
+import { EventsRate } from './events-rate';
+import { PermissionsRate } from './permissions-rate';
+import { ArtifactsRate } from './artifacts-rate';
+import { IRate } from '../interfaces/rate.interface';
+import { ArtifactModel } from '../models/artifact.model';
+import { Rate } from './rate';
+import { AnyPropertyModel, PropertyModel } from '../models/property.model';
+import { IRateMap } from '../interfaces/rate-map.interface';
+import { CompareUtils } from '../utils/utils';
 
 export class BlocksRate extends Rate<BlockModel> {
     public blockType: string;

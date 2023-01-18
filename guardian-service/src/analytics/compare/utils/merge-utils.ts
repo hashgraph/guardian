@@ -1,5 +1,5 @@
-import { IWeightModel } from "../interfaces/model.interface";
-import { IRateMap } from "../interfaces/rate-map.interface";
+import { IWeightModel } from '../interfaces/model.interface';
+import { IRateMap } from '../interfaces/rate-map.interface';
 
 export class MergeUtils {
     private static getKey(left?: IWeightModel, right?: IWeightModel): string {

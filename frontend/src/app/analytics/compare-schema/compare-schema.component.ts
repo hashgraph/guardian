@@ -10,13 +10,12 @@ export class CompareSchemaComponent implements OnInit {
 
     panelOpenState = true;
 
-    type = 'tree';
-
     schema1: any;
     schema2: any;
     report!: any[];
     total!: any;
 
+    @Input() type: string = 'tree';
     @Input() idLvl: string = '1';
 
     @Output() change = new EventEmitter<any>();

@@ -1,8 +1,8 @@
-import { ICompareOptions } from "../interfaces/compare-options.interface";
-import { IProperties } from "../interfaces/properties.interface";
-import { PropertyType } from "../types/property.type";
-import { SchemaModel } from "./schema.model";
-import { TokenModel } from "./token.model";
+import { ICompareOptions } from '../interfaces/compare-options.interface';
+import { IProperties } from '../interfaces/properties.interface';
+import { PropertyType } from '../types/property.type';
+import { SchemaModel } from './schema.model';
+import { TokenModel } from './token.model';
 
 export class PropertyModel<T> implements IProperties<T> {
     public readonly name: string;
