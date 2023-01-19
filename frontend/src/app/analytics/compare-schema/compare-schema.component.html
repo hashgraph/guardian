@@ -57,8 +57,12 @@
                         [attr.type-2]="type2" [attr.type-3]="type3" [attr.type-4]="type4">
 
                         <div *ngFor="let item of report; let i=index" class="report-item report-item-number"
-                            [attr.type]="item.type" [attr.rate]="item.total_rate">
+                            [attr.type]="item.type" [attr.rate]="item.total_rate" [attr.hidden]="item._hidden">
                             <div class="report-number">{{i+1}}</div>
+                            <div class="report-collapse" [attr.collapse]="item._collapse" (click)="onCollapse(item)">
+                                <mat-icon class="open-icon">remove</mat-icon>
+                                <mat-icon class="collapse-icon">add</mat-icon>
+                            </div>
 
                             <div *ngIf="item.left_name" [attr.offset]="item.lvl" [style.padding-left.px]="30*item.lvl"
                                 class="left-tree">

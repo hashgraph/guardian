@@ -115,7 +115,7 @@ export class PropertiesModel {
         path: string,
         properties: PropertyModel<any>[]
     ): PropertyModel<any>[] {
-        if (!value) {
+        if (value === undefined) {
             return properties;
         }
         if (/[S,s]chema/.test(name)) {
@@ -126,7 +126,7 @@ export class PropertiesModel {
             properties.push(new TokenPropertyModel(name, value, lvl, path));
             return properties;
         }
-        if (typeof value === 'object') {
+        if (value && typeof value === 'object') {
             if (Array.isArray(value)) {
                 properties.push(new ArrayPropertyModel(name, !!value.length, lvl, path));
                 for (let index = 0; index < value.length; index++) {

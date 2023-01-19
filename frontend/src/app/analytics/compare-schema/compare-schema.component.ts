@@ -53,6 +53,17 @@ export class CompareSchemaComponent implements OnInit {
             .filter(c => c.label)
             .map(c => c.name);
 
+        for (let i = 0; i < this.report.length; i++) {
+            const item1 = this.report[i];
+            const item2 = this.report[i + 1];
+            if (item1 && item2 && item2.lvl > item1.lvl) {
+                item1._collapse = 1;
+            } else {
+                item1._collapse = 0;
+            }
+            item1._hidden = false;
+            item1._index = i;
+        }
         this.onRender();
     }
 
@@ -64,5 +75,22 @@ export class CompareSchemaComponent implements OnInit {
             type: 'params',
             idLvl: this.idLvl,
         })
+    }
+
+    onCollapse(item: any) {
+        const hidden = item._collapse == 1;
+        if (hidden) {
+            item._collapse = 2;
+        } else {
+            item._collapse = 1;
+        }
+        for (let i = item._index + 1; i < this.report.length; i++) {
+            const item2 = this.report[i];
+            if (item2.lvl > item.lvl) {
+                item2._hidden = hidden;
+            } else {
+                break;
+            }
+        }
     }
 }

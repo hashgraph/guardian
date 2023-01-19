@@ -127,6 +127,10 @@
     position: relative;
 }
 
+.report-item[hidden="true"] {
+    display: none;
+}
+
 .left-tree {
     grid-row-start: 1;
     grid-column-start: 1;
@@ -550,4 +554,42 @@
 
 .merge-table-content::ng-deep mat-row[type="PARTLY"][rate="100%"] {
     background: linear-gradient(45deg, #d0ffd6 48%, #fffada 52%);
+}
+
+.report-collapse {
+    position: absolute;
+    left: 21px;
+    top: 19px;
+    padding-right: 4px;
+    box-sizing: border-box;
+    color: #898989;
+    overflow: hidden;
+    z-index: 2;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #898989;
+    background: #fff;
+    cursor: pointer;
+    display: none;
+}
+
+.report-collapse mat-icon {
+    position: absolute;
+    pointer-events: none;
+    left: -1px;
+    top: -1px;
+    font-size: 16px;
+    display: none;
+}
+
+.report-collapse[collapse="1"],
+.report-collapse[collapse="2"] {
+    display: block;
+}
+
+.report-collapse[collapse="1"] .open-icon {
+    display: block;
+}
+.report-collapse[collapse="2"] .collapse-icon {
+    display: block;
 }

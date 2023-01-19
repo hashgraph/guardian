@@ -352,7 +352,7 @@
             <div *ngFor="let prop of blocks.properties" class="prop-table-row" [attr.type]="prop.type"
                 [attr.offset]="prop.lvl" [attr.index]="index">
                 <div class="prop-table-name" [style.padding-left.px]="10*prop.lvl">{{prop.name}}:</div>
-                <div class="prop-table-value" [attr.prop-type]="prop.items[index].type">
+                <div class="prop-table-value" [attr.prop-type]="prop.items[index]?.type">
                     <div class="compare-btn" (click)="compareSchema(prop)">
                         <mat-icon>search</mat-icon>
                     </div>
@@ -462,7 +462,7 @@
             <div *ngFor="let prop of props.properties" class="prop-table-row" [attr.type]="prop.type"
                 [attr.offset]="prop.lvl" [attr.index]="index">
                 <div class="prop-table-name" [style.padding-left.px]="10*prop.lvl">{{prop.name}}:</div>
-                <div class="prop-table-value" [attr.prop-type]="prop.items[index].type">
+                <div class="prop-table-value" [attr.prop-type]="prop.items[index]?.type">
                     <div class="compare-btn" (click)="compareSchema(prop)">
                         <mat-icon>search</mat-icon>
                     </div>
