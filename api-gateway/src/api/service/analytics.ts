@@ -70,7 +70,6 @@ analyticsAPI.post('/compare/policies/export', async (req: AuthenticatedRequest, 
             childrenLvl,
             idLvl
         );
-        console.log('!!!!', result);
         res.send(result);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);

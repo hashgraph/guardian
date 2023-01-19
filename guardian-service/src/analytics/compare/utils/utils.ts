@@ -2,6 +2,7 @@ import { CSV } from '../../table/csv';
 import { IReportTable } from '../interfaces/report-table.interface';
 import { IRateMap } from '../interfaces/rate-map.interface';
 import { IRate } from '../interfaces/rate.interface';
+import MurmurHash3 from 'imurmurhash';
 
 /**
  * Compare Utils
@@ -93,5 +94,19 @@ export class CompareUtils {
             }
             csv.addLine();
         }
+    }
+
+    /**
+     * Aggregate hash
+     * @param args - hash (array)
+     * @public
+     * @static
+     */
+    public static aggregateHash(...args: string[]): string {
+        const hashState = MurmurHash3();
+        for (const h of args) {
+            hashState.hash(h);
+        }
+        return String(hashState.result());
     }
 }

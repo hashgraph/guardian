@@ -29,8 +29,6 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
                 idLvl: parseInt(idLvl, 10),
             };
 
-            console.log(options);
-
             //Policy
             const policy1 = await DatabaseServer.getPolicyById(policyId1);
             const policy2 = await DatabaseServer.getPolicyById(policyId2);

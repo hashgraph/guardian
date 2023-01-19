@@ -132,8 +132,8 @@ export class SchemaModel {
         const hashState = MurmurHash3();
         hashState.hash(this.name || '');
         hashState.hash(this.description || '');
-        hashState.hash(this.version || '');
         if (options.idLvl > 0) {
+            hashState.hash(this.version || '');
             hashState.hash(this.uuid || '');
             hashState.hash(this.iri || '');
         }

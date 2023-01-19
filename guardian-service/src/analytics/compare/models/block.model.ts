@@ -11,6 +11,7 @@ import { PropertyType } from '../types/property.type';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { TokenModel } from './token.model';
 import { IWeightModel } from '../interfaces/weight-model.interface';
+import { CompareUtils } from '../utils/utils';
 
 /**
  * Block Model
@@ -132,78 +133,90 @@ export class BlockModel implements IWeightModel {
         const weights = [];
         const weightMap = {};
 
-        let hashState: any;
+        let _hashState: any;
+        let _children = '0';
+        let _children1 = '0';
+        let _children2 = '0';
+        let _tag = '0';
+        let _prop = '0';
 
-        if (options.childLvl > 0) {
-            if (this._children.length) {
-                //children
-                hashState = MurmurHash3();
-                hashState.hash(this.blockType);
-                for (const child of this._children) {
-                    hashState.hash(child.blockType);
-                }
-                const weight = String(hashState.result());
-                weights.push(weight);
-                weightMap[WeightType.CHILD_LVL_1] = weight;
-            } else {
-                weights.push('0');
-                weightMap[WeightType.CHILD_LVL_1] = '0';
+        if (this._children && this._children.length) {
+            _hashState = MurmurHash3();
+            _hashState.hash(this.blockType);
+            for (const child of this._children) {
+                _hashState.hash(child.blockType);
             }
-        }
+            _children1 = String(_hashState.result());
 
-        if (options.propLvl > 0) {
-            //prop
-            hashState = MurmurHash3();
-            hashState.hash(this.blockType + this.tag);
-            const weight = String(hashState.result());
-            weights.push(weight);
-            weightMap[WeightType.PROP_LVL_1] = weight;
-        }
-
-        if (options.childLvl > 1) {
-            if (this._children.length) {
-                //all children
-                hashState = MurmurHash3();
-                hashState.hash(this.blockType);
-                for (const child of this._children) {
-                    hashState.hash(child.getWeight(WeightType.CHILD_LVL_2));
-                }
-                const weight = String(hashState.result());
-                weights.push(weight);
-                weightMap[WeightType.CHILD_LVL_2] = weight;
-            } else {
-                weights.push('0');
-                weightMap[WeightType.CHILD_LVL_2] = '0';
+            _hashState = MurmurHash3();
+            _hashState.hash(this.blockType);
+            for (const child of this._children) {
+                _hashState.hash(child.getWeight(WeightType.CHILD_LVL_2));
             }
-        }
+            _children2 = String(_hashState.result());
 
-        if (options.propLvl > 1) {
-            //prop
-            hashState = MurmurHash3();
-            hashState.hash(this.blockType + this._prop.hash(options));
-            const weight = String(hashState.result());
-            weights.push(weight);
-            weightMap[WeightType.PROP_LVL_2] = weight;
-        }
-
-        if (options.propLvl > 0 && options.childLvl > 0) {
-            //prop + all children
-            hashState = MurmurHash3();
-            hashState.hash(this.blockType + this._prop.hash(options));
             if (options.childLvl > 1) {
-                for (const child of this._children) {
-                    hashState.hash(child.getWeight(WeightType.PROP_AND_CHILD));
-                }
+                _children = _children2;
+            } else if (options.childLvl > 0) {
+                _children = _children1;
             } else {
-                for (const child of this._children) {
-                    hashState.hash(child._prop.hash(options));
-                }
+                _children = '0';
             }
-            const weight = String(hashState.result());
-            weights.push(weight);
-            weightMap[WeightType.PROP_AND_CHILD] = weight;
         }
 
+        if (this._prop) {
+            _hashState = MurmurHash3();
+            _hashState.hash(this.blockType)
+            _hashState.hash(this._prop.hash(options));
+            _prop = String(_hashState.result());
+        }
+
+        if (this.tag) {
+            _hashState = MurmurHash3();
+            _hashState.hash(this.blockType)
+            _hashState.hash(this.tag);
+            _tag = String(_hashState.result());
+        }
+
+        /*
+        - children
+        - tag
+        - prop
+        - tag + children
+        - prop + children
+        - tag + prop
+        - tag + prop + children
+        */
+        weightMap[WeightType.CHILD_LVL_2] = '0';
+        if (options.childLvl > 0) {
+            weightMap[WeightType.CHILD_LVL_1] = _children1;
+            weightMap[WeightType.CHILD_LVL_2] = _children2;
+            weights.push(_children);
+        }
+        if (options.propLvl > 0) {
+            weightMap[WeightType.PROP_LVL_1] = _tag;
+            weights.push(weightMap[WeightType.PROP_LVL_1]);
+        }
+        if (options.propLvl > 0) {
+            weightMap[WeightType.PROP_LVL_2] = _prop;
+            weights.push(weightMap[WeightType.PROP_LVL_2]);
+        }
+        if (options.propLvl > 0 && options.childLvl > 0) {
+            weightMap[WeightType.PROP_AND_CHILD_1] = CompareUtils.aggregateHash(_tag, _children);
+            weights.push(weightMap[WeightType.PROP_AND_CHILD_1]);
+        }
+        if (options.propLvl > 0 && options.childLvl > 0) {
+            weightMap[WeightType.PROP_AND_CHILD_2] = CompareUtils.aggregateHash(_prop, _children);
+            weights.push(weightMap[WeightType.PROP_AND_CHILD_2]);
+        }
+        if (options.propLvl > 0) {
+            weightMap[WeightType.PROP_LVL_3] = CompareUtils.aggregateHash(_tag, _prop);
+            weights.push(weightMap[WeightType.PROP_LVL_3]);
+        }
+        if (options.propLvl > 0 && options.childLvl > 0) {
+            weightMap[WeightType.PROP_AND_CHILD_3] = CompareUtils.aggregateHash(_tag, _prop, _children);
+            weights.push(weightMap[WeightType.PROP_AND_CHILD_3]);
+        }
         this._weightMap = weightMap;
         this._weight = weights.reverse();
     }
