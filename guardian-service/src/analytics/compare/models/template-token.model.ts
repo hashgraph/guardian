@@ -1,16 +1,20 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
-import { IWeightModel } from '../interfaces/model.interface';
+import { IWeightModel } from '../interfaces/weight-model.interface';
 import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { PropertiesModel } from './properties.model';
 import { PropertyModel } from './property.model';
 
+/**
+ * Template Token Model
+ * @extends IWeightModel
+ */
 export class TemplateTokenModel implements IWeightModel {
     public readonly name: any;
 
-    private _prop: PropertiesModel;
+    private readonly _prop: PropertiesModel;
 
     private _weight: string[];
     private _weightMap: IKeyMap<string>;

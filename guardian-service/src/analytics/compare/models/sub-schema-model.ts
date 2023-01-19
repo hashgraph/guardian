@@ -3,6 +3,9 @@ import { ConditionModel } from './condition-model';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import MurmurHash3 from 'imurmurhash';
 
+/**
+ * Schema Model
+ */
 export class SubSchemaModel {
     public readonly fields: FieldModel[];
     public readonly conditions: ConditionModel[];
@@ -38,6 +41,10 @@ export class SubSchemaModel {
 
         const properties = Object.keys(document.properties);
         for (const name of properties) {
+            if(name === '@context' || name === 'type') {
+                continue;
+            }
+
             const property = document.properties[name];
 
             const field = new FieldModel(name, property, !!required[name], index);
@@ -110,7 +117,7 @@ export class SubSchemaModel {
     }
 
     public update(options: ICompareOptions): void {
-        let hashState = MurmurHash3();
+        const hashState = MurmurHash3();
         for (const field of this.fields) {
             field.update(options);
             hashState.hash(field.hash(options));

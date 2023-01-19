@@ -12,6 +12,9 @@ import { TopicModel } from './topic.model';
 import { TemplateTokenModel } from './template-token.model';
 import { RoleModel } from './role.model';
 
+/**
+ * Policy Model
+ */
 export class PolicyModel {
     public readonly tree: BlockModel;
     public readonly id: string;

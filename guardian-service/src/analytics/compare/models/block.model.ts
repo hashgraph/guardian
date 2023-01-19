@@ -1,7 +1,7 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { EventModel } from './event.model';
-import { BlockPropertiesModel } from './properties.model';
+import { BlockPropertiesModel } from "./block-properties-model";
 import { WeightType } from '../types/weight.type';
 import { ArtifactModel } from './artifact.model';
 import { IArtifacts } from '../interfaces/artifacts.interface';
@@ -10,8 +10,12 @@ import { PropertyModel } from './property.model';
 import { PropertyType } from '../types/property.type';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { TokenModel } from './token.model';
-import { IWeightModel } from '../interfaces/model.interface';
+import { IWeightModel } from '../interfaces/weight-model.interface';
 
+/**
+ * Block Model
+ * @extends IWeightModel
+ */
 export class BlockModel implements IWeightModel {
     public readonly index: number;
     public readonly blockType: string;

@@ -13,20 +13,53 @@ import { AnyPropertyModel, PropertyModel } from '../models/property.model';
 import { IRateMap } from '../interfaces/rate-map.interface';
 import { CompareUtils } from '../utils/utils';
 
+/**
+ * Calculates the difference between two Blocks
+ */
 export class BlocksRate extends Rate<BlockModel> {
+    /**
+     * Blocks type
+     */
     public blockType: string;
-
+    /**
+     * Order Rate (percentage)
+     */
     public indexRate: number;
+    /**
+     * Properties Rate (percentage)
+     */
     public propertiesRate: number;
+    /**
+     * Events Rate (percentage)
+     */
     public eventsRate: number;
+    /**
+     * Permissions Rate (percentage)
+     */
     public permissionsRate: number;
+    /**
+     * Artifacts Rate (percentage)
+     */
     public artifactsRate: number;
-
+    /**
+     * Sub Properties
+     */
     public properties: IRate<any>[];
+    /**
+     * Sub Events
+     */
     public events: IRate<any>[];
+    /**
+     * Sub Permissions
+     */
     public permissions: IRate<any>[];
+    /**
+     * Sub Artifacts
+     */
     public artifacts: IRate<any>[];
-
+    /**
+     * Sub Blocks
+     */
     public children: BlocksRate[];
 
     constructor(block1: BlockModel, block2: BlockModel) {
@@ -51,23 +84,30 @@ export class BlocksRate extends Rate<BlockModel> {
         }
     }
 
-    private compareProp(
+    /**
+     * Compare two blocks
+     * @param block1
+     * @param block2
+     * @param options - comparison options
+     * @private
+     */
+    private compare(
         block1: BlockModel,
         block2: BlockModel,
         options: ICompareOptions
     ): IRate<any>[] {
         const list: string[] = [];
         const map: { [key: string]: IRateMap<PropertyModel<any>> } = {};
-        map['tag'] = { left: null, right: null };
+        map.tag = { left: null, right: null };
         if (block1) {
-            map['tag'].left = new AnyPropertyModel('tag', block1.tag);
+            map.tag.left = new AnyPropertyModel('tag', block1.tag);
             for (const item of block1.getPropList()) {
                 map[item.path] = { left: item, right: null };
                 list.push(item.path);
             }
         }
         if (block2) {
-            map['tag'].right = new AnyPropertyModel('tag', block2.tag);
+            map.tag.right = new AnyPropertyModel('tag', block2.tag);
             for (const item of block2.getPropList()) {
                 if (map[item.path]) {
                     map[item.path].right = item;
@@ -94,6 +134,13 @@ export class BlocksRate extends Rate<BlockModel> {
         return rates;
     }
 
+    /**
+     * Compare two permissions
+     * @param block1
+     * @param block2
+     * @param options - comparison options
+     * @private
+     */
     private comparePermissions(
         block1: BlockModel,
         block2: BlockModel,
@@ -119,6 +166,13 @@ export class BlocksRate extends Rate<BlockModel> {
         return rates;
     }
 
+    /**
+     * Compare two events
+     * @param block1
+     * @param block2
+     * @param options - comparison options
+     * @private
+     */
     private compareEvents(
         block1: BlockModel,
         block2: BlockModel,
@@ -144,6 +198,13 @@ export class BlocksRate extends Rate<BlockModel> {
         return rates;
     }
 
+    /**
+     * Compare two artifacts
+     * @param block1
+     * @param block2
+     * @param options - comparison options
+     * @private
+     */
     private compareArtifacts(
         block1: BlockModel,
         block2: BlockModel,
@@ -169,11 +230,16 @@ export class BlocksRate extends Rate<BlockModel> {
         return rates;
     }
 
+    /**
+     * Calculations all rates
+     * @param options - comparison options
+     * @public
+     */
     public override calc(options: ICompareOptions): void {
         const block1 = this.left;
         const block2 = this.right;
 
-        this.properties = this.compareProp(block1, block2, options);
+        this.properties = this.compare(block1, block2, options);
         this.events = this.compareEvents(block1, block2, options);
         this.permissions = this.comparePermissions(block1, block2, options);
         this.artifacts = this.compareArtifacts(block1, block2, options);
@@ -195,6 +261,11 @@ export class BlocksRate extends Rate<BlockModel> {
         );
     }
 
+    /**
+     * Get sub rates by name
+     * @param name - rate name
+     * @public
+     */
     public getSubRate(name: string): IRate<any>[] {
         if (name === 'properties') {
             return this.properties;
@@ -211,10 +282,19 @@ export class BlocksRate extends Rate<BlockModel> {
         return null;
     }
 
+    /**
+     * Get Children Rates
+     * @public
+     */
     public override getChildren<T extends IRate<any>>(): T[] {
         return this.children as any;
     }
 
+    /**
+     * Get rate by name
+     * @param name - rate name
+     * @public
+     */
     public override getRateValue(name: string): number {
         if (name === 'index') {
             return this.indexRate;

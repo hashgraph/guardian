@@ -22,17 +22,17 @@
 
             <mat-form-field appearance="outline" style="width: 100%">
                 <mat-label>First policy:</mat-label>
-                <mat-select [(value)]="policyId1">
+                <mat-select [(value)]="policyId1" (valueChange)="onChange()">
                     <mat-option>None</mat-option>
-                    <mat-option *ngFor="let policy of policies" [value]="policy.id">{{policy.name}}</mat-option>
+                    <mat-option *ngFor="let policy of list1" [value]="policy.id">{{policy.name}}</mat-option>
                 </mat-select>
             </mat-form-field>
 
             <mat-form-field appearance="outline" style="width: 100%">
                 <mat-label>Secondary policy</mat-label>
-                <mat-select [(value)]="policyId2">
+                <mat-select [(value)]="policyId2" (valueChange)="onChange()">
                     <mat-option>None</mat-option>
-                    <mat-option *ngFor="let policy of policies" [value]="policy.id">{{policy.name}}</mat-option>
+                    <mat-option *ngFor="let policy of list2" [value]="policy.id">{{policy.name}}</mat-option>
                 </mat-select>
             </mat-form-field>
         </div>

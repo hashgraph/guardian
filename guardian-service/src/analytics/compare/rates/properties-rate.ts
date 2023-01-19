@@ -2,22 +2,48 @@ import { Status } from '../types/status.type';
 import { IRate } from '../interfaces/rate.interface';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { PropertyModel } from '../models/property.model';
-import { PropertyType } from '../types/property.type';
 import { CompareUtils } from '../utils/utils';
 import { IRateMap } from '../interfaces/rate-map.interface';
 
+/**
+ * Calculates the difference between two Properties
+ */
 export class PropertiesRate implements IRate<PropertyModel<any>> {
+    /**
+     * Left property
+     */
     public readonly left: PropertyModel<any>;
+    /**
+     * Left property
+     */
     public readonly right: PropertyModel<any>;
-
+    /**
+     * Degree of equality
+     */
     public type: Status;
+    /**
+     * Total Rate (percentage)
+     */
     public totalRate: number;
-
+    /**
+     * Property name
+     */
     public name: string;
+    /**
+     * Property full path
+     */
     public path: string;
+    /**
+     * Property nesting level
+     */
     public lvl: number;
-
+    /**
+     * Properties Rate (percentage)
+     */
     public propertiesRate: number;
+    /**
+     * Sub Properties (if value is object)
+     */
     public properties: IRate<any>[];
 
     constructor(prop1: PropertyModel<any>, prop2: PropertyModel<any>) {
@@ -43,14 +69,30 @@ export class PropertiesRate implements IRate<PropertyModel<any>> {
         }
     }
 
-    public getChildren<T extends IRate<any>>(): T[] {
+    /**
+     * Get Children Rates
+     * @public
+     */
+    public getChildren<U extends IRate<any>>(): U[] {
         return [];
     }
 
+    /**
+     * Get sub rates by name
+     * @param name - rate name
+     * @public
+     */
     public getSubRate(name?: string): IRate<any>[] {
         return this.properties;
     }
 
+    /**
+     * Compare two properties
+     * @param prop1
+     * @param prop2
+     * @param options - comparison options
+     * @private
+     */
     private compareProp(
         prop1: PropertyModel<any>,
         prop2: PropertyModel<any>,
@@ -89,6 +131,11 @@ export class PropertiesRate implements IRate<PropertyModel<any>> {
         return rates;
     }
 
+    /**
+     * Calculations all rates
+     * @param options - comparison options
+     * @public
+     */
     public calc(options: ICompareOptions): void {
         this.properties = this.compareProp(this.left, this.right, options);
 
@@ -108,6 +155,10 @@ export class PropertiesRate implements IRate<PropertyModel<any>> {
         this.totalRate = CompareUtils.calcTotalRate(this.totalRate, this.propertiesRate);
     }
 
+    /**
+     * Convert class to object
+     * @public
+     */
     public toObject(): any {
         return {
             type: this.type,
@@ -122,10 +173,19 @@ export class PropertiesRate implements IRate<PropertyModel<any>> {
         }
     }
 
+    /**
+     * Get rate by name
+     * @param name - rate name
+     * @public
+     */
     public getRateValue(name: string): number {
         return this.totalRate;
     }
 
+    /**
+     * Get total rate and total rate all children
+     * @public
+     */
     public total(): number {
         return this.totalRate;
     }

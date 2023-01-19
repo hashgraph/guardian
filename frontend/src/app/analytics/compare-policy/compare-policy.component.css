@@ -10,7 +10,7 @@
 
 .list {
     overflow: auto;
-    height: calc(100vh - 130px);
+    height: calc(100vh - 205px);
 }
 
 .info-container {
@@ -256,7 +256,9 @@
 .report-item[type="FULL"] .block-tree {
     background: #a2ffa5;
 }
-
+.report-item[type="FULL"]:not([rate="100%"]) .block-tree {
+    background: #fff6ab;
+}
 .report-item[type="PARTLY"] .block-tree {
     background: #fff6ab;
 }
@@ -590,6 +592,9 @@
     display: block;
 }
 
+.merge-table-content::ng-deep mat-row[type="FULL"]:not([rate="100%"]) {
+    background: #fffada;
+}
 .merge-table-content::ng-deep mat-row[type="FULL"] {
     background: #d0ffd6;
 }
@@ -622,6 +627,7 @@
     max-width: 105px;
 }
 
+.cdk-column-order_rate,
 .cdk-column-index_rate,
 .cdk-column-prop_rate,
 .cdk-column-event_rate,

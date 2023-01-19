@@ -1,4 +1,6 @@
-
+/**
+ * Weight Type
+ */
 export enum WeightType {
     CHILD_LVL_1 = 'CHILD_LVL_1',
     CHILD_LVL_2 = 'CHILD_LVL_2',

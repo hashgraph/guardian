@@ -8,12 +8,25 @@ import { IRateMap } from '../interfaces/rate-map.interface';
 import { PropertyModel } from '../models/property.model';
 import { CompareUtils } from '../utils/utils';
 
+/**
+ * Calculates the difference between two Fields
+ */
 export class FieldsRate extends Rate<FieldModel> {
+    /**
+     * Children
+     */
     public fields: FieldsRate[];
-
+    /**
+     * Sub Properties (if value is object)
+     */
     public properties: PropertiesRate[];
-
+    /**
+     * Properties Rate (percentage)
+     */
     public propertiesRate: number;
+    /**
+     * Order Rate (percentage)
+     */
     public indexRate: number;
 
     constructor(field1: FieldModel, field2: FieldModel) {
@@ -33,7 +46,14 @@ export class FieldsRate extends Rate<FieldModel> {
         this.propertiesRate = -1;
     }
 
-    private compareProp(
+    /**
+     * Compare two fields
+     * @param field1
+     * @param field2
+     * @param options - comparison options
+     * @private
+     */
+    private compare(
         field1: FieldModel,
         field2: FieldModel,
         options: ICompareOptions
@@ -70,8 +90,13 @@ export class FieldsRate extends Rate<FieldModel> {
         }
     }
 
+    /**
+     * Calculations all rates
+     * @param options - comparison options
+     * @public
+     */
     public override calc(options: ICompareOptions): void {
-        this.compareProp(this.left, this.right, options);
+        this.compare(this.left, this.right, options);
 
         if (!this.left || !this.right) {
             return;
@@ -85,14 +110,28 @@ export class FieldsRate extends Rate<FieldModel> {
         );
     }
 
+    /**
+     * Get Children Rates
+     * @public
+     */
     public override getChildren<T extends IRate<any>>(): T[] {
         return this.fields as any;
     }
 
+    /**
+     * Get sub rates by name
+     * @param name - rate name
+     * @public
+     */
     public override getSubRate(name?: string): IRate<any>[] {
         return this.properties;
     }
 
+    /**
+     * Get rate by name
+     * @param name - rate name
+     * @public
+     */
     public override getRateValue(name: string): number {
         if (name === 'index') {
             return this.indexRate;

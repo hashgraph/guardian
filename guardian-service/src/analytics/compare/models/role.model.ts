@@ -1,11 +1,15 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
-import { IWeightModel } from '../interfaces/model.interface';
+import { IWeightModel } from '../interfaces/weight-model.interface';
 import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { AnyPropertyModel, PropertyModel } from './property.model';
 
+/**
+ * Role Model
+ * @extends IWeightModel
+ */
 export class RoleModel implements IWeightModel {
     public readonly name: any;
 

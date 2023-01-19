@@ -808,3 +808,19 @@ schemaAPI.get('/system/entity/:schemaEntity', async (req: AuthenticatedRequest, 
         res.status(500).json({ code: 500, message: error.message });
     }
 });
+
+schemaAPI.get('/list/all', async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const guardians = new Guardians();
+        let owner = user.parent;
+        if (user.role === UserRole.STANDARD_REGISTRY) {
+            owner = user.did;
+        }
+        const schemas = await guardians.getListSchemas(owner);
+        res.status(200).send(schemas);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).json({ code: error.code, message: error.message });
+    }
+});

@@ -2,6 +2,9 @@ import { Status } from '../types/status.type';
 import { ArtifactModel } from '../models/artifact.model';
 import { Rate } from './rate';
 
+/**
+ * Calculates the difference between two Artifacts
+ */
 export class ArtifactsRate extends Rate<ArtifactModel> {
     constructor(artifact1: ArtifactModel, artifact2: ArtifactModel) {
         super(artifact1, artifact2);

@@ -6,10 +6,19 @@ import { Rate } from './rate';
 import { IRateMap } from '../interfaces/rate-map.interface';
 import { PropertyModel } from '../models/property.model';
 import { CompareUtils } from '../utils/utils';
-import { IWeightModel } from '../interfaces/model.interface';
+import { IWeightModel } from '../interfaces/weight-model.interface';
 
+/**
+ * Calculates the difference between two Object
+ */
 export class ObjectRate extends Rate<IWeightModel> {
+    /**
+     * Sub Properties (if value is object)
+     */
     public properties: PropertiesRate[];
+    /**
+     * Properties Rate (percentage)
+     */
     public propertiesRate: number;
 
     constructor(item1: IWeightModel, item2: IWeightModel) {
@@ -28,7 +37,14 @@ export class ObjectRate extends Rate<IWeightModel> {
         this.propertiesRate = -1;
     }
 
-    private compareProp(item1: any, item2: any, options: ICompareOptions): void {
+    /**
+     * Compare two objects
+     * @param item1
+     * @param item2
+     * @param options - comparison options
+     * @private
+     */
+    private compare(item1: any, item2: any, options: ICompareOptions): void {
         const list: string[] = [];
         const map: { [key: string]: IRateMap<PropertyModel<any>> } = {};
 
@@ -61,8 +77,13 @@ export class ObjectRate extends Rate<IWeightModel> {
         }
     }
 
+    /**
+     * Calculations all rates
+     * @param options - comparison options
+     * @public
+     */
     public override calc(options: ICompareOptions): void {
-        this.compareProp(this.left, this.right, options);
+        this.compare(this.left, this.right, options);
 
         if (!this.left || !this.right) {
             return;
@@ -72,10 +93,20 @@ export class ObjectRate extends Rate<IWeightModel> {
         this.totalRate = CompareUtils.calcTotalRate(this.propertiesRate);
     }
 
+    /**
+     * Get sub rates by name
+     * @param name - rate name
+     * @public
+     */
     public override getSubRate(name?: string): IRate<any>[] {
         return this.properties;
     }
 
+    /**
+     * Get rate by name
+     * @param name - rate name
+     * @public
+     */
     public override getRateValue(name: string): number {
         if (name === 'properties') {
             return this.propertiesRate;

@@ -1,7 +1,17 @@
-import { IWeightModel } from '../interfaces/model.interface';
+import { IWeightModel } from '../interfaces/weight-model.interface';
 import { IRateMap } from '../interfaces/rate-map.interface';
 
+/**
+ * Merge Utils
+ */
 export class MergeUtils {
+    /**
+     * Get left or right object's key
+     * @param left
+     * @param right
+     * @private
+     * @static
+     */
     private static getKey(left?: IWeightModel, right?: IWeightModel): string {
         if (left) {
             return left.key;
@@ -12,6 +22,13 @@ export class MergeUtils {
         }
     }
 
+    /**
+     * Matches the left and right side one to one
+     * @param items1
+     * @param items2
+     * @public
+     * @static
+     */
     public static fullMerge<T>(items1: IWeightModel[], items2: IWeightModel[]): IRateMap<T>[] {
         const result: IRateMap<IWeightModel>[] = [];
         const max = Math.max(items1.length, items2.length);
@@ -23,23 +40,36 @@ export class MergeUtils {
         return result as any;
     }
 
+    /**
+     * Does not match left and right
+     * @param items1
+     * @param items2
+     * @public
+     * @static
+     */
     public static notMerge<T>(items1: IWeightModel[], items2: IWeightModel[]): IRateMap<T>[] {
         const result: IRateMap<IWeightModel>[] = [];
         if (items1) {
-            for (let i = 0; i < items1.length; i++) {
-                const left = items1[i];
+            for (const left of items1) {
                 result.push({ key: MergeUtils.getKey(left), left, right: null });
             }
         }
         if (items2) {
-            for (let i = 0; i < items2.length; i++) {
-                const right = items2[i];
+            for (const right of items2) {
                 result.push({ key: MergeUtils.getKey(right), left: null, right });
             }
         }
         return result as any;
     }
 
+    /**
+     * Matches the left and right side using weights
+     * @param items1
+     * @param items2
+     * @param keepOrder - keep original order
+     * @public
+     * @static
+     */
     public static partlyMerge<T>(items1: IWeightModel[], items2: IWeightModel[], keepOrder: boolean): IRateMap<T>[] {
         const result: IRateMap<IWeightModel>[] = [];
 
@@ -71,6 +101,14 @@ export class MergeUtils {
         return result as any;
     }
 
+    /**
+     * Set item in map
+     * @param result
+     * @param child
+     * @param iteration - accuracy decreases as iteration increases
+     * @public
+     * @static
+     */
     public static mapping(result: IRateMap<IWeightModel>[], child: IWeightModel, iteration: number) {
         for (const row of result) {
             if (row.left && !row.right) {
@@ -88,6 +126,13 @@ export class MergeUtils {
         return false;
     }
 
+    /**
+     * Get diff (percentage)
+     * @param item1
+     * @param item2
+     * @public
+     * @static
+     */
     public static getDiff(item1: IWeightModel, item2: IWeightModel): number {
         if (!item1) {
             return 0;

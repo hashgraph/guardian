@@ -119,10 +119,22 @@ export class CompareComponent implements OnInit {
         this.router.navigate(['/compare'], {
             queryParams: {
                 type: 'schema',
-                policyId1: undefined,
-                policyId2: undefined,
+                policyId1: this.policyId1,
+                policyId2: this.policyId2,
                 schemaId1: event.schemaId1,
                 schemaId2: event.schemaId2
+            }
+        });
+    }
+
+    onBack() {
+        this.router.navigate(['/compare'], {
+            queryParams: {
+                type: 'policy',
+                policyId1: this.policyId1,
+                policyId2: this.policyId2,
+                schemaId1: undefined,
+                schemaId2: undefined
             }
         });
     }

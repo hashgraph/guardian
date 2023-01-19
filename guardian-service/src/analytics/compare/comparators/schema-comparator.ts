@@ -11,7 +11,13 @@ import { IRateMap } from '../interfaces/rate-map.interface';
 import { CSV } from '../../table/csv';
 import { CompareUtils } from '../utils/utils';
 
+/**
+ * Component for comparing two schemas
+ */
 export class SchemaComparator {
+    /**
+     * Compare Options
+     */
     private readonly options: ICompareOptions;
 
     constructor(options?: ICompareOptions) {
@@ -27,10 +33,13 @@ export class SchemaComparator {
         }
     }
 
-    public compare(
-        schema1: SchemaModel,
-        schema2: SchemaModel
-    ): ICompareResult<any> {
+    /**
+     * Compare two schemas
+     * @param schema1 - left schema
+     * @param schema2 - right schema
+     * @public
+     */
+    public compare(schema1: SchemaModel, schema2: SchemaModel): ICompareResult<any> {
         const columns = [
             { name: 'lvl', label: 'Offset', type: 'number' },
             { name: 'left_index', label: 'Index', type: 'number' },
@@ -63,7 +72,12 @@ export class SchemaComparator {
         return result;
     }
 
-    public total(rates: IRate<any>[]): number {
+    /**
+     * Calculate total rate
+     * @param rates
+     * @private
+     */
+    private total(rates: IRate<any>[]): number {
         let total = 0;
         let count = 0;
 
@@ -79,33 +93,46 @@ export class SchemaComparator {
         return 100;
     }
 
+    /**
+     * Convert array to table
+     * @param tree
+     * @param table
+     * @private
+     */
     private ratesToTable(rates: IRate<any>[], table: ReportTable): void {
         for (const child of rates) {
             this.rateToTable(child, table, 1);
         }
     }
 
+    /**
+     * Convert tree to table
+     * @param tree
+     * @param table
+     * @param lvl
+     * @private
+     */
     private rateToTable(rate: IRate<any>, table: ReportTable, lvl: number): ReportTable {
-        const item_1 = rate.left;
-        const item_2 = rate.right;
+        const leftItem = rate.left;
+        const rightItem = rate.right;
         const row = table.createRow();
 
         row.set('lvl', lvl);
         row.set('type', rate.type);
         row.setArray('properties', rate.getSubRate('properties'));
 
-        row.set('left', item_1?.toObject());
-        row.set('right', item_2?.toObject());
+        row.set('left', leftItem?.toObject());
+        row.set('right', rightItem?.toObject());
 
-        if (item_1) {
-            row.set('left_name', item_1.name);
-            row.set('left_index', item_1.index);
+        if (leftItem) {
+            row.set('left_name', leftItem.name);
+            row.set('left_index', leftItem.order);
         }
-        if (item_2) {
-            row.set('right_name', item_2.name);
-            row.set('right_index', item_2.index);
+        if (rightItem) {
+            row.set('right_name', rightItem.name);
+            row.set('right_index', rightItem.order);
         }
-        if (item_1 && item_2) {
+        if (leftItem && rightItem) {
             row.set('index_rate', `${rate.getRateValue('index')}%`);
             row.set('prop_rate', `${rate.getRateValue('properties')}%`);
             row.set('total_rate', `${rate.getRateValue('total')}%`);
@@ -120,11 +147,25 @@ export class SchemaComparator {
         return table;
     }
 
+    /**
+     * Compare two trees
+     * @param schema1
+     * @param schema2
+     * @param options
+     * @private
+     */
     private compareSchemas(schema1: SchemaModel, schema2: SchemaModel, options: ICompareOptions): IRate<any>[] {
         const fields = this.compareArray(Status.PARTLY, schema1.fields, schema2.fields, options);
         return fields;
     }
 
+    /**
+     * Compare two trees
+     * @param fields1
+     * @param fields2
+     * @param options
+     * @private
+     */
     private compareField(field1: FieldModel, field2: FieldModel, options: ICompareOptions): FieldsRate {
         const rate = new FieldsRate(field1, field2);
         rate.calc(options);
@@ -151,6 +192,14 @@ export class SchemaComparator {
         return rate;
     }
 
+    /**
+     * Compare two array
+     * @param type
+     * @param fields1
+     * @param fields2
+     * @param options
+     * @private
+     */
     private compareArray(
         type: Status,
         fields1: FieldModel[],
@@ -172,6 +221,11 @@ export class SchemaComparator {
         return children;
     }
 
+    /**
+     * Convert result to CSV
+     * @param result
+     * @public
+     */
     public csv(result: ICompareResult<any>): string {
         const csv = new CSV();
 
@@ -213,7 +267,7 @@ export class SchemaComparator {
         CompareUtils.tableToCsv(csv, result.fields);
         csv.addLine();
 
-        csv.add('Total').add(result.total+'%');
+        csv.add('Total').add(result.total + '%');
 
         return csv.result();
     }

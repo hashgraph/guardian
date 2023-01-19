@@ -1,22 +1,46 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 
+/**
+ * Artifact Model
+ */
 export class ArtifactModel {
+    /**
+     * Artifact key
+     */
     public readonly name: any;
+    /**
+     * File UUID
+     */
     public readonly uuid: any;
+    /**
+     * File type
+     */
     public readonly type: any;
+    /**
+     * File extension
+     */
     public readonly extension: any;
-
-    private _weight: string;
+    /**
+     * File weight (hash)
+     */
     public get weight(): string {
         return this._weight;
     }
-
-    private hash: string;
-
+    /**
+     * Model key
+     */
     public get key(): string {
         return null;
     }
+    /**
+     * File weight (hash)
+     */
+    private _weight: string;
+    /**
+     * File hash
+     */
+    private hash: string;
 
     constructor(json: any) {
         this.name = json.name;
@@ -25,8 +49,14 @@ export class ArtifactModel {
         this.extension = json.extention;
     }
 
+    /**
+     * Update all weight
+     * @param data - file data (hash)
+     * @param options - comparison options
+     * @public
+     */
     public update(data: string, options: ICompareOptions): void {
-        let hashState = MurmurHash3();
+        const hashState = MurmurHash3();
         hashState.hash(this.name);
         hashState.hash(this.type);
         hashState.hash(this.extension);
@@ -40,6 +70,9 @@ export class ArtifactModel {
         this.hash = weight;
     }
 
+    /**
+     * Convert class to object
+     */
     public toObject(): any {
         return {
             uuid: this.uuid,
@@ -50,7 +83,13 @@ export class ArtifactModel {
         };
     }
 
-    public equal(event: ArtifactModel, iteration?: number): boolean {
-        return this.hash === event.hash;
+    /**
+     * Comparison of models using weight
+     * @param item - model
+     * @param index - weight index
+     * @public
+     */
+    public equal(item: ArtifactModel, index?: number): boolean {
+        return this.hash === item.hash;
     }
 }

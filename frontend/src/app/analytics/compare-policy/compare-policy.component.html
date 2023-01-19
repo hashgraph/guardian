@@ -21,7 +21,7 @@
                 </div>
             </mat-expansion-panel>
 
-            <mat-expansion-panel expanded>
+            <mat-expansion-panel>
                 <mat-expansion-panel-header>
                     <mat-panel-title>
                         <div class="header">Policy Roles</div>
@@ -47,7 +47,7 @@
                 </div>
             </mat-expansion-panel>
 
-            <mat-expansion-panel expanded>
+            <mat-expansion-panel>
                 <mat-expansion-panel-header>
                     <mat-panel-title>
                         <div class="header">Policy Groups</div>
@@ -73,7 +73,7 @@
                 </div>
             </mat-expansion-panel>
 
-            <mat-expansion-panel expanded>
+            <mat-expansion-panel>
                 <mat-expansion-panel-header>
                     <mat-panel-title>
                         <div class="header">Policy Topics</div>
@@ -99,7 +99,7 @@
                 </div>
             </mat-expansion-panel>
 
-            <mat-expansion-panel expanded>
+            <mat-expansion-panel>
                 <mat-expansion-panel-header>
                     <mat-panel-title>
                         <div class="header">Policy Tokens</div>
@@ -251,10 +251,6 @@
                                 </div>
                             </ng-container>
                         </div>
-                    </div>
-
-                    <div *ngIf="type==='tree'" class="scroll" (scroll)="onScroll($event)">
-                        <div [style.width.px]="_scroll"></div>
                     </div>
 
                     <div *ngIf="type==='table'" class="merge-table" [attr.open]="panelOpenState">

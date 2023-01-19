@@ -37,7 +37,7 @@
     border-bottom: 1px solid #c9c9c9;
     margin-bottom: 10px;
     display: grid;
-    grid-template-columns: min-content auto 130px 180px;
+    grid-template-columns: min-content min-content auto 130px 180px;
     padding: 10px;
     box-sizing: border-box;
     box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 8%), 0px 2px 2px 0px rgb(0 0 0 / 8%), 0px 1px 5px 0px rgb(0 0 0 / 6%);
@@ -120,4 +120,32 @@
     position: absolute;
     left: 10px;
     top: 8px;
+}
+
+
+.merge-back > div {
+    width: 105px;
+    height: 38px;
+    margin: 6px;
+    position: relative;
+    cursor: pointer;
+}
+
+.merge-back > div  span {
+    color: #707070;
+    position: absolute;
+    top: 9px;
+    left: 21px;
+    font-weight: 500;
+    font-size: 18px;
+    pointer-events: none;
+}
+
+.merge-back > div  mat-icon {
+    color: #707070;
+    position: absolute;
+    top: 3px;
+    left: -4px;
+    font-size: 30px;
+    pointer-events: none;
 }

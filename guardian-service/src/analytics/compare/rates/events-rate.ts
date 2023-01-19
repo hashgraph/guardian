@@ -2,6 +2,9 @@ import { Status } from '../types/status.type';
 import { EventModel } from '../models/event.model';
 import { Rate } from './rate';
 
+/**
+ * Calculates the difference between two Events
+ */
 export class EventsRate extends Rate<EventModel> {
     constructor(event1: EventModel, event2: EventModel) {
         super(event1, event2);

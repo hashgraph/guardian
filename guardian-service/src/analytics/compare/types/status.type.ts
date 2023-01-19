@@ -1,4 +1,6 @@
-
+/**
+ * Merge Status
+ */
 export enum Status {
     NONE = 'NONE',
     FULL = 'FULL',

@@ -2,6 +2,9 @@ import MurmurHash3 from 'imurmurhash';
 import { BlockModel } from './block.model';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 
+/**
+ * Event Model
+ */
 export class EventModel {
     public readonly actor: any;
     public readonly disabled: any;
@@ -46,7 +49,7 @@ export class EventModel {
         }
 
 
-        let hashState = MurmurHash3();
+        const hashState = MurmurHash3();
         if (this.start) {
             hashState.hash(this.start);
         }

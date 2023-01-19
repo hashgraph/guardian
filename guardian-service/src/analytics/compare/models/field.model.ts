@@ -1,11 +1,15 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
-import { IWeightModel } from '../interfaces/model.interface';
+import { IWeightModel } from '../interfaces/weight-model.interface';
 import { WeightType } from '../types/weight.type';
 import { AnyPropertyModel, ArrayPropertyModel, PropertyModel, UUIDPropertyModel } from './property.model';
 import { SubSchemaModel } from './sub-schema-model';
 
+/**
+ * Field Model
+ * @extends IWeightModel
+ */
 export class FieldModel implements IWeightModel {
     public readonly index: number;
 

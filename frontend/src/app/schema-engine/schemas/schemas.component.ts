@@ -64,6 +64,7 @@ export class SchemaConfigComponent implements OnInit {
     schemasMap: any;
     policyNameByTopic: any;
     system: boolean = false;
+    allSchemas: Schema[] = [];
 
     taskId: string | undefined = undefined;
     expectedTaskMessages: number = 0;
@@ -97,11 +98,13 @@ export class SchemaConfigComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.policyEngineService.all(),
+            this.schemaService.all(),
         ]).subscribe((value) => {
             this.loading = false;
 
             const profile: IUser | null = value[0];
             const policies: any[] = value[1] || [];
+            const schemas: any[] = value[2] || [];
 
             this.isConfirmed = !!(profile && profile.confirmed);
             if (!this.isConfirmed) {
@@ -120,6 +123,8 @@ export class SchemaConfigComponent implements OnInit {
             if (!this.policyNameByTopic[this.currentTopicPolicy]) {
                 this.currentTopicPolicy = undefined;
             }
+
+            this.allSchemas = schemas;
 
             this.pageIndex = 0;
             this.pageSize = 25;
@@ -528,7 +533,7 @@ export class SchemaConfigComponent implements OnInit {
             autoFocus: false,
             data: {
                 schema: element,
-                schemas: this.schemas
+                schemas: this.allSchemas
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {

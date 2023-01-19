@@ -43,6 +43,10 @@ export class SchemaService {
         return this.http.get<ISchema[]>(`${this.url}`);
     }
 
+    public all(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/list/all`);
+    }
+
     public getSchemasByPolicy(policyId: string): Observable<ISchema[]> {
         return this.http.get<ISchema[]>(`${this.url}?policyId=${policyId}`);
     }
@@ -145,15 +149,5 @@ export class SchemaService {
 
     public getSystemSchemasByEntity(entity: SchemaEntity): Observable<ISchema> {
         return this.http.get<ISchema>(`${this.url}/system/entity/${entity}`);
-    }
-
-    public compareSchema(
-        schemaId1: string,
-        schemaId2: string
-    ): Observable<any> {
-        const params = new HttpParams()
-            .set('schemaId1', schemaId1)
-            .set('schemaId2', schemaId1);
-        return this.http.get<any>(`${this.url}/analytics/compare`, { params });
     }
 }

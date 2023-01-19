@@ -15,6 +15,9 @@ export class CompareSchemaDialog {
     schemaId1!: any;
     schemaId2!: any;
 
+    list1: any[];
+    list2: any[];
+
     constructor(
         public dialogRef: MatDialogRef<CompareSchemaDialog>,
         @Inject(MAT_DIALOG_DATA) public data: any
@@ -22,6 +25,8 @@ export class CompareSchemaDialog {
         this.schema = data.schema;
         this.schemas = data.schemas || [];
         this.schemaId1 = this.schema?.id;
+        this.list1 = this.schemas;
+        this.list2 = this.schemas;
     }
 
     ngOnInit() {
@@ -40,5 +45,10 @@ export class CompareSchemaDialog {
             schemaId1: this.schemaId1,
             schemaId2: this.schemaId2,
         });
+    }
+
+    onChange() {
+        this.list1 = this.schemas.filter(s=>s.id !== this.schemaId2);
+        this.list2 = this.schemas.filter(s=>s.id !== this.schemaId1);
     }
 }

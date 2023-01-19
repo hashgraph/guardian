@@ -4,6 +4,12 @@
     </div>
 
     <div *ngIf="result" class="merge-options">
+        <div class="merge-back">
+            <div *ngIf="type === 'schema' && policyId1 && policyId2" (click)="onBack()">
+                <mat-icon>chevron_left</mat-icon>
+                <span>Policies</span> 
+            </div>
+        </div>
         <div class="merge-lvl">
             <div *ngIf="type === 'policy'" class="f1">
                 <mat-form-field appearance="outline">

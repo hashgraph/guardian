@@ -2,6 +2,9 @@ import { Token } from '@entity/token';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import MurmurHash3 from 'imurmurhash';
 
+/**
+ * Token Model
+ */
 export class TokenModel {
     public readonly id: string;
     public readonly tokenId: string;
@@ -60,7 +63,7 @@ export class TokenModel {
     }
 
     public update(options: ICompareOptions): void {
-        let hashState = MurmurHash3();
+        const hashState = MurmurHash3();
         hashState.hash(String(this.tokenName));
         hashState.hash(String(this.tokenSymbol));
         hashState.hash(String(this.tokenType));

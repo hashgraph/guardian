@@ -5,11 +5,15 @@ import { MessageAPI } from '@guardian/interfaces';
 import * as crypto from 'crypto';
 import { PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaModel, TokenModel } from '@analytics';
 
+/**
+ * API analytics
+ * @param channel
+ * @constructor
+ */
 export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void> {
     ApiResponse(channel, MessageAPI.COMPARE_POLICIES, async (msg) => {
         try {
             const {
-                user,
                 type,
                 policyId1,
                 policyId2,
@@ -129,12 +133,11 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
 
     ApiResponse(channel, MessageAPI.COMPARE_SCHEMAS, async (msg) => {
         try {
-            const { 
-                user, 
-                type, 
-                schemaId1, 
-                schemaId2, 
-                idLvl 
+            const {
+                type,
+                schemaId1,
+                schemaId2,
+                idLvl
             } = msg;
 
             const schema1 = await DatabaseServer.getSchemaById(schemaId1);

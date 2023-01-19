@@ -5,19 +5,47 @@ import { PolicyModel } from '../models/policy.model';
 import { ReportTable } from '../../table/report-table';
 import { Status } from '../types/status.type';
 import { IRateMap } from '../interfaces/rate-map.interface';
-import { ICompareResult, IReportTable } from '../interfaces/compare-result.interface';
+import { ICompareResult } from '../interfaces/compare-result.interface';
 import { MergeUtils } from '../utils/merge-utils';
-import { IWeightModel } from '../interfaces/model.interface';
+import { IWeightModel } from '../interfaces/weight-model.interface';
 import { IRate } from '../interfaces/rate.interface';
 import { ObjectRate } from '../rates/object-rate';
 import { CompareUtils } from '../utils/utils';
 import { CSV } from '../../table/csv';
 
+/**
+ * Component for comparing two policies
+ */
 export class PolicyComparator {
+    /**
+     * Properties
+     * 0 - Don't compare
+     * 1 - Only simple properties
+     * 2 - All properties
+     */
     private readonly propLvl: number;
+    /**
+     * Children
+     * 0 - Don't compare
+     * 1 - Only child blocks of the first level
+     * 2 - All children
+     */
     private readonly childLvl: number;
+    /**
+     * Events
+     * 0 - Don't compare
+     * 1 - All events
+     */
     private readonly eventLvl: number;
+    /**
+     * UUID
+     * 0 - Don't compare
+     * 1 - All UUID
+     */
     private readonly idLvl: number;
+    /**
+     * Compare Options
+     */
     private readonly options: ICompareOptions;
 
     constructor(options?: ICompareOptions) {
@@ -40,10 +68,13 @@ export class PolicyComparator {
         }
     }
 
-    public compare(
-        policy1: PolicyModel,
-        policy2: PolicyModel
-    ): ICompareResult<any> {
+    /**
+     * Compare two policies
+     * @param policy1 - left policy
+     * @param policy2 - right policy
+     * @public
+     */
+    public compare(policy1: PolicyModel, policy2: PolicyModel): ICompareResult<any> {
         const columnsRoles = [
             { name: 'left_name', label: 'Name', type: 'string' },
             { name: 'right_name', label: 'Name', type: 'string' },
@@ -137,7 +168,12 @@ export class PolicyComparator {
         return result;
     }
 
-    public total(rates: IRate<any>[]): number {
+    /**
+     * Calculate total rate
+     * @param rates
+     * @private
+     */
+    private total(rates: IRate<any>[]): number {
         let total = 0;
         let count = 0;
 
@@ -159,7 +195,13 @@ export class PolicyComparator {
         return 100;
     }
 
-    public treeToArray(tree: IRate<any>, result: IRate<any>[]): IRate<any>[] {
+    /**
+     * Convert tree to array
+     * @param tree
+     * @param result
+     * @private
+     */
+    private treeToArray(tree: IRate<any>, result: IRate<any>[]): IRate<any>[] {
         result.push(tree);
         for (const child of tree.getChildren<BlocksRate>()) {
             this.treeToArray(child, result);
@@ -167,9 +209,16 @@ export class PolicyComparator {
         return result;
     }
 
-    public treeToTable(tree: BlocksRate, table: ReportTable, lvl: number): void {
-        const item_1 = tree.left;
-        const item_2 = tree.right;
+    /**
+     * Convert tree to table
+     * @param tree
+     * @param table
+     * @param lvl
+     * @private
+     */
+    private treeToTable(tree: BlocksRate, table: ReportTable, lvl: number): void {
+        const leftItem = tree.left;
+        const rightItem = tree.right;
         const row = table.createRow();
 
         row.set('lvl', lvl);
@@ -181,20 +230,20 @@ export class PolicyComparator {
         row.setArray('permissions', tree.getSubRate('permissions'));
         row.setArray('artifacts', tree.getSubRate('artifacts'));
 
-        row.set('left', item_1?.toObject());
-        row.set('right', item_2?.toObject());
+        row.set('left', leftItem?.toObject());
+        row.set('right', rightItem?.toObject());
 
-        if (item_1) {
-            row.set('left_type', item_1.blockType);
-            row.set('left_tag', item_1.tag);
-            row.set('left_index', item_1.index);
+        if (leftItem) {
+            row.set('left_type', leftItem.blockType);
+            row.set('left_tag', leftItem.tag);
+            row.set('left_index', leftItem.index);
         }
-        if (item_2) {
-            row.set('right_type', item_2.blockType);
-            row.set('right_tag', item_2.tag);
-            row.set('right_index', item_2.index);
+        if (rightItem) {
+            row.set('right_type', rightItem.blockType);
+            row.set('right_tag', rightItem.tag);
+            row.set('right_index', rightItem.index);
         }
-        if (item_1 && item_2) {
+        if (leftItem && rightItem) {
             row.set('prop_rate', `${tree.getRateValue('properties')}%`);
             row.set('event_rate', `${tree.getRateValue('events')}%`);
             row.set('index_rate', `${tree.getRateValue('index')}%`);
@@ -215,29 +264,42 @@ export class PolicyComparator {
         }
     }
 
+    /**
+     * Convert array to table
+     * @param tree
+     * @param table
+     * @private
+     */
     private ratesToTable(rates: IRate<any>[], table: ReportTable): void {
         for (const child of rates) {
             this.rateToTable(child, table, 1);
         }
     }
 
+    /**
+     * Convert tree to table
+     * @param tree
+     * @param table
+     * @param lvl
+     * @private
+     */
     private rateToTable(rate: IRate<any>, table: ReportTable, lvl: number): ReportTable {
-        const item_1 = rate.left;
-        const item_2 = rate.right;
+        const leftItem = rate.left;
+        const rightItem = rate.right;
         const row = table.createRow();
 
-        row.set('left', item_1?.toObject());
-        row.set('right', item_2?.toObject());
+        row.set('left', leftItem?.toObject());
+        row.set('right', rightItem?.toObject());
         row.set('type', rate.type);
         row.setArray('properties', rate.getSubRate('properties'));
 
-        if (item_1) {
-            row.set('left_name', item_1.key);
+        if (leftItem) {
+            row.set('left_name', leftItem.key);
         }
-        if (item_2) {
-            row.set('right_name', item_2.key);
+        if (rightItem) {
+            row.set('right_name', rightItem.key);
         }
-        if (item_1 && item_2) {
+        if (leftItem && rightItem) {
             row.set('total_rate', `${rate.getRateValue('total')}%`);
         } else {
             row.set('total_rate', `-`);
@@ -249,6 +311,13 @@ export class PolicyComparator {
         return table;
     }
 
+    /**
+     * Compare two trees
+     * @param block1
+     * @param block2
+     * @param options
+     * @private
+     */
     private compareTree(block1: BlockModel, block2: BlockModel, options: ICompareOptions): BlocksRate {
         const rate = new BlocksRate(block1, block2);
         rate.calc(options);
@@ -270,7 +339,7 @@ export class PolicyComparator {
             rate.children = this.compareChildren(Status.FULL, block1.children, block2.children, options);
             return rate;
         }
-        if (block1.key == block2.key) {
+        if (block1.key === block2.key) {
             rate.type = Status.PARTLY;
             rate.children = this.compareChildren(Status.PARTLY, block1.children, block2.children, options);
             return rate;
@@ -281,6 +350,14 @@ export class PolicyComparator {
         }
     }
 
+    /**
+     * Compare two array (with children)
+     * @param type
+     * @param children1
+     * @param children2
+     * @param options
+     * @private
+     */
     private compareChildren(
         type: Status,
         children1: BlockModel[],
@@ -302,12 +379,20 @@ export class PolicyComparator {
         return children;
     }
 
+    /**
+     * Compare two array (without children)
+     * @param type
+     * @param children1
+     * @param children2
+     * @param options
+     * @private
+     */
     private compareArray(
         children1: IWeightModel[],
         children2: IWeightModel[],
         options: ICompareOptions
     ): IRate<any>[] {
-        let result = MergeUtils.partlyMerge<IWeightModel>(children1, children2, false);
+        const result = MergeUtils.partlyMerge<IWeightModel>(children1, children2, false);
         const rates: IRate<any>[] = [];
         for (const item of result) {
             const rate = new ObjectRate(item.left, item.right);
@@ -317,6 +402,11 @@ export class PolicyComparator {
         return rates;
     }
 
+    /**
+     * Convert result to CSV
+     * @param result
+     * @public
+     */
     public csv(result: ICompareResult<any>): string {
         const csv = new CSV();
 

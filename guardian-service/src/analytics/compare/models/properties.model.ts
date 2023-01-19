@@ -1,35 +1,51 @@
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
-import { 
-    AnyPropertyModel, 
-    ArrayPropertyModel, 
-    ObjectPropertyModel, 
-    PropertyModel, 
-    SchemaPropertyModel, 
-    TokenPropertyModel 
+import {
+    AnyPropertyModel,
+    ArrayPropertyModel,
+    ObjectPropertyModel,
+    PropertyModel,
+    SchemaPropertyModel,
+    TokenPropertyModel
 } from './property.model';
 import { PropertyType } from '../types/property.type';
 import { SchemaModel } from './schema.model';
 import { TokenModel } from './token.model';
 
+/**
+ * Properties Model
+ */
 export class PropertiesModel {
-    private list: PropertyModel<any>[];
+    /**
+     * All Properties
+     */
+    private readonly list: PropertyModel<any>[];
 
     constructor(json: any) {
         this.list = PropertiesModel.createPropList(json);
     }
 
+    /**
+     * Calculations hash
+     * @param options - comparison options
+     * @public
+     */
     public hash(options: ICompareOptions): string {
-        let result: string[] = [];
+        const result: string[] = [];
         for (const item of this.list) {
             const hash = item.hash(options);
-            if(hash) {
+            if (hash) {
                 result.push(hash);
             }
         }
         return result.join(',');
     }
 
+    /**
+     * Get properties
+     * @param type - filter by property type
+     * @public
+     */
     public getPropList(type?: PropertyType): PropertyModel<any>[] {
         if (type) {
             return this.list.filter(p => p.type === type);
@@ -38,6 +54,12 @@ export class PropertiesModel {
         }
     }
 
+    /**
+     * Update properties (if type = schema)
+     * @param schemaMap - schemas
+     * @param options - comparison options
+     * @public
+     */
     public updateSchemas(schemaMap: IKeyMap<SchemaModel>, options: ICompareOptions): void {
         for (const prop of this.list) {
             if (prop.type === PropertyType.Schema) {
@@ -46,6 +68,12 @@ export class PropertiesModel {
         }
     }
 
+    /**
+     * Update properties (if type = token)
+     * @param tokenMap - tokens
+     * @param options - comparison options
+     * @public
+     */
     public updateTokens(tokenMap: IKeyMap<TokenModel>, options: ICompareOptions): void {
         for (const prop of this.list) {
             if (prop.type === PropertyType.Token) {
@@ -54,6 +82,12 @@ export class PropertiesModel {
         }
     }
 
+    /**
+     * Create Properties object by JSON
+     * @param properties - json
+     * @public
+     * @static
+     */
     public static createPropList(properties: any): PropertyModel<any>[] {
         const list: PropertyModel<any>[] = [];
         const keys = Object.keys(properties);
@@ -63,6 +97,16 @@ export class PropertiesModel {
         return list;
     }
 
+    /**
+     * Create PropertyModel
+     * @param name - key
+     * @param value - property value
+     * @param lvl - property nesting level
+     * @param path - property full path
+     * @param properties - result
+     * @private
+     * @static
+     */
     private static createProp(
         name: string,
         value: any,
@@ -102,36 +146,3 @@ export class PropertiesModel {
         }
     }
 }
-
-export class BlockPropertiesModel extends PropertiesModel {
-    private permissions: string[];
-
-    constructor(json: any) {
-        const prop = Object.assign({}, json, {
-            id: undefined,
-            blockType: undefined,
-            tag: undefined,
-            permissions: undefined,
-            artifacts: undefined,
-            events: undefined,
-            children: undefined,
-        });
-
-        super(prop);
-
-        if (Array.isArray(json.permissions)) {
-            this.permissions = json.permissions;
-        } else {
-            this.permissions = [];
-        }
-        this.permissions.sort();
-    }
-
-    public getPermissionsList(): string[] {
-        return this.permissions.slice();
-    }
-
-    public getPermissions(lvl: number): string {
-        return JSON.stringify(this.permissions);
-    }
-}  

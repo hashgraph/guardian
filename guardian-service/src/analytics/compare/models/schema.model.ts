@@ -4,6 +4,9 @@ import { FieldModel } from './field.model';
 import { SubSchemaModel } from './sub-schema-model';
 import MurmurHash3 from 'imurmurhash';
 
+/**
+ * Schema Model
+ */
 export class SchemaModel {
     public readonly id: string;
     public readonly description: string;
@@ -66,7 +69,7 @@ export class SchemaModel {
     }
 
     public update(options: ICompareOptions): void {
-        let hashState = MurmurHash3();
+        const hashState = MurmurHash3();
         hashState.hash(this.name || '');
         hashState.hash(this.description || '');
         hashState.hash(this.version || '');

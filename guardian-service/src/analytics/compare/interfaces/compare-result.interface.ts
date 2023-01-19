@@ -1,19 +1,43 @@
-import { IColumn } from 'analytics/table/report-column';
-import { ReportTable } from 'analytics/table/report-table';
+import { IReportTable } from './report-table.interface';
 
-export interface IReportTable {
-    columns: IColumn[];
-    report: any[];
-}
-
+/**
+ * Compare Result
+ */
 export interface ICompareResult<T> {
+    /**
+     * Left Object
+     */
     left: T;
+    /**
+     * Right Object
+     */
     right: T;
+    /**
+     * Total rate
+     */
     total: number;
+    /**
+     * Block rates (Policy)
+     */
     blocks?: IReportTable;
+    /**
+     * Role rates (Policy)
+     */
     roles?: IReportTable;
+    /**
+     * Group rates (Policy)
+     */
     groups?: IReportTable;
+    /**
+     * Topic rates (Policy)
+     */
     topics?: IReportTable;
+    /**
+     * Token rates (Policy)
+     */
     tokens?: IReportTable;
+    /**
+     * Field rates (Schema)
+     */
     fields?: IReportTable;
 }

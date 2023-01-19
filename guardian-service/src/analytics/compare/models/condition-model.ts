@@ -1,5 +1,8 @@
 import { FieldModel } from './field.model';
 
+/**
+ * Condition Model
+ */
 export class ConditionModel {
     public readonly index: number;
     public readonly name: string;

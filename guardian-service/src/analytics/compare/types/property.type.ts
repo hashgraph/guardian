@@ -1,3 +1,6 @@
+/**
+ * Property Type
+ */
 export enum PropertyType {
     Array = 'array',
     Object = 'object',

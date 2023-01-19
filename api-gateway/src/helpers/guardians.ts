@@ -813,6 +813,17 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Return schemas (name\id)
+     *
+     * @param {string} owner - schemas owner
+     *
+     * @returns {any[]} - schemas
+     */
+    public async getListSchemas(owner: string): Promise<any[]> {
+        return await this.request<any[]>(MessageAPI.GET_LIST_SCHEMAS, { owner });
+    }
+
+    /**
      * Upload Policy Artifacts
      *
      * @param {any} artifact - Artifact

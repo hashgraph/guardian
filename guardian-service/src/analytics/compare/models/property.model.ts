@@ -4,6 +4,9 @@ import { PropertyType } from '../types/property.type';
 import { SchemaModel } from './schema.model';
 import { TokenModel } from './token.model';
 
+/**
+ * Property Model
+ */
 export class PropertyModel<T> implements IProperties<T> {
     public readonly name: string;
     public readonly lvl: number;
