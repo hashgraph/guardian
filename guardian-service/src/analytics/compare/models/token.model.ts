@@ -6,20 +6,83 @@ import MurmurHash3 from 'imurmurhash';
  * Token Model
  */
 export class TokenModel {
+    /**
+     * ID
+     * @public
+     */
     public readonly id: string;
+
+    /**
+     * Token ID
+     * @public
+     */
     public readonly tokenId: string;
+
+    /**
+     * Token Name
+     * @public
+     */
     public readonly tokenName: string;
+
+    /**
+     * Token Symbol
+     * @public
+     */
     public readonly tokenSymbol: string;
+
+    /**
+     * Token Type
+     * @public
+     */
     public readonly tokenType: string;
+
+    /**
+     * Token Decimals
+     * @public
+     */
     public readonly decimals: any;
+
+    /**
+     * Token Initial Supply
+     * @public
+     */
     public readonly initialSupply: any;
+
+    /**
+     * Enable Admin
+     * @public
+     */
     public readonly enableAdmin: boolean;
+
+    /**
+     * Enable Freeze
+     * @public
+     */
     public readonly enableFreeze: boolean;
+
+    /**
+     * Enable KYC
+     * @public
+     */
     public readonly enableKYC: boolean;
+
+    /**
+     * Enable Wipe
+     * @public
+     */
     public readonly enableWipe: boolean;
 
-    private readonly options: ICompareOptions;
+    /**
+     * Weights
+     * @private
+     */
     private _weight: string;
+
+    /**
+     * Compare Options
+     * @private
+     */
+    private readonly options: ICompareOptions;
 
     constructor(token: Token, options: ICompareOptions) {
         this.options = options;
@@ -38,10 +101,19 @@ export class TokenModel {
         this.update(this.options);
     }
 
+    /**
+     * Comparison of models using id
+     * @param item - model
+     * @public
+     */
     public equal(item: TokenModel): boolean {
         return this.tokenId === item.tokenId;
     }
 
+    /**
+     * Convert class to object
+     * @public
+     */
     public toObject(): any {
         return {
             id: this.id,
@@ -58,10 +130,20 @@ export class TokenModel {
         }
     }
 
+    /**
+     * Calculations hash
+     * @param options - comparison options
+     * @public
+     */
     public hash(options?: ICompareOptions): string {
         return this._weight;
     }
 
+    /**
+     * Update all weight
+     * @param options - comparison options
+     * @public
+     */
     public update(options: ICompareOptions): void {
         const hashState = MurmurHash3();
         hashState.hash(String(this.tokenName));

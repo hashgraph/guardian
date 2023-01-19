@@ -1,7 +1,7 @@
 import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { EventModel } from './event.model';
-import { BlockPropertiesModel } from "./block-properties-model";
+import { BlockPropertiesModel } from './block-properties-model';
 import { WeightType } from '../types/weight.type';
 import { ArtifactModel } from './artifact.model';
 import { IArtifacts } from '../interfaces/artifacts.interface';
@@ -17,24 +17,75 @@ import { IWeightModel } from '../interfaces/weight-model.interface';
  * @extends IWeightModel
  */
 export class BlockModel implements IWeightModel {
+    /**
+     * Block index
+     * @public
+     */
     public readonly index: number;
+
+    /**
+     * Block type
+     * @public
+     */
     public readonly blockType: string;
+
+    /**
+     * Tag
+     * @public
+     */
     public readonly tag: string;
 
-    private _prop: BlockPropertiesModel;
-    private _events: EventModel[];
-    private _artifacts: ArtifactModel[];
-    private _children: BlockModel[];
-    private _weight: string[];
-    private _weightMap: IKeyMap<string>;
-
+    /**
+     * Children
+     * @public
+     */
     public get children(): BlockModel[] {
         return this._children;
     }
 
+    /**
+     * Model key
+     * @public
+     */
     public get key(): string {
         return this.blockType;
     }
+
+    /**
+     * Properties
+     * @private
+     */
+    private readonly _prop: BlockPropertiesModel;
+
+    /**
+     * Events
+     * @private
+     */
+    private readonly _events: EventModel[];
+
+    /**
+     * Artifacts
+     * @private
+     */
+    private readonly _artifacts: ArtifactModel[];
+
+    /**
+     * Children
+     * @private
+     */
+    private readonly _children: BlockModel[];
+
+    /**
+     * Weights
+     * @private
+     */
+    private _weight: string[];
+
+    /**
+     * Weights map by name
+     * @private
+     */
+    private _weightMap: IKeyMap<string>;
 
     constructor(json: any, index: number) {
         this.blockType = json.blockType;
@@ -48,6 +99,11 @@ export class BlockModel implements IWeightModel {
         this._weightMap = {};
     }
 
+    /**
+     * Create Events by JSON
+     * @param json
+     * @private
+     */
     private createEvents(json: any): EventModel[] {
         if (Array.isArray(json.events)) {
             return json.events.map((e: any) => new EventModel(e));
@@ -55,6 +111,11 @@ export class BlockModel implements IWeightModel {
         return [];
     }
 
+    /**
+     * Create Artifacts by JSON
+     * @param json
+     * @private
+     */
     private createArtifacts(json: any): ArtifactModel[] {
         if (Array.isArray(json.artifacts)) {
             return json.artifacts.map((e: any) => new ArtifactModel(e));
@@ -62,6 +123,11 @@ export class BlockModel implements IWeightModel {
         return [];
     }
 
+    /**
+     * Update all weight
+     * @param options - comparison options
+     * @public
+     */
     public update(options: ICompareOptions): void {
         const weights = [];
         const weightMap = {};
@@ -142,12 +208,24 @@ export class BlockModel implements IWeightModel {
         this._weight = weights.reverse();
     }
 
+    /**
+     * Update event weights
+     * @param map - blocks map
+     * @param options - comparison options
+     * @public
+     */
     public updateEvents(map: IKeyMap<BlockModel>, options: ICompareOptions) {
         for (const event of this._events) {
-            event.update(map[event.source], map[event.target], options);
+            event.update(map, options);
         }
     }
 
+    /**
+     * Update artifact weights
+     * @param map - artifacts
+     * @param options - comparison options
+     * @public
+     */
     public updateArtifacts(artifacts: IArtifacts[], options: ICompareOptions) {
         for (const artifact of this._artifacts) {
             const row = artifacts.find(e => e.uuid === artifact.uuid);
@@ -159,52 +237,92 @@ export class BlockModel implements IWeightModel {
         }
     }
 
+    /**
+     * Update schema weights
+     * @param schemaMap - schemas map
+     * @param options - comparison options
+     * @public
+     */
     public updateSchemas(schemaMap: IKeyMap<SchemaModel>, options: ICompareOptions): void {
         this._prop.updateSchemas(schemaMap, options);
     }
 
+    /**
+     * Update token weights
+     * @param tokenMap - tokens map
+     * @param options - comparison options
+     * @public
+     */
     public updateTokens(tokenMap: IKeyMap<TokenModel>, options: ICompareOptions): void {
         this._prop.updateTokens(tokenMap, options);
     }
 
+    /**
+     * Get weight by name
+     * @param type - weight name
+     * @public
+     */
     public getWeight(type?: WeightType): string {
         if (type) {
             return this._weightMap[type];
         } else {
-            this._weight[0];
+            return this._weight[0];
         }
     }
 
+    /**
+     * Get all weight
+     * @public
+     */
     public getWeights(): string[] {
         return this._weight;
     }
 
+    /**
+     * Get weight number
+     * @public
+     */
     public maxWeight(): number {
         return this._weight ? this._weight.length : 0;
     }
 
-    public checkWeight(iteration: number): boolean {
-        return iteration < this._weight.length;
+    /**
+     * Check weight by number
+     * @param index - weight index
+     * @public
+     */
+    public checkWeight(index: number): boolean {
+        return index < this._weight.length;
     }
 
-    public equal(block: BlockModel, iteration?: number): boolean {
+    /**
+     * Comparison of models using weight
+     * @param item - model
+     * @param index - weight index
+     * @public
+     */
+    public equal(block: BlockModel, index?: number): boolean {
         if (this.blockType !== block.blockType) {
             return false;
         }
         if (!this._weight.length) {
             return this.blockType === block.blockType;
         }
-        if (iteration) {
-            if (this._weight[iteration] === '0' && block._weight[iteration] === '0') {
+        if (index) {
+            if (this._weight[index] === '0' && block._weight[index] === '0') {
                 return false;
             } else {
-                return this._weight[iteration] === block._weight[iteration];
+                return this._weight[index] === block._weight[index];
             }
         } else {
             return this._weight[0] === block._weight[0];
         }
     }
 
+    /**
+     * Convert class to object
+     * @public
+     */
     public toObject(): any {
         const properties = this._prop.getPropList();
         const events = this._events.map(e => e.toObject());
@@ -217,22 +335,44 @@ export class BlockModel implements IWeightModel {
         }
     }
 
+    /**
+     * Get properties
+     * @param type - filter by property type
+     * @public
+     */
     public getPropList(type?: PropertyType): PropertyModel<any>[] {
         return this._prop.getPropList(type);
     }
 
+    /**
+     * Get events
+     * @public
+     */
     public getEventList(): EventModel[] {
         return this._events;
     }
 
+    /**
+     * Get permissions
+     * @public
+     */
     public getPermissionsList(): string[] {
         return this._prop.getPermissionsList();
     }
 
+    /**
+     * Get artifacts
+     * @public
+     */
     public getArtifactsList(): ArtifactModel[] {
         return this._artifacts;
     }
 
+    /**
+     * Add child
+     * @param child
+     * @public
+     */
     public addChildren(child: BlockModel): void {
         this._children.push(child);
     }

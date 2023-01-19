@@ -8,13 +8,46 @@ import { TokenModel } from './token.model';
  * Property Model
  */
 export class PropertyModel<T> implements IProperties<T> {
+    /**
+     * Property name
+     * @public
+     */
     public readonly name: string;
+
+    /**
+     * Property nesting level
+     * @public
+     */
     public readonly lvl: number;
+
+    /**
+     * Full path
+     * @public
+     */
     public readonly path: string;
+
+    /**
+     * Property type
+     * @public
+     */
     public readonly type: PropertyType;
+
+    /**
+     * Property value
+     * @public
+     */
     public readonly value?: T;
 
+    /**
+     * Properties
+     * @protected
+     */
     protected _subProp: PropertyModel<T>[];
+
+    /**
+     * Weight
+     * @protected
+     */
     protected _weight: string;
 
     constructor(
@@ -33,10 +66,19 @@ export class PropertyModel<T> implements IProperties<T> {
         this._weight = String(this.value);
     }
 
+    /**
+     * Comparison of models using weight
+     * @param item - model
+     * @public
+     */
     public equal(item: PropertyModel<any>): boolean {
         return this.type === item.type && this._weight === item._weight;
     }
 
+    /**
+     * Convert class to object
+     * @public
+     */
     public toObject(): IProperties<T> {
         return {
             name: this.name,
@@ -47,6 +89,11 @@ export class PropertyModel<T> implements IProperties<T> {
         }
     }
 
+    /**
+     * Calculations hash
+     * @param options - comparison options
+     * @public
+     */
     public hash(options: ICompareOptions): string {
         if (options.propLvl === 1) {
             if (this.lvl === 1) {
@@ -59,11 +106,18 @@ export class PropertyModel<T> implements IProperties<T> {
         }
     }
 
+    /**
+     * Get properties
+     * @public
+     */
     public getPropList(): PropertyModel<T>[] {
         return this._subProp;
     }
 }
 
+/**
+ * Property Model (type = UUID)
+ */
 export class UUIDPropertyModel extends PropertyModel<any> {
     constructor(
         name: string,
@@ -74,6 +128,11 @@ export class UUIDPropertyModel extends PropertyModel<any> {
         super(name, PropertyType.UUID, value, lvl, path);
     }
 
+    /**
+     * Calculations hash
+     * @param options - comparison options
+     * @public
+     */
     public hash(options: ICompareOptions): string {
         if (options.idLvl === 0) {
             return null;
@@ -82,6 +141,9 @@ export class UUIDPropertyModel extends PropertyModel<any> {
     }
 }
 
+/**
+ * Property Model (type = any)
+ */
 export class AnyPropertyModel extends PropertyModel<any> {
     constructor(
         name: string,
@@ -93,6 +155,9 @@ export class AnyPropertyModel extends PropertyModel<any> {
     }
 }
 
+/**
+ * Property Model (type = Array)
+ */
 export class ArrayPropertyModel extends PropertyModel<boolean> {
     constructor(
         name: string,
@@ -104,6 +169,9 @@ export class ArrayPropertyModel extends PropertyModel<boolean> {
     }
 }
 
+/**
+ * Property Model (type = Object)
+ */
 export class ObjectPropertyModel extends PropertyModel<boolean> {
     constructor(
         name: string,
@@ -115,7 +183,14 @@ export class ObjectPropertyModel extends PropertyModel<boolean> {
     }
 }
 
+/**
+ * Property Model (type = Token)
+ */
 export class TokenPropertyModel extends PropertyModel<string> {
+    /**
+     * Token Model
+     * @public
+     */
     public token?: TokenModel;
 
     constructor(
@@ -127,6 +202,11 @@ export class TokenPropertyModel extends PropertyModel<string> {
         super(name, PropertyType.Token, value, lvl, path);
     }
 
+    /**
+     * Set Token Model
+     * @param token
+     * @public
+     */
     public setToken(token: TokenModel): void {
         this.token = token;
         if (this.token) {
@@ -144,6 +224,10 @@ export class TokenPropertyModel extends PropertyModel<string> {
         }
     }
 
+    /**
+     * Convert class to object
+     * @public
+     */
     public override toObject(): IProperties<string> {
         const item = super.toObject();
         if (this.token) {
@@ -161,6 +245,11 @@ export class TokenPropertyModel extends PropertyModel<string> {
         return item;
     }
 
+    /**
+     * Calculations hash
+     * @param options - comparison options
+     * @public
+     */
     public hash(options: ICompareOptions): string {
         if (options.idLvl === 0 && this.token) {
             return `${this.path}:${this.token.hash(options)}`;
@@ -169,7 +258,14 @@ export class TokenPropertyModel extends PropertyModel<string> {
     }
 }
 
+/**
+ * Property Model (type = Schema)
+ */
 export class SchemaPropertyModel extends PropertyModel<string> {
+    /**
+     * Schema Model
+     * @public
+     */
     public schema?: SchemaModel;
 
     constructor(
@@ -181,13 +277,22 @@ export class SchemaPropertyModel extends PropertyModel<string> {
         super(name, PropertyType.Schema, value, lvl, path);
     }
 
+    /**
+     * Set Schema Model
+     * @param schema
+     * @public
+     */
     public setSchema(schema: SchemaModel): void {
         this.schema = schema;
-        if(this.schema) {
+        if (this.schema) {
             this._weight = this.schema.hash();
         }
     }
 
+    /**
+     * Convert class to object
+     * @public
+     */
     public override toObject(): IProperties<string> {
         const item = super.toObject();
         if (this.schema) {
@@ -196,6 +301,11 @@ export class SchemaPropertyModel extends PropertyModel<string> {
         return item;
     }
 
+    /**
+     * Calculations hash
+     * @param options - comparison options
+     * @public
+     */
     public hash(options: ICompareOptions): string {
         if (options.idLvl === 0 && this.schema) {
             return `${this.path}:${this.schema.hash(options)}`;

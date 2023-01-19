@@ -22,29 +22,38 @@ export class PolicyComparator {
      * 0 - Don't compare
      * 1 - Only simple properties
      * 2 - All properties
+     * @private
      */
     private readonly propLvl: number;
+
     /**
      * Children
      * 0 - Don't compare
      * 1 - Only child blocks of the first level
      * 2 - All children
+     * @private
      */
     private readonly childLvl: number;
+
     /**
      * Events
      * 0 - Don't compare
      * 1 - All events
+     * @private
      */
     private readonly eventLvl: number;
+
     /**
      * UUID
      * 0 - Don't compare
      * 1 - All UUID
+     * @private
      */
     private readonly idLvl: number;
+
     /**
      * Compare Options
+     * @private
      */
     private readonly options: ICompareOptions;
 

@@ -18,6 +18,7 @@ import { TokenModel } from './token.model';
 export class PropertiesModel {
     /**
      * All Properties
+     * @private
      */
     private readonly list: PropertyModel<any>[];
 

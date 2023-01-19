@@ -12,16 +12,37 @@ import { PropertyModel } from './property.model';
  * @extends IWeightModel
  */
 export class TemplateTokenModel implements IWeightModel {
+    /**
+     * Model name
+     * @public
+     */
     public readonly name: any;
 
-    private readonly _prop: PropertiesModel;
-
-    private _weight: string[];
-    private _weightMap: IKeyMap<string>;
-
+    /**
+     * Model key
+     * @public
+     */
     public get key(): string {
         return this.name;
     }
+
+    /**
+     * Weights
+     * @private
+     */
+    private _weight: string[];
+
+    /**
+     * Weights map by name
+     * @private
+     */
+    private _weightMap: IKeyMap<string>;
+
+    /**
+     * Properties
+     * @private
+     */
+    private readonly _prop: PropertiesModel;
 
     constructor(json: any) {
         this.name = json.templateTokenTag;
@@ -30,6 +51,11 @@ export class TemplateTokenModel implements IWeightModel {
         this._weightMap = {};
     }
 
+    /**
+     * Update all weight
+     * @param options - comparison options
+     * @public
+     */
     public update(options: ICompareOptions): void {
         const weights = [];
         const weightMap = {};
@@ -54,6 +80,10 @@ export class TemplateTokenModel implements IWeightModel {
         this._weight = weights.reverse();
     }
 
+    /**
+     * Convert class to object
+     * @public
+     */
     public toObject(): any {
         const properties = this._prop.getPropList();
         return {
@@ -62,41 +92,70 @@ export class TemplateTokenModel implements IWeightModel {
         }
     }
 
+    /**
+     * Get weight by name
+     * @param type - weight name
+     * @public
+     */
     public getWeight(type?: WeightType): string {
         if (type) {
             return this._weightMap[type];
         } else {
-            this._weight[0];
+            return this._weight[0];
         }
     }
 
+    /**
+     * Get all weight
+     * @public
+     */
     public getWeights(): string[] {
         return this._weight;
     }
 
+    /**
+     * Get weight number
+     * @public
+     */
     public maxWeight(): number {
         return this._weight ? this._weight.length : 0;
     }
 
-    public checkWeight(iteration: number): boolean {
-        return iteration < this._weight.length;
+    /**
+     * Check weight by number
+     * @param index - weight index
+     * @public
+     */
+    public checkWeight(index: number): boolean {
+        return index < this._weight.length;
     }
 
-    public equal(field: TemplateTokenModel, iteration?: number): boolean {
+    /**
+     * Comparison of models using weight
+     * @param item - model
+     * @param index - weight index
+     * @public
+     */
+    public equal(field: TemplateTokenModel, index?: number): boolean {
         if (!this._weight.length) {
             return this.name === field.name;
         }
-        if (iteration) {
-            if (this._weight[iteration] === '0' && field._weight[iteration] === '0') {
+        if (index) {
+            if (this._weight[index] === '0' && field._weight[index] === '0') {
                 return false;
             } else {
-                return this._weight[iteration] === field._weight[iteration];
+                return this._weight[index] === field._weight[index];
             }
         } else {
             return this._weight[0] === field._weight[0];
         }
     }
 
+    /**
+     * Get properties
+     * @param type - filter by property type
+     * @public
+     */
     public getPropList(type?: PropertyType): PropertyModel<any>[] {
         return this._prop.getPropList(type);
     }

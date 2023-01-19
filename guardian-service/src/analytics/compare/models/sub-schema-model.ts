@@ -7,9 +7,22 @@ import MurmurHash3 from 'imurmurhash';
  * Schema Model
  */
 export class SubSchemaModel {
+    /**
+     * Fields
+     * @public
+     */
     public readonly fields: FieldModel[];
+
+    /**
+     * Conditions
+     * @public
+     */
     public readonly conditions: ConditionModel[];
 
+    /**
+     * Weight
+     * @private
+     */
     private _weight: string;
 
     constructor(document: any, index: number, defs?: any) {
@@ -24,6 +37,7 @@ export class SubSchemaModel {
      * @param document
      * @param contextURL
      * @param defs
+     * @private
      */
     private parseFields(document: any, index: number, defs?: any): FieldModel[] {
         const fields: FieldModel[] = [];
@@ -41,7 +55,7 @@ export class SubSchemaModel {
 
         const properties = Object.keys(document.properties);
         for (const name of properties) {
-            if(name === '@context' || name === 'type') {
+            if (name === '@context' || name === 'type') {
                 continue;
             }
 
@@ -63,9 +77,10 @@ export class SubSchemaModel {
     /**
      * Parse conditions
      * @param document
-     * @param context
+     * @param index
      * @param fields
      * @param defs
+     * @private
      */
     private parseConditions(
         document: any,
@@ -94,7 +109,10 @@ export class SubSchemaModel {
         }
         return conditions;
     }
-
+    /**
+     * Update conditions
+     * @private
+     */
     private updateConditions(): FieldModel[] {
         if (this.conditions && this.conditions.length) {
             const map: any = {};
@@ -116,6 +134,11 @@ export class SubSchemaModel {
         return this.fields.sort((a, b) => a.order - b.order);
     }
 
+    /**
+     * Update all weight
+     * @param options - comparison options
+     * @public
+     */
     public update(options: ICompareOptions): void {
         const hashState = MurmurHash3();
         for (const field of this.fields) {
@@ -125,6 +148,11 @@ export class SubSchemaModel {
         this._weight = String(hashState.result());
     }
 
+    /**
+     * Calculations hash
+     * @param options - comparison options
+     * @public
+     */
     public hash(options: ICompareOptions): string {
         return this._weight;
     }

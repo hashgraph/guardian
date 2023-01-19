@@ -4,12 +4,46 @@ import { FieldModel } from './field.model';
  * Condition Model
  */
 export class ConditionModel {
+    /**
+     * Condition index
+     * @public
+     */
     public readonly index: number;
+
+    /**
+     * Field name
+     * @public
+     */
     public readonly name: string;
+
+    /**
+     * Field Model
+     * @public
+     */
     public readonly field: FieldModel;
+
+    /**
+     * Field value
+     * @public
+     */
     public readonly fieldValue: any;
+
+    /**
+     * Then Fields
+     * @public
+     */
     public readonly thenFields: FieldModel[];
+
+    /**
+     * Else Fields
+     * @public
+     */
     public readonly elseFields: FieldModel[];
+
+    /**
+     * All Fields
+     * @public
+     */
     public readonly fields: FieldModel[];
 
     constructor(

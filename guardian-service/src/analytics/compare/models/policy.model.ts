@@ -16,22 +16,94 @@ import { RoleModel } from './role.model';
  * Policy Model
  */
 export class PolicyModel {
-    public readonly tree: BlockModel;
+    /**
+     * Policy id
+     * @public
+     */
     public readonly id: string;
+
+    /**
+     * Policy description
+     * @public
+     */
     public readonly description: string;
+
+    /**
+     * Policy name
+     * @public
+     */
     public readonly name: string;
+
+    /**
+     * Instance Topic
+     * @public
+     */
     public readonly instanceTopicId: string;
+
+    /**
+     * Policy version
+     * @public
+     */
     public readonly version: string;
+
+    /**
+     * Groups
+     * @public
+     */
     public readonly groups: GroupModel[];
+
+    /**
+     * Topics
+     * @public
+     */
     public readonly topics: TopicModel[];
+
+    /**
+     * Tokens
+     * @public
+     */
     public readonly tokens: TemplateTokenModel[];
+
+    /**
+     * Roles
+     * @public
+     */
     public readonly roles: RoleModel[];
 
+    /**
+     * Blocks
+     * @public
+     */
+    public readonly tree: BlockModel;
 
-    private options: ICompareOptions;
-    private _list: BlockModel[];
+    /**
+     * Compare Options
+     * @private
+     */
+    private readonly options: ICompareOptions;
+
+    /**
+     * All Blocks
+     * @private
+     */
+    private readonly _list: BlockModel[];
+
+    /**
+     * All artifacts
+     * @private
+     */
     private _artifacts: IArtifacts[];
+
+    /**
+     * All schemas
+     * @private
+     */
     private _schemas: SchemaModel[];
+
+    /**
+     * All tokens
+     * @private
+     */
     private _tokens: TokenModel[];
 
     constructor(policy: Policy, options: ICompareOptions) {
@@ -56,21 +128,12 @@ export class PolicyModel {
         this.tokens = this.createTokens(policy.policyTokens, this.options);
     }
 
-    public setArtifacts(artifacts: IArtifacts[]): PolicyModel {
-        this._artifacts = artifacts;
-        return this;
-    }
-
-    public setSchemas(schemas: SchemaModel[]): PolicyModel {
-        this._schemas = schemas;
-        return this;
-    }
-
-    public setTokens(tokens: TokenModel[]): PolicyModel {
-        this._tokens = tokens;
-        return this;
-    }
-
+    /**
+     * Convert tree to array
+     * @param root
+     * @param list - result
+     * @private
+     */
     private getAllBlocks(root: BlockModel, list: BlockModel[]): BlockModel[] {
         list.push(root)
         for (const child of root.children) {
@@ -79,6 +142,12 @@ export class PolicyModel {
         return list;
     }
 
+    /**
+     * Create Block by JSON
+     * @param json
+     * @param index
+     * @private
+     */
     private createBlock(json: any, index: number): BlockModel {
         const block = new BlockModel(json, index + 1);
         if (Array.isArray(json.children)) {
@@ -90,6 +159,12 @@ export class PolicyModel {
         return block;
     }
 
+    /**
+     * Update all weight (all blocks)
+     * @param root
+     * @param options - comparison options
+     * @public
+     */
     private updateAllBlocks(root: BlockModel, options: ICompareOptions): void {
         for (const child of root.children) {
             this.updateAllBlocks(child, options);
@@ -97,6 +172,12 @@ export class PolicyModel {
         root.update(options);
     }
 
+    /**
+     * Create Roles by JSON
+     * @param roles
+     * @param options - comparison options
+     * @private
+     */
     private createRoles(roles: string[], options: ICompareOptions): RoleModel[] {
         const result: RoleModel[] = [];
         if (Array.isArray(roles)) {
@@ -108,6 +189,13 @@ export class PolicyModel {
         }
         return result;
     }
+
+    /**
+     * Create Groups by JSON
+     * @param groups
+     * @param options - comparison options
+     * @private
+     */
     private createGroups(groups: any[], options: ICompareOptions): GroupModel[] {
         const result: GroupModel[] = [];
         if (Array.isArray(groups)) {
@@ -119,6 +207,13 @@ export class PolicyModel {
         }
         return result;
     }
+
+    /**
+     * Create Topics by JSON
+     * @param topics
+     * @param options - comparison options
+     * @private
+     */
     private createTopics(topics: any[], options: ICompareOptions): TopicModel[] {
         const result: TopicModel[] = [];
         if (Array.isArray(topics)) {
@@ -130,6 +225,13 @@ export class PolicyModel {
         }
         return result;
     }
+
+    /**
+     * Create Tokens by JSON
+     * @param tokens
+     * @param options - comparison options
+     * @private
+     */
     private createTokens(tokens: any[], options: ICompareOptions): TemplateTokenModel[] {
         const result: TemplateTokenModel[] = [];
         if (Array.isArray(tokens)) {
@@ -142,6 +244,40 @@ export class PolicyModel {
         return result;
     }
 
+    /**
+     * Set artifact models
+     * @param artifacts
+     * @public
+     */
+    public setArtifacts(artifacts: IArtifacts[]): PolicyModel {
+        this._artifacts = artifacts;
+        return this;
+    }
+
+    /**
+     * Set schema models
+     * @param schemas
+     * @public
+     */
+    public setSchemas(schemas: SchemaModel[]): PolicyModel {
+        this._schemas = schemas;
+        return this;
+    }
+
+    /**
+     * Set token models
+     * @param tokens
+     * @public
+     */
+    public setTokens(tokens: TokenModel[]): PolicyModel {
+        this._tokens = tokens;
+        return this;
+    }
+
+    /**
+     * Update all weight
+     * @public
+     */
     public update(): PolicyModel {
         const blockMap: IKeyMap<BlockModel> = {};
         for (const block of this._list) {
@@ -168,6 +304,10 @@ export class PolicyModel {
         return this;
     }
 
+    /**
+     * Convert class to object
+     * @public
+     */
     public info(): any {
         return {
             id: this.id,
@@ -178,6 +318,11 @@ export class PolicyModel {
         };
     }
 
+    /**
+     * Get all properties (all blocks)
+     * @param type - filter by property type
+     * @public
+     */
     public getAllProp<T>(type: PropertyType): PropertyModel<T>[] {
         let prop = [];
         for (const block of this._list) {

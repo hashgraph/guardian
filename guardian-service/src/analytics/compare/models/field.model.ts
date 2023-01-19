@@ -2,6 +2,7 @@ import MurmurHash3 from 'imurmurhash';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { IKeyMap } from '../interfaces/key-map.interface';
 import { IWeightModel } from '../interfaces/weight-model.interface';
+import { PropertyType } from '../types/property.type';
 import { WeightType } from '../types/weight.type';
 import { AnyPropertyModel, ArrayPropertyModel, PropertyModel, UUIDPropertyModel } from './property.model';
 import { SubSchemaModel } from './sub-schema-model';
@@ -11,31 +12,118 @@ import { SubSchemaModel } from './sub-schema-model';
  * @extends IWeightModel
  */
 export class FieldModel implements IWeightModel {
+    /**
+     * Model index
+     * @public
+     */
     public readonly index: number;
 
+    /**
+     * Field name
+     * @public
+     */
     public readonly name: string;
+
+    /**
+     * Field title
+     * @public
+     */
     public readonly title: string;
+
+    /**
+     * Field description
+     * @public
+     */
     public readonly description: string;
+
+    /**
+     * Field type
+     * @public
+     */
     public readonly type: string;
+
+    /**
+     * Field format
+     * @public
+     */
     public readonly format: string;
+
+    /**
+     * Pattern
+     * @public
+     */
     public readonly pattern: string;
+
+    /**
+     * Unit
+     * @public
+     */
     public readonly unit: string;
+
+    /**
+     * Unit System
+     * @public
+     */
     public readonly unitSystem: string;
+
+    /**
+     * If value = array
+     * @public
+     */
     public readonly isArray: boolean;
+
+    /**
+     * If value = sub-schema
+     * @public
+     */
     public readonly isRef: boolean;
+
+    /**
+     * ReadOnly
+     * @public
+     */
     public readonly readOnly: boolean;
+
+    /**
+     * Required
+     * @public
+     */
     public readonly required: boolean;
+
+    /**
+     * Custom type
+     * @public
+     */
     public readonly customType: string;
+
+    /**
+     * Field comment
+     * @public
+     */
     public readonly comment: string;
+
+    /**
+     * If value = remote link
+     * @public
+     */
     public readonly remoteLink: string;
+
+    /**
+     * If value = enum
+     * @public
+     */
     public readonly enum: string[];
+
+    /**
+     * Field order
+     * @public
+     */
     public readonly order: number;
 
-    private _condition: string;
-    private _subSchema: SubSchemaModel;
-    private _weight: string[];
-    private _weightMap: IKeyMap<string>;
-
+    /**
+     * Children
+     * @public
+     */
     public get children(): FieldModel[] {
         if (this._subSchema) {
             return this._subSchema.fields;
@@ -43,13 +131,45 @@ export class FieldModel implements IWeightModel {
         return [];
     }
 
+    /**
+     * Condition
+     * @public
+     */
     public get condition(): string {
         return this._condition;
     }
 
+    /**
+     * Model key
+     * @public
+     */
     public get key(): string {
         return null;
     }
+
+    /**
+     * Weights
+     * @private
+     */
+    private _weight: string[];
+
+    /**
+     * Weights map by name
+     * @private
+     */
+    private _weightMap: IKeyMap<string>;
+
+    /**
+     * Condition
+     * @private
+     */
+    private _condition: string;
+
+    /**
+     * Sub-schema
+     * @private
+     */
+    private _subSchema: SubSchemaModel;
 
     constructor(
         name: string,
@@ -111,6 +231,7 @@ export class FieldModel implements IWeightModel {
     /**
      * Parse Field comment
      * @param comment
+     * @private
      */
     private parseFieldComment(comment: string): any {
         try {
@@ -121,6 +242,11 @@ export class FieldModel implements IWeightModel {
         }
     }
 
+    /**
+     * Calculations base weight
+     * @param options - comparison options
+     * @public
+     */
     public calcBaseWeight(options: ICompareOptions): void {
         const weights = [];
         const weightMap = {};
@@ -200,26 +326,50 @@ export class FieldModel implements IWeightModel {
         this._weight = weights.reverse();
     }
 
+    /**
+     * Get weight by name
+     * @param type - weight name
+     * @public
+     */
     public getWeight(type?: WeightType): string {
         if (type) {
             return this._weightMap[type];
         } else {
-            this._weight[0];
+            return this._weight[0];
         }
     }
 
+    /**
+     * Get all weight
+     * @public
+     */
     public getWeights(): string[] {
         return this._weight;
     }
 
+    /**
+     * Get weight number
+     * @public
+     */
     public maxWeight(): number {
         return this._weight ? this._weight.length : 0;
     }
 
+    /**
+     * Check weight by number
+     * @param index - weight index
+     * @public
+     */
     public checkWeight(iteration: number): boolean {
         return iteration < this._weight.length;
     }
 
+    /**
+     * Comparison of models using weight
+     * @param item - model
+     * @param index - weight index
+     * @public
+     */
     public equal(field: FieldModel, iteration?: number): boolean {
         if (!this._weight.length) {
             return this.name === field.name;
@@ -235,7 +385,12 @@ export class FieldModel implements IWeightModel {
         }
     }
 
-    public getPropList(): PropertyModel<any>[] {
+    /**
+     * Get properties
+     * @param type - filter by property type
+     * @public
+     */
+    public getPropList(type?: PropertyType): PropertyModel<any>[] {
         const properties: PropertyModel<any>[] = [];
         if (this.name) {
             properties.push(new AnyPropertyModel('name', this.name));
@@ -291,6 +446,10 @@ export class FieldModel implements IWeightModel {
         return properties;
     }
 
+    /**
+     * Convert class to object
+     * @public
+     */
     public toObject(): any {
         return {
             index: this.index,
@@ -315,14 +474,29 @@ export class FieldModel implements IWeightModel {
         }
     }
 
+    /**
+     * Set sub-schema model
+     * @param subSchema
+     * @public
+     */
     public setSubSchema(subSchema: SubSchemaModel): void {
         this._subSchema = subSchema;
     }
 
+    /**
+     * Set condition model
+     * @param condition
+     * @public
+     */
     public setCondition(condition: string): void {
         this._condition = condition;
     }
 
+    /**
+     * Update all weight
+     * @param options - comparison options
+     * @public
+     */
     public update(options: ICompareOptions): void {
         if (this._subSchema) {
             this._subSchema.update(options);
@@ -330,6 +504,11 @@ export class FieldModel implements IWeightModel {
         this.calcBaseWeight(options);
     }
 
+    /**
+     * Calculations hash
+     * @param options - comparison options
+     * @public
+     */
     public hash(options: ICompareOptions): string {
         return this._weight[0];
     }

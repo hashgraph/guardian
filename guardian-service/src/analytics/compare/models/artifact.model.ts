@@ -35,12 +35,14 @@ export class ArtifactModel {
     }
     /**
      * File weight (hash)
+     * @private
      */
     private _weight: string;
     /**
      * File hash
+     * @private
      */
-    private hash: string;
+    private _hash: string;
 
     constructor(json: any) {
         this.name = json.name;
@@ -67,11 +69,12 @@ export class ArtifactModel {
         } else {
             this._weight = '';
         }
-        this.hash = weight;
+        this._hash = weight;
     }
 
     /**
      * Convert class to object
+     * @public
      */
     public toObject(): any {
         return {
@@ -90,6 +93,6 @@ export class ArtifactModel {
      * @public
      */
     public equal(item: ArtifactModel, index?: number): boolean {
-        return this.hash === item.hash;
+        return this._hash === item._hash;
     }
 }

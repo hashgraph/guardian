@@ -17,6 +17,7 @@ import { CompareUtils } from '../utils/utils';
 export class SchemaComparator {
     /**
      * Compare Options
+     * @private
      */
     private readonly options: ICompareOptions;
 
