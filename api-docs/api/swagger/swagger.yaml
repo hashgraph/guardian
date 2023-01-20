@@ -1,24 +1,24 @@
 openapi: 3.0.0
 info:
-  title: "Guardian"
-  description: "The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation."
-  version: "2.8.0"
+  title: 'Guardian'
+  description: 'The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation.'
+  version: '2.8.0'
   contact:
-    name: "API developer"
-    url: "https://envisionblockchain.com"
-    email: "info@envisionblockchain.com"
+    name: 'API developer'
+    url: 'https://envisionblockchain.com'
+    email: 'info@envisionblockchain.com'
   license:
-    name: "Apache 2.0"
-    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+    name: 'Apache 2.0'
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
 servers:
   - url: /api/v1
     description: version 1.0
 components:
   securitySchemes:
     bearerAuth:
-      type: "http"
-      scheme: "bearer"
-      bearerFormat: "JWT"
+      type: 'http'
+      scheme: 'bearer'
+      bearerFormat: 'JWT'
   schemas:
     Credentials:
       type: object
@@ -440,7 +440,7 @@ components:
         blocks:
           type: array
           items:
-            $ref: "#/components/schemas/PolicyBlock"
+            $ref: '#/components/schemas/PolicyBlock'
     ExportPolicy:
       type: object
       required:
@@ -667,38 +667,38 @@ components:
         vcDocument:
           type: object
 tags:
-  - name: "accounts"
-    description: "Operations related to Guardian users"
-  - name: "profiles"
-    description: "Hedera profile related operations"
-  - name: "schema"
-    description: "Single schema operations"
-  - name: "schemas"
-    description: "Operations with data schemas"
-  - name: "tokens"
-    description: "Everything about tokens"
-  - name: "trustchains"
-    description: "Audit and trust chain"
-  - name: "policies"
-    description: "Policy engine operations"
-  - name: "external"
-    description: "APIs for external data sources"
-  - name: "demo"
-    description: "Demo Only APIs"
-  - name: "ipfs"
-    description: "IPFS Operations"
-  - name: "settings"
-    description: "Settings operations"
-  - name: "logs"
-    description: "Logs operations"
-  - name: "tasks"
-    description: "Task Status"
-  - name: "artifacts"
-    description: "Policy Artifacts"
-  - name: "contracts"
-    description: "Contracts"
-  - name: "analytics"
-    description: "Analytics"
+  - name: 'accounts'
+    description: 'Operations related to Guardian users'
+  - name: 'profiles'
+    description: 'Hedera profile related operations'
+  - name: 'schema'
+    description: 'Single schema operations'
+  - name: 'schemas'
+    description: 'Operations with data schemas'
+  - name: 'tokens'
+    description: 'Everything about tokens'
+  - name: 'trustchains'
+    description: 'Audit and trust chain'
+  - name: 'policies'
+    description: 'Policy engine operations'
+  - name: 'external'
+    description: 'APIs for external data sources'
+  - name: 'demo'
+    description: 'Demo Only APIs'
+  - name: 'ipfs'
+    description: 'IPFS Operations'
+  - name: 'settings'
+    description: 'Settings operations'
+  - name: 'logs'
+    description: 'Logs operations'
+  - name: 'tasks'
+    description: 'Task Status'
+  - name: 'artifacts'
+    description: 'Policy Artifacts'
+  - name: 'contracts'
+    description: 'Contracts'
+  - name: 'analytics'
+    description: 'Analytics'
 paths:
   /accounts:
     get:
@@ -716,7 +716,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Account"
+                  $ref: '#/components/schemas/Account'
         401:
           description: Unauthorized.
         403:
@@ -726,7 +726,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /accounts/session:
     get:
@@ -742,7 +742,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Session"
+                $ref: '#/components/schemas/Session'
         401:
           description: Unauthorized.
         500:
@@ -750,7 +750,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
   /accounts/balance:
     get:
       tags:
@@ -783,7 +783,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /accounts/register:
     post:
@@ -796,20 +796,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Credentials"
+              $ref: '#/components/schemas/Credentials'
       responses:
         201:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Account"
+                $ref: '#/components/schemas/Account'
         500:
           description: Internal server error.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /accounts/login:
     post:
@@ -822,20 +822,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Credentials"
+              $ref: '#/components/schemas/Credentials'
       responses:
         200:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Session"
+                $ref: '#/components/schemas/Session'
         500:
           description: Internal server error.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /accounts/root-authorities:
     get:
@@ -854,7 +854,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Account"
+                  $ref: '#/components/schemas/Account'
         401:
           description: Unauthorized.
         500:
@@ -862,7 +862,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /accounts/standard-registries:
     get:
@@ -880,7 +880,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Account"
+                  $ref: '#/components/schemas/Account'
         401:
           description: Unauthorized.
         500:
@@ -888,7 +888,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /profiles/{username}/balance:
     get:
@@ -921,7 +921,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /profiles/{username}:
     get:
@@ -944,7 +944,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: '#/components/schemas/User'
         401:
           description: Unauthorized.
         403:
@@ -954,7 +954,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     put:
       tags:
         - profiles
@@ -975,7 +975,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: '#/components/schemas/User'
       responses:
         201:
           description: Successful operation.
@@ -988,7 +988,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /profiles/push/{username}:
     put:
@@ -1011,14 +1011,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: '#/components/schemas/User'
       responses:
         200:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -1028,7 +1028,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas:
     get:
@@ -1070,7 +1070,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Schema"
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1080,7 +1080,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schema/{schemaId}:
     get:
@@ -1103,7 +1103,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Schema"
+                $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1113,7 +1113,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/{topicId}:
     post:
@@ -1140,7 +1140,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Schema"
+              $ref: '#/components/schemas/Schema'
       responses:
         201:
           description: Successful operation.
@@ -1153,7 +1153,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     get:
       tags:
         - schemas
@@ -1203,7 +1203,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Schema"
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1213,7 +1213,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/push/{topicId}:
     post:
@@ -1240,14 +1240,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Schema"
+              $ref: '#/components/schemas/Schema'
       responses:
         200:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -1257,7 +1257,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/{schemaId}/publish:
     put:
@@ -1292,7 +1292,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Schema"
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1302,7 +1302,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/push/{schemaId}/publish:
     put:
@@ -1335,7 +1335,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -1345,7 +1345,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/{schemaId}:
     put:
@@ -1368,7 +1368,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Schema"
+              $ref: '#/components/schemas/Schema'
       responses:
         200:
           description: Successful operation.
@@ -1377,7 +1377,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Schema"
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1387,7 +1387,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     delete:
       tags:
         - schemas
@@ -1410,7 +1410,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Schema"
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1420,7 +1420,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/{topicId}/import/file:
     post:
@@ -1457,7 +1457,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Schema"
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1467,7 +1467,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/push/{topicId}/import/file:
     post:
@@ -1502,7 +1502,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -1512,7 +1512,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/{topicId}/import/message:
     post:
@@ -1551,7 +1551,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Schema"
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1561,7 +1561,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/push/{topicId}/import/message:
     post:
@@ -1598,7 +1598,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -1608,7 +1608,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/import/message/preview:
     post:
@@ -1636,7 +1636,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Schema"
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1646,7 +1646,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/push/import/message/preview:
     post:
@@ -1672,7 +1672,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -1682,7 +1682,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/import/file/preview:
     post:
@@ -1708,7 +1708,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Schema"
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1718,7 +1718,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/{schemaId}/export/message:
     post:
@@ -1741,7 +1741,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ExportSchema"
+                $ref: '#/components/schemas/ExportSchema'
         401:
           description: Unauthorized.
         403:
@@ -1751,7 +1751,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/{schemaId}/export/file:
     post:
@@ -1780,7 +1780,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /schemas/type/{type}:
     get:
@@ -1803,7 +1803,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Schema"
+                $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1813,7 +1813,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
   /schemas/system/{username}:
     post:
       tags:
@@ -1835,7 +1835,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Schema"
+              $ref: '#/components/schemas/Schema'
       responses:
         201:
           description: Successful operation.
@@ -1848,7 +1848,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     get:
       tags:
         - schemas
@@ -1894,7 +1894,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Schema"
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1904,7 +1904,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
   /schemas/system/{schemaId}:
     put:
       tags:
@@ -1926,7 +1926,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Schema"
+              $ref: '#/components/schemas/Schema'
       responses:
         200:
           description: Successful operation.
@@ -1935,7 +1935,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Schema"
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1945,7 +1945,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     delete:
       tags:
         - schemas
@@ -1968,7 +1968,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Schema"
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1978,7 +1978,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
   /schemas/system/{schemaId}/active:
     put:
       tags:
@@ -2012,7 +2012,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Schema"
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -2022,7 +2022,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
   /schemas/system/entity/{schemaEntity}:
     get:
       tags:
@@ -2045,7 +2045,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Schema"
+                $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -2055,7 +2055,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
   /tokens:
     get:
       tags:
@@ -2073,7 +2073,7 @@ paths:
                 type: array
                 items:
                   allOf:
-                    - $ref: "#/components/schemas/TokenInfo"
+                    - $ref: '#/components/schemas/TokenInfo'
                     - type: object
                       properties:
                         policies:
@@ -2089,7 +2089,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     post:
       tags:
         - tokens
@@ -2103,7 +2103,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Token"
+              $ref: '#/components/schemas/Token'
       responses:
         201:
           description: Successful operation.
@@ -2113,7 +2113,7 @@ paths:
                 type: array
                 items:
                   allOf:
-                    - $ref: "#/components/schemas/TokenInfo"
+                    - $ref: '#/components/schemas/TokenInfo'
                     - type: object
                       properties:
                         policies:
@@ -2125,7 +2125,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
         401:
           description: Unauthorized.
         403:
@@ -2135,7 +2135,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/push:
     post:
@@ -2151,14 +2151,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Token"
+              $ref: '#/components/schemas/Token'
       responses:
         200:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -2168,7 +2168,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/{tokenId}/{username}/info:
     get:
@@ -2196,13 +2196,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TokenInfo"
+                $ref: '#/components/schemas/TokenInfo'
         400:
           description: Bad Request.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
         401:
           description: Unauthorized.
         403:
@@ -2212,7 +2212,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/{tokenId}/associate:
     put:
@@ -2241,7 +2241,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/push/{tokenId}/associate:
     put:
@@ -2264,7 +2264,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -2274,7 +2274,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/{tokenId}/dissociate:
     put:
@@ -2303,7 +2303,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/push/{tokenId}/dissociate:
     put:
@@ -2326,7 +2326,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -2336,7 +2336,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/{tokenId}/{username}/grantKyc:
     put:
@@ -2365,13 +2365,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TokenInfo"
+                $ref: '#/components/schemas/TokenInfo'
         400:
           description: Bad Request.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
         401:
           description: Unauthorized.
         403:
@@ -2381,7 +2381,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/push/{tokenId}/{username}/grantKyc:
     put:
@@ -2410,7 +2410,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -2420,7 +2420,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/{tokenId}/{username}/revokeKyc:
     put:
@@ -2449,13 +2449,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TokenInfo"
+                $ref: '#/components/schemas/TokenInfo'
         400:
           description: Bad Request.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
         401:
           description: Unauthorized.
         403:
@@ -2465,7 +2465,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/push/{tokenId}/{username}/revokeKyc:
     put:
@@ -2494,7 +2494,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -2504,7 +2504,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/{tokenId}/{username}/freeze:
     put:
@@ -2533,13 +2533,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TokenInfo"
+                $ref: '#/components/schemas/TokenInfo'
         400:
           description: Bad Request.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
         401:
           description: Unauthorized.
         403:
@@ -2549,7 +2549,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/push/{tokenId}/{username}/freeze:
     put:
@@ -2578,7 +2578,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -2588,7 +2588,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/{tokenId}/{username}/unfreeze:
     put:
@@ -2617,13 +2617,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TokenInfo"
+                $ref: '#/components/schemas/TokenInfo'
         400:
           description: Bad Request.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
         401:
           description: Unauthorized.
         403:
@@ -2633,7 +2633,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tokens/push/{tokenId}/{username}/unfreeze:
     put:
@@ -2662,7 +2662,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -2672,7 +2672,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /trustchains:
     get:
@@ -2724,7 +2724,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/VerifiablePresentation"
+                  $ref: '#/components/schemas/VerifiablePresentation'
         401:
           description: Unauthorized.
         403:
@@ -2734,7 +2734,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /trustchains/{hash}:
     get:
@@ -2757,7 +2757,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TrustChains"
+                $ref: '#/components/schemas/TrustChains'
         401:
           description: Unauthorized.
         403:
@@ -2767,7 +2767,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies:
     get:
@@ -2810,7 +2810,7 @@ paths:
                 type: array
                 items:
                   allOf:
-                    - $ref: "#/components/schemas/PolicyConfig"
+                    - $ref: '#/components/schemas/PolicyConfig'
                     - type: object
                       properties:
                         userRoles:
@@ -2826,7 +2826,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     post:
       tags:
         - policies
@@ -2840,7 +2840,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PolicyConfig"
+              $ref: '#/components/schemas/PolicyConfig'
       responses:
         201:
           description: Successful operation.
@@ -2853,7 +2853,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/push:
     post:
@@ -2869,14 +2869,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PolicyConfig"
+              $ref: '#/components/schemas/PolicyConfig'
       responses:
         200:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -2886,7 +2886,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}:
     get:
@@ -2910,7 +2910,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/PolicyConfig"
+                  - $ref: '#/components/schemas/PolicyConfig'
                   - type: object
                     properties:
                       userRoles:
@@ -2926,7 +2926,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     put:
       tags:
         - policies
@@ -2945,7 +2945,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PolicyConfig"
+              $ref: '#/components/schemas/PolicyConfig'
       security:
         - bearerAuth: []
       responses:
@@ -2954,7 +2954,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PolicyConfig"
+                $ref: '#/components/schemas/PolicyConfig'
         401:
           description: Unauthorized.
         403:
@@ -2964,7 +2964,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/publish:
     put:
@@ -2997,7 +2997,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PublishPolicy"
+                $ref: '#/components/schemas/PublishPolicy'
         401:
           description: Unauthorized.
         403:
@@ -3007,7 +3007,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/push/{policyId}/publish:
     put:
@@ -3040,7 +3040,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -3050,7 +3050,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/validate:
     post:
@@ -3066,14 +3066,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PolicyConfig"
+              $ref: '#/components/schemas/PolicyConfig'
       responses:
         200:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ValidatePolicy"
+                $ref: '#/components/schemas/ValidatePolicy'
         401:
           description: Unauthorized.
         403:
@@ -3083,7 +3083,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/groups:
     get:
@@ -3131,7 +3131,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     post:
       tags:
         - policies
@@ -3168,7 +3168,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/blocks:
     get:
@@ -3191,7 +3191,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PolicyBlock"
+                $ref: '#/components/schemas/PolicyBlock'
         401:
           description: Unauthorized.
         403:
@@ -3201,7 +3201,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/blocks/{uuid}:
     get:
@@ -3230,7 +3230,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PolicyBlockData"
+                $ref: '#/components/schemas/PolicyBlockData'
         401:
           description: Unauthorized.
         403:
@@ -3240,7 +3240,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     post:
       tags:
         - policies
@@ -3280,7 +3280,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/tag/{tag}:
     get:
@@ -3322,7 +3322,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/export/message:
     get:
@@ -3345,7 +3345,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ExportPolicy"
+                $ref: '#/components/schemas/ExportPolicy'
         401:
           description: Unauthorized.
         403:
@@ -3355,7 +3355,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/export/file:
     get:
@@ -3378,7 +3378,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ExportPolicy"
+                $ref: '#/components/schemas/ExportPolicy'
         401:
           description: Unauthorized.
         403:
@@ -3388,7 +3388,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/import/message:
     post:
@@ -3404,7 +3404,7 @@ paths:
           examples:
             pageIndex:
               summary: Example of a topic ID of policy version.
-              value: "0.0.00000001"
+              value: '0.0.00000001'
       security:
         - bearerAuth: []
       summary: Imports new policy from IPFS.
@@ -3426,7 +3426,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/PolicyConfig"
+                  $ref: '#/components/schemas/PolicyConfig'
         401:
           description: Unauthorized.
         403:
@@ -3436,7 +3436,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/push/import/message:
     post:
@@ -3462,7 +3462,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -3472,7 +3472,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/import/file:
     post:
@@ -3488,7 +3488,7 @@ paths:
           examples:
             pageIndex:
               summary: Example of a topic ID of policy version.
-              value: "0.0.00000001"
+              value: '0.0.00000001'
       security:
         - bearerAuth: []
       summary: Imports new policy from a zip file.
@@ -3508,7 +3508,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/PolicyConfig"
+                  $ref: '#/components/schemas/PolicyConfig'
         401:
           description: Unauthorized.
         403:
@@ -3518,7 +3518,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/push/import/file:
     post:
@@ -3542,7 +3542,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -3552,7 +3552,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/import/message/preview:
     post:
@@ -3578,7 +3578,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PreviewPolicy"
+                $ref: '#/components/schemas/PreviewPolicy'
         401:
           description: Unauthorized.
         403:
@@ -3588,7 +3588,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/push/import/message/preview:
     post:
@@ -3614,7 +3614,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Task"
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -3624,7 +3624,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/import/file/preview:
     post:
@@ -3648,7 +3648,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PreviewPolicy"
+                $ref: '#/components/schemas/PreviewPolicy'
         401:
           description: Unauthorized.
         403:
@@ -3658,7 +3658,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/dry-run:
     put:
@@ -3681,7 +3681,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PublishPolicy"
+                $ref: '#/components/schemas/PublishPolicy'
         401:
           description: Unauthorized.
         403:
@@ -3691,7 +3691,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/draft:
     put:
@@ -3714,7 +3714,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PublishPolicy"
+                $ref: '#/components/schemas/PublishPolicy'
         401:
           description: Unauthorized.
         403:
@@ -3724,7 +3724,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/dry-run/users:
     get:
@@ -3764,7 +3764,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/dry-run/user:
     post:
@@ -3804,7 +3804,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/dry-run/login:
     post:
@@ -3854,7 +3854,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/dry-run/restart:
     post:
@@ -3883,7 +3883,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/dry-run/transactions:
     get:
@@ -3925,7 +3925,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/dry-run/artifacts:
     get:
@@ -3967,7 +3967,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/dry-run/ipfs:
     get:
@@ -4009,7 +4009,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /policies/{policyId}/tag/{tag}/blocks:
     post:
@@ -4038,7 +4038,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PolicyBlockData"
+                $ref: '#/components/schemas/PolicyBlockData'
         401:
           description: Unauthorized.
         403:
@@ -4048,7 +4048,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     get:
       tags:
         - policies
@@ -4081,7 +4081,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
   /policies/{policyId}/multiple:
     post:
       tags:
@@ -4118,7 +4118,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MultiPolicyConfig"
+                $ref: '#/components/schemas/MultiPolicyConfig'
         401:
           description: Unauthorized.
         403:
@@ -4128,7 +4128,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     get:
       tags:
         - policies
@@ -4149,7 +4149,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MultiPolicyConfig"
+                $ref: '#/components/schemas/MultiPolicyConfig'
         401:
           description: Unauthorized.
         403:
@@ -4159,7 +4159,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
   /external:
     post:
       tags:
@@ -4172,7 +4172,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ExternalData"
+              $ref: '#/components/schemas/ExternalData'
       responses:
         200:
           description: Successful operation.
@@ -4181,7 +4181,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /demo/registeredUsers:
     get:
@@ -4198,7 +4198,7 @@ paths:
                 type: array
                 items:
                   allOf:
-                    - $ref: "#/components/schemas/Account"
+                    - $ref: '#/components/schemas/Account'
                     - type: object
                       properties:
                         policyRoles:
@@ -4225,7 +4225,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /demo/randomKey:
     get:
@@ -4241,7 +4241,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HederaAccount"
+                $ref: '#/components/schemas/HederaAccount'
         401:
           description: Unauthorized.
         403:
@@ -4251,7 +4251,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /demo/push/randomKey:
     get:
@@ -4282,7 +4282,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /ipfs/file/{cid}:
     get:
@@ -4314,7 +4314,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /ipfs/file/:
     post:
@@ -4347,7 +4347,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /settings:
     get:
@@ -4363,7 +4363,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CommonSettings"
+                $ref: '#/components/schemas/CommonSettings'
         401:
           description: Unauthorized.
         403:
@@ -4373,7 +4373,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     post:
       tags:
         - settings
@@ -4393,7 +4393,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CommonSettings"
+                $ref: '#/components/schemas/CommonSettings'
   /settings/environment:
     get:
       tags:
@@ -4409,13 +4409,13 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: "testnet"
+                example: 'testnet'
         500:
           description: Internal server error.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /logs:
     post:
@@ -4429,7 +4429,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LogFilters"
+              $ref: '#/components/schemas/LogFilters'
       summary: Returns logs.
       responses:
         200:
@@ -4442,7 +4442,7 @@ paths:
                   totalCount:
                     type: number
                   logs:
-                    $ref: "#/components/schemas/Log"
+                    $ref: '#/components/schemas/Log'
         401:
           description: Unauthorized.
         403:
@@ -4452,7 +4452,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /logs/attributes:
     get:
@@ -4493,7 +4493,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /tasks/{taskId}:
     get:
@@ -4516,7 +4516,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TaskStatus"
+                $ref: '#/components/schemas/TaskStatus'
         401:
           description: Unauthorized.
         403:
@@ -4526,7 +4526,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /artifact:
     get:
@@ -4573,7 +4573,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Artifact"
+                  $ref: '#/components/schemas/Artifact'
         401:
           description: Unauthorized.
         403:
@@ -4583,7 +4583,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /artifact/{policyId}:
     post:
@@ -4619,7 +4619,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Artifact"
+                  $ref: '#/components/schemas/Artifact'
         401:
           description: Unauthorized.
         403:
@@ -4629,7 +4629,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /artifact/{artifactId}:
     delete:
@@ -4662,7 +4662,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /contracts:
     get:
@@ -4704,7 +4704,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Contract"
+                  $ref: '#/components/schemas/Contract'
         401:
           description: Unauthorized.
         403:
@@ -4714,7 +4714,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     post:
       tags:
         - contracts
@@ -4732,14 +4732,14 @@ paths:
                 description:
                   type: string
             example:
-              description: "Smart Contract Description"
+              description: 'Smart Contract Description'
       responses:
         200:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Contract"
+                $ref: '#/components/schemas/Contract'
         401:
           description: Unauthorized.
         403:
@@ -4749,7 +4749,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /contracts/import:
     post:
@@ -4771,8 +4771,8 @@ paths:
                 description:
                   type: string
             example:
-              contractId: "0.0.49176956"
-              description: "Smart Contract Description"
+              contractId: '0.0.49176956'
+              description: 'Smart Contract Description'
 
       responses:
         200:
@@ -4780,7 +4780,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Contract"
+                $ref: '#/components/schemas/Contract'
         401:
           description: Unauthorized.
         403:
@@ -4790,7 +4790,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /contracts/{contractId}/user:
     post:
@@ -4807,7 +4807,7 @@ paths:
             type: string
           description: Contract identifier
           required: true
-          example: "0.0.49176956"
+          example: '0.0.49176956'
       requestBody:
         description: Request Object Parameters.
         content:
@@ -4818,7 +4818,7 @@ paths:
                 userId:
                   type: string
             example:
-              userId: "0.0.49176949"
+              userId: '0.0.49176949'
       responses:
         200:
           description: Successful operation.
@@ -4835,7 +4835,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /contracts/{contractId}/status:
     post:
@@ -4852,7 +4852,7 @@ paths:
             type: string
           description: Contract identifier
           required: true
-          example: "0.0.49176956"
+          example: '0.0.49176956'
       responses:
         200:
           description: Successful operation. Returns true if you are added to contract else false.
@@ -4869,7 +4869,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /contracts/{contractId}/pair:
     post:
@@ -4886,7 +4886,7 @@ paths:
             type: string
           description: Contract identifier
           required: true
-          example: "0.0.49176956"
+          example: '0.0.49176956'
       requestBody:
         description: Request Object Parameters.
         content:
@@ -4903,8 +4903,8 @@ paths:
                 oppositeTokenCount:
                   type: integer
             example:
-              baseTokenId: "0.0.49179655"
-              oppositeTokenId: "0.0.49179656"
+              baseTokenId: '0.0.49179655'
+              oppositeTokenId: '0.0.49179656'
               baseTokenCount: 1
               oppositeTokenCount: 3
       responses:
@@ -4923,7 +4923,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /contracts/pair:
     get:
@@ -4939,13 +4939,13 @@ paths:
           schema:
             type: string
           description: Base token identifier
-          example: "0.0.49179655"
+          example: '0.0.49179655'
         - in: query
           name: oppositeTokenId
           schema:
             type: string
           description: Opposite token identifier
-          example: "0.0.49179656"
+          example: '0.0.49179656'
       responses:
         200:
           description: Successful operation.
@@ -4978,7 +4978,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /contracts/{contractId}/retire/request:
     post:
@@ -4995,7 +4995,7 @@ paths:
             type: string
           description: Contract identifier
           required: true
-          example: "0.0.49176956"
+          example: '0.0.49176956'
       requestBody:
         description: Request Object Parameters.
         content:
@@ -5020,8 +5020,8 @@ paths:
                   items:
                     type: integer
             example:
-              baseTokenId: "0.0.49179655"
-              oppositeTokenId: "0.0.49179656"
+              baseTokenId: '0.0.49179655'
+              oppositeTokenId: '0.0.49179656'
               baseTokenCount: 2
               oppositeTokenCount: 6
               baseTokenSerials: []
@@ -5032,7 +5032,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RetireRequest"
+                $ref: '#/components/schemas/RetireRequest'
         401:
           description: Unauthorized.
         403:
@@ -5042,7 +5042,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /contracts/retire/request:
     get:
@@ -5058,7 +5058,7 @@ paths:
           schema:
             type: string
           description: Contract Identifier.
-          example: "0.0.49176956"
+          example: '0.0.49176956'
         - in: query
           name: pageIndex
           schema:
@@ -5090,7 +5090,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/RetireRequest"
+                  $ref: '#/components/schemas/RetireRequest'
         401:
           description: Unauthorized.
         403:
@@ -5100,7 +5100,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
     delete:
       tags:
         - contracts
@@ -5115,7 +5115,7 @@ paths:
             type: string
           description: Request Identifier.
           required: true
-          example: "507f1f77bcf86cd799439011"
+          example: '507f1f77bcf86cd799439011'
       responses:
         200:
           description: Successful operation.
@@ -5132,7 +5132,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /contracts/retire:
     post:
@@ -5152,7 +5152,7 @@ paths:
                 requestId:
                   type: string
             example:
-              requestId: "507f1f77bcf86cd799439011"
+              requestId: '507f1f77bcf86cd799439011'
       responses:
         200:
           description: Successful operation.
@@ -5169,7 +5169,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /analytics/compare/policies:
     post:
@@ -5199,12 +5199,12 @@ paths:
                 idLvl:
                   type: string
             example:
-              policyId1: "507f1f77bcf86cd799439011"
-              policyId2: "507f1f77bcf86cd799439011"
-              propLvl: "0"
-              childrenLvl: "0"
-              eventsLvl: "0"
-              idLvl: "0"
+              policyId1: '507f1f77bcf86cd799439011'
+              policyId2: '507f1f77bcf86cd799439011'
+              propLvl: '0'
+              childrenLvl: '0'
+              eventsLvl: '0'
+              idLvl: '0'
       responses:
         200:
           description: Successful operation.
@@ -5218,15 +5218,15 @@ paths:
                   right:
                     type: object
                   roles:
-                    $ref: "#/components/schemas/Table"
+                    $ref: '#/components/schemas/Table'
                   groups:
-                    $ref: "#/components/schemas/Table"
+                    $ref: '#/components/schemas/Table'
                   tokens:
-                    $ref: "#/components/schemas/Table"
+                    $ref: '#/components/schemas/Table'
                   topics:
-                    $ref: "#/components/schemas/Table"
+                    $ref: '#/components/schemas/Table'
                   blocks:
-                    $ref: "#/components/schemas/Table"
+                    $ref: '#/components/schemas/Table'
                   total:
                     type: number
         401:
@@ -5238,7 +5238,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /analytics/compare/schemas:
     post:
@@ -5262,9 +5262,9 @@ paths:
                 idLvl:
                   type: string
             example:
-              schemaId1: "507f1f77bcf86cd799439011"
-              schemaId2: "507f1f77bcf86cd799439011"
-              idLvl: "0"
+              schemaId1: '507f1f77bcf86cd799439011'
+              schemaId2: '507f1f77bcf86cd799439011'
+              idLvl: '0'
       responses:
         200:
           description: Successful operation.
@@ -5278,7 +5278,7 @@ paths:
                   right:
                     type: object
                   fields:
-                    $ref: "#/components/schemas/Table"
+                    $ref: '#/components/schemas/Table'
                   total:
                     type: number
         401:
@@ -5290,7 +5290,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /analytics/compare/policies/export:
     post:
@@ -5308,7 +5308,7 @@ paths:
             enum: [csv]
           description: File type.
           required: true
-          example: "csv"
+          example: 'csv'
       requestBody:
         description: Compare Parameters.
         content:
@@ -5329,12 +5329,12 @@ paths:
                 idLvl:
                   type: string
             example:
-              policyId1: "507f1f77bcf86cd799439011"
-              policyId2: "507f1f77bcf86cd799439011"
-              propLvl: "0"
-              childrenLvl: "0"
-              eventsLvl: "0"
-              idLvl: "0"
+              policyId1: '507f1f77bcf86cd799439011'
+              policyId2: '507f1f77bcf86cd799439011'
+              propLvl: '0'
+              childrenLvl: '0'
+              eventsLvl: '0'
+              idLvl: '0'
       responses:
         200:
           description: Successful operation.
@@ -5351,7 +5351,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
 
   /analytics/compare/schemas/export:
     post:
@@ -5369,7 +5369,7 @@ paths:
             enum: [csv]
           description: File type.
           required: true
-          example: "csv"
+          example: 'csv'
       requestBody:
         description: Compare Parameters.
         content:
@@ -5384,9 +5384,9 @@ paths:
                 idLvl:
                   type: string
             example:
-              schemaId1: "507f1f77bcf86cd799439011"
-              schemaId2: "507f1f77bcf86cd799439011"
-              idLvl: "0"
+              schemaId1: '507f1f77bcf86cd799439011'
+              schemaId2: '507f1f77bcf86cd799439011'
+              idLvl: '0'
       responses:
         200:
           description: Successful operation.
@@ -5403,4 +5403,4 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: '#/components/schemas/Error'
