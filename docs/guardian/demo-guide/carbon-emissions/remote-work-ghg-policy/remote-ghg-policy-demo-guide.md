@@ -64,9 +64,12 @@ You can review the total aggregate CO2 emissions in the Policy Screen under the 
 Note:
 
 1. The timers in the GHG policy on MGS are set to intervals of hours, so you need to wait \~1.5 hours for minting tokens
-2. You can make changes to this time period by changing time\_tracking\_timer block from period to custom.
+2. You can make changes to this time period by changing time\_tracking\_timer and report\_timer blocks as shown below.
 
-**For example** : When we change period from custom to 1m and mask as 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,57,59 \* \* \* \* \*
+**For example** : \
+**report\_timer:** 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58 \* \* \* \*&#x20;
+
+**time\_tracking\_timer:** 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,57,59 \* \* \* \*
 {% endhint %}
 
 You can view the number of tokens minted in the Policy Screen under the sub-table Mint’s VP column. You can explore the Trust Chain by clicking on the “View Document.”
