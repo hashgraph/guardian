@@ -1392,6 +1392,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                     'id',
                     'name',
                     'description',
+                    'topicId'
                 ]
             });
             return new MessageResponse(schema);

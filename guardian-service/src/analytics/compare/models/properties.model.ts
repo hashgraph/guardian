@@ -128,7 +128,7 @@ export class PropertiesModel {
         }
         if (value && typeof value === 'object') {
             if (Array.isArray(value)) {
-                properties.push(new ArrayPropertyModel(name, !!value.length, lvl, path));
+                properties.push(new ArrayPropertyModel(name, value.length, lvl, path));
                 for (let index = 0; index < value.length; index++) {
                     PropertiesModel.createProp(String(index), value[index], lvl + 1, `${path}.${index}`, properties);
                 }

@@ -429,7 +429,7 @@ export class FieldModel implements IWeightModel {
             properties.push(new AnyPropertyModel('remoteLink', this.remoteLink));
         }
         if (Array.isArray(this.enum)) {
-            properties.push(new ArrayPropertyModel('enum', !!this.enum.length));
+            properties.push(new ArrayPropertyModel('enum', this.enum.length));
             if (this.enum.length) {
                 for (let index = 0; index < this.enum.length; index++) {
                     const v = this.enum[index];

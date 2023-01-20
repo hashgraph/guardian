@@ -598,7 +598,7 @@ schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.STANDARD_REGIS
         const name = `${Date.now()}`;
         const zip = await generateZipFile(schemas);
         const arcStream = zip.generateNodeStream({
-            type: 'nodebuffer' ,
+            type: 'nodebuffer',
             compression: 'DEFLATE',
             compressionOptions: {
                 level: 3
@@ -809,15 +809,11 @@ schemaAPI.get('/system/entity/:schemaEntity', async (req: AuthenticatedRequest, 
     }
 });
 
-schemaAPI.get('/list/all', async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.get('/list/all', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
-        let owner = user.parent;
-        if (user.role === UserRole.STANDARD_REGISTRY) {
-            owner = user.did;
-        }
-        const schemas = await guardians.getListSchemas(owner);
+        const schemas = await guardians.getListSchemas(user.did);
         res.status(200).send(schemas);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);

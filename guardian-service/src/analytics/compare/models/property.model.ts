@@ -158,10 +158,10 @@ export class AnyPropertyModel extends PropertyModel<any> {
 /**
  * Property Model (type = Array)
  */
-export class ArrayPropertyModel extends PropertyModel<boolean> {
+export class ArrayPropertyModel extends PropertyModel<number> {
     constructor(
         name: string,
-        value: boolean,
+        value: number,
         lvl?: number,
         path?: string
     ) {

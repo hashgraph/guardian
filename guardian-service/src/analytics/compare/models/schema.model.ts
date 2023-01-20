@@ -3,6 +3,7 @@ import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { FieldModel } from './field.model';
 import { SubSchemaModel } from './sub-schema-model';
 import MurmurHash3 from 'imurmurhash';
+import { Policy } from '@entity/policy';
 
 /**
  * Schema Model
@@ -63,12 +64,6 @@ export class SchemaModel {
     private readonly subSchema: SubSchemaModel;
 
     /**
-     * Weights
-     * @private
-     */
-    private _weight: string;
-
-    /**
      * Fields
      * @public
      */
@@ -79,7 +74,22 @@ export class SchemaModel {
         return [];
     }
 
-    constructor(schema: SchemaCollection, options: ICompareOptions) {
+    /**
+     * Weights
+     * @private
+     */
+    private _weight: string;
+
+    /**
+     * Policy name
+     * @private
+     */
+    private _policyName: string;
+
+    constructor(
+        schema: SchemaCollection,
+        options: ICompareOptions
+    ) {
         this.options = options;
         this.id = '';
         this.name = '';
@@ -120,6 +130,7 @@ export class SchemaModel {
             topicId: this.topicId,
             version: this.version,
             iri: this.iri,
+            policy: this._policyName
         };
     }
 
@@ -150,5 +161,15 @@ export class SchemaModel {
      */
     public hash(options?: ICompareOptions): string {
         return this._weight;
+    }
+
+    /**
+     * Set policy
+     * @param policy
+     * @public
+     */
+    public setPolicy(policy: Policy): SchemaModel {
+        this._policyName = policy?.name;
+        return this;
     }
 }

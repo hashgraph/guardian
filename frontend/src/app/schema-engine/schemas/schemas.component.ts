@@ -98,7 +98,7 @@ export class SchemaConfigComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.policyEngineService.all(),
-            this.schemaService.all(),
+            this.schemaService.list(),
         ]).subscribe((value) => {
             this.loading = false;
 
@@ -122,6 +122,15 @@ export class SchemaConfigComponent implements OnInit {
 
             if (!this.policyNameByTopic[this.currentTopicPolicy]) {
                 this.currentTopicPolicy = undefined;
+            }
+
+            for (const schema of schemas) {
+                schema.policy = this.policyNameByTopic[schema.topicId];
+                if(schema.policy) {
+                    schema.fullName = `${schema.name} (${schema.policy})`;
+                } else {
+                    schema.fullName = schema.name;
+                }
             }
 
             this.allSchemas = schemas;
@@ -533,6 +542,7 @@ export class SchemaConfigComponent implements OnInit {
             autoFocus: false,
             data: {
                 schema: element,
+                policies: this.policies,
                 schemas: this.allSchemas
             }
         });

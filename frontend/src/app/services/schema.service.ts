@@ -43,7 +43,7 @@ export class SchemaService {
         return this.http.get<ISchema[]>(`${this.url}`);
     }
 
-    public all(): Observable<any[]> {
+    public list(): Observable<any[]> {
         return this.http.get<any[]>(`${this.url}/list/all`);
     }
 

@@ -48,11 +48,13 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
             const schemaModels2: SchemaModel[] = [];
             for (const schema of schemas1) {
                 const m = new SchemaModel(schema, options);
+                m.setPolicy(policy1);
                 m.update(options);
                 schemaModels1.push(m);
             }
             for (const schema of schemas2) {
                 const m = new SchemaModel(schema, options);
+                m.setPolicy(policy2);
                 m.update(options);
                 schemaModels2.push(m);
             }
@@ -147,8 +149,13 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
                 idLvl: parseInt(idLvl, 10)
             }
 
+            const policy1 = await DatabaseServer.getPolicy({ topicId: schema1?.topicId });
+            const policy2 = await DatabaseServer.getPolicy({ topicId: schema2?.topicId });
+
             const model1 = new SchemaModel(schema1, options);
             const model2 = new SchemaModel(schema2, options);
+            model1.setPolicy(policy1);
+            model2.setPolicy(policy2);
             model1.update(options);
             model2.update(options);
             const comparator = new SchemaComparator(options);

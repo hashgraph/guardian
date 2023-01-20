@@ -151,8 +151,12 @@ export class PropertiesRate implements IRate<PropertyModel<any>> {
             this.type = Status.PARTLY;
         }
 
-        this.propertiesRate = CompareUtils.calcRate(this.properties);
-        this.totalRate = CompareUtils.calcTotalRate(this.totalRate, this.propertiesRate);
+        if (this.properties && this.properties.length) {
+            this.propertiesRate = CompareUtils.calcRate(this.properties);
+            this.totalRate = CompareUtils.calcTotalRate(this.totalRate, this.propertiesRate);
+        } else {
+            this.propertiesRate = this.totalRate;
+        }
     }
 
     /**

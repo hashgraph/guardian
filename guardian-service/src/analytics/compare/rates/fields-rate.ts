@@ -81,6 +81,30 @@ export class FieldsRate extends Rate<FieldModel> {
             }
         }
 
+        const _order = [
+            'name',
+            'title',
+            'description',
+            'required',
+            'type',
+            'format',
+            'pattern',
+            'customType',
+            'unit',
+            'unitSystem'
+        ];
+        list.sort((a, b) => {
+            for (const key of _order) {
+                if (a === key) {
+                    return -1;
+                }
+                if (b === key) {
+                    return 1;
+                }
+            }
+            return a < b ? -1 : 1;
+        });
+
         this.properties = [];
         for (const path of list) {
             const item = map[path];
@@ -104,10 +128,7 @@ export class FieldsRate extends Rate<FieldModel> {
 
         this.indexRate = this.left.index === this.right.index ? 100 : 0;
         this.propertiesRate = CompareUtils.calcRate(this.properties);
-        this.totalRate = CompareUtils.calcTotalRate(
-            this.indexRate,
-            this.propertiesRate
-        );
+        this.totalRate = CompareUtils.calcTotalRate(this.propertiesRate);
     }
 
     /**

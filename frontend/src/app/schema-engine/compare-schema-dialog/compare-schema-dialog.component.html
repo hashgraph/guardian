@@ -20,21 +20,42 @@
                 <mat-spinner></mat-spinner>
             </div>
 
-            <mat-form-field appearance="outline" style="width: 100%">
-                <mat-label>First schema:</mat-label>
-                <mat-select [(value)]="schemaId1" (valueChange)="onChange()">
-                    <mat-option>None</mat-option>
-                    <mat-option *ngFor="let schema of list1" [value]="schema.id">{{schema.name}}</mat-option>
-                </mat-select>
-            </mat-form-field>
+            <div class="grid">
+                <mat-form-field appearance="outline" style="width: 150px">
+                    <mat-label>Policy:</mat-label>
+                    <mat-select [(value)]="topicId1" (valueChange)="onChange()">
+                        <mat-option>None</mat-option>
+                        <mat-option *ngFor="let policy of policies"
+                            [value]="policy.topicId">{{policy.name}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" style="width: 100%">
+                    <mat-label>First schema:</mat-label>
+                    <mat-select [(value)]="schemaId1" (valueChange)="onChange()">
+                        <mat-option>None</mat-option>
+                        <mat-option *ngFor="let schema of list1" [value]="schema.id">{{schema.fullName}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
 
-            <mat-form-field appearance="outline" style="width: 100%">
-                <mat-label>Secondary schema</mat-label>
-                <mat-select [(value)]="schemaId2" (valueChange)="onChange()">
-                    <mat-option>None</mat-option>
-                    <mat-option *ngFor="let schema of list2" [value]="schema.id">{{schema.name}}</mat-option>
-                </mat-select>
-            </mat-form-field>
+            <div class="grid">
+                <mat-form-field appearance="outline" style="width: 150px">
+                    <mat-label>Policy</mat-label>
+                    <mat-select [(value)]="topicId2" (valueChange)="onChange()">
+                        <mat-option>None</mat-option>
+                        <mat-option *ngFor="let policy of policies"
+                            [value]="policy.topicId">{{policy.name}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" style="width: 100%">
+                    <mat-label>Secondary schema</mat-label>
+                    <mat-select [(value)]="schemaId2" (valueChange)="onChange()">
+                        <mat-option>None</mat-option>
+                        <mat-option *ngFor="let schema of list2" [value]="schema.id">{{schema.fullName}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
         </div>
     </div>
 </div>
