@@ -6,7 +6,8 @@ import {
     schemaAPI,
     tokenAPI,
     externalAPI,
-    ipfsAPI
+    ipfsAPI,
+    analyticsAPI
 } from '@api/service';
 import { Guardians } from '@helpers/guardians';
 import express from 'express';
@@ -75,6 +76,7 @@ Promise.all([
         app.use('/ipfs', authorizationHelper, ipfsAPI);
         app.use('/logs', authorizationHelper, loggerAPI);
         app.use('/tasks/', taskAPI);
+        app.use('/analytics/', authorizationHelper, analyticsAPI);
         app.use('/contracts', authorizationHelper, contractAPI);
         /////////////////////////////////////////
 

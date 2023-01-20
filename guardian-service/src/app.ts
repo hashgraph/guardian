@@ -49,6 +49,7 @@ import { SynchronizationService } from '@policy-engine/multi-policy-service';
 import { Contract } from '@entity/contract';
 import { contractAPI } from '@api/contract.service';
 import { RetireRequest } from '@entity/retire-request';
+import { analyticsAPI } from '@api/analytics.service';
 
 export const obj = {};
 
@@ -178,6 +179,7 @@ Promise.all([
         await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
         await artifactAPI(channel);
         await contractAPI(channel, contractRepository, retireRequestRepository);
+	await analyticsAPI(channel);
     } catch (error) {
         console.error(error.message);
         process.exit(0);

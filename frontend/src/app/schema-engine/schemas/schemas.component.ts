@@ -4,7 +4,7 @@ import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SchemaService } from '../../services/schema.service';
-import { SchemaDialog } from '../../schema-engine/schema-dialog/schema-dialog.component';
+import { SchemaDialog } from '../schema-dialog/schema-dialog.component';
 import { ISchema, IUser, Schema, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { ImportSchemaDialog } from 'src/app/schema-engine/import-schema/import-schema-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
@@ -17,14 +17,15 @@ import { HttpResponse } from '@angular/common/http';
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
+import { CompareSchemaDialog } from '../compare-schema-dialog/compare-schema-dialog.component';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
  */
 @Component({
     selector: 'app-schema-config',
-    templateUrl: './schema-config.component.html',
-    styleUrls: ['./schema-config.component.css']
+    templateUrl: './schemas.component.html',
+    styleUrls: ['./schemas.component.css']
 })
 export class SchemaConfigComponent implements OnInit {
     loading: boolean = true;
@@ -63,6 +64,7 @@ export class SchemaConfigComponent implements OnInit {
     schemasMap: any;
     policyNameByTopic: any;
     system: boolean = false;
+    allSchemas: Schema[] = [];
 
     taskId: string | undefined = undefined;
     expectedTaskMessages: number = 0;
@@ -96,11 +98,13 @@ export class SchemaConfigComponent implements OnInit {
         forkJoin([
             this.profileService.getProfile(),
             this.policyEngineService.all(),
+            this.schemaService.list(),
         ]).subscribe((value) => {
             this.loading = false;
 
             const profile: IUser | null = value[0];
             const policies: any[] = value[1] || [];
+            const schemas: any[] = value[2] || [];
 
             this.isConfirmed = !!(profile && profile.confirmed);
             if (!this.isConfirmed) {
@@ -115,10 +119,21 @@ export class SchemaConfigComponent implements OnInit {
                     this.policies.push(policy);
                 }
             }
-            
+
             if (!this.policyNameByTopic[this.currentTopicPolicy]) {
                 this.currentTopicPolicy = undefined;
             }
+
+            for (const schema of schemas) {
+                schema.policy = this.policyNameByTopic[schema.topicId];
+                if(schema.policy) {
+                    schema.fullName = `${schema.name} (${schema.policy})`;
+                } else {
+                    schema.fullName = schema.name;
+                }
+            }
+
+            this.allSchemas = schemas;
 
             this.pageIndex = 0;
             this.pageSize = 25;
@@ -387,7 +402,7 @@ export class SchemaConfigComponent implements OnInit {
             if (!result) {
                 return;
             }
-            
+
             this.loading = true;
             const request = this.system ?
                 this.schemaService.deleteSystemSchemas(element.id) :
@@ -516,6 +531,31 @@ export class SchemaConfigComponent implements OnInit {
             this.loadSchemas();
         }, (e) => {
             this.loading = false;
+        });
+    }
+
+    compareSchemas(element?: any) {
+        const dialogRef = this.dialog.open(CompareSchemaDialog, {
+            width: '650px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
+            data: {
+                schema: element,
+                policies: this.policies,
+                schemas: this.allSchemas
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.router.navigate(['/compare'], {
+                    queryParams: {
+                        type: 'schema',
+                        schemaId1: result.schemaId1,
+                        schemaId2: result.schemaId2
+                    }
+                });
+            }
         });
     }
 }

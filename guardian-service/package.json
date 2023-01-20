@@ -8,7 +8,8 @@
     "@policy-engine": "dist/policy-engine",
     "@hedera-modules": "dist/hedera-modules/index",
     "@document-loader": "dist/document-loader",
-    "@database-modules": "dist/database-modules/index"
+    "@database-modules": "dist/database-modules/index",
+    "@analytics": "dist/analytics/index"
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
@@ -34,6 +35,7 @@
     "dotenv": "^16.0.0",
     "express": "^4.17.1",
     "fs-extra": "^10.0.0",
+    "imurmurhash": "^0.1.4",
     "jszip": "^3.7.1",
     "lodash.get": "^4.4.2",
     "mathjs": "^10.1.0",

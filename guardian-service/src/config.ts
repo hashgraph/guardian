@@ -11,7 +11,8 @@ moduleAlias.addAliases({
     '@policy-engine': __dirname + '/policy-engine',
     '@hedera-modules': __dirname + '/hedera-modules/index',
     '@database-modules': __dirname + '/database-modules/index',
-    '@document-loader': __dirname + '/document-loader'
+    '@document-loader': __dirname + '/document-loader',
+    '@analytics': __dirname + '/analytics/index'
 });
 
 dotenv.config();

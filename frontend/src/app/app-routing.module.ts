@@ -11,7 +11,7 @@ import { UserProfileComponent } from './views/user-profile/user-profile.componen
 import { LoginComponent } from './views/login/login.component';
 import { RegisterComponent } from './views/register/register.component';
 import { RootConfigComponent } from './views/root-config/root-config.component';
-import { SchemaConfigComponent } from './views/schema-config/schema-config.component';
+import { SchemaConfigComponent } from './schema-engine/schemas/schemas.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
 import { AuthService } from './services/auth.service';
@@ -25,6 +25,7 @@ import { PoliciesComponent } from './policy-engine/policies/policies.component';
 import { ArtifactConfigComponent } from './artifact-engine/artifact-config/artifact-config.component';
 import { ContractConfigComponent } from './views/contract-config/contract-config.component';
 import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
+import { CompareComponent } from './analytics/compare/compare.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -168,6 +169,8 @@ const routes: Routes = [
     { path: 'policy-viewer', component: PoliciesComponent, canActivate: [ServicesStatusGuard] },
     { path: 'policy-viewer/:id', component: PolicyViewerComponent, canActivate: [ServicesStatusGuard] },
     { path: 'policy-configuration', component: PolicyConfigurationComponent, canActivate: [ServicesStatusGuard] },
+    
+    { path: 'compare', component: CompareComponent, canActivate: [ServicesStatusGuard] },
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

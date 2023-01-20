@@ -1370,4 +1370,35 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             return new MessageError(error);
         }
     });
+
+    /**
+     * Return schemas
+     *
+     * @param {Object} [payload] - filters
+     *
+     * @returns {any[]} - all schemas
+     */
+    ApiResponse(channel, MessageAPI.GET_LIST_SCHEMAS, async (msg) => {
+        try {
+            if (!msg || !msg.owner) {
+                return new MessageError('Invalid schema owner');
+            }
+            const schema = await DatabaseServer.getSchemas({
+                owner: msg.owner,
+                system: false,
+                readonly: false
+            }, {
+                fields: [
+                    'id',
+                    'name',
+                    'description',
+                    'topicId'
+                ]
+            });
+            return new MessageResponse(schema);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
 }

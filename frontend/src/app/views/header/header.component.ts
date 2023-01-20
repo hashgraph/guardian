@@ -98,6 +98,11 @@ export class HeaderComponent implements OnInit {
             disabled: false,
             link: '/policy-configuration',
             hidden: true,
+        }, {
+            name: "Compare",
+            disabled: false,
+            link: '/compare',
+            hidden: true,
         },
         {
             name: "Admin",

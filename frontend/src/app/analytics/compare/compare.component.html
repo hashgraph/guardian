@@ -1,0 +1,85 @@
+<div class="content">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+
+    <div *ngIf="result" class="merge-options">
+        <div class="merge-back">
+            <div *ngIf="type === 'schema' && policyId1 && policyId2" (click)="onBack()">
+                <mat-icon>chevron_left</mat-icon>
+                <span>Policies</span> 
+            </div>
+        </div>
+        <div class="merge-lvl">
+            <div *ngIf="type === 'policy'" class="f1">
+                <mat-form-field appearance="outline">
+                    <mat-label>Events:</mat-label>
+                    <mat-select [(value)]="eventsLvl">
+                        <mat-option value="0">Don't compare</mat-option>
+                        <mat-option value="1">All events</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div *ngIf="type === 'policy'" class="f1">
+                <mat-form-field appearance="outline">
+                    <mat-label>Properties:</mat-label>
+                    <mat-select [(value)]="propLvl">
+                        <mat-option value="0">Don't compare</mat-option>
+                        <mat-option value="1">Only simple properties</mat-option>
+                        <mat-option value="2">All properties</mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+            </div>
+            <div *ngIf="type === 'policy'" class="f1">
+                <mat-form-field appearance="outline">
+                    <mat-label>Children:</mat-label>
+                    <mat-select [(value)]="childrenLvl">
+                        <mat-option value="0">Don't compare</mat-option>
+                        <mat-option value="1">Only child blocks of the first level</mat-option>
+                        <mat-option value="2">All children</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="f1">
+                <mat-form-field appearance="outline">
+                    <mat-label>UUID:</mat-label>
+                    <mat-select [(value)]="idLvl">
+                        <mat-option value="0">Don't compare</mat-option>
+                        <mat-option value="1">All UUID</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+        </div>
+        <div class="merge-lvl-apply">
+            <div class="merge-lvl-btn" (click)="onApply()">Apply</div>
+        </div>
+        <div>
+            <div class="export-btn" (click)="onExport()">
+                <mat-icon>download</mat-icon>
+                Export
+            </div>
+        </div>
+        <div class="merge-type">
+            <div class="f2">
+                <mat-form-field appearance="outline">
+                    <mat-label>Type:</mat-label>
+                    <mat-select [(value)]="visibleType">
+                        <mat-option value="tree">Tree</mat-option>
+                        <mat-option value="table">Table</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="type === 'policy'" class="content-result">
+        <app-compare-policy [type]="visibleType" [value]="result" [eventsLvl]="eventsLvl" [propLvl]="propLvl"
+            [childrenLvl]="childrenLvl" [idLvl]="idLvl" (change)="onChange($event)"></app-compare-policy>
+    </div>
+
+    <div *ngIf="type === 'schema'" class="content-result">
+        <app-compare-schema [type]="visibleType" [value]="result" [idLvl]="idLvl"
+            (change)="onChange($event)"></app-compare-schema>
+    </div>
+</div>

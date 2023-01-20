@@ -43,7 +43,7 @@ a {
 
 .actions {
     display: grid;
-    grid-template-columns: 300px auto 290px;
+    grid-template-columns: 300px auto 470px;
     padding: 14px 14px 14px 14px;
     border-bottom: 1px solid #eee;
     margin: 0;
@@ -259,4 +259,32 @@ a {
     max-width: 25px;
     border-left: 1px solid #dddddd;
     padding-left: 10px;
+}
+
+
+.toolbar-btn {
+    margin: 15px;
+    min-width: 120px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: left;
+    user-select: none;
+    position: relative;
+    border-radius: 8px;
+    padding: 0;
+    font-size: 14px;
+    padding-left: 48px !important;
+    padding-right: 30px;
+}
+
+.toolbar-btn mat-icon {
+    position: absolute;
+    left: 14px;
+    top: 10px;
+}
+
+.toolbar-btn.add mat-icon {
+    font-size: 30px;
+    left: 10px;
+    top: 7px;
 }

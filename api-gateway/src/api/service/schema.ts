@@ -598,7 +598,7 @@ schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.STANDARD_REGIS
         const name = `${Date.now()}`;
         const zip = await generateZipFile(schemas);
         const arcStream = zip.generateNodeStream({
-            type: 'nodebuffer' ,
+            type: 'nodebuffer',
             compression: 'DEFLATE',
             compressionOptions: {
                 level: 3
@@ -806,5 +806,17 @@ schemaAPI.get('/system/entity/:schemaEntity', async (req: AuthenticatedRequest, 
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.get('/list/all', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const guardians = new Guardians();
+        const schemas = await guardians.getListSchemas(user.did);
+        res.status(200).send(schemas);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).json({ code: error.code, message: error.message });
     }
 });

@@ -1508,6 +1508,17 @@ export class DatabaseServer {
 
     /**
      * Get schema
+     * @param ids
+     */
+    public static async getSchemaById(id: string): Promise<SchemaCollection> {
+        if(id) {
+            return await new DataBaseHelper(SchemaCollection).findOne(id);
+        }
+        return null;
+    }
+
+    /**
+     * Get schema
      * @param filters
      */
     public static async getSchemasCount(filters?: any): Promise<number> {
