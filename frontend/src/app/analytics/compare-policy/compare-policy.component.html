@@ -1,23 +1,20 @@
 <div class="content">
     <div *ngIf="policy1 && policy2" class="list">
+
+        <div class="total-info" [attr.total]="total">
+            Policies are <span>{{total}}%</span> the same
+        </div>
+
         <mat-accordion multi>
             <mat-expansion-panel expanded>
                 <mat-expansion-panel-header>
                     <mat-panel-title>
-                        <div class="header">Main</div>
+                        <div class="header">Description</div>
                     </mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="info-container">
                     <ng-container *ngTemplateOutlet="policyInfo; context: {policy:policy1}"></ng-container>
                     <ng-container *ngTemplateOutlet="policyInfo; context: {policy:policy2}"></ng-container>
-                </div>
-                <div class="total-info">
-                    <div class="policy-info-field">
-                        <div class="policy-info-field-name">Total</div>
-                        <div class="policy-info-field-value">
-                            {{total}}%
-                        </div>
-                    </div>
                 </div>
             </mat-expansion-panel>
 

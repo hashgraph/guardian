@@ -253,12 +253,17 @@ export class BlocksRate extends Rate<BlockModel> {
         this.eventsRate = CompareUtils.calcRate(this.events);
         this.permissionsRate = CompareUtils.calcRate(this.permissions);
         this.artifactsRate = CompareUtils.calcRate(this.artifacts);
-        this.totalRate = CompareUtils.calcTotalRate(
-            this.propertiesRate,
-            this.eventsRate,
-            this.permissionsRate,
-            this.artifactsRate
-        );
+
+        const rates = [];
+        if (options.propLvl) {
+            rates.push(this.propertiesRate);
+            rates.push(this.permissionsRate);
+            rates.push(this.artifactsRate);
+        }
+        if (options.eventLvl) {
+            rates.push(this.eventsRate);
+        }
+        this.totalRate = CompareUtils.calcTotalRates(rates);
     }
 
     /**

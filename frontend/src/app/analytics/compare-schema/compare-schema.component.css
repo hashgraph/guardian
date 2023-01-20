@@ -483,9 +483,17 @@
 }
 
 .total-info {
-    border-top: 1px solid #999;
-    margin-top: 10px;
-    padding-top: 10px;
+    padding: 10px 22px;
+    font-weight: bold;
+    font-size: 20px;
+    margin-bottom: 5px;
+    color: #686868;
+}
+.total-info span {
+    color: #e70000;
+}
+.total-info[total="100"] span {
+    color: #008d0c;
 }
 
 .report-number {

@@ -1,21 +1,20 @@
 <div class="content">
     <div *ngIf="schema1 && schema2" class="list">
+
+        <div class="total-info" [attr.total]="total">
+            Schemas are <span>{{total}}%</span> the same
+        </div>
+
         <mat-accordion multi>
             <mat-expansion-panel expanded>
                 <mat-expansion-panel-header>
                     <mat-panel-title>
-                        <div class="header">Main</div>
+                        <div class="header">Description</div>
                     </mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="info-container">
                     <ng-container *ngTemplateOutlet="schemaInfo; context: {schema:schema1}"></ng-container>
                     <ng-container *ngTemplateOutlet="schemaInfo; context: {schema:schema2}"></ng-container>
-                </div>
-                <div class="total-info">
-                    <div class="schema-info-field">
-                        <div class="schema-info-field-name">Total</div>
-                        <div class="schema-info-field-value">{{total}}%</div>
-                    </div>
                 </div>
             </mat-expansion-panel>
             <mat-expansion-panel expanded>

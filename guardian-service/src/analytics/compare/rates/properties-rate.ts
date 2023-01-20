@@ -143,7 +143,7 @@ export class PropertiesRate implements IRate<PropertyModel<any>> {
             return;
         }
 
-        if (this.left.equal(this.right)) {
+        if (this.left.equal(this.right, options)) {
             this.totalRate = 100;
             this.type = Status.FULL;
         } else {

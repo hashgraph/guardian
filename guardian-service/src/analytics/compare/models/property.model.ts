@@ -69,9 +69,10 @@ export class PropertyModel<T> implements IProperties<T> {
     /**
      * Comparison of models using weight
      * @param item - model
+     * @param options - comparison options
      * @public
      */
-    public equal(item: PropertyModel<any>): boolean {
+    public equal(item: PropertyModel<any>, options: ICompareOptions): boolean {
         return this.type === item.type && this._weight === item._weight;
     }
 
@@ -138,6 +139,19 @@ export class UUIDPropertyModel extends PropertyModel<any> {
             return null;
         }
         return super.hash(options);
+    }
+
+    /**
+     * Comparison of models using weight
+     * @param item - model
+     * @public
+     */
+    public override equal(item: PropertyModel<any>, options: ICompareOptions): boolean {
+        if (options.idLvl === 0) {
+            return true;
+        } else {
+            return this.type === item.type && this.value === item.value;
+        }
     }
 }
 
@@ -256,6 +270,19 @@ export class TokenPropertyModel extends PropertyModel<string> {
         }
         return super.hash(options);
     }
+
+    /**
+     * Comparison of models using weight
+     * @param item - model
+     * @public
+     */
+    public override equal(item: PropertyModel<any>, options: ICompareOptions): boolean {
+        if (options.idLvl === 0) {
+            return super.equal(item, options);
+        } else {
+            return this.type === item.type && this.value === item.value;
+        }
+    }
 }
 
 /**
@@ -311,5 +338,18 @@ export class SchemaPropertyModel extends PropertyModel<string> {
             return `${this.path}:${this.schema.hash(options)}`;
         }
         return super.hash(options);
+    }
+
+    /**
+     * Comparison of models using weight
+     * @param item - model
+     * @public
+     */
+    public override equal(item: PropertyModel<any>, options: ICompareOptions): boolean {
+        if (options.idLvl === 0) {
+            return super.equal(item, options);
+        } else {
+            return this.type === item.type && this.value === item.value;
+        }
     }
 }

@@ -73,6 +73,23 @@ export class CompareUtils {
     }
 
     /**
+     * Aggregate total rate
+     * @param rates - rates (array)
+     * @public
+     * @static
+     */
+    public static calcTotalRates(rates: number[]): number {
+        if(!rates.length) {
+            return 100;
+        }
+        let total = 0;
+        for (const rate of rates) {
+            total += rate;
+        }
+        return Math.floor(total / rates.length);
+    }
+
+    /**
      * Convert result(table) in csv file
      * @param csv
      * @param table

@@ -88,6 +88,12 @@ export class BlockModel implements IWeightModel {
      */
     private _weightMap: IKeyMap<string>;
 
+    /**
+     * Hash
+     * @private
+     */
+    private _hash: string;
+
     constructor(json: any, index: number) {
         this.blockType = json.blockType;
         this.tag = json.tag;
@@ -98,6 +104,7 @@ export class BlockModel implements IWeightModel {
         this._children = [];
         this._weight = [];
         this._weightMap = {};
+        this._hash = '';
     }
 
     /**
@@ -139,6 +146,16 @@ export class BlockModel implements IWeightModel {
         let _children2 = '0';
         let _tag = '0';
         let _prop = '0';
+        let _hash = '0';
+
+        if (this._children) {
+            _hashState = MurmurHash3();
+            _hashState.hash(this.blockType);
+            for (const child of this._children) {
+                _hashState.hash(String(child._hash));
+            }
+            _hash = String(_hashState.result());
+        }
 
         if (this._children && this._children.length) {
             _hashState = MurmurHash3();
@@ -187,11 +204,10 @@ export class BlockModel implements IWeightModel {
         - tag + prop
         - tag + prop + children
         */
-        weightMap[WeightType.CHILD_LVL_2] = '0';
+        weightMap[WeightType.CHILD_LVL_2] = _children2;
         if (options.childLvl > 0) {
-            weightMap[WeightType.CHILD_LVL_1] = _children1;
-            weightMap[WeightType.CHILD_LVL_2] = _children2;
-            weights.push(_children);
+            weightMap[WeightType.CHILD_LVL_1] = _children;
+            weights.push(weightMap[WeightType.CHILD_LVL_1]);
         }
         if (options.propLvl > 0) {
             weightMap[WeightType.PROP_LVL_1] = _tag;
@@ -217,6 +233,13 @@ export class BlockModel implements IWeightModel {
             weightMap[WeightType.PROP_AND_CHILD_3] = CompareUtils.aggregateHash(_tag, _prop, _children);
             weights.push(weightMap[WeightType.PROP_AND_CHILD_3]);
         }
+
+        if (options.propLvl > 0) {
+            this._hash = CompareUtils.aggregateHash(_hash, _tag, _prop);
+        } else {
+            this._hash = CompareUtils.aggregateHash(_hash, _tag);
+        }
+
         this._weightMap = weightMap;
         this._weight = weights.reverse();
     }
@@ -321,14 +344,14 @@ export class BlockModel implements IWeightModel {
         if (!this._weight.length) {
             return this.blockType === block.blockType;
         }
-        if (index) {
+        if (Number.isFinite(index)) {
             if (this._weight[index] === '0' && block._weight[index] === '0') {
                 return false;
             } else {
                 return this._weight[index] === block._weight[index];
             }
         } else {
-            return this._weight[0] === block._weight[0];
+            return this._hash === block._hash;
         }
     }
 
