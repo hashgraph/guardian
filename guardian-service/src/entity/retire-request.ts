@@ -9,50 +9,50 @@ export class RetireRequest extends BaseEntity {
     /**
      * Hedera Contract Id
      */
-    @Property({ nullable: true })
-    contractId?: string;
+    @Property({ default: '' })
+    contractId: string = '';
 
     /**
      * Base Token Id
      */
-    @Property({ nullable: true })
-    baseTokenId?: string;
+    @Property({ default: '' })
+    baseTokenId: string = '';
 
     /**
      * Owner
      */
-    @Property({ nullable: true })
-    owner?: string;
+    @Property({ default: '' })
+    owner: string = '';
 
     /**
      * Opposite Token Id
      */
-    @Property({ nullable: true })
-    oppositeTokenId?: string;
+    @Property({ default: '' })
+    oppositeTokenId: string = '';
 
     /**
      * Base Token Count
      */
-    @Property({ nullable: true })
-    baseTokenCount?: number;
+    @Property({ default: 0 })
+    baseTokenCount: number = 0;
 
     /**
      * Opposite Token Count
      */
-    @Property({ nullable: true })
-    oppositeTokenCount?: number;
+    @Property({ default: 0 })
+    oppositeTokenCount: number = 0;
 
     /**
      * Base Token Count
      */
-    @Property({ nullable: true })
-    baseTokenSerials?: number[];
+    @Property({ default: [] })
+    baseTokenSerials: number[] = [];
 
     /**
      * Opposite Token Count
      */
-    @Property({ nullable: true })
-    oppositeTokenSerials?: number[];
+    @Property({ default: [] })
+    oppositeTokenSerials: number[] = [];
 
     /**
      * Vc Document Hash

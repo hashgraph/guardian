@@ -26,6 +26,7 @@ contract RetirementContract is HederaTokenService {
 
     constructor() {
         contractOwner = msg.sender;
+        users[contractOwner] = true;
     }
 
     function getOwner() public view returns (address) {
@@ -40,6 +41,9 @@ contract RetirementContract is HederaTokenService {
     }
     
     function grantKyc(address token) private {
+        if (token == address(0)) {
+            return;
+        }
         (bool suc, bytes memory res) = precompileAddress.call(
             abi.encodeWithSelector(IHederaTokenService.isKyc.selector, token, address(this)));
         (int64 kycRes, bool kycGranted) = suc ? abi.decode(res, (int32, bool)) : (HederaResponseCodes.UNKNOWN, false);
@@ -50,6 +54,9 @@ contract RetirementContract is HederaTokenService {
     }
     
     function associate(address token) private {
+        if (token == address(0)) {
+            return;
+        }
         if (associatedTokens[token] == false) {
             HederaTokenService.associateToken(address(this), token);
             associatedTokens[token] = true;
@@ -60,12 +67,22 @@ contract RetirementContract is HederaTokenService {
         if (contractOwner != msg.sender && users[msg.sender] == false) {
             revert();
         }
-        if (baseTokenCount <= 0 || oppositeTokenCount <= 0) {
-            revert();
-        }
         if (baseToken == oppositeToken) {
             revert();
         }
+        if ((baseToken != address(0) && oppositeToken != address(0)) && (baseTokenCount <= 0 && oppositeTokenCount <= 0)) {
+            revert();
+        }
+        if ((baseToken == address(0) || oppositeToken == address(0)) && (baseTokenCount != 0 && oppositeTokenCount != 0)) {
+            revert();
+        }
+        if (baseToken != address(0)) {
+            baseTokenCount = baseTokenCount == 0 ? 1 : baseTokenCount;
+        }
+        if (oppositeToken != address(0)) {
+            oppositeTokenCount = oppositeTokenCount == 0 ? 1 : oppositeTokenCount;
+        }
+
         associate(baseToken);
         associate(oppositeToken);
         grantKyc(baseToken);
@@ -96,12 +113,26 @@ contract RetirementContract is HederaTokenService {
 
         if (baseTokenCount != 0 && oppositeTokenCount != 0 && baseTokenSerials.length == 0 && oppositeTokenSerials.length == 0) {
             addUserRequest_FT_FT(baseToken, oppositeToken, baseTokenCount, oppositeTokenCount, baseTokenCountPair, oppositeTokenCountPair);
+            return;
         } else if (baseTokenCount != 0 && oppositeTokenCount == 0 && baseTokenSerials.length == 0 && oppositeTokenSerials.length != 0) {
             addUserRequest_FT_NFT(baseToken, oppositeToken, baseTokenCount, oppositeTokenSerials, baseTokenCountPair, oppositeTokenCountPair);
+            return;
         } else if (baseTokenCount == 0 && oppositeTokenCount != 0 && baseTokenSerials.length != 0 && oppositeTokenSerials.length == 0) {
             addUserRequest_FT_NFT(oppositeToken, baseToken, oppositeTokenCount, baseTokenSerials, oppositeTokenCountPair, baseTokenCountPair);
+            return;
         } else if (baseTokenCount == 0 && oppositeTokenCount == 0 && baseTokenSerials.length != 0 && oppositeTokenSerials.length != 0) {
             addUserRequest_NFT_NFT(baseToken, oppositeToken, baseTokenSerials, oppositeTokenSerials, baseTokenCountPair, oppositeTokenCountPair);
+            return;
+        }
+
+        if (baseTokenCount != 0 && baseTokenSerials.length == 0) {
+            addUserRequest_FT_NFT(baseToken, oppositeToken, baseTokenCount, oppositeTokenSerials, baseTokenCountPair, oppositeTokenCountPair);
+        } else if (baseTokenCount == 0 && baseTokenSerials.length != 0) {
+            addUserRequest_NFT_NFT(baseToken, oppositeToken, baseTokenSerials, oppositeTokenSerials, baseTokenCountPair, oppositeTokenCountPair);
+        } else if (oppositeTokenCount != 0 && oppositeTokenSerials.length == 0) {
+            addUserRequest_FT_NFT(oppositeToken, baseToken, oppositeTokenCount, oppositeTokenSerials, oppositeTokenCountPair, baseTokenCountPair);
+        } else if (oppositeTokenCount == 0 && oppositeTokenSerials.length != 0) {
+            addUserRequest_NFT_NFT(baseToken, oppositeToken, oppositeTokenSerials, baseTokenSerials, baseTokenCountPair, oppositeTokenCountPair);
         }
     }
 
@@ -202,9 +233,7 @@ contract RetirementContract is HederaTokenService {
         for(uint256 i = 0; i < oppositeTokenSerials.length; i++) {
             (int responseCode) = HederaTokenService.transferNFT(oppositeToken, msg.sender, address(this), oppositeTokenSerials[i]);
             if (responseCode != HederaResponseCodes.SUCCESS) {
-                for(uint256 j = 0; j < baseTokenSerials.length; j++) {
-                    HederaTokenService.transferNFT(baseToken, address(this), msg.sender, baseTokenSerials[j]);
-                }
+                backNFT(baseToken, baseTokenSerials);
                 for(uint256 j = i-1; j >= 0; j--) {
                     HederaTokenService.transferNFT(oppositeToken, address(this), msg.sender, oppositeTokenSerials[j]);
                 }
@@ -313,6 +342,6 @@ contract RetirementContract is HederaTokenService {
     }
     
     function checkStatus() public view returns (bool) {
-        return users[msg.sender]==true;
+        return users[msg.sender];
     }
 }

@@ -7,7 +7,6 @@ import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { TokenType } from '@guardian/interfaces';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { moreThanZeroValidator } from 'src/app/validators/more-than-zero.validator';
 
 /**
  * Dialog for retire tokens.
@@ -31,7 +30,7 @@ export class RetireTokenDialogComponent {
     oppositeTokenId = this.fb.control('');
     contractForm = this.fb.control('', Validators.required);
     tokenCountForm = this.fb.group({
-        baseTokenCount: [0, moreThanZeroValidator()],
+        baseTokenCount: [0],
         oppositeTokenCount: [0],
         baseTokenSerials: [[]],
         oppositeTokenSerials: [[]],
@@ -208,10 +207,11 @@ export class RetireTokenDialogComponent {
         } = this.tokenCountForm.getRawValue() || {};
 
         if (
-            !baseTokenCount &&
+            (!baseTokenCount &&
             !oppositeTokenCount &&
             !baseTokenSerials?.length &&
-            !oppositeTokenSerials?.length
+            !oppositeTokenSerials?.length)
+            || baseTokenCount < 0
         ) {
             return false;
         }
