@@ -62,6 +62,7 @@
       * [Importing Schema from IPFS](schema-related-apis-for-asynchronous-execution/importing-schema-from-ipfs.md)
       * [Importing Schema from .zip](schema-related-apis-for-asynchronous-execution/importing-schema-from-.zip.md)
     * [ℹ Schema Versioning & Deprecation Policy](versioning-and-deprecation-policy/schema-versioning-and-deprecation-policy.md)
+    * [💻 Schema Differentiation using UI](guardian/standard-registry/schemas/schema-differentiation-using-ui.md)
   * [🛠 Policies](guardian/standard-registry/policies/README.md)
     * [🎓 Policy Glossary](user-guide-glossary/policy-glossary.md)
     * [ℹ Policy Versioning & Deprecation Policy](versioning-and-deprecation-policy/policy-versioning-and-deprecation-policy.md)
