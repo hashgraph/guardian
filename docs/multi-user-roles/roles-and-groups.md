@@ -16,7 +16,7 @@ Roles can be created by adding Role Property and its Value in Policy Configurato
 
 This is used for setting Permissions for a block, which limits which users can see this block or access it via the API.
 
-<figure><img src="../.gitbook/assets/image (1) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../.gitbook/assets/image (33) (1).png" alt=""><figcaption></figcaption></figure>
 

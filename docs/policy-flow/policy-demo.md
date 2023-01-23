@@ -13,7 +13,7 @@ We have two options to create Policy :
 
 1.1 To create Policy from scratch, we need to click on "Create Policy" button.
 
-![](<../.gitbook/assets/image (1) (2) (1).png>)
+![](<../.gitbook/assets/image (1) (2).png>)
 
 1.2 Once you click on Create Policy , you get a dialog box to fill out basic Policy details.
 

@@ -2,7 +2,7 @@
 
 Once Standard Registry creates Token Pairs, Users can perform token retirement by clicking on Retire tab:
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
 Users can create Retire Request by clicking on Create Retire Request.
 
@@ -14,7 +14,7 @@ Users can choose interested tokens, which they want to retire from the drop down
 
 Once tokens are selected, user needs to select the respective contract depending on the ratio needed.&#x20;
 
-<figure><img src="../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (12) (3).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note:**

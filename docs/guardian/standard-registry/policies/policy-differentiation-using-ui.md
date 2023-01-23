@@ -1,4 +1,4 @@
-# Policy Differentiation using UI
+# 💻 Policy Differentiation using UI
 
 We can now perform a detailed comparison between two policies.
 
@@ -6,7 +6,7 @@ We can now perform a detailed comparison between two policies.
 
 To compare the policies, we need to click on **Compare** button in the policies tab as shown below:
 
-<figure><img src="../../../.gitbook/assets/image (2) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
 When Compare button is clicked, we get a pop up to select policies, which we want to perform comparison off.
 
@@ -63,7 +63,19 @@ There are different sections in the comparison such as&#x20;
 
 We have several Display settings in Policy Blocks section:
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
 
+**Display Settings:** description and show/hide settings for each color/type of difference:
+
+| Color         | Purpose                                                                                 |
+| ------------- | --------------------------------------------------------------------------------------- |
+| Green         | blocks are equal, including their child blocks                                          |
+| Green - Amber | blocks are equal, but their child blocks are different                                  |
+| Amber         | blocks are of the same type and are partially equal, there are some notable differences |
+| Red           | blocks are absent in the other Policy                                                   |
+
+Block comparison displays can be unfolded to display a detailed view of the block Properties.
+
+<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
