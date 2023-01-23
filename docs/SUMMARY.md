@@ -173,6 +173,7 @@
       * [Policy Review](policy-related-apis-for-asynchronous-execution/policy-review.md)
     * [💻 Creating Roles and Groups using Policy Configurator UI](multi-user-roles/roles-and-groups.md)
     * [💻 Configuring Multi Policy using UI](guardian/standard-registry/policies/page-1.md)
+    * [Page 1](guardian/standard-registry/policies/page-1-1.md)
   * [📔 Retirement Contract](guardian/standard-registry/retirement-contract/README.md)
     * [💻 Creating / Importing Contract UI](guardian/standard-registry/retirement-contract/creating-importing-contract-ui.md)
     * [💻 Creating Token Pair UI](guardian/standard-registry/retirement-contract/creating-token-pair-ui.md)
