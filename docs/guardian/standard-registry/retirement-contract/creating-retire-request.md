@@ -2,7 +2,7 @@
 
 Once Standard Registry creates Token Pairs, Users can perform token retirement by clicking on Retire tab:
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
 Users can create Retire Request by clicking on Create Retire Request.
 
@@ -32,4 +32,4 @@ In addition to creation of requests, Users also can see created requests, they c
 
 Standard Registry can see all retire requests by each contract. He can also view VC if it is already approved, or approve retire by clicking on “Retire Tokens” button.
 
-<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
