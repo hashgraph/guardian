@@ -16,7 +16,7 @@ Block for retrieving information from outside (3rd party) services via HTTP requ
 | Body             | Body of the HTTP request                                                          | $(document)               |
 | Headers          | Additional HTTP headers (can be used for authentication purposes)                 | Bearer $(document).Source |
 
-<figure><img src="../../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Dynamic Variables
 

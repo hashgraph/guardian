@@ -6,7 +6,7 @@ We can now perform a detailed comparison between two policies.
 
 To compare the policies, we need to click on **Compare** button in the policies tab as shown below:
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (2).png" alt=""><figcaption></figcaption></figure>
 
 When Compare button is clicked, we get a pop up to select policies, which we want to perform comparison off.
 
@@ -60,3 +60,10 @@ There are different sections in the comparison such as&#x20;
 4. **Policy Topics** – shows results of comparison of dynamic topics
 5. **Policy Tokens** – shows results of comparisons of dynamic tokens
 6. **Policy Blocks** – shows results of comparisons of Policy block structures
+
+We have several Display settings in Policy Blocks section:
+
+<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+

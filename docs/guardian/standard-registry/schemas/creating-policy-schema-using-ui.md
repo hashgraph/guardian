@@ -43,7 +43,7 @@ Import from IPFS: You can also import Schema from IPFS by entering the correct S
 
 Once the Schema is imported, we need to select the Policy from the Policy dropdown to connect the Schema and the Policy.
 
-![](<../../../.gitbook/assets/image (2) (2).png>)
+![](<../../../.gitbook/assets/image (2) (2) (1).png>)
 
 ![](<../../../.gitbook/assets/image (11) (2) (1).png>)
 
