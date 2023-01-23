@@ -17,7 +17,7 @@ The tokens are only minted when the necessary quorum of approvals (by the ‘sec
 
 Step 1: Need to click on the linking icon for the policy, which you wanted to be a primary one as shown below:
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 Step 2: We get a policy linking pop up to create a link for the primary policy or joining an existing policy:
 

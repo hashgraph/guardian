@@ -1,4 +1,4 @@
-# Page 1
+# Policy Differentiation using UI
 
 We can now perform a detailed comparison between two policies.
 
@@ -6,11 +6,21 @@ We can now perform a detailed comparison between two policies.
 
 To compare the policies, we need to click on **Compare** button in the policies tab as shown below:
 
-<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
 When Compare button is clicked, we get a pop up to select policies, which we want to perform comparison off.
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+
+## 2. Comparison Result
+
+We have several different sections in our comparison screen including filter parameters:
+
+<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+
+### 2.1 Comparison Parameters
+
+1. **Events:** configures if differences in events are reflected in the results of the comparison of blocks
 
 | Parameter     | Definition                                                             |
 | ------------- | ---------------------------------------------------------------------- |
