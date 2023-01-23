@@ -342,11 +342,11 @@ export async function contractAPI(
                             hederaAccountKey: rootKey,
                             baseTokenId,
                             oppositeTokenId,
-                            baseTokenCount: baseToken.decimals
+                            baseTokenCount: baseToken?.decimals
                                 ? Math.pow(10, baseToken.decimals) *
                                   baseTokenCount
                                 : baseTokenCount,
-                            oppositeTokenCount: oppositeToken.decimals
+                            oppositeTokenCount: oppositeToken?.decimals
                                 ? Math.pow(10, oppositeToken.decimals) *
                                   oppositeTokenCount
                                 : oppositeTokenCount,
@@ -457,11 +457,11 @@ export async function contractAPI(
                     1
                 );
                 contractPairs.push({
-                    baseTokenRate: baseToken.decimals
+                    baseTokenRate: baseToken?.decimals
                         ? contractPair.baseTokenRate /
                           Math.pow(10, baseToken.decimals)
                         : contractPair.baseTokenRate,
-                    oppositeTokenRate: oppositeToken.decimals
+                    oppositeTokenRate: oppositeToken?.decimals
                         ? contractPair.oppositeTokenRate /
                           Math.pow(10, oppositeToken.decimals)
                         : contractPair.oppositeTokenRate,
@@ -520,10 +520,10 @@ export async function contractAPI(
                         hederaAccountKey: rootKey,
                         baseTokenId,
                         oppositeTokenId,
-                        baseTokenCount: baseToken.decimals
+                        baseTokenCount: baseToken?.decimals
                             ? Math.pow(10, baseToken.decimals) * baseTokenCount
                             : baseTokenCount,
-                        oppositeTokenCount: oppositeToken.decimals
+                        oppositeTokenCount: oppositeToken?.decimals
                             ? Math.pow(10, oppositeToken.decimals) *
                               oppositeTokenCount
                             : oppositeTokenCount,
@@ -555,11 +555,11 @@ export async function contractAPI(
                     baseTokenId,
                     oppositeTokenId,
                     owner: did,
-                    baseTokenCount: baseToken.decimals
+                    baseTokenCount: baseToken?.decimals
                         ? contractRequest.baseTokenCount /
                           Math.pow(10, baseToken.decimals)
                         : contractRequest.baseTokenCount,
-                    oppositeTokenCount: oppositeToken.decimals
+                    oppositeTokenCount: oppositeToken?.decimals
                         ? contractRequest.oppositeTokenCount /
                           Math.pow(10, oppositeToken.decimals)
                         : contractRequest.oppositeTokenCount,
@@ -658,20 +658,23 @@ export async function contractAPI(
                 retireRequest?.owner
             );
             const wipeKeys = [];
-            wipeKeys.push(
-                await wallet.getUserKey(
-                    did,
-                    KeyType.TOKEN_WIPE_KEY,
-                    retireRequest.baseTokenId
-                )
+            const baseTokenWipeKey = await wallet.getUserKey(
+                did,
+                KeyType.TOKEN_WIPE_KEY,
+                retireRequest.baseTokenId
             );
-            wipeKeys.push(
-                await wallet.getUserKey(
-                    did,
-                    KeyType.TOKEN_WIPE_KEY,
-                    retireRequest.oppositeTokenId
-                )
+            if (baseTokenWipeKey) {
+                wipeKeys.push(baseTokenWipeKey);
+            }
+
+            const oppositeTokenWipeKey = await wallet.getUserKey(
+                did,
+                KeyType.TOKEN_WIPE_KEY,
+                retireRequest.oppositeTokenId
             );
+            if (oppositeTokenWipeKey) {
+                wipeKeys.push(oppositeTokenWipeKey);
+            }
 
             const retireResult = await workers.addNonRetryableTask(
                 {
