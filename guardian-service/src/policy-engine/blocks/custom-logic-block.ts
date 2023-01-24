@@ -84,17 +84,17 @@ export class CustomLogicBlock {
      */
     execute(state: IPolicyEventState, user: IPolicyUser): Promise<any> {
         return new Promise(async (resolve, reject) => {
-            const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
-            const idType = ref.options.idType;
-            let documents: IPolicyDocument[] = null;
-            if (Array.isArray(state.data)) {
-                documents = state.data;
-            } else {
-                documents = [state.data];
-            }
+            try {
+                const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
+                const idType = ref.options.idType;
+                let documents: IPolicyDocument[] = null;
+                if (Array.isArray(state.data)) {
+                    documents = state.data;
+                } else {
+                    documents = [state.data];
+                }
 
-            const done = async (result) => {
-                try {
+                const done = async (result) => {
                     const owner = PolicyUtils.getDocumentOwner(ref, documents[0]);
                     const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
                     let root;
@@ -172,43 +172,53 @@ export class CustomLogicBlock {
                         resolve(await processing(result));
                         return;
                     }
-
-                } catch (error) {
-                    reject(error);
                 }
-            }
 
-            const execCodeArtifacts = ref.options.artifacts?.filter(artifact => artifact.type === ArtifactType.EXECUTABLE_CODE) || [];
-            let execCode = '';
-            for (const execCodeArtifact of execCodeArtifacts) {
-                execCode += (await DatabaseServer.getArtifactFileByUUID(execCodeArtifact.uuid)).toString();
-            }
+                const execCodeArtifacts =
+                    ref.options.artifacts?.filter(
+                        (artifact) => artifact.type === ArtifactType.EXECUTABLE_CODE
+                    ) || [];
+                let execCode = '';
+                for (const execCodeArtifact of execCodeArtifacts) {
+                    const artifactFile = await DatabaseServer.getArtifactFileByUUID(
+                        execCodeArtifact.uuid
+                    );
+                    execCode += artifactFile.toString();
+                }
 
-            const artifacts = [];
-            const jsonArtifacts = ref.options.artifacts?.filter(artifact => artifact.type === ArtifactType.JSON) || [];
-            for (const jsonArtifact of jsonArtifacts) {
-                artifacts.push(JSON.parse((await DatabaseServer.getArtifactFileByUUID(jsonArtifact.uuid)).toString()));
-            }
+                const artifacts = [];
+                const jsonArtifacts =
+                    ref.options.artifacts?.filter(
+                        (artifact) => artifact.type === ArtifactType.JSON
+                    ) || [];
+                for (const jsonArtifact of jsonArtifacts) {
+                    const artifactFile = await DatabaseServer.getArtifactFileByUUID(
+                        jsonArtifact.uuid
+                    );
+                    artifacts.push(JSON.parse(artifactFile.toString()));
+                }
 
-            const worker = new Worker(path.join(path.dirname(__filename), '..', 'helpers', 'custom-logic-worker.js'), {
-                workerData: {
-                    execFunc: `const [done, user, documents, mathjs, artifacts] = arguments;${execCode}${ref.options.expression}`,
-                    user,
-                    documents,
-                    artifacts
-                },
-            });
-            worker.on('error', (error) => {
+                const worker = new Worker(path.join(path.dirname(__filename), '..', 'helpers', 'custom-logic-worker.js'), {
+                    workerData: {
+                        execFunc: `const [done, user, documents, mathjs, artifacts] = arguments;${execCode}${ref.options.expression}`,
+                        user,
+                        documents,
+                        artifacts
+                    },
+                });
+                worker.on('error', (error) => {
+                    reject(error);
+                });
+                worker.on('message', async (result) => {
+                    try {
+                        await done(result);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+            } catch (error) {
                 reject(error);
-                // worker.terminate()
-            });
-            worker.on('message', (result) => {
-                done(result);
-                // worker.terminate()
-            });
-            // worker.on('exit', (code) => {
-            //     console.log('Worker exit with code', code);
-            // });
+            }
         });
     }
 

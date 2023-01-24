@@ -76,6 +76,7 @@ contract RetirementContract is HederaTokenService {
         if ((baseToken == address(0) || oppositeToken == address(0)) && (baseTokenCount != 0 && oppositeTokenCount != 0)) {
             revert();
         }
+        
         if (baseToken != address(0)) {
             baseTokenCount = baseTokenCount == 0 ? 1 : baseTokenCount;
         }
@@ -114,25 +115,35 @@ contract RetirementContract is HederaTokenService {
         if (baseTokenCount != 0 && oppositeTokenCount != 0 && baseTokenSerials.length == 0 && oppositeTokenSerials.length == 0) {
             addUserRequest_FT_FT(baseToken, oppositeToken, baseTokenCount, oppositeTokenCount, baseTokenCountPair, oppositeTokenCountPair);
             return;
-        } else if (baseTokenCount != 0 && oppositeTokenCount == 0 && baseTokenSerials.length == 0 && oppositeTokenSerials.length != 0) {
+        } 
+        if (baseTokenCount != 0 && oppositeTokenCount == 0 && baseTokenSerials.length == 0 && oppositeTokenSerials.length != 0) {
             addUserRequest_FT_NFT(baseToken, oppositeToken, baseTokenCount, oppositeTokenSerials, baseTokenCountPair, oppositeTokenCountPair);
             return;
-        } else if (baseTokenCount == 0 && oppositeTokenCount != 0 && baseTokenSerials.length != 0 && oppositeTokenSerials.length == 0) {
+        } 
+        if (baseTokenCount == 0 && oppositeTokenCount != 0 && baseTokenSerials.length != 0 && oppositeTokenSerials.length == 0) {
             addUserRequest_FT_NFT(oppositeToken, baseToken, oppositeTokenCount, baseTokenSerials, oppositeTokenCountPair, baseTokenCountPair);
             return;
-        } else if (baseTokenCount == 0 && oppositeTokenCount == 0 && baseTokenSerials.length != 0 && oppositeTokenSerials.length != 0) {
+        } 
+        if (baseTokenCount == 0 && oppositeTokenCount == 0 && baseTokenSerials.length != 0 && oppositeTokenSerials.length != 0) {
             addUserRequest_NFT_NFT(baseToken, oppositeToken, baseTokenSerials, oppositeTokenSerials, baseTokenCountPair, oppositeTokenCountPair);
             return;
         }
 
         if (baseTokenCount != 0 && baseTokenSerials.length == 0) {
             addUserRequest_FT_NFT(baseToken, oppositeToken, baseTokenCount, oppositeTokenSerials, baseTokenCountPair, oppositeTokenCountPair);
-        } else if (baseTokenCount == 0 && baseTokenSerials.length != 0) {
+            return;
+        }
+        if (baseTokenCount == 0 && baseTokenSerials.length != 0) {
             addUserRequest_NFT_NFT(baseToken, oppositeToken, baseTokenSerials, oppositeTokenSerials, baseTokenCountPair, oppositeTokenCountPair);
-        } else if (oppositeTokenCount != 0 && oppositeTokenSerials.length == 0) {
+            return;
+        }
+        if (oppositeTokenCount != 0 && oppositeTokenSerials.length == 0) {
             addUserRequest_FT_NFT(oppositeToken, baseToken, oppositeTokenCount, oppositeTokenSerials, oppositeTokenCountPair, baseTokenCountPair);
-        } else if (oppositeTokenCount == 0 && oppositeTokenSerials.length != 0) {
-            addUserRequest_NFT_NFT(baseToken, oppositeToken, oppositeTokenSerials, baseTokenSerials, baseTokenCountPair, oppositeTokenCountPair);
+            return;
+        }
+        if (oppositeTokenCount == 0 && oppositeTokenSerials.length != 0) {
+            addUserRequest_NFT_NFT(oppositeToken, baseToken, oppositeTokenSerials, baseTokenSerials, oppositeTokenCountPair, baseTokenCountPair);
+            return;
         }
     }
 
