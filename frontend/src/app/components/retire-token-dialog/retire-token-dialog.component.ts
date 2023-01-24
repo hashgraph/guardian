@@ -26,11 +26,8 @@ export class RetireTokenDialogComponent {
     tokens: any[] = [];
     baseTokens: any[] = [];
     oppositeTokens: any = [];
-
-    chooseTokensForm = this.fb.group({
-        baseTokenId: ['', Validators.required],
-        oppositeTokenId: ['', Validators.required],
-    });
+    baseTokenId = this.fb.control('', Validators.required);
+    oppositeTokenId = this.fb.control('');
     contractForm = this.fb.control('', Validators.required);
     tokenCountForm = this.fb.group({
         baseTokenCount: [0],
@@ -65,16 +62,13 @@ export class RetireTokenDialogComponent {
             this.tokens = data.tokens || [];
             this.baseTokens = this.tokens;
             this.oppositeTokens = this.tokens;
-            const baseTokenControl = this.chooseTokensForm.get('baseTokenId');
-            const oppositeTokenControl =
-                this.chooseTokensForm.get('oppositeTokenId');
             const oppositeTokenCountControl =
                 this.tokenCountForm.get('oppositeTokenCount');
             const baseTokenCountControl =
                 this.tokenCountForm.get('baseTokenCount');
 
             oppositeTokenCountControl?.disable();
-            baseTokenControl?.valueChanges
+            this.baseTokenId?.valueChanges
                 .pipe(takeUntil(this.destroy$))
                 .subscribe((value) => {
                     this.oppositeTokens = this.tokens.filter(
@@ -86,8 +80,7 @@ export class RetireTokenDialogComponent {
                     this.baseTokenType = baseToken?.tokenType;
                     this.baseTokenDecimals = baseToken?.decimals;
                     this.baseTokenSerials = baseToken?.serials || [];
-                    const oppositeTokenId =
-                        this.chooseTokensForm.get('oppositeTokenId')?.value;
+                    const oppositeTokenId = this.oppositeTokenId?.value;
                     this.contractAndRates = [];
                     this.contractForm.patchValue('');
                     this.tokenCountForm.reset();
@@ -113,7 +106,7 @@ export class RetireTokenDialogComponent {
                     this.baseTokenRate = contractAndRates.baseTokenRate;
                     this.oppositeTokenRate = contractAndRates.oppositeTokenRate;
                 });
-            oppositeTokenControl?.valueChanges
+            this.oppositeTokenId?.valueChanges
                 .pipe(takeUntil(this.destroy$))
                 .subscribe((value) => {
                     this.baseTokens = this.tokens.filter(
@@ -125,8 +118,7 @@ export class RetireTokenDialogComponent {
                     this.oppositeTokenType = oppositeToken?.tokenType;
                     this.oppositeTokenDecimals = oppositeToken?.decimals;
                     this.oppositeTokenSerials = oppositeToken?.serials || [];
-                    const baseTokenId =
-                        this.chooseTokensForm.get('baseTokenId')?.value;
+                    const baseTokenId = this.baseTokenId?.value;
                     this.contractAndRates = [];
                     this.contractForm.patchValue('');
                     this.tokenCountForm.reset();
@@ -140,7 +132,7 @@ export class RetireTokenDialogComponent {
     }
 
     setContractPair(baseTokenId: string, oppositeTokenId: string) {
-        if (!baseTokenId || !oppositeTokenId) {
+        if (!baseTokenId) {
             return;
         }
         this.contractsLoading = true;
@@ -151,7 +143,7 @@ export class RetireTokenDialogComponent {
                     return;
                 }
                 this.contractAndRates = result.filter(
-                    (item: any) => item.baseTokenRate && item.oppositeTokenRate
+                    (item: any) => item.baseTokenRate
                 );
                 this.contractsLoading = false;
             },
@@ -160,7 +152,7 @@ export class RetireTokenDialogComponent {
     }
 
     countValueForOppositeToken(baseTokenValue: number) {
-        if (!this.tokenCountForm) {
+        if (!this.tokenCountForm || !this.oppositeTokenId.value) {
             return;
         }
         const oppositeTokenControl =
@@ -196,17 +188,17 @@ export class RetireTokenDialogComponent {
 
     onCreate() {
         this.dialogRef.close({
-            ...this.chooseTokensForm.value,
+            baseTokenId: this.baseTokenId.value,
+            oppositeTokenId: this.oppositeTokenId.value,
             ...this.tokenCountForm.getRawValue(),
             contractId: this.contractForm.value,
         });
     }
 
     validateCountValues() {
-        if (!this.baseTokenRate || !this.oppositeTokenRate) {
+        if (!this.baseTokenRate) {
             return false;
         }
-
         const {
             baseTokenCount,
             oppositeTokenCount,
@@ -215,10 +207,11 @@ export class RetireTokenDialogComponent {
         } = this.tokenCountForm.getRawValue() || {};
 
         if (
-            !baseTokenCount &&
+            (!baseTokenCount &&
             !oppositeTokenCount &&
             !baseTokenSerials?.length &&
-            !oppositeTokenSerials?.length
+            !oppositeTokenSerials?.length)
+            || baseTokenCount < 0
         ) {
             return false;
         }

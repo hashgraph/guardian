@@ -639,12 +639,25 @@ export class Worker {
                         networkOptions
                     );
                     result.data = await client.contractCall(
-                        contractId, 'addPair',
+                        contractId,
+                        'addPair',
                         new ContractFunctionParameters()
-                            .addAddress(TokenId.fromString(baseTokenId).toSolidityAddress())
-                            .addAddress(TokenId.fromString(oppositeTokenId).toSolidityAddress())
-                            .addUint32(Math.floor(baseTokenCount))
-                            .addUint32(Math.floor(oppositeTokenCount)),
+                            .addAddress(
+                                baseTokenId
+                                    ? TokenId.fromString(
+                                          baseTokenId
+                                      ).toSolidityAddress()
+                                    : new TokenId(0).toSolidityAddress()
+                            )
+                            .addAddress(
+                                oppositeTokenId
+                                    ? TokenId.fromString(
+                                          oppositeTokenId
+                                      ).toSolidityAddress()
+                                    : new TokenId(0).toSolidityAddress()
+                            )
+                            .addUint32(Math.floor(baseTokenCount || 0))
+                            .addUint32(Math.floor(oppositeTokenCount || 0)),
                         grantKycKeys
                     );
                     break;
@@ -710,12 +723,26 @@ export class Worker {
                         networkOptions
                     );
                     result.data = await client.contractCall(
-                        contractId, 'retire',
-                        (new ContractFunctionParameters()
-                            .addAddress(AccountId.fromString(userId).toSolidityAddress())
-                            .addAddress(TokenId.fromString(baseTokenId).toSolidityAddress())
-                            .addAddress(TokenId.fromString(oppositeTokenId).toSolidityAddress())
-                        ),
+                        contractId,
+                        'retire',
+                        new ContractFunctionParameters()
+                            .addAddress(
+                                AccountId.fromString(userId).toSolidityAddress()
+                            )
+                            .addAddress(
+                                baseTokenId
+                                    ? TokenId.fromString(
+                                          baseTokenId
+                                      ).toSolidityAddress()
+                                    : new TokenId(0).toSolidityAddress()
+                            )
+                            .addAddress(
+                                oppositeTokenId
+                                    ? TokenId.fromString(
+                                          oppositeTokenId
+                                      ).toSolidityAddress()
+                                    : new TokenId(0).toSolidityAddress()
+                            ),
                         wipeKeys
                     );
                     break;
@@ -736,11 +763,23 @@ export class Worker {
                         networkOptions
                     );
                     result.data = await client.contractCall(
-                        contractId, 'cancelUserRequest',
-                        (new ContractFunctionParameters()
-                            .addAddress(TokenId.fromString(baseTokenId).toSolidityAddress())
-                            .addAddress(TokenId.fromString(oppositeTokenId).toSolidityAddress())
-                        )
+                        contractId,
+                        'cancelUserRequest',
+                        new ContractFunctionParameters()
+                            .addAddress(
+                                baseTokenId
+                                    ? TokenId.fromString(
+                                          baseTokenId
+                                      ).toSolidityAddress()
+                                    : new TokenId(0).toSolidityAddress()
+                            )
+                            .addAddress(
+                                oppositeTokenId
+                                    ? TokenId.fromString(
+                                          oppositeTokenId
+                                      ).toSolidityAddress()
+                                    : new TokenId(0).toSolidityAddress()
+                            )
                     );
                     break;
                 }
@@ -760,11 +799,23 @@ export class Worker {
                         networkOptions
                     );
                     const contractQueryResult = await client.contractQuery(
-                        contractId, 'getPair',
-                        (new ContractFunctionParameters()
-                            .addAddress(TokenId.fromString(baseTokenId).toSolidityAddress())
-                            .addAddress(TokenId.fromString(oppositeTokenId).toSolidityAddress())
-                        )
+                        contractId,
+                        'getPair',
+                        new ContractFunctionParameters()
+                            .addAddress(
+                                baseTokenId
+                                    ? TokenId.fromString(
+                                          baseTokenId
+                                      ).toSolidityAddress()
+                                    : new TokenId(0).toSolidityAddress()
+                            )
+                            .addAddress(
+                                oppositeTokenId
+                                    ? TokenId.fromString(
+                                          oppositeTokenId
+                                      ).toSolidityAddress()
+                                    : new TokenId(0).toSolidityAddress()
+                            )
                     );
                     result.data = {
                         baseTokenRate: contractQueryResult.getUint32(0),
@@ -793,15 +844,36 @@ export class Worker {
                         networkOptions
                     );
                     result.data = await client.contractCall(
-                        contractId, 'addUserRequest',
-                        (new ContractFunctionParameters()
-                            .addAddress(TokenId.fromString(baseTokenId).toSolidityAddress())
-                            .addAddress(TokenId.fromString(oppositeTokenId).toSolidityAddress())
+                        contractId,
+                        'addUserRequest',
+                        new ContractFunctionParameters()
+                            .addAddress(
+                                baseTokenId
+                                    ? TokenId.fromString(
+                                          baseTokenId
+                                      ).toSolidityAddress()
+                                    : new TokenId(0).toSolidityAddress()
+                            )
+                            .addAddress(
+                                oppositeTokenId
+                                    ? TokenId.fromString(
+                                          oppositeTokenId
+                                      ).toSolidityAddress()
+                                    : new TokenId(0).toSolidityAddress()
+                            )
                             .addUint32(baseTokenCount)
                             .addUint32(oppositeTokenCount)
-                            .addInt64Array(baseTokenSerials && baseTokenSerials.length ? baseTokenSerials : [0])
-                            .addInt64Array(oppositeTokenSerials && oppositeTokenSerials.length ? oppositeTokenSerials : [0])
-                        )
+                            .addInt64Array(
+                                baseTokenSerials && baseTokenSerials.length
+                                    ? baseTokenSerials
+                                    : [0]
+                            )
+                            .addInt64Array(
+                                oppositeTokenSerials &&
+                                    oppositeTokenSerials.length
+                                    ? oppositeTokenSerials
+                                    : [0]
+                            )
                     );
                     break;
                 }
@@ -822,12 +894,26 @@ export class Worker {
                         networkOptions
                     );
                     const contractQueryResult = await client.contractQuery(
-                        contractId, 'getUserRequest',
-                        (new ContractFunctionParameters()
-                            .addAddress(AccountId.fromString(userId).toSolidityAddress())
-                            .addAddress(TokenId.fromString(baseTokenId).toSolidityAddress())
-                            .addAddress(TokenId.fromString(oppositeTokenId).toSolidityAddress())
-                        )
+                        contractId,
+                        'getUserRequest',
+                        new ContractFunctionParameters()
+                            .addAddress(
+                                AccountId.fromString(userId).toSolidityAddress()
+                            )
+                            .addAddress(
+                                baseTokenId
+                                    ? TokenId.fromString(
+                                          baseTokenId
+                                      ).toSolidityAddress()
+                                    : new TokenId(0).toSolidityAddress()
+                            )
+                            .addAddress(
+                                oppositeTokenId
+                                    ? TokenId.fromString(
+                                          oppositeTokenId
+                                      ).toSolidityAddress()
+                                    : new TokenId(0).toSolidityAddress()
+                            )
                     );
                     result.data = {
                         baseTokenCount: contractQueryResult.getUint32(0) || contractQueryResult.getUint32(2),
