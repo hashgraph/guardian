@@ -109,15 +109,19 @@ export class EventModel {
         }
         const hashState = MurmurHash3();
         if (this._start) {
-            hashState.hash(this._start);
+            hashState.hash(`source:${this._start}`);
+        } else {
+            hashState.hash(`source:undefined`);
         }
         if (this._end) {
-            hashState.hash(this._end);
+            hashState.hash(`target:${this._end}`);
+        } else {
+            hashState.hash('target:undefined');
         }
-        hashState.hash(this.actor);
-        hashState.hash(this.disabled);
-        hashState.hash(this.input);
-        hashState.hash(this.output);
+        hashState.hash(`actor:${this.actor}`);
+        hashState.hash(`disabled:${this.disabled}`);
+        hashState.hash(`input:${this.input}`);
+        hashState.hash(`output:${this.output}`);
         const weight = String(hashState.result());
         if (options.eventLvl > 0) {
             this._weight = weight;
