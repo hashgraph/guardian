@@ -658,7 +658,7 @@ export class PolicyEngineService {
 
         this.channel.response<any, any>(PolicyEngineEvents.GET_BLOCK_PARENTS, async (msg) => {
             try {
-                const { blockId } = msg;
+                const { blockId, policyId } = msg;
 
                 const cn = new CommonVariables().getVariable('cn');
                 const policyChannel = new MessageBrokerChannel(cn, `policy_service-${Date.now()}`);
