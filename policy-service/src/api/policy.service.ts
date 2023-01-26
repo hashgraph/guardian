@@ -1,7 +1,6 @@
 import { MessageBrokerChannel } from '@guardian/common';
 import { PolicyEvents } from '@guardian/interfaces';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
-import { DatabaseServer } from 'guardian-service/dist/database-modules';
 
 const models = [];
 
