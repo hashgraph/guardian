@@ -14,5 +14,6 @@ export enum PolicyEvents {
     SELECT_POLICY_GROUP = 'select-policy-groups',
     BLOCK_BY_TAG = 'block-by-tag',
     GET_BLOCK_PARENTS = 'get-block-parents',
+    BLOCK_UPDATE_BROADCAST = 'BLOCk_UPDATE_BROADCAST'
 
 }

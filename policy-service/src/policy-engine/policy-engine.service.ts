@@ -2,7 +2,7 @@ import {
     PolicyEngineEvents,
     TopicType,
     PolicyType,
-    ExternalMessageEvents
+    ExternalMessageEvents, PolicyEvents
 } from '@guardian/interfaces';
 import {
     IAuthUser,
@@ -186,6 +186,33 @@ export class PolicyEngineService {
                 console.error(error);
             }
         };
+
+        // this.channel.subscribe(PolicyEvents.BLOCK_UPDATE_BROADCAST, (msg: any) => {
+        //     const {type, args} = msg;
+        //
+        //     console.log(type, msg);
+        //
+        //     switch (type) {
+        //         case 'update':
+        //             PolicyComponentsUtils.BlockUpdateFn(args[0], args[1], args[2], args[3]);
+        //             break;
+        //
+        //         case 'error':
+        //             PolicyComponentsUtils.BlockErrorFn(args[0], args[1], args[2]);
+        //             break;
+        //
+        //         case 'update-user':
+        //             PolicyComponentsUtils.UpdateUserInfoFn(args[0], args[1]);
+        //             break;
+        //
+        //         case 'external':
+        //             PolicyComponentsUtils.ExternalEventFn(args[0]);
+        //             break;
+        //
+        //         default:
+        //             throw new Error('Unknown type');
+        //     }
+        // })
 
         this.channel.response<any, any>('mrv-data', async (msg) => {
             await PolicyComponentsUtils.ReceiveExternalData(msg);

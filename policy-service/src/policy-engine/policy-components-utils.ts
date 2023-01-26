@@ -8,7 +8,7 @@ import {
     EventCallback,
     PolicyOutputEventType
 } from '@policy-engine/interfaces';
-import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyEvents, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInstance, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
 import { Policy } from '@entity/policy';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
@@ -18,11 +18,24 @@ import { GetBlockAbout } from '@policy-engine/blocks';
 import { DatabaseServer } from '@database-modules';
 import { IPolicyUser } from './policy-user';
 import { ExternalEvent } from './interfaces/external-event';
+import { CommonVariables } from '@helpers/common-variables';
 
 /**
  * Policy action map type
  */
 export type PolicyActionMap = Map<string, Map<PolicyInputEventType, EventCallback<any>>>
+
+/**
+ * BlockUpdateFunction
+ * @param type
+ * @param args
+ */
+export function blockUpdate(type: string, args: any[]) {
+    const commonVars = new CommonVariables();
+    const channel = commonVars.getVariable('channel');
+
+    channel.publish(PolicyEvents.BLOCK_UPDATE_BROADCAST, {type, args});
+}
 
 /**
  * Policy component utils
@@ -31,19 +44,19 @@ export class PolicyComponentsUtils {
     /**
      * Block update function
      */
-    public static BlockUpdateFn: (uuid: string, state: any, user: IPolicyUser, tag?: string) => Promise<void>;
+    public static BlockUpdateFn: (uuid: string, state: any, user: IPolicyUser, tag?: string) => Promise<void> = async (...args) => {blockUpdate('update', args);};
     /**
      * Block error function
      */
-    public static BlockErrorFn: (blockType: string, message: any, user: IPolicyUser) => Promise<void>;
+    public static BlockErrorFn: (blockType: string, message: any, user: IPolicyUser) => Promise<void> = async (...args) => {blockUpdate('error', args);};
     /**
      * Update user info function
      */
-    public static UpdateUserInfoFn: (user: IPolicyUser, policy: Policy) => Promise<void>;
+    public static UpdateUserInfoFn: (user: IPolicyUser, policy: Policy) => Promise<void> = async (...args) => {blockUpdate('update-user', args);};
     /**
      * External Event function
      */
-    public static ExternalEventFn: (event: ExternalEvent<any>) => Promise<void>;
+    public static ExternalEventFn: (event: ExternalEvent<any>) => Promise<void> = async (...args) => {blockUpdate('external', args);};
 
     /**
      * Block ID list

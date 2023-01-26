@@ -13,6 +13,7 @@ import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { Logger, MessageBrokerChannel, MessageResponse } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import { PolicyEngine } from '@policy-engine/policy-engine';
+import { CommonVariables } from '@helpers/common-variables';
 
 /**
  * Block tree generator
@@ -32,14 +33,20 @@ export class BlockTreeGenerator {
         const cn = await MessageBrokerChannel.connect(`policy-${policyId}`);
         const channel = new MessageBrokerChannel(cn, `policy-${policyId}`);
 
-        console.log(`policy-${policyId}`);
+        const commonVars = new CommonVariables();
+        commonVars.setVariable('cn', cn);
+        commonVars.setVariable('channel', channel);
 
         channel.response(`${PolicyEvents.GET_ROOT_BLOCK_DATA}`, async (msg: any) => {
 
             const { user } = msg;
 
             const policyEngine = new PolicyEngine();
+
+            console.log(user);
             const userFull = await policyEngine.getUser(policyInstance, user);
+
+            console.log(userFull);
 
             console.log('message', msg, userFull);
 
@@ -123,6 +130,8 @@ export class BlockTreeGenerator {
 
             const { user, blockId, data } = msg;
 
+            console.log(user, blockId, data);
+
             const policyEngine = new PolicyEngine();
             const userFull = await policyEngine.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
@@ -147,7 +156,7 @@ export class BlockTreeGenerator {
             console.log('message', block);
 
             if (block && (await block.isAvailable(userFull))) {
-                const result = await block.getData(userFull, data);
+                const result = await block.setData(userFull, data);
                 return new MessageResponse(result);
             } else {
                 return new MessageResponse(null);

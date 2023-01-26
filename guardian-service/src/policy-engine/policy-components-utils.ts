@@ -534,7 +534,7 @@ export class PolicyComponentsUtils {
      * @param user
      */
     public static async GetGroups(policy: IPolicyInstance, user: IPolicyUser): Promise<any[]> {
-        return await policy.databaseServer.getGroupsByUser(policy.policyId, user.did, {
+        return await new DatabaseServer().getGroupsByUser(policy.policyId, user.did, {
             fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active']
         });
     }
@@ -546,7 +546,7 @@ export class PolicyComponentsUtils {
      * @param uuid
      */
     public static async SelectGroup(policy: IPolicyInstance, user: IPolicyUser, uuid: string): Promise<void> {
-        await policy.databaseServer.setActiveGroup(policy.policyId, user.did, uuid);
+        await new DatabaseServer().setActiveGroup(policy.policyId, user.did, uuid);
     }
 
     /**

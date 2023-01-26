@@ -827,6 +827,7 @@ export class PolicyUtils {
      */
     public static async getPolicyTopic(ref: AnyBlockType, topicId: string | TopicId): Promise<TopicConfig> {
         let topic: Topic;
+        console.log('topicId', topicId);
         if (topicId) {
             topic = await ref.databaseServer.getTopic({ policyId: ref.policyId, topicId: topicId.toString() });
         }
@@ -844,7 +845,9 @@ export class PolicyUtils {
      * @param ref
      */
     public static async getInstancePolicyTopic(ref: AnyBlockType): Promise<TopicConfig> {
+        console.log(ref.policyId, TopicType.InstancePolicyTopic);
         const topic = await ref.databaseServer.getTopic({ policyId: ref.policyId, type: TopicType.InstancePolicyTopic });
+        console.log(topic);
         if (!topic) {
             throw new Error(`Topic does not exist`);
         }

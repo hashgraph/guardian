@@ -18,7 +18,7 @@ export class Workers extends ServiceRequestsBase {
     /**
      * Target
      */
-    public target: string = 'worker.*';
+    public target: string = 'guardians';
 
     /**
      * Queue
@@ -69,27 +69,28 @@ export class Workers extends ServiceRequestsBase {
         task.id = taskId;
         task.priority = priority;
         attempts = attempts > 0 && attempts < this.maxRepetitions ? attempts : this.maxRepetitions;
-        this.queue.push(task);
+        // this.queue.push(task);
         const result = new Promise((resolve, reject) => {
             this.tasksCallbacks.set(taskId, {
                 task,
                 number: 0,
                 callback: (data, error) => {
                     if (error) {
-                        if (isRetryableTask) {
-                            if (this.tasksCallbacks.has(taskId)) {
-                                const callback = this.tasksCallbacks.get(taskId);
-                                callback.number++;
-                                if (callback.number > attempts) {
-                                    this.tasksCallbacks.delete(taskId);
-                                    reject(error);
-                                    return;
-                                }
-                            }
-                            this.queue.push(task);
-                        } else {
-                            reject(error);
-                        }
+                        console.log(error);
+                        // if (isRetryableTask) {
+                        //     if (this.tasksCallbacks.has(taskId)) {
+                        //         const callback = this.tasksCallbacks.get(taskId);
+                        //         callback.number++;
+                        //         if (callback.number > attempts) {
+                        //             this.tasksCallbacks.delete(taskId);
+                        //             reject(error);
+                        //             return;
+                        //         }
+                        //     }
+                        //     this.queue.push(task);
+                        // } else {
+                        //     reject(error);
+                        // }
                     } else {
                         this.tasksCallbacks.delete(taskId);
                         resolve(data);
@@ -97,7 +98,7 @@ export class Workers extends ServiceRequestsBase {
                 }
             });
         });
-        this.channel.publish(WorkerEvents.QUEUE_UPDATED, null);
+        this.request(WorkerEvents.PUSH_TASK, {task, priority, isRetryableTask, attempts});
         return result;
     }
 
@@ -105,34 +106,11 @@ export class Workers extends ServiceRequestsBase {
      * Init listeners
      */
     public initListeners() {
-        this.channel.response(WorkerEvents.QUEUE_GET, async (msg: IWorkerRequest) => {
-            const itemIndex = this.queue.findIndex(_item => {
-                return (_item.priority >= msg.minPriority) && (_item.priority <= msg.maxPriority)
-            });
-            if (itemIndex === -1) {
-                return new MessageResponse(null);
-            }
-            const item = this.queue[itemIndex];
-            this.queue.splice(itemIndex, 1);
-            return new MessageResponse(item || null);
-        });
-
-        this.channel.response(WorkerEvents.TASK_COMPLETE, async (msg: any) => {
+        this.channel.subscribe(WorkerEvents.TASK_COMPLETE_BROADCAST, async (msg: any) => {
             const activeTask = this.tasksCallbacks.get(msg.id);
+            console.log('msg', msg);
             activeTask.callback(msg.data, msg.error);
-            return new MessageResponse(null);
+            // return new MessageResponse(null);
         });
-    }
-
-    /**
-     * Update worker settings
-     */
-    public updateSettings(settings: {
-        /**
-         * IPFS storage api key
-         */
-        ipfsStorageApiKey: string
-    }) {
-        this.channel.publish(WorkerEvents.UPDATE_SETTINGS, settings);
     }
 }

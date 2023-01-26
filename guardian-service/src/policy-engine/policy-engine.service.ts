@@ -89,27 +89,33 @@ export class PolicyEngineService {
             return;
         }
 
-        if (!PolicyComponentsUtils.IfUUIDRegistered(uuid)) {
-            return;
-        }
+        await this.channel.request(['api-gateway', 'update-block'].join('.'), {
+            uuid,
+            state,
+            user
+        });
 
-        const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(uuid);
-        if (await block.isAvailable(user)) {
-            let changed = true;
-            if (block.blockClassName === 'ContainerBlock') {
-                changed = true;
-            } else if (typeof block.getData === 'function') {
-                const data = await block.getData(user, null, null);
-                changed = block.updateDataState(user, data);
-            }
-            if (changed) {
-                await this.channel.request(['api-gateway', 'update-block'].join('.'), {
-                    uuid,
-                    state,
-                    user
-                });
-            }
-        }
+        // if (!PolicyComponentsUtils.IfUUIDRegistered(uuid)) {
+        //     return;
+        // }
+        //
+        // const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(uuid);
+        // if (await block.isAvailable(user)) {
+        //     let changed = true;
+        //     if (block.blockClassName === 'ContainerBlock') {
+        //         changed = true;
+        //     } else if (typeof block.getData === 'function') {
+        //         const data = await block.getData(user, null, null);
+        //         changed = block.updateDataState(user, data);
+        //     }
+        //     if (changed) {
+        //         await this.channel.request(['api-gateway', 'update-block'].join('.'), {
+        //             uuid,
+        //             state,
+        //             user
+        //         });
+        //     }
+        // }
     }
 
     /**
@@ -142,8 +148,8 @@ export class PolicyEngineService {
             return;
         }
 
-        const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policy.id.toString());
-        const userGroups = await PolicyComponentsUtils.GetGroups(policyInstance, user);
+        // const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policy.id.toString());
+        const userGroups = await PolicyComponentsUtils.GetGroups({policyId: policy.id.toString()} as any, user);
 
         let userGroup = userGroups.find(g => g.active !== false);
         if (!userGroup) {
@@ -187,6 +193,33 @@ export class PolicyEngineService {
                 console.error(error);
             }
         };
+
+        this.channel.subscribe(PolicyEvents.BLOCK_UPDATE_BROADCAST, (msg: any) => {
+            const {type, args} = msg;
+
+            console.log(type, msg);
+
+            switch (type) {
+                case 'update':
+                    PolicyComponentsUtils.BlockUpdateFn(args[0], args[1], args[2], args[3]);
+                    break;
+
+                case 'error':
+                    PolicyComponentsUtils.BlockErrorFn(args[0], args[1], args[2]);
+                    break;
+
+                case 'update-user':
+                    PolicyComponentsUtils.UpdateUserInfoFn(args[0], args[1]);
+                    break;
+
+                case 'external':
+                    PolicyComponentsUtils.ExternalEventFn(args[0]);
+                    break;
+
+                default:
+                    throw new Error('Unknown type');
+            }
+        })
 
         this.channel.response<any, any>('mrv-data', async (msg) => {
             await PolicyComponentsUtils.ReceiveExternalData(msg);
@@ -492,10 +525,7 @@ export class PolicyEngineService {
                 const blockData = await policyChannel.request([`policy-${policyId}`, PolicyEvents.GET_ROOT_BLOCK_DATA].join('.'), {
                     user,
                     policyId
-                })
-
-                console.log(`policy-${policyId}`);
-                console.log('block-data', blockData);
+                });
 
                 return new MessageResponse(blockData.body);
 
@@ -580,12 +610,21 @@ export class PolicyEngineService {
 
                 const cn = new CommonVariables().getVariable('cn');
                 const policyChannel = new MessageBrokerChannel(cn, `policy_service-${Date.now()}`);
+                console.log('blockData', {
+                    user,
+                    blockId,
+                    policyId,
+                    data
+                });
+
                 const blockData = await policyChannel.request([`policy-${policyId}`, PolicyEvents.SET_BLOCK_DATA].join('.'), {
                     user,
                     blockId,
                     policyId,
                     data
-                })
+                });
+
+                console.log('blockData', blockData);
 
                 return new MessageResponse(blockData.body);
 
