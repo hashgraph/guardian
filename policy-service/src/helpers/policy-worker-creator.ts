@@ -1,4 +1,4 @@
-import { workerData, parentPort, isMainThread } from 'node:worker_threads';
+import { workerData } from 'node:worker_threads';
 import '../config'
 import { Environment, MessageServer } from '@hedera-modules';
 import {
@@ -15,7 +15,7 @@ import { Workers } from '@helpers/workers';
 /**
  * Init worker
  */
-async function init() {
+async function init(args) {
 
     const values = await Promise.all([
         MikroORM.init<MongoDriver>({
@@ -44,32 +44,18 @@ async function init() {
     const workersHelper = new Workers();
     workersHelper.setChannel(channel);
     workersHelper.initListeners();
+
+    const {
+        policy,
+        // policyId,
+        skipRegistration,
+        resultsContainer
+    } = args;
+
+    const generator = new BlockTreeGenerator();
+    await generator.generate(policy, skipRegistration, resultsContainer);
 }
 
-parentPort.on('message', async (m) => {
-    switch (m.type) {
-        case 'GENERATE':
-            console.log(workerData);
-            const {
-                policy,
-                // policyId,
-                skipRegistration,
-                resultsContainer
-            } = workerData;
-            const generator = new BlockTreeGenerator();
-            const p = await generator.generate(policy, skipRegistration, resultsContainer);
-            console.log(p);
-            break;
-
-        default:
-            throw new Error('Unknown message' + m.type);
-    }
+init(workerData).then(() => {
+    console.info('Policy instance started');
 });
-
-if (!isMainThread) {
-    init().then(() => {
-        parentPort.postMessage({
-            type: 'INITIALIZED'
-        })
-    });
-}
