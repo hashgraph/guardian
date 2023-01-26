@@ -21,7 +21,6 @@ WORKDIR /usr/policy-service
 COPY ./policy-service/package*.json ./
 COPY ./policy-service/tsconfig.json ./
 COPY ./policy-service/.env.docker ./.env
-COPY ./policy-service/system-schemas ./system-schemas/.
 RUN npm install --force /usr/interfaces/guardian-interfaces-*.tgz /usr/common/guardian-common-*.tgz
 RUN npm install --force
 ADD ./policy-service/src ./src/.

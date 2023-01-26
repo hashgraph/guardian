@@ -77,11 +77,11 @@ export class BlockTreeGenerator {
             const userFull = await policyEngine.getUser(policyInstance, user);
 
             if (!policyInstance.isMultipleGroup) {
-                return new MessageResponse([]);
+                return new MessageResponse([] as any);
             }
 
             await PolicyComponentsUtils.SelectGroup(policyInstance, userFull, uuid);
-            return new MessageResponse(true);
+            return new MessageResponse(true as any);
         });
 
         channel.response(`${PolicyEvents.GET_BLOCK_DATA}`, async (msg: any) => {
