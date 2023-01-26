@@ -50,6 +50,9 @@ jobs:
           pushd guardian-service
           npm install
           npm run build
+          pushd policy-service
+          npm install
+          npm run build
           popd
           pushd worker-service
           npm install
