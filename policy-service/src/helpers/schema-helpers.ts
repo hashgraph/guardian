@@ -5,7 +5,6 @@ import {
     SchemaStatus,
     TopicType,
     SchemaHelper,
-    ModelHelper,
     GenerateUUIDv4,
     Schema,
     IRootConfig,
@@ -13,13 +12,12 @@ import {
 import path from 'path';
 import { readJSON } from 'fs-extra';
 import { schemasToContext } from '@transmute/jsonld-schema';
-import { MessageAction, MessageServer, MessageType, SchemaMessage, TopicConfig, TopicHelper, UrlType } from '@hedera-modules';
+import { MessageAction, MessageServer, SchemaMessage, TopicConfig, TopicHelper, UrlType } from '@hedera-modules';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
-import { Logger } from '@guardian/common';
 
 export const schemaCache = {};
 
@@ -86,82 +84,6 @@ export async function setDefaultSchema() {
     await fn(map[SchemaEntity.CHUNK]);
     await fn(map[SchemaEntity.ACTIVITY_IMPACT]);
     await fn(map[SchemaEntity.TOKEN_DATA_SOURCE]);
-}
-
-/**
- * Load schema
- * @param messageId
- * @param owner
- */
-async function loadSchema(messageId: string, owner: string) {
-    const log = new Logger();
-    try {
-        if (schemaCache[messageId]) {
-            return schemaCache[messageId];
-        }
-        const messageServer = new MessageServer(null, null);
-        log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
-        const message = await messageServer.getMessage<SchemaMessage>(messageId, MessageType.Schema);
-        log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE']);
-        const schemaToImport: any = {
-            uuid: message.uuid,
-            hash: '',
-            name: message.name,
-            description: message.description,
-            entity: message.entity as SchemaEntity,
-            status: SchemaStatus.PUBLISHED,
-            readonly: false,
-            system: false,
-            active: false,
-            document: message.getDocument(),
-            context: message.getContext(),
-            version: message.version,
-            creator: message.owner,
-            owner,
-            topicId: message.getTopicId(),
-            messageId,
-            documentURL: message.getDocumentUrl(UrlType.url),
-            contextURL: message.getContextUrl(UrlType.url),
-            iri: null,
-            codeVersion: message.codeVersion
-        }
-        SchemaHelper.updateIRI(schemaToImport);
-        log.info(`loadSchema end: ${messageId}`, ['GUARDIAN_SERVICE']);
-        schemaCache[messageId] = { ...schemaToImport };
-        return schemaToImport;
-    } catch (error) {
-        log.error(error, ['GUARDIAN_SERVICE']);
-        throw new Error(`Cannot load schema ${messageId}`);
-    }
-}
-
-/**
- * Get defs
- * @param schema
- */
-function getDefs(schema: ISchema) {
-    try {
-        let document: any = schema.document;
-        if (typeof document === 'string') {
-            document = JSON.parse(document);
-        }
-        if (!document.$defs) {
-            return [];
-        }
-        return Object.keys(document.$defs);
-    } catch (error) {
-        return [];
-    }
-}
-
-/**
- * Only unique
- * @param value
- * @param index
- * @param self
- */
-function onlyUnique(value: any, index: any, self: any): boolean {
-    return self.indexOf(value) === index;
 }
 
 /**
@@ -515,8 +437,7 @@ async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
     const relatedSchemas = await DatabaseServer.getSchemas(filters);
     for (const rSchema of relatedSchemas) {
         if (oldSchemaId) {
-            let document = JSON.stringify(rSchema.document) as string;
-            // document = document.replaceAll(oldSchemaId.substring(1), schemaId.substring(1));
+            const document = JSON.stringify(rSchema.document) as string;
             rSchema.document = JSON.parse(document);
         }
         rSchema.document.$defs[schemaId] = schemaDocument;
@@ -692,88 +613,6 @@ export async function findAndDryRunSchema(item: SchemaCollection, version: strin
     SchemaHelper.updateIRI(item);
     await DatabaseServer.updateSchema(item.id, item);
     return item;
-}
-
-/**
- * Import schemas by messages
- * @param owner
- * @param messageIds
- * @param topicId
- * @param notifier
- */
-async function importSchemasByMessages(
-    owner: string,
-    messageIds: string[],
-    topicId: string,
-    notifier: INotifier
-): Promise<{
-    /**
-     * New schema uuid
-     */
-    schemasMap: any[];
-    /**
-     * Errors
-     */
-    errors: any[];
-}> {
-    notifier.start('Load schema files');
-    const files: ISchema[] = [];
-    for (const messageId of messageIds) {
-        const newSchema = await loadSchema(messageId, null);
-        files.push(newSchema);
-    }
-    notifier.completed();
-    return await importSchemaByFiles(owner, files, topicId, notifier);
-}
-
-/**
- * Prepare schema for preview
- * @param messageIds
- * @param notifier
- */
-async function prepareSchemaPreview(messageIds: string[], notifier: INotifier): Promise<any[]> {
-    notifier.start('Load schema file');
-    const result = [];
-    for (const messageId of messageIds) {
-        const schema = await loadSchema(messageId, null);
-        result.push(schema);
-    }
-
-    notifier.completedAndStart('Parse schema');
-    const messageServer = new MessageServer(null, null);
-    const uniqueTopics = result.map(res => res.topicId).filter(onlyUnique);
-    const anotherSchemas: SchemaMessage[] = [];
-    for (const topicId of uniqueTopics) {
-        const anotherVersions = await messageServer.getMessages<SchemaMessage>(
-            topicId, MessageType.Schema, MessageAction.PublishSchema
-        );
-        for (const ver of anotherVersions) {
-            anotherSchemas.push(ver);
-        }
-    }
-
-    notifier.completedAndStart('Verifying');
-    for (const schema of result) {
-        if (!schema.version) {
-            continue;
-        }
-        const newVersions = [];
-        const topicMessages = anotherSchemas.filter(item => item.uuid === schema.uuid);
-        for (const topicMessage of topicMessages) {
-            if (topicMessage.version &&
-                ModelHelper.versionCompare(topicMessage.version, schema.version) === 1) {
-                newVersions.push({
-                    messageId: topicMessage.getId(),
-                    version: topicMessage.version
-                });
-            }
-        }
-        if (newVersions && newVersions.length !== 0) {
-            schema.newVersions = newVersions.reverse();
-        }
-    }
-    notifier.completed();
-    return result;
 }
 
 /**

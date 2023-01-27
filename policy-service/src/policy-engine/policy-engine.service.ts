@@ -2,7 +2,7 @@ import {
     PolicyEngineEvents,
     TopicType,
     PolicyType,
-    ExternalMessageEvents, PolicyEvents
+    ExternalMessageEvents
 } from '@guardian/interfaces';
 import {
     IAuthUser,

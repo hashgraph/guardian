@@ -7,7 +7,6 @@ import {
     Logger,
     ExternalEventChannel,
     DB_DI,
-    Migration,
     COMMON_CONNECTION_CONFIG,
 } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';

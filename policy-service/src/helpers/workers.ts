@@ -1,7 +1,6 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { GenerateUUIDv4, IActiveTask, ITask, IWorkerRequest, WorkerEvents } from '@guardian/interfaces';
+import { GenerateUUIDv4, IActiveTask, ITask, WorkerEvents } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/service-requests-base';
-import { MessageResponse } from '@guardian/common';
 import { Environment } from '@hedera-modules';
 
 /**
@@ -19,12 +18,6 @@ export class Workers extends ServiceRequestsBase {
      * Target
      */
     public target: string = 'guardians';
-
-    /**
-     * Queue
-     * @private
-     */
-    private readonly queue: ITask[] = [];
 
     /**
      * Max Repetitions

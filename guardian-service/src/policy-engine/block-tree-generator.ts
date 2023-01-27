@@ -195,21 +195,4 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
         }
         return model;
     }
-
-    /**
-     * Tag finder
-     * @param instance
-     * @param resultsContainer
-     * @private
-     */
-    private async tagFinder(instance: any, resultsContainer: PolicyValidationResultsContainer) {
-        if (instance.tag) {
-            resultsContainer.addTag(instance.tag);
-        }
-        if (Array.isArray(instance.children)) {
-            for (const child of instance.children) {
-                this.tagFinder(child, resultsContainer);
-            }
-        }
-    }
 }

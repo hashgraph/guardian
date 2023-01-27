@@ -16,7 +16,6 @@ import {
 import {
     DIDDocument, TopicConfig,
 } from '@hedera-modules'
-import { IPolicyBlock, IPolicyInterfaceBlock } from './policy-engine.interface';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
