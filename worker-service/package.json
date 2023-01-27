@@ -1,16 +1,16 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.8.0",
-    "@guardian/interfaces": "^2.8.0",
-    "@hashgraph/sdk": "^2.19.0",
-    "@transmute/credentials-context": "^0.7.0-unstable.60",
-    "@transmute/did-context": "^0.7.0-unstable.60",
-    "@transmute/ed25519-signature-2018": "^0.7.0-unstable.60",
-    "@transmute/json-web-signature": "^0.7.0-unstable.60",
-    "@transmute/jsonld-schema": "^0.7.0-unstable.60",
-    "@transmute/security-context": "^0.7.0-unstable.60",
-    "@transmute/vc.js": "^0.7.0-unstable.60",
+    "@guardian/common": "^2.8.1",
+    "@guardian/interfaces": "^2.8.1",
+    "@hashgraph/sdk": "^2.19.2",
+    "@transmute/credentials-context": "^0.7.0-unstable.80",
+    "@transmute/did-context": "^0.7.0-unstable.80",
+    "@transmute/ed25519-signature-2018": "^0.7.0-unstable.80",
+    "@transmute/json-web-signature": "^0.7.0-unstable.80",
+    "@transmute/jsonld-schema": "^0.7.0-unstable.80",
+    "@transmute/security-context": "^0.7.0-unstable.80",
+    "@transmute/vc.js": "^0.7.0-unstable.80",
     "axios": "^0.25.0",
     "axios-retry": "^3.2.4",
     "cross-blob": "^2.0.1",
@@ -47,5 +47,5 @@
     "start": "node dist/index.js",
     "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/worker-service.xml --exit"
   },
-  "version": "2.8.0"
+  "version": "2.8.1"
 }

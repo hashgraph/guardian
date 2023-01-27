@@ -127,6 +127,13 @@ export class VCJS {
     }
 
     /**
+     * Generate new UUIDv4
+     */
+    public generateUUID(): string {
+        return `urn:uuid:${GenerateUUIDv4()}`;
+    }
+
+    /**
      * Issue VC Document
      *
      * @param {HcsVcDocument<T>} vcDocument - VC Document
@@ -148,28 +155,6 @@ export class VCJS {
         });
         vcDocument.proofFromJson(verifiableCredential);
         return vcDocument;
-    }
-
-    /**
-     * Issue VC Document
-     *
-     * @param {HcsVcDocument<T>} vcDocument - VC Document
-     * @param {Ed25519Signature2018} suite - suite
-     * @param {DocumentLoaderFunction} documentLoader - Document Loader
-     *
-     * @returns {HcsVcDocument<T>} - VC Document
-     */
-    public async issueJSON(
-        vc: any,
-        suite: Ed25519Signature2018,
-        documentLoader: DocumentLoaderFunction
-    ): Promise<any> {
-        const verifiableCredential = await vcjs.createVerifiableCredential({
-            credential: vc,
-            suite,
-            documentLoader,
-        });
-        return verifiableCredential;
     }
 
     /**
@@ -325,7 +310,7 @@ export class VCJS {
         group?: any
     ): Promise<VcDocument> {
         const document = DidRootKey.createByPrivateKey(did, key);
-        const id = GenerateUUIDv4();
+        const id = this.generateUUID();
         const suite = await this.createSuite(document);
         const vcSubject = VcSubject.create(subject);
         for (const element of this.schemaContext) {
@@ -362,7 +347,7 @@ export class VCJS {
         vc: VcDocument
     ): Promise<VcDocument> {
         const document = DidRootKey.createByPrivateKey(did, key);
-        const id = GenerateUUIDv4();
+        const id = this.generateUUID();
         const suite = await this.createSuite(document);
         vc.setId(id);
         vc.setIssuanceDate(TimestampUtils.now());
@@ -387,7 +372,7 @@ export class VCJS {
         vcs: VcDocument[],
         uuid?: string,
     ): Promise<VpDocument> {
-        uuid = uuid || GenerateUUIDv4();
+        uuid = uuid || this.generateUUID();
         const document = DidRootKey.createByPrivateKey(did, key);
         const suite = await this.createSuite(document);
         let vp = new VpDocument();

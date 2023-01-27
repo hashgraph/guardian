@@ -54,7 +54,7 @@ export class VcSubject {
      * @param id
      */
     public setId(id: string): void {
-        this.id = id;
+        this.id = VcSubject.convertUUID(id);
     }
 
     /**
@@ -147,6 +147,17 @@ export class VcSubject {
     }
 
     /**
+     * Convert UUID
+     * @param uuid
+     */
+    private static convertUUID(uuid: string): string {
+        if (uuid && uuid.indexOf(':') === -1) {
+            return `urn:uuid:${uuid}`;
+        }
+        return uuid;
+    }
+
+    /**
      * From JSON
      * @param json
      */
@@ -180,7 +191,7 @@ export class VcSubject {
 
         const result = new VcSubject();
 
-        result.id = subject[VcSubject.CREDENTIAL_ID];
+        result.id = VcSubject.convertUUID(subject[VcSubject.CREDENTIAL_ID]);
         result.type = subject[VcSubject.CREDENTIAL_TYPE];
         const context = subject[VcSubject.CONTEXT];
         result.addContext(context);
@@ -202,12 +213,12 @@ export class VcSubject {
      */
     private _clear(map: any, f?: Function): any {
         if (map && typeof map === 'object') {
-            if(Array.isArray(map)) {
+            if (Array.isArray(map)) {
                 for (let i = 0; i < map.length; i++) {
                     map[i] = this._clear(map[i], f);
                 }
             } else {
-                if(f) {
+                if (f) {
                     map = f(map);
                 }
                 delete map[VcSubject.CREDENTIAL_ID];

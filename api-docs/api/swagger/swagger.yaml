@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: "Guardian"
   description: "The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation."
-  version: "2.8.0"
+  version: "2.8.1"
   contact:
     name: "API developer"
     url: "https://envisionblockchain.com"
@@ -4008,7 +4008,6 @@ paths:
             type: string
           required: true
           description: Tag from the selected policy.
-      requestBody:
       responses:
         200:
           description: Successful operation.
@@ -4240,7 +4239,11 @@ paths:
       summary: Generates a new Hedera account with a random private key.
       responses:
         200:
-          description:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -4576,6 +4579,7 @@ paths:
           name: policyId
           schema:
             type: string
+          required: true
           description: Policy identifier
       summary: Upload Artifact.
       responses:
@@ -4611,6 +4615,7 @@ paths:
           name: artifactId
           schema:
             type: string
+          required: true
           description: Artifact identifier
       responses:
         200:
@@ -4701,9 +4706,9 @@ paths:
         200:
           description: Successful operation.
           content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Contract"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contract"
         401:
           description: Unauthorized.
         403:
@@ -4861,9 +4866,9 @@ paths:
         200:
           description: Successful operation.
           content:
-          application/json:
-            schema:
-              type: boolean
+            application/json:
+              schema:
+                type: boolean
         401:
           description: Unauthorized.
         403:
@@ -4974,9 +4979,9 @@ paths:
         200:
           description: Successful operation.
           content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RetireRequest"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetireRequest"
         401:
           description: Unauthorized.
         403:
@@ -5097,9 +5102,9 @@ paths:
         200:
           description: Successful operation.
           content:
-          application/json:
-            schema:
-              type: boolean
+            application/json:
+              schema:
+                type: boolean
         401:
           description: Unauthorized.
         403:
