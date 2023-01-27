@@ -141,18 +141,46 @@ export class VCJS {
         documentLoader: DocumentLoaderFunction
     ): Promise<VcDocument> {
         const vc: any = vcDocument.getDocument();
-        // TODO: Remove try catch !!!!
-        try {
-            const verifiableCredential = await vcjs.createVerifiableCredential({
-                credential: vc,
-                suite,
-                documentLoader,
-            });
-            vcDocument.proofFromJson(verifiableCredential);
-        } catch (e) {
-            console.error(e);
-        }
+
+        this.fixIds(vc);
+
+        const verifiableCredential = await vcjs.createVerifiableCredential({
+            credential: vc,
+            suite,
+            documentLoader,
+        });
+        vcDocument.proofFromJson(verifiableCredential);
         return vcDocument;
+    }
+
+    /**
+     * Fix ids
+     * @param vc
+     */
+    fixIds(vc) {
+        if (vc.id && !vc.id.includes(':')) {
+            vc.id = 'urn:uuid:' + vc.id;
+        }
+
+        if(Array.isArray(vc.credentialSubject)) {
+            for (const s of vc.credentialSubject) {
+                if (s.id && !s.id.includes(':')) {
+                    s.id = 'urn:uuid:' + s.id;
+                }
+            }
+        } else if (typeof vc.credentialSubject === 'object') {
+            if (vc.credentialSubject.id && !vc.credentialSubject.id.includes(':')) {
+                vc.credentialSubject.id = 'urn:uuid:' + vc.credentialSubject.id;
+            }
+        }
+
+        if(Array.isArray(vc.verifiableCredential)) {
+            for (const s of vc.verifiableCredential) {
+                this.fixIds(s);
+            }
+        } else if (typeof vc.verifiableCredential === 'object') {
+            this.fixIds(vc.verifiableCredential);
+        }
     }
 
     /**
@@ -169,6 +197,8 @@ export class VCJS {
         suite: Ed25519Signature2018,
         documentLoader: DocumentLoaderFunction
     ): Promise<any> {
+        this.fixIds(vc);
+
         const verifiableCredential = await vcjs.createVerifiableCredential({
             credential: vc,
             suite,
@@ -220,6 +250,9 @@ export class VCJS {
         documentLoader: DocumentLoaderFunction
     ): Promise<VpDocument> {
         const vp = vpDocument.toJsonTree();
+
+        this.fixIds(vp);
+
         const verifiablePresentation = await vcjs.createVerifiablePresentation({
             presentation: vp,
             challenge: '123',
