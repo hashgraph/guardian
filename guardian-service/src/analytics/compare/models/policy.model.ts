@@ -295,11 +295,14 @@ export class PolicyModel {
         for (const block of this._list) {
             block.updateArtifacts(this._artifacts, this.options);
             block.updateSchemas(schemaMap, this.options);
-            block.updateTokens(tokenMap, this.options);
-            block.updateEvents(blockMap, this.options);
+            block.updateTokens(tokenMap, this.options);;
         }
 
         this.updateAllBlocks(this.tree, this.options);
+
+        for (const block of this._list) {
+            block.updateEvents(blockMap, this.options);
+        }
 
         return this;
     }

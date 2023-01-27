@@ -353,7 +353,7 @@
                     <div class="compare-btn" (click)="compareSchema(prop)">
                         <mat-icon>search</mat-icon>
                     </div>
-                    <span *ngIf="prop.items[index]">
+                    <span *ngIf="prop.items[index]" [title]="prop.items[index].value">
                         {{prop.items[index].value}}
                     </span>
                 </div>

@@ -119,15 +119,6 @@ export class AddPairDialogComponent {
 
     onCreate() {
         this.dialogRef.close(this.dataForm.value);
-        if (this.dataForm.valid) {
-        }
-    }
-
-    onSave() {
-        if (this.dataForm.valid) {
-            const data = this.dataForm.value;
-            this.dialogRef.close(data);
-        }
     }
 
     ngOnDestroy() {

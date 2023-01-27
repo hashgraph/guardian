@@ -26,9 +26,9 @@ For Demo purpose, we have uploaded two versions of Verra Policies into IPFS and 
 
 | Version | IPFS Timestamp | Policy File Link | Version Differences |
 |---|---|---|---:|
-| Verra 1.1.0  | 1661883705.247269744 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/Verra/Verra%20Redd/VM0007/Policies/Verra%20REDD.policy) | Verra Methodology |
-| Verra 2.2.2 | 1661882417.772439852 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/Verra/Verra%20Redd/VM0007/Policies/Verra%20REDD%20Policy%202.policy) | Verra 1.1.0 + revoke actions |
-| Verra REDD Policy 3 groups | 1665667787.019450003 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/Verra/Verra%20Redd/VM0007/Policies/Verra%20REDD%20Policy%203%20groups%20(1663846582.307635866).policy) | Demonstrates the usage of private groups, which accept members by invitation, and multi-signature approvals. The VVB role has been changed, in this new version it is an 'organisation' groupping multiple individual identities/users. When a project proponent selects a VVB it is no longer represented by a single identity/user, but by an organisation where multiple individuals can approve the project. |
+| Verra 1.1.0  | 1674823276.261149647 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/Verra/Verra%20Redd/VM0007/Policies/Verra%20REDD.policy) | Verra Methodology |
+| Verra 2.2.2 | 1674823441.956296415 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/Verra/Verra%20Redd/VM0007/Policies/Verra%20REDD%20Policy%202.policy) | Verra 1.1.0 + revoke actions |
+| Verra REDD Policy 3 groups | 1674823642.126585003 | [Link](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/Verra/Verra%20Redd/VM0007/Policies/Verra%20REDD%20Policy%203%20groups%20(1663846582.307635866).policy) | Demonstrates the usage of private groups, which accept members by invitation, and multi-signature approvals. The VVB role has been changed, in this new version it is an 'organisation' groupping multiple individual identities/users. When a project proponent selects a VVB it is no longer represented by a single identity/user, but by an organisation where multiple individuals can approve the project. |
 
 In addition to the above Policy Versions, we have also added Schema Design Template file for demo purpose. Please check : [Sample Design Template](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/Verra/Verra%20Redd/VM0007/REDD%20APD%20Schema%20Design%20Template.xlsx)
 
