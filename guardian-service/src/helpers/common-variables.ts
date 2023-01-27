@@ -1,12 +1,15 @@
 import { Singleton } from '@guardian/common';
 
+/**
+ * Common variables
+ */
 @Singleton
 export class CommonVariables {
 
     /**
      * Variables container
      */
-    private container = new Map<string, any>();
+    private readonly container = new Map<string, any>();
 
     /**
      * Set variable

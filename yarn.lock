@@ -221,11 +221,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@hashgraph/cryptography@npm:^1.4.1":
-  version: 1.4.1
-  resolution: "@hashgraph/cryptography@npm:1.4.1"
+"@hashgraph/cryptography@npm:^1.4.2":
+  version: 1.4.2
+  resolution: "@hashgraph/cryptography@npm:1.4.2"
   dependencies:
-    bignumber.js: ^9.0.2
+    bignumber.js: ^9.1.0
     crypto-js: ^4.1.1
     elliptic: ^6.5.4
     js-base64: ^3.7.2
@@ -242,7 +242,7 @@ __metadata:
       optional: true
     expo-random:
       optional: true
-  checksum: 54e159b094a3ae48721ab53ca6e22a8b79101e9efe99492af72f82603a462bfd1e5c77f38c4673744cec3ba69473254cb3447c4ec1553bd33ec01c3f4ed14c35
+  checksum: 3f275e4838a410c6843b84716150b4b501fbd915aca1707ef6d66667f00ae4bf2dd6882075f077098e0a0f32f44b742f8a8a1dd1ae08a9a098b6a1556747a8e1
   languageName: node
   linkType: hard
 
@@ -256,13 +256,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hashgraph/sdk@npm:^2.19.0":
-  version: 2.19.0
-  resolution: "@hashgraph/sdk@npm:2.19.0"
+"@hashgraph/sdk@npm:^2.19.2":
+  version: 2.19.2
+  resolution: "@hashgraph/sdk@npm:2.19.2"
   dependencies:
     "@ethersproject/rlp": ^5.7.0
     "@grpc/grpc-js": ^1.7.0
-    "@hashgraph/cryptography": ^1.4.1
+    "@hashgraph/cryptography": ^1.4.2
     "@hashgraph/proto": 2.11.0
     axios: ^0.27.2
     bignumber.js: ^9.1.0
@@ -277,7 +277,7 @@ __metadata:
   peerDependenciesMeta:
     expo:
       optional: true
-  checksum: a584925f827acab8b07bd5e6fb814181d120629867d8a7ae793cfad7cf4b18b6726bf0ae4371dfcec621dec2d8f5cd0e0c3cef8a3a0927357c200891679aaaf6
+  checksum: 9d5c5b756d606397a39f5986a546a7fafb6f5cde67a953af5954b4458dbb81da4230a29a2288535fea0867aba6a3f58095c58a81e893387494bad011f132ee7b
   languageName: node
   linkType: hard
 
@@ -1989,13 +1989,6 @@ __metadata:
   version: 1.6.51
   resolution: "big-integer@npm:1.6.51"
   checksum: 3d444173d1b2e20747e2c175568bedeebd8315b0637ea95d75fd27830d3b8e8ba36c6af40374f36bdaea7b5de376dcada1b07587cb2a79a928fccdb6e6e3c518
-  languageName: node
-  linkType: hard
-
-"bignumber.js@npm:^9.0.2":
-  version: 9.0.2
-  resolution: "bignumber.js@npm:9.0.2"
-  checksum: 8637b71d0a99104b20413c47578953970006fec6b4df796b9dcfd9835ea9c402ea0e727eba9a5ca9f9a393c1d88b6168c5bbe0887598b708d4f8b4870ad62e1f
   languageName: node
   linkType: hard
 
@@ -4155,7 +4148,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.8.0
     "@guardian/interfaces": ^2.8.0
-    "@hashgraph/sdk": ^2.19.0
+    "@hashgraph/sdk": ^2.19.2
     "@mikro-orm/core": ~5.3.0
     "@mikro-orm/mongodb": ~5.3.0
     "@transmute/credentials-context": 0.7.0-unstable.80
@@ -7302,7 +7295,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.8.0
     "@guardian/interfaces": ^2.8.0
-    "@hashgraph/sdk": ^2.19.0
+    "@hashgraph/sdk": ^2.19.2
     "@mikro-orm/core": ~5.3.0
     "@mikro-orm/mongodb": ~5.3.0
     "@transmute/credentials-context": 0.7.0-unstable.80
@@ -9387,7 +9380,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.8.0
     "@guardian/interfaces": ^2.8.0
-    "@hashgraph/sdk": ^2.19.0
+    "@hashgraph/sdk": ^2.19.2
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80

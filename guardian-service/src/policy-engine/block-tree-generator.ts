@@ -134,7 +134,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
         }
 
         this.channel.publish(PolicyEvents.VALIDATE_POLICY, {
-            policy,
+            policyConfig,
             resultsContainer
         });
 

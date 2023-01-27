@@ -166,7 +166,7 @@ export class BlockTreeGenerator {
         channel.response(`${PolicyEvents.BLOCK_BY_TAG}`, async (msg: any) => {
             const { tag } = msg;
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(policyId, tag);
-            return new MessageResponse(block.uuid);
+            return new MessageResponse({ id: block.uuid });
         });
 
         channel.response(`${PolicyEvents.GET_BLOCK_PARENTS}`, async (msg: any) => {

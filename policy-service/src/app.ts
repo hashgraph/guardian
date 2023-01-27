@@ -25,13 +25,6 @@ import { policyAPI } from '@api/policy.service';
 export const obj = {};
 
 Promise.all([
-    Migration({
-        ...COMMON_CONNECTION_CONFIG,
-        migrations: {
-            path: 'dist/migrations',
-            transactional: false
-        }
-    }),
     MikroORM.init<MongoDriver>({
         ...COMMON_CONNECTION_CONFIG,
         driverOptions: {
@@ -41,7 +34,7 @@ Promise.all([
     }),
     MessageBrokerChannel.connect('POLICY_SERVICE')
 ]).then(async values => {
-    const [_, db, cn] = values;
+    const [db, cn] = values;
     DB_DI.orm = db;
     const channel = new MessageBrokerChannel(cn, 'policy');
 
