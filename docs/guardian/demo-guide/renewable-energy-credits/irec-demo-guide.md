@@ -6,7 +6,7 @@ description: Demonstrating Multi User Role functionality
 
 This folder contains a sample file that is referenced in the Demo Guide
 
-1. New iREC Policy (`IRec Policy 5 group (1663850151.496004277).policy`[)](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
+1. New iREC Policy (**IRec Policy 5 group (1663850151.496004277).policy**[)](https://github.com/hashgraph/guardian/tree/main/Demo%20Artifacts)
 
 1.The Guardian reference implementation comes with two predefined users:
 
@@ -23,11 +23,11 @@ This folder contains a sample file that is referenced in the Demo Guide
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
 
 ```
-iREC 1 : 1661166202.802071003
-iREC 2 : 1662640724.951854568
-iREC 3 : 1662641840.731000003
-iREC 4 : 1662642008.325450377
-iREC 5 : 1663850151.496004277
+iREC 1 : 1674820447.688663003
+iREC 2 : 1674821041.273277003
+iREC 3 : 1674821342.619996003
+iREC 4 : 1674821702.668883536
+iREC 5 : 1674822145.926539705
 ```
 
 <figure><img src="../../../.gitbook/assets/iREC_5.1.png" alt=""><figcaption></figcaption></figure>
