@@ -106,8 +106,6 @@ services:
       - message-broker
       - auth-service
       - logger-service
-      - worker-service-1
-      - worker-service-2
 
   guardian-service:
     build:
