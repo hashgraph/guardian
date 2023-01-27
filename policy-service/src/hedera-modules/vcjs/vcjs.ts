@@ -141,12 +141,17 @@ export class VCJS {
         documentLoader: DocumentLoaderFunction
     ): Promise<VcDocument> {
         const vc: any = vcDocument.getDocument();
-        const verifiableCredential = await vcjs.createVerifiableCredential({
-            credential: vc,
-            suite,
-            documentLoader,
-        });
-        vcDocument.proofFromJson(verifiableCredential);
+        // TODO: Remove try catch !!!!
+        try {
+            const verifiableCredential = await vcjs.createVerifiableCredential({
+                credential: vc,
+                suite,
+                documentLoader,
+            });
+            vcDocument.proofFromJson(verifiableCredential);
+        } catch (e) {
+            console.error(e);
+        }
         return vcDocument;
     }
 
