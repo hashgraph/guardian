@@ -11,43 +11,20 @@
         "@database-modules": "dist/database-modules/index",
         "@analytics": "dist/analytics/index"
     },
-    "name": "polycy-service",
-    "version": "2.8.0",
-    "scripts": {
-        "build": "tsc",
-        "debug": "nodemon dist/index.js",
-        "dev:docker": "nodemon .",
-        "dev": "tsc -w",
-        "lint": "tslint --config ../tslint.json --project .",
-        "start": "node dist/index.js"
-    },
-    "devDependencies": {
-        "@types/deep-equal": "^1.0.1",
-        "@types/express": "^4.17.13",
-        "@types/fs-extra": "^9.0.12",
-        "@types/jszip": "^3.4.1",
-        "@types/node": "^18.11.9",
-        "chai": "4.3.4",
-        "mocha": "^9.2.0",
-        "mocha-junit-reporter": "^2.0.2",
-        "nodemon": "^2.0.12",
-        "rewire": "^6.0.0",
-        "tslint": "^6.1.3",
-        "typescript": "^4.5.5"
-    },
+    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
         "@guardian/common": "^2.8.0",
         "@guardian/interfaces": "^2.8.0",
         "@hashgraph/sdk": "^2.19.0",
         "@mikro-orm/core": "~5.3.0",
         "@mikro-orm/mongodb": "~5.3.0",
-        "@transmute/credentials-context": "0.7.0-unstable.60",
-        "@transmute/did-context": "0.7.0-unstable.60",
-        "@transmute/ed25519-signature-2018": "0.7.0-unstable.60",
-        "@transmute/json-web-signature": "0.7.0-unstable.60",
-        "@transmute/jsonld-schema": "0.7.0-unstable.60",
-        "@transmute/security-context": "0.7.0-unstable.60",
-        "@transmute/vc.js": "0.7.0-unstable.60",
+        "@transmute/credentials-context": "0.7.0-unstable.79",
+        "@transmute/did-context": "0.7.0-unstable.79",
+        "@transmute/ed25519-signature-2018": "0.7.0-unstable.79",
+        "@transmute/json-web-signature": "0.7.0-unstable.79",
+        "@transmute/jsonld-schema": "0.7.0-unstable.79",
+        "@transmute/security-context": "0.7.0-unstable.79",
+        "@transmute/vc.js": "0.7.0-unstable.79",
         "ajv": "^8.10.0",
         "ajv-formats": "^2.1.1",
         "axios": "^0.25.0",
@@ -65,5 +42,39 @@
         "module-alias": "^2.2.2",
         "moment": "^2.29.2",
         "reflect-metadata": "^0.1.13"
-    }
+    },
+    "description": "",
+    "devDependencies": {
+        "@types/deep-equal": "^1.0.1",
+        "@types/express": "^4.17.13",
+        "@types/fs-extra": "^9.0.12",
+        "@types/jszip": "^3.4.1",
+        "@types/node": "^18.11.9",
+        "chai": "4.3.4",
+        "mocha": "^9.2.0",
+        "mocha-junit-reporter": "^2.0.2",
+        "nodemon": "^2.0.12",
+        "rewire": "^6.0.0",
+        "tslint": "^6.1.3",
+        "typescript": "^4.5.5"
+    },
+    "license": "Apache-2.0",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "name": "policy-service",
+    "scripts": {
+        "build": "tsc",
+        "debug": "nodemon dist/index.js",
+        "dev:docker": "nodemon .",
+        "dev": "tsc -w",
+        "lint": "tslint --config ../tslint.json --project .",
+        "start": "node dist/index.js",
+        "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/guardian-service.xml",
+        "test:local": "mocha tests/**/*.test.js",
+        "test:stability": "mocha tests/stability.test.js"
+    },
+    "version": "2.8.0"
 }
