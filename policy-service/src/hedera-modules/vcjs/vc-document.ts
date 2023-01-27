@@ -114,7 +114,7 @@ export class VcDocument {
      * @param id
      */
     public setId(id: string): void {
-        this.id = id;
+        this.id = VcDocument.convertUUID(id);
     }
 
     /**
@@ -327,6 +327,17 @@ export class VcDocument {
     }
 
     /**
+     * Convert UUID
+     * @param uuid
+     */
+    private static convertUUID(uuid: string): string {
+        if (uuid && uuid.indexOf(':') === -1) {
+            return `urn:uuid:${uuid}`;
+        }
+        return uuid;
+    }
+
+    /**
      * From JSON tree
      * @param json
      */
@@ -338,7 +349,7 @@ export class VcDocument {
         const result = new VcDocument();
 
         if (json[VcDocument.ID]) {
-            result.id = json[VcDocument.ID];
+            result.id = VcDocument.convertUUID(json[VcDocument.ID]);
         }
         if (json[VcDocument.TYPE]) {
             result.type = json[VcDocument.TYPE];
