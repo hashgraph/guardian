@@ -10,10 +10,9 @@ import {
     PolicyValidationResultsContainer
 } from '@policy-engine/policy-validation-results-container';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
-import { Logger, MessageBrokerChannel, MessageResponse } from '@guardian/common';
+import { Logger, MessageResponse } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import { PolicyEngine } from '@policy-engine/policy-engine';
-import { CommonVariables } from '@helpers/common-variables';
 import { ServiceRequestsBase } from '@helpers/service-requests-base';
 
 /**
@@ -92,7 +91,6 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             const policyEngine = new PolicyEngine();
             const userFull = await policyEngine.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
-
 
             if (block && (await block.isAvailable(userFull))) {
                 const data = await block.getData(userFull, blockId, null);

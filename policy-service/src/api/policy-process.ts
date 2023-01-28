@@ -22,7 +22,7 @@ const {
     resultsContainer
 } = JSON.parse(process.env.POLICY_START_OPTIONS);
 
-process.env.SERVICE_CHANNEL = policyServiceName
+process.env.SERVICE_CHANNEL = policyServiceName;
 
 Promise.all([
     MikroORM.init<MongoDriver>({
@@ -34,6 +34,7 @@ Promise.all([
     }),
     MessageBrokerChannel.connect(policyServiceName)
 ]).then(async values => {
+
     const [db, cn] = values;
     DB_DI.orm = db;
 
@@ -55,7 +56,7 @@ Promise.all([
     workersHelper.setChannel(channel);
     workersHelper.initListeners();
 
-    new Logger().info(`Process for with id ${policyId} was started started PID: ${process.pid}`, ['POLICY', policyId]);
+    new Logger().info(`Process for with id ${policyId} was started started PID: ${process.pid}, SERVICE_CHANNEL: ${process.env.SERVICE_CHANNEL}`, ['POLICY', policyId]);
 
     const generator = new BlockTreeGenerator();
     await generator.generate(policy, skipRegistration, resultsContainer);

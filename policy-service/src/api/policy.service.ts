@@ -1,6 +1,5 @@
 import { Logger, MessageBrokerChannel } from '@guardian/common';
 import { PolicyEvents } from '@guardian/interfaces';
-import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import path from 'path';
 import { fork, ChildProcess } from 'node:child_process';
 import * as process from 'process';
@@ -62,12 +61,10 @@ function runPolicyProcess(policy: unknown, policyId: string, policyServiceName: 
     });
     childProcess.on('error', (error) => {
         logger.error(error.message, ['POLICY-SERVICE', policyId]);
-        // models.delete(policyId);
         // Restart policy
     });
     childProcess.on('exit', (code) => {
         logger.info(`Policy process exit with code ${code}`, ['POLICY-SERVICE', policyId]);
-        // models.delete(policyId)
     });
     models.set(policyServiceName, childProcess);
 }

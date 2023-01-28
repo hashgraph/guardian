@@ -135,7 +135,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             };
         }
 
-        const policyId = policy.id.toString();
+        // const policyId = policy.id.toString();
         // const policyServiceName = PolicyServiceChannelsContainer.createPolicyServiceChannel(policyId);
         // PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
         this.channel.publish(PolicyEvents.VALIDATE_POLICY, {

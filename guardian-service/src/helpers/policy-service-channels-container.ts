@@ -48,7 +48,7 @@ export class PolicyServiceChannelsContainer {
      * Channels map
      * @private
      */
-    private channelsMap: Map<string, IContainerEntity>;
+    private readonly channelsMap: Map<string, IContainerEntity>;
 
     /**
      * Connection

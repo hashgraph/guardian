@@ -27,7 +27,6 @@ import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from './policy-engine';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { findAllEntities } from '@helpers/utils';
-import { CommonVariables } from '@helpers/common-variables';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 
 /**

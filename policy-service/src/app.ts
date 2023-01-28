@@ -1,24 +1,9 @@
-import { IPFS } from '@helpers/ipfs';
-import { Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
 import {
     MessageBrokerChannel,
     ApplicationState,
-    Logger,
-    ExternalEventChannel,
-    DB_DI,
-    COMMON_CONNECTION_CONFIG,
+    Logger
 } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
-import {
-    Environment,
-    MessageServer,
-    TransactionLogger,
-    TransactionLogLvl
-} from '@hedera-modules';
-import { MikroORM } from '@mikro-orm/core';
-import { MongoDriver } from '@mikro-orm/mongodb';
-import { Workers } from '@helpers/workers';
 import { policyAPI } from '@api/policy.service';
 
 export const obj = {};
