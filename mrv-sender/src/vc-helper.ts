@@ -41,7 +41,7 @@ export class VCHelper {
         const id = this.randomUUID();
         const suite = await this.createSuite(didDocument);
         const vc = {
-            "id": id,
+            "id": 'urn:uuid:' + id,
             "type": ["VerifiableCredential"],
             "issuer": did,
             "issuanceDate": (new Date()).toISOString(),

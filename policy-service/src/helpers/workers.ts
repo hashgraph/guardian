@@ -101,8 +101,7 @@ export class Workers extends ServiceRequestsBase {
     public initListeners() {
         this.channel.subscribe(WorkerEvents.TASK_COMPLETE_BROADCAST, async (msg: any) => {
             const activeTask = this.tasksCallbacks.get(msg.id);
-            console.log('msg', msg);
-            activeTask.callback(msg.data, msg.error);
+            activeTask?.callback(msg.data, msg.error);
             // return new MessageResponse(null);
         });
     }

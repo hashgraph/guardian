@@ -40,7 +40,6 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
                 status: { $in: [PolicyType.PUBLISH, PolicyType.DRY_RUN] }
             }
         });
-        console.log(policies.length);
         for (const policy of policies) {
             try {
                 await this.generate(policy.id.toString());

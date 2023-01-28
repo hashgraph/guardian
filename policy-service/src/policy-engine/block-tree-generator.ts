@@ -46,7 +46,6 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
 
             if (policyInstance && (await policyInstance.isAvailable(userFull))) {
                 const data = await policyInstance.getData(userFull, policyInstance.uuid);
-                console.log('GET_ROOT_BLOCK_DATA');
                 return new MessageResponse(data);
             } else {
                 return new MessageResponse(null);
@@ -65,7 +64,6 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             }
 
             const groups = await PolicyComponentsUtils.GetGroups(policyInstance, userFull);
-            console.log('GET_POLICY_GROUPS');
             return new MessageResponse(groups);
         });
 
@@ -163,6 +161,18 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             }
             return new MessageResponse(parents);
         });
+
+        this.channel.response(PolicyEvents.MRV_DATA, async (msg: any) => {
+            const { data } = msg;
+
+            for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
+                if (block.policyId === policyId) {
+                    await (block as any).receiveData(data);
+                }
+            }
+
+            return new MessageResponse({});
+        })
     }
 
     /**

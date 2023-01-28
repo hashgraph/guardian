@@ -69,7 +69,7 @@ export class PolicyComponentsUtils {
      * Block UUID -> Block component
      * @private
      */
-    private static readonly ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
+    public static readonly ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
     /**
      * Block map
      * Block UUID -> Block component

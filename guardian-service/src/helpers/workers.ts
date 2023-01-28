@@ -122,7 +122,6 @@ export class Workers extends ServiceRequestsBase {
         this.channel.response(WorkerEvents.TASK_COMPLETE, async (msg: any) => {
             const activeTask = this.tasksCallbacks.get(msg.id);
 
-            console.log('activeTask', activeTask);
             if (!activeTask) {
                 this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, msg);
             }

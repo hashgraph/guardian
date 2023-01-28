@@ -196,8 +196,6 @@ export class PolicyEngineService {
         this.channel.subscribe(PolicyEvents.BLOCK_UPDATE_BROADCAST, (msg: any) => {
             const {type, args} = msg;
 
-            console.log(type, msg);
-
             switch (type) {
                 case 'update':
                     PolicyComponentsUtils.BlockUpdateFn(args[0], args[1], args[2], args[3]);
@@ -221,7 +219,18 @@ export class PolicyEngineService {
         })
 
         this.channel.response<any, any>('mrv-data', async (msg) => {
-            await PolicyComponentsUtils.ReceiveExternalData(msg);
+            // await PolicyComponentsUtils.ReceiveExternalData(msg);
+
+            const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
+            if (policy) {
+                const policyId = policy.id.toString();
+                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                await channel.request([name, PolicyEvents.MRV_DATA].join('.'), {
+                    policyId,
+                    data: msg
+                });
+            }
+
             return new MessageResponse({})
         });
 
@@ -873,7 +882,15 @@ export class PolicyEngineService {
 
         this.channel.response<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, async (msg) => {
             try {
-                await PolicyComponentsUtils.ReceiveExternalData(msg);
+                const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
+                if (policy) {
+                    const policyId = policy.id.toString();
+                    const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                    await channel.request([name, PolicyEvents.MRV_DATA].join('.'), {
+                        policyId,
+                        data: msg
+                    });
+                }
                 return new MessageResponse(true);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
