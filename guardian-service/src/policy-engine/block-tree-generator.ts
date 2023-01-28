@@ -13,6 +13,7 @@ import { GenerateUUIDv4, PolicyEvents, PolicyType } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import { ServiceRequestsBase } from '@helpers/service-requests-base';
+import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 
 /**
  * Block tree generator
@@ -22,7 +23,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
     /**
      * Target
      */
-    public target: string = 'policy-*';
+    public target: string = 'policy-service';
 
     /**
      * Policy models map
@@ -79,11 +80,12 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             throw new Error('Policy was not exist');
         }
 
-        new Logger().info('Start policy', ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
+        const policyServiceName = PolicyServiceChannelsContainer.createPolicyServiceChannel(policyId).name;
 
         this.channel.publish(PolicyEvents.GENERATE_POLICY, {
             policy,
             policyId,
+            policyServiceName,
             skipRegistration,
             resultsContainer
         });
@@ -133,9 +135,13 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             };
         }
 
+        const policyId = policy.id.toString();
+        // const policyServiceName = PolicyServiceChannelsContainer.createPolicyServiceChannel(policyId);
+        // PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
         this.channel.publish(PolicyEvents.VALIDATE_POLICY, {
             policyConfig,
-            resultsContainer
+            resultsContainer,
+            policyServiceName: '123'
         });
 
         // const policyInstance = await this.generate(arg, true, resultsContainer);
@@ -160,11 +166,15 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
         } else {
             policy = arg;
         }
+        const policyId = policy.id.toString();
+        const policyServiceName = PolicyServiceChannelsContainer.createPolicyServiceChannel(policyId).name;
+        PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
         this.channel.publish(PolicyEvents.DELETE_POLICY, {
-            policy
+            policyId,
+            policyServiceName
+
         });
         // if (policy) {
-        //     const policyId = policy.id.toString()
         //     this.models.delete(policyId);
         //     await PolicyComponentsUtils.UnregisterBlocks(policyId);
         //     await PolicyComponentsUtils.UnregisterPolicy(policyId);

@@ -14,12 +14,19 @@ import { Logger, MessageBrokerChannel, MessageResponse } from '@guardian/common'
 import { DatabaseServer } from '@database-modules';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 import { CommonVariables } from '@helpers/common-variables';
+import { ServiceRequestsBase } from '@helpers/service-requests-base';
 
 /**
  * Block tree generator
  */
 @Singleton
-export class BlockTreeGenerator {
+export class BlockTreeGenerator extends ServiceRequestsBase {
+
+    /**
+     * Target
+     */
+    public target = 'guardians';
+
     /**
      * Policy models map
      * @private
@@ -30,53 +37,40 @@ export class BlockTreeGenerator {
      * Init policy events
      */
     async initPolicyEvents(policyId: string, policyInstance: any): Promise<void> {
-        const cn = await MessageBrokerChannel.connect(`policy-${policyId}`);
-        const channel = new MessageBrokerChannel(cn, `policy-${policyId}`);
-
-        const commonVars = new CommonVariables();
-        commonVars.setVariable('cn', cn);
-        commonVars.setVariable('channel', channel);
-
-        channel.response(`${PolicyEvents.GET_ROOT_BLOCK_DATA}`, async (msg: any) => {
+        this.channel.response(PolicyEvents.GET_ROOT_BLOCK_DATA, async (msg: any) => {
 
             const { user } = msg;
 
             const policyEngine = new PolicyEngine();
 
-            console.log(user);
             const userFull = await policyEngine.getUser(policyInstance, user);
-
-            console.log(userFull);
-
-            console.log('message', msg, userFull);
 
             if (policyInstance && (await policyInstance.isAvailable(userFull))) {
                 const data = await policyInstance.getData(userFull, policyInstance.uuid);
-                console.log(data);
+                console.log('GET_ROOT_BLOCK_DATA');
                 return new MessageResponse(data);
             } else {
                 return new MessageResponse(null);
             }
         });
 
-        channel.response(`${PolicyEvents.GET_POLICY_GROUPS}`, async (msg: any) => {
+        this.channel.response(PolicyEvents.GET_POLICY_GROUPS, async (msg: any) => {
 
             const { user } = msg;
 
             const policyEngine = new PolicyEngine();
             const userFull = await policyEngine.getUser(policyInstance, user);
 
-            console.log('message', msg, userFull);
-
             if (!policyInstance.isMultipleGroup) {
                 return new MessageResponse([]);
             }
 
             const groups = await PolicyComponentsUtils.GetGroups(policyInstance, userFull);
+            console.log('GET_POLICY_GROUPS');
             return new MessageResponse(groups);
         });
 
-        channel.response(`${PolicyEvents.SELECT_POLICY_GROUP}`, async (msg: any) => {
+        this.channel.response(PolicyEvents.SELECT_POLICY_GROUP, async (msg: any) => {
 
             const { user, uuid } = msg;
 
@@ -91,7 +85,7 @@ export class BlockTreeGenerator {
             return new MessageResponse(true as any);
         });
 
-        channel.response(`${PolicyEvents.GET_BLOCK_DATA}`, async (msg: any) => {
+        this.channel.response(PolicyEvents.GET_BLOCK_DATA, async (msg: any) => {
 
             const { user, blockId } = msg;
 
@@ -99,7 +93,6 @@ export class BlockTreeGenerator {
             const userFull = await policyEngine.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
-            console.log('message', block);
 
             if (block && (await block.isAvailable(userFull))) {
                 const data = await block.getData(userFull, blockId, null);
@@ -109,14 +102,12 @@ export class BlockTreeGenerator {
             }
         });
 
-        channel.response(`${PolicyEvents.GET_BLOCK_DATA_BY_TAG}`, async (msg: any) => {
+        this.channel.response(PolicyEvents.GET_BLOCK_DATA_BY_TAG, async (msg: any) => {
             const { user, tag } = msg;
 
             const policyEngine = new PolicyEngine();
             const userFull = await policyEngine.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
-
-            console.log('message', block);
 
             if (block && (await block.isAvailable(userFull))) {
                 const data = await block.getData(userFull, block.uuid, null);
@@ -126,17 +117,13 @@ export class BlockTreeGenerator {
             }
         });
 
-        channel.response(`${PolicyEvents.SET_BLOCK_DATA}`, async (msg: any) => {
+        this.channel.response(PolicyEvents.SET_BLOCK_DATA, async (msg: any) => {
 
             const { user, blockId, data } = msg;
-
-            console.log(user, blockId, data);
 
             const policyEngine = new PolicyEngine();
             const userFull = await policyEngine.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
-
-            console.log('message', block);
 
             if (block && (await block.isAvailable(userFull))) {
                 const result = await block.setData(userFull, data);
@@ -146,15 +133,13 @@ export class BlockTreeGenerator {
             }
         });
 
-        channel.response(`${PolicyEvents.SET_BLOCK_DATA_BY_TAG}`, async (msg: any) => {
+        this.channel.response(PolicyEvents.SET_BLOCK_DATA_BY_TAG, async (msg: any) => {
             const { user, tag, data } = msg;
 
             const policyEngine = new PolicyEngine();
             const userFull = await policyEngine.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
 
-            console.log('message', block);
-
             if (block && (await block.isAvailable(userFull))) {
                 const result = await block.setData(userFull, data);
                 return new MessageResponse(result);
@@ -163,13 +148,13 @@ export class BlockTreeGenerator {
             }
         });
 
-        channel.response(`${PolicyEvents.BLOCK_BY_TAG}`, async (msg: any) => {
+        this.channel.response(PolicyEvents.BLOCK_BY_TAG, async (msg: any) => {
             const { tag } = msg;
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(policyId, tag);
             return new MessageResponse({ id: block.uuid });
         });
 
-        channel.response(`${PolicyEvents.GET_BLOCK_PARENTS}`, async (msg: any) => {
+        this.channel.response(PolicyEvents.GET_BLOCK_PARENTS, async (msg: any) => {
             const { blockId } = msg;
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
             let tmpBlock: IPolicyBlock = block;
@@ -212,7 +197,7 @@ export class BlockTreeGenerator {
             throw new Error('Policy was not exist');
         }
 
-        new Logger().info('Start policy', ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
+        new Logger().info('Start policy', ['POLICY', policy.name, policyId.toString()]);
 
         try {
             const instancesArray: IPolicyBlock[] = [];

@@ -50,7 +50,7 @@ import { Contract } from '@entity/contract';
 import { contractAPI } from '@api/contract.service';
 import { RetireRequest } from '@entity/retire-request';
 import { analyticsAPI } from '@api/analytics.service';
-import { CommonVariables } from '@helpers/common-variables';
+import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 
 export const obj = {};
 
@@ -73,9 +73,10 @@ Promise.all([
 ]).then(async values => {
     const [_, db, cn] = values;
     DB_DI.orm = db;
-    new CommonVariables().setVariable('cn', cn);
+    new PolicyServiceChannelsContainer().setConnection(cn);
     const channel = new MessageBrokerChannel(cn, 'guardians');
     const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
+    const policyServiceChannel = new MessageBrokerChannel(cn, 'policy-service');
 
     new Logger().setChannel(channel);
     const state = new ApplicationState('GUARDIAN_SERVICE');
@@ -148,7 +149,7 @@ Promise.all([
 
     try {
         const policyGenerator = new BlockTreeGenerator();
-        policyGenerator.setChannel(channel);
+        policyGenerator.setChannel(policyServiceChannel);
         const policyService = new PolicyEngineService(channel, apiGatewayChannel);
         policyService.registerListeners();
         await policyGenerator.init();

@@ -28,6 +28,7 @@ import { PolicyEngine } from './policy-engine';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { findAllEntities } from '@helpers/utils';
 import { CommonVariables } from '@helpers/common-variables';
+import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 
 /**
  * Policy engine service
@@ -519,24 +520,13 @@ export class PolicyEngineService {
             try {
                 const { user, policyId } = msg;
 
-                const cn = new CommonVariables().getVariable('cn');
-                const policyChannel = new MessageBrokerChannel(cn, `policy_service-${Date.now()}`);
-                const blockData = await policyChannel.request([`policy-${policyId}`, PolicyEvents.GET_ROOT_BLOCK_DATA].join('.'), {
+                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                const blockData = await channel.request([name, PolicyEvents.GET_ROOT_BLOCK_DATA].join('.'), {
                     user,
                     policyId
                 });
 
                 return new MessageResponse(blockData.body);
-
-                // const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
-                // const block = this.policyEngine.getRoot(policyId);
-                //
-                // if (block && (await block.isAvailable(userFull))) {
-                //     const data = await block.getData(userFull, block.uuid);
-                //     return new MessageResponse(data);
-                // } else {
-                //     return new MessageResponse(null);
-                // }
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -547,26 +537,14 @@ export class PolicyEngineService {
             try {
                 const { user, blockId, policyId } = msg;
 
-                const cn = new CommonVariables().getVariable('cn');
-                const policyChannel = new MessageBrokerChannel(cn, `policy_service-${Date.now()}`);
-                const blockData = await policyChannel.request([`policy-${policyId}`, PolicyEvents.GET_BLOCK_DATA].join('.'), {
+                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_DATA].join('.'), {
                     user,
                     blockId,
                     policyId
                 })
 
                 return new MessageResponse(blockData.body);
-
-                // const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
-                // const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
-                // const userFull = await this.policyEngine.getUser(policyInstance, user);
-                //
-                // if (block && (await block.isAvailable(userFull))) {
-                //     const data = await block.getData(userFull, blockId, null);
-                //     return new MessageResponse(data);
-                // } else {
-                //     return new MessageResponse(null);
-                // }
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -577,26 +555,14 @@ export class PolicyEngineService {
             try {
                 const { user, tag, policyId } = msg;
 
-                const cn = new CommonVariables().getVariable('cn');
-                const policyChannel = new MessageBrokerChannel(cn, `policy_service-${Date.now()}`);
-                const blockData = await policyChannel.request([`policy-${policyId}`, PolicyEvents.GET_BLOCK_DATA_BY_TAG].join('.'), {
+                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_DATA_BY_TAG].join('.'), {
                     user,
                     tag,
                     policyId
                 })
 
                 return new MessageResponse(blockData.body);
-
-                // const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
-                // const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
-                // const userFull = await this.policyEngine.getUser(policyInstance, user);
-                //
-                // if (block && (await block.isAvailable(userFull))) {
-                //     const data = await block.getData(userFull, block.uuid, null);
-                //     return new MessageResponse(data);
-                // } else {
-                //     return new MessageResponse(null);
-                // }
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -607,36 +573,15 @@ export class PolicyEngineService {
             try {
                 const { user, blockId, policyId, data } = msg;
 
-                const cn = new CommonVariables().getVariable('cn');
-                const policyChannel = new MessageBrokerChannel(cn, `policy_service-${Date.now()}`);
-                console.log('blockData', {
+                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                const blockData = await channel.request([name, PolicyEvents.SET_BLOCK_DATA].join('.'), {
                     user,
                     blockId,
                     policyId,
                     data
                 });
-
-                const blockData = await policyChannel.request([`policy-${policyId}`, PolicyEvents.SET_BLOCK_DATA].join('.'), {
-                    user,
-                    blockId,
-                    policyId,
-                    data
-                });
-
-                console.log('blockData', blockData);
 
                 return new MessageResponse(blockData.body);
-
-                // const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
-                // const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
-                // const userFull = await this.policyEngine.getUser(policyInstance, user);
-                //
-                // if (block && (await block.isAvailable(userFull))) {
-                //     const result = await block.setData(userFull, data);
-                //     return new MessageResponse(result);
-                // } else {
-                //     return new MessageError(new Error('Permission denied'));
-                // }
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -647,9 +592,8 @@ export class PolicyEngineService {
             try {
                 const { user, tag, policyId, data } = msg;
 
-                const cn = new CommonVariables().getVariable('cn');
-                const policyChannel = new MessageBrokerChannel(cn, `policy_service-${Date.now()}`);
-                const blockData = await policyChannel.request([`policy-${policyId}`, PolicyEvents.SET_BLOCK_DATA_BY_TAG].join('.'), {
+                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                const blockData = await channel.request([name, PolicyEvents.SET_BLOCK_DATA_BY_TAG].join('.'), {
                     user,
                     tag,
                     policyId,
@@ -657,17 +601,6 @@ export class PolicyEngineService {
                 })
 
                 return new MessageResponse(blockData.body);
-
-                // const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
-                // const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
-                // const userFull = await this.policyEngine.getUser(policyInstance, user);
-                //
-                // if (block && (await block.isAvailable(userFull))) {
-                //     const result = await block.setData(userFull, data);
-                //     return new MessageResponse(result);
-                // } else {
-                //     return new MessageError(new Error('Permission denied'));
-                // }
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -678,17 +611,13 @@ export class PolicyEngineService {
             try {
                 const { tag, policyId } = msg;
 
-                const cn = new CommonVariables().getVariable('cn');
-                const policyChannel = new MessageBrokerChannel(cn, `policy_service-${Date.now()}`);
-                const blockData = await policyChannel.request([`policy-${policyId}`, PolicyEvents.BLOCK_BY_TAG].join('.'), {
+                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                const blockData = await channel.request([name, PolicyEvents.BLOCK_BY_TAG].join('.'), {
                     tag,
                     policyId,
                 })
 
                 return new MessageResponse(blockData.body);
-
-                // const block = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(policyId, tag);
-                // return new MessageResponse({ id: block.uuid });
             } catch (error) {
                 return new MessageError('The policy does not exist, or is not published, or tag was not registered in policy', 404);
             }
@@ -698,22 +627,12 @@ export class PolicyEngineService {
             try {
                 const { blockId, policyId } = msg;
 
-                const cn = new CommonVariables().getVariable('cn');
-                const policyChannel = new MessageBrokerChannel(cn, `policy_service-${Date.now()}`);
-                const blockData = await policyChannel.request([`policy-${policyId}`, PolicyEvents.GET_BLOCK_PARENTS].join('.'), {
+                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_PARENTS].join('.'), {
                     blockId
                 })
 
                 return new MessageResponse(blockData.body);
-
-                // const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
-                // let tmpBlock: IPolicyBlock = block;
-                // const parents = [block.uuid];
-                // while (tmpBlock.parent) {
-                //     parents.push(tmpBlock.parent.uuid);
-                //     tmpBlock = tmpBlock.parent;
-                // }
-                // return new MessageResponse(parents);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -724,24 +643,13 @@ export class PolicyEngineService {
             try {
                 const { user, policyId } = msg;
 
-                const cn = new CommonVariables().getVariable('cn');
-                const policyChannel = new MessageBrokerChannel(cn, `policy_service-${Date.now()}`);
-                const blockData = await policyChannel.request([`policy-${policyId}`, PolicyEvents.GET_POLICY_GROUPS].join('.'), {
+                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                const blockData = await channel.request([name, PolicyEvents.GET_POLICY_GROUPS].join('.'), {
                     user,
                     policyId
                 })
 
                 return new MessageResponse(blockData.body);
-
-                // const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
-                // if (!policyInstance.isMultipleGroup) {
-                //     return new MessageResponse([]);
-                // }
-                //
-                // const userFull = await this.policyEngine.getUser(policyInstance, user);
-                // const groups = await PolicyComponentsUtils.GetGroups(policyInstance, userFull);
-                //
-                // return new MessageResponse(groups);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -752,25 +660,14 @@ export class PolicyEngineService {
             try {
                 const { user, policyId, uuid } = msg;
 
-                const cn = new CommonVariables().getVariable('cn');
-                const policyChannel = new MessageBrokerChannel(cn, `policy_service-${Date.now()}`);
-                const blockData = await policyChannel.request([`policy-${policyId}`, PolicyEvents.SELECT_POLICY_GROUP].join('.'), {
+                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                const blockData = await channel.request([name, PolicyEvents.SELECT_POLICY_GROUP].join('.'), {
                     user,
                     policyId,
                     uuid
                 })
 
                 return new MessageResponse(blockData.body);
-
-                // const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
-                // if (!policyInstance.isMultipleGroup) {
-                //     throw new Error(`Policy does not contain groups`);
-                // }
-                //
-                // const userFull = await this.policyEngine.getUser(policyInstance, user);
-                // await PolicyComponentsUtils.SelectGroup(policyInstance, userFull, uuid);
-                //
-                // return new MessageResponse(true);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

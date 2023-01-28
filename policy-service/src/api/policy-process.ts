@@ -1,9 +1,8 @@
-import { workerData } from 'node:worker_threads';
 import '../config'
 import { Environment, MessageServer } from '@hedera-modules';
 import {
     COMMON_CONNECTION_CONFIG,
-    DB_DI, Logger, MessageBrokerChannel
+    DB_DI, ExternalEventChannel, Logger, MessageBrokerChannel
 } from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -11,23 +10,30 @@ import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { Workers } from '@helpers/workers';
+import process from 'process';
+import { IPFS } from '@helpers/ipfs';
+import { CommonVariables } from '@helpers/common-variables';
 
-/**
- * Init worker
- */
-async function init(args) {
+const {
+    policy,
+    policyId,
+    policyServiceName,
+    skipRegistration,
+    resultsContainer
+} = JSON.parse(process.env.POLICY_START_OPTIONS);
 
-    const values = await Promise.all([
-        MikroORM.init<MongoDriver>({
-            ...COMMON_CONNECTION_CONFIG,
-            driverOptions: {
-                useUnifiedTopology: true
-            },
-            ensureIndexes: true,
-        }),
-        MessageBrokerChannel.connect('POLICY_SERVICE')
-    ])
+process.env.SERVICE_CHANNEL = policyServiceName
 
+Promise.all([
+    MikroORM.init<MongoDriver>({
+        ...COMMON_CONNECTION_CONFIG,
+        driverOptions: {
+            useUnifiedTopology: true
+        },
+        ensureIndexes: true,
+    }),
+    MessageBrokerChannel.connect(policyServiceName)
+]).then(async values => {
     const [db, cn] = values;
     DB_DI.orm = db;
 
@@ -36,26 +42,21 @@ async function init(args) {
     Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
 
-    const channel = new MessageBrokerChannel(cn, 'policy-instance' + Date.now());
+    const channel = new MessageBrokerChannel(cn, policyServiceName);
+    new CommonVariables().setVariable('channel', channel);
 
     new Logger().setChannel(channel);
+    new BlockTreeGenerator().setChannel(channel);
+    IPFS.setChannel(channel);
+    new ExternalEventChannel().setChannel(channel);
     new Wallet().setChannel(channel);
     new Users().setChannel(channel);
     const workersHelper = new Workers();
     workersHelper.setChannel(channel);
     workersHelper.initListeners();
 
-    const {
-        policy,
-        // policyId,
-        skipRegistration,
-        resultsContainer
-    } = args;
+    new Logger().info(`Process for with id ${policyId} was started started PID: ${process.pid}`, ['POLICY', policyId]);
 
     const generator = new BlockTreeGenerator();
     await generator.generate(policy, skipRegistration, resultsContainer);
-}
-
-init(workerData).then(() => {
-    console.info('Policy instance started');
 });
