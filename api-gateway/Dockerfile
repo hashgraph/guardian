@@ -1,29 +1,40 @@
-FROM node:16
-ENV PLATFORM="docker"
-#ENV NODE_ENV="production"
-
-WORKDIR /usr/interfaces
+FROM node:16 AS interfacesModuleBuilder
+WORKDIR /usr/local/interfaces
 COPY ./interfaces/package*.json ./
 COPY ./interfaces/tsconfig.json ./
 ADD ./interfaces/src ./src/.
 RUN npm install
 RUN npm pack
 
-WORKDIR /usr/common
+FROM node:16 AS commonModuleBuilder
+WORKDIR /usr/local/common
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
 COPY ./common/package*.json ./
 COPY ./common/tsconfig.json ./
+RUN npm install guardian-interfaces-*.tgz
 ADD ./common/src ./src/.
-RUN npm install /usr/interfaces/guardian-interfaces-*.tgz
-RUN npm install
 RUN npm pack
 
-WORKDIR /usr/api-gateway
+FROM node:16 AS apiGatewayBuilder
+WORKDIR /usr/local/api-gateway
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
+COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz ./
 COPY ./api-gateway/package*.json ./
 COPY ./api-gateway/tsconfig.json ./
 COPY ./api-gateway/.env.docker ./.env
-RUN npm install /usr/interfaces/guardian-interfaces-*.tgz /usr/common/guardian-common-*.tgz
-RUN npm install
+RUN npm install guardian-interfaces-*.tgz guardian-common-*.tgz
 ADD ./api-gateway/src ./src/.
 RUN npm run build
+
+FROM node:16
+ENV PLATFORM="docker"
+ENV NODE_ENV="production"
+WORKDIR /usr/api-gateway
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
+COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz ./
+COPY ./api-gateway/package*.json ./
+COPY ./api-gateway/.env.docker ./.env
+RUN npm install --production guardian-interfaces-*.tgz guardian-common-*.tgz
+COPY --from=apiGatewayBuilder /usr/local/api-gateway/dist ./dist
 
 CMD npm start
