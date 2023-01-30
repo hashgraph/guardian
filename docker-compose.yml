@@ -7,6 +7,17 @@ services:
     expose:
       - 27017
 
+  mongo-express:
+    image: mongo-express:1.0.0-alpha.4
+    expose:
+      - 8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_SITE_BASEURL: /mongo-admin
+    depends_on:
+      - mongo
+
   ipfs-node:
     image: ipfs/kubo:v0.17.0
     ports:
@@ -146,6 +157,7 @@ services:
       - api-gateway
       - api-docs
       - mrv-sender
+      - mongo-express
 volumes:
   mongo:
   # volume-guardian-service:
