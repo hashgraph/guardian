@@ -1,14 +1,16 @@
-FROM node:16 as frontendBuilder
-WORKDIR /usr/interfaces
+FROM node:16 AS interfacesModuleBuilder
+WORKDIR /usr/local/interfaces
 COPY ./interfaces/package*.json ./
 COPY ./interfaces/tsconfig.json ./
 ADD ./interfaces/src ./src/.
 RUN npm install
 RUN npm pack
+
+FROM node:16 as frontendBuilder
 WORKDIR /usr/local/frontend
 COPY ./frontend/. /usr/local/frontend
-RUN npm install /usr/interfaces/guardian-interfaces-*.tgz
-RUN npm install
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
+RUN npm install guardian-interfaces-*.tgz
 RUN npm run build
 
 FROM nginx:latest

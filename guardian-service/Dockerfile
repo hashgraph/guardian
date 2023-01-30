@@ -36,5 +36,6 @@ COPY ./guardian-service/.env.docker ./.env
 COPY ./guardian-service/system-schemas ./system-schemas/.
 RUN npm install --production guardian-interfaces-*.tgz guardian-common-*.tgz
 COPY --from=guardianServiceBuilder /usr/local/guardian-service/dist ./dist
+RUN rm guardian-*.tgz
 
 CMD npm start

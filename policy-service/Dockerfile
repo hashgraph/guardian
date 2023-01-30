@@ -35,5 +35,6 @@ COPY ./policy-service/package*.json ./
 COPY ./policy-service/.env.docker ./.env
 RUN npm install --production guardian-interfaces-*.tgz guardian-common-*.tgz
 COPY --from=policyServiceBuilder /usr/local/policy-service/dist ./dist
+RUN rm guardian-*.tgz
 
 CMD npm start

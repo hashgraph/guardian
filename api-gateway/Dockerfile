@@ -36,5 +36,6 @@ COPY ./api-gateway/package*.json ./
 COPY ./api-gateway/.env.docker ./.env
 RUN npm install --production guardian-interfaces-*.tgz guardian-common-*.tgz
 COPY --from=apiGatewayBuilder /usr/local/api-gateway/dist ./dist
+RUN rm guardian-*.tgz
 
 CMD npm start

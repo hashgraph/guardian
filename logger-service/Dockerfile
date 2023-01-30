@@ -35,5 +35,6 @@ COPY ./logger-service/package*.json ./
 COPY ./logger-service/.env.docker ./.env
 RUN npm install --production guardian-interfaces-*.tgz guardian-common-*.tgz
 COPY --from=loggerServiceBuilder /usr/local/logger-service/dist ./dist
+RUN rm guardian-*.tgz
 
 CMD npm start

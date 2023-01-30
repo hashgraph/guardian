@@ -11,6 +11,8 @@
     "guardian-service",
     "logger-service",
     "mrv-sender",
+    "topic-viewer",
+    "tree-viewer",
     "worker-service",
     "policy-service"
   ],

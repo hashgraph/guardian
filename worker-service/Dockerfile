@@ -35,5 +35,6 @@ COPY ./worker-service/package*.json ./
 COPY ./worker-service/.env.docker ./.env
 RUN npm install --production guardian-interfaces-*.tgz guardian-common-*.tgz
 COPY --from=workerServiceBuilder /usr/local/worker-service/dist ./dist
+RUN rm guardian-*.tgz
 
 CMD npm start

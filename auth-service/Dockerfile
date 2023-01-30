@@ -35,5 +35,6 @@ COPY ./auth-service/package*.json ./
 COPY ./auth-service/.env.docker ./.env
 RUN npm install --production guardian-interfaces-*.tgz guardian-common-*.tgz
 COPY --from=authServiceBuilder /usr/local/auth-service/dist ./dist
+RUN rm guardian-*.tgz
 
 CMD npm start
