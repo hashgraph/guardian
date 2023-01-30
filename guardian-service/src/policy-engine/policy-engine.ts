@@ -14,7 +14,7 @@ import {
 import {
     DataBaseHelper,
     IAuthUser,
-    Logger, ServiceRequestsBase, Singleton
+    Logger, MessageResponse, ServiceRequestsBase, Singleton
 } from '@guardian/common';
 import {
     MessageAction,
@@ -67,6 +67,16 @@ interface IPublishResult {
  */
 @Singleton
 export class PolicyEngine extends ServiceRequestsBase{
+
+    /**
+     * Run ready event
+     * @param policyId
+     * @param data
+     */
+    public static runReadyEvent(policyId: string, data: any): void {
+        new PolicyEngine().runReadyEvent(policyId, data);
+    }
+
     /**
      * Target
      */
@@ -94,21 +104,25 @@ export class PolicyEngine extends ServiceRequestsBase{
                 status: { $in: [PolicyType.PUBLISH, PolicyType.DRY_RUN] }
             }
         });
-        for (const policy of policies) {
+        await Promise.all(policies.map(async (policy) => {
             try {
                 await this.generateModel(policy.id.toString());
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
             }
-        }
+        }));
+    }
 
-        this.channel.subscribe(PolicyEvents.POLICY_READY, (data: any) => {
-            console.log('policy ready');
-            const { policyId } = data;
-            if (policyId && this.policyReadyCallbacks.has(policyId)) {
-                this.policyReadyCallbacks.get(policyId)(data);
-            }
-        });
+    /**
+     * Run ready event
+     * @param policyId
+     * @param data
+     */
+    private runReadyEvent(policyId: string, data?: any): void {
+        console.log('policy ready', policyId);
+        if (this.policyReadyCallbacks.has(policyId)) {
+            this.policyReadyCallbacks.get(policyId)(data);
+        }
     }
 
     /**
@@ -833,7 +847,6 @@ export class PolicyEngine extends ServiceRequestsBase{
 
         return new Promise((resolve) => {
             this.policyReadyCallbacks.set(policyId, (data) => {
-                console.log('policy ready', policyId);
                 resolve(data);
             })
         });

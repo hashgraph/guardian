@@ -1,5 +1,6 @@
 import { MessageBrokerChannel, Singleton } from '@guardian/common';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
+import { PolicyEngine } from '@policy-engine/policy-engine';
 
 /**
  * Container entity
@@ -78,11 +79,14 @@ export class PolicyServiceChannelsContainer {
      */
     private createPolicyServiceChannel(policyId: string): IContainerEntity {
         const name = `policy-${policyId}-${GenerateUUIDv4()}`;
-        const entity = {
-            name,
-            channel: new MessageBrokerChannel(this.cn, name)
-        }
+        const channel = new MessageBrokerChannel(this.cn, name);
+        const entity = {name, channel};
         this.channelsMap.set(policyId, entity);
+
+        channel.subscribe(PolicyEvents.POLICY_READY, (msg: any) => {
+            PolicyEngine.runReadyEvent(msg.policyId, msg.data);
+        })
+
         return entity;
     }
 

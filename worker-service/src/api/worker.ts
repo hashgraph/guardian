@@ -985,7 +985,7 @@ export class Worker {
     public async getItem(): Promise<any> {
         this.isInUse = true;
 
-        this.logger.info(`Search task`, [this.channelName]);
+        // this.logger.info(`Search task`, [this.channelName]);
 
         let task: any = null;
         try {
@@ -1005,7 +1005,7 @@ export class Worker {
         if (!task) {
             this.isInUse = false;
 
-            this.logger.info(`Task not found`, [this.channelName]);
+            // this.logger.info(`Task not found`, [this.channelName]);
 
             if (this.updateEventReceived) {
                 this.updateEventReceived = false;
