@@ -22,7 +22,9 @@
     "build:prod": "tsc --project tsconfig.production.json",
     "dev": "tsc -w",
     "lint": "tslint --config ../tslint.json --project .",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepack": "npm run build:prod"},
-  "version": "2.8.1"
+    "prepack": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "2.9.0-prerelease",
+  "stableVersion": "2.8.1"
 }
