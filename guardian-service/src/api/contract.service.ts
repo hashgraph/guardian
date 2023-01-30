@@ -483,9 +483,9 @@ export async function contractAPI(
                 return new MessageError('Invalid add contract pair parameters');
             }
 
+            const baseTokenId = msg.baseTokenId || '';
+            const oppositeTokenId = msg.oppositeTokenId || '';
             const {
-                baseTokenId,
-                oppositeTokenId,
                 baseTokenCount,
                 oppositeTokenCount,
                 baseTokenSerials,
@@ -568,10 +568,20 @@ export async function contractAPI(
                 },
                 {
                     contractId,
-                    baseTokenId,
-                    oppositeTokenId,
+                    $and: [
+                        {
+                            baseTokenId: {
+                                $in: [baseTokenId, oppositeTokenId],
+                            },
+                        },
+                        {
+                            oppositeTokenId: {
+                                $in: [baseTokenId, oppositeTokenId],
+                            },
+                        },
+                    ],
                     owner: did,
-                    vcDocumentHash: null
+                    vcDocumentHash: null,
                 }
             );
 
