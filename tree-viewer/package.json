@@ -11,7 +11,7 @@
   },
   "license": "Apache-2.0",
   "main": "dist/index.js",
-  "name": "topic-viewer",
+  "name": "tree-viewer",
   "scripts": {
     "dev:docker": "nodemon src/index.ts",
     "build": "tsc",
