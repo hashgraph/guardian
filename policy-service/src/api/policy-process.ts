@@ -13,6 +13,7 @@ import { Workers } from '@helpers/workers';
 import process from 'process';
 import { IPFS } from '@helpers/ipfs';
 import { CommonVariables } from '@helpers/common-variables';
+import { PolicyEvents } from '@guardian/interfaces';
 
 const {
     policy,
@@ -60,4 +61,8 @@ Promise.all([
 
     const generator = new BlockTreeGenerator();
     await generator.generate(policy, skipRegistration, resultsContainer);
+
+    channel.publish(PolicyEvents.POLICY_READY, { policyId: policyId.toString() });
+    new Logger().info('Start policy', ['POLICY', policy.name, policyId.toString()]);
+
 });

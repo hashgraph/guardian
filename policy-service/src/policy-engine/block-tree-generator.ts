@@ -205,8 +205,6 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             throw new Error('Policy was not exist');
         }
 
-        new Logger().info('Start policy', ['POLICY', policy.name, policyId.toString()]);
-
         try {
             const instancesArray: IPolicyBlock[] = [];
             const model = PolicyComponentsUtils.BuildBlockTree(policy, policyId, instancesArray);

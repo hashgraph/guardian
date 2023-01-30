@@ -25,9 +25,9 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
 import { Policy as PolicyCollection } from '@entity/policy';
-import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { Topic } from '@entity/topic';
 import { Token } from '@entity/token';
+import { PolicyEngine } from '@policy-engine/policy-engine';
 
 /**
  * Restore data from hedera class
@@ -312,7 +312,8 @@ export class RestoreDataFromHedera {
 
                 await this.restorePolicyDocuments(policyInstanceMessages, owner, r.id.toString(), r.uuid, user, hederaAccountKey);
 
-                await new BlockTreeGenerator().generate(r.id.toString());
+                await new PolicyEngine().generateModel(r.id.toString());
+                // await new BlockTreeGenerator().generate(r.id.toString());
 
             }
         } catch (e) {

@@ -45,6 +45,18 @@ export class PolicyServiceChannelsContainer {
     }
 
     /**
+     * Create service channel if not exist
+     * @param policyId
+     */
+    static createIfNotExistServiceChannel(policyId): IContainerEntity {
+        let entity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+        if (!entity) {
+            entity = PolicyServiceChannelsContainer.createPolicyServiceChannel(policyId);
+        }
+        return entity;
+    }
+
+    /**
      * Channels map
      * @private
      */

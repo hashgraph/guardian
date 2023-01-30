@@ -3,6 +3,7 @@
  */
 export enum PolicyEvents {
     GENERATE_POLICY = 'generate-policy',
+    POLICY_READY = 'policy-ready',
     DELETE_POLICY = 'delete-policy',
     VALIDATE_POLICY = 'validate-policy',
     GET_BLOCK_DATA = 'get-block-data',
