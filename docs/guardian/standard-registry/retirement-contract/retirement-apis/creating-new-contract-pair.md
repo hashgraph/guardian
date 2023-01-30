@@ -17,11 +17,11 @@ Contract identifier
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="baseTokenCount" type="String" %}
+{% swagger-parameter in="body" name="baseTokenCount" type="Integer" %}
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="oppositeTokenCount" type="String" %}
+{% swagger-parameter in="body" name="oppositeTokenCount" type="Integer" %}
 
 {% endswagger-parameter %}
 

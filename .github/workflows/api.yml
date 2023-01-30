@@ -51,6 +51,10 @@ jobs:
           npm install
           npm run build
           popd
+          pushd policy-service
+          npm install
+          npm run build
+          popd
           pushd worker-service
           npm install
           npm run build

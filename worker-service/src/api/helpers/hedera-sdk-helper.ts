@@ -73,6 +73,24 @@ export interface ITransactionLoggerData {
 }
 
 /**
+ * Network options
+ */
+export class NetworkOptions {
+    /**
+     * Network
+     */
+    public network: string = 'testnet';
+    /**
+     * Local node address
+     */
+    public localNodeAddress: string = '';
+    /**
+     * Local node protocol
+     */
+    public localNodeProtocol: string = '';
+}
+
+/**
  * Contains methods to simplify work with hashgraph sdk
  */
 export class HederaSDKHelper {
@@ -114,8 +132,12 @@ export class HederaSDKHelper {
     constructor(
         operatorId: string | AccountId | null,
         operatorKey: string | PrivateKey | null,
-        dryRun: string = null
+        dryRun: string = null,
+        networkOptions: NetworkOptions
     ) {
+        Environment.setNetwork(networkOptions.network);
+        Environment.setLocalNodeAddress(networkOptions.localNodeAddress);
+        Environment.setLocalNodeProtocol(networkOptions.localNodeProtocol);
         this.dryRun = dryRun || null;
         this.client = Environment.createClient();
         if (operatorId && operatorKey) {
@@ -1113,7 +1135,8 @@ export class HederaSDKHelper {
         const contractQueryTx = new ContractCallQuery()
             .setContractId(contractId)
             .setGas(100000)
-            .setFunction(functionName, parameters);
+            .setFunction(functionName, parameters)
+            .setQueryPayment(new Hbar(0.05));
         const contractQueryResult = await contractQueryTx.execute(client);
         return contractQueryResult;
     }

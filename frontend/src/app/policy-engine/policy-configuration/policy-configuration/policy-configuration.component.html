@@ -3,7 +3,8 @@
         <mat-spinner></mat-spinner>
     </div>
     <div *ngIf="loading && taskId" class="loading">
-        <async-progess class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages" (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progess>
+        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
+            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
     </div>
     <div class="not-exist" *ngIf="!policyModel.valid">
         Policy doesn't exist
@@ -271,7 +272,8 @@
                             </common-properties>
                         </ng-container>
                         <ng-container *ngIf="propTab=='Artifacts'">
-                            <artifact-properties [readonly]="readonly" [policyId]="policyId" [block]="currentBlock"></artifact-properties>
+                            <artifact-properties [readonly]="readonly" [policyId]="policyId"
+                                [block]="currentBlock"></artifact-properties>
                         </ng-container>
                     </div>
                 </div>

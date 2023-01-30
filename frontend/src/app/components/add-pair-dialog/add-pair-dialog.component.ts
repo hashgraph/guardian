@@ -2,14 +2,14 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
     AbstractControl,
-    FormBuilder,
-    ValidationErrors,
-    ValidatorFn,
+    FormControl,
+    FormGroup,
     Validators,
 } from '@angular/forms';
 import { ContractService } from 'src/app/services/contract.service';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+import { moreThanZeroValidator } from 'src/app/validators/more-than-zero.validator';
 /**
  * Dialog for creating pair.
  */
@@ -19,12 +19,23 @@ import { Subject } from 'rxjs';
     styleUrls: ['./add-pair-dialog.component.css'],
 })
 export class AddPairDialogComponent {
-    dataForm = this.fb.group({
-        baseTokenId: ['', Validators.required],
-        baseTokenCount: [0, this.moreThanZeroValidator()],
-        oppositeTokenId: ['', Validators.required],
-        oppositeTokenCount: [0, this.moreThanZeroValidator()],
-        contractId: ['', Validators.required],
+    baseTokenId = new FormControl('', Validators.required);
+    baseTokenCount = new FormControl(
+        { value: 0, disabled: true },
+        Validators.required
+    );
+    oppositeTokenId = new FormControl('');
+    oppositeTokenCount = new FormControl(
+        { value: 0, disabled: true },
+        moreThanZeroValidator()
+    );
+    contractId = new FormControl('', Validators.required);
+    dataForm = new FormGroup({
+        baseTokenId: this.baseTokenId,
+        baseTokenCount: this.baseTokenCount,
+        oppositeTokenId: this.oppositeTokenId,
+        oppositeTokenCount: this.oppositeTokenCount,
+        contractId: this.contractId,
     });
     loading: boolean = false;
     existsPairs: any = [];
@@ -36,33 +47,41 @@ export class AddPairDialogComponent {
     constructor(
         public dialogRef: MatDialogRef<AddPairDialogComponent>,
         private contractService: ContractService,
-        private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         this.tokens = data?.tokens || [];
         this.baseTokens = this.tokens;
         this.oppositeTokens = this.tokens;
-        this.dataForm.get('contractId')?.patchValue(data?.contractId || '');
-        this.dataForm
-            .get('baseTokenId')
-            ?.valueChanges.pipe(takeUntil(this.destroy$))
-            .subscribe(this.onTokenChange('oppositeTokenId'));
-        this.dataForm
-            .get('oppositeTokenId')
-            ?.valueChanges.pipe(takeUntil(this.destroy$))
-            .subscribe(this.onTokenChange('baseTokenId', true));
+        this.contractId.patchValue(data?.contractId || '');
+        this.baseTokenId.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(this.onTokenChange(this.oppositeTokenId));
+        this.oppositeTokenId.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(this.onTokenChange(this.baseTokenId, true));
     }
 
-    onTokenChange(controlName: string, isOppositeToken: boolean = false) {
+    onTokenChange(control: AbstractControl, isOppositeToken: boolean = false) {
         return (value: any) => {
-            const tokenId = this.dataForm.get(controlName)?.value;
+            const tokenId = control.value;
             if (isOppositeToken) {
-                this.baseTokens = this.tokens.filter(item => item.tokenId !== value)
+                this.baseTokens = this.tokens.filter(
+                    (item) => item.tokenId !== value
+                );
             } else {
-                this.oppositeTokens = this.tokens.filter(item => item.tokenId !== value);
+                this.oppositeTokens = this.tokens.filter(
+                    (item) => item.tokenId !== value
+                );
             }
             this.existsPairs = [];
-            if (!value || !tokenId) {
+            if (!value && isOppositeToken) {
+                this.baseTokenCount.disable();
+                this.oppositeTokenCount.disable();
+            } else if (isOppositeToken) {
+                this.baseTokenCount.enable();
+                this.oppositeTokenCount.enable();
+            }
+            if ((!value && !isOppositeToken) || (!tokenId && isOppositeToken)) {
                 return;
             }
             this.loading = true;
@@ -78,13 +97,13 @@ export class AddPairDialogComponent {
                             return;
                         }
                         this.existsPairs = result
-                            .filter(
-                                (item: any) =>
-                                    item.baseTokenRate && item.oppositeTokenRate
-                            )
+                            .filter((item: any) => item.baseTokenRate)
                             .map(
                                 (item: any) =>
-                                    `${item.contractId} (${item.baseTokenRate}:${item.oppositeTokenRate})`
+                                    item.contractId +
+                                    (item.oppositeTokenRate
+                                        ? ` (${item.baseTokenRate}:${item.oppositeTokenRate})`
+                                        : '')
                             );
                     },
                     () => (this.loading = false)
@@ -99,34 +118,11 @@ export class AddPairDialogComponent {
     }
 
     onCreate() {
-        if (this.dataForm.valid) {
-            this.dialogRef.close(this.dataForm.value);
-        }
-    }
-
-    onSave() {
-        if (this.dataForm.valid) {
-            const data = this.dataForm.value;
-            this.dialogRef.close(data);
-        }
+        this.dialogRef.close(this.dataForm.value);
     }
 
     ngOnDestroy() {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
-    }
-
-    moreThanZeroValidator(): ValidatorFn {
-        return (control: AbstractControl): ValidationErrors | null => {
-            const value = control.value;
-            if (typeof value === 'number' && value > 0) {
-                return null;
-            }
-            return {
-                lessThanZero: {
-                    valid: false,
-                },
-            };
-        };
     }
 }

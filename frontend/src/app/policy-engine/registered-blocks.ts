@@ -311,12 +311,19 @@ export class RegisteredBlocks {
             factory: DocumentsSourceBlockComponent,
             property: DocumentSourceComponent,
             allowedChildren: [
-                ...allowedChildrenStepContainerBlocks, {
-                    type: BlockType.PaginationAddon
-                }, {
-                    type: BlockType.DocumentsSourceAddon
-                }
-            ]
+                {
+                    type: BlockType.FiltersAddon,
+                    group: BlockGroup.UnGrouped,
+                },
+                {
+                    type: BlockType.PaginationAddon,
+                    group: BlockGroup.UnGrouped,
+                },
+                {
+                    type: BlockType.DocumentsSourceAddon,
+                    group: BlockGroup.UnGrouped,
+                },
+            ],
         });
         this.registerBlock({
             type: BlockType.Request,

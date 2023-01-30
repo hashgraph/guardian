@@ -4,8 +4,8 @@
     </div>
 
     <div *ngIf="loading && taskId" class="loading">
-        <async-progess class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
-            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progess>
+        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
+            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
     </div>
 
     <ng-container *ngIf="!isConfirmed">
@@ -16,10 +16,18 @@
 
     <ng-container *ngIf="isConfirmed && policies">
         <div class="actions-container" [attr.role]="role">
-            <button mat-raised-button color="primary" (click)="newPolicy()" style="margin: 15px;min-width: 100px">Create
-                Policy</button>
-            <button mat-raised-button color="primary" (click)="importPolicy()"
-                style="margin: 15px;min-width: 100px">Import</button>
+            <button mat-raised-button color="primary" (click)="newPolicy()" class="toolbar-btn add">
+                <mat-icon>add</mat-icon>
+                <span>Create New</span>
+            </button>
+            <button mat-raised-button color="primary" (click)="importPolicy()" class="toolbar-btn">
+                <mat-icon>file_open</mat-icon>
+                <span>Import</span>
+            </button>
+            <button mat-raised-button color="primary" (click)="comparePolicy()" class="toolbar-btn">
+                <mat-icon>compare</mat-icon>
+                <span>Compare</span>
+            </button>
         </div>
         <div class="table-container" [attr.role]="role">
             <table mat-table [dataSource]="policies" class="table">
@@ -104,14 +112,11 @@
                                 </div>
                             </div>
                             <div *ngIf="role === 'USER'">
-                                <div *ngIf="element.status =='PUBLISH'"
-                                    class="btn-icon-import"
-                                    [attr.status]="element.multiPolicyStatus"
-                                    (click)="createMultiPolicy(element)"
+                                <div *ngIf="element.status =='PUBLISH'" class="btn-icon-import"
+                                    [attr.status]="element.multiPolicyStatus" (click)="createMultiPolicy(element)"
                                     [title]="element.multiPolicyStatus ? 'Show Multi Policy' : 'Create Multi Policy'"
                                     [matTooltip]="element.multiPolicyStatus ? 'Show Multi Policy' : 'Create Multi Policy'"
-                                    matTooltipPosition="above"
-                                    matTooltipClass="guardian-tooltip">
+                                    matTooltipPosition="above" matTooltipClass="guardian-tooltip">
                                     <mat-icon>share</mat-icon>
                                 </div>
                                 <div *ngIf="element.status =='DRY-RUN'" class="btn-icon-delete-des">

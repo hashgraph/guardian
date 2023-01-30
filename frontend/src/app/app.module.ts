@@ -21,7 +21,6 @@ import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
 import { RootConfigComponent } from './views/root-config/root-config.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
-import { SchemaConfigComponent } from './views/schema-config/schema-config.component';
 import { TokenDialog } from './components/token-dialog/token-dialog.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
@@ -52,6 +51,8 @@ import { ContractRequestConfigComponent } from './views/contract-request-config/
 import { AddPairDialogComponent } from './components/add-pair-dialog/add-pair-dialog.component';
 import { RetireTokenDialogComponent } from './components/retire-token-dialog/retire-token-dialog.component';
 import { DataInputDialogComponent } from './components/data-input-dialog/data-input-dialog.component';
+import { CompareModule } from './analytics/analytics.module';
+import { AnalyticsService } from './services/analytics.service';
 
 @NgModule({
     declarations: [
@@ -64,7 +65,6 @@ import { DataInputDialogComponent } from './components/data-input-dialog/data-in
         RootConfigComponent,
         TokenConfigComponent,
         TokenDialog,
-        SchemaConfigComponent,
         AuditComponent,
         TrustChainComponent,
         NewPolicyDialog,
@@ -92,7 +92,8 @@ import { DataInputDialogComponent } from './components/data-input-dialog/data-in
         HttpClientModule,
         FormsModule,
         ToastrModule.forRoot(),
-        PolicyEngineModule
+        PolicyEngineModule,
+        CompareModule
     ],
     exports: [],
     providers: [
@@ -104,6 +105,7 @@ import { DataInputDialogComponent } from './components/data-input-dialog/data-in
         ProfileService,
         TokenService,
         SchemaService,
+        AnalyticsService,
         AuditService,
         PolicyEngineService,
         PolicyHelper,

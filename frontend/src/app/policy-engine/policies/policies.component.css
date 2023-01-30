@@ -178,8 +178,8 @@
 
 .table-container .mat-column-operations {
     padding-left: 8px;
-    width: 130px;
-    max-width: 130px;
+    width: 125px;
+    max-width: 125px;
     border-right: 1px solid #dddddd;
 }
 
@@ -318,4 +318,31 @@
 .btn-icon-import[status="Main"],
 .btn-icon-import[status="Sub"] {
     color: #49af54;
+}
+
+.toolbar-btn {
+    margin: 15px;
+    min-width: 120px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: left;
+    user-select: none;
+    position: relative;
+    border-radius: 8px;
+    padding: 0;
+    font-size: 14px;
+    padding-left: 48px !important;
+    padding-right: 30px;
+}
+
+.toolbar-btn mat-icon {
+    position: absolute;
+    left: 14px;
+    top: 10px;
+}
+
+.toolbar-btn.add mat-icon {
+    font-size: 30px;
+    left: 10px;
+    top: 7px;
 }

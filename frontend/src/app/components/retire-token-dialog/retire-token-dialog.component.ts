@@ -3,7 +3,6 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ContractService } from 'src/app/services/contract.service';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { TokenType } from '@guardian/interfaces';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -26,11 +25,8 @@ export class RetireTokenDialogComponent {
     tokens: any[] = [];
     baseTokens: any[] = [];
     oppositeTokens: any = [];
-
-    chooseTokensForm = this.fb.group({
-        baseTokenId: ['', Validators.required],
-        oppositeTokenId: ['', Validators.required],
-    });
+    baseTokenId = this.fb.control('', Validators.required);
+    oppositeTokenId = this.fb.control('');
     contractForm = this.fb.control('', Validators.required);
     tokenCountForm = this.fb.group({
         baseTokenCount: [0],
@@ -51,8 +47,6 @@ export class RetireTokenDialogComponent {
     contractAndRates: any = [];
     contractsLoading = false;
 
-    readonly separatorKeysCodes = [ENTER, COMMA] as const;
-
     destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
@@ -61,86 +55,77 @@ export class RetireTokenDialogComponent {
         private contractService: ContractService,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
-        if (data) {
-            this.tokens = data.tokens || [];
-            this.baseTokens = this.tokens;
-            this.oppositeTokens = this.tokens;
-            const baseTokenControl = this.chooseTokensForm.get('baseTokenId');
-            const oppositeTokenControl =
-                this.chooseTokensForm.get('oppositeTokenId');
-            const oppositeTokenCountControl =
-                this.tokenCountForm.get('oppositeTokenCount');
-            const baseTokenCountControl =
-                this.tokenCountForm.get('baseTokenCount');
+        this.tokens = data?.tokens || [];
+        this.baseTokens = this.tokens;
+        this.oppositeTokens = this.tokens;
+        const oppositeTokenCountControl =
+            this.tokenCountForm.get('oppositeTokenCount');
+        const baseTokenCountControl =
+            this.tokenCountForm.get('baseTokenCount');
 
-            oppositeTokenCountControl?.disable();
-            baseTokenControl?.valueChanges
-                .pipe(takeUntil(this.destroy$))
-                .subscribe((value) => {
-                    this.oppositeTokens = this.tokens.filter(
-                        (item) => item.tokenId != value
-                    );
-                    const baseToken = this.tokens.find(
-                        (item: any) => item.tokenId === value
-                    );
-                    this.baseTokenType = baseToken?.tokenType;
-                    this.baseTokenDecimals = baseToken?.decimals;
-                    this.baseTokenSerials = baseToken?.serials || [];
-                    const oppositeTokenId =
-                        this.chooseTokensForm.get('oppositeTokenId')?.value;
-                    this.contractAndRates = [];
-                    this.contractForm.patchValue('');
-                    this.tokenCountForm.reset();
-                    this.setContractPair(value, oppositeTokenId);
+        oppositeTokenCountControl?.disable();
+        this.baseTokenId?.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((value) => {
+                this.oppositeTokens = this.tokens.filter(
+                    (item) => item.tokenId != value
+                );
+                const baseToken = this.tokens.find(
+                    (item: any) => item.tokenId === value
+                );
+                this.baseTokenType = baseToken?.tokenType;
+                this.baseTokenDecimals = baseToken?.decimals;
+                this.baseTokenSerials = baseToken?.serials || [];
+                const oppositeTokenId = this.oppositeTokenId?.value;
+                this.contractAndRates = [];
+                this.contractForm.patchValue('');
+                this.setContractPair(value, oppositeTokenId);
+            });
+        this.contractForm.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((value) => {
+                this.tokenCountForm.reset({
+                    baseTokenCount: 0,
+                    oppositeTokenCount: 0,
+                    baseTokenSerials: [],
+                    oppositeTokenSerials: [],
                 });
-            this.contractForm.valueChanges
-                .pipe(takeUntil(this.destroy$))
-                .subscribe((value) => {
-                    this.tokenCountForm.reset({
-                        baseTokenCount: 0,
-                        oppositeTokenCount: 0,
-                        baseTokenSerials: [],
-                        oppositeTokenSerials: [],
-                    });
-                    if (!value) {
-                        this.baseTokenRate = 0;
-                        this.oppositeTokenRate = 0;
-                        return;
-                    }
-                    const contractAndRates = this.contractAndRates.find(
-                        (item: any) => item.contractId === value
-                    );
-                    this.baseTokenRate = contractAndRates.baseTokenRate;
-                    this.oppositeTokenRate = contractAndRates.oppositeTokenRate;
-                });
-            oppositeTokenControl?.valueChanges
-                .pipe(takeUntil(this.destroy$))
-                .subscribe((value) => {
-                    this.baseTokens = this.tokens.filter(
-                        (item) => item.tokenId != value
-                    );
-                    const oppositeToken = this.tokens.find(
-                        (item: any) => item.tokenId === value
-                    );
-                    this.oppositeTokenType = oppositeToken?.tokenType;
-                    this.oppositeTokenDecimals = oppositeToken?.decimals;
-                    this.oppositeTokenSerials = oppositeToken?.serials || [];
-                    const baseTokenId =
-                        this.chooseTokensForm.get('baseTokenId')?.value;
-                    this.contractAndRates = [];
-                    this.contractForm.patchValue('');
-                    this.tokenCountForm.reset();
-                    this.setContractPair(baseTokenId, value);
-                });
+                if (!value) {
+                    this.baseTokenRate = 0;
+                    this.oppositeTokenRate = 0;
+                    return;
+                }
+                const contractAndRates = this.contractAndRates.find(
+                    (item: any) => item.contractId === value
+                );
+                this.baseTokenRate = contractAndRates.baseTokenRate;
+                this.oppositeTokenRate = contractAndRates.oppositeTokenRate;
+            });
+        this.oppositeTokenId?.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((value) => {
+                this.baseTokens = this.tokens.filter(
+                    (item) => item.tokenId != value
+                );
+                const oppositeToken = this.tokens.find(
+                    (item: any) => item.tokenId === value
+                );
+                this.oppositeTokenType = oppositeToken?.tokenType;
+                this.oppositeTokenDecimals = oppositeToken?.decimals;
+                this.oppositeTokenSerials = oppositeToken?.serials || [];
+                const baseTokenId = this.baseTokenId?.value;
+                this.contractAndRates = [];
+                this.contractForm.patchValue('');
+                this.setContractPair(baseTokenId, value);
+            });
 
-            baseTokenCountControl?.valueChanges
-                .pipe(takeUntil(this.destroy$))
-                .subscribe(this.countValueForOppositeToken.bind(this));
-        }
+        baseTokenCountControl?.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(this.countValueForOppositeToken.bind(this));
     }
 
     setContractPair(baseTokenId: string, oppositeTokenId: string) {
-        if (!baseTokenId || !oppositeTokenId) {
+        if (!baseTokenId) {
             return;
         }
         this.contractsLoading = true;
@@ -151,7 +136,7 @@ export class RetireTokenDialogComponent {
                     return;
                 }
                 this.contractAndRates = result.filter(
-                    (item: any) => item.baseTokenRate && item.oppositeTokenRate
+                    (item: any) => item.baseTokenRate
                 );
                 this.contractsLoading = false;
             },
@@ -160,7 +145,7 @@ export class RetireTokenDialogComponent {
     }
 
     countValueForOppositeToken(baseTokenValue: number) {
-        if (!this.tokenCountForm) {
+        if (!this.tokenCountForm || !this.oppositeTokenId.value) {
             return;
         }
         const oppositeTokenControl =
@@ -196,17 +181,17 @@ export class RetireTokenDialogComponent {
 
     onCreate() {
         this.dialogRef.close({
-            ...this.chooseTokensForm.value,
+            baseTokenId: this.baseTokenId.value,
+            oppositeTokenId: this.oppositeTokenId.value,
             ...this.tokenCountForm.getRawValue(),
             contractId: this.contractForm.value,
         });
     }
 
     validateCountValues() {
-        if (!this.baseTokenRate || !this.oppositeTokenRate) {
+        if (!this.baseTokenRate) {
             return false;
         }
-
         const {
             baseTokenCount,
             oppositeTokenCount,
@@ -215,10 +200,11 @@ export class RetireTokenDialogComponent {
         } = this.tokenCountForm.getRawValue() || {};
 
         if (
-            !baseTokenCount &&
+            (!baseTokenCount &&
             !oppositeTokenCount &&
             !baseTokenSerials?.length &&
-            !oppositeTokenSerials?.length
+            !oppositeTokenSerials?.length)
+            || baseTokenCount < 0
         ) {
             return false;
         }

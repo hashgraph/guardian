@@ -349,7 +349,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 **Note**: Restore Data can be restored from Hedera if data is available for setting up the Registry.
 
-<figure><img src="../../.gitbook/assets/image (2) (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (21) (3).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Limitations on restoring the data:**\
@@ -360,7 +360,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
-![](<../../.gitbook/assets/image (23) (1).png>)
+![](<../../.gitbook/assets/image (14) (3).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
@@ -410,7 +410,6 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | SERVICE\_CHANNEL                       | Version of the Guardian                                                            | guardian.1                  |
 | DB\_HOST                               | Hostname of the Database                                                           | localhost                   |
 | DB\_DATABASE                           | Database Name                                                                      | guardian\_db                |
-| MAX\__TRANSACTION\_FEE_                | Maximum Transaction Fees Value                                                     | 10                          |
 | INITIAL\_BALANCE                       | Initial Balance Value                                                              | 500                         |
 | INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                         |
 | OPERATOR\_ID                           | The ID of the operation                                                            | -                           |
@@ -464,20 +463,21 @@ For Hashicorp vault backup and restore use this instructions: [https://developer
 
 #### Using Docker:
 
-| Folder         | URL                                                                        |
-| -------------- | -------------------------------------------------------------------------- |
-| WEB\_INTERFACE | [http://localhost:3000](http://localhost:3000)                             |
-| API\_GATEWAY   | [http://localhost:3000/api/v1/](http://localhost:3000/api/v1/)             |
-| MRV\_SENDER    | [http://localhost:3000/mrv-sender/](http://localhost:3000/mrv-sender/)     |
-| TOPIC\_VIEWER  | [http://localhost:3000/topic-viewer/](http://localhost:3000/topic-viewer/) |
-| API\_DOCS      | [http://localhost:3000/api-docs/v1/](http://localhost:3000/api-docs/v1/)   |
+| Folder            | URL                                                                        | Target Deployment |
+| ----------------- | -------------------------------------------------------------------------- | ----------------- |
+| WEB\_INTERFACE    | [http://localhost:3000](http://localhost:3000)                             | Production        |
+| API\_GATEWAY      | [http://localhost:3000/api/v1/](http://localhost:3000/api/v1/)             | Production        |
+| MRV\_SENDER       | [http://localhost:3000/mrv-sender/](http://localhost:3000/mrv-sender/)     | Demo              |
+| TOPIC\_VIEWER     | [http://localhost:3000/topic-viewer/](http://localhost:3000/topic-viewer/) | Demo              |
+| API\_DOCS         | [http://localhost:3000/api-docs/v1/](http://localhost:3000/api-docs/v1/)   | Demo              |
+| MONGO-ADMIN-PANEL | [http://localhost:3000/mongo-admin](http://localhost:3000/mongo-admin)     | Demo              |
 
 #### Not in Docker:
 
-| Folder         | URL                                              |
-| -------------- | ------------------------------------------------ |
-| WEB\_INTERFACE | [http://localhost:4200/](http://localhost:4200/) |
-| API\_GATEWAY   | [http://localhost:3002/](http://localhost:3002/) |
-| MRV\_SENDER    | [http://localhost:3005/](http://localhost:3005/) |
-| TOPIC\_VIEWER  | [http://localhost:3006/](http://localhost:3006/) |
-| API\_DOCS      | [http://localhost:3001/](http://localhost:3001/) |
+| Folder         | URL                                              | Target Deployment |
+| -------------- | ------------------------------------------------ | ----------------- |
+| WEB\_INTERFACE | [http://localhost:4200/](http://localhost:4200/) | Production        |
+| API\_GATEWAY   | [http://localhost:3002/](http://localhost:3002/) | Production        |
+| MRV\_SENDER    | [http://localhost:3005/](http://localhost:3005/) | Demo              |
+| TOPIC\_VIEWER  | [http://localhost:3006/](http://localhost:3006/) | Demo              |
+| API\_DOCS      | [http://localhost:3001/](http://localhost:3001/) | Demo              |

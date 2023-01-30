@@ -4,7 +4,7 @@
 
 ### Create Root Account
 
-{% swagger method="post" path="" baseUrl="/account/register" summary="Creating Standard Registry" %}
+{% swagger method="post" path="" baseUrl="/account" summary="Creating Standard Registry" %}
 {% swagger-description %}
 To create a Root Account
 {% endswagger-description %}

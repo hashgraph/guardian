@@ -5,7 +5,7 @@ import { DatetimePicker } from './components/datetime-picker/datetime-picker.com
 import { HederaExplorer } from './components/hedera-explorer/hedera-explorer.component';
 import { NgxMatDateFormats, NgxMatDatetimePickerModule, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
 import { SelectMenuButton } from './components/select-menu/select-menu.component';
-import { AsyncProgessComponent } from './components/async-progess/async-progess.component';
+import { AsyncProgressComponent } from './components/async-progress/async-progress.component';
 import { SwitchButton } from './components/switch-button/switch-button.component';
 import { FormsModule } from '@angular/forms';
 
@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
         DatetimePicker,
         HederaExplorer,
         SelectMenuButton,
-        AsyncProgessComponent,
+        AsyncProgressComponent,
         SwitchButton
     ],
     imports: [
@@ -28,7 +28,7 @@ import { FormsModule } from '@angular/forms';
         HederaExplorer,
         SelectMenuButton,
         SwitchButton,
-        AsyncProgessComponent
+        AsyncProgressComponent
     ]
 })
 export class CommonComponentsModule { }

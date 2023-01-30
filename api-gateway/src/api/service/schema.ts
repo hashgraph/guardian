@@ -3,9 +3,10 @@ import { Request, Response, Router } from 'express';
 import { ISchema, UserRole, SchemaHelper, SchemaEntity, StatusType } from '@guardian/interfaces';
 import { permissionHelper } from '@auth/authorization-helper';
 import JSZip from 'jszip';
-import { AuthenticatedRequest, Logger } from '@guardian/common';
+import { AuthenticatedRequest, Logger, RunFunctionAsync } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { TaskManager } from '@helpers/task-manager';
+import { ServiceError } from '@helpers/service-requests-base';
 
 /**
  * Parse zip archive
@@ -236,14 +237,12 @@ schemaAPI.post('/push/:topicId', permissionHelper(UserRole.STANDARD_REGISTRY), a
     const user = req.user;
     const newSchema = req.body;
     const topicId = req.params.topicId as string;
-    setImmediate(async () => {
-        try {
-            fromOld(newSchema);
-            await createSchemaAsync(newSchema, user.did, topicId, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        fromOld(newSchema);
+        await createSchemaAsync(newSchema, user.did, topicId, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: 500, message: error.message });
     });
 
     res.status(201).send({ taskId, expectation });
@@ -403,34 +402,32 @@ schemaAPI.put('/push/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGI
     const schemaId = req.params.schemaId;
     const user = req.user;
     const version = req.body.version;
-    setImmediate(async () => {
-        try {
-            const guardians = new Guardians();
-            taskManager.addStatus(taskId, 'Load schema data', StatusType.PROCESSING);
-            const schema = await guardians.getSchemaById(schemaId);
-            if (!schema) {
-                taskManager.addError(taskId, { code: 500, message: 'Schema does not exist.' });
-                return;
-            }
-            if (schema.creator !== user.did) {
-                taskManager.addError(taskId, { code: 500, message: 'Invalid creator.' });
-                return;
-            }
-            if (schema.system) {
-                taskManager.addError(taskId, { code: 500, message: 'Schema is system.' });
-                return;
-            }
-
-            const allVersion = await guardians.getSchemasByUUID(schema.uuid);
-            if (allVersion.findIndex(s => s.version === version) !== -1) {
-                taskManager.addError(taskId, { code: 500, message: 'Version already exists.' });
-            }
-            taskManager.addStatus(taskId, 'Load schema data', StatusType.COMPLETED);
-            await guardians.publishSchemaAsync(schemaId, version, user.did, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+    RunFunctionAsync<ServiceError>(async () => {
+        const guardians = new Guardians();
+        taskManager.addStatus(taskId, 'Load schema data', StatusType.PROCESSING);
+        const schema = await guardians.getSchemaById(schemaId);
+        if (!schema) {
+            taskManager.addError(taskId, { code: 500, message: 'Schema does not exist.' });
+            return;
         }
+        if (schema.creator !== user.did) {
+            taskManager.addError(taskId, { code: 500, message: 'Invalid creator.' });
+            return;
+        }
+        if (schema.system) {
+            taskManager.addError(taskId, { code: 500, message: 'Schema is system.' });
+            return;
+        }
+
+        const allVersion = await guardians.getSchemasByUUID(schema.uuid);
+        if (allVersion.findIndex(s => s.version === version) !== -1) {
+            taskManager.addError(taskId, { code: 500, message: 'Version already exists.' });
+        }
+        taskManager.addStatus(taskId, 'Load schema data', StatusType.COMPLETED);
+        await guardians.publishSchemaAsync(schemaId, version, user.did, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: 500, message: error.message });
     });
 
     res.status(200).send({ taskId, expectation });
@@ -456,17 +453,15 @@ schemaAPI.post('/push/import/message/preview', permissionHelper(UserRole.STANDAR
     const { taskId, expectation } = taskManager.start('Preview schema message');
 
     const messageId = req.body.messageId;
-    setImmediate(async () => {
-        try {
-            if (!messageId) {
-                throw new Error('Schema ID in body is empty');
-            }
-            const guardians = new Guardians();
-            await guardians.previewSchemasByMessagesAsync([messageId], taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+    RunFunctionAsync<ServiceError>(async () => {
+        if (!messageId) {
+            throw new Error('Schema ID in body is empty');
         }
+        const guardians = new Guardians();
+        await guardians.previewSchemasByMessagesAsync([messageId], taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: 500, message: error.message });
     });
 
     res.status(201).send({ taskId, expectation });
@@ -511,14 +506,12 @@ schemaAPI.post('/push/:topicId/import/message', permissionHelper(UserRole.STANDA
     const user = req.user;
     const topicId = req.params.topicId as string;
     const messageId = req.body.messageId as string;
-    setImmediate(async () => {
-        try {
-            const guardians = new Guardians();
-            await guardians.importSchemasByMessagesAsync([messageId], user.did, topicId, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
-        }
+    RunFunctionAsync<ServiceError>(async () => {
+        const guardians = new Guardians();
+        await guardians.importSchemasByMessagesAsync([messageId], user.did, topicId, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: 500, message: error.message });
     });
 
     res.status(201).send({ taskId, expectation });
@@ -551,20 +544,18 @@ schemaAPI.post('/push/:topicId/import/file', permissionHelper(UserRole.STANDARD_
     const user = req.user;
     const zip = req.body;
     const topicId = req.params.topicId as string;
-    setImmediate(async () => {
-        try {
-            taskManager.addStatus(taskId, 'Parse file', StatusType.PROCESSING);
-            if (!zip) {
-                throw new Error('file in body is empty');
-            }
-            const files = await parseZipFile(zip);
-            taskManager.addStatus(taskId, 'Parse file', StatusType.COMPLETED);
-            const guardians = new Guardians();
-            await guardians.importSchemasByFileAsync(files, user.did, topicId, taskId);
-        } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            taskManager.addError(taskId, { code: 500, message: error.message });
+    RunFunctionAsync<ServiceError>(async () => {
+        taskManager.addStatus(taskId, 'Parse file', StatusType.PROCESSING);
+        if (!zip) {
+            throw new Error('file in body is empty');
         }
+        const files = await parseZipFile(zip);
+        taskManager.addStatus(taskId, 'Parse file', StatusType.COMPLETED);
+        const guardians = new Guardians();
+        await guardians.importSchemasByFileAsync(files, user.did, topicId, taskId);
+    }, async (error) => {
+        new Logger().error(error, ['API_GATEWAY']);
+        taskManager.addError(taskId, { code: 500, message: error.message });
     });
 
     res.status(201).send({ taskId, expectation });
@@ -607,7 +598,7 @@ schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.STANDARD_REGIS
         const name = `${Date.now()}`;
         const zip = await generateZipFile(schemas);
         const arcStream = zip.generateNodeStream({
-            type: 'nodebuffer' ,
+            type: 'nodebuffer',
             compression: 'DEFLATE',
             compressionOptions: {
                 level: 3
@@ -815,5 +806,17 @@ schemaAPI.get('/system/entity/:schemaEntity', async (req: AuthenticatedRequest, 
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
+    }
+});
+
+schemaAPI.get('/list/all', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        const guardians = new Guardians();
+        const schemas = await guardians.getListSchemas(user.did);
+        res.status(200).send(schemas);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).json({ code: error.code, message: error.message });
     }
 });
