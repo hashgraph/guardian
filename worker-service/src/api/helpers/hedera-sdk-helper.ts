@@ -1135,7 +1135,8 @@ export class HederaSDKHelper {
         const contractQueryTx = new ContractCallQuery()
             .setContractId(contractId)
             .setGas(100000)
-            .setFunction(functionName, parameters);
+            .setFunction(functionName, parameters)
+            .setQueryPayment(new Hbar(0.05));
         const contractQueryResult = await contractQueryTx.execute(client);
         return contractQueryResult;
     }
