@@ -17,9 +17,9 @@ Promise.all([
     new Logger().setChannel(channel);
     const state = new ApplicationState('POLICY_SERVICE');
     state.setChannel(channel);
+    await state.updateState(ApplicationStates.STARTED);
 
     /////////////
-    await state.updateState(ApplicationStates.STARTED);
 
     state.updateState(ApplicationStates.INITIALIZING);
 
