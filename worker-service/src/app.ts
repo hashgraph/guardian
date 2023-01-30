@@ -1,6 +1,7 @@
 import { ApplicationState, Logger, MessageBrokerChannel, SettingsContainer } from '@guardian/common';
 import { Worker } from './api/worker';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
+import { ApplicationStates } from '@guardian/interfaces';
 
 Promise.all([
     MessageBrokerChannel.connect('WORKERS_SERVICE')
@@ -13,6 +14,7 @@ Promise.all([
     logger.setChannel(channel);
     const state = new ApplicationState(channelName);
     state.setChannel(channel);
+    await state.updateState(ApplicationStates.STARTED);
 
     HederaSDKHelper.setTransactionLogSender(async (data) => {
         await channel.request(`guardians.transaction-log-event`, data);
@@ -22,9 +24,11 @@ Promise.all([
     settingsContainer.setChannel(channel);
     await settingsContainer.init('IPFS_STORAGE_API_KEY');
 
+    await state.updateState(ApplicationStates.INITIALIZING);
     const w = new Worker(channel, channelName);
     w.init();
 
+    await state.updateState(ApplicationStates.READY);
     logger.info('Worker started', [channelName]);
 }, (reason) => {
     console.log(reason);
