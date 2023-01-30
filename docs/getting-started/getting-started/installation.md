@@ -463,20 +463,21 @@ For Hashicorp vault backup and restore use this instructions: [https://developer
 
 #### Using Docker:
 
-| Folder         | URL                                                                        |
-| -------------- | -------------------------------------------------------------------------- |
-| WEB\_INTERFACE | [http://localhost:3000](http://localhost:3000)                             |
-| API\_GATEWAY   | [http://localhost:3000/api/v1/](http://localhost:3000/api/v1/)             |
-| MRV\_SENDER    | [http://localhost:3000/mrv-sender/](http://localhost:3000/mrv-sender/)     |
-| TOPIC\_VIEWER  | [http://localhost:3000/topic-viewer/](http://localhost:3000/topic-viewer/) |
-| API\_DOCS      | [http://localhost:3000/api-docs/v1/](http://localhost:3000/api-docs/v1/)   |
+| Folder            | URL                                                                        | Target Deployment |
+| ----------------- | -------------------------------------------------------------------------- | ----------------- |
+| WEB\_INTERFACE    | [http://localhost:3000](http://localhost:3000)                             | Production        |
+| API\_GATEWAY      | [http://localhost:3000/api/v1/](http://localhost:3000/api/v1/)             | Production        |
+| MRV\_SENDER       | [http://localhost:3000/mrv-sender/](http://localhost:3000/mrv-sender/)     | Demo              |
+| TOPIC\_VIEWER     | [http://localhost:3000/topic-viewer/](http://localhost:3000/topic-viewer/) | Demo              |
+| API\_DOCS         | [http://localhost:3000/api-docs/v1/](http://localhost:3000/api-docs/v1/)   | Demo              |
+| MONGO-ADMIN-PANEL | [http://localhost:3000/mongo-admin](http://localhost:3000/mongo-admin)     | Demo              |
 
 #### Not in Docker:
 
-| Folder         | URL                                              |
-| -------------- | ------------------------------------------------ |
-| WEB\_INTERFACE | [http://localhost:4200/](http://localhost:4200/) |
-| API\_GATEWAY   | [http://localhost:3002/](http://localhost:3002/) |
-| MRV\_SENDER    | [http://localhost:3005/](http://localhost:3005/) |
-| TOPIC\_VIEWER  | [http://localhost:3006/](http://localhost:3006/) |
-| API\_DOCS      | [http://localhost:3001/](http://localhost:3001/) |
+| Folder         | URL                                              | Target Deployment |
+| -------------- | ------------------------------------------------ | ----------------- |
+| WEB\_INTERFACE | [http://localhost:4200/](http://localhost:4200/) | Production        |
+| API\_GATEWAY   | [http://localhost:3002/](http://localhost:3002/) | Production        |
+| MRV\_SENDER    | [http://localhost:3005/](http://localhost:3005/) | Demo              |
+| TOPIC\_VIEWER  | [http://localhost:3006/](http://localhost:3006/) | Demo              |
+| API\_DOCS      | [http://localhost:3001/](http://localhost:3001/) | Demo              |
