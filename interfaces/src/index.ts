@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+export { PolicyEvents } from './type/policy-events';
 export { WorkerEvents } from './type/worker-events';
 export { GenerateUUIDv4 } from './helpers/generate-uuid-v4';
 export { BlockErrorActions } from './type/block-error-actions';

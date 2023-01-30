@@ -9,15 +9,22 @@ import {
     ISerializedErrors,
     PolicyValidationResultsContainer
 } from '@policy-engine/policy-validation-results-container';
-import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyEvents, PolicyType } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
+import { ServiceRequestsBase } from '@helpers/service-requests-base';
+import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 
 /**
  * Block tree generator
  */
 @Singleton
-export class BlockTreeGenerator {
+export class BlockTreeGenerator extends ServiceRequestsBase {
+    /**
+     * Target
+     */
+    public target: string = 'policy-service';
+
     /**
      * Policy models map
      * @private
@@ -51,13 +58,13 @@ export class BlockTreeGenerator {
         policy: Policy | string,
         skipRegistration?: boolean,
         resultsContainer?: PolicyValidationResultsContainer
-    ): Promise<IPolicyBlock>;
+    ): Promise<void>;
 
     public async generate(
         arg: any,
         skipRegistration?: boolean,
         resultsContainer?: PolicyValidationResultsContainer
-    ): Promise<IPolicyBlock> {
+    ): Promise<void> {
         let policy: Policy;
         let policyId: string;
         if (typeof arg === 'string') {
@@ -72,25 +79,33 @@ export class BlockTreeGenerator {
             throw new Error('Policy was not exist');
         }
 
-        new Logger().info('Start policy', ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
+        const policyServiceName = PolicyServiceChannelsContainer.createPolicyServiceChannel(policyId).name;
 
-        try {
-            const instancesArray: IPolicyBlock[] = [];
-            const model = PolicyComponentsUtils.BuildBlockTree(policy, policyId, instancesArray);
+        this.channel.publish(PolicyEvents.GENERATE_POLICY, {
+            policy,
+            policyId,
+            policyServiceName,
+            skipRegistration,
+            resultsContainer
+        });
 
-            if (!skipRegistration) {
-                await PolicyComponentsUtils.RegisterPolicyInstance(policyId, policy);
-                await PolicyComponentsUtils.RegisterBlockTree(instancesArray);
-                this.models.set(policy.id.toString(), model as any);
-            }
-            return model as IPolicyInterfaceBlock;
-        } catch (error) {
-            new Logger().error(`Error build policy ${error}`, ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
-            if (resultsContainer) {
-                resultsContainer.addError(typeof error === 'string' ? error : error.message)
-            }
-            return null;
-        }
+        // try {
+        //     const instancesArray: IPolicyBlock[] = [];
+        //     const model = PolicyComponentsUtils.BuildBlockTree(policy, policyId, instancesArray);
+        //
+        //     if (!skipRegistration) {
+        //         await PolicyComponentsUtils.RegisterPolicyInstance(policyId, policy);
+        //         await PolicyComponentsUtils.RegisterBlockTree(instancesArray);
+        //         this.models.set(policy.id.toString(), model as any);
+        //     }
+        //     return model as IPolicyInterfaceBlock;
+        // } catch (error) {
+        //     new Logger().error(`Error build policy ${error}`, ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
+        //     if (resultsContainer) {
+        //         resultsContainer.addError(typeof error === 'string' ? error : error.message)
+        //     }
+        //     return null;
+        // }
     }
 
     /**
@@ -119,12 +134,21 @@ export class BlockTreeGenerator {
             };
         }
 
-        const policyInstance = await this.generate(arg, true, resultsContainer);
-        this.tagFinder(policyConfig, resultsContainer);
-        resultsContainer.addPermissions(policy.policyRoles);
-        if (policyInstance) {
-            await policyInstance.validate(resultsContainer);
-        }
+        // const policyId = policy.id.toString();
+        // const policyServiceName = PolicyServiceChannelsContainer.createPolicyServiceChannel(policyId);
+        // PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
+        this.channel.publish(PolicyEvents.VALIDATE_POLICY, {
+            policyConfig,
+            resultsContainer,
+            policyServiceName: '123'
+        });
+
+        // const policyInstance = await this.generate(arg, true, resultsContainer);
+        // this.tagFinder(policyConfig, resultsContainer);
+        // resultsContainer.addPermissions(policy.policyRoles);
+        // if (policyInstance) {
+        //     await policyInstance.validate(resultsContainer);
+        // }
         return resultsContainer.getSerializedErrors();
     }
 
@@ -141,12 +165,19 @@ export class BlockTreeGenerator {
         } else {
             policy = arg;
         }
-        if (policy) {
-            const policyId = policy.id.toString()
-            this.models.delete(policyId);
-            await PolicyComponentsUtils.UnregisterBlocks(policyId);
-            await PolicyComponentsUtils.UnregisterPolicy(policyId);
-        }
+        const policyId = policy.id.toString();
+        const policyServiceName = PolicyServiceChannelsContainer.createPolicyServiceChannel(policyId).name;
+        PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
+        this.channel.publish(PolicyEvents.DELETE_POLICY, {
+            policyId,
+            policyServiceName
+
+        });
+        // if (policy) {
+        //     this.models.delete(policyId);
+        //     await PolicyComponentsUtils.UnregisterBlocks(policyId);
+        //     await PolicyComponentsUtils.UnregisterPolicy(policyId);
+        // }
     }
 
     /**
@@ -172,22 +203,5 @@ export class BlockTreeGenerator {
             throw new Error('Unexisting policy');
         }
         return model;
-    }
-
-    /**
-     * Tag finder
-     * @param instance
-     * @param resultsContainer
-     * @private
-     */
-    private async tagFinder(instance: any, resultsContainer: PolicyValidationResultsContainer) {
-        if (instance.tag) {
-            resultsContainer.addTag(instance.tag);
-        }
-        if (Array.isArray(instance.children)) {
-            for (const child of instance.children) {
-                this.tagFinder(child, resultsContainer);
-            }
-        }
     }
 }

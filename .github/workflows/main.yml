@@ -34,6 +34,10 @@ jobs:
           npm install
           npm run build
           popd
+          pushd policy-service
+          npm install
+          npm run build
+          popd
           pushd guardian-service
           npm install
           npm run build
@@ -60,6 +64,9 @@ jobs:
           npm run lint
           popd
           pushd auth-service
+          npm run lint
+          popd
+          pushd policy-service
           npm run lint
           popd
           pushd guardian-service

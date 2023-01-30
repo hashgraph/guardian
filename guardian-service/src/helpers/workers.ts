@@ -64,38 +64,40 @@ export class Workers extends ServiceRequestsBase {
      * @param isRetryableTask
      * @param attempts
      */
-    private addTask(task: ITask, priority: number, isRetryableTask: boolean = false, attempts: number = 0): Promise<any> {
+    private addTask(task: ITask, priority: number, isRetryableTask: boolean = false, attempts: number = 0, registerCallback = true): Promise<any> {
         const taskId = GenerateUUIDv4()
-        task.id = taskId;
+        task.id = task.id || taskId;
         task.priority = priority;
         attempts = attempts > 0 && attempts < this.maxRepetitions ? attempts : this.maxRepetitions;
         this.queue.push(task);
         const result = new Promise((resolve, reject) => {
-            this.tasksCallbacks.set(taskId, {
-                task,
-                number: 0,
-                callback: (data, error) => {
-                    if (error) {
-                        if (isRetryableTask) {
-                            if (this.tasksCallbacks.has(taskId)) {
-                                const callback = this.tasksCallbacks.get(taskId);
-                                callback.number++;
-                                if (callback.number > attempts) {
-                                    this.tasksCallbacks.delete(taskId);
-                                    reject(error);
-                                    return;
+            if (registerCallback) {
+                this.tasksCallbacks.set(taskId, {
+                    task,
+                    number: 0,
+                    callback: (data, error) => {
+                        if (error) {
+                            if (isRetryableTask) {
+                                if (this.tasksCallbacks.has(taskId)) {
+                                    const callback = this.tasksCallbacks.get(taskId);
+                                    callback.number++;
+                                    if (callback.number > attempts) {
+                                        this.tasksCallbacks.delete(taskId);
+                                        reject(error);
+                                        return;
+                                    }
                                 }
+                                this.queue.push(task);
+                            } else {
+                                reject(error);
                             }
-                            this.queue.push(task);
                         } else {
-                            reject(error);
+                            this.tasksCallbacks.delete(taskId);
+                            resolve(data);
                         }
-                    } else {
-                        this.tasksCallbacks.delete(taskId);
-                        resolve(data);
                     }
-                }
-            });
+                });
+            }
         });
         this.channel.publish(WorkerEvents.QUEUE_UPDATED, null);
         return result;
@@ -119,9 +121,20 @@ export class Workers extends ServiceRequestsBase {
 
         this.channel.response(WorkerEvents.TASK_COMPLETE, async (msg: any) => {
             const activeTask = this.tasksCallbacks.get(msg.id);
+
+            if (!activeTask) {
+                this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, msg);
+            }
+
             activeTask.callback(msg.data, msg.error);
             return new MessageResponse(null);
         });
+
+        this.channel.response(WorkerEvents.PUSH_TASK, async (msg: any) => {
+            const { task, priority, isRetryableTask, attempts } = msg;
+            this.addTask(task, priority, isRetryableTask, attempts, false);
+            return new MessageResponse(null);
+        })
     }
 
     /**

@@ -98,6 +98,24 @@ jobs:
           push: true
           tags: 'gcr.io/hedera-registry/api-gateway:${{ steps.package-version.outputs.current-version}}'
 
+      - name: policy-service-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./policy-service/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/policy-service:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/policy-service:latest'
+
+      - name: policy-service
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./policy-service/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/policy-service:${{ steps.package-version.outputs.current-version}}'
+
       - name: guardian-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@v2
