@@ -1,7 +1,7 @@
 FROM node:16 AS interfacesModuleBuilder
 WORKDIR /usr/local/interfaces
 COPY ./interfaces/package*.json ./
-COPY ./interfaces/tsconfig.json ./
+COPY ./interfaces/tsconfig*.json ./
 ADD ./interfaces/src ./src/.
 RUN npm install
 RUN npm pack

@@ -1,7 +1,7 @@
 FROM node:16 AS interfacesModuleBuilder
 WORKDIR /usr/local/interfaces
 COPY ./interfaces/package*.json ./
-COPY ./interfaces/tsconfig.json ./
+COPY ./interfaces/tsconfig*.json ./
 ADD ./interfaces/src ./src/.
 RUN npm install
 RUN npm pack
@@ -10,7 +10,7 @@ FROM node:16 AS commonModuleBuilder
 WORKDIR /usr/local/common
 COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
 COPY ./common/package*.json ./
-COPY ./common/tsconfig.json ./
+COPY ./common/tsconfig*.json ./
 RUN npm install guardian-interfaces-*.tgz
 ADD ./common/src ./src/.
 RUN npm pack
@@ -20,10 +20,10 @@ WORKDIR /usr/local/policy-service
 COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
 COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz ./
 COPY ./policy-service/package*.json ./
-COPY ./policy-service/tsconfig.json ./
+COPY ./policy-service/tsconfig*.json ./
 RUN npm install guardian-interfaces-*.tgz guardian-common-*.tgz
 ADD ./policy-service/src ./src/.
-RUN npm run build
+RUN npm run build:prod
 
 FROM node:16
 ENV PLATFORM="docker"

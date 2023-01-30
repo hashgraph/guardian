@@ -1,10 +1,10 @@
 FROM node:16 as treeViewerbuilder
 WORKDIR /usr/local/tree-viewer
 COPY ./tree-viewer/package.json ./
-COPY ./tree-viewer/tsconfig.json ./
+COPY ./tree-viewer/tsconfig*.json ./
 RUN npm install
 ADD ./tree-viewer/src ./src
-RUN npm run build
+RUN npm run build:prod
 
 FROM node:16
 ENV PLATFORM="docker"

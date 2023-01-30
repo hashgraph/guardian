@@ -39,6 +39,7 @@
   "packageManager": "yarn@3.2.1",
   "scripts": {
     "build": "tsc",
+    "build:prod": "tsc --project tsconfig.production.json",
     "debug": "nodemon dist/index.js",
     "dev": "tsc -w",
     "dev:docker": "nodemon .",

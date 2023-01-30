@@ -1,10 +1,10 @@
 FROM node:16 as topicViewerbuilder
 WORKDIR /usr/local/topic-viewer
 COPY ./topic-viewer/package.json ./
-COPY ./topic-viewer/tsconfig.json ./
+COPY ./topic-viewer/tsconfig*.json ./
 RUN npm install
 ADD ./topic-viewer/src ./src
-RUN npm run build
+RUN npm run build:prod
 
 FROM node:16
 ENV PLATFORM="docker"
