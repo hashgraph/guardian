@@ -14,7 +14,7 @@ import {
 import {
     DataBaseHelper,
     IAuthUser,
-    Logger, MessageResponse, ServiceRequestsBase, Singleton
+    Logger, ServiceRequestsBase, Singleton
 } from '@guardian/common';
 import {
     MessageAction,
