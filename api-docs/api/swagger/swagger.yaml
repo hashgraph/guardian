@@ -1,24 +1,24 @@
 openapi: 3.0.0
 info:
-  title: 'Guardian'
-  description: 'The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation.'
-  version: '2.8.0'
+  title: "Guardian"
+  description: "The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation."
+  version: "2.8.1"
   contact:
-    name: 'API developer'
-    url: 'https://envisionblockchain.com'
-    email: 'info@envisionblockchain.com'
+    name: "API developer"
+    url: "https://envisionblockchain.com"
+    email: "info@envisionblockchain.com"
   license:
-    name: 'Apache 2.0'
-    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
 servers:
-  - url: /api/v1
-    description: version 1.0
+- url: /api/v1
+  description: version 1.0
 components:
   securitySchemes:
     bearerAuth:
-      type: 'http'
-      scheme: 'bearer'
-      bearerFormat: 'JWT'
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
   schemas:
     Credentials:
       type: object
@@ -76,9 +76,9 @@ components:
         did:
           type: string
         didDocument:
-          type: object
+            type: object
         vcDocument:
-          type: object
+            type: object
         parent:
           type: string
         topicId:
@@ -551,24 +551,6 @@ components:
           type: array
           items:
             type: string
-    Table:
-      type: object
-      properties:
-        columns:
-          type: array
-          items:
-            type: object
-            properties:
-              name:
-                type: string
-              label:
-                type: string
-              type:
-                type: string
-        report:
-          type: array
-          items:
-            type: object
     Task:
       type: object
       properties:
@@ -662,43 +644,37 @@ components:
           type: number
         oppositeTokenCount:
           type: number
-        vcDocumentHash:
-          type: string
-        vcDocument:
-          type: object
 tags:
-  - name: 'accounts'
-    description: 'Operations related to Guardian users'
-  - name: 'profiles'
-    description: 'Hedera profile related operations'
-  - name: 'schema'
-    description: 'Single schema operations'
-  - name: 'schemas'
-    description: 'Operations with data schemas'
-  - name: 'tokens'
-    description: 'Everything about tokens'
-  - name: 'trustchains'
-    description: 'Audit and trust chain'
-  - name: 'policies'
-    description: 'Policy engine operations'
-  - name: 'external'
-    description: 'APIs for external data sources'
-  - name: 'demo'
-    description: 'Demo Only APIs'
-  - name: 'ipfs'
-    description: 'IPFS Operations'
-  - name: 'settings'
-    description: 'Settings operations'
-  - name: 'logs'
-    description: 'Logs operations'
-  - name: 'tasks'
-    description: 'Task Status'
-  - name: 'artifacts'
-    description: 'Policy Artifacts'
-  - name: 'contracts'
-    description: 'Contracts'
-  - name: 'analytics'
-    description: 'Analytics'
+  - name: "accounts"
+    description: "Operations related to Guardian users"
+  - name: "profiles"
+    description: "Hedera profile related operations"
+  - name: "schema"
+    description: "Single schema operations"
+  - name: "schemas"
+    description: "Operations with data schemas"
+  - name: "tokens"
+    description: "Everything about tokens"
+  - name: "trustchains"
+    description: "Audit and trust chain"
+  - name: "policies"
+    description: "Policy engine operations"
+  - name: "external"
+    description: "APIs for external data sources"
+  - name: "demo"
+    description: "Demo Only APIs"
+  - name: "ipfs"
+    description: "IPFS Operations"
+  - name: "settings"
+    description: "Settings operations"
+  - name: "logs"
+    description: "Logs operations"
+  - name: "tasks"
+    description: "Task Status"
+  - name: "artifacts"
+    description: "Policy Artifacts"
+  - name: "contracts"
+    description: "Contracts"
 paths:
   /accounts:
     get:
@@ -706,7 +682,7 @@ paths:
         - accounts
       description: Returns all users except those with roles Standard Registry and Auditor. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns a list of users, excluding Standard Registry and Auditors.
       responses:
         200:
@@ -734,7 +710,7 @@ paths:
         - accounts
       description: Returns current user session.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns current session of the user.
       responses:
         200:
@@ -757,7 +733,7 @@ paths:
         - accounts
       description: Requests current Hedera account balance.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns user's Hedera account balance.
       responses:
         200:
@@ -796,7 +772,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Credentials'
+              $ref: "#/components/schemas/Credentials"
       responses:
         201:
           description: Successful operation.
@@ -822,7 +798,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Credentials'
+              $ref: "#/components/schemas/Credentials"
       responses:
         200:
           description: Successful operation.
@@ -844,7 +820,7 @@ paths:
         - accounts
       description: Returns all Standard Registries.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns all Standard Registries.
       responses:
         200:
@@ -870,7 +846,7 @@ paths:
         - accounts
       description: Returns all Standard Registries.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns all Standard Registries.
       responses:
         200:
@@ -903,7 +879,7 @@ paths:
           required: true
           description: The name of the user for whom to fetch the balance.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns user's Hedera account balance.
       responses:
         200:
@@ -936,7 +912,7 @@ paths:
           required: true
           description: The name of the user for whom to fetch the information.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns user account info.
       responses:
         200:
@@ -967,7 +943,7 @@ paths:
           required: true
           description: The name of the user for whom to update the information.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Sets Hedera credentials for the user.
       requestBody:
         description: Object that contains the Hedera account data.
@@ -975,7 +951,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: "#/components/schemas/User"
       responses:
         201:
           description: Successful operation.
@@ -1011,7 +987,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: "#/components/schemas/User"
       responses:
         200:
           description: Successful operation.
@@ -1036,7 +1012,7 @@ paths:
         - schemas
       description: Returns all schemas.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns all schemas.
       parameters:
         - in: query
@@ -1088,7 +1064,7 @@ paths:
         - schema
       description: Returns schema by schema ID.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns schema by schema ID.
       parameters:
         - in: path
@@ -1103,7 +1079,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Schema'
+                  $ref: '#/components/schemas/Schema'
         401:
           description: Unauthorized.
         403:
@@ -1132,7 +1108,7 @@ paths:
               summary: Example of a Topic ID
               value: 0.0.00000001
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Create new schema.
       requestBody:
         description: Object that contains a valid schema.
@@ -1140,7 +1116,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Schema'
+              $ref: "#/components/schemas/Schema"
       responses:
         201:
           description: Successful operation.
@@ -1159,7 +1135,7 @@ paths:
         - schemas
       description: Returns all schemas by topicId.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns all schemas by topicId.
       parameters:
         - in: path
@@ -1240,7 +1216,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Schema'
+              $ref: "#/components/schemas/Schema"
       responses:
         200:
           description: Successful operation.
@@ -1272,18 +1248,18 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Publishes the schema.
       requestBody:
         description: Object that contains policy version.
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                version:
-                  type: string
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
       responses:
         200:
           description: Successful operation.
@@ -1324,11 +1300,11 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                version:
-                  type: string
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
       responses:
         200:
           description: Successful operation.
@@ -1360,7 +1336,7 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Updates the schema.
       requestBody:
         description: Object that contains a valid schema.
@@ -1368,7 +1344,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Schema'
+              $ref: "#/components/schemas/Schema"
       responses:
         200:
           description: Successful operation.
@@ -1400,7 +1376,7 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Deletes the schema.
       responses:
         200:
@@ -1439,7 +1415,7 @@ paths:
               summary: Example of a Topic ID
               value: 0.0.00000001
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Imports new schema from a zip file.
       requestBody:
         description: A zip file containing schema to be imported.
@@ -1531,7 +1507,7 @@ paths:
               summary: Example of a Topic ID
               value: 0.0.00000001
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Imports new schema from IPFS.
       requestBody:
         description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
@@ -1616,7 +1592,7 @@ paths:
         - schemas
       description: Previews the schema from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Schema preview from IPFS.
       requestBody:
         description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema.
@@ -1690,7 +1666,7 @@ paths:
         - schemas
       description: Previews the schema from a zip file. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Schema preview from a zip file.
       requestBody:
         description: A zip file containing the schema to be viewed.
@@ -1726,7 +1702,7 @@ paths:
         - schemas
       description: Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: List Hedera message IDs of published schemas.
       parameters:
         - in: path
@@ -1741,7 +1717,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExportSchema'
+                $ref: "#/components/schemas/ExportSchema"
         401:
           description: Unauthorized.
         403:
@@ -1759,7 +1735,7 @@ paths:
         - schemas
       description: Returns schema files for the schemas. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Return zip file with schemas.
       parameters:
         - in: path
@@ -1795,7 +1771,7 @@ paths:
           required: true
           description: JSON type.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns schema by type.
       responses:
         200:
@@ -1827,7 +1803,7 @@ paths:
           required: true
           description: Username.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Creates new system schema.
       requestBody:
         description: Object that contains a valid schema.
@@ -1835,7 +1811,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Schema'
+              $ref: "#/components/schemas/Schema"
       responses:
         201:
           description: Successful operation.
@@ -1854,7 +1830,7 @@ paths:
         - schemas
       description: Returns all system schemas by username. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns all system schemas by username.
       parameters:
         - in: path
@@ -1918,7 +1894,7 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Updates the schema.
       requestBody:
         description: Object that contains a valid schema.
@@ -1926,7 +1902,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Schema'
+              $ref: "#/components/schemas/Schema"
       responses:
         200:
           description: Successful operation.
@@ -1958,7 +1934,7 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Deletes the schema.
       responses:
         200:
@@ -1992,18 +1968,18 @@ paths:
           required: true
           description: Schema ID.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Publishes the schema.
       requestBody:
         description: Object that contains policy version.
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                version:
-                  type: string
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
       responses:
         200:
           description: Successful operation.
@@ -2037,7 +2013,7 @@ paths:
           required: true
           description: schema type.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns schema by schema type.
       responses:
         200:
@@ -2062,7 +2038,7 @@ paths:
         - tokens
       description: Returns all tokens. For the Standard Registry role it returns only the list of tokens, for other users it also returns token balances as well as the KYC, Freeze, and Association statuses. Not allowed for the Auditor role.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Return a list of tokens.
       responses:
         200:
@@ -2095,7 +2071,7 @@ paths:
         - tokens
       description: Creates a new token. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Creates a new token.
       requestBody:
         description: Object that contains token information.
@@ -2103,7 +2079,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Token'
+              $ref: "#/components/schemas/Token"
       responses:
         201:
           description: Successful operation.
@@ -2151,7 +2127,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Token'
+              $ref: "#/components/schemas/Token"
       responses:
         200:
           description: Successful operation.
@@ -2176,7 +2152,7 @@ paths:
         - tokens
       description: Returns user information for the selected token. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       parameters:
         - in: path
           name: tokenId
@@ -2227,7 +2203,7 @@ paths:
           required: true
           description: Token ID.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Associates the user with the provided Hedera token.
       responses:
         200:
@@ -2289,7 +2265,7 @@ paths:
           required: true
           description: Token ID.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Associate the user with the provided Hedera token.
       responses:
         200:
@@ -2357,7 +2333,7 @@ paths:
           required: true
           description: Username.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Sets the KYC flag for the user.
       responses:
         200:
@@ -2441,7 +2417,7 @@ paths:
           required: true
           description: Username.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Unsets the KYC flag for the user.
       responses:
         200:
@@ -2525,7 +2501,7 @@ paths:
           required: true
           description: Username.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Freeze transfers of the specified token for the user.
       responses:
         200:
@@ -2609,7 +2585,7 @@ paths:
           required: true
           description: Username.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Unfreezes transfers of the specified token for the user.
       responses:
         200:
@@ -2680,7 +2656,7 @@ paths:
         - trustchains
       description: Requests all VP documents. Only users with the Auditor role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns a list of all VP documents.
       parameters:
         - in: query
@@ -2749,7 +2725,7 @@ paths:
           required: true
           description: Hash or ID of a VP document.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns a trustchain for a VP document.
       responses:
         200:
@@ -2832,7 +2808,7 @@ paths:
         - policies
       description: Creates a new policy. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Creates a new policy.
       requestBody:
         description: Object that contains policy configuration.
@@ -2902,7 +2878,7 @@ paths:
           description: Selected policy ID.
       summary: Retrieves policy configuration.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       responses:
         200:
           description: Successful operation.
@@ -2945,9 +2921,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PolicyConfig'
+              $ref: "#/components/schemas/PolicyConfig"
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       responses:
         200:
           description: Successful operation.
@@ -2983,14 +2959,14 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                policyVersion:
-                  type: string
+              schema:
+                type: object
+                properties:
+                  policyVersion:
+                    type: string
       summary: Publishes the policy onto IPFS.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       responses:
         200:
           description: Successful operation.
@@ -3029,11 +3005,11 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                policyVersion:
-                  type: string
+              schema:
+                type: object
+                properties:
+                  policyVersion:
+                    type: string
       responses:
         200:
           description: Successful operation.
@@ -3058,7 +3034,7 @@ paths:
         - policies
       description: Validates selected policy. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Validates policy.
       requestBody:
         description: Object that contains policy configuration.
@@ -3066,7 +3042,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PolicyConfig'
+              $ref: "#/components/schemas/PolicyConfig"
       responses:
         200:
           description: Successful operation.
@@ -3099,7 +3075,7 @@ paths:
           description: Selected policy ID.
       summary: Returns a list of groups the user is a member of.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       responses:
         200:
           description: Successful operation.
@@ -3155,7 +3131,7 @@ paths:
                 uuid:
                   type: string
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       responses:
         200:
           description: Successful operation.
@@ -3184,7 +3160,7 @@ paths:
           description: Selected policy ID.
       summary: Retrieves data for the policy root block.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       responses:
         200:
           description: Successful operation.
@@ -3223,7 +3199,7 @@ paths:
           description: Selected block UUID.
       summary: Requests block data.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       responses:
         200:
           description: Successful operation.
@@ -3267,7 +3243,7 @@ paths:
             schema:
               type: object
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       responses:
         200:
           description: Successful operation.
@@ -3302,7 +3278,7 @@ paths:
           description: Tag from the selected policy.
       summary: Requests block ID from a policy by tag.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       responses:
         200:
           description: Successful operation.
@@ -3337,7 +3313,7 @@ paths:
           required: true
           description: Selected policy ID.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Return Heder message ID for the specified published policy.
       responses:
         200:
@@ -3370,7 +3346,7 @@ paths:
           required: true
           description: Selected policy ID.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Return policy and its artifacts in a zip file format for the specified policy.
       responses:
         200:
@@ -3406,7 +3382,7 @@ paths:
               summary: Example of a topic ID of policy version.
               value: '0.0.00000001'
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Imports new policy from IPFS.
       requestBody:
         description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the Policy.
@@ -3490,7 +3466,7 @@ paths:
               summary: Example of a topic ID of policy version.
               value: '0.0.00000001'
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Imports new policy from a zip file.
       requestBody:
         description: A zip file that contains the policy and associated schemas and VCs to be imported.
@@ -3561,7 +3537,7 @@ paths:
       description: Previews the policy from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
       summary: Policy preview from IPFS.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       requestBody:
         description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the policy.
         required: true
@@ -3633,7 +3609,7 @@ paths:
       description: Previews the policy from a zip file without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
       summary: Policy preview from a zip file.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       requestBody:
         description: A zip file that contains the policy and associated schemas and VCs to be viewed.
         required: true
@@ -4172,7 +4148,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExternalData'
+              $ref: "#/components/schemas/ExternalData"
       responses:
         200:
           description: Successful operation.
@@ -4234,7 +4210,7 @@ paths:
       deprecated: true
       description: Generates a new Hedera account with a random private key.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       responses:
         200:
           description: Successful operation.
@@ -4267,12 +4243,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  key:
-                    type: string
+                $ref: '#/components/schemas/Task'
         401:
           description: Unauthorized.
         403:
@@ -4298,7 +4269,7 @@ paths:
           required: true
           description: File CID.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       responses:
         201:
           description: Successful operation.
@@ -4327,11 +4298,11 @@ paths:
         required: true
         content:
           binary/octet-stream:
-            schema:
-              type: string
-              format: binary
+              schema:
+                type: string
+                format: binary
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       responses:
         201:
           description: Successful operation.
@@ -4355,7 +4326,7 @@ paths:
         - settings
       description: Returns current settings. For users with the Standard Registry role only.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns current settings.
       responses:
         200:
@@ -4379,7 +4350,7 @@ paths:
         - settings
       description: Set settings. For users with the Standard Registry role only.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Set settings.
       responses:
         200:
@@ -4400,7 +4371,7 @@ paths:
         - settings
       description: Returns current environment name.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns current environment name.
       responses:
         200:
@@ -4423,13 +4394,13 @@ paths:
         - logs
       description: Returns logs. For users with the Standard Registry role only.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       requestBody:
         description: Log filters.
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/LogFilters'
+              schema:
+                $ref: '#/components/schemas/LogFilters'
       summary: Returns logs.
       responses:
         200:
@@ -4473,7 +4444,7 @@ paths:
               type: string
           description: Attributes to exclude.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns logs attributes.
       responses:
         200:
@@ -4534,7 +4505,7 @@ paths:
         - artifacts
       description: Returns all artifacts.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns all artifacts.
       parameters:
         - in: query
@@ -4591,7 +4562,7 @@ paths:
         - artifacts
       description: Upload artifact. For users with the Standard Registry role only.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       requestBody:
         content:
           multipart/form-data:
@@ -4637,7 +4608,7 @@ paths:
         - artifacts
       description: Delete artifact.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Delete artifact.
       parameters:
         - in: path
@@ -4670,26 +4641,26 @@ paths:
         - contracts
       description: Returns all contracts.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns all contracts.
       parameters:
         - in: query
           name: pageIndex
           schema:
             type: integer
-          description: The number of pages to skip before starting to collect the result set.
+          description: The number of pages to skip before starting to collect the result set
           examples:
             pageIndex:
-              summary: Example of a pageIndex.
+              summary: Example of a pageIndex
               value: 0
         - in: query
           name: pageSize
           schema:
             type: integer
-          description: The numbers of items to return.
+          description: The numbers of items to return
           examples:
             pageSize:
-              summary: Example of a pageSize.
+              summary: Example of a pageSize
               value: 100
       responses:
         200:
@@ -4720,7 +4691,7 @@ paths:
         - contracts
       description: Creates new contract. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Create new contract.
       requestBody:
         description: Request Object Parameters.
@@ -4731,15 +4702,13 @@ paths:
               properties:
                 description:
                   type: string
-            example:
-              description: 'Smart Contract Description'
       responses:
         200:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Contract'
+                $ref: "#/components/schemas/Contract"
         401:
           description: Unauthorized.
         403:
@@ -4757,7 +4726,7 @@ paths:
         - contracts
       description: Creates new contract. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Import new contract.
       requestBody:
         description: Request Object Parameters.
@@ -4770,10 +4739,6 @@ paths:
                   type: string
                 description:
                   type: string
-            example:
-              contractId: '0.0.49176956'
-              description: 'Smart Contract Description'
-
       responses:
         200:
           description: Successful operation.
@@ -4798,7 +4763,7 @@ paths:
         - contracts
       description: Add new contract user. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Add new contract user.
       parameters:
         - in: path
@@ -4807,7 +4772,6 @@ paths:
             type: string
           description: Contract identifier
           required: true
-          example: '0.0.49176956'
       requestBody:
         description: Request Object Parameters.
         content:
@@ -4817,8 +4781,6 @@ paths:
               properties:
                 userId:
                   type: string
-            example:
-              userId: '0.0.49176949'
       responses:
         200:
           description: Successful operation.
@@ -4843,7 +4805,7 @@ paths:
         - contracts
       description: Update contract status. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Update contract status.
       parameters:
         - in: path
@@ -4852,10 +4814,9 @@ paths:
             type: string
           description: Contract identifier
           required: true
-          example: '0.0.49176956'
       responses:
         200:
-          description: Successful operation. Returns true if you are added to contract else false.
+          description: Successful operation.
           content:
             application/json:
               schema:
@@ -4877,7 +4838,7 @@ paths:
         - contracts
       description: Creates new contract pair. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Creates new contract pair.
       parameters:
         - in: path
@@ -4886,7 +4847,6 @@ paths:
             type: string
           description: Contract identifier
           required: true
-          example: '0.0.49176956'
       requestBody:
         description: Request Object Parameters.
         content:
@@ -4899,14 +4859,9 @@ paths:
                 oppositeTokenId:
                   type: string
                 baseTokenCount:
-                  type: integer
+                  type: string
                 oppositeTokenCount:
-                  type: integer
-            example:
-              baseTokenId: '0.0.49179655'
-              oppositeTokenId: '0.0.49179656'
-              baseTokenCount: 1
-              oppositeTokenCount: 3
+                  type: string
       responses:
         200:
           description: Successful operation.
@@ -4931,21 +4886,27 @@ paths:
         - contracts
       description: Returns all contracts pairs.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns all contracts pairs.
       parameters:
         - in: query
-          name: baseTokenId
+          name: pageIndex
           schema:
-            type: string
-          description: Base token identifier
-          example: '0.0.49179655'
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
         - in: query
-          name: oppositeTokenId
+          name: pageSize
           schema:
-            type: string
-          description: Opposite token identifier
-          example: '0.0.49179656'
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
       responses:
         200:
           description: Successful operation.
@@ -4962,9 +4923,9 @@ paths:
                   type: object
                   properties:
                     baseTokenRate:
-                      type: integer
+                      type: string
                     oppositeTokenRate:
-                      type: integer
+                      type: string
                     contractId:
                       type: string
                     description:
@@ -4986,7 +4947,7 @@ paths:
         - contracts
       description: Creates new contract retire request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Creates new contract retire request.
       parameters:
         - in: path
@@ -4995,7 +4956,6 @@ paths:
             type: string
           description: Contract identifier
           required: true
-          example: '0.0.49176956'
       requestBody:
         description: Request Object Parameters.
         content:
@@ -5008,31 +4968,20 @@ paths:
                 oppositeTokenId:
                   type: string
                 baseTokenCount:
-                  type: integer
+                  type: string
                 oppositeTokenCount:
-                  type: integer
+                  type: string
                 baseTokenSerials:
-                  type: array
-                  items:
-                    type: integer
+                  type: string
                 oppositeTokenSerials:
-                  type: array
-                  items:
-                    type: integer
-            example:
-              baseTokenId: '0.0.49179655'
-              oppositeTokenId: '0.0.49179656'
-              baseTokenCount: 2
-              oppositeTokenCount: 6
-              baseTokenSerials: []
-              oppositeTokenSerials: []
+                  type: string
       responses:
         200:
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RetireRequest'
+                $ref: "#/components/schemas/RetireRequest"
         401:
           description: Unauthorized.
         403:
@@ -5050,32 +4999,31 @@ paths:
         - contracts
       description: Returns all contract requests.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Returns all contract requests.
       parameters:
         - in: query
           name: contractId
           schema:
             type: string
-          description: Contract Identifier.
-          example: '0.0.49176956'
+          description: Contract Identifier
         - in: query
           name: pageIndex
           schema:
             type: integer
-          description: The number of pages to skip before starting to collect the result set.
+          description: The number of pages to skip before starting to collect the result set
           examples:
             pageIndex:
-              summary: Example of a pageIndex.
+              summary: Example of a pageIndex
               value: 0
         - in: query
           name: pageSize
           schema:
             type: integer
-          description: The numbers of items to return.
+          description: The numbers of items to return
           examples:
             pageSize:
-              summary: Example of a pageSize.
+              summary: Example of a pageSize
               value: 100
       responses:
         200:
@@ -5090,7 +5038,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/RetireRequest'
+                  $ref: "#/components/schemas/RetireRequest"
         401:
           description: Unauthorized.
         403:
@@ -5106,16 +5054,15 @@ paths:
         - contracts
       description: Cancel contract requests.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Cancel contract requests.
       parameters:
         - in: query
           name: requestId
           schema:
             type: string
-          description: Request Identifier.
+          description: Request Identifier
           required: true
-          example: '507f1f77bcf86cd799439011'
       responses:
         200:
           description: Successful operation.
@@ -5140,7 +5087,7 @@ paths:
         - contracts
       description: Retire tokens. Only users with the Standard Registry role are allowed to make the request.
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       summary: Retire tokens.
       requestBody:
         description: Request Object Parameters.
@@ -5151,8 +5098,6 @@ paths:
               properties:
                 requestId:
                   type: string
-            example:
-              requestId: '507f1f77bcf86cd799439011'
       responses:
         200:
           description: Successful operation.
@@ -5160,240 +5105,6 @@ paths:
             application/json:
               schema:
                 type: boolean
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /analytics/compare/policies:
-    post:
-      tags:
-        - analytics
-      description: Returns the result of comparing two policies. Only users with the Standard Registry role are allowed to make the request.
-      security:
-        - bearerAuth: []
-      summary: Returns the result of comparing two policies.
-      requestBody:
-        description: Compare Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                policyId1:
-                  type: string
-                policyId2:
-                  type: string
-                propLvl:
-                  type: string
-                childrenLvl:
-                  type: string
-                eventsLvl:
-                  type: string
-                idLvl:
-                  type: string
-            example:
-              policyId1: '507f1f77bcf86cd799439011'
-              policyId2: '507f1f77bcf86cd799439011'
-              propLvl: '0'
-              childrenLvl: '0'
-              eventsLvl: '0'
-              idLvl: '0'
-      responses:
-        200:
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  left:
-                    type: object
-                  right:
-                    type: object
-                  roles:
-                    $ref: '#/components/schemas/Table'
-                  groups:
-                    $ref: '#/components/schemas/Table'
-                  tokens:
-                    $ref: '#/components/schemas/Table'
-                  topics:
-                    $ref: '#/components/schemas/Table'
-                  blocks:
-                    $ref: '#/components/schemas/Table'
-                  total:
-                    type: number
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /analytics/compare/schemas:
-    post:
-      tags:
-        - analytics
-      description: Returns the result of comparing two schemas. Only users with the Standard Registry role are allowed to make the request.
-      security:
-        - bearerAuth: []
-      summary: Returns the result of comparing two schemas.
-      requestBody:
-        description: Compare Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                schemaId1:
-                  type: string
-                schemaId2:
-                  type: string
-                idLvl:
-                  type: string
-            example:
-              schemaId1: '507f1f77bcf86cd799439011'
-              schemaId2: '507f1f77bcf86cd799439011'
-              idLvl: '0'
-      responses:
-        200:
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  left:
-                    type: object
-                  right:
-                    type: object
-                  fields:
-                    $ref: '#/components/schemas/Table'
-                  total:
-                    type: number
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /analytics/compare/policies/export:
-    post:
-      tags:
-        - analytics
-      description: Returns the result of comparing two policies. Only users with the Standard Registry role are allowed to make the request.
-      security:
-        - bearerAuth: []
-      summary: Returns the result of comparing two policies.
-      parameters:
-        - in: query
-          name: type
-          schema:
-            type: string
-            enum: [csv]
-          description: File type.
-          required: true
-          example: 'csv'
-      requestBody:
-        description: Compare Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                policyId1:
-                  type: string
-                policyId2:
-                  type: string
-                propLvl:
-                  type: string
-                childrenLvl:
-                  type: string
-                eventsLvl:
-                  type: string
-                idLvl:
-                  type: string
-            example:
-              policyId1: '507f1f77bcf86cd799439011'
-              policyId2: '507f1f77bcf86cd799439011'
-              propLvl: '0'
-              childrenLvl: '0'
-              eventsLvl: '0'
-              idLvl: '0'
-      responses:
-        200:
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: string
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /analytics/compare/schemas/export:
-    post:
-      tags:
-        - analytics
-      description: Returns the result of comparing two schemas. Only users with the Standard Registry role are allowed to make the request.
-      security:
-        - bearerAuth: []
-      summary: Returns the result of comparing two schemas.
-      parameters:
-        - in: query
-          name: type
-          schema:
-            type: string
-            enum: [csv]
-          description: File type.
-          required: true
-          example: 'csv'
-      requestBody:
-        description: Compare Parameters.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                schemaId1:
-                  type: string
-                schemaId2:
-                  type: string
-                idLvl:
-                  type: string
-            example:
-              schemaId1: '507f1f77bcf86cd799439011'
-              schemaId2: '507f1f77bcf86cd799439011'
-              idLvl: '0'
-      responses:
-        200:
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: string
         401:
           description: Unauthorized.
         403:

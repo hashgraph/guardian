@@ -311,7 +311,7 @@ function setValueType(value, type) {
 
 function isValid(value, type) {
     if (type == 'topic') {
-        return !!(value && (/^\d\.\d\.\d\d\d\d\d\d\d\d$/).test(value));
+        return !!(value && (/^\d\.\d\.\d[\d]*$/).test(value));
     } else if (type == 'message') {
         return !!(value && (/^\d\d\d\d\d\d\d\d\d\d\.\d\d\d\d\d\d\d\d\d$/).test(value));
     }
@@ -319,7 +319,7 @@ function isValid(value, type) {
 }
 
 function checkType(value, type) {
-    if ((value && (/^\d\.\d\.\d\d\d\d\d\d\d\d$/).test(value))) {
+    if ((value && (/^\d\.\d\.\d[\d]*$/).test(value))) {
         return 'topic';
     }
     if ((value && (/^\d\d\d\d\d\d\d\d\d\d\.\d\d\d\d\d\d\d\d\d$/).test(value))) {
