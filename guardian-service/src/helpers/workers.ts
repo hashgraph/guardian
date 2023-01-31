@@ -120,13 +120,15 @@ export class Workers extends ServiceRequestsBase {
         });
 
         this.channel.response(WorkerEvents.TASK_COMPLETE, async (msg: any) => {
-            const activeTask = this.tasksCallbacks.get(msg.id);
+            if (this.tasksCallbacks.has(msg.id)) {
+                const activeTask = this.tasksCallbacks.get(msg.id);
 
-            if (!activeTask) {
-                this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, msg);
+                if (!activeTask) {
+                    this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, msg);
+                }
+
+                activeTask.callback(msg.data, msg.error);
             }
-
-            activeTask.callback(msg.data, msg.error);
             return new MessageResponse(null);
         });
 
