@@ -224,11 +224,14 @@ export class PolicyEngineService {
             const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
             if (policy) {
                 const policyId = policy.id.toString();
-                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                await channel.request([name, PolicyEvents.MRV_DATA].join('.'), {
-                    policyId,
-                    data: msg
-                });
+                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                if (serviceChannelEntity) {
+                    const {channel, name} = serviceChannelEntity;
+                    await channel.request([name, PolicyEvents.MRV_DATA].join('.'), {
+                        policyId,
+                        data: msg
+                    });
+                }
             }
 
             return new MessageResponse({})
@@ -528,13 +531,17 @@ export class PolicyEngineService {
             try {
                 const { user, policyId } = msg;
 
-                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                const blockData = await channel.request([name, PolicyEvents.GET_ROOT_BLOCK_DATA].join('.'), {
-                    user,
-                    policyId
-                });
+                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                if (serviceChannelEntity) {
+                    const { channel, name } = serviceChannelEntity;
+                    const blockData = await channel.request([name, PolicyEvents.GET_ROOT_BLOCK_DATA].join('.'), {
+                        user,
+                        policyId
+                    });
+                    return new MessageResponse(blockData.body);
+                }
+                return new MessageResponse(null);
 
-                return new MessageResponse(blockData.body);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -545,14 +552,17 @@ export class PolicyEngineService {
             try {
                 const { user, blockId, policyId } = msg;
 
-                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_DATA].join('.'), {
-                    user,
-                    blockId,
-                    policyId
-                })
-
-                return new MessageResponse(blockData.body);
+                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                if (serviceChannelEntity) {
+                    const {channel, name} = serviceChannelEntity;
+                    const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_DATA].join('.'), {
+                        user,
+                        blockId,
+                        policyId
+                    })
+                    return new MessageResponse(blockData.body);
+                }
+                return new MessageResponse(null);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -563,14 +573,17 @@ export class PolicyEngineService {
             try {
                 const { user, tag, policyId } = msg;
 
-                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_DATA_BY_TAG].join('.'), {
-                    user,
-                    tag,
-                    policyId
-                })
-
-                return new MessageResponse(blockData.body);
+                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                if (serviceChannelEntity) {
+                    const {channel, name} = serviceChannelEntity;
+                    const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_DATA_BY_TAG].join('.'), {
+                        user,
+                        tag,
+                        policyId
+                    })
+                    return new MessageResponse(blockData.body);
+                }
+                return new MessageResponse(null);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -581,15 +594,18 @@ export class PolicyEngineService {
             try {
                 const { user, blockId, policyId, data } = msg;
 
-                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                const blockData = await channel.request([name, PolicyEvents.SET_BLOCK_DATA].join('.'), {
-                    user,
-                    blockId,
-                    policyId,
-                    data
-                });
-
-                return new MessageResponse(blockData.body);
+                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                if (serviceChannelEntity) {
+                    const {channel, name} = serviceChannelEntity;
+                    const blockData = await channel.request([name, PolicyEvents.SET_BLOCK_DATA].join('.'), {
+                        user,
+                        blockId,
+                        policyId,
+                        data
+                    });
+                    return new MessageResponse(blockData.body);
+                }
+                return new MessageError(new Error('Permission denied'));
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -600,15 +616,18 @@ export class PolicyEngineService {
             try {
                 const { user, tag, policyId, data } = msg;
 
-                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                const blockData = await channel.request([name, PolicyEvents.SET_BLOCK_DATA_BY_TAG].join('.'), {
-                    user,
-                    tag,
-                    policyId,
-                    data
-                })
-
-                return new MessageResponse(blockData.body);
+                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                if (serviceChannelEntity) {
+                    const {channel, name} = serviceChannelEntity;
+                    const blockData = await channel.request([name, PolicyEvents.SET_BLOCK_DATA_BY_TAG].join('.'), {
+                        user,
+                        tag,
+                        policyId,
+                        data
+                    })
+                    return new MessageResponse(blockData.body);
+                }
+                return new MessageError(new Error('Permission denied'));
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -619,13 +638,17 @@ export class PolicyEngineService {
             try {
                 const { tag, policyId } = msg;
 
-                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                const blockData = await channel.request([name, PolicyEvents.BLOCK_BY_TAG].join('.'), {
-                    tag,
-                    policyId,
-                })
+                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                if (serviceChannelEntity) {
+                    const {channel, name} = serviceChannelEntity;
+                    const blockData = await channel.request([name, PolicyEvents.BLOCK_BY_TAG].join('.'), {
+                        tag,
+                        policyId,
+                    })
 
-                return new MessageResponse(blockData.body);
+                    return new MessageResponse(blockData.body);
+                }
+                return new MessageError(new Error('Permission denied'));
             } catch (error) {
                 return new MessageError('The policy does not exist, or is not published, or tag was not registered in policy', 404);
             }
@@ -635,12 +658,15 @@ export class PolicyEngineService {
             try {
                 const { blockId, policyId } = msg;
 
-                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_PARENTS].join('.'), {
-                    blockId
-                })
-
-                return new MessageResponse(blockData.body);
+                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                if (serviceChannelEntity) {
+                    const {channel, name} = serviceChannelEntity;
+                    const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_PARENTS].join('.'), {
+                        blockId
+                    });
+                    return new MessageResponse(blockData.body);
+                }
+                return new MessageError(new Error('Permission denied'));
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -651,13 +677,16 @@ export class PolicyEngineService {
             try {
                 const { user, policyId } = msg;
 
-                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                const blockData = await channel.request([name, PolicyEvents.GET_POLICY_GROUPS].join('.'), {
-                    user,
-                    policyId
-                })
-
-                return new MessageResponse(blockData.body);
+                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                if (serviceChannelEntity) {
+                    const {channel, name} = serviceChannelEntity;
+                    const blockData = await channel.request([name, PolicyEvents.GET_POLICY_GROUPS].join('.'), {
+                        user,
+                        policyId
+                    })
+                    return new MessageResponse(blockData.body);
+                }
+                return new MessageError(new Error('Permission denied'));
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -668,14 +697,17 @@ export class PolicyEngineService {
             try {
                 const { user, policyId, uuid } = msg;
 
-                const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                const blockData = await channel.request([name, PolicyEvents.SELECT_POLICY_GROUP].join('.'), {
-                    user,
-                    policyId,
-                    uuid
-                })
-
-                return new MessageResponse(blockData.body);
+                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                if (serviceChannelEntity) {
+                    const {channel, name} = serviceChannelEntity;
+                    const blockData = await channel.request([name, PolicyEvents.SELECT_POLICY_GROUP].join('.'), {
+                        user,
+                        policyId,
+                        uuid
+                    });
+                    return new MessageResponse(blockData.body);
+                }
+                return new MessageError(new Error('Permission denied'));
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -885,11 +917,15 @@ export class PolicyEngineService {
                 const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
                 if (policy) {
                     const policyId = policy.id.toString();
-                    const { channel, name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                    await channel.request([name, PolicyEvents.MRV_DATA].join('.'), {
-                        policyId,
-                        data: msg
-                    });
+
+                    const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+                    if (serviceChannelEntity) {
+                        const {channel, name} = serviceChannelEntity;
+                        await channel.request([name, PolicyEvents.MRV_DATA].join('.'), {
+                            policyId,
+                            data: msg
+                        });
+                    }
                 }
                 return new MessageResponse(true);
             } catch (error) {
