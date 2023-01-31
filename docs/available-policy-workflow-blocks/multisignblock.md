@@ -84,7 +84,7 @@ This block provides a way to specify multiple signators for a single VC document
 
 4.1.2 multiSignBlock must be child block of grid block to receive all data it requires to operate.
 
-<figure><img src="../.gitbook/assets/image (31).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (31) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 5. UI
 
@@ -98,7 +98,7 @@ We have an option of Signing/ Declining the document by clicking on "Sign" or "D
 
 Number of users, who have signed or declined the document can be displayed with threshold as shown below:
 
-<figure><img src="../.gitbook/assets/image (29).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (29) (3).png" alt=""><figcaption></figcaption></figure>
 
 #### 5.3 Detailed Signature Information
 
