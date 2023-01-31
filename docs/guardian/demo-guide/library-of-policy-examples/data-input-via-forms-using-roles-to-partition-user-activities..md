@@ -18,7 +18,7 @@ Assign these containers appropriate Permissions: ‘no\_role’, ‘User’, or 
 
 See detailed information about the Roles in Example 1.
 
-![image1.png](<../../../.gitbook/assets/0 (1).png>)
+![image1.png](<../../../.gitbook/assets/0 (2).png>)
 
 **Main section**
 
@@ -27,7 +27,7 @@ See detailed information about the Roles in Example 1.
 1. Create a schema for Policy data input
    1. Go to ‘Schemas’ tab and create a new schema
 
-![image2.png](<../../../.gitbook/assets/1 (1).png>)
+![image2.png](<../../../.gitbook/assets/1 (2).png>)
 
 *
   1. To make sure there is some demo/test data content in this schema create 3 fields:
@@ -41,62 +41,62 @@ See detailed information about the Roles in Example 1.
 1. To perform data input into the Policy the ‘requestVcDocumentBlock’ will be used
    1. Since the scope of this example includes input of multiple documents the Policy requires logic similar to what is known as ‘loop’ or ‘iteration’. For this ‘interfaceStepBlock’ is required with ‘Cyclic’ option enabled. This will allow to return to the initial state after the document was saved.
 
-![image4.png](<../../../.gitbook/assets/3 (1).png>)
+![image4.png](<../../../.gitbook/assets/3 (2).png>)
 
 *
   1. Add ‘requestVcDocumentBlock’ into the ‘_cyclic\_container_’
 
-![image5.png](<../../../.gitbook/assets/4 (1).png>)
+![image5.png](<../../../.gitbook/assets/4 (2).png>)
 
 *
   1. Select the previously created Schema
 
-![image6.png](<../../../.gitbook/assets/5 (1).png>)
+![image6.png](<../../../.gitbook/assets/5 (2).png>)
 
 *
   1. Select ‘New UUID’ to configure automatic generation of unique IDs for each document
 
-![image7.png](<../../../.gitbook/assets/6 (1).png>)
+![image7.png](<../../../.gitbook/assets/6 (2).png>)
 
 *
   1. By default ‘requestVcDocumentBlock’ is displayed as a Form covering the entire page. To prevent this chose ‘DIALOG’ value for the field ‘Type’.
 
-![image8.png](<../../../.gitbook/assets/7 (1).png>)
+![image8.png](<../../../.gitbook/assets/7 (2).png>)
 
 1. Save documents in the database.
    1. Add ‘sendToGuardianBlock’ into the container ‘_cyclic\_container’_ immediately after ‘_create\_new\_document’_
 
-![image9.png](<../../../.gitbook/assets/8 (1).png>)
+![image9.png](<../../../.gitbook/assets/8 (2).png>)
 
 *
   1. Select data type and where where to store the document
 
-![image10.png](<../../../.gitbook/assets/9 (1).png>)
+![image10.png](<../../../.gitbook/assets/9 (2).png>)
 
 *
   1. Create appropriate attributes to capture/store document status
 
 Add ‘Status’ attributed and set the initial ‘New’ value for new documents
 
-![image11.png](<../../../.gitbook/assets/10 (1).png>)
+![image11.png](<../../../.gitbook/assets/10 (2).png>)
 
 **Displaying the documents**
 
 1. To display documents ‘_interfaceDocumentsSourceBlock’ is used_
    1. Add ’_interfaceDocumentsSourceBlock’_ into the ‘_user\_roles’_ container
 
-![image12.png](../../../.gitbook/assets/11.png)
+![image12.png](<../../../.gitbook/assets/11 (2).png>)
 
 *
   1. Specify the needed columns, their titles and where the values will be taken from for display
 
-![image13.png](../../../.gitbook/assets/12.png)
+![image13.png](<../../../.gitbook/assets/12 (2).png>)
 
 *
   1. To retrieve the data from the database ’_documentsSourceAddon’ block is used_
      1. Add ‘_documentsSourceAddon’ to the_ ‘_user\_grid’_
 
-![image14.png](../../../.gitbook/assets/13.png)
+![image14.png](<../../../.gitbook/assets/13 (2).png>)
 
 *
   *

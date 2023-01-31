@@ -1,4 +1,4 @@
-# Creating and using Roles
+# 💻 Creating and using Roles
 
 ## **User roles usage in Policies**
 
@@ -10,9 +10,9 @@
 
 2. Create 2 new roles called ‘**Example role 1**_’ and_ ‘_**Example role 2**_’
 
-![Add Role button](../../../.gitbook/assets/1.png)
+![Add Role button](<../../../.gitbook/assets/1 (1).png>)
 
-![Creating two roles](../../../.gitbook/assets/2.png)
+![Creating two roles](<../../../.gitbook/assets/2 (1).png>)
 
 3. In the root container create 4 more ’**interfaceContainerBlock**_’_ container called ‘**no\_role**_’_, ‘**owner**_’_, ‘**role\_1**_’ and ‘_**role\_2**_’_
 
@@ -31,7 +31,7 @@
 
 ![No Role](../../../.gitbook/assets/4.png) ![Owner](../../../.gitbook/assets/5.png)
 
-![Example role 1](../../../.gitbook/assets/6.png) ![Example role 2](../../../.gitbook/assets/7.png)
+![Example role 1](<../../../.gitbook/assets/6 (1).png>) ![Example role 2](../../../.gitbook/assets/7.png)
 
 This would result in the following visibility of containers:
 
@@ -42,31 +42,30 @@ This would result in the following visibility of containers:
 
 5. Add a ‘**policyRolesBlock**_’_ to the ‘_no\_role’_ container and name it ‘_choose\_role’_
 
-![Adding policyRolesBlock](../../../.gitbook/assets/8.png)
+![Adding policyRolesBlock](<../../../.gitbook/assets/8 (1).png>)
 
 Since this block is located inside the container ‘_no\_role_’ which has ‘_No role_’ permission setting it would only be visible to new users without an assigned role.
 
-1. The ‘_Available Roles’_ property allows to configure which roles would be available to users to chose from at this stage of the Policy workflow
+6. The ‘**Available Roles**_’_ property allows to configure which roles would be available to users to chose from at this stage of the Policy workflow
 
-Select ‘_Example role 1’ and_ ‘E_xample role 2’_
+Select ‘**Example role 1**_’ and_ ‘**Example role 2**_’_
 
-![image10.png](../../../.gitbook/assets/9.png)
+![Available Roles property](<../../../.gitbook/assets/9 (1).png>)
 
-1. Add ‘_informationBlock_’ to to other containers just to display results
+7. Add ‘**informationBlock**’ to other containers just to display results
 
-![image11.png](../../../.gitbook/assets/10.png)
+![InformationBlock to other containers](../../../.gitbook/assets/10.png)
 
-**Results**:\
-
+### **Results**:
 
 1. New users would end up on the policy choice form upon entering the policy
 
-![image12.png](<../../../.gitbook/assets/11 (1).png>)
+![Selecting Role](../../../.gitbook/assets/11.png)
 
-1. After the selection of the role users would see only 1 container corresponding to their roles
+2. After the selection of the role users would see only 1 container corresponding to their roles
 
-![image13.png](<../../../.gitbook/assets/12 (1).png>)
+![Showing only 1 container](../../../.gitbook/assets/12.png)
 
-1. The owner of the Policy (the Standard Registry user) upon executing the policy would skip the role selection form and would immediately end-up in the corresponding container
+3. The owner of the Policy (the Standard Registry user) upon executing the policy would skip the role selection form and would immediately end-up in the corresponding container
 
-![image14.png](<../../../.gitbook/assets/13 (1).png>)
+![For Standard Registry](<../../../.gitbook/assets/13 (1).png>)
