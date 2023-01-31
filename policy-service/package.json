@@ -65,6 +65,7 @@
     "name": "policy-service",
     "scripts": {
         "build": "tsc",
+        "build:prod": "tsc --project tsconfig.production.json",
         "debug": "nodemon dist/index.js",
         "dev:docker": "nodemon .",
         "dev": "tsc -w",

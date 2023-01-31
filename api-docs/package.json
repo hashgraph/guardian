@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev:docker": "nodemon src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "build:prod": "tsc --project tsconfig.production.json"
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "license": "Apache-2.0",

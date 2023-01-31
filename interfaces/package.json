@@ -18,10 +18,11 @@
   "module": "dist/index.js",
   "name": "@guardian/interfaces",
   "scripts": {
-    "prepare": "npm run build",
     "build": "tsc",
+    "build:prod": "tsc --project tsconfig.production.json",
     "dev": "tsc -w",
     "lint": "tslint --config ../tslint.json --project .",
+    "prepack": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "version": "2.9.0"
