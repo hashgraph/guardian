@@ -997,7 +997,7 @@ export class HederaSDKHelper {
                 const result = await transaction.execute(client);
                 const receipt = await result.getReceipt(client);
                 await this.transactionEndLog(id, type, transaction, metadata);
-                HederaSDKHelper.transactionResponse(client);
+                await HederaSDKHelper.transactionResponse(client);
                 return receipt;
             } catch (error) {
                 await this.transactionErrorLog(id, type, transaction, error);
@@ -1029,7 +1029,7 @@ export class HederaSDKHelper {
                 const result = await transaction.execute(client);
                 const record = await result.getRecord(client);
                 await this.transactionEndLog(id, type, transaction, metadata);
-                HederaSDKHelper.transactionResponse(client);
+                await HederaSDKHelper.transactionResponse(client);
                 return record;
             } catch (error) {
                 await this.transactionErrorLog(id, type, transaction, error);
@@ -1051,9 +1051,9 @@ export class HederaSDKHelper {
      * @param client
      * @private
      */
-    private static transactionResponse(client: Client) {
+    private static async transactionResponse(client: Client) {
         if (HederaSDKHelper.fn) {
-            HederaSDKHelper.fn(client);
+            await HederaSDKHelper.fn(client);
         }
     }
 
