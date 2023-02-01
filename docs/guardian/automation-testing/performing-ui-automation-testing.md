@@ -16,7 +16,7 @@ After executing this command, you will see a welcome window where you need to se
 
 'E2E Testing' as shown below:
 
-<figure><img src="../../.gitbook/assets/image (7) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (7) (4) (2).png" alt=""><figcaption></figcaption></figure>
 
 Click on the button ' Start E2E Testing in Electron '.
 

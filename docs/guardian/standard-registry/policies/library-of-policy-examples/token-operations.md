@@ -89,3 +89,15 @@ Switch to the ‘**Tokens**’ tab and create a new token
 ![Adding documentSourceAddon Block](../../../../.gitbook/assets/13.png)
 
 ## **Result:**
+
+### Create User
+
+<figure><img src="../../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+
+### Create Project
+
+<figure><img src="../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+
+### Mint Token
+
+<figure><img src="../../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>

@@ -170,7 +170,7 @@ Create 2 ‘**sendToGuardianBlock**’ blocks with the corresponding values for 
 
 ### 1. Choose a role
 
-<figure><img src="../../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (7) (4).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Create new document
 
@@ -182,4 +182,4 @@ Create 2 ‘**sendToGuardianBlock**’ blocks with the corresponding values for 
 
 <figure><img src="../../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>

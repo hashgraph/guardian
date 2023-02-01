@@ -31,7 +31,7 @@ After the ‘primary’ policy is registered a special ‘link’ becomes access
 
 Step 1: We click again on the linking icon for secondary policy and will get a linking pop up as shown below:
 
-<figure><img src="../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 Step 2: In order to make the policy as secondary, we will click on Join button and link with the primary policy.
 
