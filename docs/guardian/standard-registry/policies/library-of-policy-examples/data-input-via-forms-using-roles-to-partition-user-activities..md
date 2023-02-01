@@ -48,7 +48,7 @@ For this ‘**interfaceStepBlock**’ is required with ‘**Cyclic**’ option e
 
 2.2 Add ‘**requestVcDocumentBlock**’ into the ‘_cyclic\_container_’
 
-![Adding requestVcDocumentBlock into cyclic\_container](<../../../../.gitbook/assets/4 (2).png>)
+![Adding requestVcDocumentBlock into cyclic\_container](<../../../../.gitbook/assets/4 (2) (1).png>)
 
 2.3 Then select the previously created Schema
 
@@ -60,7 +60,7 @@ For this ‘**interfaceStepBlock**’ is required with ‘**Cyclic**’ option e
 
 2.5 By default ‘**requestVcDocumentBlock**’ is displayed as a Form covering the entire page. To prevent this choose ‘**DIALOG**’ value for the field ‘Type’.
 
-![Selecting DIALOG as Type](<../../../../.gitbook/assets/7 (2).png>)
+![Selecting DIALOG as Type](<../../../../.gitbook/assets/7 (2) (1).png>)
 
 #### 3. Save documents in the Database.
 
@@ -70,13 +70,13 @@ For this ‘**interfaceStepBlock**’ is required with ‘**Cyclic**’ option e
 
 3.2 Select data type and where to store the document
 
-![Selecting Data Source and Type](<../../../../.gitbook/assets/9 (2) (1).png>)
+![Selecting Data Source and Type](<../../../../.gitbook/assets/9 (2) (1) (1).png>)
 
 3.3 Create appropriate attributes to capture/store document status
 
 Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
-![Adding Status Attribute with New Value](<../../../../.gitbook/assets/10 (2).png>)
+![Adding Status Attribute with New Value](<../../../../.gitbook/assets/10 (2) (1).png>)
 
 ### **Displaying the documents**
 
@@ -88,7 +88,7 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.2 Specify the needed columns, their titles and where the values will be taken for display
 
-![Specifying paths, type and titles of the columns](<../../../../.gitbook/assets/12 (2).png>)
+![Specifying paths, type and titles of the columns](<../../../../.gitbook/assets/12 (2) (1).png>)
 
 1.3 To retrieve the data from the database ’**documentsSourceAddon**_’ block is used_
 
@@ -106,7 +106,7 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.3.4 Select _‘_**Owned by User**_’_ checkbox which would filter in only the documents that are created by this user (this will disable the ability to view other documents)
 
-![Selecting Owned by User checkbox](<../../../../.gitbook/assets/16 (1).png>)
+![Selecting Owned by User checkbox](<../../../../.gitbook/assets/16 (1) (1).png>)
 
 ### **Approving the documents**
 
@@ -116,11 +116,11 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.2 Add additional column which would contain the ‘**Approve**’ button
 
-![Adding Approve column](<../../../../.gitbook/assets/17 (1).png>)
+![Adding Approve column](<../../../../.gitbook/assets/17 (1) (1).png>)
 
 1.3 Since the Approve button should be displayed only for new documents use two ‘**documentSourceAddon**’ block
 
-![Adding two documentSourceAddon Blocks](../../../../.gitbook/assets/18.png)
+![Adding two documentSourceAddon Blocks](<../../../../.gitbook/assets/18 (1).png>)
 
 Configure both ‘**documentSourceAddon**’ blocks similarly to how it was in the previous sections, except here do not select the ‘_Owned by User_’ checkbox to allow the Approvers to see all documents (created by all users)
 

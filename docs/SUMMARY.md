@@ -185,6 +185,7 @@
       * [💻 Creating and using Roles](guardian/standard-registry/policies/library-of-policy-examples/creating-and-using-roles.md)
       * [🔢 Data input via Forms, using Roles to partition user activities.](guardian/standard-registry/policies/library-of-policy-examples/data-input-via-forms-using-roles-to-partition-user-activities..md)
       * [🪙 Token Operations](guardian/standard-registry/policies/library-of-policy-examples/token-operations.md)
+      * [🔎 MRV Document Operations](guardian/standard-registry/policies/library-of-policy-examples/mrv-document-operations.md)
   * [📔 Retirement Contract](guardian/standard-registry/retirement-contract/README.md)
     * [💻 Creating / Importing Contract UI](guardian/standard-registry/retirement-contract/creating-importing-contract-ui.md)
     * [💻 Creating Token Pair UI](guardian/standard-registry/retirement-contract/creating-token-pair-ui.md)

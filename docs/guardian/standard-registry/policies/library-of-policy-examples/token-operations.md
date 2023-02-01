@@ -12,7 +12,7 @@ Second step of policy execution is data input and document submission. To enable
 
 To enable document submission we will use document input block (**requestVcDocumentBlock**) and document persistence block (**sendToGuardianBlock**)
 
-![creating new\_user\_registration Block](<../../../../.gitbook/assets/0 (1).png>)
+![creating new\_user\_registration Block](<../../../../.gitbook/assets/0 (1) (1).png>)
 
 **Please see** [**example 2**](data-input-via-forms-using-roles-to-partition-user-activities..md) **for the more in-depth guide of working with documents in Guardian Policies.**
 
@@ -58,11 +58,11 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 3.3 Configure the formula which would define the amount of tokens minted
 
-![Adding formula for tokens](<../../../../.gitbook/assets/8 (3).png>)
+![Adding formula for tokens](<../../../../.gitbook/assets/8 (3) (1).png>)
 
 3.4 Configure the account where tokens will be sent to upon minting
 
-![Configuring Account type](<../../../../.gitbook/assets/9 (2).png>)
+![Configuring Account type](<../../../../.gitbook/assets/9 (2) (1).png>)
 
 ### **Document Display**
 
@@ -86,7 +86,7 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 1.4 Use ‘_**documentsSourceAddon’**_ block to retrieve data from the database.
 
-![Adding documentSourceAddon Block](../../../../.gitbook/assets/13.png)
+![Adding documentSourceAddon Block](<../../../../.gitbook/assets/13 (1).png>)
 
 ## **Result:**
 

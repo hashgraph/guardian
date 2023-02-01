@@ -10,7 +10,7 @@
 
 2. Create 2 new roles called ‘**Example role 1**_’ and_ ‘_**Example role 2**_’
 
-![Add Role button](<../../../../.gitbook/assets/1 (1).png>)
+![Add Role button](<../../../../.gitbook/assets/1 (1) (1).png>)
 
 ![Creating two roles](<../../../../.gitbook/assets/2 (1).png>)
 
@@ -29,9 +29,9 @@
 * role\_1: Example role 1
 * role\_2: Example role 2
 
-![No Role](../../../../.gitbook/assets/4.png) ![Owner](<../../../../.gitbook/assets/5 (1).png>)
+![No Role](../../../../.gitbook/assets/4.png) ![Owner](<../../../../.gitbook/assets/5 (1) (2).png>)
 
-![Example role 1](<../../../../.gitbook/assets/6 (1).png>) ![Example role 2](<../../../../.gitbook/assets/7 (1).png>)
+![Example role 1](<../../../../.gitbook/assets/6 (1) (1).png>) ![Example role 2](<../../../../.gitbook/assets/7 (1).png>)
 
 This would result in the following visibility of containers:
 
@@ -64,8 +64,8 @@ Select ‘**Example role 1**_’ and_ ‘**Example role 2**_’_
 
 2. After the selection of the role users would see only 1 container corresponding to their roles
 
-![Showing only 1 container](../../../../.gitbook/assets/12.png)
+![Showing only 1 container](<../../../../.gitbook/assets/12 (2).png>)
 
 3. The owner of the Policy (the Standard Registry user) upon executing the policy would skip the role selection form and would immediately end-up in the corresponding container
 
-![For Standard Registry](<../../../../.gitbook/assets/13 (1).png>)
+![For Standard Registry](<../../../../.gitbook/assets/13 (1) (1).png>)
