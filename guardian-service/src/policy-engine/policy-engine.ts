@@ -871,15 +871,19 @@ export class PolicyEngine extends ServiceRequestsBase{
 
         const { name } = PolicyServiceChannelsContainer.createIfNotExistServiceChannel(policyId);
 
-        const resultsContainer = new PolicyValidationResultsContainer();
-        this.channel.publish(PolicyEvents.VALIDATE_POLICY, {
+        this.channel.publish(PolicyEvents.GENERATE_POLICY, {
             policy,
             policyId,
             policyServiceName: name,
             skipRegistration: false
         });
 
-        return resultsContainer.getSerializedErrors();
+        return new Promise((resolve) => {
+            this.policyReadyCallbacks.set(policyId, (data) => {
+                this.destroyModel(policyId);
+                resolve(data);
+            })
+        });
     }
 
     /**

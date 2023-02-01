@@ -179,6 +179,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
      * Generate policy instance from config
      * @param policy
      * @param skipRegistration
+     * @param resultsContainer
      */
     public async generate(
         policy: Policy | string,
@@ -217,6 +218,9 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
 
             await this.initPolicyEvents(policyId, model);
 
+            resultsContainer.addPermissions(policy.policyRoles);
+            await this.tagFinder(policy.config, resultsContainer);
+            await model.validate(resultsContainer);
             return model as IPolicyInterfaceBlock;
         } catch (error) {
             new Logger().error(`Error build policy ${error}`, ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
