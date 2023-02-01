@@ -1,7 +1,7 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.9.1",
+    "@guardian/common": "^2.9.2",
     "@transmute/credentials-context": "0.7.0-unstable.80",
     "@transmute/did-context": "0.7.0-unstable.80",
     "@transmute/ed25519-signature-2018": "0.7.0-unstable.80",
@@ -30,5 +30,5 @@
     "dev:docker": "nodemon .",
     "start": "node dist/index.js"
   },
-  "version": "2.9.1"
+  "version": "2.9.2"
 }
