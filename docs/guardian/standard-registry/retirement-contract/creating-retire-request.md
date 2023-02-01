@@ -14,7 +14,7 @@ Users can choose interested tokens, which they want to retire from the drop down
 
 Once tokens are selected, user needs to select the respective contract depending on the ratio needed.&#x20;
 
-<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (3).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note:**

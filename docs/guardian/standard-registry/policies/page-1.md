@@ -37,7 +37,7 @@ Step 2: In order to make the policy as secondary, we will click on Join button a
 
 Step 3: Once, linking is performed successfully, you will get below message:
 
-<figure><img src="../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 3. **Message Format**
 

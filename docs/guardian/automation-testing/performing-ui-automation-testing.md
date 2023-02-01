@@ -16,15 +16,15 @@ After executing this command, you will see a welcome window where you need to se
 
 'E2E Testing' as shown below:
 
-<figure><img src="../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (7) (4).png" alt=""><figcaption></figcaption></figure>
 
 Click on the button ' Start E2E Testing in Electron '.
 
-<figure><img src="../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (9) (1).png" alt=""><figcaption></figcaption></figure>
 
 and then select test under ui-tests/specs/policies
 
-<figure><img src="../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (8) (1).png" alt=""><figcaption></figcaption></figure>
 
 Finally, all the selected test runs and you can see the key components of the Test Runner that you need to pay attention to when executing tests.
 
