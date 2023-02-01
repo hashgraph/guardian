@@ -348,7 +348,7 @@ export class AggregateBlock {
                         }
                     }
                 }
-            } else if (ref.options.aggregateType !== 'period') {
+            } else if(ref.options.aggregateType !== 'period') {
                 resultsContainer.addBlockError(ref.uuid, 'Option "aggregateType" must be one of period, cumulative');
             }
             if (
