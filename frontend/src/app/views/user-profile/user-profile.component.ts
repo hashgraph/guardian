@@ -310,7 +310,7 @@ export class UserProfileComponent implements OnInit {
 
     createRetireRequest() {
         const dialogRef = this.dialog.open(RetireTokenDialogComponent, {
-            width: '650px',
+            width: '800px',
             panelClass: 'g-dialog',
             disableClose: true,
             autoFocus: false,

@@ -5,12 +5,12 @@
 Returns all contracts pairs.
 {% endswagger-description %}
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" %}
-The number of pages to skip before starting to collect the result set
+{% swagger-parameter in="query" name="baseTokenId" type="String" %}
+Base Token Identifier
 {% endswagger-parameter %}
 
-{% swagger-parameter in="query" name="pageSize" type="Integer" %}
-The numbers of items to return
+{% swagger-parameter in="query" name="OppositeTokenId" type="String" %}
+Opposite Token Identifier
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
@@ -29,9 +29,9 @@ The numbers of items to return
                   type: object
                   properties:
                     baseTokenRate:
-                      type: string
+                      type: Integer
                     oppositeTokenRate:
-                      type: string
+                      type: Integer
                     contractId:
                       type: string
                     description:

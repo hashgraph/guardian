@@ -93,7 +93,7 @@ export async function contractAPI(
                 const contracts = await contractRepository.findOne({
                     owner: did
                 });
-                if (contracts.owner !== did) {
+                if (contracts?.owner !== did) {
                     throw new Error('You are not contract owner');
                 }
                 filters.contractId = contractId;
@@ -342,11 +342,11 @@ export async function contractAPI(
                             hederaAccountKey: rootKey,
                             baseTokenId,
                             oppositeTokenId,
-                            baseTokenCount: baseToken.decimals
+                            baseTokenCount: baseToken?.decimals
                                 ? Math.pow(10, baseToken.decimals) *
                                   baseTokenCount
                                 : baseTokenCount,
-                            oppositeTokenCount: oppositeToken.decimals
+                            oppositeTokenCount: oppositeToken?.decimals
                                 ? Math.pow(10, oppositeToken.decimals) *
                                   oppositeTokenCount
                                 : oppositeTokenCount,
@@ -457,11 +457,11 @@ export async function contractAPI(
                     1
                 );
                 contractPairs.push({
-                    baseTokenRate: baseToken.decimals
+                    baseTokenRate: baseToken?.decimals
                         ? contractPair.baseTokenRate /
                           Math.pow(10, baseToken.decimals)
                         : contractPair.baseTokenRate,
-                    oppositeTokenRate: oppositeToken.decimals
+                    oppositeTokenRate: oppositeToken?.decimals
                         ? contractPair.oppositeTokenRate /
                           Math.pow(10, oppositeToken.decimals)
                         : contractPair.oppositeTokenRate,
@@ -483,9 +483,9 @@ export async function contractAPI(
                 return new MessageError('Invalid add contract pair parameters');
             }
 
+            const baseTokenId = msg.baseTokenId || '';
+            const oppositeTokenId = msg.oppositeTokenId || '';
             const {
-                baseTokenId,
-                oppositeTokenId,
                 baseTokenCount,
                 oppositeTokenCount,
                 baseTokenSerials,
@@ -520,10 +520,10 @@ export async function contractAPI(
                         hederaAccountKey: rootKey,
                         baseTokenId,
                         oppositeTokenId,
-                        baseTokenCount: baseToken.decimals
+                        baseTokenCount: baseToken?.decimals
                             ? Math.pow(10, baseToken.decimals) * baseTokenCount
                             : baseTokenCount,
-                        oppositeTokenCount: oppositeToken.decimals
+                        oppositeTokenCount: oppositeToken?.decimals
                             ? Math.pow(10, oppositeToken.decimals) *
                               oppositeTokenCount
                             : oppositeTokenCount,
@@ -555,11 +555,11 @@ export async function contractAPI(
                     baseTokenId,
                     oppositeTokenId,
                     owner: did,
-                    baseTokenCount: baseToken.decimals
+                    baseTokenCount: baseToken?.decimals
                         ? contractRequest.baseTokenCount /
                           Math.pow(10, baseToken.decimals)
                         : contractRequest.baseTokenCount,
-                    oppositeTokenCount: oppositeToken.decimals
+                    oppositeTokenCount: oppositeToken?.decimals
                         ? contractRequest.oppositeTokenCount /
                           Math.pow(10, oppositeToken.decimals)
                         : contractRequest.oppositeTokenCount,
@@ -568,10 +568,20 @@ export async function contractAPI(
                 },
                 {
                     contractId,
-                    baseTokenId,
-                    oppositeTokenId,
+                    $and: [
+                        {
+                            baseTokenId: {
+                                $in: [baseTokenId, oppositeTokenId],
+                            },
+                        },
+                        {
+                            oppositeTokenId: {
+                                $in: [baseTokenId, oppositeTokenId],
+                            },
+                        },
+                    ],
                     owner: did,
-                    vcDocumentHash: null
+                    vcDocumentHash: null,
                 }
             );
 
@@ -594,7 +604,7 @@ export async function contractAPI(
                 id: requestId,
             });
 
-            if (did !== retireRequest.owner) {
+            if (did !== retireRequest?.owner) {
                 throw new Error('You are not owner of retire request');
             }
 
@@ -655,26 +665,26 @@ export async function contractAPI(
                 did
             );
             const retireRequestUser = await users.getUserById(
-                retireRequest.owner
-            );
-            const retireRequestOwner = await users.getUserById(
-                retireRequest.owner
+                retireRequest?.owner
             );
             const wipeKeys = [];
-            wipeKeys.push(
-                await wallet.getUserKey(
-                    did,
-                    KeyType.TOKEN_WIPE_KEY,
-                    retireRequest.baseTokenId
-                )
+            const baseTokenWipeKey = await wallet.getUserKey(
+                did,
+                KeyType.TOKEN_WIPE_KEY,
+                retireRequest.baseTokenId
             );
-            wipeKeys.push(
-                await wallet.getUserKey(
-                    did,
-                    KeyType.TOKEN_WIPE_KEY,
-                    retireRequest.oppositeTokenId
-                )
+            if (baseTokenWipeKey) {
+                wipeKeys.push(baseTokenWipeKey);
+            }
+
+            const oppositeTokenWipeKey = await wallet.getUserKey(
+                did,
+                KeyType.TOKEN_WIPE_KEY,
+                retireRequest.oppositeTokenId
             );
+            if (oppositeTokenWipeKey) {
+                wipeKeys.push(oppositeTokenWipeKey);
+            }
 
             const retireResult = await workers.addNonRetryableTask(
                 {
@@ -763,7 +773,7 @@ export async function contractAPI(
                 oppositeTokenId: retireRequest.oppositeTokenId,
                 baseTokenCount: retireRequest.baseTokenCount,
                 oppositeTokenCount: retireRequest.oppositeTokenCount,
-                userId: retireRequestOwner.hederaAccountId,
+                userId: retireRequestUser.hederaAccountId,
                 baseTokenSerials: retireRequest.baseTokenSerials,
                 oppositeTokenSerials: retireRequest.oppositeTokenSerials,
             };

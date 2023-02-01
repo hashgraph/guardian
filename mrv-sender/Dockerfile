@@ -6,22 +6,22 @@ WORKDIR /usr/interfaces
 COPY ./interfaces/package*.json ./
 COPY ./interfaces/tsconfig.json ./
 ADD ./interfaces/src ./src/.
-RUN npm install
+RUN npm install --force --no-package-lock
 RUN npm pack
 
 WORKDIR /usr/common
 COPY ./common/package*.json ./
 COPY ./common/tsconfig.json ./
 ADD ./common/src ./src/.
-RUN npm install /usr/interfaces/guardian-interfaces-*.tgz
+RUN npm install --force --no-package-lock /usr/interfaces/guardian-interfaces-*.tgz
 RUN npm install
 RUN npm pack
 
 WORKDIR /usr/mrv-sender
 COPY ./mrv-sender/package*.json ./
 COPY ./mrv-sender/tsconfig.json ./
-RUN npm install /usr/interfaces/guardian-interfaces-*.tgz /usr/common/guardian-common-*.tgz
-RUN npm install
+RUN npm install --force --no-package-lock /usr/interfaces/guardian-interfaces-*.tgz /usr/common/guardian-common-*.tgz
+RUN npm install --force --no-package-lock
 ADD ./mrv-sender/src ./src/.
 ADD ./mrv-sender/public ./public/.
 ADD ./mrv-sender/templates ./templates/.

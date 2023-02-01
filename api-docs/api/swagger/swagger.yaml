@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: "Guardian"
   description: "The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation."
-  version: "2.8.1"
+  version: "2.9.0"
   contact:
     name: "API developer"
     url: "https://envisionblockchain.com"
@@ -4648,19 +4648,19 @@ paths:
           name: pageIndex
           schema:
             type: integer
-          description: The number of pages to skip before starting to collect the result set
+          description: The number of pages to skip before starting to collect the result set.
           examples:
             pageIndex:
-              summary: Example of a pageIndex
+              summary: Example of a pageIndex.
               value: 0
         - in: query
           name: pageSize
           schema:
             type: integer
-          description: The numbers of items to return
+          description: The numbers of items to return.
           examples:
             pageSize:
-              summary: Example of a pageSize
+              summary: Example of a pageSize.
               value: 100
       responses:
         200:
@@ -4702,6 +4702,8 @@ paths:
               properties:
                 description:
                   type: string
+            example:
+              description: "Smart Contract Description"
       responses:
         200:
           description: Successful operation.
@@ -4739,6 +4741,10 @@ paths:
                   type: string
                 description:
                   type: string
+            example:
+              contractId: "0.0.49176956"
+              description: "Smart Contract Description"
+
       responses:
         200:
           description: Successful operation.
@@ -4772,6 +4778,7 @@ paths:
             type: string
           description: Contract identifier
           required: true
+          example: "0.0.49176956"
       requestBody:
         description: Request Object Parameters.
         content:
@@ -4781,6 +4788,8 @@ paths:
               properties:
                 userId:
                   type: string
+            example:
+              userId: "0.0.49176949"
       responses:
         200:
           description: Successful operation.
@@ -4814,9 +4823,10 @@ paths:
             type: string
           description: Contract identifier
           required: true
+          example: "0.0.49176956"
       responses:
         200:
-          description: Successful operation.
+          description: Successful operation. Returns true if you are added to contract else false.
           content:
             application/json:
               schema:
@@ -4847,6 +4857,7 @@ paths:
             type: string
           description: Contract identifier
           required: true
+          example: "0.0.49176956"
       requestBody:
         description: Request Object Parameters.
         content:
@@ -4859,16 +4870,21 @@ paths:
                 oppositeTokenId:
                   type: string
                 baseTokenCount:
-                  type: string
+                  type: integer
                 oppositeTokenCount:
-                  type: string
+                  type: integer
+            example:
+              baseTokenId: "0.0.49179655"
+              oppositeTokenId: "0.0.49179656"
+              baseTokenCount: 1
+              oppositeTokenCount: 3
       responses:
         200:
           description: Successful operation.
           content:
-            application/json:
-              schema:
-                type: boolean
+          application/json:
+            schema:
+              type: boolean
         401:
           description: Unauthorized.
         403:
@@ -4890,23 +4906,17 @@ paths:
       summary: Returns all contracts pairs.
       parameters:
         - in: query
-          name: pageIndex
+          name: baseTokenId
           schema:
-            type: integer
-          description: The number of pages to skip before starting to collect the result set
-          examples:
-            pageIndex:
-              summary: Example of a pageIndex
-              value: 0
+            type: string
+          description: Base token identifier
+          example: "0.0.49179655"
         - in: query
-          name: pageSize
+          name: oppositeTokenId
           schema:
-            type: integer
-          description: The numbers of items to return
-          examples:
-            pageSize:
-              summary: Example of a pageSize
-              value: 100
+            type: string
+          description: Opposite token identifier
+          example: "0.0.49179656"
       responses:
         200:
           description: Successful operation.
@@ -4923,9 +4933,9 @@ paths:
                   type: object
                   properties:
                     baseTokenRate:
-                      type: string
+                      type: integer
                     oppositeTokenRate:
-                      type: string
+                      type: integer
                     contractId:
                       type: string
                     description:
@@ -4956,6 +4966,7 @@ paths:
             type: string
           description: Contract identifier
           required: true
+          example: "0.0.49176956"
       requestBody:
         description: Request Object Parameters.
         content:
@@ -4968,20 +4979,31 @@ paths:
                 oppositeTokenId:
                   type: string
                 baseTokenCount:
-                  type: string
+                  type: integer
                 oppositeTokenCount:
-                  type: string
+                  type: integer
                 baseTokenSerials:
-                  type: string
+                  type: array
+                  items:
+                    type: integer
                 oppositeTokenSerials:
-                  type: string
+                  type: array
+                  items:
+                    type: integer
+            example:
+              baseTokenId: "0.0.49179655"
+              oppositeTokenId: "0.0.49179656"
+              baseTokenCount: 2
+              oppositeTokenCount: 6
+              baseTokenSerials: []
+              oppositeTokenSerials: []
       responses:
         200:
           description: Successful operation.
           content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RetireRequest"
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RetireRequest"
         401:
           description: Unauthorized.
         403:
@@ -5006,24 +5028,25 @@ paths:
           name: contractId
           schema:
             type: string
-          description: Contract Identifier
+          description: Contract Identifier.
+          example: "0.0.49176956"
         - in: query
           name: pageIndex
           schema:
             type: integer
-          description: The number of pages to skip before starting to collect the result set
+          description: The number of pages to skip before starting to collect the result set.
           examples:
             pageIndex:
-              summary: Example of a pageIndex
+              summary: Example of a pageIndex.
               value: 0
         - in: query
           name: pageSize
           schema:
             type: integer
-          description: The numbers of items to return
+          description: The numbers of items to return.
           examples:
             pageSize:
-              summary: Example of a pageSize
+              summary: Example of a pageSize.
               value: 100
       responses:
         200:
@@ -5061,8 +5084,9 @@ paths:
           name: requestId
           schema:
             type: string
-          description: Request Identifier
+          description: Request Identifier.
           required: true
+          example: "507f1f77bcf86cd799439011"
       responses:
         200:
           description: Successful operation.
@@ -5098,13 +5122,15 @@ paths:
               properties:
                 requestId:
                   type: string
+            example: 
+              requestId: "507f1f77bcf86cd799439011"
       responses:
         200:
           description: Successful operation.
           content:
-            application/json:
-              schema:
-                type: boolean
+          application/json:
+            schema:
+              type: boolean
         401:
           description: Unauthorized.
         403:

@@ -1,0 +1,40 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onClose()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div class="g-dialog-title">
+            Compare Policy
+        </div>
+        <div class="g-dialog-actions">
+            <div class="g-dialog-actions-btn" (click)="onCompare()" [attr.disabled]="!policyId1 || !policyId2">
+                Compare
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="context">
+            <div *ngIf="loading" class="loading">
+                <mat-spinner></mat-spinner>
+            </div>
+
+            <mat-form-field appearance="outline" style="width: 100%">
+                <mat-label>First policy:</mat-label>
+                <mat-select [(value)]="policyId1" (valueChange)="onChange()">
+                    <mat-option>None</mat-option>
+                    <mat-option *ngFor="let policy of list1" [value]="policy.id">{{policy.name}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" style="width: 100%">
+                <mat-label>Secondary policy</mat-label>
+                <mat-select [(value)]="policyId2" (valueChange)="onChange()">
+                    <mat-option>None</mat-option>
+                    <mat-option *ngFor="let policy of list2" [value]="policy.id">{{policy.name}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+    </div>
+</div>

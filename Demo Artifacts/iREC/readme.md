@@ -33,6 +33,6 @@ As the initial step in IREC Policy involve creation of following Schemas: iRec r
 
 For complete User Guide and API Flow for executing IREC Policy, please refer to :
 
-IREC User Guide : https://docs.hedera.com/guardian/demo-guide/irec-demo-guide
+IREC User Guide : https://docs.hedera.com/guardian/guardian/demo-guide/renewable-energy-credits/introduction-to-international-renewable-energy-credit-standard-irec
 
 IREC API Demo Guide : https://docs.hedera.com/guardian/demo-guide/api-workflow-of-irec-demo

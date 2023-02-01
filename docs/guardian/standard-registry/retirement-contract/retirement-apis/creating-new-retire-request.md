@@ -17,19 +17,19 @@ Contract identifier
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="baseTokenCount" type="String" %}
+{% swagger-parameter in="body" name="baseTokenCount" type="Integer" %}
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="oppositeTokenCount" type="String" %}
+{% swagger-parameter in="body" name="oppositeTokenCount" type="Integer" %}
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="baseTokenSerials" type="String" %}
+{% swagger-parameter in="body" name="baseTokenSerials" type="array" %}
 
 {% endswagger-parameter %}
 
-{% swagger-parameter in="body" name="oppositeTokenSerials" type="String" %}
+{% swagger-parameter in="body" name="oppositeTokenSerials" type="array" %}
 
 {% endswagger-parameter %}
 

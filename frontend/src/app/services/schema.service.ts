@@ -1,4 +1,4 @@
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema, Schema, SchemaEntity } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
@@ -41,6 +41,10 @@ export class SchemaService {
             return this.http.get<ISchema[]>(`${this.url}/${topicId}`);
         }
         return this.http.get<ISchema[]>(`${this.url}`);
+    }
+
+    public list(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/list/all`);
     }
 
     public getSchemasByPolicy(policyId: string): Observable<ISchema[]> {

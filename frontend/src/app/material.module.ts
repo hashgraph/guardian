@@ -30,6 +30,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkTableModule } from '@angular/cdk/table';
 import { MatSliderModule } from '@angular/material/slider';
 
 @NgModule({
@@ -62,7 +63,8 @@ import { MatSliderModule } from '@angular/material/slider';
         MatPaginatorModule,
         MatButtonToggleModule,
         DragDropModule,
-        MatSliderModule,
+	MatSliderModule,
+        CdkTableModule
     ],
     exports: [
         MatTabsModule,
@@ -95,7 +97,8 @@ import { MatSliderModule } from '@angular/material/slider';
         MatAutocompleteModule,
         MatButtonToggleModule,
         DragDropModule,
-        MatSliderModule,
+	MatSliderModule,
+        CdkTableModule
     ]
 })
 export class MaterialModule { }

@@ -101,6 +101,13 @@
     padding: 0 0 0 30px;
 }
 
+.contract-form-base-token-count-container[disabled="true"] {
+    padding: unset;
+    justify-content: center;
+    width: 100%;
+    padding: 15px 0 0 0;
+}
+
 .pair-loading {
     margin: 0 auto;
 }

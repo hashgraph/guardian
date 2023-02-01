@@ -97,7 +97,7 @@ export abstract class ServiceRequestsBase {
         } else if (error.name) {
             return error.name;
         } else {
-            console.log(error);
+            console.error(error);
             return 'Unidentified error';
         }
     }

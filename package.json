@@ -11,7 +11,8 @@
     "guardian-service",
     "logger-service",
     "mrv-sender",
-    "worker-service"
+    "worker-service",
+    "policy-service"
   ],
-  "version": "2.8.1"
+  "version": "2.9.0"
 }

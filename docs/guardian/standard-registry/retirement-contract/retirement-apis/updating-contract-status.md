@@ -9,7 +9,7 @@ Update contract status. Only users with the Standard Registry role are allowed t
 Contract identifier
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="200: OK" description="Successful Operation,Returns true if you are added to contract else false." %}
 ```javascript
 {
     content:

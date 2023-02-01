@@ -73,7 +73,7 @@ export class ContractService {
         });
     }
 
-    public getPair(baseTokenId: string, oppositeTokenId: string) {
+    public getPair(baseTokenId: string, oppositeTokenId: string = '') {
         return this.http.get<any>(`${this.url}/pair`, {
             params: {
                 baseTokenId,

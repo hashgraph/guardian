@@ -813,6 +813,17 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Return schemas (name\id)
+     *
+     * @param {string} owner - schemas owner
+     *
+     * @returns {any[]} - schemas
+     */
+    public async getListSchemas(owner: string): Promise<any[]> {
+        return await this.request<any[]>(MessageAPI.GET_LIST_SCHEMAS, { owner });
+    }
+
+    /**
      * Upload Policy Artifacts
      *
      * @param {any} artifact - Artifact
@@ -888,6 +899,59 @@ export class Guardians extends ServiceRequestsBase {
     public async getFileIpfs(cid: string, responseType: any): Promise<any> {
         return await this.request<any>(MessageAPI.IPFS_GET_FILE, {
             cid, responseType
+        });
+    }
+
+    /**
+     * Compare two policies
+     * @param user
+     * @param type
+     * @param policyId1
+     * @param policyId2
+     * @param eventsLvl
+     * @param propLvl
+     * @param childrenLvl
+     * @param idLvl
+     */
+    public async comparePolicies(
+        user: any,
+        type: any,
+        policyId1: any,
+        policyId2: any,
+        eventsLvl: any,
+        propLvl: any,
+        childrenLvl: any,
+        idLvl: any,
+    ) {
+        return await this.request(MessageAPI.COMPARE_POLICIES, {
+            type,
+            user,
+            policyId1,
+            policyId2,
+            eventsLvl,
+            propLvl,
+            childrenLvl,
+            idLvl
+        });
+    }
+
+    /**
+     * Compare two schemas
+     * @param user
+     * @param type
+     * @param schemaId1
+     * @param schemaId2
+     * @param idLvl
+     */
+    public async compareSchemas(
+        user: any,
+        type: any,
+        schemaId1: any,
+        schemaId2: any,
+        idLvl: any,
+    ) {
+        return await this.request(MessageAPI.COMPARE_SCHEMAS, {
+            user, type, schemaId1, schemaId2, idLvl
         });
     }
 

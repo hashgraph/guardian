@@ -24,7 +24,8 @@
             "@auth/*": ["auth/*"],
             "@hedera-modules": ["hedera-modules/index"],
             "@database-modules": ["database-modules/index"],
-            "@document-loader/*": ["document-loader/*"]
+            "@document-loader/*": ["document-loader/*"],
+            "@analytics": ["analytics/index"]
         }
     },
     "include": [
