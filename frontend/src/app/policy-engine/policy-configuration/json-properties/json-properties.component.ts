@@ -47,6 +47,7 @@ export class JsonPropertiesComponent implements OnInit {
 
     code!: string;
     errors: any[] = [];
+    loading: boolean = false;
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -69,6 +70,7 @@ export class JsonPropertiesComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
+        this.loading = false;
         this.errors = [];
         this.block = block;
         if (this.block) {
@@ -84,10 +86,15 @@ export class JsonPropertiesComponent implements OnInit {
 
     onSave() {
         try {
+            this.loading = true;
             const block = JSON.parse(this.code);
-            this.block.rebuild(block)
+            this.block.rebuild(block);
+            setTimeout(() => {
+                this.loading = false;
+            }, 250);
         } catch (error: any) {
             this.errors = [error.message];
+            this.loading = false;
         }
     }
 }

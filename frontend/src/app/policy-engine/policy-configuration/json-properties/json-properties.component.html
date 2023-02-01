@@ -1,10 +1,15 @@
 <div [attr.readonly]="readonly">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
     <div class="toolbar">
-        <div class="toolbar-btn" (click)="onSave()" style="color: #00c300">
-            <mat-icon>done</mat-icon>
+        <div class="toolbar-btn" (click)="onSave()" style="color: #3f51b5">
+            <mat-icon>save</mat-icon>
+            <span>Save</span>
         </div>
-        <div class="toolbar-btn" (click)="onClose()" style="color: #f00">
+        <div class="toolbar-btn" (click)="onClose()" style="color: #c90000;width: 80px">
             <mat-icon>close</mat-icon>
+            <span>Cancel</span>
         </div>
     </div>
     <div *ngIf="errors && errors.length" class="json-errors">
