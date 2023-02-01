@@ -137,9 +137,8 @@ export class Worker {
                     unit: 'Hbar',
                     operatorAccountId: client.operatorAccountId.toString()
                 });
-            } catch (error) {
-                throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
-            }
+            // tslint:disable-next-line:no-empty
+            } catch { }
         })
     }
 
