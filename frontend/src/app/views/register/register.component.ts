@@ -57,7 +57,7 @@ export class RegisterComponent implements OnInit {
         if (this.loginForm.valid) {
             const d = this.loginForm.value;
             this.loading = true;
-            this.auth.createUser(d.login, d.password, d.role).subscribe((result) => {
+            this.auth.createUser(d.login, d.password, d.confirmPassword, d.role).subscribe((result) => {
                 if(result.error) {
                     this.error = result.error;
                     this.loading = false;

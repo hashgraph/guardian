@@ -9,6 +9,7 @@ import { MessageBrokerChannel, MessageResponse, Logger } from '@guardian/common'
  * WebSocket service class
  */
 export class WebSocketsService {
+    
     /**
      * WebSocket server
      * @private

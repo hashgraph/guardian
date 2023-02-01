@@ -17,7 +17,10 @@
     "jszip": "^3.7.1",
     "module-alias": "^2.2.2",
     "reflect-metadata": "^0.1.13",
-    "ws": "^8.2.1"
+    "ws": "^8.2.1",
+    "hpp": "^0.2.3",
+    "http-errors": "^2.0.0",
+    "yup": "^0.32.11"
   },
   "description": "",
   "devDependencies": {

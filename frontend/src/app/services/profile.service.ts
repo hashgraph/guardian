@@ -18,23 +18,23 @@ export class ProfileService {
     }
 
     public getProfile(): Observable<IUser> {
-        return this.http.get<any>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}`);
+        return this.http.get<any>(`${this.url}`);
     }
 
     public setProfile(profile: IUser): Observable<void> {
-        return this.http.put<void>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}`, profile);
+        return this.http.put<void>(`${this.url}`, profile);
     }
 
     public pushSetProfile(profile: IUser): Observable<{ taskId: string, expectation: number }> {
-        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${encodeURIComponent(this.auth.getUsername())}`, profile);
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push`, profile);
     }
 
     public restoreProfile(profile: IUser): Observable<{ taskId: string, expectation: number }> {
-        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore/${encodeURIComponent(this.auth.getUsername())}`, profile);
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore`, profile);
     }
 
     public getAllUserTopics(profile: IUser): Observable<{ taskId: string, expectation: number }> {
-        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore/topics/${encodeURIComponent(this.auth.getUsername())}`, profile);
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore/topics`, profile);
     }
 
     public getBalance(): Observable<string | null> {

@@ -1,4 +1,4 @@
-import { Request, Response, Router } from 'express';
+import { Request, Response, Router, NextFunction } from 'express';
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
 import { Logger, RunFunctionAsync } from '@guardian/common';
@@ -10,7 +10,7 @@ import { ServiceError } from '@helpers/service-requests-base';
  */
 export const demoAPI = Router();
 
-demoAPI.get('/registeredUsers', async (req: Request, res: Response) => {
+demoAPI.get('/registered-users', async (req: Request, res: Response, next: NextFunction) => {
     const users = new Users();
     const guardians = new Guardians();
     try {
@@ -27,11 +27,11 @@ demoAPI.get('/registeredUsers', async (req: Request, res: Response) => {
         res.json(demoUsers);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-demoAPI.get('/randomKey', async (req: Request, res: Response) => {
+demoAPI.get('/random-key', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
         let role = null;
@@ -47,14 +47,14 @@ demoAPI.get('/randomKey', async (req: Request, res: Response) => {
             role = null;
         }
         const demoKey = await guardians.generateDemoKey(role);
-        res.status(200).json(demoKey);
+        return res.json(demoKey);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-demoAPI.get('/push/randomKey', async (req: Request, res: Response) => {
+demoAPI.get('/push/random-key', async (req: Request, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Create random key');
 
@@ -79,5 +79,5 @@ demoAPI.get('/push/randomKey', async (req: Request, res: Response) => {
         taskManager.addError(taskId, { code: 500, message: error.message });
     });
 
-    res.status(201).send({ taskId, expectation });
+    return res.status(202).send({ taskId, expectation });
 });

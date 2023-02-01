@@ -1,6 +1,8 @@
+import hpp from 'hpp';
+import createError from 'http-errors';
 import {
     accountAPI,
-    trustchainsAPI,
+    trustChainsAPI,
     demoAPI,
     profileAPI,
     schemaAPI,
@@ -44,6 +46,7 @@ Promise.all([
             type: 'binary/octet-stream'
         }));
         app.use(fileupload());
+        app.use(hpp());
         const channel = new MessageBrokerChannel(cn, 'guardian');
         const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
         new Logger().setChannel(channel);
@@ -69,8 +72,8 @@ Promise.all([
         app.use('/schema', authorizationHelper, singleSchemaRoute);
         app.use('/schemas', authorizationHelper, schemaAPI);
         app.use('/tokens', authorizationHelper, tokenAPI);
-        app.use('/artifact', authorizationHelper, artifactAPI);
-        app.use('/trustchains/', authorizationHelper, trustchainsAPI);
+        app.use('/artifacts', authorizationHelper, artifactAPI);
+        app.use('/trust-chains/', authorizationHelper, trustChainsAPI);
         app.use('/external/', externalAPI);
         app.use('/demo/', demoAPI);
         app.use('/ipfs', authorizationHelper, ipfsAPI);
@@ -79,6 +82,11 @@ Promise.all([
         app.use('/analytics/', authorizationHelper, analyticsAPI);
         app.use('/contracts', authorizationHelper, contractAPI);
         /////////////////////////////////////////
+
+        // error handler
+        app.use(function(err, req, res, next) {
+            next(createError(err.status || 500, err.message))
+        });
 
         server.listen(PORT, () => {
             new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);

@@ -1,5 +1,5 @@
 import { Guardians } from '@helpers/guardians';
-import { Request, Response, Router } from 'express';
+import { Request, Response, Router, NextFunction } from 'express';
 import { ISchema, UserRole, SchemaHelper, SchemaEntity, StatusType } from '@guardian/interfaces';
 import { permissionHelper } from '@auth/authorization-helper';
 import JSZip from 'jszip';
@@ -7,6 +7,9 @@ import { AuthenticatedRequest, Logger, RunFunctionAsync } from '@guardian/common
 import { PolicyEngine } from '@helpers/policy-engine';
 import { TaskManager } from '@helpers/task-manager';
 import { ServiceError } from '@helpers/service-requests-base';
+import createError from 'http-errors';
+import validate from '@middlewares/validation';
+import { schemaSchema, systemEntitySchema } from '@middlewares/validation/schemas/schemas';
 
 /**
  * Parse zip archive
@@ -19,8 +22,7 @@ export async function parseZipFile(zipFile: any): Promise<any[]> {
     const schemaStringArray = await Promise.all(Object.entries(content.files)
         .filter(file => !file[1].dir)
         .map(file => file[1].async('string')));
-    const schemas = schemaStringArray.map(item => JSON.parse(item));
-    return schemas;
+    return schemaStringArray.map(item => JSON.parse(item));
 }
 
 /**
@@ -37,6 +39,30 @@ export async function generateZipFile(schemas: ISchema[]): Promise<JSZip> {
 }
 
 /**
+ * Prepare new schema object
+ * @param newSchema
+ * @param guardians
+ * @param owner
+ */
+async function prepareSchema(newSchema, guardians: Guardians, owner: string) {
+  if (newSchema.id) {
+    const schema = await guardians.getSchemaById(newSchema.id);
+    if (!schema) {
+      throw new Error('Schema does not exist.');
+    }
+    if (schema.creator !== owner) {
+      throw new Error('Invalid creator.');
+    }
+    newSchema.version = schema.version;
+  } else {
+    newSchema.version = '';
+  }
+  delete newSchema._id;
+  delete newSchema.id;
+  delete newSchema.status;
+}
+
+/**
  * Create new schema
  * @param {ISchema} newSchema
  * @param {string} owner
@@ -45,21 +71,7 @@ export async function generateZipFile(schemas: ISchema[]): Promise<JSZip> {
  */
 export async function createSchema(newSchema: ISchema, owner: string, topicId?: string): Promise<ISchema[]> {
     const guardians = new Guardians();
-    if (newSchema.id) {
-        const schema = await guardians.getSchemaById(newSchema.id);
-        if (!schema) {
-            throw new Error('Schema does not exist.');
-        }
-        if (schema.creator !== owner) {
-            throw new Error('Invalid creator.');
-        }
-        newSchema.version = schema.version;
-    } else {
-        newSchema.version = '';
-    }
-    delete newSchema._id;
-    delete newSchema.id;
-    delete newSchema.status;
+  await prepareSchema(newSchema, guardians, owner);
 
     if (topicId) {
         newSchema.topicId = topicId;
@@ -84,21 +96,7 @@ export async function createSchemaAsync(newSchema: ISchema, owner: string, topic
     const guardians = new Guardians();
 
     taskManager.addStatus(taskId, 'Check schema version', StatusType.PROCESSING);
-    if (newSchema.id) {
-        const schema = await guardians.getSchemaById(newSchema.id);
-        if (!schema) {
-            throw new Error('Schema does not exist.');
-        }
-        if (schema.creator !== owner) {
-            throw new Error('Invalid creator.');
-        }
-        newSchema.version = schema.version;
-    } else {
-        newSchema.version = '';
-    }
-    delete newSchema._id;
-    delete newSchema.id;
-    delete newSchema.status;
+    await prepareSchema(newSchema, guardians, owner);
     taskManager.addStatus(taskId, 'Check schema version', StatusType.COMPLETED);
 
     newSchema.topicId = topicId;
@@ -148,16 +146,15 @@ function toOld<T extends ISchema | ISchema[]>(schemas: T): T {
                 }
             }
             return schemas;
-        } else {
-            const schema: any = schemas;
-            if (schema.document) {
-                schema.document = JSON.stringify(schema.document);
-            }
-            if (schema.context) {
-                schema.context = JSON.stringify(schema.context);
-            }
-            return schema;
         }
+        const schema: any = schemas;
+        if (schema.document) {
+            schema.document = JSON.stringify(schema.document);
+        }
+        if (schema.context) {
+            schema.context = JSON.stringify(schema.context);
+        }
+        return schema;
     }
     return schemas;
 }
@@ -182,32 +179,31 @@ function fromOld(schema: ISchema): ISchema {
  */
 export const singleSchemaRoute = Router();
 
-singleSchemaRoute.get('/:schemaId', async (req: AuthenticatedRequest, res: Response) => {
+singleSchemaRoute.get('/:schemaId', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
-        const schemaId = req.params.schemaId as string;
+        const schemaId = req.params.schemaId;
         const guardians = new Guardians();
         const schema = await guardians.getSchemaById(schemaId);
+        if (!schema) {
+            return next(createError(404, 'Schema not found'));
+        }
         let owner = user.parent;
         if (user.role === UserRole.STANDARD_REGISTRY) {
             owner = user.did;
         }
-        if (!schema) {
-            throw new Error('Schema not found');
-        }
         if (!schema.system && schema.owner && schema.owner !== owner) {
-            throw new Error('Insufficient permissions to read schema');
+            return next(createError(403, 'Invalid creator.'));
         }
         if (schema.system) {
             schema.readonly = schema.readonly || schema.owner !== owner;
-        }
-        else {
+        } else {
             SchemaHelper.updatePermission([schema], owner);
         }
-        res.status(200).json(toOld(schema));
+        return res.json(toOld(schema));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: error.code, message: error.message });
+        return next(error);
     }
 });
 
@@ -216,17 +212,18 @@ singleSchemaRoute.get('/:schemaId', async (req: AuthenticatedRequest, res: Respo
  */
 export const schemaAPI = Router();
 
-schemaAPI.post('/:topicId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/:topicId', permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const newSchema = req.body;
         fromOld(newSchema);
-        const topicId = req.params.topicId as string;
+        const topicId = req.params.topicId;
         const schemas = await createSchema(newSchema, user.did, topicId);
-        res.status(201).json(toOld(schemas));
+        return res.status(201).json(toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
@@ -245,23 +242,34 @@ schemaAPI.post('/push/:topicId', permissionHelper(UserRole.STANDARD_REGISTRY), a
         taskManager.addError(taskId, { code: 500, message: error.message });
     });
 
-    res.status(201).send({ taskId, expectation });
+    res.status(202).send({ taskId, expectation });
 });
 
-schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
+/**
+ * Prepare the schema pagination
+ *
+ * @param req
+ * @param user
+ */
+function prepareSchemaPagination(req, user) {
+    const guardians = new Guardians();
+    let pageIndex: any;
+    let pageSize: any;
+    if (req.query && req.query.pageIndex && req.query.pageSize) {
+        pageIndex = req.query.pageIndex;
+        pageSize = req.query.pageSize;
+    }
+    let owner = user.parent;
+    if (user.role === UserRole.STANDARD_REGISTRY) {
+        owner = user.did;
+    }
+    return { guardians, pageIndex, pageSize, owner };
+}
+
+schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
-        const guardians = new Guardians();
-        let pageIndex: any;
-        let pageSize: any;
-        if (req.query && req.query.pageIndex && req.query.pageSize) {
-            pageIndex = req.query.pageIndex;
-            pageSize = req.query.pageSize;
-        }
-        let owner = user.parent;
-        if (user.role === UserRole.STANDARD_REGISTRY) {
-            owner = user.did;
-        }
+        let { guardians, pageIndex, pageSize, owner } = prepareSchemaPagination(req, user);
         let topicId = null;
         const policyId = req.query?.policyId;
         if (policyId) {
@@ -269,135 +277,122 @@ schemaAPI.get('/', async (req: AuthenticatedRequest, res: Response) => {
             const model = (await engineService.getPolicy({
                 filters: policyId,
                 userDid: user.did,
-            })) as any;
+            }));
             topicId = model?.topicId;
         }
         const { schemas, count } = await guardians.getSchemasByOwner(owner, topicId, pageIndex, pageSize);
         SchemaHelper.updatePermission(schemas, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemas));
+        return res.setHeader('X-Total-Count', count).json(toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: error.code, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.get('/:topicId', async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.get('/:topicId', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
-        const topicId = req.params.topicId as string;
-        const guardians = new Guardians();
-        let pageIndex: any;
-        let pageSize: any;
-        if (req.query && req.query.pageIndex && req.query.pageSize) {
-            pageIndex = req.query.pageIndex;
-            pageSize = req.query.pageSize;
-        }
-        let owner = user.parent;
-        if (user.role === UserRole.STANDARD_REGISTRY) {
-            owner = user.did;
-        }
+        const { topicId } = req.params;
+        let { guardians, pageIndex, pageSize, owner } = prepareSchemaPagination(req, user);
         const { schemas, count } = await guardians.getSchemasByOwner(owner, topicId, pageIndex, pageSize);
         SchemaHelper.updatePermission(schemas, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemas));
+        return res.setHeader('X-Total-Count', count).json(toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: error.code, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.put('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.put('/', permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const newSchema = req.body;
         const guardians = new Guardians();
         const schema = await guardians.getSchemaById(newSchema.id);
         if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
-            return;
+            return next(createError(404, 'Schema does not exist.'));
         }
         if (schema.creator !== user.did) {
-            res.status(500).json({ code: 500, message: 'Invalid creator.' });
-            return;
+            return next(createError(403, 'Invalid creator.'));
         }
         if (schema.system) {
-            res.status(500).json({ code: 500, message: 'Schema is system.' });
-            return;
+            return next(createError(422, 'Schema is system.'));
         }
         fromOld(newSchema);
         const schemas = await updateSchema(newSchema, user.did)
-        res.status(200).json(toOld(schemas));
+        return res.json(toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.delete('/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.delete('/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
         const schema = await guardians.getSchemaById(schemaId);
+
         if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
-            return;
+            return next(createError(404, 'Schema does not exist.'));
         }
         if (schema.creator !== user.did) {
-            res.status(500).json({ code: 500, message: 'Invalid creator.' });
-            return;
+            return next(createError(403, 'Invalid creator.'));
         }
         if (schema.system) {
-            res.status(500).json({ code: 500, message: 'Schema is system.' });
-            return;
+            return next(createError(422, 'Schema is system.'));
         }
+
         const schemas = (await guardians.deleteSchema(schemaId));
         SchemaHelper.updatePermission(schemas, user.did);
-        res.status(200).json(toOld(schemas));
+        return res.json(toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
         const schema = await guardians.getSchemaById(schemaId);
+
         if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
-            return;
+            return next(createError(404, 'Schema not found.'));
         }
         if (schema.creator !== user.did) {
-            res.status(500).json({ code: 500, message: 'Invalid creator.' });
-            return;
+            return next(createError(403, 'Invalid creator.'));
         }
         if (schema.system) {
-            res.status(500).json({ code: 500, message: 'Schema is system.' });
-            return;
+            return next(createError(422, 'Schema is system.'));
         }
 
         const allVersion = await guardians.getSchemasByUUID(schema.uuid);
         const { version } = req.body;
         if (allVersion.findIndex(s => s.version === version) !== -1) {
-            res.status(500).json({ code: 500, message: 'Version already exists.' });
+            return next(createError(422, 'Version already exists.'));
         }
 
         await guardians.publishSchema(schemaId, version, user.did);
 
         const { schemas, count } = await guardians.getSchemasByOwner(user.did);
         SchemaHelper.updatePermission(schemas, user.did);
-        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemas));
+        return res.setHeader('X-Total-Count', count).json(toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
 schemaAPI.put('/push/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
-    const taskManager = new TaskManager();
-    const { taskId, expectation } = taskManager.start('Publish schema');
+  const taskManager = new TaskManager();
+  const {taskId, expectation} = taskManager.start('Publish schema');
 
     const schemaId = req.params.schemaId;
     const user = req.user;
@@ -430,25 +425,26 @@ schemaAPI.put('/push/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGI
         taskManager.addError(taskId, { code: 500, message: error.message });
     });
 
-    res.status(200).send({ taskId, expectation });
+  res.status(202).send({taskId, expectation});
 });
 
-schemaAPI.post('/import/message/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/import/message/preview', [
+  validate(schemaSchema()), permissionHelper(UserRole.STANDARD_REGISTRY)
+], async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const messageId = req.body.messageId;
-        if (!messageId) {
-            throw new Error('Schema ID in body is empty');
-        }
         const guardians = new Guardians();
         const schemaToPreview = await guardians.previewSchemasByMessages([messageId]);
-        res.status(200).json(schemaToPreview);
+        return res.json(schemaToPreview);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.post('/push/import/message/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/push/import/message/preview', [
+  validate(schemaSchema()), permissionHelper(UserRole.STANDARD_REGISTRY)
+], async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Preview schema message');
 
@@ -464,47 +460,54 @@ schemaAPI.post('/push/import/message/preview', permissionHelper(UserRole.STANDAR
         taskManager.addError(taskId, { code: 500, message: error.message });
     });
 
-    res.status(201).send({ taskId, expectation });
+    res.status(202).send({ taskId, expectation });
 });
 
-schemaAPI.post('/import/file/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/import/file/preview',
+  permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const zip = req.body;
+      if (zip) {
+          return next(createError(422, 'Schema is system.'));
+      }
     try {
-        const zip = req.body;
-        if (!zip) {
-            throw new Error('file in body is empty');
-        }
         const guardians = new Guardians();
         const files = await parseZipFile(zip);
         const schemaToPreview = await guardians.previewSchemasByFile(files);
-        res.status(200).json(schemaToPreview);
+        return res.json(schemaToPreview);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.post('/:topicId/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/:topicId/import/message', [
+    validate(schemaSchema()), permissionHelper(UserRole.STANDARD_REGISTRY)
+], async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
-        const topicId = req.params.topicId as string;
+        const topicId = req.params.topicId;
         const guardians = new Guardians();
         const messageId = req.body.messageId as string;
         await guardians.importSchemasByMessages([messageId], req.user.did, topicId);
         const { schemas, count } = await guardians.getSchemasByOwner(user.did);
         SchemaHelper.updatePermission(schemas, user.did);
-        res.status(201).setHeader('X-Total-Count', count).json(toOld(schemas));
+        return res.status(201).setHeader('X-Total-Count', count).json(toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.post('/push/:topicId/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/push/:topicId/import/message', [
+    validate(schemaSchema()),
+    permissionHelper(UserRole.STANDARD_REGISTRY)
+], async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Import schema message');
 
     const user = req.user;
-    const topicId = req.params.topicId as string;
+    const topicId = req.params.topicId;
     const messageId = req.body.messageId as string;
     RunFunctionAsync<ServiceError>(async () => {
         const guardians = new Guardians();
@@ -514,36 +517,42 @@ schemaAPI.post('/push/:topicId/import/message', permissionHelper(UserRole.STANDA
         taskManager.addError(taskId, { code: 500, message: error.message });
     });
 
-    res.status(201).send({ taskId, expectation });
+    res.status(202).send({ taskId, expectation });
 });
 
-schemaAPI.post('/:topicId/import/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/:topicId/import/file',
+  permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const zip = req.body;
+    if (!zip) {
+        return next(createError(422, 'file in body is empty'));
+    }
     try {
         const user = req.user;
         const guardians = new Guardians();
-        const zip = req.body;
-        const topicId = req.params.topicId as string;
-        if (!zip) {
-            throw new Error('file in body is empty');
-        }
+        const topicId = req.params.topicId;
         const files = await parseZipFile(zip);
         await guardians.importSchemasByFile(files, req.user.did, topicId);
         const { schemas, count } = await guardians.getSchemasByOwner(user.did);
         SchemaHelper.updatePermission(schemas, user.did);
-        res.status(201).setHeader('X-Total-Count', count).json(toOld(schemas));
+        return res.status(201).setHeader('X-Total-Count', count).json(toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.post('/push/:topicId/import/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/push/:topicId/import/file', permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Import schema file');
 
     const user = req.user;
     const zip = req.body;
-    const topicId = req.params.topicId as string;
+    if (!zip) {
+        return next(createError(422, 'file in body is empty'));
+    }
+    const topicId = req.params.topicId;
     RunFunctionAsync<ServiceError>(async () => {
         taskManager.addStatus(taskId, 'Parse file', StatusType.PROCESSING);
         if (!zip) {
@@ -558,22 +567,20 @@ schemaAPI.post('/push/:topicId/import/file', permissionHelper(UserRole.STANDARD_
         taskManager.addError(taskId, { code: 500, message: error.message });
     });
 
-    res.status(201).send({ taskId, expectation });
+    res.status(202).send({ taskId, expectation });
 });
 
-schemaAPI.get('/:schemaId/export/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
+schemaAPI.get('/:schemaId/export/message', permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.params.schemaId) {
-            throw new Error('No schemas to export');
-        }
         const guardians = new Guardians();
-        const id = req.params.schemaId as string;
+        const id = req.params.schemaId;
         const schemas = await guardians.exportSchemas([id]);
         const scheme = schemas[0];
         if (!scheme) {
-            throw new Error(`Cannot export policy ${req.params.schemaId}`);
+            return next(createError(422, `Cannot export policy ${req.params.schemaId}`));
         }
-        res.status(200).send({
+        return res.send({
             id: scheme.id,
             name: scheme.name,
             description: scheme.description,
@@ -583,17 +590,15 @@ schemaAPI.get('/:schemaId/export/message', permissionHelper(UserRole.STANDARD_RE
         });
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-        if (!req.params.schemaId) {
-            throw new Error('No schemas to export');
-        }
         const guardians = new Guardians();
-        const id = req.params.schemaId as string;
+        const id = req.params.schemaId;
         const schemas = await guardians.exportSchemas([id]);
         const name = `${Date.now()}`;
         const zip = await generateZipFile(schemas);
@@ -609,21 +614,20 @@ schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.STANDARD_REGIS
         arcStream.pipe(res);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.get('/type/:schemaType', async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.get('/type/:schemaType', async (
+  req: AuthenticatedRequest, res: Response, next: NextFunction
+) => {
     try {
-        if (!req.params.schemaType) {
-            throw new Error(`Schema not found: ${req.params.schemaType}`);
-        }
         const guardians = new Guardians();
         const schema = await guardians.getSchemaByType(req.params.schemaType);
         if (!schema) {
-            throw new Error(`Schema not found: ${req.params.schemaType}`);
+            return next(createError(404, 'Schema not found'));
         }
-        res.status(200).send({
+        return res.send({
             uuid: schema.uuid,
             iri: schema.iri,
             name: schema.name,
@@ -635,26 +639,19 @@ schemaAPI.get('/type/:schemaType', async (req: AuthenticatedRequest, res: Respon
         });
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.post('/system/:username', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.post('/system/:username', [
+  validate(systemEntitySchema()),
+  permissionHelper(UserRole.STANDARD_REGISTRY)
+], async (
+  req: AuthenticatedRequest, res: Response, next: NextFunction
+) => {
     try {
         const user = req.user;
         const newSchema = req.body;
-
-        if (!newSchema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
-            return;
-        }
-        if (newSchema.entity !== SchemaEntity.STANDARD_REGISTRY && newSchema.entity !== SchemaEntity.USER) {
-            res.status(500).json({
-                code: 500,
-                message: `Invalid schema types. Entity must be ${SchemaEntity.STANDARD_REGISTRY} or ${SchemaEntity.USER}`
-            });
-            return;
-        }
 
         const guardians = new Guardians();
         const owner = user.username;
@@ -669,14 +666,15 @@ schemaAPI.post('/system/:username', permissionHelper(UserRole.STANDARD_REGISTRY)
         SchemaHelper.updateOwner(newSchema, owner);
         const schema = await guardians.createSystemSchema(newSchema);
 
-        res.status(201).json(toOld(schema));
+        return res.status(201).json(toOld(schema));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.get('/system/:username', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.get('/system/:username', permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
@@ -689,111 +687,104 @@ schemaAPI.get('/system/:username', permissionHelper(UserRole.STANDARD_REGISTRY),
         }
         const { schemas, count } = await guardians.getSystemSchemas(owner, pageIndex, pageSize);
         schemas.forEach((s) => { s.readonly = s.readonly || s.owner !== owner });
-        res.status(200).setHeader('X-Total-Count', count).json(toOld(schemas));
+        return res.setHeader('X-Total-Count', count).json(toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: error.code, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.delete('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.delete('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
         const schema = await guardians.getSchemaById(schemaId);
+
         if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
-            return;
+            return next(createError(404, 'Schema not found.'));
         }
         if (schema.owner !== user.username) {
-            res.status(500).json({ code: 500, message: 'Invalid creator.' });
-            return;
-        }
-        if (schema.active) {
-            res.status(500).json({ code: 500, message: 'Schema is active.' });
-            return;
+            return next(createError(403, 'Invalid creator.'));
         }
         if (!schema.system) {
-            res.status(500).json({ code: 500, message: 'Schema is not system.' });
-            return;
+            return next(createError(422, 'Schema is not system.'));
         }
+        if (schema.active) {
+            return next(createError(422, 'Schema is active.'));
+        }
+
         await guardians.deleteSchema(schemaId);
-        res.status(200).json(null);
+        return res.json(null);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.put('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.put('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const newSchema = req.body;
         const guardians = new Guardians();
         const schema = await guardians.getSchemaById(newSchema.id);
+
         if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
-            return;
+            return next(createError(404, 'Schema not found.'));
         }
         if (schema.owner !== user.username) {
-            res.status(500).json({ code: 500, message: 'Invalid creator.' });
-            return;
-        }
-        if (schema.active) {
-            res.status(500).json({ code: 500, message: 'Schema is active.' });
-            return;
+            return next(createError(403, 'Invalid creator.'));
         }
         if (!schema.system) {
-            res.status(500).json({ code: 500, message: 'Schema is not system.' });
-            return;
+            return next(createError(422, 'Schema is not system.'));
+        }
+        if (schema.active) {
+            return next(createError(422, 'Schema is active.'));
         }
         fromOld(newSchema);
         const schemas = await updateSchema(newSchema, user.username);
-        res.status(200).json(toOld(schemas));
+        return res.json(toOld(schemas));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.put('/system/:schemaId/active', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.put('/system/:schemaId/active', permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
         const schema = await guardians.getSchemaById(schemaId);
+
         if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
-            return;
-        }
-        if (schema.active) {
-            res.status(500).json({ code: 500, message: 'Schema is active.' });
-            return;
+            return next(createError(404, 'Schema not found.'));
         }
         if (!schema.system) {
-            res.status(500).json({ code: 500, message: 'Schema is not system.' });
-            return;
+            return next(createError(422, 'Schema is not system.'));
+        }
+        if (schema.active) {
+            return next(createError(422, 'Schema is active.'));
         }
         await guardians.activeSchema(schemaId);
-        res.status(200).json(null);
+        return res.json(null);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.get('/system/entity/:schemaEntity', async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.get('/system/entity/:schemaEntity',
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-        if (!req.params.schemaEntity) {
-            throw new Error(`Schema not found: ${req.params.schemaEntity}`);
-        }
         const guardians = new Guardians();
         const schema = await guardians.getSchemaByEntity(req.params.schemaEntity);
         if (!schema) {
-            res.status(200).send(null);
-            return;
+            return res.send(null);
         }
-        res.status(200).send({
+        return res.send({
             uuid: schema.uuid,
             iri: schema.iri,
             name: schema.name,
@@ -805,18 +796,18 @@ schemaAPI.get('/system/entity/:schemaEntity', async (req: AuthenticatedRequest, 
         });
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-schemaAPI.get('/list/all', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+schemaAPI.get('/list/all', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
         const schemas = await guardians.getListSchemas(user.did);
-        res.status(200).send(schemas);
+        return res.send(schemas);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: error.code, message: error.message });
+        return next(error);
     }
 });

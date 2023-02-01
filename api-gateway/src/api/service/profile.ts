@@ -1,6 +1,6 @@
 import { Guardians } from '@helpers/guardians';
 import { Users } from '@helpers/users';
-import { Request, Response, Router } from 'express';
+import { Request, Response, Router, NextFunction } from 'express';
 import {
     DidDocumentStatus,
     IUser,
@@ -17,7 +17,7 @@ import { ServiceError } from '@helpers/service-requests-base';
  */
 export const profileAPI = Router();
 
-profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) => {
+profileAPI.get('/', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
         const users = new Users();
@@ -25,15 +25,12 @@ profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) =
         const user = await users.getUser(req.user.username);
 
         let didDocument: any = null;
+        let vcDocument: any = null;
         if (user.did) {
             const didDocuments = await guardians.getDidDocuments({ did: user.did });
             if (didDocuments) {
                 didDocument = didDocuments[didDocuments.length - 1];
             }
-        }
-
-        let vcDocument: any = null;
-        if (user.did) {
             let vcDocuments = await guardians.getVcDocuments({
                 owner: user.did,
                 type: SchemaEntity.USER
@@ -79,30 +76,29 @@ profileAPI.get('/:username/', async (req: AuthenticatedRequest, res: Response) =
             didDocument,
             vcDocument
         };
-        res.json(result);
+        return res.json(result);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: error.code, message: error.message });
+        return next(error);
     }
 });
 
-profileAPI.put('/:username/', async (req: AuthenticatedRequest, res: Response) => {
+profileAPI.put('/', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
-
         const profile: any = req.body;
-        const username: string = req.user.username;
+        const username = req.user.username;
 
         await guardians.createUserProfileCommon(username, profile);
 
-        res.status(200).json(null);
+        return res.json(null);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: error.code || 500, message: error.message });
+        return next(error);
     }
 });
 
-profileAPI.put('/push/:username', async (req: AuthenticatedRequest, res: Response) => {
+profileAPI.put('/push', async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Connect user');
 
@@ -116,10 +112,10 @@ profileAPI.put('/push/:username', async (req: AuthenticatedRequest, res: Respons
         taskManager.addError(taskId, { code: error.code || 500, message: error.message });
     });
 
-    res.status(200).send({ taskId, expectation });
+    res.status(202).send({ taskId, expectation });
 });
 
-profileAPI.put('/restore/:username', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+profileAPI.put('/restore', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Restore user profile');
 
@@ -134,10 +130,10 @@ profileAPI.put('/restore/:username', permissionHelper(UserRole.STANDARD_REGISTRY
         taskManager.addError(taskId, { code: error.code || 500, message: error.message });
     })
 
-    res.status(200).send({ taskId, expectation });
+    return res.status(202).send({ taskId, expectation });
 });
 
-profileAPI.put('/restore/topics/:username', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+profileAPI.put('/restore/topics', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Get user topics');
 
@@ -152,16 +148,16 @@ profileAPI.put('/restore/topics/:username', permissionHelper(UserRole.STANDARD_R
         taskManager.addError(taskId, { code: error.code || 500, message: error.message });
     })
 
-    res.status(200).send({ taskId, expectation });
+    return res.status(202).send({ taskId, expectation });
 });
 
-profileAPI.get('/:username/balance', async (req: Request, res: Response) => {
+profileAPI.get('/:username/balance', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
         const balance = await guardians.getUserBalance(req.params.username);
-        res.json(balance);
+        return res.json(balance);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.json('null');
+        return next(error);
     }
 });
