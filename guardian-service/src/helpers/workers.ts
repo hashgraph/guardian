@@ -134,7 +134,11 @@ export class Workers extends ServiceRequestsBase {
 
         this.channel.response(WorkerEvents.PUSH_TASK, async (msg: any) => {
             const { task, priority, isRetryableTask, attempts } = msg;
-            this.addTask(task, priority, isRetryableTask, attempts);
+            try {
+                await this.addTask(task, priority, isRetryableTask, attempts);
+            } catch (e) {
+                console.error(e)
+            }
             return new MessageResponse(null);
         })
     }
