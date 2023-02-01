@@ -818,13 +818,16 @@ export class PolicyEngine extends ServiceRequestsBase{
      * @param policyId
      */
     public async destroyModel(policyId: string): Promise<void> {
-        const { name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-        PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
-        this.channel.publish(PolicyEvents.DELETE_POLICY, {
-            policyId,
-            policyServiceName: name
+        const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+        if (serviceChannelEntity) {
+            const {name} = serviceChannelEntity;
+            PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
+            this.channel.publish(PolicyEvents.DELETE_POLICY, {
+                policyId,
+                policyServiceName: name
 
-        });
+            });
+        }
     }
 
     /**
