@@ -1,8 +1,8 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.9.0",
-    "@guardian/interfaces": "^2.9.0",
+    "@guardian/common": "^2.9.1",
+    "@guardian/interfaces": "^2.9.1",
     "@mikro-orm/core": "~5.3.0",
     "@mikro-orm/mongodb": "~5.3.0",
     "@web-std/fetch": "3.0.0",
@@ -29,6 +29,7 @@
   "packageManager": "yarn@3.2.1",
   "scripts": {
     "build": "tsc",
+    "build:prod": "tsc --project tsconfig.production.json",
     "debug": "nodemon dist/index.js",
     "dev": "tsc -w",
     "dev:docker": "nodemon .",
@@ -36,5 +37,5 @@
     "start": "node dist/index.js",
     "watch": "nodemon src/index.ts"
   },
-  "version": "2.9.0"
+  "version": "2.9.1"
 }

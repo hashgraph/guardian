@@ -25,7 +25,7 @@ We click on **Compare** button present in Schemas tab as shown below:
 
 2\. **Schema Fields** – comparison results of the schema fields.
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (24).png" alt=""><figcaption></figcaption></figure>
 

@@ -63,36 +63,40 @@ export class Workers extends ServiceRequestsBase {
      * @param priority
      * @param isRetryableTask
      * @param attempts
+     * @param registerCallback
      */
     private addTask(task: ITask, priority: number, isRetryableTask: boolean = false, attempts: number = 0, registerCallback = true): Promise<any> {
-        const taskId = GenerateUUIDv4()
-        task.id = task.id || taskId;
+        task.id = task.id || GenerateUUIDv4();
         task.priority = priority;
         attempts = attempts > 0 && attempts < this.maxRepetitions ? attempts : this.maxRepetitions;
         this.queue.push(task);
         const result = new Promise((resolve, reject) => {
+
             if (registerCallback) {
-                this.tasksCallbacks.set(taskId, {
+                this.tasksCallbacks.set(task.id, {
                     task,
                     number: 0,
                     callback: (data, error) => {
                         if (error) {
                             if (isRetryableTask) {
-                                if (this.tasksCallbacks.has(taskId)) {
-                                    const callback = this.tasksCallbacks.get(taskId);
+                                if (this.tasksCallbacks.has(task.id)) {
+                                    const callback = this.tasksCallbacks.get(task.id);
                                     callback.number++;
                                     if (callback.number > attempts) {
-                                        this.tasksCallbacks.delete(taskId);
+                                        this.tasksCallbacks.delete(task.id);
+                                        this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: task.id, data, error });
                                         reject(error);
                                         return;
                                     }
                                 }
                                 this.queue.push(task);
                             } else {
+                                this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: task.id ,data, error });
                                 reject(error);
                             }
                         } else {
-                            this.tasksCallbacks.delete(taskId);
+                            this.tasksCallbacks.delete(task.id);
+                            this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: task.id, data, error });
                             resolve(data);
                         }
                     }
@@ -120,19 +124,17 @@ export class Workers extends ServiceRequestsBase {
         });
 
         this.channel.response(WorkerEvents.TASK_COMPLETE, async (msg: any) => {
-            const activeTask = this.tasksCallbacks.get(msg.id);
+            if (this.tasksCallbacks.has(msg.id)) {
+                const activeTask = this.tasksCallbacks.get(msg.id);
 
-            if (!activeTask) {
-                this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, msg);
+                activeTask.callback(msg.data, msg.error);
             }
-
-            activeTask.callback(msg.data, msg.error);
             return new MessageResponse(null);
         });
 
         this.channel.response(WorkerEvents.PUSH_TASK, async (msg: any) => {
             const { task, priority, isRetryableTask, attempts } = msg;
-            this.addTask(task, priority, isRetryableTask, attempts, false);
+            this.addTask(task, priority, isRetryableTask, attempts);
             return new MessageResponse(null);
         })
     }

@@ -16,7 +16,7 @@ To create new contract, we need to click on Create Contract button and add a Nam
 
 To import the already created contract, we need to click on Import contract button as shown below:
 
-<figure><img src="../../../.gitbook/assets/image (3) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 When clicked on Import Contract button, we need to enter Hedera Contract Id and Description to import it successfully.
 

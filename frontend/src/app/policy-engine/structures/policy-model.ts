@@ -898,9 +898,18 @@ export class PolicyBlockModel {
         delete object.children;
         delete object.events;
 
-        const keys = Object.keys(object);
-        for (let i = 0; i < keys.length; i++) {
-            const key = keys[i];
+        const keys1 = Object.keys(this.properties);
+        const keys2 = Object.keys(object);
+        for (const key of keys1) {
+            if(
+                key !== 'blockType' && 
+                key !== 'id' && 
+                key !== 'tag'
+            ) {
+                delete this.properties[key];
+            }
+        }
+        for (const key of keys2) {
             this.properties[key] = object[key];
         }
 

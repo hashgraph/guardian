@@ -1,30 +1,41 @@
-FROM node:16
-ENV PLATFORM="docker"
-#ENV NODE_ENV="production"
-
-WORKDIR /usr/interfaces
+FROM node:16 AS interfacesModuleBuilder
+WORKDIR /usr/local/interfaces
 COPY ./interfaces/package*.json ./
-COPY ./interfaces/tsconfig.json ./
+COPY ./interfaces/tsconfig*.json ./
 ADD ./interfaces/src ./src/.
 RUN npm install
 RUN npm pack
 
-WORKDIR /usr/common
+FROM node:16 AS commonModuleBuilder
+WORKDIR /usr/local/common
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
 COPY ./common/package*.json ./
-COPY ./common/tsconfig.json ./
+COPY ./common/tsconfig*.json ./
+RUN npm install guardian-interfaces-*.tgz
 ADD ./common/src ./src/.
-RUN npm install /usr/interfaces/guardian-interfaces-*.tgz
-RUN npm install
 RUN npm pack
 
-WORKDIR /usr/guardian-service
+FROM node:16 AS guardianServiceBuilder
+WORKDIR /usr/local/guardian-service
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
+COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz ./
 COPY ./guardian-service/package*.json ./
-COPY ./guardian-service/tsconfig.json ./
+COPY ./guardian-service/tsconfig*.json ./
+RUN npm install guardian-interfaces-*.tgz guardian-common-*.tgz
+ADD ./guardian-service/src ./src/.
+RUN npm run build:prod
+
+FROM node:16
+ENV PLATFORM="docker"
+ENV NODE_ENV="production"
+WORKDIR /usr/local/guardian-service
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
+COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz ./
+COPY ./guardian-service/package*.json ./
 COPY ./guardian-service/.env.docker ./.env
 COPY ./guardian-service/system-schemas ./system-schemas/.
-RUN npm install --force /usr/interfaces/guardian-interfaces-*.tgz /usr/common/guardian-common-*.tgz
-RUN npm install --force
-ADD ./guardian-service/src ./src/.
-RUN npm run build
+RUN npm install --production guardian-interfaces-*.tgz guardian-common-*.tgz
+COPY --from=guardianServiceBuilder /usr/local/guardian-service/dist ./dist
+RUN rm guardian-*.tgz
 
 CMD npm start

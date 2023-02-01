@@ -58,35 +58,20 @@ export class Workers extends ServiceRequestsBase {
      * @param attempts
      */
     private addTask(task: ITask, priority: number, isRetryableTask: boolean = false, attempts: number = 0): Promise<any> {
-        const taskId = GenerateUUIDv4()
+        const taskId = GenerateUUIDv4();
         task.id = taskId;
         task.priority = priority;
         attempts = attempts > 0 && attempts < this.maxRepetitions ? attempts : this.maxRepetitions;
-        // this.queue.push(task);
         const result = new Promise((resolve, reject) => {
             this.tasksCallbacks.set(taskId, {
                 task,
                 number: 0,
                 callback: (data, error) => {
-                    if (error) {
-                        console.log(error);
-                        // if (isRetryableTask) {
-                        //     if (this.tasksCallbacks.has(taskId)) {
-                        //         const callback = this.tasksCallbacks.get(taskId);
-                        //         callback.number++;
-                        //         if (callback.number > attempts) {
-                        //             this.tasksCallbacks.delete(taskId);
-                        //             reject(error);
-                        //             return;
-                        //         }
-                        //     }
-                        //     this.queue.push(task);
-                        // } else {
-                        //     reject(error);
-                        // }
-                    } else {
-                        this.tasksCallbacks.delete(taskId);
+                    this.tasksCallbacks.delete(taskId);
+                    if (!error) {
                         resolve(data);
+                    } else {
+                        reject(error)
                     }
                 }
             });
@@ -102,7 +87,6 @@ export class Workers extends ServiceRequestsBase {
         this.channel.subscribe(WorkerEvents.TASK_COMPLETE_BROADCAST, async (msg: any) => {
             const activeTask = this.tasksCallbacks.get(msg.id);
             activeTask?.callback(msg.data, msg.error);
-            // return new MessageResponse(null);
         });
     }
 }

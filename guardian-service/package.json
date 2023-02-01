@@ -12,8 +12,8 @@
   },
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@guardian/common": "^2.9.0",
-    "@guardian/interfaces": "^2.9.0",
+    "@guardian/common": "^2.9.1",
+    "@guardian/interfaces": "^2.9.1",
     "@hashgraph/sdk": "^2.19.2",
     "@mikro-orm/core": "~5.3.0",
     "@mikro-orm/mongodb": "~5.3.0",
@@ -34,6 +34,7 @@
     "dotenv": "^16.0.0",
     "express": "^4.17.1",
     "fs-extra": "^10.0.0",
+    "imurmurhash": "^0.1.4",
     "jszip": "^3.7.1",
     "lodash.get": "^4.4.2",
     "mathjs": "^10.1.0",
@@ -65,6 +66,7 @@
   "name": "guardian-service",
   "scripts": {
     "build": "tsc",
+    "build:prod": "tsc --project tsconfig.production.json",
     "debug": "nodemon dist/index.js",
     "dev:docker": "nodemon .",
     "dev": "tsc -w",
@@ -74,5 +76,5 @@
     "test:local": "mocha tests/**/*.test.js",
     "test:stability": "mocha tests/stability.test.js"
   },
-  "version": "2.9.0"
+  "version": "2.9.1"
 }

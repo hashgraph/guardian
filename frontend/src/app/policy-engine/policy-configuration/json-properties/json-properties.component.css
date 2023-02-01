@@ -1,8 +1,7 @@
-
 .textarea-code {
     position: absolute;
     left: 0px;
-    top: 25px;
+    top: 32px;
     bottom: 0px;
     right: 0px;
     resize: none;
@@ -18,7 +17,7 @@
     left: 0px;
     top: 0px;
     right: 0px;
-    height: 24px;
+    height: 31px;
     overflow: hidden;
     background: #f7f7f7;
     display: flex;
@@ -28,7 +27,24 @@
 
 .toolbar-btn {
     cursor: pointer;
-    margin: 0px 3px;
+    margin: 2px 6px 2px 3px;
+    position: relative;
+    height: 27px;
+    padding: 1px;
+    box-sizing: border-box;
+    width: 70px;
+    border: 1px solid #e7e7e7;
+    border-radius: 4px;
+}
+
+.toolbar-btn:hover {
+    background: #f0f0f0;
+}
+
+.toolbar-btn span {
+    position: absolute;
+    left: 28px;
+    top: 4px;
 }
 
 .json-errors {
@@ -66,4 +82,19 @@
     background: #df0000;
     width: 6px;
     height: 3px;
+}
+
+.loading {
+    background: rgb(255 255 255 / 60%);
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
 }
