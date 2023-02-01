@@ -9,7 +9,7 @@ context("Artifacts", { tags: "@artifacts" }, () => {
         cy.request({
             method: "POST",
             url: API.ApiServer + API.PolicisImportMsg,
-            body: { messageId: "1650282926.728623821" },
+            body: { messageId: "1674827265.374101003" }, //Remote Work GHG Policy
             headers: {
                 authorization,
             },

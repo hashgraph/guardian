@@ -25,7 +25,7 @@ describe("Workflow Verra Policy", { tags: '@ui' },  () => {
         home.login("StandardRegistry");
         policies.openPoliciesTab();
         policies.importPolicyButton();
-        policies.importPolicyMessage("1663846582.307635866");
+        policies.importPolicyMessage("1675254414.695533713"); //Verra REDD 
         policies.publishPolicy();
         home.logOut("StandardRegistry");
 

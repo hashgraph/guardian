@@ -9,7 +9,7 @@ context("Policies", { tags: '@policies' },() => {
         cy.request({
           method: 'POST',
           url: `${Cypress.env('api_server')}policies/import/message`,
-          body: { "messageId":"1663850151.496004277"},
+          body: { "messageId":"1675253727.031928415"}, //iRec5
           headers: {
             authorization,
           },
