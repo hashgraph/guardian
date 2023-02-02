@@ -92,7 +92,7 @@ This block provides a way to specify multiple signators for a single VC document
 
 We have an option of Signing/ Declining the document by clicking on "Sign" or "Decline" button for the document as shown below:
 
-<figure><img src="../.gitbook/assets/image (21) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (20) (2).png" alt=""><figcaption></figcaption></figure>
 
 #### 5.2 Threshold Display
 
