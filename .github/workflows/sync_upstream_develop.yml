@@ -1,7 +1,7 @@
 name: Sync Upstream Develop
 
 env:
-  LE_BRANCH: develop
+  BRANCH: develop
   
 # This runs every day on 1801 UTC
 on:
