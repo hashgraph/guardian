@@ -2,6 +2,7 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { GenerateUUIDv4, IActiveTask, ITask, WorkerEvents } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/service-requests-base';
 import { Environment } from '@hedera-modules';
+import { doNothing } from '@guardian/common';
 
 /**
  * Workers helper
@@ -76,7 +77,7 @@ export class Workers extends ServiceRequestsBase {
                 }
             });
         });
-        this.request(WorkerEvents.PUSH_TASK, {task, priority, isRetryableTask, attempts});
+        this.request(WorkerEvents.PUSH_TASK, {task, priority, isRetryableTask, attempts}).then(doNothing, doNothing);
         return result;
     }
 
