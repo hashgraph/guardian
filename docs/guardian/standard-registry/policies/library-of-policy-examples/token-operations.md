@@ -1,5 +1,7 @@
 # 🪙 Token Operations
 
+For a demo example of following steps, here is the policy timestamp: **1675164687.693099003**
+
 ## **Task Summary**
 
 Create a token with which newly registered users would be automatically linked. After the registration these users would be able to create documents which would be used for minting tokens at the rate of 1 token to 1000 units of value in the document.

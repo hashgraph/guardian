@@ -2,6 +2,8 @@
 
 ## **User roles usage in Policies**
 
+For a demo example of following steps, here is the policy timestamp: **1675164531.823309003**
+
 ### **An example of creating and using Roles in Policy**
 
 1. Switch to the Roles tab
