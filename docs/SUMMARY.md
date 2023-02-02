@@ -187,6 +187,7 @@
       * [🪙 Token Operations](guardian/standard-registry/policies/library-of-policy-examples/token-operations.md)
       * [🔎 MRV Document Operations](guardian/standard-registry/policies/library-of-policy-examples/mrv-document-operations.md)
       * [⛓ TrustChain reports](guardian/standard-registry/policies/library-of-policy-examples/trustchain-reports.md)
+      * [➗ MRV aggregation and splitting for minting tokens](guardian/standard-registry/policies/library-of-policy-examples/mrv-aggregation-and-splitting-for-minting-tokens.md)
   * [📔 Retirement Contract](guardian/standard-registry/retirement-contract/README.md)
     * [💻 Creating / Importing Contract UI](guardian/standard-registry/retirement-contract/creating-importing-contract-ui.md)
     * [💻 Creating Token Pair UI](guardian/standard-registry/retirement-contract/creating-token-pair-ui.md)
