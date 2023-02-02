@@ -1,7 +1,7 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import { GenerateUUIDv4, IActiveTask, ITask, IWorkerRequest, WorkerEvents } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/service-requests-base';
-import { MessageResponse } from '@guardian/common';
+import { doNothing, MessageResponse } from '@guardian/common';
 import { Environment } from '@hedera-modules';
 
 /**
@@ -134,7 +134,7 @@ export class Workers extends ServiceRequestsBase {
 
         this.channel.response(WorkerEvents.PUSH_TASK, async (msg: any) => {
             const { task, priority, isRetryableTask, attempts } = msg;
-            this.addTask(task, priority, isRetryableTask, attempts);
+            this.addTask(task, priority, isRetryableTask, attempts).then(doNothing, doNothing);
             return new MessageResponse(null);
         })
     }

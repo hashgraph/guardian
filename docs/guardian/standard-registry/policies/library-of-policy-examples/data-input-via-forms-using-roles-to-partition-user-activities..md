@@ -52,7 +52,7 @@ For this ‘**interfaceStepBlock**’ is required with ‘**Cyclic**’ option e
 
 2.3 Then select the previously created Schema
 
-![Selecting already created Schema](<../../../../.gitbook/assets/5 (2).png>)
+![Selecting already created Schema](<../../../../.gitbook/assets/5 (2) (1).png>)
 
 2.4 Select ‘New UUID’ to configure automatic generation of unique IDs for each document
 
