@@ -11,8 +11,8 @@
     },
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@guardian/common": "^2.9.0",
-        "@guardian/interfaces": "^2.9.0",
+        "@guardian/common": "^2.9.2",
+        "@guardian/interfaces": "^2.9.2",
         "@hashgraph/sdk": "^2.19.2",
         "@mikro-orm/core": "~5.3.0",
         "@mikro-orm/mongodb": "~5.3.0",
@@ -65,6 +65,7 @@
     "name": "policy-service",
     "scripts": {
         "build": "tsc",
+        "build:prod": "tsc --project tsconfig.production.json",
         "debug": "nodemon dist/index.js",
         "dev:docker": "nodemon .",
         "dev": "tsc -w",
@@ -74,5 +75,5 @@
         "test:local": "mocha tests/**/*.test.js",
         "test:stability": "mocha tests/stability.test.js"
     },
-    "version": "2.9.0"
+    "version": "2.9.2"
 }

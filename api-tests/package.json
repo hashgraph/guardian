@@ -1,6 +1,6 @@
 {
   "name": "api-tests",
-  "version": "2.9.0",
+  "version": "2.9.2",
   "description": "API Tests",
   "main": "index.js",
   "scripts": {

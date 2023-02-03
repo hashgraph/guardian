@@ -329,11 +329,7 @@ export class AggregateBlock {
     public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
-            if (ref.options.aggregateType === 'period') {
-                if (!ref.options.timer && !resultsContainer.isTagExist(ref.options.timer)) {
-                    resultsContainer.addBlockError(ref.uuid, `Tag "${ref.options.timer}" does not exist`);
-                }
-            } else if (ref.options.aggregateType === 'cumulative') {
+            if (ref.options.aggregateType === 'cumulative') {
                 const variables: any = {};
                 if (ref.options.expressions) {
                     for (const expression of ref.options.expressions) {
@@ -352,7 +348,7 @@ export class AggregateBlock {
                         }
                     }
                 }
-            } else {
+            } else if(ref.options.aggregateType !== 'period') {
                 resultsContainer.addBlockError(ref.uuid, 'Option "aggregateType" must be one of period, cumulative');
             }
             if (

@@ -39,7 +39,7 @@ import { PolicyConverterUtils } from './policy-converter-utils';
 import { DatabaseServer } from '@database-modules';
 import { IPolicyUser, PolicyUser } from './policy-user';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
-import { ISerializedErrors, PolicyValidationResultsContainer } from './policy-validation-results-container';
+import { ISerializedErrors } from './policy-validation-results-container';
 import { Artifact } from '@entity/artifact';
 import { MultiPolicy } from '@entity/multi-policy';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
@@ -818,13 +818,16 @@ export class PolicyEngine extends ServiceRequestsBase{
      * @param policyId
      */
     public async destroyModel(policyId: string): Promise<void> {
-        const { name } = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-        PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
-        this.channel.publish(PolicyEvents.DELETE_POLICY, {
-            policyId,
-            policyServiceName: name
+        const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
+        if (serviceChannelEntity) {
+            const {name} = serviceChannelEntity;
+            PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
+            this.channel.publish(PolicyEvents.DELETE_POLICY, {
+                policyId,
+                policyServiceName: name
 
-        });
+            });
+        }
     }
 
     /**
@@ -871,15 +874,19 @@ export class PolicyEngine extends ServiceRequestsBase{
 
         const { name } = PolicyServiceChannelsContainer.createIfNotExistServiceChannel(policyId);
 
-        const resultsContainer = new PolicyValidationResultsContainer();
-        this.channel.publish(PolicyEvents.VALIDATE_POLICY, {
+        this.channel.publish(PolicyEvents.GENERATE_POLICY, {
             policy,
             policyId,
             policyServiceName: name,
             skipRegistration: false
         });
 
-        return resultsContainer.getSerializedErrors();
+        return new Promise((resolve) => {
+            this.policyReadyCallbacks.set(policyId, (data) => {
+                this.destroyModel(policyId);
+                resolve(data);
+            })
+        });
     }
 
     /**

@@ -10,7 +10,7 @@ After clicking on the New button, you will be asked to enter Schema details such
 
 In addition to the basic Schema details we also have an option to add Field and Condition to each field.
 
-![](<../../../.gitbook/assets/image (9) (1).png>)
+![](<../../../.gitbook/assets/image (9) (1) (2).png>)
 
 We can also customize the Field keys and Field Title by clicking on Advanced Tab.
 

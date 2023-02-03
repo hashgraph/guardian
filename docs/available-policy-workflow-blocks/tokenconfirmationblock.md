@@ -28,7 +28,7 @@ This block enables the owner of the private key for the account to manually perf
 3. Users can skip the action by selecting “I will _Action_ manually” option in the UI. This would require the user to perform the corresponding action off-Guardian platform (directly on Hedera chain).
 {% endhint %}
 
-![Block Properties](<../.gitbook/assets/image (6) (4).png>)
+![Block Properties](<../.gitbook/assets/image (6) (4) (1).png>)
 
 ![JSON View of the Block](<../.gitbook/assets/image (9) (3).png>)
 

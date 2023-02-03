@@ -16,11 +16,11 @@
 
 We have added new Impacts Section to display Primary/Secondary Impacts token details in Trustchain:
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 In the case when multiple linked mint blocks are used then the system displays all linked VPs as shown below:
 
-<figure><img src="../.gitbook/assets/image (2) (1) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2) (1) (3) (2).png" alt=""><figcaption></figcaption></figure>
 
 #### 2.1 Data Format:
 

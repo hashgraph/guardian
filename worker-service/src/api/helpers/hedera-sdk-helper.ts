@@ -1053,7 +1053,16 @@ export class HederaSDKHelper {
      */
     private static transactionResponse(client: Client) {
         if (HederaSDKHelper.fn) {
-            HederaSDKHelper.fn(client);
+            try {
+                const result = HederaSDKHelper.fn(client);
+                if (typeof result.then === 'function') {
+                    result.then(null, (error) => {
+                        console.error(error);
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            }
         }
     }
 

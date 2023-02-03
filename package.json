@@ -11,8 +11,10 @@
     "guardian-service",
     "logger-service",
     "mrv-sender",
+    "topic-viewer",
+    "tree-viewer",
     "worker-service",
     "policy-service"
   ],
-  "version": "2.9.0"
+  "version": "2.9.2"
 }

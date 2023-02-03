@@ -14,13 +14,13 @@ import process from 'process';
 import { IPFS } from '@helpers/ipfs';
 import { CommonVariables } from '@helpers/common-variables';
 import { PolicyEvents } from '@guardian/interfaces';
+import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 const {
     policy,
     policyId,
     policyServiceName,
-    skipRegistration,
-    resultsContainer
+    skipRegistration
 } = JSON.parse(process.env.POLICY_START_OPTIONS);
 
 process.env.SERVICE_CHANNEL = policyServiceName;
@@ -36,6 +36,7 @@ Promise.all([
     MessageBrokerChannel.connect(policyServiceName)
 ]).then(async values => {
 
+    const resultsContainer = new PolicyValidationResultsContainer();
     const [db, cn] = values;
     DB_DI.orm = db;
 
@@ -62,7 +63,7 @@ Promise.all([
     const generator = new BlockTreeGenerator();
     await generator.generate(policy, skipRegistration, resultsContainer);
 
-    channel.publish(PolicyEvents.POLICY_READY, { policyId: policyId.toString() });
+    channel.publish(PolicyEvents.POLICY_READY, { policyId: policyId.toString(), data: resultsContainer.getSerializedErrors() });
     new Logger().info('Start policy', ['POLICY', policy.name, policyId.toString()]);
 
 });

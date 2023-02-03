@@ -23,7 +23,7 @@ function stopPolicyProcess(policyId: string, policyServiceName: string): void {
     const logger = new Logger();
 
     if (models.has(policyServiceName)) {
-        models.get(policyServiceName).kill(0);
+        models.get(policyServiceName).kill(9);
         models.delete(policyServiceName);
 
         logger.info(`Policy process killed`, ['POLICY-SERVICE', policyId]);
