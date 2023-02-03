@@ -176,8 +176,11 @@ export class RevokeBlock {
             const prevDocument = prevDocs[prevDocs.length - 1];
             if (prevDocument) {
                 prevDocument.option.status = uiMetaData.prevDocStatus;
-                await ref.databaseServer.updateVCRecordById(prevDocument);
-                await ref.databaseServer.saveDocumentState(prevDocument.id, uiMetaData.prevDocStatus);
+                await ref.databaseServer.updateVC(prevDocument);
+                await ref.databaseServer.saveDocumentState({
+                    documentId: prevDocument.id,
+                    status: uiMetaData.prevDocStatus
+                });
             }
         }
 

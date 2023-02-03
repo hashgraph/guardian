@@ -141,6 +141,9 @@ export class DidRootKey {
         result.type = json.type;
         result.controller = json.controller;
         result.publicKeyBase58 = json.publicKeyBase58;
+        if (json.privateKeyBase58) {
+            result.privateKeyBase58 = json.privateKeyBase58;
+        }
         return result;
     }
 
@@ -412,6 +415,24 @@ export class DidDocumentBase {
         result.didRootKey = DidRootKey.createByPublicKey(did, didRootKey);
         return result;
     }
+
+    /**
+     * From JSON tree
+     * @param json
+     */
+    public static fromJsonTree(json: IDidDocument): DidDocumentBase {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+        const result = new DidDocumentBase();
+        if (json[DidDocumentBase.ID]) {
+            result.did = json[DidDocumentBase.ID];
+        }
+        if (json[DidDocumentBase.VERIFICATION_METHOD]) {
+            result.didRootKey = DidRootKey.fromJsonTree(json[DidDocumentBase.VERIFICATION_METHOD]);
+        }
+        return result;
+    }
 }
 
 /**
@@ -528,7 +549,7 @@ export class DIDDocument {
     /**
      * Get document
      */
-    public getDocument(): any {
+    public getDocument(): IDidDocument {
         return this.document.getDidDocument();
     }
 
@@ -686,5 +707,38 @@ export class DIDDocument {
         } catch (error) {
             throw new Error('DID string is invalid. ' + error.message);
         }
+    }
+
+    /**
+     * From JSON tree
+     * @param json
+     */
+    public static fromJsonTree(json: IDidDocument): DIDDocument {
+        if (!json) {
+            throw new Error('JSON Object is empty');
+        }
+        const result = new DIDDocument();
+        result.document = DidDocumentBase.fromJsonTree(json);
+        if (result.document) {
+            result.did = result.document.getId();
+        }
+        return result;
+    }
+
+    /**
+     * To JSON tree
+     */
+    public toJsonTree(): IDidDocument {
+        return this.getDocument();
+    }
+
+    /**
+     * To credential hash
+     */
+    public toCredentialHash(): string {
+        const map = this.getDocument();
+        const json: string = JSON.stringify(map);
+        const hash: Uint8Array = Hashing.sha256.digest(json);
+        return Hashing.base58.encode(hash);
     }
 }

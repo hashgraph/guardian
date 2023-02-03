@@ -1,6 +1,6 @@
 import { Token } from '@entity/token';
 import { Topic } from '@entity/topic';
-import { VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument, TopicConfig } from '@hedera-modules';
+import { VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument, TopicConfig, DIDDocument } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import {
@@ -21,6 +21,7 @@ import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Workers } from '@helpers/workers';
+import { DocumentType } from '@policy-engine/interfaces/document.type';
 
 /**
  * Data types
@@ -327,7 +328,7 @@ export class PolicyUtils {
      * Get subject type
      * @param document
      */
-     public static getCredentialSubjectType(document: any): any {
+    public static getCredentialSubjectType(document: any): any {
         try {
             if (document) {
                 if (Array.isArray(document.credentialSubject)) {
@@ -346,22 +347,22 @@ export class PolicyUtils {
      * Get Document Type
      * @param document
      */
-    public static getDocumentType(document: any): string {
+    public static getDocumentType(document: IPolicyDocument): DocumentType {
         if (document && document.document && document.document.type) {
             const type = document.document.type;
             if (Array.isArray(type)) {
                 if (type.indexOf('VerifiableCredential') > -1) {
-                    return 'VerifiableCredential';
+                    return DocumentType.VerifiableCredential;
                 }
                 if (type.indexOf('VerifiablePresentation') > -1) {
-                    return 'VerifiablePresentation';
+                    return DocumentType.VerifiablePresentation;
                 }
             } else {
                 if (type === 'VerifiableCredential') {
-                    return 'VerifiableCredential';
+                    return DocumentType.VerifiableCredential;
                 }
                 if (type === 'VerifiablePresentation') {
-                    return 'VerifiablePresentation';
+                    return DocumentType.VerifiablePresentation;
                 }
             }
         }
@@ -810,7 +811,7 @@ export class PolicyUtils {
                     ? memoObj
                     : config
             });
-            if(!ref.dryRun) {
+            if (!ref.dryRun) {
                 await topic.saveKeys();
             }
             await topicHelper.twoWayLink(topic, rootTopic, null);
@@ -866,7 +867,7 @@ export class PolicyUtils {
      * @param ref
      * @param userId
      */
-     public static getPolicyUserById(ref: AnyBlockType, userId: string): IPolicyUser {
+    public static getPolicyUserById(ref: AnyBlockType, userId: string): IPolicyUser {
         return PolicyUser.fromUserId(userId, null, !!ref.dryRun);
     }
 
@@ -1104,17 +1105,15 @@ export class PolicyUtils {
      * @param owner
      * @param document
      */
-    public static createDID(ref: AnyBlockType, owner: IPolicyUser, did: string, document: any): IPolicyDocument {
+    public static createDID(ref: AnyBlockType, owner: IPolicyUser, document: DIDDocument): IPolicyDocument {
         return {
             policyId: ref.policyId,
             tag: ref.tag,
-            did,
-            document,
+            did: document.getDid(),
+            document: document.getDocument(),
             owner: owner.did,
             group: owner.group,
-            status: DidDocumentStatus.CREATE,
-            messageId: null,
-            topicId: null,
+            status: DidDocumentStatus.CREATE
         };
     }
 
@@ -1128,15 +1127,12 @@ export class PolicyUtils {
         return {
             policyId: ref.policyId,
             tag: ref.tag,
-            type: null,
             hash: document.toCredentialHash(),
             document: document.toJsonTree(),
             owner: owner.did,
             group: owner.group,
             status: DocumentStatus.NEW,
-            signature: DocumentSignature.NEW,
-            messageId: null,
-            topicId: null,
+            signature: DocumentSignature.NEW
         };
     }
 
@@ -1150,52 +1146,27 @@ export class PolicyUtils {
         return {
             policyId: ref.policyId,
             tag: ref.tag,
-            type: null,
             hash: document.toCredentialHash(),
             document: document.toJsonTree(),
             owner: owner.did,
             group: owner.group,
-            assignedTo: null,
-            assignedToGroup: null,
-            option: null,
-            schema: null,
             hederaStatus: DocumentStatus.NEW,
-            signature: DocumentSignature.NEW,
-            messageId: null,
-            topicId: null,
-            relationships: null,
-            comment: null,
-            accounts: null,
+            signature: DocumentSignature.NEW
         };
     }
 
     /**
-     * Clone DID Document
+     * Clone VC Document
      * @param ref
      * @param document
      */
     public static cloneVC(ref: AnyBlockType, document: IPolicyDocument): VcDocumentCollection {
-        return {
-            policyId: ref.policyId,
-            tag: document.tag || null,
-            type: document.type || null,
-            hash: document.hash,
-            document: document.document,
-            owner: document.owner,
-            group: document.group,
-            assignedTo: document.assignedTo || null,
-            assignedToGroup: document.assignedToGroup || null,
-            option: document.option || null,
-            schema: document.schema || null,
-            hederaStatus: document.hederaStatus || DocumentStatus.NEW,
-            signature: document.signature || DocumentSignature.NEW,
-            messageId: document.messageId || null,
-            topicId: document.topicId || null,
-            relationships: document.relationships || null,
-            comment: document.comment || null,
-            accounts: document.accounts || null,
-            tokens: document.tokens || null
-        } as VcDocumentCollection;
+        let clone = Object.assign({}, document);
+        clone.policyId = ref.policyId;
+        if (document.document) {
+            clone.document = JSON.parse(JSON.stringify(document.document));
+        }
+        return clone as VcDocumentCollection;
     }
 
     /**

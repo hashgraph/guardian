@@ -720,6 +720,10 @@ export interface IPolicyDocument {
      */
     topicId?: string,
     /**
+     * Message History
+     */
+    messageIds?: string[],
+    /**
      * Other fields
      */
     [x: string]: any;

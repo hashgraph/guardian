@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 
 /**
  * Settings for block of 'sendToGuardian' type.
@@ -44,6 +43,21 @@ export class SendConfigComponent implements OnInit {
         this.block = block.properties;
         this.block.uiMetaData = this.block.uiMetaData || {};
         this.block.options = this.block.options || [];
+        if (this.block.dataSource === 'database') {
+            if (this.block.forceNew) {
+                this.block.operation = 'create';
+            } else {
+                this.block.operation = 'update';
+            }
+            if (this.block.operation == 'update') {
+                if (!this.block.updateBy) {
+                    this.block.updateBy = 'hash';
+                }
+            }
+        }
+        if (!this.block.dataType && !this.block.dataSource) {
+            this.block.dataSource = 'auto';
+        }
     }
 
     onHide(item: any, prop: any) {
@@ -66,11 +80,26 @@ export class SendConfigComponent implements OnInit {
             const name = `New Topic ${this.policy.policyTopics.length}`;
             this.policy.createTopic({
                 name: name,
-                description: "",
-                type: "any",
+                description: '',
+                type: 'any',
                 static: false
             });
             this.block.topic = name;
+        }
+    }
+
+    onDataSource(event: any) {
+        if (this.block.dataSource === 'database') {
+            if (this.block.forceNew) {
+                this.block.operation = 'create';
+            } else {
+                this.block.operation = 'update';
+            }
+            if (this.block.operation == 'update') {
+                if (!this.block.updateBy) {
+                    this.block.updateBy = 'hash';
+                }
+            }
         }
     }
 }
