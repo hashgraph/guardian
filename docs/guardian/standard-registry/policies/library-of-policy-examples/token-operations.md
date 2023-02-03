@@ -94,12 +94,12 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 ### Create User
 
-<figure><img src="../../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_3_demot_01.png" alt=""><figcaption></figcaption></figure>
 
 ### Create Project
 
-<figure><img src="../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_3_demot_02.png" alt=""><figcaption></figcaption></figure>
 
 ### Mint Token
 
-<figure><img src="../../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_3_demot_03.png" alt=""><figcaption></figcaption></figure>
