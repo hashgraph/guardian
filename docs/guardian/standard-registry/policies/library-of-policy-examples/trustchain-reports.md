@@ -1,6 +1,8 @@
 # ⛓ TrustChain reports
 
-**Task**
+For a demo example of following steps, here is the policy timestamp: **1675176247.137536341**
+
+## **Task**
 
 Create a report to check a chain of documents.
 
@@ -10,15 +12,15 @@ We will use [example 4](mrv-document-operations.md) to assemble multiple documen
 
 Let’s add several additional attributes into the documents to simplify the document search.
 
-![Adding Entity](<../../../../.gitbook/assets/0 (3).png>)
+![Adding Entity](<../../../../.gitbook/assets/0 (3) (1).png>)
 
 ![Adding Status](<../../../../.gitbook/assets/1 (3).png>)
 
-![Adding Entity ](<../../../../.gitbook/assets/2 (4).png>)
+![Adding Entity ](<../../../../.gitbook/assets/2 (4) (1).png>)
 
 ![Adding Entity](<../../../../.gitbook/assets/3 (4).png>)
 
-![Adding Type Attribute](<../../../../.gitbook/assets/4 (3).png>)
+![Adding Type Attribute](<../../../../.gitbook/assets/4 (3) (1).png>)
 
 ## **Building the trustchain report:**
 
@@ -26,11 +28,11 @@ Let’s add several additional attributes into the documents to simplify the doc
 
 1.1 Add new container
 
-![Adding new container](<../../../../.gitbook/assets/5 (2).png>)
+![Adding new container](<../../../../.gitbook/assets/5 (2) (2).png>)
 
 1.2 Add ‘_**reportBlock**_’
 
-![Adding reportBlock](<../../../../.gitbook/assets/6 (3).png>)
+![Adding reportBlock](<../../../../.gitbook/assets/6 (3) (1).png>)
 
 In Guardian policy ‘**reportBlock**’ finds VP documents based on their _id_ or _hash_ and displays document information, related policy and token information. To retrieve the linked information ‘**reportItemBlock**’ must be used.
 
@@ -44,11 +46,11 @@ The ‘**reportItemBlock**’ items are executed sequentially, thus in the filte
 
 1.3.1 ‘**mint\_document**’. To find this document which described the token mint operation we will use one of the **Common Variables** - _actionId_
 
-![Using actionId value](<../../../../.gitbook/assets/8 (4).png>)
+![Using actionId value](<../../../../.gitbook/assets/8 (4) (1).png>)
 
 1.3.2 ’**report\_document**_’_. To find the MRV report (i.e. data document which was the basis of the decision to mint tokens) we will also use one of the **Common Variables** – _documentId_
 
-![Adding documentId value](<../../../../.gitbook/assets/9 (3).png>)
+![Adding documentId value](<../../../../.gitbook/assets/9 (3) (1).png>)
 
 To find further documents we will need to use values from the **Ref** variable which point to the previous document. Let’s save in a new variable:
 

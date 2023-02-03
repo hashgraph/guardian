@@ -1,5 +1,7 @@
 # 🔢 Data input via Forms, using Roles to partition user activities.
 
+For a demo example of following steps, here is the policy timestamp: **1675164605.096601003**
+
 ## **Objective**
 
 Construct a policy in which one group of users can individually fill in and submit documents for approval and view their own documents’ status, and another group of users can view and take approve/reject actions on any of these user documents.
@@ -136,25 +138,25 @@ Configure both ‘**documentSourceAddon**’ blocks similarly to how it was in t
 
 Switch off the ‘Default Active’ option to avoid specifying the button as an independent element and hide it
 
-<figure><img src="../../../../.gitbook/assets/image (31).png" alt=""><figcaption><p>Adding buttonBlock</p></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_2_screenshot_22.png" alt=""><figcaption></figcaption></figure>
 
 2.2 Create 2 buttons for ‘Approve’ and ‘Reject’ correspondingly.
 
-<figure><img src="../../../../.gitbook/assets/image (33).png" alt=""><figcaption><p>Creating two buttons</p></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_2_screenshot_23.png" alt=""><figcaption></figcaption></figure>
 
 2.3 ‘**buttonBlock**’ is responsible only for the actions, in order to save the refreshed status of the documents.&#x20;
 
 Create 2 ‘**sendToGuardianBlock**’ blocks with the corresponding values for the ‘Status’.
 
-<figure><img src="../../../../.gitbook/assets/image (34).png" alt=""><figcaption><p>Creating 2 sendToGuardianBlock</p></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_2_screenshot_24.png" alt=""><figcaption></figcaption></figure>
 
 2.4 By default blocks are always directly connected to the next block (just below it). To decouple the blocks select ‘**Events**’ tab and switch off the default events for both blocks.
 
-<figure><img src="../../../../.gitbook/assets/image (29).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_2_screenshot_25.png" alt=""><figcaption></figcaption></figure>
 
 2.5 Connect events from the ‘**buttonBlock**’ with the corresponding ‘**sendToGuardianBlock**_’_ by selecting the _Events_ tab and create 2 new events.
 
-<figure><img src="../../../../.gitbook/assets/image (42).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_2_screenshot_26.png" alt=""><figcaption></figcaption></figure>
 
 3. Return to the grid settings and add the created buttons into the previously prepared column
 
@@ -164,22 +166,22 @@ Create 2 ‘**sendToGuardianBlock**’ blocks with the corresponding values for 
 
 3.3 In order to display the buttons for only new documents set the corresponding value for the ‘_Bind Group'_
 
-<figure><img src="../../../../.gitbook/assets/image (43).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_2_screenshot_27.png" alt=""><figcaption></figcaption></figure>
 
 ## Result
 
 ### 1. Choose a role
 
-<figure><img src="../../../../.gitbook/assets/image (7) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_2_demo_01.png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Create new document
 
-<figure><img src="../../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_2_demo_02.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_2_demo_03.png" alt=""><figcaption></figcaption></figure>
 
 ### 3. Approve
 
-<figure><img src="../../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_2_demo_04.png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_2_demo_05.png" alt=""><figcaption></figcaption></figure>
