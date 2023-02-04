@@ -134,6 +134,41 @@ create_roles() {
   done
 }
 
+# Get AppRole Credentials for all services
+get_approle_credentials() {
+  ROLES=$(cat "$APPROLE_CONFIG_DIR" | jq -c -r '.[]')
+  for ROLE in ${ROLES[@]}; do
+    ROLE_NAME=$(echo $ROLE | jq -r '.role_name')
+
+    ROLE_ID=$(read v1/auth/approle/role/$ROLE_NAME/role-id $VAULT_TOKEN | jq -r ".data.role_id")
+
+    SECRET_ID=$(write "{\"num_uses\":$VAULT_SECRET_ID_TTL, \"ttl\": \"$VAULT_SECRET_NUM_USES\"}" v1/auth/approle/role/$ROLE_NAME/secret-id $VAULT_TOKEN | jq -r ".data.secret_id")
+
+    ENV_PATHS=$(echo $ROLE | jq -r '.env_path[]')
+    for ENV_PATH in ${ENV_PATHS[@]}; do
+
+      ENV_FILE=$PWD/$ENV_PATH
+      if grep -q "^VAULT_APPROLE_ROLE_ID=" "$ENV_FILE"; then
+        # replace the value of the key if it exists
+        sed -i "s/^VAULT_APPROLE_ROLE_ID=.*/VAULT_APPROLE_ROLE_ID=$ROLE_ID/" $ENV_FILE
+      else
+        # add the key and its value if it doesn't exist
+        echo -e "\nVAULT_APPROLE_ROLE_ID=$ROLE_ID" >> "$ENV_FILE"
+      fi
+
+      if grep -q "^VAULT_APPROLE_SECRET_ID=" "$ENV_FILE"; then
+        # replace the value of the key if it exists
+        sed -i "s/^VAULT_APPROLE_SECRET_ID=.*/VAULT_APPROLE_SECRET_ID=$SECRET_ID/" $ENV_FILE
+      else
+        # add the key and its value if it doesn't exist
+        echo "VAULT_APPROLE_SECRET_ID=$SECRET_ID" >> "$ENV_FILE"
+      fi
+    done
+
+    
+  done
+}
+
 echo "Initialize Vault"
 init_vault
 
@@ -151,3 +186,6 @@ create_policies
 
 echo "Create roles associated with policies for all services"
 create_roles
+
+echo "Get AppRole Credentials for all services"
+get_approle_credentials
