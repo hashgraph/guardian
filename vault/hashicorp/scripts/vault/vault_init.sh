@@ -3,11 +3,15 @@
 # Load environment variables
 source $PWD/vault/hashicorp/.env
 
+BASE_DIR=$PWD/vault/hashicorp
 
 VAULT_CLIENT_CERT_PATH=$CERT_REPOSITORY_DIR/vault/client
 VAULT_CACERT=$VAULT_CLIENT_CERT_PATH/ca.crt
 VAULT_CLIENT_CERT=$VAULT_CLIENT_CERT_PATH/tls.crt
 VAULT_CLIENT_KEY=$VAULT_CLIENT_CERT_PATH/tls.key
+
+VAULT_ROOT_TOKEN_PATH=$BASE_DIR/vault/.root
+
 
 
 # Executes a vault read command using curl
@@ -59,3 +63,23 @@ write() {
       $URL
   fi
 }
+
+# Initialize Vault to retreive root token and unseal keys and store them .root file
+init_vault() {
+  init_response=$(write '{"secret_shares": 5, "secret_threshold": 3}' v1/sys/init)
+
+  VAULT_TOKEN=$(echo $init_response | jq -r .root_token)
+  UNSEAL_KEYS=$(echo $init_response | jq -r .keys)
+
+  ERRORS=$(echo $init_response | jq .errors | jq '.[0]')
+  if [ "$UNSEAL_KEYS" = "null" ]; then
+    echo "cannot retrieve unseal key: $ERRORS"
+    exit 1
+  fi
+
+  echo $init_response | jq '{root_token, keys}' > $VAULT_ROOT_TOKEN_PATH
+}
+
+
+echo "Initialize Vault"
+init_vault

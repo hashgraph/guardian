@@ -1,5 +1,7 @@
 vault_keygen:
 	@./vault/hashicorp/scripts/keygen/keygen_cfssl.sh
+	@sleep 10
+	@./vault/hashicorp/scripts/vault/vault_init.sh
 
 cfgen:
 	@./vault/hashicorp/scripts/consul/consul_config_gen.sh
