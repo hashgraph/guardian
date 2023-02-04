@@ -12,10 +12,9 @@ generate_config() {
   TEMP_CFG=$(cat $CONSUL_CONFIG_TEMPLATE_DIR)
 
   TEMP_CFG=$(echo $TEMP_CFG |
-    jq '.ui_config.enable = '$CONSUL_UI_ENABLE'' |
+    jq '.ui_config.enabled = '$CONSUL_UI_ENABLE'' |
     jq '.log_level = "'$CONSUL_LOG_LEVEL'"')
 
-  # echo $TEMP_CFG
 
   if [ $TLS_ENABLE = false ]; then
     TEMP_CFG=$(echo $TEMP_CFG | 
@@ -25,7 +24,6 @@ generate_config() {
       jq '.auto_encrypt.allow_tls = false' |
       jq 'del(.ca_file, .cert_file, .key_file)')
   fi
-    echo $TEMP_CFG
 
   echo $TEMP_CFG | jq . -M > $CONSUL_CONFIG_DIR/consul.json
 }
