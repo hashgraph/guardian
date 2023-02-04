@@ -80,6 +80,21 @@ init_vault() {
   echo $init_response | jq '{root_token, keys}' > $VAULT_ROOT_TOKEN_PATH
 }
 
+# Using Unseal Keys to unseal Vault
+unseal_vault() {
+  UNSEAL_KEY_1=$(cat $VAULT_ROOT_TOKEN_PATH | jq .keys | jq '.[1]')
+  UNSEAL_KEY_2=$(cat $VAULT_ROOT_TOKEN_PATH | jq .keys | jq '.[2]')
+  UNSEAL_KEY_3=$(cat $VAULT_ROOT_TOKEN_PATH | jq .keys | jq '.[3]')
+
+  write '{"key": '${UNSEAL_KEY_1}'}' v1/sys/unseal
+
+  write '{"key": '${UNSEAL_KEY_2}'}' v1/sys/unseal
+
+  write '{"key": '${UNSEAL_KEY_3}'}' v1/sys/unseal
+}
 
 echo "Initialize Vault"
 init_vault
+
+echo "Unseal Vault"
+unseal_vault
