@@ -14,6 +14,7 @@ VAULT_ROOT_TOKEN_PATH=$BASE_DIR/vault/.root
 
 POLICY_CONFIG_DIR=$BASE_DIR/configs/vault/policies/policy_configs.json
 APPROLE_CONFIG_DIR=$BASE_DIR/configs/vault/approle/approle.json
+SECRETS_DIR=$BASE_DIR/configs/vault/secrets/secrets.json
 
 # Executes a vault read command using curl
 # $1: URI vault path to be executed
@@ -169,6 +170,16 @@ get_approle_credentials() {
   done
 }
 
+# Push secrets for all services to Vault
+push_secrets() {
+  SECRETS=$(cat "$SECRETS_DIR" | jq -c -r '.[]')
+  for SECRET in ${SECRETS[@]}; do
+    SECRET_PATH=$(echo $SECRET | jq -r .path )
+    SECRET_DATA=$(echo $SECRET | jq -r .data )
+    write "{\"data\": $SECRET_DATA}" v1/secret/data/$SECRET_PATH $VAULT_TOKEN
+  done
+}
+
 echo "Initialize Vault"
 init_vault
 
@@ -189,3 +200,6 @@ create_roles
 
 echo "Get AppRole Credentials for all services"
 get_approle_credentials
+
+echo "Push secrets for all services to Vault"
+push_secrets
