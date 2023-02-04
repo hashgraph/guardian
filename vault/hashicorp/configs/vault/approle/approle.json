@@ -19,8 +19,8 @@
     "role_name": "policy_service",
     "policies": ["wallet","operator"],
     "env_path": [
-      "guardian-service/.env",
-      "guardian-service/.env.docker"
+      "policy-service/.env",
+      "policy-service/.env.docker"
     ]
   },
   {
