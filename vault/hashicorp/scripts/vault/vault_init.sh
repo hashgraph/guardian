@@ -12,6 +12,7 @@ VAULT_CLIENT_KEY=$VAULT_CLIENT_CERT_PATH/tls.key
 
 VAULT_ROOT_TOKEN_PATH=$BASE_DIR/vault/.root
 
+POLICY_CONFIG_DIR=$BASE_DIR/configs/vault/policies/policy_configs.json
 
 
 # Executes a vault read command using curl
@@ -103,6 +104,21 @@ enable_approle() {
   write '{"type": "approle"}' v1/sys/auth/approle $VAULT_TOKEN
 }
 
+# Create Policies for All provided services
+create_policies() {
+  POLICIES=$(cat $POLICY_CONFIG_DIR | jq -c -r '.[]')
+
+  for POLICY in ${POLICIES[@]}; do
+    POLICY_NAME=$(echo $POLICY | jq -r .policy_name)
+    POLICY_DATA_FILES=$(echo $POLICY | jq -r .policies[])
+
+    for POLICY_DATA_FILE in ${POLICY_DATA_FILES[@]}; do
+      POLICY_DATA='{"policy": '$(cat $PWD/$POLICY_DATA_FILE)'}'
+      write "$POLICY_DATA" v1/sys/policies/acl/$POLICY_NAME $VAULT_TOKEN
+    done
+  done
+}
+
 echo "Initialize Vault"
 init_vault
 
@@ -114,3 +130,6 @@ enable_kv2_key_engine
 
 echo "Enable AppRole Auth Method"
 enable_approle
+
+echo "Create Policies for All guardian Service"
+create_policies
