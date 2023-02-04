@@ -23,3 +23,7 @@ node_modules
 
 # tls
 vault/hashicorp/certs/
+
+# vault artificats
+vault/hashicorp/vault
+vault/hashicorp/consul
