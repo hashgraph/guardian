@@ -12,7 +12,12 @@ CFSSL_CONFIG_FILE=$CFSSL_CONFIG_DIR/cfssl.json
 CFSSL_PROFILE_PATH_ROOT_CA=$CFSSL_PROFILES_CA_DIR/root.json
 CFSSL_PROFILE_PATH_INT_CA=$CFSSL_PROFILES_CA_DIR/intermediate_ca.json
 
+CFSSL_PROFILES_SERVERS_DIR=$CFSSL_PROFILES_DIR/servers
+CFSSL_PROFILES_CLIENTS_DIR=$CFSSL_PROFILES_DIR/clients
+
 PROFILE_TYPE_ICA=intermediate_ca
+PROFILE_TYPE_SERVER=server
+PROFILE_TYPE_CLIENT=client
 
 ROOT_CA_REPOSITORY=$CERT_REPOSITORY_DIR/ca/root
 ROOT_CA_CRT=$ROOT_CA_REPOSITORY/ca.crt
@@ -56,6 +61,45 @@ generate_int_ca() {
     cat $INT_CA_CRT >> $ROOT_CA_CRT
 }
 
+# Generate PKI derived from Root CA and store to target directory
+# Parameters:
+# 1: PROFILE_CONFIG Cfssl Configs Profile
+# 2: PROFILE_TYPE Traget profile type: {"server", "client"}
+# 3: TARGET_DIR target directory to store pki
+generate_cert() {
+    PROFILE_CONFIG=$1
+    PROFILE_TYPE=$2
+    OUT_DIR=$3
+
+    pki=$(cfssl gencert -ca $INT_CA_CRT -ca-key $INT_CA_KEY -config $CFSSL_CONFIG_FILE -profile=$PROFILE_TYPE $PROFILE_CONFIG)
+    echo $pki | jq -r '.cert' >> $OUT_DIR/tls.crt
+    echo $pki | jq -r '.key' >> $OUT_DIR/tls.key
+    cp $ROOT_CA_CRT $OUT_DIR/ca.crt
+}
+
+generate_certs() {
+    echo "Generate Server PKIs"
+    for PROFILE in $CFSSL_PROFILES_SERVERS_DIR/*; do
+        CN=$(cat $PROFILE | jq -r .CN)
+
+        CERT_PATH=$CERT_REPOSITORY_DIR/"$CN"/tls
+
+        mkdir -p $CERT_PATH
+        
+        generate_cert $PROFILE $PROFILE_TYPE_SERVER $CERT_PATH
+    done
+
+    echo "Generate Clients PKIs"
+    for PROFILE in $CFSSL_PROFILES_CLIENTS_DIR/*; do
+        CN=$(cat $PROFILE | jq -r .CN)
+
+        CERT_PATH=$CERT_REPOSITORY_DIR/"$CN"/client
+        
+        mkdir -p $CERT_PATH
+        
+        generate_cert $PROFILE $PROFILE_TYPE_CLIENT $CERT_PATH
+    done
+}
 
 echo "Clean Artificats"
 path_clean
@@ -68,3 +112,6 @@ generate_root_ca
 
 echo "Generate Intermediate CA"
 generate_int_ca
+
+echo "Generate PKIs Automatically from Profiles directory"
+generate_certs
