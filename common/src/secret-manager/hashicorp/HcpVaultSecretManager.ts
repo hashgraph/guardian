@@ -16,6 +16,15 @@ export class HcpVaultSecretManager implements SecretManager {
     } as NodeVault.Option);
   }
 
+  private async loginByApprole(): Promise<void> {
+    const result = await this.vault.approleLogin({
+      role_id: this.approle.roleId,
+      secret_id: this.approle.secretId,
+    })
+
+    this.vault.token = result.auth.client_token;
+  }
+
   async getSecrets(path: string): Promise<any> {
     return
   }
