@@ -93,8 +93,16 @@ unseal_vault() {
   write '{"key": '${UNSEAL_KEY_3}'}' v1/sys/unseal
 }
 
+# Enable KV V2 engine
+enable_kv2_key_engine() {
+  write '{"type": "kv-v2", "config": {"force_no_cache": true} }' v1/sys/mounts/secret $VAULT_TOKEN
+}
+
 echo "Initialize Vault"
 init_vault
 
 echo "Unseal Vault"
 unseal_vault
+
+echo "Enable KV V2 Secret Engine"
+enable_kv2_key_engine
