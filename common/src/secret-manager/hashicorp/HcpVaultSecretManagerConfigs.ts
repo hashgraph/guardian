@@ -1,4 +1,4 @@
-import { SecretManagerConfigs } from "../SecretManagerConfig";
+import { SecretManagerConfigsBase } from "../SecretManagerConfigBase";
 import * as fs from "fs"
 
 export interface IHcpVaultSecretManagerConfigs {
@@ -19,7 +19,7 @@ export interface IHcpVaultTlsOptions {
   key: Buffer,
 }
 
-export class HcpVaultSecretManagerConfigs implements SecretManagerConfigs {
+export class HcpVaultSecretManagerConfigs implements SecretManagerConfigsBase {
   static getConfigs(): IHcpVaultSecretManagerConfigs {   
     return {
       apiVersion: process.env.VAULT_API_VERSION,
