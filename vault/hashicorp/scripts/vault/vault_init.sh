@@ -98,6 +98,11 @@ enable_kv2_key_engine() {
   write '{"type": "kv-v2", "config": {"force_no_cache": true} }' v1/sys/mounts/secret $VAULT_TOKEN
 }
 
+# Enable AppRole Auth Method
+enable_approle() {
+  write '{"type": "approle"}' v1/sys/auth/approle $VAULT_TOKEN
+}
+
 echo "Initialize Vault"
 init_vault
 
@@ -106,3 +111,6 @@ unseal_vault
 
 echo "Enable KV V2 Secret Engine"
 enable_kv2_key_engine
+
+echo "Enable AppRole Auth Method"
+enable_approle
