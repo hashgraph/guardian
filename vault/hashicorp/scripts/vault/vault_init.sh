@@ -13,7 +13,7 @@ VAULT_CLIENT_KEY=$VAULT_CLIENT_CERT_PATH/tls.key
 VAULT_ROOT_TOKEN_PATH=$BASE_DIR/vault/.root
 
 POLICY_CONFIG_DIR=$BASE_DIR/configs/vault/policies/policy_configs.json
-
+APPROLE_CONFIG_DIR=$BASE_DIR/configs/vault/approle/approle.json
 
 # Executes a vault read command using curl
 # $1: URI vault path to be executed
@@ -119,6 +119,21 @@ create_policies() {
   done
 }
 
+# Create roles associated with policies for all services
+create_roles() {
+  ROLES=$(cat "$APPROLE_CONFIG_DIR" | jq -c -r '.[]')
+  
+  for ROLE in ${ROLES[@]}; do
+    ROLE_NAME=$(echo $ROLE | jq -r '.role_name')
+    POLICIES=$(echo $ROLE | jq -r '.policies')
+
+    ROLE_DATA=$(echo '{}' | jq '.')
+    ROLE_DATA=$(echo $ROLE_DATA | jq '.token_policies = '"$POLICIES"'')
+
+    write "$ROLE_DATA" v1/auth/approle/role/$ROLE_NAME $VAULT_TOKEN
+  done
+}
+
 echo "Initialize Vault"
 init_vault
 
@@ -133,3 +148,6 @@ enable_approle
 
 echo "Create Policies for All guardian Service"
 create_policies
+
+echo "Create roles associated with policies for all services"
+create_roles
