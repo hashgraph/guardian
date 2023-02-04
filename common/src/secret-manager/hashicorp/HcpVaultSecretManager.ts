@@ -1,8 +1,8 @@
 import NodeVault from "node-vault"
-import { SecretManager } from "../SecretManager";
+import { SecretManagerBase } from "../SecretManagerBase";
 import { ApproleCrential, IHcpVaultSecretManagerConfigs } from "./HcpVaultSecretManagerConfigs";
 
-export class HcpVaultSecretManager implements SecretManager {
+export class HcpVaultSecretManager implements SecretManagerBase {
   private approle: ApproleCrential;
   private vault: NodeVault.client;
 
