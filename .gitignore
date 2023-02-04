@@ -27,3 +27,4 @@ vault/hashicorp/certs/
 # vault artificats
 vault/hashicorp/vault
 vault/hashicorp/consul
+vault/hashicorp/configs/vault/secrets/secrets.json
