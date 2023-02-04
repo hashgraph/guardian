@@ -66,7 +66,7 @@ write() {
 
 # Initialize Vault to retreive root token and unseal keys and store them .root file
 init_vault() {
-  init_response=$(write '{"secret_shares": 5, "secret_threshold": 3}' v1/sys/init)
+  init_response=$(write '{"secret_shares": '$VAULT_UNSEAL_SECRET_SHARES', "secret_threshold": '$VAULT_UNSEAL_SECRET_THRESHOLD'}' v1/sys/init)
 
   VAULT_TOKEN=$(echo $init_response | jq -r .root_token)
   UNSEAL_KEYS=$(echo $init_response | jq -r .keys)
