@@ -26,10 +26,21 @@ export class HcpVaultSecretManager implements SecretManager {
   }
 
   async getSecrets(path: string): Promise<any> {
-    return
+    await this.loginByApprole()
+    try {
+      const result = await this.vault.read(path)
+      return result.data.data
+    } catch(ex) {
+      throw Error("Retreive Secret Failed: " + ex)
+    }
   }
 
   async setSecrets(path: string, data: any): Promise<any> {
-    return
+    await this.loginByApprole()
+    try {
+      await this.vault.write(path, data)
+    } catch(ex) {
+      throw new Error("Write Secrets Failed: " + ex)
+    }
   }
 }
