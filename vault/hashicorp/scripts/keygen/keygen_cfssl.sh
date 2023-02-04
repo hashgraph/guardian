@@ -74,7 +74,14 @@ generate_cert() {
     pki=$(cfssl gencert -ca $INT_CA_CRT -ca-key $INT_CA_KEY -config $CFSSL_CONFIG_FILE -profile=$PROFILE_TYPE $PROFILE_CONFIG)
     echo $pki | jq -r '.cert' >> $OUT_DIR/tls.crt
     echo $pki | jq -r '.key' >> $OUT_DIR/tls.key
-    cp $ROOT_CA_CRT $OUT_DIR/ca.crt
+
+    verify_certificate $OUT_DIR/tls.crt
+}
+
+# Verifies Certificate against Root CA Certificate 
+# 1: Path to the certificate to be verified
+verify_certificate() {
+    openssl verify -CAfile $ROOT_CA_CRT $1
 }
 
 generate_certs() {
