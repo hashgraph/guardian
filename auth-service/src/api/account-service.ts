@@ -8,7 +8,8 @@ import {
     MessageResponse,
     MessageError,
     Logger,
-    DataBaseHelper
+    DataBaseHelper,
+    SecretManager
 } from '@guardian/common';
 import {
     AuthEvents, UserRole,
@@ -47,7 +48,13 @@ export class AccountService {
             const { token } = msg;
 
             try {
-                const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, process.env.ACCESS_TOKEN_SECRET, {});
+                /**
+                 * this code block retreives `ACCESS_TOKEN_SECRET` from Vault instead of environment variable
+                 */
+                const secretManager = SecretManager.New();
+                const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secret/data/secretkey/auth');
+
+                const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, ACCESS_TOKEN_SECRET, {});
                 const user = await new DataBaseHelper(User).findOne({ username: decryptedToken.username });
                 return new MessageResponse(user);
             } catch (error) {
@@ -85,6 +92,12 @@ export class AccountService {
 
         this.channel.response<IGenerateTokenMessage, IGenerateTokenResponse>(AuthEvents.GENERATE_NEW_TOKEN, async (msg) => {
             try {
+                /**
+                 * this code block retreives `ACCESS_TOKEN_SECRET` from Vault instead of environment variable
+                 */
+                const secretManager = SecretManager.New();
+                const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secret/data/secretkey/auth');
+
                 const { username, password } = msg;
                 const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
@@ -94,7 +107,7 @@ export class AccountService {
                         username: user.username,
                         did: user.did,
                         role: user.role
-                    }, process.env.ACCESS_TOKEN_SECRET);
+                    }, ACCESS_TOKEN_SECRET);
                     return new MessageResponse({
                         username: user.username,
                         did: user.did,
