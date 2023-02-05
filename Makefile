@@ -16,7 +16,7 @@ vault_down:
 vault_restart: vault_down vault_up
 
 distribute_keys:
-	@./vault/scripts/keygen/keystor.sh distribute
+	@./vault/hashicorp/scripts/keygen/keystore.sh distribute
 
 clean_keys:
-	@./vault/scripts/keygen/keystor.sh clean
+	@./vault/hashicorp/scripts/keygen/keystore.sh clean
