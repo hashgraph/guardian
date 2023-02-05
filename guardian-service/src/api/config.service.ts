@@ -6,7 +6,7 @@ import {
     MessageResponse,
     MessageError,
     Logger,
-    DataBaseHelper, SettingsContainer
+    DataBaseHelper, SettingsContainer, SecretManager
 } from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
 import { Environment } from '@hedera-modules';
@@ -48,8 +48,21 @@ export async function configAPI(
                 await new Logger().error('OPERATOR_KEY: ' + error.message, ['GUARDIAN_SERVICE']);
                 throw new Error('OPERATOR_KEY: ' + error.message);
             }
-            await settingsContainer.updateSetting('OPERATOR_ID', settings.operatorId);
-            await settingsContainer.updateSetting('OPERATOR_KEY', settings.operatorKey);
+
+            /**
+             * this block sets OPERATOR SetingsContainer through Auth service,
+             * instead by Secretmanager services can get/set secrets t Vault direectly.
+                await settingsContainer.updateSetting('OPERATOR_ID', settings.operatorId);
+                await settingsContainer.updateSetting('OPERATOR_KEY', settings.operatorKey);
+             */
+            const secretManager = SecretManager.New();
+            await secretManager.setSecrets('secret/data/keys/operator', {
+                data: {
+                    OPERATOR_ID: settings.operatorId,
+                    OPERATOR_KEY: settings.operatorKey,
+                }
+            });
+            
             await new Workers().updateSettings({
                 ipfsStorageApiKey: settings.ipfsStorageApiKey
             });
@@ -66,8 +79,14 @@ export async function configAPI(
      */
     ApiResponse(channel, MessageAPI.GET_SETTINGS, async (msg) => {
         try {
-            const settingsContainer = new SettingsContainer();
-            const { OPERATOR_ID } = settingsContainer.settings;
+            /**
+             * this block gets OPERATOR from Auth service utilising SettingsContainer,
+             * instead by Secretmanager services can get/set secrets t Vault direectly.
+                const settingsContainer = new SettingsContainer();
+                const { OPERATOR_ID } = settingsContainer.settings;
+            */
+            const secretManager = SecretManager.New();
+            const { OPERATOR_ID } = await secretManager.getSecrets('secret/data/keys/operator');
 
             return new MessageResponse({
                 operatorId: OPERATOR_ID,

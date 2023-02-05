@@ -26,7 +26,8 @@ import {
     DB_DI,
     Migration,
     COMMON_CONNECTION_CONFIG,
-    SettingsContainer
+    SettingsContainer,
+    SecretManager
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import {
@@ -81,12 +82,19 @@ Promise.all([
     new Logger().setChannel(channel);
     const state = new ApplicationState('GUARDIAN_SERVICE');
     state.setChannel(channel);
-    const settingsContainer = new SettingsContainer();
-    settingsContainer.setChannel(channel);
-    await settingsContainer.init('OPERATOR_ID', 'OPERATOR_KEY');
 
-    const { OPERATOR_ID, OPERATOR_KEY } = settingsContainer.settings;
+    /**
+     * this block gets OPERATOR from Auth service utilising SettingsContainer,
+     * instead by Secretmanager services can get/set secrets t Vault direectly.
+        const settingsContainer = new SettingsContainer();
+        settingsContainer.setChannel(channel);
+        await settingsContainer.init('OPERATOR_ID', 'OPERATOR_KEY');
 
+        const { OPERATOR_ID, OPERATOR_KEY } = settingsContainer.settings;
+     */
+    const secretManager = SecretManager.New();
+    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('secret/data/keys/operator');
+    
     // Check configuration
     try {
         AccountId.fromString(OPERATOR_ID);

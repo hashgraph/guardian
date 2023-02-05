@@ -1,6 +1,6 @@
 import { WorkerTaskType } from '@guardian/interfaces';
 import { Workers } from '@helpers/workers';
-import { Logger, MessageResponse, RunFunctionAsync, SettingsContainer } from '@guardian/common';
+import { Logger, MessageResponse, RunFunctionAsync, SecretManager, SettingsContainer } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 
 /**
@@ -147,8 +147,15 @@ export class TransactionLogger {
 
             if (TransactionLogger.logLvl === TransactionLogLvl.DEBUG) {
                 try {
-                    const settingsContainer = new SettingsContainer();
-                    const { OPERATOR_ID, OPERATOR_KEY } = settingsContainer.settings;
+                    /**
+                     * this block gets OPERATOR from Auth service utilising SettingsContainer,
+                     * instead by Secretmanager services can get/set secrets t Vault direectly.
+                        const settingsContainer = new SettingsContainer();
+                        const { OPERATOR_ID, OPERATOR_KEY } = settingsContainer.settings;
+                    */
+                    const secretManager = SecretManager.New();
+                    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('secret/data/keys/operator');
+
                     const workers = new Workers();
                     const balance = await workers.addNonRetryableTask({
                         type: WorkerTaskType.GET_USER_BALANCE,

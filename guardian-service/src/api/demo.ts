@@ -7,6 +7,7 @@ import {
     MessageBrokerChannel,
     MessageError,
     MessageResponse, RunFunctionAsync,
+    SecretManager,
     SettingsContainer
 } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
@@ -37,8 +38,15 @@ interface DemoKey {
 async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier): Promise<DemoKey> {
     notifier.start('Resolve settings');
 
-    const settingsContainer = new SettingsContainer();
-    const {OPERATOR_ID, OPERATOR_KEY} = settingsContainer.settings;
+    /**
+     * this block gets OPERATOR from Auth service utilising SettingsContainer,
+     * instead by Secretmanager services can get/set secrets t Vault direectly.
+        const settingsContainer = new SettingsContainer();
+        const {OPERATOR_ID, OPERATOR_KEY} = settingsContainer.settings;
+    */
+    const secretManager = SecretManager.New();
+    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('secret/data/keys/operator');
+
     let initialBalance: number = null;
     try {
         if (role === 'STANDARD_REGISTRY') {
