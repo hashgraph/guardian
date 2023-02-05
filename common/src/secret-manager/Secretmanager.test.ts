@@ -3,15 +3,15 @@ import * as path from 'path';
 import { SecretManager } from './SecretManager';
 import { SecretManagerBase } from './SecretManagerBase';
 
-const auth_env_path = path.join(__dirname, '../../../auth-service/.env')
-const guardian_env_path = path.join(__dirname, '../../../guardian-service/.env')
-const policy_env_path = path.join(__dirname, '../../../policy-service/.env')
-const worker_env_path = path.join(__dirname, '../../../worker-service/.env')
+const auth_env_path = path.join(process.cwd(), '../auth-service/.env')
+const guardian_env_path = path.join(process.cwd(), '../guardian-service/.env')
+const policy_env_path = path.join(process.cwd(), '../policy-service/.env')
+const worker_env_path = path.join(process.cwd(), '../worker-service/.env')
 
-const auth_certs_path = path.join(__dirname, '../../../auth-service/tls/vault/client')
-const guardian_certs_path = path.join(__dirname, '../../../guardian-service/tls/vault/client')
-const policy_certs_path = path.join(__dirname, '../../../policy-service/tls/vault/client')
-const worker_certs_path = path.join(__dirname, '../../../worker-service/tls/vault/client')
+const auth_certs_path = path.join('../auth-service/tls/vault/client')
+const guardian_certs_path = path.join('../guardian-service/tls/vault/client')
+const policy_certs_path = path.join('../policy-service/tls/vault/client')
+const worker_certs_path = path.join('../worker-service/tls/vault/client')
 
 let secretManager: SecretManagerBase;
 

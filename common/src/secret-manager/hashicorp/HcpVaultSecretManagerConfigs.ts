@@ -1,5 +1,6 @@
 import { SecretManagerConfigsBase } from "../SecretManagerConfigBase";
 import * as fs from "fs"
+import * as path from 'path';
 
 export interface IHcpVaultSecretManagerConfigs {
   apiVersion: string,
@@ -25,9 +26,12 @@ export class HcpVaultSecretManagerConfigs implements SecretManagerConfigsBase {
       apiVersion: process.env.VAULT_API_VERSION,
       endpoint: process.env.VAULT_ADDRESS,
       tlsOptions: {
-        ca: fs.readFileSync(process.env.VAULT_CA_CERT),
-        cert: fs.readFileSync(process.env.VAULT_CLIENT_CERT),
-        key: fs.readFileSync(process.env.VAULT_CLIENT_KEY),
+        ca: fs.readFileSync(
+          path.join(process.cwd(), process.env.VAULT_CA_CERT)),
+        cert: fs.readFileSync(
+          path.join(process.cwd(), process.env.VAULT_CLIENT_CERT)),
+        key: fs.readFileSync(
+          path.join(process.cwd(), process.env.VAULT_CLIENT_KEY)),
       },
       approleCredential: {
         roleId: process.env.VAULT_APPROLE_ROLE_ID,

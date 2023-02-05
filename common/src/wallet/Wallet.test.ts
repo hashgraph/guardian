@@ -2,11 +2,11 @@ import { Wallet } from "./Wallet";
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-const guardian_env_path = path.join(__dirname, '../../../guardian-service/.env')
-const policy_env_path = path.join(__dirname, '../../../policy-service/.env')
+const guardian_env_path = path.join(process.cwd(), '../guardian-service/.env')
+const policy_env_path = path.join(process.cwd(), '../policy-service/.env')
 
-const guardian_certs_path = path.join(__dirname, '../../../guardian-service/tls/vault/client')
-const policy_certs_path = path.join(__dirname, '../../../policy-service/tls/vault/client')
+const guardian_certs_path = path.join('../guardian-service/tls/vault/client')
+const policy_certs_path = path.join('../policy-service/tls/vault/client')
 
 function setCertsPath(certsPath: string) {
   process.env.VAULT_CA_CERT = `${certsPath}/ca.crt`
