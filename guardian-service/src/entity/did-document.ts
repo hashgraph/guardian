@@ -1,4 +1,4 @@
-import { DidDocumentStatus, IDidObject } from '@guardian/interfaces';
+import { DidDocumentStatus, DocumentStatus, IDidObject } from '@guardian/interfaces';
 import {
     Entity,
     Unique,
@@ -60,6 +60,42 @@ export class DidDocument extends BaseEntity implements IDidObject {
      */
     @Property({ nullable: true })
     topicId?: string;
+
+    /**
+     * Hedera Status
+     */
+    @Property({ nullable: true })
+    hederaStatus?: DocumentStatus;
+
+    /**
+     * Type
+     */
+    @Property({ nullable: true })
+    type?: string;
+
+    /**
+     * Hash
+     */
+    @Property({ nullable: true })
+    hash?: string;
+
+    /**
+     * Hedera Hash
+     */
+    @Property({ nullable: true })
+    messageHash?: string;
+
+    /**
+     * Message History
+     */
+    @Property({ nullable: true })
+    messageIds?: string[];
+
+    /**
+     * Relationships
+     */
+    @Property({ nullable: true })
+    relationships?: string[];
 
     /**
      * Default document values

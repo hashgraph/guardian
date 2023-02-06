@@ -499,6 +499,18 @@ export class DryRun extends BaseEntity {
     tokenMap?: any
 
     /**
+     * Hedera Hash
+     */
+    @Property({ nullable: true })
+    messageHash?: string;
+
+    /**
+     * Message History
+     */
+    @Property({ nullable: true })
+    messageIds?: string[];
+    
+    /**
      * Default document values
      */
     @BeforeCreate()

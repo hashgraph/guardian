@@ -519,110 +519,13 @@ export class DatabaseServer {
 
     /**
      * Save Document State
-     * @param documentId
-     * @param status
+     * @param row
      *
      * @virtual
      */
-    public async saveDocumentState(documentId: string, status: any): Promise<DocumentState> {
-        const item = this.create(DocumentState, { documentId, status });
+    public async saveDocumentState(row: Partial<DocumentState>): Promise<DocumentState> {
+        const item = this.create(DocumentState, row);
         return await this.save(DocumentState, item);
-    }
-
-    /**
-     * Update Approval record
-     * @param row
-     *
-     * @virtual
-     */
-    public async updateApprovalRecord(row: ApprovalDocumentCollection): Promise<ApprovalDocumentCollection> {
-        let item: ApprovalDocumentCollection;
-        if (row.id) {
-            item = await this.findOne(ApprovalDocumentCollection, row.id);
-        }
-        if (item) {
-            item.owner = row.owner;
-            item.group = row.group;
-            item.option = row.option;
-            item.schema = row.schema;
-            item.document = row.document;
-            item.tag = row.tag;
-            item.type = row.type;
-        } else {
-            item = this.create(ApprovalDocumentCollection, row as ApprovalDocumentCollection);
-        }
-        return await this.save(ApprovalDocumentCollection, item);
-    }
-
-    /**
-     * Update did record
-     * @param row
-     *
-     * @virtual
-     */
-    public async updateDIDRecord(row: DidDocumentCollection): Promise<DidDocumentCollection> {
-        let item = await this.findOne(DidDocumentCollection, { did: row.did });
-        if (item) {
-            item.document = row.document;
-            item.status = row.status;
-            await this.update(DidDocumentCollection, item.id, item);
-            return item;
-        } else {
-            item = this.create(DidDocumentCollection, row as DidDocumentCollection);
-            return await this.save(DidDocumentCollection, item);
-        }
-    }
-
-    /**
-     * Update VC record
-     * @param row
-     *
-     * @virtual
-     */
-    public async updateVCRecord(row: VcDocumentCollection): Promise<VcDocumentCollection> {
-        let item = await this.findOne(VcDocumentCollection, {
-            where: {
-                hash: { $eq: row.hash },
-                hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
-            }
-        });
-        let updateStatus = false;
-        if (item) {
-            if (row.option?.status) {
-                updateStatus = item.option?.status !== row.option.status
-            }
-            item.owner = row.owner;
-            item.group = row.group;
-            item.assignedTo = row.assignedTo;
-            item.assignedToGroup = row.assignedToGroup;
-            item.option = row.option;
-            item.schema = row.schema;
-            item.hederaStatus = row.hederaStatus;
-            item.signature = row.signature;
-            item.type = row.type;
-            item.tag = row.tag;
-            item.document = row.document;
-            item.messageId = row.messageId || item.messageId;
-            item.topicId = row.topicId || item.topicId;
-            item.comment = row.comment;
-            item.relationships = row.relationships;
-            item.tokens = row.tokens;
-
-            await this.update(VcDocumentCollection, item.id, item);
-        } else {
-            item = this.create(VcDocumentCollection, row);
-            updateStatus = !!item.option?.status;
-
-            await this.save(VcDocumentCollection, item);
-        }
-        if (updateStatus) {
-            await this.save(DocumentState, this.create(DocumentState, {
-                documentId: item.id,
-                status: item.option.status,
-                reason: item.comment
-            }));
-        }
-        return item;
     }
 
     /**
@@ -636,25 +539,58 @@ export class DatabaseServer {
     }
 
     /**
-     * Update VC record
+     * Update Approval VC
      * @param row
      *
      * @virtual
      */
-    public async updateVCRecordById(row: VcDocumentCollection): Promise<VcDocumentCollection> {
+    public async updateApproval(row: ApprovalDocumentCollection): Promise<ApprovalDocumentCollection> {
+        await this.update(ApprovalDocumentCollection, row.id, row);
+        return row;
+    }
+
+    /**
+     * Update VC
+     * @param row
+     *
+     * @virtual
+     */
+    public async updateVC(row: VcDocumentCollection): Promise<VcDocumentCollection> {
         await this.update(VcDocumentCollection, row.id, row);
         return row;
     }
 
     /**
-     * Update VP record
+     * Update VP
      * @param row
      *
      * @virtual
      */
-    public async updateVPRecord(row: VpDocumentCollection): Promise<VpDocumentCollection> {
-        const doc = this.create(VpDocumentCollection, row);
-        return await this.save(VpDocumentCollection, doc);
+    public async updateVP(row: VpDocumentCollection): Promise<VpDocumentCollection> {
+        await this.update(VpDocumentCollection, row.id, row);
+        return row;
+    }
+
+    /**
+     * Update Did
+     * @param row
+     *
+     * @virtual
+     */
+    public async updateDid(row: DidDocumentCollection): Promise<DidDocumentCollection> {
+        await this.update(DidDocumentCollection, row.id, row);
+        return row;
+    }
+
+    /**
+     * Save Approval VC
+     * @param row
+     *
+     * @virtual
+     */
+    public async saveApproval(row: Partial<ApprovalDocumentCollection>): Promise<ApprovalDocumentCollection> {
+        const doc = this.create(ApprovalDocumentCollection, row);
+        return await this.save(ApprovalDocumentCollection, doc);
     }
 
     /**
@@ -1511,7 +1447,7 @@ export class DatabaseServer {
      * @param ids
      */
     public static async getSchemaById(id: string): Promise<SchemaCollection> {
-        if(id) {
+        if (id) {
             return await new DataBaseHelper(SchemaCollection).findOne(id);
         }
         return null;

@@ -348,22 +348,15 @@ export class PolicyUtils {
      * @param document
      */
     public static getDocumentType(document: IPolicyDocument): DocumentType {
-        if (document && document.document && document.document.type) {
-            const type = document.document.type;
-            if (Array.isArray(type)) {
-                if (type.indexOf('VerifiableCredential') > -1) {
-                    return DocumentType.VerifiableCredential;
-                }
-                if (type.indexOf('VerifiablePresentation') > -1) {
-                    return DocumentType.VerifiablePresentation;
-                }
-            } else {
-                if (type === 'VerifiableCredential') {
-                    return DocumentType.VerifiableCredential;
-                }
-                if (type === 'VerifiablePresentation') {
-                    return DocumentType.VerifiablePresentation;
-                }
+        if (document && document.document) {
+            if (document.document.verifiableCredential) {
+                return DocumentType.VerifiablePresentation;
+            }
+            if (document.document.credentialSubject) {
+                return DocumentType.VerifiableCredential;
+            }
+            if (document.document.verificationMethod) {
+                return DocumentType.DID;
             }
         }
         return null;

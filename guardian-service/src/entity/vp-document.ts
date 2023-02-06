@@ -62,7 +62,7 @@ export class VpDocument extends BaseEntity implements IVPDocument {
      * Document type
      */
     @Enum({ nullable: true })
-    type?: SchemaEntity;
+    type?: string;
 
     /**
      * Policy id
@@ -108,6 +108,18 @@ export class VpDocument extends BaseEntity implements IVPDocument {
      */
     @Property({ nullable: true })
     comment?: string;
+
+    /**
+     * Hedera Hash
+     */
+    @Property({ nullable: true })
+    messageHash?: string;
+
+    /**
+     * Message History
+     */
+    @Property({ nullable: true })
+    messageIds?: string[];
 
     /**
      * Document defaults

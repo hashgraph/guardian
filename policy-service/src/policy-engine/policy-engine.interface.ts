@@ -1,4 +1,4 @@
-import { PolicyRole } from '@guardian/interfaces';
+import { DocumentStatus, PolicyRole } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { EventConfig, IPolicyEvent } from './interfaces';
@@ -714,15 +714,35 @@ export interface IPolicyDocument {
     /**
      * Message Id
      */
-    messageId?: string,
+    messageId?: string;
     /**
      * Topic Id
      */
-    topicId?: string,
+    topicId?: string;
     /**
      * Message History
      */
-    messageIds?: string[],
+    messageIds?: string[];
+    /**
+     * Hedera Status
+     */
+    hederaStatus?: DocumentStatus;
+    /**
+     * Hash
+     */
+    hash?: string;
+    /**
+     * Hedera Hash
+     */
+    messageHash?: string;
+    /**
+     * Relationships
+     */
+    relationships?: string[];
+    /**
+     * Type
+     */
+    type?: string;
     /**
      * Other fields
      */

@@ -163,7 +163,7 @@ export class SendToGuardianBlock {
     private async getVPRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
         let old: any = null;
         if (operation === Operation.auto) {
-            if (document.did) {
+            if (document.hash) {
                 old = await ref.databaseServer.getVcDocument({
                     where: {
                         hash: { $eq: document.hash },
@@ -227,9 +227,11 @@ export class SendToGuardianBlock {
             updateStatus = old.option?.status !== document.option?.status;
             old = this.mapDocument(old, document);
             old = await ref.databaseServer.updateVC(old);
+            console.log(`   -- update vc`);
         } else {
             updateStatus = !!document.option?.status;
-            old = await ref.databaseServer.saveVC(document)
+            old = await ref.databaseServer.saveVC(document);
+            console.log(`   -- save vc`);
         }
 
         if (updateStatus) {
@@ -418,6 +420,7 @@ export class SendToGuardianBlock {
         type: DocumentType,
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
+        console.log('   -- send -> database');
         let operation: Operation = Operation.auto;
         if (ref.options.dataSource === 'database') {
             if (ref.options.forceNew || ref.options.operation === 'create') {
@@ -431,6 +434,7 @@ export class SendToGuardianBlock {
                 }
             }
         }
+        console.log(`   -- operation: ${operation}`);
 
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
@@ -452,6 +456,7 @@ export class SendToGuardianBlock {
         message: Message,
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
+        console.log('   -- send -> hedera');
         try {
             const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
             const user = await PolicyUtils.getHederaAccount(ref, document.owner);
@@ -492,6 +497,8 @@ export class SendToGuardianBlock {
     private async documentSender(document: IPolicyDocument, user: IPolicyUser): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const type = PolicyUtils.getDocumentType(document);
+
+        console.log(' -- start', ref.uuid);
 
         //
         // Create Message
@@ -547,7 +554,7 @@ export class SendToGuardianBlock {
                 document.hash = hash;
                 document = await this.sendByType(document, ref);
             }
-        } else if (ref.options.dataSource === 'auto') {
+        } else if (ref.options.dataSource === 'auto' || !ref.options.dataSource) {
             if (document.messageHash !== messageHash) {
                 document = await this.sendToHedera(document, message, ref);
                 document.messageHash = messageHash;
@@ -564,6 +571,9 @@ export class SendToGuardianBlock {
         } else {
             throw new BlockActionError(`dataSource "${ref.options.dataSource}" is unknown`, ref.blockType, ref.uuid);
         }
+
+        console.log(' -- end', ref.uuid);
+        console.log(' ');
 
         return document;
     }
@@ -614,17 +624,33 @@ export class SendToGuardianBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (ref.options.dataType) {
-                if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
+                const t = ['vc-documents', 'did-documents', 'approve', 'hedera'];
+                if (t.indexOf(ref.options.dataType) === -1) {
+                    resultsContainer.addBlockError(ref.uuid, `Option "dataType" must be one of ${t.join('|')}`);
                 }
-            }
-
-            if (ref.options.dataSource === 'database') {
-                if (!['vc', 'did', 'vp', 'document'].find(item => item === ref.options.documentType)) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "documentType" must be one of vc, did, vp');
+            } else if (ref.options.dataSource === 'auto') {
+                return;
+            } else if (ref.options.dataSource === 'database') {
+                if (!ref.options.operation) {
+                    return;
+                } else if (ref.options.operation === 'create') {
+                    return;
+                } else if (ref.options.operation === 'update') {
+                    if (!ref.options.updateBy) {
+                        return;
+                    } else if (ref.options.updateBy === 'id') {
+                        return;
+                    } else if (ref.options.updateBy === 'hash') {
+                        return;
+                    } else if (ref.options.updateBy === 'messageId') {
+                        return;
+                    } else {
+                        resultsContainer.addBlockError(ref.uuid, 'Option "updateBy" must be one of id|hash|messageId');
+                    }
+                } else {
+                    resultsContainer.addBlockError(ref.uuid, 'Option "operation" must be one of create|update');
                 }
-            }
-            if (ref.options.dataSource === 'hedera') {
+            } else if (ref.options.dataSource === 'hedera') {
                 if (ref.options.topic && ref.options.topic !== 'root') {
                     const policyTopics = ref.policyInstance.policyTopics || [];
                     const config = policyTopics.find(e => e.name === ref.options.topic);
@@ -632,9 +658,10 @@ export class SendToGuardianBlock {
                         resultsContainer.addBlockError(ref.uuid, `Topic "${ref.options.topic}" does not exist`);
                     }
                 }
-            }
-            if (!ref.options.dataSource && !ref.options.dataType) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "dataSource" must be one of database, hedera');
+            } else if (!ref.options.dataSource) {
+                return;
+            } else {
+                resultsContainer.addBlockError(ref.uuid, 'Option "dataSource" must be one of auto|database|hedera');
             }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
