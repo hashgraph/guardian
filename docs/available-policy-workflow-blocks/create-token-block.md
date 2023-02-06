@@ -22,3 +22,10 @@
 | Dialogue Text        | Provides a tile inside the Dialogue box. Needs the dialogue box to be selected from the "Type."                                                                               |
 | Dialogue Description | Provides a description inside the Dialogue box. Needs the dialogue box to be selected from the "Type."                                                                        |
 
+### API Parameters
+
+{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+{% endswagger %}
