@@ -96,4 +96,19 @@ export interface SchemaField {
      * Comment
      */
     comment?: string;
+
+    /**
+     * Text color
+     */
+    textSize?: string;
+
+    /**
+     * Text size
+     */
+    textColor?: string;
+
+    /**
+     * Text bold
+     */
+    textBold?: boolean;
 }

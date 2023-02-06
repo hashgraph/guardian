@@ -14,7 +14,7 @@ export const SYSTEM_FIELDS = [
 
 export class FieldControl {
     public readonly name: string;
-    
+
     public controlKey: FormControl;
     public controlTitle: FormControl;
     public controlDescription: FormControl;
@@ -24,6 +24,9 @@ export class FieldControl {
     public controlUnit: FormControl;
     public controlRemoteLink: FormControl;
     public controlEnum: FormArray;
+    public controlColor: FormControl;
+    public controlSize: FormControl;
+    public controlBold: FormControl;
     private readonly _defaultFieldMap!: any;
     private _entityType!: FormControl;
 
@@ -40,7 +43,7 @@ export class FieldControl {
         this.name = `field${Date.now()}${Math.floor(Math.random() * 1000000)}`;
         if (field) {
             this.controlKey = new FormControl(field.name, [
-                Validators.required, 
+                Validators.required,
                 this.keyValidator(),
                 this.fieldSystemKeyValidator()
             ]);
@@ -58,9 +61,12 @@ export class FieldControl {
             field.enum?.forEach(item => {
                 this.controlEnum.push(new FormControl(item))
             });
+            this.controlColor = new FormControl(field.textColor || '#000000');
+            this.controlSize = new FormControl(field.textSize && +field.textSize.replace('px', '') || 18);
+            this.controlBold = new FormControl(field.textBold || false);
         } else {
             this.controlKey = new FormControl(name || this.name, [
-                Validators.required, 
+                Validators.required,
                 this.keyValidator(),
                 this.fieldSystemKeyValidator()
             ]);
@@ -75,6 +81,9 @@ export class FieldControl {
             this.controlUnit = new FormControl('');
             this.controlRemoteLink = new FormControl('');
             this.controlEnum = new FormArray([]);
+            this.controlColor = new FormControl('#000000');
+            this.controlSize = new FormControl(18);
+            this.controlBold = new FormControl(false);
         }
         this._entityType.valueChanges
             .pipe(takeUntil(destroyEvent))
@@ -115,6 +124,22 @@ export class FieldControl {
         return this.controlUnit.value;
     }
 
+    public get enum(): string[] {
+        return this.controlEnum.value;
+    }
+
+    public get color(): string {
+        return this.controlColor.value;
+    }
+
+    public get size(): string {
+        return this.controlSize.value;
+    }
+
+    public get bold(): boolean {
+        return this.controlBold.value;
+    }
+
     public createGroup(): FormGroup {
         return new FormGroup({
             controlKey: this.controlKey,
@@ -125,7 +150,10 @@ export class FieldControl {
             fieldArray: this.controlArray,
             fieldUnit: this.controlUnit,
             controlRemoteLink: this.controlRemoteLink,
-            controlEnum: this.controlEnum
+            controlEnum: this.controlEnum,
+            controlColor: this.controlColor,
+            controlSize: this.controlSize,
+            controlBold: this.controlBold,
         });
     }
 
@@ -141,6 +169,11 @@ export class FieldControl {
             const unit = group.fieldUnit;
             const remoteLink = group.controlRemoteLink;
             const enumArray = group.controlEnum;
+            const textColor = group.controlColor;
+            const textSize = group.controlSize
+                ? group.controlSize + 'px'
+                : undefined;
+            const textBold = group.controlBold;
             return {
                 key,
                 title,
@@ -150,7 +183,10 @@ export class FieldControl {
                 isArray,
                 unit,
                 remoteLink,
-                enumArray
+                enumArray,
+                textColor,
+                textSize,
+                textBold,
             };
         } else {
             return null;

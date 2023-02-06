@@ -392,7 +392,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 }
                 else {
                     continue;
-                }    
+                }
             }
 
             if (option.type === field.type) {
@@ -499,7 +499,10 @@ export class SchemaConfigurationComponent implements OnInit {
             isArray,
             unit,
             remoteLink,
-            enumArray
+            enumArray,
+            textColor,
+            textSize,
+            textBold,
         } = fieldConfig.getValue(data);
         const type = this.schemaTypeMap[typeIndex];
         return {
@@ -515,6 +518,9 @@ export class SchemaConfigurationComponent implements OnInit {
             unit: type.unitSystem ? unit : undefined,
             unitSystem: type.unitSystem,
             customType: type.customType,
+            textColor,
+            textSize,
+            textBold,
             readOnly: false,
             remoteLink: type.customType === 'enum'
                 ? remoteLink
