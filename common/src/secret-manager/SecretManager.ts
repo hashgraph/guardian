@@ -1,6 +1,9 @@
 import { HcpVaultSecretManager } from "./hashicorp/HcpVaultSecretManager";
 import { SecretManagerConfigs, SecretManagerType } from "./SecretManagerConfig";
 import { SecretManagerBase } from "./SecretManagerBase";
+import { AwsSecretManager } from "./aws/AwsSecretManager";
+import { IHcpVaultSecretManagerConfigs } from "./hashicorp/HcpVaultSecretManagerConfigs";
+import { IAwsSecretManagerConfigs } from "./aws/AwsSecretManagerConfigs";
 
 export class SecretManager {
   static defaultType(): SecretManagerType {
@@ -30,9 +33,9 @@ export class SecretManager {
 
     switch (secretManagerType) {
       case SecretManagerType.HCP_VAULT:
-        return new HcpVaultSecretManager(configs)
+        return new HcpVaultSecretManager(configs as IHcpVaultSecretManagerConfigs)
       case SecretManagerType.AWS:
-        return /* new AwsSecretsManager(config) */
+        return new AwsSecretManager(configs as IAwsSecretManagerConfigs)
       case SecretManagerType.GCP:
         return /* new GcpSecretManager(config) */
       case SecretManagerType.AZURE:
