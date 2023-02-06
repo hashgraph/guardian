@@ -72,6 +72,9 @@ export class SchemaHelper {
             unit,
             unitSystem,
             customType,
+            textColor,
+            textSize,
+            textBold,
             orderPosition
         } = SchemaHelper.parseFieldComment(field.comment);
         if (field.isRef) {
@@ -84,6 +87,9 @@ export class SchemaHelper {
             field.unit = unit ? String(unit) : null;
             field.unitSystem = unitSystem ? String(unitSystem) : null;
             field.customType = customType ? String(customType) : null;
+            field.textColor = textColor;
+            field.textSize = textSize;
+            field.textBold = textBold;
         }
         field.required = required;
         return [field, orderPosition];
@@ -798,6 +804,15 @@ export class SchemaHelper {
         }
         if (field.customType) {
             comment.customType = field.customType;
+        }
+        if (field.textColor) {
+            comment.textColor = field.textColor;
+        }
+        if (field.textSize) {
+            comment.textSize = field.textSize;
+        }
+        if (field.textBold) {
+            comment.textBold = field.textBold;
         }
         if (Number.isInteger(orderPosition) && orderPosition >= 0) {
             comment.orderPosition = orderPosition;
