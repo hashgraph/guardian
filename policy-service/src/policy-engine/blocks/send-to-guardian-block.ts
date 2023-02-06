@@ -304,6 +304,7 @@ export class SendToGuardianBlock {
             } else {
                 old.messageIds = [document.messageId];
             }
+            console.log(`   -- update message`);
             return await ref.databaseServer.updateVC(old);
         } else {
             if (Array.isArray(document.messageIds)) {
@@ -311,7 +312,7 @@ export class SendToGuardianBlock {
             } else {
                 document.messageIds = [document.messageId];
             }
-            return await ref.databaseServer.saveVC(document)
+            return document;
         }
     }
 
@@ -544,7 +545,12 @@ export class SendToGuardianBlock {
         document.document = docObject.toJsonTree();
         document.policyId = ref.policyId;
         document.tag = ref.tag;
-        document.option = Object.assign({}, document.option, ref.options.options);
+        document.option = Object.assign({}, document.option);
+        if (ref.options.options) {
+            for (const option of ref.options.options) {
+                document.option[option.name] = option.value;
+            }
+        }
         if (ref.options.entityType) {
             document.type = ref.options.entityType;
         }
