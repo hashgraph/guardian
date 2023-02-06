@@ -24,3 +24,6 @@ distribute_keys:
 
 clean_keys:
 	@./vault/hashicorp/scripts/keygen/keystore.sh clean
+
+clean: clean_keys
+	@rm -rf ./vault/hashicorp/vault ./vault/hashicorp/consul
