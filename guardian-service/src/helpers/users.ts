@@ -14,8 +14,7 @@ export class Users extends ServiceRequestsBase {
      * Wallet helper
      * @private
      */
-    @Inject()
-    private readonly wallet: Wallet;
+    private readonly wallet = new Wallet()
 
     /**
      * Message broker target
