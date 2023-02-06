@@ -6,14 +6,18 @@ cfgen:
 	@./vault/hashicorp/scripts/vault/vault_config_gen.sh
 
 vault_up: vault_keygen distribute_keys cfgen
-	@docker-compose -f ./vault/hashicorp/docker-compose.yaml up -d
+	@docker-compose up -d consul vault
 	@sleep 10
 	@./vault/hashicorp/scripts/vault/vault_init.sh
 
 vault_down:
-	@docker-compose -f ./vault/hashicorp/docker-compose.yaml down -v
+	@docker-compose stop vault consul
+	@docker-compose rm -s -v vault consul
 
-vault_restart: vault_down vault_up
+vault_restart: vault_down
+	@docker-compose up -d consul vault
+	@sleep 10
+	@./vault/hashicorp/scripts/vault/vault_init.sh
 
 distribute_keys:
 	@./vault/hashicorp/scripts/keygen/keystore.sh distribute
