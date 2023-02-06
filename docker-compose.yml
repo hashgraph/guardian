@@ -113,6 +113,8 @@ services:
       - ./worker-service/.env.docker
     environment:
       - SERVICE_CHANNEL="worker.1"
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
 
   worker-service-2:
     build:
@@ -125,6 +127,8 @@ services:
       - ./worker-service/.env.docker
     environment:
       - SERVICE_CHANNEL="worker.2"
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
 
   auth-service:
     build:
@@ -132,6 +136,8 @@ services:
       dockerfile: ./auth-service/Dockerfile
     env_file:
       - ./auth-service/.env.docker
+    volumes:
+      - ./auth-service/tls:/usr/local/auth-service/tls:ro
     depends_on:
       - mongo
       - vault
@@ -159,6 +165,8 @@ services:
       dockerfile: ./policy-service/Dockerfile
     env_file:
       - ./policy-service/.env.docker
+    volumes:
+      - ./policy-service/tls:/usr/local/policy-service/tls:ro
     depends_on:
       - mongo
       - message-broker
@@ -171,6 +179,8 @@ services:
       dockerfile: ./guardian-service/Dockerfile
     env_file:
       - ./guardian-service/.env.docker
+    volumes:
+      - ./guardian-service/tls:/usr/local/guardian-service/tls:ro
     depends_on:
       - mongo
       - message-broker
