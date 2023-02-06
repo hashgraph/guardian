@@ -38,24 +38,29 @@ To know more information about events, please look at [events.md](events.md "men
 
 ### API Parameters
 
-{% swagger method="get" path=" 'InterfaceContainerBlock'" baseUrl="blocktype :" summary="" %}
+{% swagger method="get" path="" baseUrl="/policies/{policyID}/blocks/{uuid}" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="id" type="String" required="true" %}
-Block ID
+{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
+Policy ID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="path" name="blockType" type="String" required="true" %}
-Block Type
+{% swagger-parameter in="path" name="uuid" required="true" type="String" %}
+block UUID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="path" name="blocks" type="array" required="true" %}
-Contained blocks
-{% endswagger-parameter %}
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+    {
+  "uiMetaData": {
+    "type": "blank"
+  },
+  "id": "27c9f288-c4b4-4690-b3b9-9843cc90129f",
+  "blockType": "interfaceContainerBlock",
 
-{% swagger-parameter in="path" name="uiMetadata" required="true" %}
-{}
-{% endswagger-parameter %}
+}
+```
+{% endswagger-response %}
 {% endswagger %}
