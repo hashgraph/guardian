@@ -1,4 +1,4 @@
-import { DocumentSignature, DocumentStatus, IVP, IVPDocument, SchemaEntity } from '@guardian/interfaces';
+import { DocumentSignature, DocumentStatus, IVP, IVPDocument } from '@guardian/interfaces';
 import { Entity, Property, Enum, BeforeCreate, Unique } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 

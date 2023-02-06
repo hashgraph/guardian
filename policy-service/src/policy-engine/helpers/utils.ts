@@ -1154,7 +1154,7 @@ export class PolicyUtils {
      * @param document
      */
     public static cloneVC(ref: AnyBlockType, document: IPolicyDocument): VcDocumentCollection {
-        let clone = Object.assign({}, document);
+        const clone = Object.assign({}, document);
         clone.policyId = ref.policyId;
         if (document.document) {
             clone.document = JSON.parse(JSON.stringify(document.document));

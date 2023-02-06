@@ -24,6 +24,9 @@ import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 import { DocumentType } from '@policy-engine/interfaces/document.type';
 
+/**
+ * Document Operations
+ */
 enum Operation {
     auto = 'auto',
     create = 'create',
@@ -290,7 +293,7 @@ export class SendToGuardianBlock {
      * @param ref
      */
     private async updateVCMessage(document: IPolicyDocument, ref: AnyBlockType): Promise<IPolicyDocument> {
-        let old = await this.getVCRecord(document, Operation.auto, ref);
+        const old = await this.getVCRecord(document, Operation.auto, ref);
         if (old) {
             old.hederaStatus = document.hederaStatus;
             old.messageId = document.messageId;
@@ -320,7 +323,7 @@ export class SendToGuardianBlock {
      * @virtual
      */
     private async updateDIDMessage(document: IPolicyDocument, ref: AnyBlockType): Promise<IPolicyDocument> {
-        let old = await this.getDIDRecord(document, Operation.auto, ref);
+        const old = await this.getDIDRecord(document, Operation.auto, ref);
         if (old) {
             old.hederaStatus = document.hederaStatus;
             old.messageId = document.messageId;
@@ -348,7 +351,7 @@ export class SendToGuardianBlock {
      * @param ref
      */
     private async updateVPMessage(document: IPolicyDocument, ref: AnyBlockType): Promise<IPolicyDocument> {
-        let old = await this.getVPRecord(document, Operation.auto, ref);
+        const old = await this.getVPRecord(document, Operation.auto, ref);
         if (old) {
             old.hederaStatus = document.hederaStatus;
             old.messageId = document.messageId;
@@ -370,6 +373,12 @@ export class SendToGuardianBlock {
         }
     }
 
+    /**
+     * Update Message Hash
+     * @param document
+     * @param type
+     * @param ref
+     */
     private async updateMessage(
         document: IPolicyDocument,
         type: DocumentType,
