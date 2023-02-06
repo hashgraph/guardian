@@ -97,6 +97,8 @@ services:
     build:
       context: .
       dockerfile: ./logger-service/Dockerfile
+    env_file:
+      - ./logger-service/.env.docker
     depends_on:
       - message-broker
 
@@ -107,6 +109,8 @@ services:
     depends_on:
       - ipfs-node
       - auth-service
+    env_file:
+      - ./worker-service/.env.docker
     environment:
       - SERVICE_CHANNEL="worker.1"
 
@@ -117,6 +121,8 @@ services:
     depends_on:
       - ipfs-node
       - auth-service
+    env_file:
+      - ./worker-service/.env.docker
     environment:
       - SERVICE_CHANNEL="worker.2"
 
@@ -124,6 +130,8 @@ services:
     build:
       context: .
       dockerfile: ./auth-service/Dockerfile
+    env_file:
+      - ./auth-service/.env.docker
     depends_on:
       - mongo
       - vault
@@ -136,6 +144,8 @@ services:
       dockerfile: ./api-gateway/Dockerfile
     expose:
       - 3002
+    env_file:
+      - ./api-gateway/.env.docker
     depends_on:
       - mongo
       - message-broker
@@ -147,6 +157,8 @@ services:
     build:
       context: .
       dockerfile: ./policy-service/Dockerfile
+    env_file:
+      - ./policy-service/.env.docker
     depends_on:
       - mongo
       - message-broker
@@ -157,6 +169,8 @@ services:
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
+    env_file:
+      - ./guardian-service/.env.docker
     depends_on:
       - mongo
       - message-broker
