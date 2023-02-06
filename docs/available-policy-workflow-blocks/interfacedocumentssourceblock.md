@@ -51,124 +51,20 @@ To know more information about events, please look at [events.md](events.md "men
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
+{% swagger method="get" path="" baseUrl="blockType: 'InterfaceDocumentsSource'" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
+{% swagger-parameter in="path" name="blocks" type="array" required="true" %}
+Contained addons (filter)
 {% endswagger-parameter %}
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Block UUID
+{% swagger-parameter in="path" name="data" type="array" required="true" %}
+Data
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```
-{
-  "data": [
-    {
-      "_id": "63da084ddb84efbb04da4588",
-      "dryRunId": "63da04e19670adb07f82b092",
-      "dryRunClass": "VcDocumentCollection",
-      "owner": "did:hedera:testnet:7Vn2KdgTZG2DZkz1x3naEJfazEACCEZGBkGLeUwrh45C_0.0.3075949",
-      "hash": "29yk1PWG8h8euDCKFRcV9GXeXGCxhipyjaEnTaEw8wb9",
-      "document": {
-        "id": "urn:uuid:bd06ea41-9037-4294-b13d-f868563e30f1",
-        "type": [
-          "VerifiableCredential"
-        ],
-        "issuer": "did:hedera:testnet:7Vn2KdgTZG2DZkz1x3naEJfazEACCEZGBkGLeUwrh45C_0.0.3075949",
-        "issuanceDate": "2023-02-01T06:35:57.132Z",
-        "@context": [
-          "https://www.w3.org/2018/credentials/v1"
-        ],
-        "credentialSubject": [
-          {
-            "field1": {
-              "type": "bf7109c2-6ff4-47bb-a39d-02a0f11574b0",
-              "@context": []
-            },
-            "field2": {
-              "type": "dee7e78b-44b8-4bb0-8be0-3a86bde752b2",
-              "@context": []
-            },
-            "field3": {
-              "type": "86f9436f-82fd-48ce-bce8-37a5130263b0",
-              "@context": []
-            },
-            "policyId": "63da04e19670adb07f82b092",
-            "@context": [
-              "schema#f6ab05cd-95a6-4465-8b3a-e1e87375fef9"
-            ],
-            "id": "did:hedera:testnet:7Vn2KdgTZG2DZkz1x3naEJfazEACCEZGBkGLeUwrh45C_0.0.3075949",
-            "type": "f6ab05cd-95a6-4465-8b3a-e1e87375fef9"
-          }
-        ],
-        "proof": {
-          "type": "Ed25519Signature2018",
-          "created": "2023-02-01T06:35:57Z",
-          "verificationMethod": "did:hedera:testnet:7Vn2KdgTZG2DZkz1x3naEJfazEACCEZGBkGLeUwrh45C_0.0.3075949#did-root-key",
-          "proofPurpose": "assertionMethod",
-          "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..XUDlrhjJkXHgOIKVdGZETi3koGVRJM2elk70XKzRmCxVL8OyMEfhVyEz9c2z4L7I00dlH0nrZKoirtOdp0puAA"
-        }
-      },
-      "createDate": "2023-02-01T06:35:57.508Z",
-      "updateDate": "2023-02-01T06:35:57.508Z",
-"created": "2023-02-01T06:35:57.508Z",
-      "updated": "2023-02-01T06:35:57.508Z",
-      "status": "NEW",
-      "signature": 0,
-      "type": "registrant",
-      "policyId": "63da04e19670adb07f82b092",
-      "tag": "create_application(db)",
-      "messageId": "1675.233357483",
-      "topicId": "0.0.1675233357271",
-      "relationships": null,
-"option": {
-        "status": "Waiting for approval"
-      },
-      "comment": null,
-      "assignedTo": null,
-      "assignedToGroup": null,
-      "hederaStatus": "ISSUE",
-      "schema": "#f6ab05cd-95a6-4465-8b3a-e1e87375fef9",
-      "accounts": {
-        "default": "0.0.1675233350065"
-      },
-      "tokens": null,
-      "uuid": "801f790a-404c-4869-ae1b-4e5fe1146783",
-      "entity": "NONE",
-      "iri": "801f790a-404c-4869-ae1b-4e5fe1146783",
-      "readonly": false,
-      "system": false,
-      "active": false,
-      "codeVersion": "1.0.0",
-      "group": "8e58d3eb-9af5-4705-a9b3-
-.....
-```
-{% endswagger-response %}
-{% endswagger %}
-
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
-{% swagger-description %}
-
-{% endswagger-description %}
-
-{% swagger-parameter in="body" name="orderDirection" type="String" %}
-Order Direction ASC,DESC
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="orderField" type="String" %}
-Order Field Path
-{% endswagger-parameter %}
-
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
-{% endswagger-parameter %}
-
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Block UUID
+{% swagger-parameter in="path" name="Fields" type="array" required="true" %}
+Column Description
 {% endswagger-parameter %}
 {% endswagger %}

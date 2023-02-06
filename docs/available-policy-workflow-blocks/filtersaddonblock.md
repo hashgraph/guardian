@@ -66,12 +66,20 @@ Block UUID
 {% endswagger-response %}
 {% endswagger %}
 
-{% swagger method="post" path="" baseUrl="blockType: 'filtersAddon'" summary="" %}
+{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="filterValue" type="String" required="true" %}
+{% swagger-parameter in="body" name="filterValue" type="String" required="true" %}
 New filter value
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
+Policy ID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Block UUID
 {% endswagger-parameter %}
 {% endswagger %}

@@ -23,3 +23,74 @@
 | Value              | Value to set                                                                                     | Validated                                                                                                                 |        |
 | UI Class           | UI class of the button                                                                           | btn-approve                                                                                                               |        |
 | Filters            | array of addition visible filters                                                                | <p>Field (field) – field of document.</p><p>Value (value) – field to compare.</p><p> Type (type)– type of comparison.</p> |        |
+
+### API Parameters
+
+{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
+Policy ID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Block UUID
+{% endswagger-parameter %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+  "id": "fa4c1642-700a-44f6-a8eb-1089e77c4d64",
+  "blockType": "buttonBlock",
+  "type": "selector",
+  "uiMetaData": {
+    "options": [
+      {
+        "title": "",
+        "name": "Add",
+        "tooltip": "",
+        "type": "text",
+        "value": "Waiting for Validation",
+        "uiClass": "btn-approve",
+        "bindBlock": "save_added",
+        "tag": "Option_0"
+      }
+    ],
+    "content": "VVB",
+    "buttons": [
+      {
+        "tag": "Option_0",
+        "name": "Add",
+        "type": "selector",
+        "filters": [],
+        "field": "option.status",
+        "value": "Waiting for Validation",
+        "uiClass": "btn-approve"
+      }
+    ]
+  }
+}
+
+```
+{% endswagger-response %}
+{% endswagger %}
+
+{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
+Policy ID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Block UUID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="document" type="Object" required="true" %}
+VC Document
+{% endswagger-parameter %}
+{% endswagger %}
