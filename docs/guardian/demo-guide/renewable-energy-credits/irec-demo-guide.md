@@ -18,7 +18,7 @@ This folder contains a sample file that is referenced in the Demo Guide
 
 3\. You will now be prompted to configure your Standard Registry account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the details of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../../../.gitbook/assets/Verra\_2.2.png)
+![](../../../.gitbook/assets/iREC\_4.2.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
 
@@ -116,7 +116,7 @@ Once details are submitted, Registrant waits for the approval.
 
 21\. Now, we login back as Approver1 and approves the device created by Registrant. Device is approved by clicking on Sign button.
 
-<figure><img src="../../../.gitbook/assets/iREC_5.18.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/iREC_5.18 (1).png" alt=""><figcaption></figcaption></figure>
 
 22\. We logout as an Approver1 and login as Approver2 and approve the device by following step 21.
 

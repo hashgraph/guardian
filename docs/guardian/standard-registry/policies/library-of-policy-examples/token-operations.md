@@ -1,5 +1,7 @@
 # 🪙 Token Operations
 
+For a demo example of following steps, here is the policy timestamp: **1675164687.693099003**
+
 ## **Task Summary**
 
 Create a token with which newly registered users would be automatically linked. After the registration these users would be able to create documents which would be used for minting tokens at the rate of 1 token to 1000 units of value in the document.
@@ -92,12 +94,12 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 ### Create User
 
-<figure><img src="../../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_3_demot_01.png" alt=""><figcaption></figcaption></figure>
 
 ### Create Project
 
-<figure><img src="../../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_3_demot_02.png" alt=""><figcaption></figcaption></figure>
 
 ### Mint Token
 
-<figure><img src="../../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Template_3_demot_03.png" alt=""><figcaption></figcaption></figure>
