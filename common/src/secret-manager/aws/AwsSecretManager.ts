@@ -4,6 +4,7 @@ import { IAwsSecretManagerConfigs } from "./AwsSecretManagerConfigs";
 
 export class AwsSecretManager implements SecretManagerBase {
   private client: SecretsManagerClient;
+  private baseSecretPath = 'guardian/';
 
   constructor(configs: IAwsSecretManagerConfigs) {
     this.client = new SecretsManagerClient({
@@ -11,11 +12,15 @@ export class AwsSecretManager implements SecretManagerBase {
     });
   }
 
+  private getSecretId(path: string): string {
+    return this.baseSecretPath + path;
+  }
+
   public async getSecrets(path: string): Promise<any> {  
     try {
       const response = await this.client.send(
         new GetSecretValueCommand({
-          SecretId: path,
+          SecretId: this.getSecretId(path),
           VersionStage: "AWSCURRENT",
         })
       );
@@ -29,7 +34,7 @@ export class AwsSecretManager implements SecretManagerBase {
     try {
       await this.client.send(
         new CreateSecretCommand({
-          Name: path,
+          Name: this.getSecretId(path),
           SecretString: JSON.stringify(data)
         })
       );
