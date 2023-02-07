@@ -62,5 +62,5 @@
         "test": "ng test",
         "watch": "ng build --watch --configuration development --output-path ../www-data"
     },
-    "version": "2.9.2"
+    "version": "2.9.3"
 }
