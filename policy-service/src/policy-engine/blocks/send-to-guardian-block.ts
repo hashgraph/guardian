@@ -208,6 +208,8 @@ export class SendToGuardianBlock {
             old = this.mapDocument(old, document);
             return await ref.databaseServer.updateApproval(old);
         } else {
+            delete document.id;
+            delete document._id;
             return await ref.databaseServer.saveApproval(document)
         }
     }
@@ -230,11 +232,11 @@ export class SendToGuardianBlock {
             updateStatus = old.option?.status !== document.option?.status;
             old = this.mapDocument(old, document);
             old = await ref.databaseServer.updateVC(old);
-            console.log(`   -- update vc`);
         } else {
             updateStatus = !!document.option?.status;
+            delete document.id;
+            delete document._id;
             old = await ref.databaseServer.saveVC(document);
-            console.log(`   -- save vc`);
         }
 
         if (updateStatus) {
@@ -263,6 +265,8 @@ export class SendToGuardianBlock {
             old = this.mapDocument(old, document);
             return await ref.databaseServer.updateDid(old);
         } else {
+            delete document.id;
+            delete document._id;
             return await ref.databaseServer.saveDid(document)
         }
     }
@@ -283,6 +287,8 @@ export class SendToGuardianBlock {
             old = this.mapDocument(old, document);
             return await ref.databaseServer.updateVP(old);
         } else {
+            delete document.id;
+            delete document._id;
             return await ref.databaseServer.saveVP(document)
         }
     }
@@ -304,7 +310,6 @@ export class SendToGuardianBlock {
             } else {
                 old.messageIds = [document.messageId];
             }
-            console.log(`   -- update message`);
             return await ref.databaseServer.updateVC(old);
         } else {
             if (Array.isArray(document.messageIds)) {
@@ -342,7 +347,7 @@ export class SendToGuardianBlock {
             } else {
                 document.messageIds = [document.messageId];
             }
-            return await ref.databaseServer.saveDid(document)
+            return document;
         }
     }
 
@@ -370,7 +375,7 @@ export class SendToGuardianBlock {
             } else {
                 document.messageIds = [document.messageId];
             }
-            return await ref.databaseServer.saveVP(document)
+            return document;
         }
     }
 
@@ -430,7 +435,6 @@ export class SendToGuardianBlock {
         type: DocumentType,
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
-        console.log('   -- send -> database');
         let operation: Operation = Operation.auto;
         if (ref.options.dataSource === 'database') {
             if (ref.options.forceNew || ref.options.operation === 'create') {
@@ -444,7 +448,6 @@ export class SendToGuardianBlock {
                 }
             }
         }
-        console.log(`   -- operation: ${operation}`);
 
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
@@ -466,7 +469,6 @@ export class SendToGuardianBlock {
         message: Message,
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
-        console.log('   -- send -> hedera');
         try {
             const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
             const user = await PolicyUtils.getHederaAccount(ref, document.owner);
@@ -507,8 +509,6 @@ export class SendToGuardianBlock {
     private async documentSender(document: IPolicyDocument, user: IPolicyUser): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const type = PolicyUtils.getDocumentType(document);
-
-        console.log(' -- start', ref.uuid);
 
         //
         // Create Message
