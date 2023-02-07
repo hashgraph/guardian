@@ -24,7 +24,7 @@ export class AwsSecretManager implements SecretManagerBase {
           VersionStage: "AWSCURRENT",
         })
       );
-      return response.SecretString;
+      return JSON.parse(response.SecretString);
     } catch (ex) {
       throw new Error("Retreive Secret Failed: " + ex);
     }
