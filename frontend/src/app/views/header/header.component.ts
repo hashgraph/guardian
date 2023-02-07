@@ -80,9 +80,10 @@ export class HeaderComponent implements OnInit {
             this.balanceType = '';
         });
 
-        this.getBallance();
-        this.authSubscription = this.auth.subscribe(() => {
-            this.getBallance();
+        this.authSubscription = this.auth.subscribe((token) => {
+            if (token) {
+                this.getBallance();
+            }
         })
     }
 

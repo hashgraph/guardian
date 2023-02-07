@@ -2,12 +2,12 @@ const axios = require("axios");
 const {GetURL, GetToken} = require("../helpers");
 const assert = require("assert");
 
-function Trustchains() {
-    it('/trustchains', async function() {
+function TrustChains() {
+    it('/trust-chains', async function () {
         this.timeout(60000);
         let result;
         result = await axios.get(
-            GetURL('trustchains'),
+            GetURL('trust-chains'),
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -18,11 +18,10 @@ function Trustchains() {
         assert.equal(Array.isArray(result.data), true);
     })
 
-    it('/trustchains/{hash}', async function() {
+    it('/trust-chains/{hash}', async function () {
         this.timeout(60000);
-        let result;
-        result = await axios.get(
-            GetURL('trustchains', '123123123'),
+        const result = await axios.get(
+            GetURL('trust-chains', '123123123'),
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -35,5 +34,5 @@ function Trustchains() {
 }
 
 module.exports = {
-    Trustchains
+    TrustChains: TrustChains
 }

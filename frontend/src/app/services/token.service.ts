@@ -57,17 +57,17 @@ export class TokenService {
 
     public kyc(tokenId: string, username: string, kyc: boolean): Observable<void> {
         if (kyc) {
-            return this.http.put<void>(`${this.url}/${tokenId}/${username}/grantKyc`, null);
+            return this.http.put<void>(`${this.url}/${tokenId}/${username}/grant-kyc`, null);
         } else {
-            return this.http.put<void>(`${this.url}/${tokenId}/${username}/revokeKyc`, null);
+            return this.http.put<void>(`${this.url}/${tokenId}/${username}/revoke-kyc`, null);
         }
     }
 
     public pushKyc(tokenId: string, username: string, kyc: boolean): Observable<{ taskId: string, expectation: number }> {
         if (kyc) {
-            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/grantKyc`, null);
+            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/grant-kyc`, null);
         } else {
-            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/revokeKyc`, null);
+            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/revoke-kyc`, null);
         }
     };
 
