@@ -43,19 +43,6 @@ export class SendConfigComponent implements OnInit {
         this.block = block.properties;
         this.block.uiMetaData = this.block.uiMetaData || {};
         this.block.options = this.block.options || [];
-        if (this.block.dataSource === 'database') {
-            if (this.block.forceNew === true) {
-                this.block.operation = 'create';
-            } else if (!this.block.operation) {
-                this.block.operation = 'update';
-            }
-            delete this.block.forceNew;
-            if (this.block.operation == 'update') {
-                if (!this.block.updateBy) {
-                    this.block.updateBy = 'hash';
-                }
-            }
-        }
         if (!this.block.dataType && !this.block.dataSource) {
             this.block.dataSource = 'auto';
         }
@@ -90,15 +77,5 @@ export class SendConfigComponent implements OnInit {
     }
 
     onDataSource(event: any) {
-        if (this.block.dataSource === 'database') {
-            if (!this.block.operation) {
-                this.block.operation = 'update';
-            }
-            if (this.block.operation == 'update') {
-                if (!this.block.updateBy) {
-                    this.block.updateBy = 'hash';
-                }
-            }
-        }
     }
 }

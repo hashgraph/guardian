@@ -81,29 +81,13 @@ export class SendToGuardianBlock {
      */
     private async getVCRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
         let old: any = null;
-        if (operation === Operation.auto) {
-            if (document.hash) {
-                old = await ref.databaseServer.getVcDocument({
-                    where: {
-                        hash: { $eq: document.hash },
-                        hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
-                    }
-                });
-            }
-        } else if (operation === Operation.updateById) {
-            if (document.id || document._id) {
-                old = await ref.databaseServer.getVcDocument(document.id || document._id);
-            }
-
-        } else if (operation === Operation.updateByMessage) {
-            if (document.messageId) {
-                old = await ref.databaseServer.getVcDocument({
-                    where: {
-                        messageId: { $eq: document.messageId },
-                        hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
-                    }
-                });
-            }
+        if (document.hash) {
+            old = await ref.databaseServer.getVcDocument({
+                where: {
+                    hash: { $eq: document.hash },
+                    hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
+                }
+            });
         }
         return old;
     }
@@ -130,29 +114,13 @@ export class SendToGuardianBlock {
      */
     private async getDIDRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
         let old: any = null;
-        if (operation === Operation.auto) {
-            if (document.did) {
-                old = await ref.databaseServer.getVcDocument({
-                    where: {
-                        did: { $eq: document.did },
-                        hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
-                    }
-                });
-            }
-        } else if (operation === Operation.updateById) {
-            if (document.id || document._id) {
-                old = await ref.databaseServer.getVcDocument(document.id || document._id);
-            }
-
-        } else if (operation === Operation.updateByMessage) {
-            if (document.messageId) {
-                old = await ref.databaseServer.getVcDocument({
-                    where: {
-                        messageId: { $eq: document.messageId },
-                        hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
-                    }
-                });
-            }
+        if (document.did) {
+            old = await ref.databaseServer.getVcDocument({
+                where: {
+                    did: { $eq: document.did },
+                    hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
+                }
+            });
         }
         return old;
     }
@@ -165,29 +133,13 @@ export class SendToGuardianBlock {
      */
     private async getVPRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
         let old: any = null;
-        if (operation === Operation.auto) {
-            if (document.hash) {
-                old = await ref.databaseServer.getVcDocument({
-                    where: {
-                        hash: { $eq: document.hash },
-                        hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
-                    }
-                });
-            }
-        } else if (operation === Operation.updateById) {
-            if (document.id || document._id) {
-                old = await ref.databaseServer.getVcDocument(document.id || document._id);
-            }
-
-        } else if (operation === Operation.updateByMessage) {
-            if (document.messageId) {
-                old = await ref.databaseServer.getVcDocument({
-                    where: {
-                        messageId: { $eq: document.messageId },
-                        hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
-                    }
-                });
-            }
+        if (document.hash) {
+            old = await ref.databaseServer.getVcDocument({
+                where: {
+                    hash: { $eq: document.hash },
+                    hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
+                }
+            });
         }
         return old;
     }
@@ -436,19 +388,6 @@ export class SendToGuardianBlock {
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
         let operation: Operation = Operation.auto;
-        if (ref.options.dataSource === 'database') {
-            if (ref.options.forceNew || ref.options.operation === 'create') {
-                operation = Operation.create;
-            } else {
-                if (ref.options.updateBy === 'id') {
-                    operation = Operation.updateById;
-                }
-                if (ref.options.updateBy === 'messageId') {
-                    operation = Operation.updateByMessage;
-                }
-            }
-        }
-
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
         } else if (type === DocumentType.VerifiableCredential) {
@@ -646,25 +585,7 @@ export class SendToGuardianBlock {
             } else if (ref.options.dataSource === 'auto') {
                 return;
             } else if (ref.options.dataSource === 'database') {
-                if (!ref.options.operation) {
-                    return;
-                } else if (ref.options.operation === 'create') {
-                    return;
-                } else if (ref.options.operation === 'update') {
-                    if (!ref.options.updateBy) {
-                        return;
-                    } else if (ref.options.updateBy === 'id') {
-                        return;
-                    } else if (ref.options.updateBy === 'hash') {
-                        return;
-                    } else if (ref.options.updateBy === 'messageId') {
-                        return;
-                    } else {
-                        resultsContainer.addBlockError(ref.uuid, 'Option "updateBy" must be one of id|hash|messageId');
-                    }
-                } else {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "operation" must be one of create|update');
-                }
+                return;
             } else if (ref.options.dataSource === 'hedera') {
                 if (ref.options.topic && ref.options.topic !== 'root') {
                     const policyTopics = ref.policyInstance.policyTopics || [];

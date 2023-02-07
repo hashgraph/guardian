@@ -29,31 +29,6 @@
         </td>
     </tr>
 
-    <ng-container *ngIf="block.dataSource=='database'">
-        <tr class="propRow" [attr.collapse]="propHidden.main">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Operation</td>
-            <td class="propRowCell">
-                <mat-select [(value)]="block.operation" [disabled]="readonly">
-                    <mat-option value="create">Create New Document</mat-option>
-                    <mat-option value="update">Update Document</mat-option>
-                </mat-select>
-            </td>
-        </tr>
-
-        <tr *ngIf="block.operation=='update'" class="propRow" [attr.collapse]="propHidden.main">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Update document by</td>
-            <td class="propRowCell">
-                <mat-select [(value)]="block.updateBy" [disabled]="readonly">
-                    <mat-option value="id">Database ID</mat-option>
-                    <mat-option value="hash">Hash</mat-option>
-                    <mat-option value="messageId">Message ID</mat-option>
-                </mat-select>
-            </td>
-        </tr>
-    </ng-container>
-
     <ng-container *ngIf="block.dataSource=='hedera'">
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
