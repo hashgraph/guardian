@@ -1,4 +1,4 @@
-import { SecretsManagerClient, GetSecretValueCommand, CreateSecretCommand } from "@aws-sdk/client-secrets-manager";
+import { SecretsManagerClient, GetSecretValueCommand, UpdateSecretCommand } from "@aws-sdk/client-secrets-manager";
 import { SecretManagerBase } from "../SecretManagerBase";
 import { IAwsSecretManagerConfigs } from "./AwsSecretManagerConfigs";
 
@@ -33,8 +33,8 @@ export class AwsSecretManager implements SecretManagerBase {
   async setSecrets(path: string, data: any): Promise<any> {
     try {
       await this.client.send(
-        new CreateSecretCommand({
-          Name: this.getSecretId(path),
+        new UpdateSecretCommand({
+          SecretId: this.getSecretId(path),
           SecretString: JSON.stringify(data)
         })
       );
