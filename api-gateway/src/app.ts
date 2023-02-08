@@ -18,7 +18,6 @@ import { policyAPI } from '@api/service/policy';
 import { PolicyEngine } from '@helpers/policy-engine';
 import { WebSocketsService } from '@api/service/websockets';
 import { Users } from '@helpers/users';
-import { Wallet } from '@helpers/wallet';
 import { settingsAPI } from '@api/service/settings';
 import { loggerAPI } from '@api/service/logger';
 import { MessageBrokerChannel, Logger } from '@guardian/common';
@@ -51,7 +50,6 @@ Promise.all([
         new IPFS().setChannel(channel);
         new PolicyEngine().setChannel(channel);
         new Users().setChannel(channel);
-        new Wallet().setChannel(channel);
 
         const server = createServer(app);
         const wsService = new WebSocketsService(server, apiGatewayChannel);
