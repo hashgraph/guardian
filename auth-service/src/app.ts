@@ -1,12 +1,9 @@
 import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/account-service';
-import { WalletService } from '@api/wallet-service';
 import { ApplicationState, MessageBrokerChannel, Logger, DB_DI, Migration, COMMON_CONNECTION_CONFIG } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { InitializeVault } from './vaults';
-import { ImportKeysFromDatabase } from '@helpers/import-keys-from-database';
 
 Promise.all([
     Migration({
@@ -24,8 +21,7 @@ Promise.all([
         ensureIndexes: true
     }),
     MessageBrokerChannel.connect('LOGGER_SERVICE'),
-    InitializeVault(process.env.VAULT_PROVIDER)
-]).then(async ([_, db, cn, vault]) => {
+]).then(async ([_, db, cn]) => {
     DB_DI.orm = db;
     const state = new ApplicationState('AUTH_SERVICE');
     const channel = new MessageBrokerChannel(cn, 'auth-service');
@@ -37,11 +33,6 @@ Promise.all([
 
         new Logger().setChannel(channel);
         new AccountService(channel).registerListeners();
-        new WalletService(channel, vault).registerListeners();
-
-        if (process.env.IMPORT_KEYS_FROM_DB) {
-            await ImportKeysFromDatabase(vault);
-        }
 
         state.updateState(ApplicationStates.READY);
         new Logger().info('auth service started', ['AUTH_SERVICE']);
