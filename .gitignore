@@ -29,3 +29,7 @@ vault/hashicorp/vault
 vault/hashicorp/consul
 vault/hashicorp/configs/vault/secrets/secrets.json
 */tls
+
+# .env files
+*/.env
+*/.env.docker
