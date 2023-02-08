@@ -387,7 +387,7 @@ export class SendToGuardianBlock {
         type: DocumentType,
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
-        let operation: Operation = Operation.auto;
+        const operation: Operation = Operation.auto;
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
         } else if (type === DocumentType.VerifiableCredential) {
