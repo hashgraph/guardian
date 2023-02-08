@@ -86,9 +86,7 @@ async function test_wallet_guardian() {
   
   secretManager = SecretManager.New()
   await secretManager.setSecrets('wallet/test_guardian', {
-    data: {
-      private_key: "0x1234567890abcdef"
-    }
+    private_key: "0x1234567890abcdef",
   })
 
   const data = await secretManager.getSecrets('wallet/test_guardian')
@@ -104,9 +102,7 @@ async function test_wallet_policy() {
   
   secretManager = SecretManager.New()
   await secretManager.setSecrets('wallet/test_policy', {
-    data: {
-      private_key: "0xABCDEF0987654321"
-    }
+    private_key: "0xABCDEF0987654321",
   })
 
   const data = await secretManager.getSecrets('wallet/test_policy')

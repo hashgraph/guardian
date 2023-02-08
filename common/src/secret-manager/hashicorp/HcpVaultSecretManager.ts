@@ -38,7 +38,7 @@ export class HcpVaultSecretManager implements SecretManagerBase {
   async setSecrets(path: string, data: any): Promise<any> {
     await this.loginByApprole()
     try {
-      await this.vault.write(this.getSecretId(path), data)
+      await this.vault.write(this.getSecretId(path), { data })
     } catch(ex) {
       throw new Error("Write Secrets Failed: " + ex)
     }

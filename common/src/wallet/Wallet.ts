@@ -31,9 +31,7 @@ export class Wallet {
    */
   public async setKey(token: string, type: string, key: string, value: string): Promise<void>{
     await this.secretManager.setSecrets(`wallet/${this.generateKeyName(token, type, key)}`, {
-      data: {
-        privateKey: value
-      }
+      privateKey: value,
     })
   }
 
