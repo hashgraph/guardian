@@ -1,4 +1,4 @@
-import { Logger, MessageBrokerChannel, SecretManager, SettingsContainer } from '@guardian/common';
+import { Logger, MessageBrokerChannel, SecretManager } from '@guardian/common';
 import {
     ExternalMessageEvents,
     ITask,
@@ -96,13 +96,6 @@ export class Worker {
         private readonly channel: MessageBrokerChannel,
         private readonly channelName: string
     ) {
-        /**
-         * This block retreives `IPFS_STORAGE_API_KEY` from SettingContainer
-         * which gets cofigs from Auth Service. Instead, by SecretManager will
-         * load secrets directly from vault.
-         * 
-            const { IPFS_STORAGE_API_KEY } = new SettingsContainer().settings;
-         */
         const secretManager = SecretManager.New()
         secretManager.getSecrets("secret/data/apikey/ipfs").
             then(secrets => {
@@ -136,13 +129,6 @@ export class Worker {
         });
 
         this.channel.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
-            /**
-             * This block updates `IPFS_STORAGE_API_KEY` by SettingContainer
-             * which sends configs to Auth Service as secret manager proxy.
-             * Instead, by SecretManager, services write secrets to Vault directly.
-             * 
-                new SettingsContainer().updateSetting('IPFS_STORAGE_API_KEY', msg.ipfsStorageApiKey);
-            */
             const secretManager = SecretManager.New();
             await secretManager.setSecrets('secret/data/apikey/ipfs', {
                 data: {

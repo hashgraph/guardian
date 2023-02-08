@@ -26,7 +26,6 @@ import {
     DB_DI,
     Migration,
     COMMON_CONNECTION_CONFIG,
-    SettingsContainer,
     SecretManager
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';

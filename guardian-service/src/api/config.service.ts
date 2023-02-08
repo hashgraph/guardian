@@ -6,7 +6,7 @@ import {
     MessageResponse,
     MessageError,
     Logger,
-    DataBaseHelper, SettingsContainer, SecretManager
+    DataBaseHelper, SecretManager
 } from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
 import { Environment } from '@hedera-modules';
@@ -35,7 +35,6 @@ export async function configAPI(
      */
     ApiResponse(channel, MessageAPI.UPDATE_SETTINGS, async (settings: CommonSettings) => {
         try {
-            const settingsContainer = new SettingsContainer();
             try {
                 AccountId.fromString(settings.operatorId);
             } catch (error) {
@@ -49,12 +48,6 @@ export async function configAPI(
                 throw new Error('OPERATOR_KEY: ' + error.message);
             }
 
-            /**
-             * this block sets OPERATOR SetingsContainer through Auth service,
-             * instead by Secretmanager services can get/set secrets t Vault direectly.
-                await settingsContainer.updateSetting('OPERATOR_ID', settings.operatorId);
-                await settingsContainer.updateSetting('OPERATOR_KEY', settings.operatorKey);
-             */
             const secretManager = SecretManager.New();
             await secretManager.setSecrets('secret/data/keys/operator', {
                 data: {
@@ -79,12 +72,6 @@ export async function configAPI(
      */
     ApiResponse(channel, MessageAPI.GET_SETTINGS, async (msg) => {
         try {
-            /**
-             * this block gets OPERATOR from Auth service utilising SettingsContainer,
-             * instead by Secretmanager services can get/set secrets t Vault direectly.
-                const settingsContainer = new SettingsContainer();
-                const { OPERATOR_ID } = settingsContainer.settings;
-            */
             const secretManager = SecretManager.New();
             const { OPERATOR_ID } = await secretManager.getSecrets('secret/data/keys/operator');
 

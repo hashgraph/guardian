@@ -1,4 +1,4 @@
-import { ApplicationState, Logger, MessageBrokerChannel, SettingsContainer } from '@guardian/common';
+import { ApplicationState, Logger, MessageBrokerChannel } from '@guardian/common';
 import { Worker } from './api/worker';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
 import { ApplicationStates } from '@guardian/interfaces';
@@ -19,20 +19,6 @@ Promise.all([
     HederaSDKHelper.setTransactionLogSender(async (data) => {
         await channel.request(`guardians.transaction-log-event`, data);
     });
-
-    /**
-     * 
-     * This blocks was to send settings including `IPFS_STORAGE_API_KEY`
-     * to Auth Service in order to be written in its Vault.
-     * With Secret Manager that grants restricted r/w permissions 
-     * per service individually each service is allowed to deirectly
-     * get/update secrets to vault independently. Consequently this
-     * block is not needed (for secrets) anymore.
-     * 
-        const settingsContainer = new SettingsContainer();
-        settingsContainer.setChannel(channel);
-        await settingsContainer.init('IPFS_STORAGE_API_KEY');
-     */
 
     await state.updateState(ApplicationStates.INITIALIZING);
     const w = new Worker(channel, channelName);
