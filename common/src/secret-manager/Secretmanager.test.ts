@@ -37,7 +37,7 @@ async function test_secretkey() {
   setCertsPath(auth_certs_path)
 
   secretManager = SecretManager.New()
-  let data = await secretManager.getSecrets('secret/data/secretkey/auth')
+  let data = await secretManager.getSecrets('secretkey/auth')
   console.log(data)
 }
 
@@ -49,7 +49,7 @@ async function test_apikey_ipfs() {
   setCertsPath(worker_certs_path)
   
   secretManager = SecretManager.New()
-  const data = await secretManager.getSecrets('secret/data/apikey/ipfs')
+  const data = await secretManager.getSecrets('apikey/ipfs')
   console.log(data)
 }
 
@@ -61,7 +61,7 @@ async function test_operator_key_guardian() {
   setCertsPath(guardian_certs_path)  
   
   secretManager = SecretManager.New()
-  const data = await secretManager.getSecrets('secret/data/keys/operator')
+  const data = await secretManager.getSecrets('keys/operator')
   console.log(data)
 }
 
@@ -73,7 +73,7 @@ async function test_operator_key_policy() {
   setCertsPath(policy_certs_path)  
   
   secretManager = SecretManager.New()
-  const data = await secretManager.getSecrets('secret/data/keys/operator')
+  const data = await secretManager.getSecrets('keys/operator')
   console.log(data)
 }
 
@@ -85,13 +85,13 @@ async function test_wallet_guardian() {
   setCertsPath(guardian_certs_path)  
   
   secretManager = SecretManager.New()
-  await secretManager.setSecrets('secret/data/wallet/test_guardian', {
+  await secretManager.setSecrets('wallet/test_guardian', {
     data: {
       private_key: "0x1234567890abcdef"
     }
   })
 
-  const data = await secretManager.getSecrets('secret/data/wallet/test_guardian')
+  const data = await secretManager.getSecrets('wallet/test_guardian')
   console.log(data)
 }
 
@@ -103,13 +103,13 @@ async function test_wallet_policy() {
   setCertsPath(policy_certs_path)  
   
   secretManager = SecretManager.New()
-  await secretManager.setSecrets('secret/data/wallet/test_policy', {
+  await secretManager.setSecrets('wallet/test_policy', {
     data: {
       private_key: "0xABCDEF0987654321"
     }
   })
 
-  const data = await secretManager.getSecrets('secret/data/wallet/test_policy')
+  const data = await secretManager.getSecrets('wallet/test_policy')
   console.log(data)
 }
 
