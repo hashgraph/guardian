@@ -45,3 +45,56 @@ The user need to input the private key for the account to enable Guardian to per
 {% endhint %}
 
 ![](<../.gitbook/assets/image (17) (2).png>)
+
+### API Parameters
+
+{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
+Policy ID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Block UUID
+{% endswagger-parameter %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```
+{
+  "id": "484c57c2-5ceb-41ed-97b3-61c52fce473e",
+  "blockType": "tokenConfirmationBlock",
+  "action": "associate",
+  "accountId": "0.0.1",
+  "tokenName": "GHG Token",
+  "tokenSymbol": "GHG",
+  "tokenId": "0.0.3121118"
+}
+
+```
+{% endswagger-response %}
+{% endswagger %}
+
+{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
+Policy Id
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Block UUID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="action" type="String" required="true" %}
+action
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="hederaAccountKey" type="String" required="true" %}
+Hedera Account Private Key
+{% endswagger-parameter %}
+{% endswagger %}

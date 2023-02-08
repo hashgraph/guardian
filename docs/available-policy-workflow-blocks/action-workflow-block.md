@@ -48,34 +48,58 @@ To know more information about events, please look at [events.md](events.md "men
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="blockType: 'InterfaceAction'" summary="" %}
+{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="id" type="String" required="true" %}
-Block ID
+{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
+Policy ID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="path" name="blockType" type="String" required="true" %}
-Block Type
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Block UUID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="path" name="type" type="String" required="true" %}
-Action type (dropdown / selector / download)
-{% endswagger-parameter %}
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+  "id": "448ff538-1c3b-45eb-a310-9414ae223b81",
+  "blockType": "interfaceActionBlock",
+  "type": "dropdown",
+  "uiMetaData": {
+    "options": [],
+    "content": "VVB"
+  },
+  "name": "document.credentialSubject.0.field0",
+  "value": "group",
+  "field": "assignedToGroup",
+  "options": [
+    {
+      "name": "1",
+      "value": "6b3efd88-037c-4335-a4d1-02776e23973c"
+    }
+  ]
+}
 
-{% swagger-parameter in="path" name="uiMetaData" required="true" %}
-{}
-{% endswagger-parameter %}
+```
+{% endswagger-response %}
 {% endswagger %}
 
-{% swagger method="post" path="" baseUrl="blockType: 'InterfaceAction" summary="" %}
+{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="document" type="VC" required="true" %}
-VC document
+{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
+Policy ID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Block UUID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="document" type="VC" required="true" %}
+VC Document
 {% endswagger-parameter %}
 {% endswagger %}
