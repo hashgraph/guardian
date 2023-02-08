@@ -47,7 +47,6 @@ export { SchemaCondition } from './interface/schema-condition.interface';
 export { ModelHelper } from './helpers/model-helper';
 export { ImportType } from './type/import.type';
 export { SchemaHelper } from './helpers/schema-helper';
-export { WalletEvents } from './type/wallet-events';
 export { SchemaCategory } from './type/schema-category.type';
 export { CommonSettings } from './interface/common-settings.interface';
 export { ILog } from './interface/log.interface';
