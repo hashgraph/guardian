@@ -241,7 +241,6 @@ export class CustomLogicBlock {
                 const didObject = DIDDocument.create(null, topic.topicId);
                 const did = didObject.getDid();
                 const key = didObject.getPrivateKeyString();
-                const document = didObject.getDocument();
 
                 const message = new DIDMessage(MessageAction.CreateDID);
                 message.setDocument(didObject);
@@ -251,7 +250,7 @@ export class CustomLogicBlock {
                     .setTopicObject(topic)
                     .sendMessage(message);
 
-                const item = PolicyUtils.createDID(ref, user, did, document);
+                const item = PolicyUtils.createDID(ref, user, didObject);
                 item.messageId = messageResult.getId();
                 item.topicId = messageResult.getTopicId();
 

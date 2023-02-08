@@ -5,12 +5,34 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { MessageAction, MessageServer, VcDocument as HVcDocument, VCMessage, MessageMemo } from '@hedera-modules';
+import {
+    MessageAction,
+    MessageServer,
+    VcDocument,
+    VpDocument,
+    DIDDocument,
+    VCMessage,
+    MessageMemo,
+    VPMessage,
+    DIDMessage,
+    Message
+} from '@hedera-modules';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { DocumentType } from '@policy-engine/interfaces/document.type';
+
+/**
+ * Document Operations
+ */
+enum Operation {
+    auto = 'auto',
+    create = 'create',
+    updateById = 'update-by-id',
+    updateByMessage = 'update-by-message',
+}
 
 /**
  * Send to guardian
@@ -38,70 +60,320 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
 })
 export class SendToGuardianBlock {
     /**
+     * Update item prop
+     * @param old
+     * @param doc
+     */
+    private mapDocument(old: IPolicyDocument, doc: IPolicyDocument): IPolicyDocument {
+        for (const key in doc) {
+            if (key !== 'id' && key !== '_id' && typeof doc[key] !== 'function') {
+                old[key] = doc[key];
+            }
+        }
+        return old;
+    }
+
+    /**
+     * Get VC record
+     * @param document
+     * @param operation
+     * @param ref
+     */
+    private async getVCRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
+        let old: any = null;
+        if (document.hash) {
+            old = await ref.databaseServer.getVcDocument({
+                where: {
+                    hash: { $eq: document.hash },
+                    hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
+                }
+            });
+        }
+        return old;
+    }
+
+    /**
+     * Get Approval record
+     * @param document
+     * @param operation
+     * @param ref
+     */
+    private async getApprovalRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
+        let old: any;
+        if (document.id || document._id) {
+            old = await ref.databaseServer.getApprovalDocument(document.id || document._id);
+        }
+        return old;
+    }
+
+    /**
+     * Get did record
+     * @param document
+     * @param operation
+     * @param ref
+     */
+    private async getDIDRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
+        let old: any = null;
+        if (document.did) {
+            old = await ref.databaseServer.getVcDocument({
+                where: {
+                    did: { $eq: document.did },
+                    hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
+                }
+            });
+        }
+        return old;
+    }
+
+    /**
+     * Get VP record
+     * @param document
+     * @param operation
+     * @param ref
+     */
+    private async getVPRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
+        let old: any = null;
+        if (document.hash) {
+            old = await ref.databaseServer.getVcDocument({
+                where: {
+                    hash: { $eq: document.hash },
+                    hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
+                }
+            });
+        }
+        return old;
+    }
+
+    /**
+     * Update Approval record
+     * @param document
+     * @param operation
+     * @param ref
+     */
+    private async updateApprovalRecord(
+        document: IPolicyDocument,
+        operation: Operation,
+        ref: AnyBlockType
+    ): Promise<IPolicyDocument> {
+        let old = await this.getApprovalRecord(document, operation, ref);
+        if (old) {
+            old = this.mapDocument(old, document);
+            return await ref.databaseServer.updateApproval(old);
+        } else {
+            delete document.id;
+            delete document._id;
+            return await ref.databaseServer.saveApproval(document)
+        }
+    }
+
+    /**
+     * Update VC record
+     * @param document
+     * @param operation
+     * @param ref
+     */
+    private async updateVCRecord(
+        document: IPolicyDocument,
+        operation: Operation,
+        ref: AnyBlockType
+    ): Promise<IPolicyDocument> {
+        let old = await this.getVCRecord(document, operation, ref);
+
+        let updateStatus = false;
+        if (old) {
+            updateStatus = old.option?.status !== document.option?.status;
+            old = this.mapDocument(old, document);
+            old = await ref.databaseServer.updateVC(old);
+        } else {
+            updateStatus = !!document.option?.status;
+            delete document.id;
+            delete document._id;
+            old = await ref.databaseServer.saveVC(document);
+        }
+
+        if (updateStatus) {
+            await ref.databaseServer.saveDocumentState({
+                documentId: old.id,
+                status: old.option.status,
+                reason: old.comment
+            });
+        }
+        return old;
+    }
+
+    /**
+     * Update did record
+     * @param document
+     * @param operation
+     * @param ref
+     */
+    private async updateDIDRecord(
+        document: IPolicyDocument,
+        operation: Operation,
+        ref: AnyBlockType
+    ): Promise<IPolicyDocument> {
+        let old = await this.getDIDRecord(document, operation, ref);
+        if (old) {
+            old = this.mapDocument(old, document);
+            return await ref.databaseServer.updateDid(old);
+        } else {
+            delete document.id;
+            delete document._id;
+            return await ref.databaseServer.saveDid(document)
+        }
+    }
+
+    /**
+     * Update VP record
+     * @param document
+     * @param operation
+     * @param ref
+     */
+    private async updateVPRecord(
+        document: IPolicyDocument,
+        operation: Operation,
+        ref: AnyBlockType
+    ): Promise<IPolicyDocument> {
+        let old = await this.getVPRecord(document, operation, ref);
+        if (old) {
+            old = this.mapDocument(old, document);
+            return await ref.databaseServer.updateVP(old);
+        } else {
+            delete document.id;
+            delete document._id;
+            return await ref.databaseServer.saveVP(document)
+        }
+    }
+
+    /**
+     * Update VC message
+     * @param document
+     * @param ref
+     */
+    private async updateVCMessage(document: IPolicyDocument, ref: AnyBlockType): Promise<IPolicyDocument> {
+        const old = await this.getVCRecord(document, Operation.auto, ref);
+        if (old) {
+            old.hederaStatus = document.hederaStatus;
+            old.messageId = document.messageId;
+            old.topicId = document.topicId;
+            old.messageHash = document.messageHash;
+            if (Array.isArray(old.messageIds)) {
+                old.messageIds.push(document.messageId);
+            } else {
+                old.messageIds = [document.messageId];
+            }
+            return await ref.databaseServer.updateVC(old);
+        } else {
+            if (Array.isArray(document.messageIds)) {
+                document.messageIds.push(document.messageId);
+            } else {
+                document.messageIds = [document.messageId];
+            }
+            return document;
+        }
+    }
+
+    /**
+     * Update did message
+     * @param document
+     * @param ref
+     *
+     * @virtual
+     */
+    private async updateDIDMessage(document: IPolicyDocument, ref: AnyBlockType): Promise<IPolicyDocument> {
+        const old = await this.getDIDRecord(document, Operation.auto, ref);
+        if (old) {
+            old.hederaStatus = document.hederaStatus;
+            old.messageId = document.messageId;
+            old.topicId = document.topicId;
+            old.messageHash = document.messageHash;
+            if (Array.isArray(old.messageIds)) {
+                old.messageIds.push(document.messageId);
+            } else {
+                old.messageIds = [document.messageId];
+            }
+            return await ref.databaseServer.updateDid(old);
+        } else {
+            if (Array.isArray(document.messageIds)) {
+                document.messageIds.push(document.messageId);
+            } else {
+                document.messageIds = [document.messageId];
+            }
+            return document;
+        }
+    }
+
+    /**
+     * Update VP message
+     * @param document
+     * @param ref
+     */
+    private async updateVPMessage(document: IPolicyDocument, ref: AnyBlockType): Promise<IPolicyDocument> {
+        const old = await this.getVPRecord(document, Operation.auto, ref);
+        if (old) {
+            old.hederaStatus = document.hederaStatus;
+            old.messageId = document.messageId;
+            old.topicId = document.topicId;
+            old.messageHash = document.messageHash;
+            if (Array.isArray(old.messageIds)) {
+                old.messageIds.push(document.messageId);
+            } else {
+                old.messageIds = [document.messageId];
+            }
+            return await ref.databaseServer.updateVP(old);
+        } else {
+            if (Array.isArray(document.messageIds)) {
+                document.messageIds.push(document.messageId);
+            } else {
+                document.messageIds = [document.messageId];
+            }
+            return document;
+        }
+    }
+
+    /**
+     * Update Message Hash
+     * @param document
+     * @param type
+     * @param ref
+     */
+    private async updateMessage(
+        document: IPolicyDocument,
+        type: DocumentType,
+        ref: AnyBlockType
+    ): Promise<IPolicyDocument> {
+        if (type === DocumentType.DID) {
+            return await this.updateDIDMessage(document, ref);
+        } else if (type === DocumentType.VerifiableCredential) {
+            return await this.updateVCMessage(document, ref);
+        } else if (type === DocumentType.VerifiablePresentation) {
+            return await this.updateVPMessage(document, ref);
+        }
+    }
+
+    /**
      * Send by type
+     * @param document
+     * @param ref
      * @deprecated 2022-08-04
      */
-    async sendByType(document: IPolicyDocument, currentUser: IPolicyUser, ref: AnyBlockType) {
-        let result: any;
+    private async sendByType(
+        document: IPolicyDocument,
+        ref: AnyBlockType
+    ): Promise<IPolicyDocument> {
         switch (ref.options.dataType) {
             case 'vc-documents': {
-                const vc = HVcDocument.fromJsonTree(document.document);
-
-                const doc = PolicyUtils.cloneVC(ref, document);
-                doc.type = ref.options.entityType || doc.type;
-                doc.hash = vc.toCredentialHash();
-                doc.document = vc.toJsonTree();
-
-                result = await ref.databaseServer.updateVCRecord(doc);
-                break;
+                return await this.updateVCRecord(document, Operation.auto, ref);
             }
             case 'did-documents': {
-                result = await ref.databaseServer.updateDIDRecord(document as any);
-                break;
+                return await this.updateDIDRecord(document, Operation.auto, ref);
             }
             case 'approve': {
-                result = await ref.databaseServer.updateApprovalRecord(document as any)
-                break;
-            }
-            case 'hedera': {
-                result = await this.sendToHedera(document, currentUser, ref);
-                break;
+                return await this.updateApprovalRecord(document, Operation.auto, ref);
             }
             default:
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
-
-        return result;
-    }
-
-    /**
-     * Send document
-     * @param document
-     * @param currentUser
-     * @param ref
-     */
-    async send(
-        document: IPolicyDocument,
-        currentUser: IPolicyUser,
-        ref: IPolicyBlock
-    ): Promise<IPolicyDocument> {
-        const { dataSource } = ref.options;
-
-        let result: IPolicyDocument;
-        switch (dataSource) {
-            case 'database': {
-                result = await this.sendToDatabase(document, currentUser, ref);
-                break;
-            }
-            case 'hedera': {
-                result = await this.sendToHedera(document, currentUser, ref);
-                break;
-            }
-            default:
-                throw new BlockActionError(`dataSource "${dataSource}" is unknown`, ref.blockType, ref.uuid)
-        }
-
-        return result;
     }
 
     /**
@@ -110,59 +382,39 @@ export class SendToGuardianBlock {
      * @param currentUser
      * @param ref
      */
-    async sendToDatabase(
+    private async sendToDatabase(
         document: IPolicyDocument,
-        currentUser: IPolicyUser,
-        ref: IPolicyBlock
+        type: DocumentType,
+        ref: AnyBlockType
     ): Promise<IPolicyDocument> {
-        let { documentType } = ref.options;
-        if (documentType === 'document') {
-            const doc = document?.document;
-            if (doc && doc.verificationMethod) {
-                documentType = 'did';
-            } else if (doc.type && doc.type.includes('VerifiablePresentation')) {
-                documentType = 'vp';
-            } else if (doc.type && doc.type.includes('VerifiableCredential')) {
-                documentType = 'vc';
-            }
-        }
-
-        switch (documentType) {
-            case 'vc': {
-                const vc = HVcDocument.fromJsonTree(document.document);
-
-                const doc = PolicyUtils.cloneVC(ref, document);
-                doc.type = ref.options.entityType || doc.type;
-                doc.hash = vc.toCredentialHash();
-                doc.document = vc.toJsonTree();
-
-                return await ref.databaseServer.updateVCRecord(doc);
-            }
-            case 'did': {
-                return await ref.databaseServer.updateDIDRecord(document as any);
-            }
-            case 'vp': {
-                return await ref.databaseServer.updateVPRecord(document as any);
-            }
-            default:
-                throw new BlockActionError(`documentType "${documentType}" is unknown`, ref.blockType, ref.uuid)
+        const operation: Operation = Operation.auto;
+        if (type === DocumentType.DID) {
+            return await this.updateDIDRecord(document, operation, ref);
+        } else if (type === DocumentType.VerifiableCredential) {
+            return await this.updateVCRecord(document, operation, ref);
+        } else if (type === DocumentType.VerifiablePresentation) {
+            return await this.updateVPRecord(document, operation, ref);
         }
     }
 
     /**
      * Send to hedera
      * @param document
-     * @param currentUser
+     * @param message
      * @param ref
      */
-    async sendToHedera(document: IPolicyDocument, currentUser: IPolicyUser, ref: IPolicyBlock) {
+    private async sendToHedera(
+        document: IPolicyDocument,
+        message: Message,
+        ref: AnyBlockType
+    ): Promise<IPolicyDocument> {
         try {
             const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
             const user = await PolicyUtils.getHederaAccount(ref, document.owner);
 
             let topicOwner = user;
             if (ref.options.topicOwner === 'user') {
-                topicOwner = await PolicyUtils.getHederaAccount(ref, currentUser.did);
+                topicOwner = await PolicyUtils.getHederaAccount(ref, user.did);
             } else if (ref.options.topicOwner === 'issuer') {
                 topicOwner = await PolicyUtils.getHederaAccount(ref, PolicyUtils.getDocumentIssuer(document.document));
             } else {
@@ -171,27 +423,14 @@ export class SendToGuardianBlock {
             if (!topicOwner) {
                 throw new Error(`Topic owner not found`);
             }
+            const topic = await PolicyUtils.getOrCreateTopic(ref, ref.options.topic, root, topicOwner, document);
 
-            const topic = await PolicyUtils.getOrCreateTopic(
-                ref,
-                ref.options.topic,
-                root,
-                topicOwner,
-                document
-            );
-            const vc = HVcDocument.fromJsonTree(document.document);
-            const vcMessage = new VCMessage(MessageAction.CreateVC);
-            vcMessage.setDocumentStatus(document.option?.status || DocumentStatus.NEW);
-            vcMessage.setDocument(vc);
-            vcMessage.setRelationships(document.relationships);
             const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, ref.dryRun);
+            const memo = MessageMemo.parseMemo(true, ref.options.memo, document);
             const vcMessageResult = await messageServer
                 .setTopicObject(topic)
-                .sendMessage(
-                    vcMessage,
-                    true,
-                    MessageMemo.parseMemo(true, ref.options.memo, document)
-                );
+                .sendMessage(message, true, memo);
+
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
             document.topicId = vcMessageResult.getTopicId();
@@ -206,31 +445,89 @@ export class SendToGuardianBlock {
      * @param document
      * @param user
      */
-    async documentSender(document: IPolicyDocument, user: IPolicyUser): Promise<any> {
+    private async documentSender(document: IPolicyDocument, user: IPolicyUser): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const type = PolicyUtils.getDocumentType(document);
 
+        //
+        // Create Message
+        //
+        let message: Message;
+        let docObject: DIDDocument | VcDocument | VpDocument;
+        if (type === DocumentType.DID) {
+            const did = DIDDocument.fromJsonTree(document.document);
+            const didMessage = new DIDMessage(MessageAction.CreateDID);
+            didMessage.setDocument(did);
+            didMessage.setRelationships(document.relationships);
+            message = didMessage;
+            docObject = did;
+        } else if (type === DocumentType.VerifiableCredential) {
+            const vc = VcDocument.fromJsonTree(document.document);
+            const vcMessage = new VCMessage(MessageAction.CreateVC);
+            vcMessage.setDocument(vc);
+            vcMessage.setDocumentStatus(document.option?.status || DocumentStatus.NEW);
+            vcMessage.setRelationships(document.relationships);
+            message = vcMessage;
+            docObject = vc;
+        } else if (type === DocumentType.VerifiablePresentation) {
+            const vp = VpDocument.fromJsonTree(document.document);
+            const vpMessage = new VPMessage(MessageAction.CreateVP);
+            vpMessage.setDocument(vp);
+            vpMessage.setRelationships(document.relationships);
+            message = vpMessage;
+            docObject = vp;
+        }
+
+        //
+        // Update options
+        //
+        document.document = docObject.toJsonTree();
         document.policyId = ref.policyId;
         document.tag = ref.tag;
-        document.type = ref.options.entityType || document.type;
-
-        if (ref.options.forceNew) {
-            document = { ...document };
-            document.id = undefined;
-        }
+        document.option = Object.assign({}, document.option);
         if (ref.options.options) {
-            document.option = document.option || {};
             for (const option of ref.options.options) {
                 document.option[option.name] = option.value;
             }
         }
-
-        ref.log(`Send Document: ${JSON.stringify(document)}`);
-
-        if (ref.options.dataType) {
-            document = await this.sendByType(document, user, ref);
-        } else {
-            document = await this.send(document, user, ref);
+        if (ref.options.entityType) {
+            document.type = ref.options.entityType;
         }
+
+        //
+        // Save documents
+        //
+        const hash = docObject.toCredentialHash();
+        const messageHash = message.toHash();
+        if (ref.options.dataType) {
+            if (ref.options.dataType === 'hedera') {
+                document = await this.sendToHedera(document, message, ref);
+                document.messageHash = messageHash;
+                document = await this.updateMessage(document, type, ref);
+            } else {
+                document.hash = hash;
+                document = await this.sendByType(document, ref);
+            }
+        } else if (ref.options.dataSource === 'auto' || !ref.options.dataSource) {
+            if (document.messageHash !== messageHash) {
+                document = await this.sendToHedera(document, message, ref);
+                document.messageHash = messageHash;
+            }
+            document.hash = hash;
+            document = await this.sendToDatabase(document, type, ref);
+        } else if (ref.options.dataSource === 'database') {
+            document.hash = hash;
+            document = await this.sendToDatabase(document, type, ref);
+        } else if (ref.options.dataSource === 'hedera') {
+            document = await this.sendToHedera(document, message, ref);
+            document.messageHash = messageHash;
+            document = await this.updateMessage(document, type, ref);
+        } else {
+            throw new BlockActionError(`dataSource "${ref.options.dataSource}" is unknown`, ref.blockType, ref.uuid);
+        }
+
+        console.log(' -- end', ref.uuid);
+        console.log(' ');
 
         return document;
     }
@@ -281,17 +578,15 @@ export class SendToGuardianBlock {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         try {
             if (ref.options.dataType) {
-                if (!['vc-documents', 'did-documents', 'approve', 'hedera'].find(item => item === ref.options.dataType)) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of vc-documents, did-documents, approve, hedera');
+                const t = ['vc-documents', 'did-documents', 'approve', 'hedera'];
+                if (t.indexOf(ref.options.dataType) === -1) {
+                    resultsContainer.addBlockError(ref.uuid, `Option "dataType" must be one of ${t.join('|')}`);
                 }
-            }
-
-            if (ref.options.dataSource === 'database') {
-                if (!['vc', 'did', 'vp', 'document'].find(item => item === ref.options.documentType)) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "documentType" must be one of vc, did, vp');
-                }
-            }
-            if (ref.options.dataSource === 'hedera') {
+            } else if (ref.options.dataSource === 'auto') {
+                return;
+            } else if (ref.options.dataSource === 'database') {
+                return;
+            } else if (ref.options.dataSource === 'hedera') {
                 if (ref.options.topic && ref.options.topic !== 'root') {
                     const policyTopics = ref.policyInstance.policyTopics || [];
                     const config = policyTopics.find(e => e.name === ref.options.topic);
@@ -299,9 +594,10 @@ export class SendToGuardianBlock {
                         resultsContainer.addBlockError(ref.uuid, `Topic "${ref.options.topic}" does not exist`);
                     }
                 }
-            }
-            if (!ref.options.dataSource && !ref.options.dataType) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "dataSource" must be one of database, hedera');
+            } else if (!ref.options.dataSource) {
+                return;
+            } else {
+                resultsContainer.addBlockError(ref.uuid, 'Option "dataSource" must be one of auto|database|hedera');
             }
         } catch (error) {
             resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);

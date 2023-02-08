@@ -16,16 +16,71 @@
 
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Data Source</td>
+        <td class="propRowCell cellName">
+            <!-- <span class="required-fields">*</span> -->
+            Data Source
+        </td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.dataSource" [disabled]="readonly">
+            <mat-select [(value)]="block.dataSource" [disabled]="readonly" (selectionChange)="onDataSource($event)">
+                <mat-option value="auto">Auto</mat-option>
                 <mat-option value="database">Database</mat-option>
                 <mat-option value="hedera">Hedera Topic</mat-option>
             </mat-select>
         </td>
     </tr>
 
+    <ng-container *ngIf="block.dataSource=='hedera'">
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Hedera Topic</td>
+            <td class="propRowCell">
+                <mat-select [(value)]="block.topic" [disabled]="readonly" (selectionChange)="selectTopic($event)">
+                    <mat-option class="link" value="new">
+                        <span class="mat-option-link">
+                            <mat-icon>add</mat-icon>
+                            <span>Create new topic</span>
+                        </span>
+                    </mat-option>
+                    <mat-option value="root">Policy Instance</mat-option>
+                    <mat-option *ngFor="let topic of policy.policyTopics" [value]="topic.name"
+                        [matTooltip]="topic.description" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                        {{topic.name}}
+                    </mat-option>
+                </mat-select>
+            </td>
+        </tr>
+    
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Topic Owner</td>
+            <td class="propRowCell">
+                <mat-select [(value)]="block.topicOwner" [disabled]="readonly">
+                    <mat-option value=""></mat-option>
+                    <mat-option value="user">Current User</mat-option>
+                    <mat-option value="owner">Document Owner</mat-option>
+                    <mat-option value="issuer">Document Issuer</mat-option>
+                </mat-select>
+            </td>
+        </tr>
+
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Memo</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="block.memo" [readonly]="readonly">
+            </td>
+        </tr>
+    </ng-container>
+    
     <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Entity Type</td>
+        <td class="propRowCell">
+            <input class="prop-input" [(ngModel)]="block.entityType" [readonly]="readonly">
+        </td>
+    </tr>
+
+    <!-- <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Document Type</td>
         <td class="propRowCell">
@@ -37,63 +92,15 @@
                 <mat-option value="document">Take From Input Document</mat-option>
             </mat-select>
         </td>
-    </tr>
+    </tr> -->
 
-    <tr *ngIf="block.dataSource=='hedera'" class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Hedera Topic</td>
-        <td class="propRowCell">
-            <mat-select [(value)]="block.topic" [disabled]="readonly" (selectionChange)="selectTopic($event)">
-                <mat-option class="link" value="new">
-                    <span class="mat-option-link">
-                        <mat-icon>add</mat-icon>
-                        <span>Create new topic</span>
-                    </span>
-                </mat-option>
-                <mat-option value="root">Policy Instance</mat-option>
-                <mat-option *ngFor="let topic of policy.policyTopics" [value]="topic.name"
-                    [matTooltip]="topic.description" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
-                    {{topic.name}}
-                </mat-option>
-            </mat-select>
-        </td>
-    </tr>
-
-    <tr *ngIf="block.dataSource=='hedera'" class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Topic Owner</td>
-        <td class="propRowCell">
-            <mat-select [(value)]="block.topicOwner" [disabled]="readonly">
-                <mat-option value=""></mat-option>
-                <mat-option value="user">Current User</mat-option>
-                <mat-option value="owner">Document Owner</mat-option>
-                <mat-option value="issuer">Document Issuer</mat-option>
-            </mat-select>
-        </td>
-    </tr>
-
-    <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Entity Type</td>
-        <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.entityType" [readonly]="readonly">
-        </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
+    <!-- <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Force New Document</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="block.forceNew" [readonly]="readonly">
         </td>
-    </tr>
-
-    <tr *ngIf="block.dataSource=='hedera'" class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Memo</td>
-        <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.memo" [readonly]="readonly">
-        </td>
-    </tr>
+    </tr> -->
 
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'optionGroup')" [attr.collapse]="propHidden.optionGroup">
@@ -109,6 +116,7 @@
             </div>
         </td>
     </tr>
+
     <ng-container *ngFor="let option of block.options; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.optionGroup">
             <td class="propRowCol" (click)="onHide(propHidden.options, i)" [attr.collapse]="propHidden.options[i]">

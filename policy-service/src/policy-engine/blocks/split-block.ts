@@ -111,7 +111,6 @@ export class SplitBlock {
         threshold: number,
     ): Promise<IPolicyDocument> {
         let clone = PolicyUtils.cloneVC(ref, document);
-        clone.document = JSON.parse(JSON.stringify(clone.document));
         PolicyUtils.setObjectValue(clone, ref.options.sourceField, newValue);
         let vc = VcDocument.fromJsonTree(clone.document);
         if (document.messageId) {

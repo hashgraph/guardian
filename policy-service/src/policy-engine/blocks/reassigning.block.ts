@@ -95,7 +95,7 @@ export class ReassigningBlock {
         let item = PolicyUtils.createVC(ref, owner, vc);
         item.type = document.type;
         item.schema = document.schema;
-        item.option = document.option;
+        item.option = Object.assign({}, document.option);
         item = PolicyUtils.setDocumentRef(item, document);
 
         return { item, actor };
