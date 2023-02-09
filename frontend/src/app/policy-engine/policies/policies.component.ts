@@ -74,7 +74,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         color: '#4caf50'
     }];
 
-    failedMenuOption = [
+    publishErrorMenuOption = [
         // {
         //     id: 'Draft',
         //     title: 'Stop',
@@ -407,7 +407,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             this.draft(element);
         }
     }
-    onFailedAction(event: any, element: any) {
+    onPublishErrorAction(event: any, element: any) {
         if (event.id === 'Publish') {
             this.setVersion(element);
         }

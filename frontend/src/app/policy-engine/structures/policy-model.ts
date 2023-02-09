@@ -973,7 +973,7 @@ export class PolicyModel {
     public readonly isPublished: boolean = false;
     public readonly isDryRun: boolean = false;
     public readonly readonly: boolean = false;
-    public readonly isFailed: boolean = false;
+    public readonly isPublishError: boolean = false;
 
     constructor(policy?: any) {
         this._changed = false;
@@ -1003,9 +1003,9 @@ export class PolicyModel {
 
         this.isDraft = this.status === PolicyType.DRAFT;
         this.isPublished = this.status === PolicyType.PUBLISH;
-        this.isFailed = this.status === PolicyType.FAILED;
+        this.isPublishError = this.status === PolicyType.PUBLISH_ERROR;
         this.isDryRun = this.status === PolicyType.DRY_RUN;
-        this.readonly = this.isPublished || this.isDryRun || this.isFailed;
+        this.readonly = this.isPublished || this.isDryRun || this.isPublishError;
     }
 
     public get policyTag(): string {

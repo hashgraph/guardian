@@ -465,7 +465,7 @@ export class PolicyEngine extends ServiceRequestsBase{
         try {
             model = await this.publishSchemas(model, owner, root, notifier);
         } catch (error) {
-            model.status = PolicyType.FAILED;
+            model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
             await DatabaseServer.updatePolicy(model);
             throw error;
@@ -494,8 +494,7 @@ export class PolicyEngine extends ServiceRequestsBase{
             }
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
 
-            let rootTopic;
-            if (model.status === PolicyType.FAILED && !model.instanceTopicId) {
+            const createInstanceTopic = async () => {
                 notifier.completedAndStart('Create instance topic');
                 rootTopic = await topicHelper.create({
                     type: TopicType.InstancePolicyTopic,
@@ -508,12 +507,22 @@ export class PolicyEngine extends ServiceRequestsBase{
                 await rootTopic.saveKeys();
                 await DatabaseServer.saveTopic(rootTopic.toObject());
                 model.instanceTopicId = rootTopic.topicId;
-            } else {
-                const topicEntity = await DatabaseServer.getTopicById(model.instanceTopicId);
-                rootTopic = await TopicConfig.fromObject(topicEntity);
             }
 
-            if (model.status === PolicyType.FAILED && !model.synchronizationTopicId) {
+            let rootTopic;
+            if (model.status === PolicyType.PUBLISH_ERROR) {
+                if (model.instanceTopicId) {
+                    const topicEntity = await DatabaseServer.getTopicById(model.instanceTopicId);
+                    rootTopic = await TopicConfig.fromObject(topicEntity);
+                }
+                if (!rootTopic) {
+                    await createInstanceTopic();
+                }
+            } else {
+                await createInstanceTopic();
+            }
+
+            const createSynchronizationTopic = async () => {
                 notifier.completedAndStart('Create synchronization topic');
                 const synchronizationTopic = await topicHelper.create({
                     type: TopicType.SynchronizationTopic,
@@ -526,6 +535,13 @@ export class PolicyEngine extends ServiceRequestsBase{
                 await synchronizationTopic.saveKeys();
                 await DatabaseServer.saveTopic(synchronizationTopic.toObject());
                 model.synchronizationTopicId = synchronizationTopic.topicId;
+            }
+            if (model.status === PolicyType.PUBLISH_ERROR) {
+                if (!!model.synchronizationTopicId) {
+                    await createSynchronizationTopic();
+                }
+            } else {
+                await createSynchronizationTopic();
             }
 
             notifier.completedAndStart('Publish policy');
@@ -572,7 +588,7 @@ export class PolicyEngine extends ServiceRequestsBase{
             logger.info('Published Policy', ['GUARDIAN_SERVICE']);
 
         } catch (error) {
-            model.status = PolicyType.FAILED;
+            model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
             await DatabaseServer.updatePolicy(model);
             throw error

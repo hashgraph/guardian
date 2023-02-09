@@ -4,8 +4,6 @@
 export enum PolicyType {
     DRY_RUN = 'DRY-RUN',
     DRAFT = 'DRAFT',
-
-    FAILED = 'FAILED',
-
+    PUBLISH_ERROR = 'PUBLISH_ERROR',
     PUBLISH = 'PUBLISH',
 }
