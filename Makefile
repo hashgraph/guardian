@@ -50,8 +50,8 @@ guardian_make_env:
 	cd worker-service && cp .env.example .env && cp .env.docker.example .env.docker
 	cd policy-service && cp .env.example .env && cp .env.docker.example .env.docker
 
-guardian_up_pm2: guardian_make_env vault_up
-	docker-compose -f docker-compose-dev.yml up -d mongo message-broker
+guardian_up_pm2:
+	docker-compose -f docker-compose-dev.yml up -d mongo message-broker ipfs-node
 	pm2 start ecosystem.config.js
 
 guardian_down_pm2:
