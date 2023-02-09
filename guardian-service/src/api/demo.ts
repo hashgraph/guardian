@@ -38,7 +38,7 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
     notifier.start('Resolve settings');
 
     const secretManager = SecretManager.New();
-    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('secret/data/keys/operator');
+    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
 
     let initialBalance: number = null;
     try {

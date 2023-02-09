@@ -92,7 +92,7 @@ Promise.all([
         const { OPERATOR_ID, OPERATOR_KEY } = settingsContainer.settings;
      */
     const secretManager = SecretManager.New();
-    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('secret/data/keys/operator');
+    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
     
     // Check configuration
     try {

@@ -148,7 +148,7 @@ export class TransactionLogger {
             if (TransactionLogger.logLvl === TransactionLogLvl.DEBUG) {
                 try {
                     const secretManager = SecretManager.New();
-                    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('secret/data/keys/operator');
+                    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
 
                     const workers = new Workers();
                     const balance = await workers.addNonRetryableTask({
