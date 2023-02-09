@@ -43,23 +43,19 @@ guardian_build:
 	cd frontend && yarn install && yarn build:prod
 
 guardian_make_env:
-	cd logger-service && cp .env.example .env && cp .env.example .env.docker
-	cd api-gateway && cp .env.example .env && cp .env.example .env.docker
-	cd auth-service && cp .env.example .env && cp .env.example .env.docker
-	cd guardian-service && cp .env.example .env && cp .env.example .env.docker
-	cd worker-service && cp .env.example .env && cp .env.example .env.docker
-	cd policy-service && cp .env.example .env && cp .env.example .env.docker
+	cd logger-service && cp .env.example .env && cp .env.docker.example .env.docker
+	cd api-gateway && cp .env.example .env && cp .env.docker.example .env.docker
+	cd auth-service && cp .env.example .env && cp .env.docker.example .env.docker
+	cd guardian-service && cp .env.example .env && cp .env.docker.example .env.docker
+	cd worker-service && cp .env.example .env && cp .env.docker.example .env.docker
+	cd policy-service && cp .env.example .env && cp .env.docker.example .env.docker
 
-guardian_up_pm2: guardian_build guardian_make_env vault_up
+guardian_up_pm2: guardian_make_env vault_up
 	docker-compose -f docker-compose-dev.yml up -d mongo message-broker
+	pm2 start ecosystem.config.js
 
-	cd api-gateway && pm2 start "npm start" -n gateway
-	cd logger-service && pm2 start "npm start" -n logger
-	cd auth-service && pm2 start "npm start" -n auth
-	cd worker-service && pm2 start "npm start" -n worker
-	cd guardian-service && pm2 start "npm start" -n guardian
-	cd policy-service && pm2 start "npm start" -n policy
-	cd topic-viewer && pm2 start "npm start" -n topic
-	cd mrv-sender && pm2 start "npm start" -n mrv
-	cd frontend && pm2 start "npm start" -n frontend
+guardian_down_pm2:
+	docker-compose stop mongo
+	docker-compose rm -s -v mongo
+	pm2 delete all
 	
