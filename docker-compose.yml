@@ -113,6 +113,7 @@ services:
       - ./worker-service/.env.docker
     environment:
       - SERVICE_CHANNEL="worker.1"
+      - SECRET_MANAGER={{SECRET_MANAGER}}
     volumes:
       - ./worker-service/tls:/usr/local/worker-service/tls:ro
 
@@ -127,6 +128,7 @@ services:
       - ./worker-service/.env.docker
     environment:
       - SERVICE_CHANNEL="worker.2"
+      - SECRET_MANAGER={{SECRET_MANAGER}}
     volumes:
       - ./worker-service/tls:/usr/local/worker-service/tls:ro
 
@@ -134,6 +136,8 @@ services:
     build:
       context: .
       dockerfile: ./auth-service/Dockerfile
+    environment:
+      - SECRET_MANAGER={{SECRET_MANAGER}}
     env_file:
       - ./auth-service/.env.docker
     volumes:
@@ -163,6 +167,8 @@ services:
     build:
       context: .
       dockerfile: ./policy-service/Dockerfile
+    environment:
+      - SECRET_MANAGER={{SECRET_MANAGER}}
     env_file:
       - ./policy-service/.env.docker
     volumes:
@@ -177,6 +183,8 @@ services:
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
+    environment:
+      - SECRET_MANAGER={{SECRET_MANAGER}}
     env_file:
       - ./guardian-service/.env.docker
     volumes:
