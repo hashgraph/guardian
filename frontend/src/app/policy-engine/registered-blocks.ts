@@ -112,6 +112,8 @@ export class RegisteredBlocks {
     private allowedChildren: any;
     private dynamicAbout: any;
     private customProperties: any;
+    private types: string[];
+    private list: any[];
 
     private readonly defaultA = new BlockAbout({
         post: false,
@@ -135,6 +137,8 @@ export class RegisteredBlocks {
         this.allowedChildren = {};
         this.dynamicAbout = {};
         this.customProperties = {};
+        this.types = [];
+        this.list = [];
 
         const allowedChildrenStepContainerBlocks = [
             { type: BlockType.Information },
@@ -610,6 +614,7 @@ export class RegisteredBlocks {
         this.factories[type] = setting.factory;
         this.properties[type] = setting.property;
         this.dynamicAbout[type] = setting.about;
+        this.types.push(type);
     }
 
     public registerConfig(config: any) {
@@ -630,6 +635,16 @@ export class RegisteredBlocks {
             }, this.dynamicAbout[type]);
             this.customProperties[type] = setting?.properties;
         }
+        for (const type of types) {
+            this.list.push({
+                type: type,
+                icon: this.icons[type],
+                group: this.group[type],
+                header: this.header[type],
+                name: this.names[type],
+                title: this.titles[type]
+            });
+        }
     }
 
     private clear() {
@@ -637,6 +652,7 @@ export class RegisteredBlocks {
         this.titles = {};
         this.about = {};
         this.customProperties = {};
+        this.list = [];
     }
 
     public getHeader(blockType: string): string {
@@ -678,6 +694,10 @@ export class RegisteredBlocks {
     public getAbout(blockType: string, block: any): IBlockAbout {
         const f: BlockAbout = this.about[blockType] || this.defaultA;
         return f.get(block);
+    }
+
+    public getAll(): any[] {
+        return this.list;
     }
 
     public bindAbout(blockType: string, block: any, prev?: IBlockAbout, next?: boolean): IBlockAbout {
