@@ -12,6 +12,12 @@ export class Options {
     private _json: any;
     private _favorites: any;
 
+    private _favoritesGroup: boolean;
+    private _uiGroup: boolean;
+    private _serverGroup: boolean;
+    private _addonsGroup: boolean;
+    private _unGroup: boolean;
+
     constructor() {
         this._components = true;
         this._library = false;
@@ -26,6 +32,12 @@ export class Options {
         this._artifacts = false;
         this._events = false;
         this._json = false;
+
+        this._favoritesGroup = false;
+        this._uiGroup = false;
+        this._serverGroup = false;
+        this._addonsGroup = false;
+        this._unGroup = false;
 
         this._favorites = {};
     }
@@ -43,6 +55,11 @@ export class Options {
             this.artifacts = localStorage.getItem('POLICY_CONFIG_ARTIFACTS') === 'true';
             this.events = localStorage.getItem('POLICY_CONFIG_EVENTS') === 'true';
             this.json = localStorage.getItem('POLICY_CONFIG_JSON') === 'true';
+            this.favoritesGroup = localStorage.getItem('POLICY_CONFIG_FAVORITES_GROUP') === 'true';
+            this.uiGroup = localStorage.getItem('POLICY_CONFIG_UI_GROUP') === 'true';
+            this.serverGroup = localStorage.getItem('POLICY_CONFIG_SERVER_GROUP') === 'true';
+            this.addonsGroup = localStorage.getItem('POLICY_CONFIG_ADDONS_GROUP') === 'true';
+            this.unGroup = localStorage.getItem('POLICY_CONFIG_UN_GROUP') === 'true';
             const json = localStorage.getItem('POLICY_CONFIG_FAVORITES');
             if (typeof json === 'string' && json.startsWith('{')) {
                 const favorites = JSON.parse(json);
@@ -69,6 +86,11 @@ export class Options {
             localStorage.setItem('POLICY_CONFIG_EVENTS', String(this.events));
             localStorage.setItem('POLICY_CONFIG_JSON', String(this.json));
             localStorage.setItem('POLICY_CONFIG_FAVORITES', JSON.stringify(this._favorites));
+            localStorage.setItem('POLICY_CONFIG_FAVORITES_GROUP', JSON.stringify(this.favoritesGroup));
+            localStorage.setItem('POLICY_CONFIG_UI_GROUP', JSON.stringify(this.uiGroup));
+            localStorage.setItem('POLICY_CONFIG_SERVER_GROUP', JSON.stringify(this.serverGroup));
+            localStorage.setItem('POLICY_CONFIG_ADDONS_GROUP', JSON.stringify(this.addonsGroup));
+            localStorage.setItem('POLICY_CONFIG_UN_GROUP', JSON.stringify(this.unGroup));
         } catch (error) {
             console.error(error);
         }
@@ -116,6 +138,22 @@ export class Options {
 
     public get json() {
         return this._json;
+    }
+
+    public get favoritesGroup() {
+        return this._favoritesGroup;
+    }
+    public get uiGroup() {
+        return this._uiGroup;
+    }
+    public get serverGroup() {
+        return this._serverGroup;
+    }
+    public get addonsGroup() {
+        return this._addonsGroup;
+    }
+    public get unGroup() {
+        return this._unGroup;
     }
 
     public set components(value: boolean) {
@@ -215,6 +253,22 @@ export class Options {
         }
     }
 
+    public set favoritesGroup(value: boolean) {
+        this._favoritesGroup = value;
+    }
+    public set uiGroup(value: boolean) {
+        this._uiGroup = value;
+    }
+    public set serverGroup(value: boolean) {
+        this._serverGroup = value;
+    }
+    public set addonsGroup(value: boolean) {
+        this._addonsGroup = value;
+    }
+    public set unGroup(value: boolean) {
+        this._unGroup = value;
+    }
+
     public getFavorites(name: string): boolean {
         return !!this._favorites[name];
     }
@@ -246,6 +300,22 @@ export class Options {
             this.events = true;
         } else if (name === 'json') {
             this.json = true;
+        } else {
+            return;
+        }
+    }
+
+    public collapse(name: string) {
+        if (name === 'favoritesGroup') {
+            this.favoritesGroup = !this.favoritesGroup;
+        } else if (name === 'uiGroup') {
+            this.uiGroup = !this.uiGroup;
+        } else if (name === 'serverGroup') {
+            this.serverGroup = !this.serverGroup;
+        } else if (name === 'addonsGroup') {
+            this.addonsGroup = !this.addonsGroup;
+        } else if (name === 'unGroup') {
+            this.unGroup = !this.unGroup;
         } else {
             return;
         }

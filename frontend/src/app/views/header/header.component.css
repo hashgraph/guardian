@@ -68,7 +68,7 @@
     opacity: 1;
     transition: color .3s linear;
     padding: 0 10px;
-    min-width: 140px;
+    min-width: 120px;
 }
 
 ::ng-deep .mat-toolbar-row,

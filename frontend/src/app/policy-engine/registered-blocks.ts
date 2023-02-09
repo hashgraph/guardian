@@ -636,15 +636,19 @@ export class RegisteredBlocks {
             this.customProperties[type] = setting?.properties;
         }
         for (const type of types) {
+            const name = this.names[type] || type;
+            const search = (name + type).toLowerCase();
             this.list.push({
                 type: type,
+                search,
                 icon: this.icons[type],
                 group: this.group[type],
                 header: this.header[type],
-                name: this.names[type],
+                name,
                 title: this.titles[type]
             });
         }
+        this.list = this.list.sort((a, b) => a.name > b.name ? 1 : -1);
     }
 
     private clear() {

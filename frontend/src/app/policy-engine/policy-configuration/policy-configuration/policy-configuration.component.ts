@@ -8,6 +8,7 @@ import { TokenService } from 'src/app/services/token.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { Schema, SchemaHelper, Token } from '@guardian/interfaces';
 import { RegisteredBlocks } from '../../registered-blocks';
+import { PolicyStorage } from '../../structures/policy-storage';
 
 /**
  * The page for editing the policy and blocks.
@@ -31,6 +32,10 @@ export class PolicyConfigurationComponent implements OnInit {
     public errorsCount: number = -1;
     public errorsMap: any;
     public currentView: string = 'blocks';
+    public search: string = '';
+    public policyStorage: PolicyStorage;
+    public copyBlocksMode: boolean = false;
+    public eventVisible: string = 'All';
 
     readonly codeMirrorOptions = {
         theme: 'default',
@@ -57,6 +62,7 @@ export class PolicyConfigurationComponent implements OnInit {
         addons: [],
         unGrouped: [],
     };
+    private _searchTimeout!: any;
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
@@ -68,9 +74,10 @@ export class PolicyConfigurationComponent implements OnInit {
     ) {
         this.options = new Options();
         this.policyModel = new PolicyModel();
+        this.policyStorage = new PolicyStorage(localStorage);
     }
 
-    ngOnInit() {
+    public ngOnInit() {
         this.loading = true;
         this.options.load();
         this.route.queryParams.subscribe(queryParams => {
@@ -78,12 +85,17 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    select(name: string) {
+    public select(name: string) {
         this.options.select(name);
         this.options.save();
     }
 
-    loadPolicy(): void {
+    public collapse(name: string) {
+        this.options.collapse(name);
+        this.options.save();
+    }
+
+    private loadPolicy(): void {
         this.errors = [];
         this.errorsCount = -1;
         this.errorsMap = {};
@@ -135,7 +147,7 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    finishedLoad() {
+    private finishedLoad() {
         this.readonly = this.policyModel.readonly;
         this.codeMirrorOptions.readOnly = this.readonly;
 
@@ -161,14 +173,18 @@ export class PolicyConfigurationComponent implements OnInit {
         setTimeout(() => { this.loading = false; }, 500);
     }
 
-    updateComponents() {
+    private updateComponents() {
         const all = this.registeredBlocks.getAll();
         this.componentsList.favorites = [];
         this.componentsList.uiComponents = [];
         this.componentsList.serverBlocks = [];
         this.componentsList.addons = [];
         this.componentsList.unGrouped = [];
+        const search = this.search ? this.search.toLowerCase() : null;
         for (const block of all) {
+            if (this.search && block.search.indexOf(search) === -1) {
+                continue;
+            }
             if (block.header === 'UI Components') {
                 this.componentsList.uiComponents.push(block);
             } else if (block.header === 'Server Blocks') {
@@ -186,9 +202,65 @@ export class PolicyConfigurationComponent implements OnInit {
         console.log(this.componentsList);
     }
 
-    setFavorite(item: any) {
+    public setFavorite(item: any) {
         this.options.setFavorites(item.type, !item.favorite);
         this.options.save();
         this.updateComponents();
+    }
+
+    public onSearch(event: any) {
+        clearTimeout(this._searchTimeout);
+        this._searchTimeout = setTimeout(() => {
+            this.updateComponents()
+        }, 200);
+    }
+
+    public savePolicy() {
+        throw '';
+    }
+
+    public saveAsPolicy() {
+        throw '';
+    }
+
+    public tryPublishPolicy() {
+        throw '';
+    }
+
+    public draftPolicy() {
+        throw '';
+    }
+
+    public tryRunPolicy() {
+        throw '';
+    }
+
+    public validationPolicy() {
+        throw '';
+    }
+
+    public undoPolicy() {
+        const item = this.policyStorage.undo();
+        // this.loadState(item);
+        throw '';
+    }
+
+    public redoPolicy() {
+        const item = this.policyStorage.redo();
+        // this.loadState(item);
+        throw '';
+    }
+
+    public onView(type: string) {
+        this.loading = true;
+        setTimeout(() => {
+            // this.chanceView(type);
+            this.loading = false;
+            throw '';
+        }, 0);
+    }
+
+    public onShowEvent(type: string) {
+        this.eventVisible = type;
     }
 }

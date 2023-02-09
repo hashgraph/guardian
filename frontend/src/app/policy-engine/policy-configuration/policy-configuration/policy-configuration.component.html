@@ -13,7 +13,128 @@
     <div *ngIf="policyModel.valid" class="policy-configuration" [attr.readonly]="readonly">
         <div class="top-toolbar">
 
+
+            <div class="top-toolbar-btn readonly-status" (click)="savePolicy()" title="Save Policy">
+                <mat-icon>save</mat-icon>
+                <span>Save</span>
+            </div>
+
+            <div class="top-toolbar-btn all-status" (click)="saveAsPolicy()" title="Save Policy">
+                <mat-icon>save</mat-icon>
+                <span>Save As</span>
+            </div>
+
+            <div class="delimiter"></div>
+
+            <div *ngIf="policyModel.isDraft" class="top-toolbar-group all-status" [matMenuTriggerFor]="publishMenu">
+                <mat-icon class="edit-color">edit</mat-icon>
+                <span class="edit-color">Draft</span>
+                <div class="expand-group">
+                    <mat-icon>arrow_drop_down</mat-icon>
+                </div>
+            </div>
+
+            <div *ngIf="policyModel.isDryRun" class="top-toolbar-group all-status" style="width: 60px"
+                [matMenuTriggerFor]="dryRunMenu">
+                <mat-icon class="dry-run-color">build</mat-icon>
+                <span class="dry-run-color">
+                    In Dry Run
+                </span>
+                <div class="expand-group">
+                    <mat-icon>arrow_drop_down</mat-icon>
+                </div>
+            </div>
+
+            <div *ngIf="policyModel.isPublished" class="top-toolbar-btn top-toolbar-label">
+                <mat-icon class="publish-color">public</mat-icon>
+                <span class="publish-color">Published</span>
+            </div>
+
+            <div class="delimiter"></div>
+
+            <div *ngIf="policyModel.isDraft" class="top-toolbar-btn all-status" (click)="validationPolicy()"
+                title="Validation Policy" [attr.errors-count]="errorsCount" [attr.readonly]="currentView != 'blocks'">
+                <mat-icon>task_alt</mat-icon>
+                <span>Validation</span>
+                <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
+            </div>
+
+            <div *ngIf="policyModel.isDryRun || policyModel.isPublished" class="top-toolbar-btn all-status"
+                [routerLink]="['/policy-viewer', policyId]">
+                <mat-icon>double_arrow</mat-icon>
+                <span>Go</span>
+            </div>
+
+            <div class="delimiter"></div>
+
+            <ng-container *ngIf="!readonly && currentView === 'blocks'">
+                <div [attr.storage-active]="policyStorage.isUndo" class="top-toolbar-btn readonly-status"
+                    (click)="undoPolicy()" title="Undo">
+                    <mat-icon>undo</mat-icon>
+                    <span>Undo</span>
+                </div>
+
+                <div [attr.storage-active]="policyStorage.isRedo" class="top-toolbar-btn readonly-status"
+                    (click)="redoPolicy()" title="Redo">
+                    <mat-icon>redo</mat-icon>
+                    <span>Redo</span>
+                </div>
+
+                <div class="top-toolbar-btn all-status copy-blocks-mode" (click)="copyBlocksMode=!copyBlocksMode"
+                    title="Save Policy" [ngClass]="{'copy-blocks-mode-active': copyBlocksMode}">
+                    <mat-icon>content_copy</mat-icon>
+                    <span>Copy Mode</span>
+                </div>
+
+                <div class="delimiter"></div>
+            </ng-container>
+
+            <div class="top-toolbar-btn all-status" (click)="onView('blocks')" title="Blocks"
+                [attr.active]="currentView == 'blocks'">
+                <mat-icon>view_agenda</mat-icon>
+                <span>Tree</span>
+            </div>
+
+            <div class="top-toolbar-btn all-status" (click)="onView('json')" title="JSON"
+                [attr.active]="currentView == 'json'">
+                <mat-icon>code</mat-icon>
+                <span>JSON</span>
+            </div>
+
+            <div class="top-toolbar-btn all-status" (click)="onView('yaml')" title="YAML"
+                [attr.active]="currentView == 'yaml'">
+                <mat-icon>segment</mat-icon>
+                <span>YAML</span>
+            </div>
+
+            <div class="delimiter"></div>
+
+            <div *ngIf="currentView === 'blocks'" class="top-toolbar-group all-status event-color"
+                [matMenuTriggerFor]="eventMenu" style="width: 60px">
+
+
+                <mat-icon *ngIf="eventVisible =='All'" class="event-color">flash_on</mat-icon>
+                <mat-icon *ngIf="eventVisible =='Action'" class="event-color">
+                    <div class="action-event-icon"></div>
+                </mat-icon>
+                <mat-icon *ngIf="eventVisible =='Refresh'" class="event-color">
+                    <div class="refresh-event-icon"></div>
+                </mat-icon>
+                <mat-icon *ngIf="eventVisible =='None'" class="event-color">flash_off</mat-icon>
+
+                <span *ngIf="eventVisible =='All'" class="event-color">All Events</span>
+                <span *ngIf="eventVisible =='Action'" class="event-color">Action Events</span>
+                <span *ngIf="eventVisible =='Refresh'" class="event-color">Refresh Events</span>
+                <span *ngIf="eventVisible =='None'" class="event-color">Hide Events</span>
+
+                <div class="expand-group">
+                    <mat-icon>arrow_drop_down</mat-icon>
+                </div>
+            </div>
+
+            <div class="delimiter"></div>
         </div>
+
         <div class="main-container">
             <div class="left-toolbar">
 
@@ -28,17 +149,19 @@
                         </div>
                     </div>
                     <div class="pc-tabs-content">
-                        <div [hidden]="!options.components">
+                        <div class="components-container readonly-status" [hidden]="!options.components">
 
-                            <div *ngIf="componentsList.favorites.length" class="components-group">
-                                <div class="components-group-name">
+                            <div class="components-search">
+                                <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
+                                <mat-icon class="components-search-icon">search</mat-icon> 
+                            </div>
+
+                            <div *ngIf="componentsList.favorites.length" class="components-group"
+                                [attr.collapsed]="options.favoritesGroup">
+                                <div class="components-group-name" (click)="collapse('favoritesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
-                                    <mat-icon style="
-                                        color: #f3ac0e;
-                                        position: absolute;
-                                        left: 22px;
-                                        top: 7px;
-                                        font-size: 22px">star</mat-icon>
+                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                    <mat-icon class="components-group-name-icon">star</mat-icon>
                                     <span style="padding-left: 22px">Favorites</span>
                                 </div>
                                 <div class="components-group-body">
@@ -46,15 +169,15 @@
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                            (click)="setFavorite(item)">
-                                            star
-                                        </mat-icon>
+                                            (click)="setFavorite(item)">star</mat-icon>
                                     </div>
                                 </div>
                             </div>
-                            <div *ngIf="componentsList.uiComponents.length" class="components-group">
-                                <div class="components-group-name">
+                            <div *ngIf="componentsList.uiComponents.length" class="components-group"
+                                [attr.collapsed]="options.uiGroup">
+                                <div class="components-group-name" (click)="collapse('uiGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>UI Components</span>
                                 </div>
                                 <div class="components-group-body">
@@ -62,15 +185,15 @@
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                            (click)="setFavorite(item)">
-                                            star
-                                        </mat-icon>
+                                            (click)="setFavorite(item)">star</mat-icon>
                                     </div>
                                 </div>
                             </div>
-                            <div *ngIf="componentsList.serverBlocks.length" class="components-group">
-                                <div class="components-group-name">
+                            <div *ngIf="componentsList.serverBlocks.length" class="components-group"
+                                [attr.collapsed]="options.serverGroup">
+                                <div class="components-group-name" (click)="collapse('serverGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>Server Components</span>
                                 </div>
                                 <div class="components-group-body">
@@ -78,15 +201,15 @@
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                            (click)="setFavorite(item)">
-                                            star
-                                        </mat-icon>
+                                            (click)="setFavorite(item)">star</mat-icon>
                                     </div>
                                 </div>
                             </div>
-                            <div *ngIf="componentsList.addons.length" class="components-group">
-                                <div class="components-group-name">
+                            <div *ngIf="componentsList.addons.length" class="components-group"
+                                [attr.collapsed]="options.addonsGroup">
+                                <div class="components-group-name" (click)="collapse('addonsGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>Addons</span>
                                 </div>
                                 <div class="components-group-body">
@@ -94,15 +217,15 @@
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                            (click)="setFavorite(item)">
-                                            star
-                                        </mat-icon>
+                                            (click)="setFavorite(item)">star</mat-icon>
                                     </div>
                                 </div>
                             </div>
-                            <div *ngIf="componentsList.unGrouped.length" class="components-group">
-                                <div class="components-group-name">
+                            <div *ngIf="componentsList.unGrouped.length" class="components-group"
+                                [attr.collapsed]="options.unGroup">
+                                <div class="components-group-name" (click)="collapse('unGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>unGrouped</span>
                                 </div>
                                 <div class="components-group-body">
@@ -110,15 +233,13 @@
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                            (click)="setFavorite(item)">
-                                            star
-                                        </mat-icon>
+                                            (click)="setFavorite(item)">star</mat-icon>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
-                        <div [hidden]="!options.library">
+
+                        <div class="components-container" [hidden]="!options.library">
 
                         </div>
                     </div>
@@ -217,3 +338,53 @@
         </div>
     </div>
 </div>
+
+<mat-menu #publishMenu="matMenu">
+    <div class="toolbar-menu all-status publish-color" (click)="tryPublishPolicy()"
+        title="Release version into public domain.">
+        <mat-icon class="publish-color">public</mat-icon>
+        <span class="publish-color">Publish</span>
+    </div>
+
+    <div class="toolbar-menu all-status dry-run-color" (click)="tryRunPolicy()"
+        title="Run without making any persistent changes or executing transaction.">
+        <mat-icon class="dry-run-color">build</mat-icon>
+        <span class="dry-run-color">Dry Run</span>
+    </div>
+</mat-menu>
+
+<mat-menu #dryRunMenu="matMenu">
+    <div class="toolbar-menu all-status publish-color" (click)="tryPublishPolicy()"
+        title="Release version into public domain.">
+        <mat-icon class="publish-color">public</mat-icon>
+        <span class="publish-color">Publish</span>
+    </div>
+
+    <div class="toolbar-menu all-status edit-color" (click)="draftPolicy()" title="Return to editing.">
+        <mat-icon class="edit-color">edit</mat-icon>
+        <span class="edit-color">Stop</span>
+    </div>
+</mat-menu>
+
+<mat-menu #eventMenu="matMenu">
+    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('All')" title="Show All Events.">
+        <mat-icon class="event-color">flash_on</mat-icon>
+        <span class="action-color">Show All Events</span>
+    </div>
+    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('Action')" title="Show Action Events.">
+        <mat-icon class="event-color">
+            <div class="action-event-icon"></div>
+        </mat-icon>
+        <span class="action-color">Show Action Events</span>
+    </div>
+    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('Refresh')" title="Show Refresh Events.">
+        <mat-icon class="event-color">
+            <div class="refresh-event-icon"></div>
+        </mat-icon>
+        <span class="action-color">Show Refresh Events</span>
+    </div>
+    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('None')" title="Hide All Events.">
+        <mat-icon class="event-color">flash_off</mat-icon>
+        <span class="action-color">Hide All Events</span>
+    </div>
+</mat-menu>
