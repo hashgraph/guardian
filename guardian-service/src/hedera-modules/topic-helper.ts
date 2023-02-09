@@ -47,6 +47,7 @@ export class TopicHelper {
     /**
      * Create instance
      * @param config
+     * @param keys
      */
     public async create(
         config: {
