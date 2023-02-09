@@ -447,6 +447,9 @@ export class PolicyEngineService {
                 if (model.status === PolicyType.DRY_RUN) {
                     throw new Error(`Policy already in Dry Run`);
                 }
+                if (model.status === PolicyType.FAILED) {
+                    throw new Error(`Failed policy cannot be started in dry run mode`);
+                }
 
                 const owner = await this.getUserDid(user.username);
 

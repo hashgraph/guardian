@@ -92,6 +92,10 @@
                         <select-menu-button class="btn-publish" *ngIf="element.status == 'PUBLISH'">
                             Published
                         </select-menu-button>
+                        <select-menu-button class="btn-failed" *ngIf="element.status == 'FAILED'"
+                                            (action)="onFailedAction($event, element)" [options]="failedMenuOption">
+                            Failed
+                        </select-menu-button>
                     </td>
                 </ng-container>
 

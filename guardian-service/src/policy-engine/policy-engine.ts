@@ -455,107 +455,130 @@ export class PolicyEngine extends ServiceRequestsBase{
         const root = await this.users.getHederaAccount(owner);
         notifier.completedAndStart('Find topic');
 
+        model.version = version;
+
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(model.topicId), true);
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
             .setTopicObject(topic);
 
         notifier.completedAndStart('Publish schemas');
-        model = await this.publishSchemas(model, owner, root, notifier);
-        model.status = PolicyType.PUBLISH;
-        model.version = version;
+        try {
+            model = await this.publishSchemas(model, owner, root, notifier);
+        } catch (error) {
+            model.status = PolicyType.FAILED;
+            model.version = '';
+            await DatabaseServer.updatePolicy(model);
+            throw error;
+        }
 
-        notifier.completedAndStart('Generate file');
-        this.regenerateIds(model.config);
-        const zip = await PolicyImportExportHelper.generateZipFile(model);
-        const buffer = await zip.generateAsync({
-            type: 'arraybuffer',
-            compression: 'DEFLATE',
-            compressionOptions: {
-                level: 3
+        try {
+            notifier.completedAndStart('Generate file');
+            this.regenerateIds(model.config);
+            const zip = await PolicyImportExportHelper.generateZipFile(model);
+            const buffer = await zip.generateAsync({
+                type: 'arraybuffer',
+                compression: 'DEFLATE',
+                compressionOptions: {
+                    level: 3
+                }
+            });
+
+            notifier.completedAndStart('Token');
+            const tokenIds = findAllEntities(model.config, ['tokenId']);
+            const tokens = await DatabaseServer.getTokens({tokenId: {$in: tokenIds}, owner: model.owner});
+            for (const token of tokens) {
+                const tokenMessage = new TokenMessage(MessageAction.UseToken);
+                tokenMessage.setDocument(token);
+                await messageServer
+                    .sendMessage(tokenMessage);
             }
-        });
+            const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
 
-        notifier.completedAndStart('Token');
-        const tokenIds = findAllEntities(model.config, ['tokenId']);
-        const tokens = await DatabaseServer.getTokens({ tokenId: { $in: tokenIds }, owner: model.owner });
-        for (const token of tokens) {
-            const tokenMessage = new TokenMessage(MessageAction.UseToken);
-            tokenMessage.setDocument(token);
-            await messageServer
-                .sendMessage(tokenMessage);
+            let rootTopic;
+            if (model.status === PolicyType.FAILED && !model.instanceTopicId) {
+                notifier.completedAndStart('Create instance topic');
+                rootTopic = await topicHelper.create({
+                    type: TopicType.InstancePolicyTopic,
+                    name: model.name || TopicType.InstancePolicyTopic,
+                    description: model.topicDescription || TopicType.InstancePolicyTopic,
+                    owner,
+                    policyId: model.id.toString(),
+                    policyUUID: model.uuid
+                });
+                await rootTopic.saveKeys();
+                await DatabaseServer.saveTopic(rootTopic.toObject());
+                model.instanceTopicId = rootTopic.topicId;
+            } else {
+                const topicEntity = await DatabaseServer.getTopicById(model.instanceTopicId);
+                rootTopic = await TopicConfig.fromObject(topicEntity);
+            }
+
+            if (model.status === PolicyType.FAILED && !model.synchronizationTopicId) {
+                notifier.completedAndStart('Create synchronization topic');
+                const synchronizationTopic = await topicHelper.create({
+                    type: TopicType.SynchronizationTopic,
+                    name: model.name || TopicType.SynchronizationTopic,
+                    description: model.topicDescription || TopicType.InstancePolicyTopic,
+                    owner,
+                    policyId: model.id.toString(),
+                    policyUUID: model.uuid
+                }, {admin: true, submit: false});
+                await synchronizationTopic.saveKeys();
+                await DatabaseServer.saveTopic(synchronizationTopic.toObject());
+                model.synchronizationTopicId = synchronizationTopic.topicId;
+            }
+
+            notifier.completedAndStart('Publish policy');
+            const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
+            message.setDocument(model, buffer);
+            const result = await messageServer
+                .sendMessage(message);
+            model.messageId = result.getId();
+
+            notifier.completedAndStart('Link topic and policy');
+            await topicHelper.twoWayLink(rootTopic, topic, result.getId());
+
+            notifier.completedAndStart('Create VC');
+            const messageId = result.getId();
+            const url = result.getUrl();
+            const policySchema = await DatabaseServer.getSchemaByType(model.topicId, SchemaEntity.POLICY);
+            const vcHelper = new VcHelper();
+            let credentialSubject: any = {
+                id: messageId,
+                name: model.name,
+                description: model.description,
+                topicDescription: model.topicDescription,
+                version: model.version,
+                policyTag: model.policyTag,
+                owner: model.owner,
+                cid: url.cid,
+                url: url.url,
+                uuid: model.uuid,
+                operation: 'PUBLISH'
+            }
+            if (policySchema) {
+                const schemaObject = new Schema(policySchema);
+                credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
+            }
+            const vc = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
+            await DatabaseServer.saveVC({
+                hash: vc.toCredentialHash(),
+                owner,
+                document: vc.toJsonTree(),
+                type: SchemaEntity.POLICY,
+                policyId: `${model.id}`
+            });
+
+            logger.info('Published Policy', ['GUARDIAN_SERVICE']);
+
+        } catch (error) {
+            model.status = PolicyType.FAILED;
+            model.version = '';
+            await DatabaseServer.updatePolicy(model);
+            throw error
         }
-
-        notifier.completedAndStart('Create instance topic');
-        const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
-        const rootTopic = await topicHelper.create({
-            type: TopicType.InstancePolicyTopic,
-            name: model.name || TopicType.InstancePolicyTopic,
-            description: model.topicDescription || TopicType.InstancePolicyTopic,
-            owner,
-            policyId: model.id.toString(),
-            policyUUID: model.uuid
-        });
-        await rootTopic.saveKeys();
-        await DatabaseServer.saveTopic(rootTopic.toObject());
-        model.instanceTopicId = rootTopic.topicId;
-
-        notifier.completedAndStart('Create synchronization topic');
-        const synchronizationTopic = await topicHelper.create({
-            type: TopicType.SynchronizationTopic,
-            name: model.name || TopicType.SynchronizationTopic,
-            description: model.topicDescription || TopicType.InstancePolicyTopic,
-            owner,
-            policyId: model.id.toString(),
-            policyUUID: model.uuid
-        }, { admin: true, submit: false });
-        await synchronizationTopic.saveKeys();
-        await DatabaseServer.saveTopic(synchronizationTopic.toObject());
-        model.synchronizationTopicId = synchronizationTopic.topicId;
-
-        notifier.completedAndStart('Publish policy');
-        const message = new PolicyMessage(MessageType.InstancePolicy, MessageAction.PublishPolicy);
-        message.setDocument(model, buffer);
-        const result = await messageServer
-            .sendMessage(message);
-        model.messageId = result.getId();
-
-        notifier.completedAndStart('Link topic and policy');
-        await topicHelper.twoWayLink(rootTopic, topic, result.getId());
-
-        notifier.completedAndStart('Create VC');
-        const messageId = result.getId();
-        const url = result.getUrl();
-        const policySchema = await DatabaseServer.getSchemaByType(model.topicId, SchemaEntity.POLICY);
-        const vcHelper = new VcHelper();
-        let credentialSubject: any = {
-            id: messageId,
-            name: model.name,
-            description: model.description,
-            topicDescription: model.topicDescription,
-            version: model.version,
-            policyTag: model.policyTag,
-            owner: model.owner,
-            cid: url.cid,
-            url: url.url,
-            uuid: model.uuid,
-            operation: 'PUBLISH'
-        }
-        if (policySchema) {
-            const schemaObject = new Schema(policySchema);
-            credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
-        }
-        const vc = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
-        await DatabaseServer.saveVC({
-            hash: vc.toCredentialHash(),
-            owner,
-            document: vc.toJsonTree(),
-            type: SchemaEntity.POLICY,
-            policyId: `${model.id}`
-        });
-
-        logger.info('Published Policy', ['GUARDIAN_SERVICE']);
-
         notifier.completedAndStart('Saving in DB');
+        model.status = PolicyType.PUBLISH;
         const retVal = await DatabaseServer.updatePolicy(model);
         notifier.completed();
         return retVal

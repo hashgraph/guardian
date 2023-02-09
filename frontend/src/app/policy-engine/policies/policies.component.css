@@ -43,6 +43,12 @@
     min-width: 93px;
 }
 
+.btn-failed::ng-deep > * {
+    background: #572424 !important;
+    color: #fff !important;
+    min-width: 93px;
+}
+
 .btn-publish::ng-deep > * {
     background: #4caf50 !important;
     color: #fff !important;
@@ -296,7 +302,7 @@
 }
 
 .btn-icon-go.go-dry-run {
-    background: #3f51b5; 
+    background: #3f51b5;
 }
 
 .btn-icon-go mat-icon  {

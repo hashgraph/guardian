@@ -74,6 +74,20 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         color: '#4caf50'
     }];
 
+    failedMenuOption = [
+        // {
+        //     id: 'Draft',
+        //     title: 'Stop',
+        //     description: 'Return to editing.',
+        //     color: '#9c27b0'
+        // },
+        {
+            id: 'Publish',
+            title: 'Publish',
+            description: 'Release version into public domain.',
+            color: '#4caf50'
+        }
+    ];
     constructor(
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
@@ -393,6 +407,14 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             this.draft(element);
         }
     }
+    onFailedAction(event: any, element: any) {
+        if (event.id === 'Publish') {
+            this.setVersion(element);
+        }
+        // else if (event.id === 'Draft') {
+        //     this.draft(element);
+        // }
+    }
 
     private processPublishResult(taskId: string): void {
         this.taskService.get(taskId).subscribe((task: any) => {
@@ -457,7 +479,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
-                this.router.navigate(['/compare'], { queryParams: { 
+                this.router.navigate(['/compare'], { queryParams: {
                     type: 'policy',
                     policyId1: result.policyId1,
                     policyId2: result.policyId2

@@ -50,6 +50,11 @@
                         <span style="color: #4caf50">Published</span>
                     </div>
 
+                    <div *ngIf="policyModel.isFailed" class="btn-new-block btn-label">
+                        <mat-icon style="color: #572424">close</mat-icon>
+                        <span style="color: #572424">Failed</span>
+                    </div>
+
                     <div class="delimiter"></div>
 
                     <div *ngIf="policyModel.isDraft" class="btn-new-block btn-status-all" (click)="validationPolicy()"

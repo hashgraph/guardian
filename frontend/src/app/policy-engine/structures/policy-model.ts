@@ -902,8 +902,8 @@ export class PolicyBlockModel {
         const keys2 = Object.keys(object);
         for (const key of keys1) {
             if(
-                key !== 'blockType' && 
-                key !== 'id' && 
+                key !== 'blockType' &&
+                key !== 'id' &&
                 key !== 'tag'
             ) {
                 delete this.properties[key];
@@ -973,6 +973,7 @@ export class PolicyModel {
     public readonly isPublished: boolean = false;
     public readonly isDryRun: boolean = false;
     public readonly readonly: boolean = false;
+    public readonly isFailed: boolean = false;
 
     constructor(policy?: any) {
         this._changed = false;
@@ -1002,8 +1003,9 @@ export class PolicyModel {
 
         this.isDraft = this.status === PolicyType.DRAFT;
         this.isPublished = this.status === PolicyType.PUBLISH;
+        this.isFailed = this.status === PolicyType.FAILED;
         this.isDryRun = this.status === PolicyType.DRY_RUN;
-        this.readonly = this.isPublished || this.isDryRun;
+        this.readonly = this.isPublished || this.isDryRun || this.isFailed;
     }
 
     public get policyTag(): string {
