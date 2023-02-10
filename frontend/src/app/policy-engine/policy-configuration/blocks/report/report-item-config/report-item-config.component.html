@@ -3,7 +3,7 @@
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'properties')"
             [attr.collapse]="propHidden.properties">
-            <mat-icon>expand_more</mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Properties</td>
         <td class="propHeaderCell"></td>
@@ -83,7 +83,7 @@
         <tr class="propHeader">
             <td class="propRowCol" (click)="onHide(propHidden, 'dynamicFilterGroup')"
                 [attr.collapse]="propHidden.dynamicFilterGroup">
-                <mat-icon>expand_more</mat-icon>
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propHeaderCell cellName">Dynamic Filters</td>
             <td class="propHeaderCell">
@@ -97,9 +97,7 @@
             <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup">
                 <td class="propRowCol" (click)="onHide(propHidden.dynamicFilters, i)"
                     [attr.collapse]="propHidden.dynamicFilters[i]">
-                    <mat-icon>
-                        expand_more
-                    </mat-icon>
+                    <mat-icon>arrow_drop_down</mat-icon>
                 </td>
                 <td class="propRowCell cellName">Dynamic Filter {{i}}</td>
                 <td class="propRowCell">
@@ -148,7 +146,7 @@
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'commonVariableGroup')"
             [attr.collapse]="propHidden.commonVariableGroup">
-            <mat-icon>expand_more</mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Common Variables</td>
         <td class="propHeaderCell"></td>
@@ -196,7 +194,7 @@
 
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'variableGroup')" [attr.collapse]="propHidden.variableGroup">
-            <mat-icon>expand_more</mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Variables</td>
         <td class="propHeaderCell">
@@ -209,9 +207,7 @@
     <ng-container *ngFor="let item of block.variables; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.variableGroup">
             <td class="propRowCol" (click)="onHide(propHidden.variables, i)" [attr.collapse]="propHidden.variables[i]">
-                <mat-icon>
-                    expand_more
-                </mat-icon>
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Variable {{i}}</td>
             <td class="propRowCell">
@@ -240,7 +236,7 @@
 
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'filterGroup')" [attr.collapse]="propHidden.filterGroup">
-            <mat-icon>expand_more</mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Filters</td>
         <td class="propHeaderCell">
@@ -253,9 +249,7 @@
     <ng-container *ngFor="let item of block.filters; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.filterGroup">
             <td class="propRowCol" (click)="onHide(propHidden.filters, i)" [attr.collapse]="propHidden.filters[i]">
-                <mat-icon>
-                    expand_more
-                </mat-icon>
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Filter {{i}}</td>
             <td class="propRowCell">

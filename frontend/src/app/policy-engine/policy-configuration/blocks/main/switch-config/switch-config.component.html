@@ -2,9 +2,7 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="block">
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'options')" [attr.collapse]="propHidden.options">
-            <mat-icon>
-                expand_more
-            </mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Options</td>
         <td class="propHeaderCell"></td>
@@ -22,9 +20,7 @@
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'conditionsGroup')"
             [attr.collapse]="propHidden.options || propHidden.conditionsGroup">
-            <mat-icon>
-                expand_more
-            </mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Conditions</td>
         <td class="propHeaderCell">
@@ -38,9 +34,7 @@
         <tr class="propRow" [attr.collapse]="propHidden.options || propHidden.conditionsGroup">
             <td class="propRowCol" (click)="onHide(propHidden.conditions, i)"
                 [attr.collapse]="propHidden.conditions[i]">
-                <mat-icon>
-                    expand_more
-                </mat-icon>
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Condition {{i}}</td>
             <td class="propRowCell">

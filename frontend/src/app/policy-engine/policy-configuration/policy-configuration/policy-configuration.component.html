@@ -87,6 +87,13 @@
                 </div>
 
                 <div class="delimiter"></div>
+
+                <div class="top-toolbar-btn readonly-status" title="Create Module">
+                    <mat-icon>create_new_folder</mat-icon>
+                    <span>Create Module</span>
+                </div>
+
+                <div class="delimiter"></div>
             </ng-container>
 
             <div class="top-toolbar-btn all-status" (click)="onView('blocks')" title="Blocks"
@@ -141,11 +148,11 @@
 
                 <div class="pc-tabs">
                     <div class="pc-tabs-headers">
-                        <div [attr.selected]="options.components" (click)="select('components')">
+                        <div class="tab-header" [attr.selected]="options.components" (click)="select('components')">
                             Components
                         </div>
-                        <div [attr.selected]="options.library" (click)="select('library')">
-                            Library
+                        <div class="tab-header" [attr.selected]="options.library" (click)="select('library')">
+                            Modules
                         </div>
                     </div>
                     <div class="pc-tabs-content">
@@ -153,7 +160,7 @@
 
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
-                                <mat-icon class="components-search-icon">search</mat-icon> 
+                                <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
 
                             <div *ngIf="componentsList.favorites.length" class="components-group"
@@ -162,7 +169,8 @@
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <mat-icon class="components-group-name-icon">star</mat-icon>
-                                    <span style="padding-left: 22px">Favorites</span>
+                                    <span style="padding-left: 22px">Favorites
+                                        ({{componentsList.favorites.length}})</span>
                                 </div>
                                 <div class="components-group-body">
                                     <div *ngFor="let item of componentsList.favorites" class="component-btn">
@@ -173,12 +181,11 @@
                                     </div>
                                 </div>
                             </div>
-                            <div *ngIf="componentsList.uiComponents.length" class="components-group"
-                                [attr.collapsed]="options.uiGroup">
+                            <div class="components-group" [attr.collapsed]="options.uiGroup">
                                 <div class="components-group-name" (click)="collapse('uiGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>UI Components</span>
+                                    <span>UI Components ({{componentsList.uiComponents.length}})</span>
                                 </div>
                                 <div class="components-group-body">
                                     <div *ngFor="let item of componentsList.uiComponents" class="component-btn">
@@ -189,12 +196,11 @@
                                     </div>
                                 </div>
                             </div>
-                            <div *ngIf="componentsList.serverBlocks.length" class="components-group"
-                                [attr.collapsed]="options.serverGroup">
+                            <div class="components-group" [attr.collapsed]="options.serverGroup">
                                 <div class="components-group-name" (click)="collapse('serverGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>Server Components</span>
+                                    <span>Server Components ({{componentsList.serverBlocks.length}})</span>
                                 </div>
                                 <div class="components-group-body">
                                     <div *ngFor="let item of componentsList.serverBlocks" class="component-btn">
@@ -205,12 +211,11 @@
                                     </div>
                                 </div>
                             </div>
-                            <div *ngIf="componentsList.addons.length" class="components-group"
-                                [attr.collapsed]="options.addonsGroup">
+                            <div class="components-group" [attr.collapsed]="options.addonsGroup">
                                 <div class="components-group-name" (click)="collapse('addonsGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
-                                    <span>Addons</span>
+                                    <span>Addons ({{componentsList.addons.length}})</span>
                                 </div>
                                 <div class="components-group-body">
                                     <div *ngFor="let item of componentsList.addons" class="component-btn">
@@ -241,6 +246,83 @@
 
                         <div class="components-container" [hidden]="!options.library">
 
+                            <div class="components-search">
+                                <input placeholder="Search" [(ngModel)]="search" (input)="onModuleSearch($event)">
+                                <mat-icon class="components-search-icon">search</mat-icon>
+                            </div>
+
+                            <div *ngIf="modulesList.favorites.length" class="components-group"
+                                [attr.collapsed]="options.favoritesModulesGroup">
+                                <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
+                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                    <mat-icon class="components-group-name-icon">star</mat-icon>
+                                    <span style="padding-left: 22px">Favorites
+                                        ({{modulesList.favorites.length}})</span>
+                                </div>
+                                <div class="components-group-body">
+
+
+                                    <div *ngFor="let item of modulesList.favorites" class="component-btn">
+                                        <mat-icon class="component-btn-icon">folder</mat-icon>
+                                        <span>{{item.name}}</span>
+                                        <span class="component-btn-toolbar">
+                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                (click)="setModuleFavorite(item)">star</mat-icon>
+                                            <mat-icon [attr.readonly]="item.isDefault" class="component-btn-delete"
+                                                [attr.favorite]="item.favorite"
+                                                (click)="onDeleteModule(item)">delete</mat-icon>
+                                        </span>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="components-group" [attr.collapsed]="options.defaultModulesGroup">
+                                <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
+                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                    <span>Default Modules ({{modulesList.defaultModules.length}})</span>
+                                </div>
+                                <div class="components-group-body">
+
+
+                                    <div *ngFor="let item of modulesList.defaultModules" class="component-btn">
+                                        <mat-icon class="component-btn-icon">folder</mat-icon>
+                                        <span>{{item.name}}</span>
+                                        <span class="component-btn-toolbar">
+                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                (click)="setModuleFavorite(item)">star</mat-icon>
+                                        </span>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="components-group" [attr.collapsed]="options.customModulesGroup">
+                                <div class="components-group-name" (click)="collapse('customModulesGroup')">
+                                    <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
+                                    <mat-icon class="components-group-open">arrow_right</mat-icon>
+                                    <span>Custom models ({{modulesList.customModules.length}})</span>
+                                </div>
+                                <div class="components-group-body">
+
+
+                                    <div *ngFor="let item of modulesList.customModules" class="component-btn">
+                                        <mat-icon class="component-btn-icon">folder</mat-icon>
+                                        <span>{{item.name}}</span>
+
+                                        <span class="component-btn-toolbar">
+                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                (click)="setModuleFavorite(item)">star</mat-icon>
+                                            <mat-icon class="component-btn-delete" [attr.favorite]="item.favorite"
+                                                (click)="onDeleteModule(item)">delete</mat-icon>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -248,92 +330,128 @@
 
 
             </div>
-            <div class="tree-container">
+            <div class="center-container">
+
+
+                <div class="pc-tabs minimized-tabs">
+                    <div class="pc-tabs-headers">
+                        <div class="tab-header tab-header-icon" [attr.selected]="moduleIndex==-1"
+                            style="width: 100px;margin-right: 6px" (click)="moduleIndex=-1">
+                            <mat-icon class="action-color">shield</mat-icon>
+                            Policy
+                        </div>
+                        <div class="tab-header tab-header-icon" *ngFor="let item of modules; let i=index"
+                            [attr.selected]="moduleIndex==i" (click)="moduleIndex=i">
+                            <mat-icon class="edit-color">folder</mat-icon>
+                            Module {{i}}
+                        </div>
+                    </div>
+                    <div class="pc-tabs-content tree-container">
+
+                    </div>
+                </div>
 
             </div>
             <div class="right-toolbar">
 
-                <div class="right-top-toolbar">
+                <div class="right-top-toolbar" [attr.collapse-top]="options.rightTopMenu"
+                    [attr.collapse-bottom]="options.rightBottomMenu">
 
 
                     <div class="pc-tabs">
                         <div class="pc-tabs-headers">
-                            <div [attr.selected]="options.description" (click)="select('description')">
+                            <div class="tab-header" [attr.selected]="options.description"
+                                (click)="select('description')">
                                 Description
                             </div>
-                            <div [attr.selected]="options.roles" (click)="select('roles')">
+                            <div class="tab-header" [attr.selected]="options.roles" (click)="select('roles')">
                                 Roles
                             </div>
-                            <div [attr.selected]="options.groups" (click)="select('groups')">
+                            <div class="tab-header" [attr.selected]="options.groups" (click)="select('groups')">
                                 Groups
                             </div>
-                            <div [attr.selected]="options.topics" (click)="select('topics')">
+                            <div class="tab-header" [attr.selected]="options.topics" (click)="select('topics')">
                                 Topics
                             </div>
-                            <div [attr.selected]="options.tokens" (click)="select('tokens')">
+                            <div class="tab-header" [attr.selected]="options.tokens" (click)="select('tokens')">
                                 Tokens
+                            </div>
+
+                            <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
+                                (click)="collapse('rightTopMenu')">
+                                <mat-icon>keyboard_double_arrow_up</mat-icon>
                             </div>
                         </div>
                         <div class="pc-tabs-content">
-                            <div [hidden]="!options.description">
-
+                            <div class="prop-container readonly-status" [hidden]="!options.description">
+                                <policy-properties [policy]="policyModel" [readonly]="readonly"
+                                    type="Main"></policy-properties>
                             </div>
-                            <div [hidden]="!options.roles">
-
+                            <div class="prop-container readonly-status" [hidden]="!options.roles">
+                                <policy-properties [policy]="policyModel" [readonly]="readonly"
+                                    type="Role"></policy-properties>
                             </div>
-                            <div [hidden]="!options.groups">
-
+                            <div class="prop-container readonly-status" [hidden]="!options.groups">
+                                <policy-properties [policy]="policyModel" [readonly]="readonly"
+                                    type="Groups"></policy-properties>
                             </div>
-                            <div [hidden]="!options.topics">
-
+                            <div class="prop-container readonly-status" [hidden]="!options.topics">
+                                <policy-properties [policy]="policyModel" [readonly]="readonly"
+                                    type="Topics"></policy-properties>
                             </div>
-                            <div [hidden]="!options.tokens">
-
+                            <div class="prop-container readonly-status" [hidden]="!options.tokens">
+                                <policy-properties [policy]="policyModel" [readonly]="readonly"
+                                    type="Tokens"></policy-properties>
                             </div>
                         </div>
                     </div>
 
-
                 </div>
-                <div class="right-bottom-toolbar">
-
-
+                <div class="right-bottom-toolbar" [attr.collapse-top]="options.rightTopMenu"
+                    [attr.collapse-bottom]="options.rightBottomMenu">
 
                     <div class="pc-tabs">
                         <div class="pc-tabs-headers">
-                            <div [attr.selected]="options.properties" (click)="select('properties')">
+                            <div class="tab-header" [attr.selected]="options.properties" (click)="select('properties')">
                                 Properties
                             </div>
-                            <div [attr.selected]="options.events" (click)="select('events')">
+                            <div class="tab-header" [attr.selected]="options.events" (click)="select('events')">
                                 Events
                             </div>
-                            <div [attr.selected]="options.artifacts" (click)="select('artifacts')">
+                            <div class="tab-header" [attr.selected]="options.artifacts" (click)="select('artifacts')">
                                 Artifacts
                             </div>
-                            <div [attr.selected]="options.json" (click)="select('json')">
+                            <div class="tab-header" [attr.selected]="options.json" (click)="select('json')">
                                 Json
+                            </div>
+                            <div class="tabs-icon" [attr.collapsed]="!options.rightBottomMenu"
+                                (click)="collapse('rightBottomMenu')">
+                                <mat-icon>keyboard_double_arrow_up</mat-icon>
                             </div>
                         </div>
                         <div class="pc-tabs-content">
-                            <div [hidden]="!options.properties">
-
+                            <div class="prop-container readonly-status" [hidden]="!options.properties">
+                                <common-properties *ngIf="currentBlock" [policy]="policyModel" [block]="currentBlock"
+                                    [schemas]="schemas" [readonly]="readonly" [tokens]="tokens"
+                                    type="Common"></common-properties>
                             </div>
-                            <div [hidden]="!options.events">
-
+                            <div class="prop-container readonly-status" [hidden]="!options.events">
+                                <common-properties *ngIf="currentBlock" [policy]="policyModel" [block]="currentBlock"
+                                    [schemas]="schemas" [readonly]="readonly" [tokens]="tokens"
+                                    type="Events"></common-properties>
                             </div>
-                            <div [hidden]="!options.artifacts">
-
+                            <div class="prop-container readonly-status" [hidden]="!options.artifacts">
+                                <artifact-properties *ngIf="currentBlock" [readonly]="readonly" [policyId]="policyId"
+                                    [block]="currentBlock"></artifact-properties>
                             </div>
-                            <div [hidden]="!options.json">
-
+                            <div class="prop-container readonly-status" [hidden]="!options.json">
+                                <json-properties *ngIf="options.json && currentBlock" [block]="currentBlock"
+                                    [readonly]="readonly"></json-properties>
                             </div>
                         </div>
                     </div>
 
-
-
                 </div>
-
             </div>
         </div>
     </div>

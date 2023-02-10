@@ -2,7 +2,7 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="block">
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>expand_more</mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">UI</td>
         <td class="propHeaderCell"></td>
@@ -23,9 +23,7 @@
     </tr>
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'fieldsGroup')" [attr.collapse]="propHidden.fieldsGroup">
-            <mat-icon>
-                expand_more
-            </mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Fields</td>
         <td class="propHeaderCell">
@@ -38,9 +36,7 @@
     <ng-container *ngFor="let field of block.uiMetaData.fields; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.fieldsGroup">
             <td class="propRowCol" (click)="onHide(propHidden.fields, i)" [attr.collapse]="propHidden.fields[i]">
-                <mat-icon>
-                    expand_more
-                </mat-icon>
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Field {{i}}</td>
             <td class="propRowCell not-editable-text">

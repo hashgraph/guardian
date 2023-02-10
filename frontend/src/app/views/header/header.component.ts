@@ -94,7 +94,7 @@ export class HeaderComponent implements OnInit {
             link: '/policy-viewer',
             pattern: new RegExp('^\/policy-viewer\/\\w+')
         }, {
-            name: "Policies configuration",
+            name: "Policy Editor",
             disabled: false,
             link: '/policy-configuration',
             hidden: true,

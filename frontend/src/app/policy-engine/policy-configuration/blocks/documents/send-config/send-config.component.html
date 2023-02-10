@@ -80,33 +80,9 @@
         </td>
     </tr>
 
-    <!-- <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Document Type</td>
-        <td class="propRowCell">
-            <mat-select [(value)]="block.documentType" [disabled]="readonly">
-                <mat-option value=""></mat-option>
-                <mat-option value="vc">VC Document</mat-option>
-                <mat-option value="did">DID Document</mat-option>
-                <mat-option value="vp">VP Document</mat-option>
-                <mat-option value="document">Take From Input Document</mat-option>
-            </mat-select>
-        </td>
-    </tr> -->
-
-    <!-- <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Force New Document</td>
-        <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.forceNew" [readonly]="readonly">
-        </td>
-    </tr> -->
-
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'optionGroup')" [attr.collapse]="propHidden.optionGroup">
-            <mat-icon>
-                expand_more
-            </mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Options</td>
         <td class="propHeaderCell">
@@ -120,9 +96,7 @@
     <ng-container *ngFor="let option of block.options; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.optionGroup">
             <td class="propRowCol" (click)="onHide(propHidden.options, i)" [attr.collapse]="propHidden.options[i]">
-                <mat-icon>
-                    expand_more
-                </mat-icon>
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Option {{i}}</td>
             <td class="propRowCell not-editable-text">

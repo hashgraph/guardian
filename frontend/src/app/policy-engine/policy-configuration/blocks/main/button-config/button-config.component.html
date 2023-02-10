@@ -4,7 +4,7 @@
         
         <tr class="propHeader" [attr.collapse]="propHidden.metaData">
             <td class="propRowCol" (click)="onHide(propHidden, 'buttonsGroup')">
-                <mat-icon *ngIf="block.uiMetaData.buttons.length">expand_more</mat-icon>
+                <mat-icon *ngIf="block.uiMetaData.buttons.length">arrow_drop_down</mat-icon>
             </td>
             <td class="propHeaderCell cellName">Buttons</td>
             <td class="propHeaderCell">
@@ -17,7 +17,7 @@
         <ng-container *ngFor="let button of block.uiMetaData.buttons; let i=index">
             <tr class="propRow subRow" [attr.collapse]="propHidden.buttonsGroup">
                 <td class="propRowCol" (click)="onHide(propHidden.buttons[i], 'collapse')" [attr.collapse]="propHidden.buttons[i].collapse">
-                    <mat-icon>expand_more</mat-icon>
+                    <mat-icon>arrow_drop_down</mat-icon>
                 </td>
                 <td class="propRowCell cellName">Button {{i}}</td>
                 <td class="propRowCell not-editable-text">
@@ -100,9 +100,7 @@
             <tr class="propRow subRow-2"
                 [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
                 <td class="propRowCol" (click)="onHide(propHidden.buttons[i], 'filtersGroup')" [attr.collapse]="propHidden.buttons[i].filtersGroup">
-                    <mat-icon>
-                        expand_more
-                    </mat-icon>
+                    <mat-icon>arrow_drop_down</mat-icon>
                 </td>
                 <td class="propRowCell cellName">Filters  Option {{i}}</td>
                 <td class="propRowCell">
@@ -116,9 +114,7 @@
             <ng-container *ngFor="let filter of button.filters; let j=index">
                 <tr class="propRow subRow-3" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup">
                     <td class="propRowCol" (click)="onHide(propHidden.buttons[i], j)" [attr.collapse]="propHidden.buttons[i][j]">
-                        <mat-icon>
-                            expand_more
-                        </mat-icon>
+                        <mat-icon>arrow_drop_down</mat-icon>
                     </td>
                     <td class="propRowCell cellName">Filter {{j}}</td>
                     <td class="propRowCell">

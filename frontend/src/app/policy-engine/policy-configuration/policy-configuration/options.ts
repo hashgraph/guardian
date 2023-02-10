@@ -18,6 +18,15 @@ export class Options {
     private _addonsGroup: boolean;
     private _unGroup: boolean;
 
+    private _rightTopMenu: boolean;
+    private _rightBottomMenu: boolean;
+
+    private _favoritesModulesGroup: boolean;
+    private _defaultModulesGroup: boolean;
+    private _customModulesGroup: boolean;
+
+    private _favoritesModules: any;
+
     constructor() {
         this._components = true;
         this._library = false;
@@ -39,7 +48,15 @@ export class Options {
         this._addonsGroup = false;
         this._unGroup = false;
 
+        this._rightTopMenu  = false;
+        this._rightBottomMenu = false;
+
+        this._favoritesModulesGroup = false;
+        this._defaultModulesGroup = false;
+        this._customModulesGroup = false;
+
         this._favorites = {};
+        this._favoritesModules = {};
     }
 
     public load() {
@@ -60,11 +77,26 @@ export class Options {
             this.serverGroup = localStorage.getItem('POLICY_CONFIG_SERVER_GROUP') === 'true';
             this.addonsGroup = localStorage.getItem('POLICY_CONFIG_ADDONS_GROUP') === 'true';
             this.unGroup = localStorage.getItem('POLICY_CONFIG_UN_GROUP') === 'true';
-            const json = localStorage.getItem('POLICY_CONFIG_FAVORITES');
-            if (typeof json === 'string' && json.startsWith('{')) {
-                const favorites = JSON.parse(json);
+            this.rightTopMenu = localStorage.getItem('POLICY_CONFIG_RIGHT_TOP') === 'true';
+            this.rightBottomMenu = localStorage.getItem('POLICY_CONFIG_RIGHT_BOTTOM') === 'true';
+
+            this.favoritesModulesGroup = localStorage.getItem('POLICY_CONFIG_FAVORITES_MODULES_GROUP') === 'true';
+            this.defaultModulesGroup = localStorage.getItem('POLICY_CONFIG_DEFAULT_MODULES_GROUP') === 'true';
+            this.customModulesGroup = localStorage.getItem('POLICY_CONFIG_CUSTOM_MODULES_GROUP') === 'true';
+
+            const json1 = localStorage.getItem('POLICY_CONFIG_FAVORITES');
+            if (typeof json1 === 'string' && json1.startsWith('{')) {
+                const favorites = JSON.parse(json1);
                 if (typeof favorites === 'object') {
                     this._favorites = favorites;
+                }
+            }
+
+            const json2 = localStorage.getItem('POLICY_CONFIG_FAVORITES_MODULES');
+            if (typeof json2 === 'string' && json2.startsWith('{')) {
+                const favorites = JSON.parse(json2);
+                if (typeof favorites === 'object') {
+                    this._favoritesModules = favorites;
                 }
             }
         } catch (error) {
@@ -86,11 +118,17 @@ export class Options {
             localStorage.setItem('POLICY_CONFIG_EVENTS', String(this.events));
             localStorage.setItem('POLICY_CONFIG_JSON', String(this.json));
             localStorage.setItem('POLICY_CONFIG_FAVORITES', JSON.stringify(this._favorites));
-            localStorage.setItem('POLICY_CONFIG_FAVORITES_GROUP', JSON.stringify(this.favoritesGroup));
-            localStorage.setItem('POLICY_CONFIG_UI_GROUP', JSON.stringify(this.uiGroup));
-            localStorage.setItem('POLICY_CONFIG_SERVER_GROUP', JSON.stringify(this.serverGroup));
-            localStorage.setItem('POLICY_CONFIG_ADDONS_GROUP', JSON.stringify(this.addonsGroup));
-            localStorage.setItem('POLICY_CONFIG_UN_GROUP', JSON.stringify(this.unGroup));
+            localStorage.setItem('POLICY_CONFIG_FAVORITES_GROUP', String(this.favoritesGroup));
+            localStorage.setItem('POLICY_CONFIG_UI_GROUP', String(this.uiGroup));
+            localStorage.setItem('POLICY_CONFIG_SERVER_GROUP', String(this.serverGroup));
+            localStorage.setItem('POLICY_CONFIG_ADDONS_GROUP', String(this.addonsGroup));
+            localStorage.setItem('POLICY_CONFIG_UN_GROUP', String(this.unGroup));
+            localStorage.setItem('POLICY_CONFIG_JSON', String(this.rightTopMenu));
+            localStorage.setItem('POLICY_CONFIG_JSON', String(this.rightBottomMenu));
+            localStorage.setItem('POLICY_CONFIG_FAVORITES_MODULES_GROUP', String(this.favoritesModulesGroup));
+            localStorage.setItem('POLICY_CONFIG_DEFAULT_MODULES_GROUP', String(this.defaultModulesGroup));
+            localStorage.setItem('POLICY_CONFIG_CUSTOM_MODULES_GROUP', String(this.customModulesGroup));
+            localStorage.setItem('POLICY_CONFIG_FAVORITES_MODULES', JSON.stringify(this._favoritesModules));
         } catch (error) {
             console.error(error);
         }
@@ -154,6 +192,21 @@ export class Options {
     }
     public get unGroup() {
         return this._unGroup;
+    }
+    public get rightTopMenu() {
+        return this._rightTopMenu;
+    }
+    public get rightBottomMenu() {
+        return this._rightBottomMenu;
+    }
+    public get favoritesModulesGroup() {
+        return this._favoritesModulesGroup;
+    }
+    public get defaultModulesGroup() {
+        return this._defaultModulesGroup;
+    }
+    public get customModulesGroup() {
+        return this._customModulesGroup;
     }
 
     public set components(value: boolean) {
@@ -256,25 +309,61 @@ export class Options {
     public set favoritesGroup(value: boolean) {
         this._favoritesGroup = value;
     }
+
     public set uiGroup(value: boolean) {
         this._uiGroup = value;
     }
+
     public set serverGroup(value: boolean) {
         this._serverGroup = value;
     }
+
     public set addonsGroup(value: boolean) {
         this._addonsGroup = value;
     }
+
     public set unGroup(value: boolean) {
         this._unGroup = value;
     }
 
-    public getFavorites(name: string): boolean {
+    public set rightTopMenu(value: boolean) {
+        this._rightTopMenu = value;
+    }
+
+    public set rightBottomMenu(value: boolean) {
+        this._rightBottomMenu = value;
+    }
+
+    public set favoritesModulesGroup(value: boolean) {
+        this._favoritesModulesGroup = value;
+    }
+
+    public set defaultModulesGroup(value: boolean) {
+        this._defaultModulesGroup = value;
+    }
+
+    public set customModulesGroup(value: boolean) {
+        this._customModulesGroup = value;
+    }
+
+    public getFavorite(name: string): boolean {
         return !!this._favorites[name];
     }
 
-    public setFavorites(name: string, value: boolean): void {
+    public setFavorite(name: string, value: boolean): void {
         this._favorites[name] = value;
+    }
+
+    public getModuleFavorite(name: string): boolean {
+        return !!this._favoritesModules[name];
+    }
+
+    public setModuleFavorite(name: string, value: boolean): void {
+        if(value) {
+            this._favoritesModules[name] = value;
+        } else {
+            delete this._favoritesModules[name];
+        }
     }
 
     public select(name: string) {
@@ -316,6 +405,16 @@ export class Options {
             this.addonsGroup = !this.addonsGroup;
         } else if (name === 'unGroup') {
             this.unGroup = !this.unGroup;
+        } else if (name === 'rightTopMenu') {
+            this.rightTopMenu = !this.rightTopMenu;
+        } else if (name === 'rightBottomMenu') {
+            this.rightBottomMenu = !this.rightBottomMenu;
+        } else if (name === 'customModulesGroup') {
+            this.customModulesGroup = !this.customModulesGroup;
+        } else if (name === 'defaultModulesGroup') {
+            this.defaultModulesGroup = !this.defaultModulesGroup;
+        } else if (name === 'favoritesModulesGroup') {
+            this.favoritesModulesGroup = !this.favoritesModulesGroup;
         } else {
             return;
         }

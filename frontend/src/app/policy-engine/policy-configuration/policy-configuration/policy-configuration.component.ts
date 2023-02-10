@@ -33,9 +33,13 @@ export class PolicyConfigurationComponent implements OnInit {
     public errorsMap: any;
     public currentView: string = 'blocks';
     public search: string = '';
+    public searchModule: string = '';
     public policyStorage: PolicyStorage;
     public copyBlocksMode: boolean = false;
     public eventVisible: string = 'All';
+    public currentBlock!: PolicyBlockModel | undefined;
+    public moduleIndex = -1;
+    public modules: any[] = [];
 
     readonly codeMirrorOptions = {
         theme: 'default',
@@ -62,6 +66,11 @@ export class PolicyConfigurationComponent implements OnInit {
         addons: [],
         unGrouped: [],
     };
+    readonly modulesList: any = {
+        favorites: [],
+        defaultModules: [],
+        customModules: [],
+    };
     private _searchTimeout!: any;
 
     constructor(
@@ -71,6 +80,7 @@ export class PolicyConfigurationComponent implements OnInit {
         private schemaService: SchemaService,
         private tokenService: TokenService,
         private policyEngineService: PolicyEngineService,
+        private changeDetector: ChangeDetectorRef
     ) {
         this.options = new Options();
         this.policyModel = new PolicyModel();
@@ -136,6 +146,29 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.schemas = SchemaHelper.map(schemas) || [];
                 this.schemas.unshift({ type: "" } as any);
 
+                this.modules = [{
+                    uuid: '1',
+                    name: 'Default 1',
+                    description: 'description 1',
+                    tag: 'd1',
+                    type: 'DEFAULT',
+                    config: {}
+                },{
+                    uuid: '2',
+                    name: 'Default 2',
+                    description: 'description 1',
+                    tag: 'd2',
+                    type: 'DEFAULT',
+                    config: {}
+                },{
+                    uuid: '3',
+                    name: 'Custom 1',
+                    description: 'description 1',
+                    tag: 'c1',
+                    type: 'CUSTOM',
+                    config: {}
+                }]
+
                 this.finishedLoad();
             }, (error) => {
                 this.loading = false;
@@ -163,12 +196,13 @@ export class PolicyConfigurationComponent implements OnInit {
         //     }, 10);
         // });
 
-        // this.onSelect(this.policyModel.root);
+        this.onSelect(this.policyModel.root);
         // if (this.treeFlatOverview) {
         //     this.treeFlatOverview.selectItem(this.currentBlock);
         // }
 
         this.updateComponents();
+        this.updateModules();
 
         setTimeout(() => { this.loading = false; }, 500);
     }
@@ -194,7 +228,7 @@ export class PolicyConfigurationComponent implements OnInit {
             } else {
                 this.componentsList.unGrouped.push(block);
             }
-            block.favorite = this.options.getFavorites(block.type);
+            block.favorite = this.options.getFavorite(block.type);
             if (block.favorite) {
                 this.componentsList.favorites.push(block);
             }
@@ -202,8 +236,33 @@ export class PolicyConfigurationComponent implements OnInit {
         console.log(this.componentsList);
     }
 
+    private updateModules() {
+        this.modulesList.favorites = [];
+        this.modulesList.defaultModules = [];
+        this.modulesList.customModules = [];
+
+        const search = this.searchModule ? this.searchModule.toLowerCase() : null;
+        for (const module of this.modules) {
+            module.isDefault = module.type === 'DEFAULT';
+
+            if (this.search && module.name.indexOf(search) === -1) {
+                continue;
+            }
+            if (module.isDefault) {
+                this.modulesList.defaultModules.push(module);
+            } else {
+                this.modulesList.customModules.push(module);
+            }
+            module.favorite = this.options.getModuleFavorite(module.uuid);
+            if (module.favorite) {
+                this.modulesList.favorites.push(module);
+            }
+        }
+        console.log(this.modulesList);
+    }
+
     public setFavorite(item: any) {
-        this.options.setFavorites(item.type, !item.favorite);
+        this.options.setFavorite(item.type, !item.favorite);
         this.options.save();
         this.updateComponents();
     }
@@ -211,7 +270,20 @@ export class PolicyConfigurationComponent implements OnInit {
     public onSearch(event: any) {
         clearTimeout(this._searchTimeout);
         this._searchTimeout = setTimeout(() => {
-            this.updateComponents()
+            this.updateComponents();
+        }, 200);
+    }
+
+    public setModuleFavorite(item: any) {
+        this.options.setModuleFavorite(item.uuid, !item.favorite);
+        this.options.save();
+        this.updateModules();
+    }
+
+    public onModuleSearch(event: any) {
+        clearTimeout(this._searchTimeout);
+        this._searchTimeout = setTimeout(() => {
+            this.updateModules();
         }, 200);
     }
 
@@ -262,5 +334,30 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public onShowEvent(type: string) {
         this.eventVisible = type;
+    }
+
+    public onSelect(block: any) {
+        this.currentBlock = this.policyModel.getBlock(block);
+        this.policyModel.checkChange();
+        this.changeDetector.detectChanges();
+        return false;
+    }
+
+    public onAdd(type: string) {
+        this.currentBlock = this.policyModel.getBlock(this.currentBlock);
+        if (this.currentBlock) {
+            const newBlock = this.registeredBlocks.newBlock(type as any);
+            newBlock.tag = this.policyModel.getNewTag();
+            this.currentBlock.createChild(newBlock);
+        }
+    }
+
+    public onDelete(block: any) {
+        this.policyModel.removeBlock(block);
+        return false;
+    }
+
+    public onDeleteModule(item:any) {
+
     }
 }

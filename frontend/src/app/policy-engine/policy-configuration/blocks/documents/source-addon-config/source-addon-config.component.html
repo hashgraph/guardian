@@ -83,9 +83,7 @@
 
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'filtersGroup')" [attr.collapse]="propHidden.filtersGroup">
-            <mat-icon>
-                expand_more
-            </mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Filters</td>
         <td class="propHeaderCell">
@@ -98,9 +96,7 @@
     <ng-container *ngFor="let field of block.filters; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.filtersGroup">
             <td class="propRowCol" (click)="onHide(propHidden.filters, i)" [attr.collapse]="propHidden.filters[i]">
-                <mat-icon>
-                    expand_more
-                </mat-icon>
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Field {{i}}</td>
             <td class="propRowCell">

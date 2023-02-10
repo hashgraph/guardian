@@ -7,10 +7,7 @@ import { PolicyModel, PolicyGroupModel, PolicyRoleModel, PolicyTopicModel, Polic
 @Component({
     selector: 'policy-properties',
     templateUrl: './policy-properties.component.html',
-    styleUrls: [
-        './../common-properties/common-properties.component.css',
-        './policy-properties.component.css'
-    ]
+    styleUrls: ['./policy-properties.component.css']
 })
 export class PolicyPropertiesComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;

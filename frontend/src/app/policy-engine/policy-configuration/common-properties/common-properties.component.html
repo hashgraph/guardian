@@ -3,20 +3,11 @@
         <mat-spinner></mat-spinner>
     </div>
     <div class="table">
-        <table class="header">
-            <tr class="propHeader">
-                <td class="propRowCol"></td>
-                <th class="propHeaderCell cellName">Property</th>
-                <th class="propHeaderCell">Value</th>
-            </tr>
-        </table>
         <div class="table-body">
             <table *ngIf="block" class="properties">
                 <tr class="propHeader">
                     <td class="propRowCol" (click)="onHide(propHidden, 'about')" [attr.collapse]="propHidden.about">
-                        <mat-icon>
-                            expand_more
-                        </mat-icon>
+                        <mat-icon>arrow_drop_down</mat-icon>
                     </td>
                     <td class="propHeaderCell cellName">About</td>
                     <td class="propHeaderCell"></td>
@@ -77,9 +68,7 @@
                 <tr class="propHeader">
                     <td class="propRowCol" (click)="onHide(propHidden, 'metaData')"
                         [attr.collapse]="propHidden.metaData">
-                        <mat-icon>
-                            expand_more
-                        </mat-icon>
+                        <mat-icon>arrow_drop_down</mat-icon>
                     </td>
                     <td class="propHeaderCell cellName">Meta Data</td>
                     <td class="propHeaderCell"></td>
@@ -176,9 +165,7 @@
                     <tr class="propHeader">
                         <td class="propRowCol" (click)="onHide(propHidden, 'customProperties')"
                             [attr.collapse]="propHidden.customProperties">
-                            <mat-icon>
-                                expand_more
-                            </mat-icon>
+                            <mat-icon>arrow_drop_down</mat-icon>
                         </td>
                         <td class="propHeaderCell cellName">Properties</td>
                         <td class="propHeaderCell"></td>
@@ -198,13 +185,6 @@
 
 <div *ngIf="type == 'Events'" class="grid-setting" [attr.readonly]="readonly">
     <div class="table">
-        <table class="header">
-            <tr class="propHeader">
-                <td class="propRowCol"></td>
-                <th class="propHeaderCell cellName">Property</th>
-                <th class="propHeaderCell">Value</th>
-            </tr>
-        </table>
         <div class="table-body">
             <table *ngIf="block" class="properties">
 
@@ -212,7 +192,7 @@
                     <tr class="propHeader">
                         <td class="propRowCol" (click)="onHide(propHidden, 'defaultEvent')"
                             [attr.collapse]="propHidden.defaultEvent">
-                            <mat-icon>expand_more</mat-icon>
+                            <mat-icon>arrow_drop_down</mat-icon>
                         </td>
                         <td class="propHeaderCell cellName">
                             <div style="height: 20px;" [attr.disabled]="block.properties.stopPropagation">
@@ -230,14 +210,14 @@
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Event Type</td>
-                        <td class="propRowCell remove-cell">
+                        <td class="propRowCell">
                             <span class="readonly-prop">Output Event</span>
                         </td>
                     </tr>
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Source</td>
-                        <td class="propRowCell remove-cell">
+                        <td class="propRowCell">
                             <span class="readonly-prop">Current Block</span>
                         </td>
                     </tr>
@@ -246,14 +226,14 @@
                         <td class="propRowCell cellName">
                             Output Event
                         </td>
-                        <td class="propRowCell remove-cell">
+                        <td class="propRowCell">
                             <span class="readonly-prop">RunEvent</span>
                         </td>
                     </tr>
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Target</td>
-                        <td class="propRowCell remove-cell">
+                        <td class="propRowCell">
                             <span class="readonly-prop">Next Block</span>
                         </td>
                     </tr>
@@ -262,7 +242,7 @@
                         <td class="propRowCell cellName">
                             Input Event
                         </td>
-                        <td class="propRowCell remove-cell">
+                        <td class="propRowCell">
                             <span class="readonly-prop">RunEvent</span>
                         </td>
                     </tr>
@@ -271,14 +251,14 @@
                         <td class="propRowCell cellName">
                             Event Actor
                         </td>
-                        <td class="propRowCell remove-cell">
+                        <td class="propRowCell">
                             <span class="readonly-prop">Event Initiator</span>
                         </td>
                     </tr>
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Disabled</td>
-                        <td class="propRowCell remove-cell">
+                        <td class="propRowCell">
                             <input class="prop-input" type="checkbox" [(ngModel)]="block.properties.stopPropagation"
                                 [readonly]="readonly" (change)="onSave()">
                         </td>
@@ -290,7 +270,7 @@
                         <tr class="propHeader">
                             <td class="propRowCol" (click)="onHide(propHidden.eventsGroup, i)"
                                 [attr.collapse]="propHidden.eventsGroup[i]">
-                                <mat-icon>expand_more</mat-icon>
+                                <mat-icon>arrow_drop_down</mat-icon>
                             </td>
                             <td class="propHeaderCell cellName">
                                 <div style="height: 20px;" [attr.disabled]="item.disabled">
@@ -317,7 +297,7 @@
                         <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Event Type</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell">
                                 <mat-select [value]="isInputEvent(item)" (selectionChange)="chanceType($event, item)"
                                     [disabled]="readonly">
                                     <mat-option [value]="true">Input Event</mat-option>
@@ -330,7 +310,7 @@
                             [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Source</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell">
                                 <span class="readonly-prop">Current Block</span>
                             </td>
                         </tr>
@@ -338,7 +318,7 @@
                             [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Source</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell">
                                 <mat-select [(value)]="item.source" [disabled]="readonly" (selectionChange)="onSave()">
                                     <mat-select-trigger>
                                         <span class="custom">
@@ -359,7 +339,7 @@
                         <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Output Event</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell">
                                 <mat-select [(value)]="item.output" [disabled]="readonly" (selectionChange)="onSave()">
                                     <mat-option value=""></mat-option>
                                     <mat-option *ngFor="let e of getOutputEvents(item)" [value]="e">
@@ -373,7 +353,7 @@
                             [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Target</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell">
                                 <mat-select [(value)]="item.target" [disabled]="readonly" (selectionChange)="onSave()">
                                     <mat-select-trigger>
                                         <span class="custom">
@@ -395,14 +375,14 @@
                             [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Target</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell">
                                 <span class="readonly-prop">Current Block</span>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Input Event</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell">
                                 <mat-select [(value)]="item.input" [disabled]="readonly" (selectionChange)="onSave()">
                                     <mat-option value=""></mat-option>
                                     <mat-option *ngFor="let e of getInputEvents(item)" [value]="e">
@@ -415,7 +395,7 @@
                         <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Event Actor</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell">
                                 <mat-select [(ngModel)]="item.actor" (selectionChange)="onSave()" [disabled]="readonly">
                                     <mat-option value="">Event Initiator</mat-option>
                                     <mat-option value="owner">Document Owner</mat-option>
@@ -427,7 +407,7 @@
                         <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Disabled</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell">
                                 <input class="prop-input" type="checkbox" [(ngModel)]="item.disabled"
                                     [readonly]="readonly" (change)="onSave()">
                             </td>
