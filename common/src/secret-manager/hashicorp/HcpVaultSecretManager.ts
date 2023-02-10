@@ -31,6 +31,9 @@ export class HcpVaultSecretManager implements SecretManagerBase {
       const result = await this.vault.read(this.getSecretId(path))
       return result.data.data
     } catch(ex) {
+      if(ex.response.statusCode == 404) {
+        return null;
+      }
       throw Error("Retreive Secret Failed: " + ex)
     }
   }

@@ -44,6 +44,9 @@ export class AwsSecretManager implements SecretManagerBase {
       );
       return JSON.parse(response.SecretString);
     } catch (ex) {
+      if (ex.name == 'ResourceNotFoundException') {
+        return null;
+      }
       throw ex;
     }
   }
@@ -61,8 +64,6 @@ export class AwsSecretManager implements SecretManagerBase {
         await this.createSecrets(path, data);
       }
     } catch (ex) {
-      console.log(ex.name, ex.message);
-      
       throw ex;
     }
   }

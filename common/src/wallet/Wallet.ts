@@ -19,7 +19,7 @@ export class Wallet {
    */
   public async getKey(token: string, type: string, key: string): Promise<string> {
     const result = await this.secretManager.getSecrets(`wallet/${this.generateKeyName(token, type, key)}`);   
-    return result.privateKey;
+    return result ? result.privateKey : null;
   }
 
   /**
