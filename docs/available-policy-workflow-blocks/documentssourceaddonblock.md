@@ -32,3 +32,27 @@ Note: If no Order Field is specified, but Order Direction is specified, then Ord
 | Field           | Name of the field to filter, it can be nested using "."    | option.status |
 | Type            | Filter on the basis of type (Equal, Not Equal, In, Not In) | Equal         |
 | Value           | The field by which to filter Value                         | Verified      |
+
+### API Parameters
+
+{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
+{% swagger-description %}
+
+{% endswagger-description %}
+
+{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
+Policy ID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Block UUID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="orderBy" type="String" %}
+Order Field Path
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="orderDirection" type="String" %}
+Order Direction, ASC, DESC
+{% endswagger-parameter %}
+{% endswagger %}
