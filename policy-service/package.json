@@ -36,6 +36,7 @@
         "imurmurhash": "^0.1.4",
         "jszip": "^3.7.1",
         "lodash.get": "^4.4.2",
+        "lodash.set": "^4.3.2",
         "mathjs": "^10.1.0",
         "module-alias": "^2.2.2",
         "moment": "^2.29.2",
@@ -70,7 +71,7 @@
         "dev:docker": "nodemon .",
         "dev": "tsc -w",
         "lint": "tslint --config ../tslint.json --project .",
-        "start": "node dist/index.js",
+        "start": "node --inspect dist/index.js",
         "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/guardian-service.xml",
         "test:local": "mocha tests/**/*.test.js",
         "test:stability": "mocha tests/stability.test.js"

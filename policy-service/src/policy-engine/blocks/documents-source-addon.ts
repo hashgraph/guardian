@@ -6,6 +6,8 @@ import { IPolicyAddonBlock, IPolicyDocument } from '@policy-engine/policy-engine
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import ObjGet from 'lodash.get';
+import ObjSet from 'lodash.set';
 
 /**
  * Documents source addon
@@ -173,20 +175,19 @@ export class DocumentsSourceAddon {
         }
 
         if(!countResult) {
+            const selectiveAttributeBlock = ref.getSelectiveAttributes()[0];
             for (const dataItem of data as IPolicyDocument[]) {
-                if (ref.options.viewHistory) {
-
-                    dataItem.history = (await ref.databaseServer.getDocumentStates({
-                        documentId: dataItem.id
-                    }, {
-                        orderBy: {'created': 'DESC'}
-                    })).map(item => {
-                        return {
-                            status: item.status,
-                            created: new Date(item.created).toLocaleString(),
-                            reason: item.reason
-                        }
-                    });
+                if (selectiveAttributeBlock) {
+                    const newOptions: any = {};
+                    for (const attribute of selectiveAttributeBlock.options
+                        .attributes) {
+                        ObjSet(
+                            newOptions,
+                            attribute.attributePath,
+                            ObjGet(dataItem.option, attribute.attributePath)
+                        );
+                    }
+                    dataItem.option = newOptions;
                 }
                 dataItem.__sourceTag__ = ref.tag;
             }
@@ -280,24 +281,30 @@ export class DocumentsSourceAddon {
             }
         };
 
-        if (ref.options.viewHistory) {
-            blockFilter.$set.historyDocumentId = {
+        const selectiveAttibuteBlock = ref.getSelectiveAttributes()[0];
+        if (selectiveAttibuteBlock) {
+            blockFilter.$set.newOption = {
                 $cond: {
                     if: {
-                        '$and': [
+                        $and: [
                             ...filters,
                             {
                                 $or: [
-                                    { $eq: [null, '$historyDocumentId'] },
-                                    { $not: '$historyDocumentId' }
-                                ]
-                            }
-                        ]
+                                    { $eq: [null, '$newOption'] },
+                                    { $not: '$newOption' },
+                                ],
+                            },
+                        ],
                     },
-                    then: { $toString: '$_id' },
-                    else: '$historyDocumentId'
-                }
+                    then: {},
+                    else: '$newOption',
+                },
             };
+            for (const attribute of selectiveAttibuteBlock.options.attributes) {
+                blockFilter.$set.newOption.$cond.then[
+                    attribute.attributePath
+                ] = `$option.${attribute.attributePath}`;
+            }
         }
 
         return blockFilter;

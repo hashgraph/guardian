@@ -323,6 +323,10 @@ export class RegisteredBlocks {
                     type: BlockType.DocumentsSourceAddon,
                     group: BlockGroup.UnGrouped,
                 },
+                {
+                    type: BlockType.HistoryAddon,
+                    group: BlockGroup.UnGrouped,
+                },
             ],
         });
         this.registerBlock({
@@ -440,6 +444,9 @@ export class RegisteredBlocks {
             allowedChildren: [{
                 type: BlockType.FiltersAddon,
                 group: BlockGroup.UnGrouped
+            },{
+                type: BlockType.SelectiveAttributes,
+                group: BlockGroup.UnGrouped
             }]
         });
         this.registerBlock({
@@ -448,6 +455,22 @@ export class RegisteredBlocks {
             group: BlockGroup.Documents,
             header: BlockHeaders.Addons,
             factory: PaginationAddonBlockComponent,
+            property: null,
+        });
+        this.registerBlock({
+            type: BlockType.HistoryAddon,
+            icon: 'history',
+            group: BlockGroup.Documents,
+            header: BlockHeaders.Addons,
+            factory: null,
+            property: null,
+        });
+        this.registerBlock({
+            type: BlockType.SelectiveAttributes,
+            icon: 'rule_folder',
+            group: BlockGroup.Documents,
+            header: BlockHeaders.Addons,
+            factory: null,
             property: null,
         });
         this.registerBlock({

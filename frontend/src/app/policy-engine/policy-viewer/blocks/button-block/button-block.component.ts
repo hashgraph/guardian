@@ -25,7 +25,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
     uiMetaData: any;
     buttons: any;
     commonVisible: boolean = true;
-    private readonly _commentField: string = 'comment';
+    private readonly _commentField: string = 'option.comment';
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -189,7 +189,22 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
-                this.setObjectValue(this.data, this._commentField, result);
+                let comments = this.getObjectValue(
+                    this.data,
+                    button.dialogResultFieldPath || this._commentField
+                );
+                if (Array.isArray(comments)) {
+                    comments.push(result);
+                } else {
+                    comments = comments
+                        ? [comments, result]
+                        : [result];
+                }
+                this.setObjectValue(
+                    this.data,
+                    button.dialogResultFieldPath || this._commentField,
+                    comments
+                );
                 this.onSelect(button);
             }
         });

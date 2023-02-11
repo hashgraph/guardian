@@ -48,6 +48,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         direction: ''
     };
     enableSorting: boolean = false;
+    viewHistory: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -127,7 +128,10 @@ export class DocumentsSourceBlockComponent implements OnInit {
             }
             this.children = data.children;
             this.columns = this.fields.map(f => f.index);
-            this.columns.unshift('history');
+            this.viewHistory = data.viewHistory;
+            if (data.viewHistory) {
+                this.columns.unshift('history');
+            }
             this.documents = data.data || [];
             this.sortHistory(this.documents);
             this.isActive = true;
@@ -225,9 +229,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
                         d = d[name];
                     }
                 }
-                return d;
+                return this.parseArrayValue(d);
             } else {
-                return row[field.name];
+                return this.parseArrayValue(row[field.name]);
             }
         } catch (error) {
             return "";
@@ -357,5 +361,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
             orderField: field.name,
             orderDirection: event.direction
         }).subscribe();
+    }
+
+    parseArrayValue(value: string | string[]) : string {
+        return Array.isArray(value) ? value.join(', ') : value;
     }
 }
