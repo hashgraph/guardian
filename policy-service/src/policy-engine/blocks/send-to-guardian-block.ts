@@ -134,7 +134,7 @@ export class SendToGuardianBlock {
     private async getVPRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
         let old: any = null;
         if (document.hash) {
-            old = await ref.databaseServer.getVcDocument({
+            old = await ref.databaseServer.getVpDocument({
                 where: {
                     hash: { $eq: document.hash },
                     hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
