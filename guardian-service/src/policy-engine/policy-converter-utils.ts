@@ -339,9 +339,7 @@ export class PolicyConverterUtils {
             block.children?.filter(
                 (child) => child.blockType === 'documentsSourceAddon'
             ) || [];
-        console.log(sourceAddons);
         const viewHistory = !!sourceAddons.find((addon) => addon.viewHistory);
-        console.log(viewHistory);
         if (viewHistory) {
             block.children.push({
                 id: GenerateUUIDv4(),

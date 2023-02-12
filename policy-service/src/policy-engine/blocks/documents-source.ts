@@ -98,6 +98,8 @@ export class InterfaceDocumentsSource {
         const history = commonAddonBlocks.find((addon) => {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
+
+        // Property viewHistory was deprecated in documentsSourceAddon blocks 11.02.23
         const deprecatedViewHistory = !!commonAddonBlocks
             .filter((addon) => addon.blockType === 'documentsSourceAddon')
             .find((addon) => {
@@ -177,21 +179,6 @@ export class InterfaceDocumentsSource {
             }
         }, {
             $set: {
-                'historyDocumentId': {
-                    $cond: {
-                        if: {
-                            $or: [
-                                { $eq: [null, '$historyDocumentId'] },
-                                { $not: '$historyDocumentId' }
-                            ]
-                        },
-                        then: '',
-                        else: '$historyDocumentId'
-                    }
-                }
-            }
-        }, {
-            $set: {
                 'option': {
                     $cond: {
                         if: {
@@ -205,6 +192,8 @@ export class InterfaceDocumentsSource {
                     }
                 }
             }
+        }, {
+            $unset: 'newOptions',
         }];
 
         if (history || deprecatedHistory) {
@@ -215,7 +204,7 @@ export class InterfaceDocumentsSource {
                             ? 'dry_run'
                             : 'document_state'
                     }`,
-                    localField: '_id',
+                    localField: 'id',
                     foreignField: 'documentId',
                     pipeline: [
                         {
@@ -224,13 +213,13 @@ export class InterfaceDocumentsSource {
                                     ? '$document.' +
                                       (history.options.timelineLabelPath ||
                                           'option.status')
-                                    : 'option.status',
+                                    : '$document.option.status',
                                 comment: history
                                     ? '$document.' +
                                       (history.options
                                           .timelineDescriptionPath ||
                                           'option.comment')
-                                    : 'option.comment',
+                                    : '$document.option.comment',
                                 created: '$created',
                             },
                         },
@@ -239,10 +228,6 @@ export class InterfaceDocumentsSource {
                 },
             });
         }
-
-        aggregation.push({
-            $unset: ['historyDocumentId', 'newOptions'],
-        });
 
         if (sortState.orderField && sortState.orderDirection) {
             const sortObject = {};
@@ -266,9 +251,9 @@ export class InterfaceDocumentsSource {
             aggregation.push({
                 $skip: paginationData.itemsPerPage * paginationData.page
             },
-                {
-                    $limit: paginationData.itemsPerPage
-                })
+            {
+                $limit: paginationData.itemsPerPage
+            });
         }
 
         switch (filtersAndDataType.dataType) {

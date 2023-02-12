@@ -196,7 +196,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
                 if (Array.isArray(comments)) {
                     comments.push(result);
                 } else {
-                    comments = comments
+                    comments = typeof comments === 'string'
                         ? [comments, result]
                         : [result];
                 }

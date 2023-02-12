@@ -444,7 +444,7 @@ export class RegisteredBlocks {
             allowedChildren: [{
                 type: BlockType.FiltersAddon,
                 group: BlockGroup.UnGrouped
-            },{
+            }, {
                 type: BlockType.SelectiveAttributes,
                 group: BlockGroup.UnGrouped
             }]

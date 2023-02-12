@@ -48,7 +48,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
         direction: ''
     };
     enableSorting: boolean = false;
-    viewHistory: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -128,7 +127,6 @@ export class DocumentsSourceBlockComponent implements OnInit {
             }
             this.children = data.children;
             this.columns = this.fields.map(f => f.index);
-            this.viewHistory = data.viewHistory;
             if (data.viewHistory) {
                 this.columns.unshift('history');
             }
@@ -163,11 +161,20 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
         for (const doc of documents) {
             if (doc.history) {
-                doc.history.sort(function (a: any, b: any) {
-                    const aDate = new Date(a.created as string);
-                    const bDate = new Date(b.created as string);
-                    return bDate.getTime() - aDate.getTime();
-                });
+                doc.history = doc.history
+                    .map((item: any) =>
+                        Object.assign(item, {
+                            created: new Date(item.created as string),
+                        })
+                    )
+                    .sort(function (a: any, b: any) {
+                        return b.created.getTime() - a.created.getTime();
+                    })
+                    .map((item: any) =>
+                        Object.assign(item, {
+                            created: (item.created as Date).toLocaleString(),
+                        })
+                    );
             }
         }
     }

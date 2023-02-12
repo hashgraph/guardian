@@ -24,7 +24,7 @@ export class ReleaseMigration extends Migration {
                 {
                     $set: {
                         'document.option.status': state.status,
-                        'document.option.comment': state.reason,
+                        'document.option.comment': [state.reason],
                     },
                 },
                 { session: this.ctx, upsert: false }

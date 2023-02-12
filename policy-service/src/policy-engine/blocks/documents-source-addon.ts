@@ -261,6 +261,9 @@ export class DocumentsSourceAddon {
         this.prepareFilters(filters);
         const blockFilter: any = {
             $set: {
+                id: {
+                    $toString: '$_id'
+                },
                 __sourceTag__: {
                     $cond: {
                         if: {
