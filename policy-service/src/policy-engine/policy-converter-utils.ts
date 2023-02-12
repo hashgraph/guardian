@@ -1,5 +1,5 @@
 import { Policy } from '@entity/policy';
-import { UserType } from '@guardian/interfaces';
+import { GenerateUUIDv4, UserType } from '@guardian/interfaces';
 import { EventConfig, PolicyInputEventType, PolicyOutputEventType, EventActor } from './interfaces';
 
 /**
@@ -9,7 +9,7 @@ export class PolicyConverterUtils {
     /**
      * Base version
      */
-    public static readonly VERSION = '1.4.0';
+    public static readonly VERSION = '1.5.0';
 
     /**
      * Policy converter
@@ -86,6 +86,9 @@ export class PolicyConverterUtils {
         }
         if (PolicyConverterUtils.versionCompare('1.3.0', policyVersion) > 0) {
             block = PolicyConverterUtils.v1_3_0(block, parent, index, next, prev);
+        }
+        if (PolicyConverterUtils.versionCompare('1.5.0', policyVersion) > 0) {
+            block = PolicyConverterUtils.v1_5_0(block, parent, index, next, prev);
         }
         if (block.children && block.children.length) {
             for (let i = 0; i < block.children.length; i++) {
@@ -309,6 +312,49 @@ export class PolicyConverterUtils {
         }
         if (block.blockType === 'retirementDocumentBlock') {
             block.accountType = block.accountType || 'default';
+        }
+        return block;
+    }
+
+    /**
+     * Create 1.3.0 version
+     * @param block
+     * @param parent
+     * @param index
+     * @param next
+     * @param prev
+     * @private
+     */
+    private static v1_5_0(
+        block: any,
+        parent?: any,
+        index?: any,
+        next?: any,
+        prev?: any
+    ): any {
+        if (block.blockType !== 'interfaceDocumentsSourceBlock') {
+            return block;
+        }
+        const sourceAddons =
+            block.children?.filter(
+                (child) => child.blockType === 'documentsSourceAddon'
+            ) || [];
+        const viewHistory = !!sourceAddons.find((addon) => addon.viewHistory);
+        if (viewHistory) {
+            block.children.push({
+                id: GenerateUUIDv4(),
+                tag: 'history_addon_' + Date.now(),
+                blockType: 'historyAddon',
+                defaultActive: false,
+                permissions: ['ANY_ROLE'],
+                onErrorAction: 'no-action',
+                artifacts: [],
+                children: [],
+                events: [],
+            });
+        }
+        for (const addon of sourceAddons) {
+            delete addon.viewHistory;
         }
         return block;
     }
