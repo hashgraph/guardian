@@ -341,9 +341,10 @@ export class PolicyConverterUtils {
             ) || [];
         const viewHistory = !!sourceAddons.find((addon) => addon.viewHistory);
         if (viewHistory) {
+            const newBlockUUID = GenerateUUIDv4();
             block.children.push({
-                id: GenerateUUIDv4(),
-                tag: 'history_addon_' + Date.now(),
+                id: newBlockUUID,
+                tag: 'history_addon_' + newBlockUUID,
                 blockType: 'historyAddon',
                 defaultActive: false,
                 permissions: ['ANY_ROLE'],
