@@ -34,7 +34,7 @@
             <mat-form-field appearance="outline">
                 <mat-label>* Help Text</mat-label>
                 <textarea
-                    [ngStyle]="{ 'color': field.color, 'font-size': field.size  + 'px', 'font-weight': field.bold ? 'bold' : ''}"
+                    [ngStyle]="{ 'height': '20px', 'color': field.color, 'font-size': field.size  + 'px', 'font-weight': field.bold ? 'bold' : ''}"
                     matInput [formControl]="field.controlDescription"></textarea>
             </mat-form-field>
         </div>
@@ -76,41 +76,46 @@
             <input matInput placeholder="Unit" [formControl]="field.controlUnit">
         </mat-form-field>
     </div>
-    <div class="custom-field-required" *ngIf="!helpText">
-        <mat-checkbox color="primary" [formControl]="field.controlRequired">
-            Required Field
-        </mat-checkbox>
-    </div>
-    <div class="custom-field-bold" *ngIf="helpText">
-        <mat-checkbox color="primary" [formControl]="field.controlBold">
-            Bold
-        </mat-checkbox>
-    </div>
-    <div class="custom-field-color" *ngIf="helpText">
-        <mat-form-field appearance="outline">
-            <mat-label>Color</mat-label>
-            <input matInput type="color" [formControl]="field.controlColor">
-            <mat-icon matPrefix>brush</mat-icon>
-        </mat-form-field>
-    </div>
-    <div class="custom-field-font-size" *ngIf="helpText">
-        <mat-form-field appearance="outline" floatLabel="never">
-            <mat-label>Font</mat-label>
-            <input matInput type="number" min="1" [formControl]="field.controlSize">
-            <div matSuffix>px</div>
-            <mat-icon matPrefix>format_size</mat-icon>
-        </mat-form-field>
-    </div>
-    <div class="reset-btn" *ngIf="helpText"
-        (click)="onHepTextReset()">
-        <mat-icon>restart_alt</mat-icon>
-        <span class="reset-btn-label">Reset</span>
-    </div>
-    <div class="custom-field-isArray" *ngIf="!helpText">
-        <mat-checkbox color="primary" [formControl]="field.controlArray">
-            Allow multiple answers
-        </mat-checkbox>
-    </div>
+
+    <ng-container *ngIf="helpText; else notHelpText">
+        <div class="custom-field-bold">
+            <mat-checkbox color="primary" [formControl]="field.controlBold">
+                Bold
+            </mat-checkbox>
+        </div>
+        <div class="custom-field-color">
+            <mat-form-field appearance="outline">
+                <mat-label>Color</mat-label>
+                <input matInput type="color" [formControl]="field.controlColor">
+                <mat-icon matPrefix>brush</mat-icon>
+            </mat-form-field>
+        </div>
+        <div class="custom-field-font-size">
+            <mat-form-field appearance="outline" floatLabel="never">
+                <mat-label>Font</mat-label>
+                <input matInput type="number" min="1" [formControl]="field.controlSize">
+                <div matSuffix>px</div>
+                <mat-icon matPrefix>format_size</mat-icon>
+            </mat-form-field>
+        </div>
+        <div class="reset-btn"
+            (click)="onHepTextReset()">
+            <mat-icon>restart_alt</mat-icon>
+            <span class="reset-btn-label">Reset</span>
+        </div>
+    </ng-container>
+    <ng-template #notHelpText>
+        <div class="custom-field-required">
+            <mat-checkbox color="primary" [formControl]="field.controlRequired">
+                Required Field
+            </mat-checkbox>
+        </div>
+        <div class="custom-field-isArray">
+            <mat-checkbox color="primary" [formControl]="field.controlArray">
+                Allow multiple answers
+            </mat-checkbox>
+        </div>
+    </ng-template>
     <div *ngIf="enum && !loading" class="enum-options-container">
         <mat-form-field *ngIf="this.field.controlEnum.value.length" appearance="outline" class="enum-form-field">
             <mat-label>Enum data</mat-label>
