@@ -537,6 +537,11 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * @param user
      */
     getState(user: IPolicyUser): any;
+
+    /**
+     * Get selective attributes addons
+     */
+    getSelectiveAttributes(): IPolicyAddonBlock[];
 }
 
 /**

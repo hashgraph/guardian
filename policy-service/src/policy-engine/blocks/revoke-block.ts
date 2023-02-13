@@ -168,7 +168,17 @@ export class RevokeBlock {
         for (const item of documents) {
             item.option = item.option || {};
             item.option.status = RevokedStatus;
-            item.comment = doc.comment;
+            item.comment = doc.option.comment;
+            if (Array.isArray(item.comment)) {
+                item.comment = item.comment[item.comment.length - 1];
+            }
+            if (item.option.comment) {
+                if (Array.isArray(item.option.comment)) {
+                    item.option.comment.push(item.comment);
+                }
+            } else {
+                item.option.comment = [item.comment];
+            }
         }
 
         if (uiMetaData && uiMetaData.updatePrevDoc && doc.relationships) {
@@ -179,7 +189,7 @@ export class RevokeBlock {
                 await ref.databaseServer.updateVC(prevDocument);
                 await ref.databaseServer.saveDocumentState({
                     documentId: prevDocument.id,
-                    status: uiMetaData.prevDocStatus
+                    document: prevDocument
                 });
             }
         }
