@@ -28,6 +28,7 @@ vault/hashicorp/certs/
 vault/hashicorp/vault
 vault/hashicorp/consul
 vault/hashicorp/configs/vault/secrets/secrets.json
+vault/aws/configs/secrets/secrets.json
 */tls
 
 # .env files
