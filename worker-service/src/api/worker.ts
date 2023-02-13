@@ -131,9 +131,7 @@ export class Worker {
         this.channel.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
             const secretManager = SecretManager.New();
             await secretManager.setSecrets('apikey/ipfs', {
-                data: {
-                    IPFS_STORAGE_API_KEY: msg.ipfsStorageApiKey,
-                }
+                IPFS_STORAGE_API_KEY: msg.ipfsStorageApiKey,
             });
             this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);            
         });

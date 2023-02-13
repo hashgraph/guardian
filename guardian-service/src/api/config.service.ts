@@ -50,10 +50,8 @@ export async function configAPI(
 
             const secretManager = SecretManager.New();
             await secretManager.setSecrets('keys/operator', {
-                data: {
-                    OPERATOR_ID: settings.operatorId,
-                    OPERATOR_KEY: settings.operatorKey,
-                }
+                OPERATOR_ID: settings.operatorId,
+                OPERATOR_KEY: settings.operatorKey,
             });
             
             await new Workers().updateSettings({
