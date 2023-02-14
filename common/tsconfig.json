@@ -13,7 +13,8 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "esModuleInterop": true,
-        "declaration": true
+        "declaration": true,
+        "skipLibCheck": true
     },
     "include": [
         "src/**/*"
