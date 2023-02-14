@@ -1,4 +1,5 @@
 version: "3.8"
+
 services:
   mongo:
     image: mongo:6.0.3
@@ -19,7 +20,7 @@ services:
       - mongo
 
   ipfs-node:
-    image: ipfs/kubo:v0.17.0
+    image: ipfs/kubo:v0.18.1
     ports:
       - "5001:5001"
       - "5002:5002"
@@ -122,6 +123,10 @@ services:
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
+    expose:
+      - 3003
+    ports:
+      - "3003:3003"
     depends_on:
       - mongo
       - message-broker
@@ -158,9 +163,52 @@ services:
       - api-docs
       - mrv-sender
       - mongo-express
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+    
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/dashboards
+    environment:
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_SERVER_HTTP_PORT=9080
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/dashboards/prometheus-dashboard.json
+    ports:
+      - "9080:9080"
+    networks:
+      - monitoring
+        
 volumes:
   mongo:
+  prometheus_data: {}
+  grafana_data: {}
   # volume-guardian-service:
   # volume-ui-service:
   # volume-mrv-sender:
   #  volume-message-broker:
+
+networks:
+  monitoring:
+    driver: bridge

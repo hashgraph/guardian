@@ -1,3 +1,5 @@
+import client from 'prom-client';
+import apiDefaultPrometheusMetrics from 'prometheus-api-metrics';
 import {
     accountAPI,
     trustchainsAPI,
@@ -7,7 +9,8 @@ import {
     tokenAPI,
     externalAPI,
     ipfsAPI,
-    analyticsAPI
+    analyticsAPI,
+    metricsAPI,
 } from '@api/service';
 import { Guardians } from '@helpers/guardians';
 import express from 'express';
@@ -32,6 +35,13 @@ import { contractAPI } from '@api/service/contract';
 const PORT = process.env.PORT || 3002;
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
 
+const restResponseTimeHistogram = new client.Histogram({
+    name: 'api_gateway_rest_response_time_duration_seconds',
+    help: 'api-gateway a histogram metric',
+    labelNames: ['method', 'route', 'statusCode'],
+    buckets: [0.1, 5, 15, 50, 100, 500],
+});
+
 Promise.all([
     MessageBrokerChannel.connect('API_GATEWAY'),
 ]).then(async ([cn]) => {
@@ -44,6 +54,7 @@ Promise.all([
             type: 'binary/octet-stream'
         }));
         app.use(fileupload());
+
         const channel = new MessageBrokerChannel(cn, 'guardian');
         const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
         new Logger().setChannel(channel);
@@ -58,8 +69,23 @@ Promise.all([
         wsService.init();
 
         new TaskManager().setDependecies(wsService, apiGatewayChannel);
-
         ////////////////////////////////////////
+        app.use(apiDefaultPrometheusMetrics());
+        app.use((req, res, next) => {
+            const start = Date.now();
+            res.on('finish', () => {
+                const responseTime = Date.now() - start;
+                restResponseTimeHistogram
+                  .observe(
+                    {
+                        method: req.method,
+                        route: req?.route?.path || '/',
+                        statusCode: res.statusCode,
+                    },
+                    responseTime * 1000);
+            });
+            next();
+        });
 
         // Config routes
         app.use('/policies', authorizationHelper, policyAPI);
@@ -78,8 +104,8 @@ Promise.all([
         app.use('/tasks/', taskAPI);
         app.use('/analytics/', authorizationHelper, analyticsAPI);
         app.use('/contracts', authorizationHelper, contractAPI);
+        app.use('/metrics', metricsAPI);
         /////////////////////////////////////////
-
         server.listen(PORT, () => {
             new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);
         });

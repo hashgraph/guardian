@@ -51,6 +51,7 @@ import { RetireRequest } from '@entity/retire-request';
 import { analyticsAPI } from '@api/analytics.service';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyEngine } from '@policy-engine/policy-engine';
+import { startMetricsServer } from './utils/metrics';
 
 export const obj = {};
 
@@ -241,6 +242,7 @@ Promise.all([
 
     await validator.validate();
 
+    startMetricsServer();
 }, (reason) => {
     console.log(reason);
     process.exit(0);

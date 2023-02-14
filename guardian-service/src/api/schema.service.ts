@@ -22,6 +22,7 @@ import { MessageBrokerChannel, MessageResponse, MessageError, Logger, RunFunctio
 import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
+import { serviceResponseTimeHistogram } from '../utils/metrics';
 
 export const schemaCache = {};
 
@@ -828,19 +829,23 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(channel, MessageAPI.CREATE_SCHEMA, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             const schemaObject = msg as ISchema;
             SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
             await createSchema(schemaObject, schemaObject.owner, emptyNotifier());
             const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
+            timer({ operation: MessageAPI.CREATE_SCHEMA, success: 'true' });
             return new MessageResponse(schemas);
         } catch (error) {
+            timer({ operation: MessageAPI.CREATE_SCHEMA, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
 
     ApiResponse(channel, MessageAPI.CREATE_SCHEMA_ASYNC, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         const { item, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
         RunFunctionAsync(async () => {
@@ -848,7 +853,9 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
             const schema = await createSchema(schemaObject, schemaObject.owner, notifier);
             notifier.result(schema.id);
+            timer({ operation: MessageAPI.CREATE_SCHEMA_ASYNC, success: 'true' });
         }, async (error) => {
+            timer({ operation: MessageAPI.CREATE_SCHEMA_ASYNC, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
@@ -863,11 +870,13 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(channel, MessageAPI.UPDATE_SCHEMA, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             const id = msg.id as string;
             const item = await DatabaseServer.getSchema(id);
             if (item) {
                 if (checkForCircularDependency(item)) {
+                    timer({ operation: MessageAPI.UPDATE_SCHEMA, success: 'false' });
                     throw new Error(`There is circular dependency in schema: ${item.iri}`);
                 }
                 item.name = msg.name;
@@ -881,8 +890,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 await updateSchemaDefs(item.document.$id);
             }
             const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
+            timer({ operation: MessageAPI.UPDATE_SCHEMA, success: 'true' });
             return new MessageResponse(schemas);
         } catch (error) {
+            timer({ operation: MessageAPI.UPDATE_SCHEMA, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
@@ -896,12 +907,15 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(channel, MessageAPI.GET_SCHEMA, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             if (!msg) {
+                timer({ operation: MessageAPI.GET_SCHEMA, success: 'false' });
                 return new MessageError('Invalid load schema parameter');
             }
             if (msg.id) {
                 const schema = await DatabaseServer.getSchema(msg.id);
+                timer({ operation: MessageAPI.GET_SCHEMA, success: 'false' });
                 return new MessageResponse(schema);
             }
             if (msg.type) {
@@ -909,10 +923,13 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 const schema = await DatabaseServer.getSchema({
                     iri
                 });
+                timer({ operation: MessageAPI.GET_SCHEMA, success: 'true' });
                 return new MessageResponse(schema);
             }
+            timer({ operation: MessageAPI.GET_SCHEMA, success: 'false' });
             return new MessageError('Invalid load schema parameter');
         } catch (error) {
+            timer({ operation: MessageAPI.GET_SCHEMA, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
@@ -926,8 +943,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(channel, MessageAPI.GET_SCHEMAS, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             if (!msg) {
+                timer({ operation: MessageAPI.GET_SCHEMAS, success: 'false' });
                 return new MessageError('Invalid load schema parameter');
             }
 
@@ -964,8 +983,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
 
             const [schemas, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
 
+            timer({ operation: MessageAPI.GET_SCHEMAS, success: 'true' });
             return new MessageResponse({ schemas, count });
         } catch (error) {
+            timer({ operation: MessageAPI.GET_SCHEMAS, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
@@ -980,8 +1001,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(channel, MessageAPI.PUBLISH_SCHEMA, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             if (!msg) {
+                timer({ operation: MessageAPI.GET_SCHEMAS, success: 'false' });
                 return new MessageError('Invalid id');
             }
 
@@ -989,8 +1012,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             const users = new Users();
             const root = await users.getHederaAccount(owner);
             const item = await findAndPublishSchema(id, version, owner, root, emptyNotifier());
+            timer({ operation: MessageAPI.GET_SCHEMAS, success: 'true' });
             return new MessageResponse(item);
         } catch (error) {
+            timer({ operation: MessageAPI.GET_SCHEMAS, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
             return new MessageError(error);
@@ -1000,8 +1025,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
     ApiResponse(channel, MessageAPI.PUBLISH_SCHEMA_ASYNC, async (msg) => {
         const { id, version, owner, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
+        const timer = serviceResponseTimeHistogram.startTimer();
         RunFunctionAsync(async () => {
             if (!msg) {
+                timer({ operation: MessageAPI.PUBLISH_SCHEMA_ASYNC, success: 'false' });
                 notifier.error('Invalid id');
             }
 
@@ -1010,7 +1037,9 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             const root = await users.getHederaAccount(owner);
             const item = await findAndPublishSchema(id, version, owner, root, notifier);
             notifier.result(item.id);
+            timer({ operation: MessageAPI.PUBLISH_SCHEMA_ASYNC, success: 'true' });
         }, async (error) => {
+            timer({ operation: MessageAPI.PUBLISH_SCHEMA_ASYNC, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
@@ -1026,13 +1055,16 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(channel, MessageAPI.DELETE_SCHEMA, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             if (msg && msg.id) {
                 await deleteSchema(msg.id, emptyNotifier());
             }
             const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
+            timer({ operation: MessageAPI.DELETE_SCHEMA, success: 'true' });
             return new MessageResponse(schemas);
         } catch (error) {
+            timer({ operation: MessageAPI.DELETE_SCHEMA, success: 'false' });
             return new MessageError(error);
         }
     });
@@ -1045,18 +1077,23 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {Schema} Found or uploaded schema
      */
     ApiResponse(channel, MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             if (!msg) {
+                timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, success: 'false' });
                 return new MessageError('Invalid import schema parameter');
             }
             const { owner, messageIds, topicId } = msg;
             if (!owner || !messageIds) {
+                timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, success: 'false' });
                 return new MessageError('Invalid import schema parameter');
             }
 
             const schemasMap = await importSchemasByMessages(owner, messageIds, topicId, emptyNotifier());
+            timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, success: 'true' });
             return new MessageResponse(schemasMap);
         } catch (error) {
+            timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
             return new MessageError(error);
@@ -1064,6 +1101,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
     });
 
     ApiResponse(channel, MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         const { owner, messageIds, topicId, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
         RunFunctionAsync(async () => {
@@ -1075,8 +1113,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             }
 
             const schemasMap = await importSchemasByMessages(owner, messageIds, topicId, notifier);
+            timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, success: 'true' });
             notifier.result(schemasMap);
         }, async (error) => {
+            timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
@@ -1091,18 +1131,23 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {Schema} Found or uploaded schema
      */
     ApiResponse(channel, MessageAPI.IMPORT_SCHEMAS_BY_FILE, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             if (!msg) {
+                timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_FILE, success: 'false' });
                 return new MessageError('Invalid import schema parameter');
             }
             const { owner, files, topicId } = msg;
             if (!owner || !files) {
+                timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_FILE, success: 'false' });
                 return new MessageError('Invalid import schema parameter');
             }
 
             const result = await importSchemaByFiles(owner, files, topicId, emptyNotifier());
+            timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_FILE, success: 'true' });
             return new MessageResponse(result);
         } catch (error) {
+            timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_FILE, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
             return new MessageError(error);
@@ -1110,19 +1155,24 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
     });
 
     ApiResponse(channel, MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         const { owner, files, topicId, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
         RunFunctionAsync(async () => {
             if (!msg) {
+                timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, success: 'false' });
                 notifier.error('Invalid import schema parameter');
             }
             if (!owner || !files) {
+                timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, success: 'false' });
                 notifier.error('Invalid import schema parameter');
             }
 
             const result = await importSchemaByFiles(owner, files, topicId, notifier);
+            timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, success: 'true' });
             notifier.result(result);
         }, async (error) => {
+            timer({ operation: MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             notifier.error(error);
         });
@@ -1137,8 +1187,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {Schema} Found or uploaded schema
      */
     ApiResponse(channel, MessageAPI.PREVIEW_SCHEMA, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             if (!msg) {
+                timer({ operation: MessageAPI.PREVIEW_SCHEMA, success: 'false' });
                 return new MessageError('Invalid preview schema parameters');
             }
             const { messageIds } = msg as {
@@ -1148,12 +1200,15 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 messageIds: string[];
             };
             if (!messageIds) {
+                timer({ operation: MessageAPI.PREVIEW_SCHEMA, success: 'false' });
                 return new MessageError('Invalid preview schema parameters');
             }
 
             const result = await prepareSchemaPreview(messageIds, emptyNotifier());
+            timer({ operation: MessageAPI.PREVIEW_SCHEMA, success: 'true' });
             return new MessageResponse(result);
         } catch (error) {
+            timer({ operation: MessageAPI.PREVIEW_SCHEMA, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             console.error(error);
             return new MessageError(error);
@@ -1168,6 +1223,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {Schema} Found or uploaded schema
      */
     ApiResponse(channel, MessageAPI.PREVIEW_SCHEMA_ASYNC, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         const { messageIds, taskId } = msg as {
             /**
              * Message ids
@@ -1181,15 +1237,18 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
         const notifier = initNotifier(apiGatewayChannel, taskId);
         RunFunctionAsync(async () => {
             if (!msg) {
+                timer({ operation: MessageAPI.PREVIEW_SCHEMA_ASYNC, success: 'false' });
                 notifier.error('Invalid preview schema parameters');
                 return;
             }
             if (!messageIds) {
+                timer({ operation: MessageAPI.PREVIEW_SCHEMA_ASYNC, success: 'false' });
                 notifier.error('Invalid preview schema parameters');
                 return;
             }
 
             const result = await prepareSchemaPreview(messageIds, notifier);
+            timer({ operation: MessageAPI.PREVIEW_SCHEMA_ASYNC, success: 'true' });
             notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -1208,6 +1267,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {any} - Response result
      */
     ApiResponse(channel, MessageAPI.EXPORT_SCHEMAS, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             const ids = msg as string[];
             const schemas = await DatabaseServer.getSchemasByIds(ids);
@@ -1229,14 +1289,17 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                     }
                 }
             }
+            timer({ operation: MessageAPI.EXPORT_SCHEMAS, success: 'true' });
             return new MessageResponse(relationships);
         } catch (error) {
+            timer({ operation: MessageAPI.EXPORT_SCHEMAS, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
 
     ApiResponse(channel, MessageAPI.INCREMENT_SCHEMA_VERSION, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             const { owner, iri } = msg as {
                 /**
@@ -1249,8 +1312,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 iri: string
             };
             const schema = await incrementSchemaVersion(iri, owner);
+            timer({ operation: MessageAPI.INCREMENT_SCHEMA_VERSION, success: 'true' });
             return new MessageResponse(schema);
         } catch (error) {
+            timer({ operation: MessageAPI.INCREMENT_SCHEMA_VERSION, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
@@ -1264,6 +1329,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(channel, MessageAPI.CREATE_SYSTEM_SCHEMA, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             const schemaObject = msg as ISchema;
             SchemaHelper.setVersion(schemaObject, null, null);
@@ -1274,8 +1340,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             schemaObject.system = true;
             schemaObject.active = false;
             const item = await DatabaseServer.createAndSaveSchema(schemaObject);
+            timer({ operation: MessageAPI.CREATE_SYSTEM_SCHEMA, success: 'true' });
             return new MessageResponse(item);
         } catch (error) {
+            timer({ operation: MessageAPI.CREATE_SYSTEM_SCHEMA, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
@@ -1289,8 +1357,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(channel, MessageAPI.GET_SYSTEM_SCHEMAS, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             if (!msg) {
+                timer({ operation: MessageAPI.GET_SYSTEM_SCHEMAS, success: 'false' });
                 return new MessageError('Invalid load schema parameter');
             }
 
@@ -1309,11 +1379,13 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 otherOptions.offset = _pageIndex * _pageSize;
             }
             const [schemas, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+            timer({ operation: MessageAPI.GET_SYSTEM_SCHEMAS, success: 'true' });
             return new MessageResponse({
                 schemas,
                 count
             });
         } catch (error) {
+            timer({ operation: MessageAPI.GET_SYSTEM_SCHEMAS, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
@@ -1328,6 +1400,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(channel, MessageAPI.ACTIVE_SCHEMA, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             if (msg && msg.id) {
                 const item = await DatabaseServer.getSchema(msg.id);
@@ -1341,8 +1414,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                     await DatabaseServer.saveSchemas(schemas);
                 }
             }
+            timer({ operation: MessageAPI.ACTIVE_SCHEMA, success: 'true' });
             return new MessageResponse(null);
         } catch (error) {
+            timer({ operation: MessageAPI.ACTIVE_SCHEMA, success: 'false' });
             return new MessageError(error);
         }
     });
@@ -1355,8 +1430,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(channel, MessageAPI.GET_SYSTEM_SCHEMA, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             if (!msg || !msg.entity) {
+                timer({ operation: MessageAPI.GET_SYSTEM_SCHEMA, success: 'false' });
                 return new MessageError('Invalid load schema parameter');
             }
             const schema = await DatabaseServer.getSchema({
@@ -1364,8 +1441,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 system: true,
                 active: true
             });
+            timer({ operation: MessageAPI.GET_SYSTEM_SCHEMA, success: 'true' });
             return new MessageResponse(schema);
         } catch (error) {
+            timer({ operation: MessageAPI.GET_SYSTEM_SCHEMA, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
@@ -1379,8 +1458,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      * @returns {any[]} - all schemas
      */
     ApiResponse(channel, MessageAPI.GET_LIST_SCHEMAS, async (msg) => {
+        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             if (!msg || !msg.owner) {
+                timer({ operation: MessageAPI.GET_LIST_SCHEMAS, success: 'false' });
                 return new MessageError('Invalid schema owner');
             }
             const schema = await DatabaseServer.getSchemas({
@@ -1395,8 +1476,10 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                     'topicId'
                 ]
             });
+            timer({ operation: MessageAPI.GET_LIST_SCHEMAS, success: 'true' });
             return new MessageResponse(schema);
         } catch (error) {
+            timer({ operation: MessageAPI.GET_LIST_SCHEMAS, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }

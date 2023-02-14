@@ -1,0 +1,11 @@
+apiVersion: 1
+
+datasources:
+  - name: API Gateway
+    type: prometheus
+    access: proxy
+    url: http://host.docker.internal:9090
+  - name: Guardian Service
+    type: prometheus
+    access: proxy
+    url: http://host.docker.internal:3003
