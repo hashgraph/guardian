@@ -1099,7 +1099,6 @@ export class PolicyEngineService {
 
                 const userDID = await this.getUserDid(user.username);
                 const item = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, userDID);
-                console.log(policy, userDID, item);
                 if (item) {
                     return new MessageResponse(item);
                 } else {
