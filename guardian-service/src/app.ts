@@ -83,6 +83,7 @@ Promise.all([
     state.setChannel(channel);
     const settingsContainer = new SettingsContainer();
     settingsContainer.setChannel(channel);
+
     await settingsContainer.init('OPERATOR_ID', 'OPERATOR_KEY');
 
     const { OPERATOR_ID, OPERATOR_KEY } = settingsContainer.settings;

@@ -1095,18 +1095,20 @@ export class PolicyEngineService {
             try {
                 const { user, policyId } = msg;
 
-                const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
-                const userFull = await this.policyEngine.getUser(policyInstance, user);
-                const item = await DatabaseServer.getMultiPolicy(policyInstance.instanceTopicId, userFull.did);
+                const policy = await DatabaseServer.getPolicyById(policyId);
+
+                const userDID = await this.getUserDid(user.username);
+                const item = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, userDID);
+                console.log(policy, userDID, item);
                 if (item) {
                     return new MessageResponse(item);
                 } else {
                     return new MessageResponse({
                         uuid: null,
-                        instanceTopicId: policyInstance.instanceTopicId,
-                        mainPolicyTopicId: policyInstance.instanceTopicId,
-                        synchronizationTopicId: policyInstance.synchronizationTopicId,
-                        owner: userFull.did,
+                        instanceTopicId: policy.instanceTopicId,
+                        mainPolicyTopicId: policy.instanceTopicId,
+                        synchronizationTopicId: policy.synchronizationTopicId,
+                        owner: userDID,
                         type: null
                     });
                 }
@@ -1119,15 +1121,16 @@ export class PolicyEngineService {
         this.channel.response<any, any>(PolicyEngineEvents.SET_MULTI_POLICY, async (msg) => {
             try {
                 const { user, policyId, data } = msg;
-                const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policyId);
+
+                const policy = await DatabaseServer.getPolicyById(policyId);
                 const userDID = await this.getUserDid(user.username);
-                const item = await DatabaseServer.getMultiPolicy(policyInstance.instanceTopicId, userDID);
+                const item = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, userDID);
                 const userAccount = await this.users.getHederaAccount(userDID);
                 if (item) {
                     return new MessageError(new Error('Policy is already bound'));
                 } else {
-                    const root = await this.users.getHederaAccount(policyInstance.owner);
-                    const result = await this.policyEngine.createMultiPolicy(policyInstance, userAccount, root, data);
+                    const root = await this.users.getHederaAccount(policy.owner);
+                    const result = await this.policyEngine.createMultiPolicy(policy, userAccount, root, data);
                     return new MessageResponse(result);
                 }
             } catch (error) {

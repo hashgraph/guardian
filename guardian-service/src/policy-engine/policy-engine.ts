@@ -1,21 +1,18 @@
 import {
+    GenerateUUIDv4,
+    IRootConfig,
+    IUser,
+    ModelHelper,
+    PolicyEvents,
+    PolicyType,
+    Schema,
     SchemaEntity,
+    SchemaHelper,
     SchemaStatus,
     TopicType,
-    ModelHelper,
-    SchemaHelper,
-    Schema,
-    UserRole,
-    IUser,
-    PolicyType,
-    IRootConfig,
-    GenerateUUIDv4, PolicyEvents
+    UserRole
 } from '@guardian/interfaces';
-import {
-    DataBaseHelper,
-    IAuthUser,
-    Logger, ServiceRequestsBase, Singleton
-} from '@guardian/common';
+import { DataBaseHelper, IAuthUser, Logger, ServiceRequestsBase, Singleton } from '@guardian/common';
 import {
     MessageAction,
     MessageServer,
@@ -26,9 +23,20 @@ import {
     TopicConfig,
     TopicHelper
 } from '@hedera-modules'
-import { findAllEntities, getArtifactType, replaceAllEntities, replaceArtifactProperties, SchemaFields } from '@helpers/utils';
-import { IPolicyInstance } from './policy-engine.interface';
-import { incrementSchemaVersion, findAndPublishSchema, findAndDryRunSchema, deleteSchema, publishSystemSchemas } from '@api/schema.service';
+import {
+    findAllEntities,
+    getArtifactType,
+    replaceAllEntities,
+    replaceArtifactProperties,
+    SchemaFields
+} from '@helpers/utils';
+import {
+    deleteSchema,
+    findAndDryRunSchema,
+    findAndPublishSchema,
+    incrementSchemaVersion,
+    publishSystemSchemas
+} from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { VcHelper } from '@helpers/vc-helper';
 import { Users } from '@helpers/users';
@@ -130,15 +138,15 @@ export class PolicyEngine extends ServiceRequestsBase{
      * @param policy
      * @param user
      */
-    public async getUser(policy: IPolicyInstance, user: IUser): Promise<IPolicyUser> {
+    public async getUser(policy: Policy, user: IUser): Promise<IPolicyUser> {
         const regUser = await this.users.getUser(user.username);
         if (!regUser || !regUser.did) {
             throw new Error(`Forbidden`);
         }
         const userFull = new PolicyUser(regUser.did);
-        if (policy.dryRun) {
+        if (policy.status === PolicyType.DRY_RUN) {
             if (user.role === UserRole.STANDARD_REGISTRY) {
-                const virtualUser = await DatabaseServer.getVirtualUser(policy.policyId);
+                const virtualUser = await DatabaseServer.getVirtualUser(policy.id);
                 userFull.setVirtualUser(virtualUser);
             } else {
                 throw new Error(`Forbidden`);
@@ -146,7 +154,7 @@ export class PolicyEngine extends ServiceRequestsBase{
         } else {
             userFull.setUsername(regUser.username);
         }
-        const groups = await policy.databaseServer.getGroupsByUser(policy.policyId, userFull.did);
+        const groups = await new DatabaseServer().getGroupsByUser(policy.id, userFull.did);
         for (const group of groups) {
             if (group.active !== false) {
                 return userFull.setGroup(group);
@@ -935,7 +943,7 @@ export class PolicyEngine extends ServiceRequestsBase{
      * @param data
      */
     public async createMultiPolicy(
-        policyInstance: IPolicyInstance,
+        policy: Policy,
         userAccount: IRootConfig,
         root: IRootConfig,
         data: any,
@@ -943,13 +951,13 @@ export class PolicyEngine extends ServiceRequestsBase{
 
         const multipleConfig = DatabaseServer.createMultiPolicy({
             uuid: GenerateUUIDv4(),
-            instanceTopicId: policyInstance.instanceTopicId,
+            instanceTopicId: policy.instanceTopicId,
             mainPolicyTopicId: data.mainPolicyTopicId,
             synchronizationTopicId: data.synchronizationTopicId,
             owner: userAccount.did,
             user: userAccount.hederaAccountId,
             policyOwner: root.hederaAccountId,
-            type: data.mainPolicyTopicId === policyInstance.instanceTopicId ? 'Main' : 'Sub',
+            type: data.mainPolicyTopicId === policy.instanceTopicId ? 'Main' : 'Sub',
         });
 
         const message = new SynchronizationMessage(MessageAction.CreateMultiPolicy);
