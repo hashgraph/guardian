@@ -59,7 +59,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             const policyEngine = new PolicyEngine();
             const userFull = await policyEngine.getUser(policyInstance, user);
 
-            if (!policyInstance.isMultipleGroup) {
+            if (!policyInstance.isMultipleGroups) {
                 return new MessageResponse([]);
             }
 
@@ -74,7 +74,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             const policyEngine = new PolicyEngine();
             const userFull = await policyEngine.getUser(policyInstance, user);
 
-            if (!policyInstance.isMultipleGroup) {
+            if (!policyInstance.isMultipleGroups) {
                 return new MessageResponse([] as any);
             }
 
@@ -215,7 +215,6 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
                 await PolicyComponentsUtils.RegisterBlockTree(instancesArray);
                 this.models.set(policy.id.toString(), model as any);
             }
-
             await this.initPolicyEvents(policyId, model);
 
             resultsContainer.addPermissions(policy.policyRoles);
