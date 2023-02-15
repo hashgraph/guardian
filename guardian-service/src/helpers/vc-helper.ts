@@ -108,7 +108,10 @@ export class VcHelper extends VCJS {
             vcSchema.fields.forEach((field) => {
                 if (field.isPrivate) {
                     credentialSubject.removeField(field.name);
-                } else if (!['type', 'id'].includes(field.name)) {
+                } else if (
+                    !['type', 'id'].includes(field.name) &&
+                    credentialSubject.getField(field.name) !== undefined
+                ) {
                     credentialSubject.frameField(field.name);
                 }
             });

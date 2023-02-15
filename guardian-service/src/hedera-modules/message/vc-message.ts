@@ -5,7 +5,6 @@ import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { VcMessageBody } from './message-body.interface';
 import { IPFS } from '@helpers/ipfs';
-import { Hashing } from '../hashing';
 import { SignatureType } from '@guardian/interfaces';
 import {
     bytesToUtf8,
