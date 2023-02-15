@@ -4,7 +4,7 @@ import { ld as vcjs } from '@transmute/vc.js';
 import { Ed25519Signature2018, Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
 import { PrivateKey } from '@hashgraph/sdk';
 import { CheckResult } from '@transmute/jsonld-schema';
-import { GenerateUUIDv4, ICredentialSubject, IVC } from '@guardian/interfaces';
+import { GenerateUUIDv4, ICredentialSubject, IVC, SignatureType } from '@guardian/interfaces';
 import { VcDocument } from './vc-document';
 import { VpDocument } from './vp-document';
 import { VcSubject } from './vc-subject';
@@ -12,10 +12,13 @@ import { TimestampUtils } from '../timestamp-utils';
 import { DocumentLoaderFunction } from '../document-loader/document-loader-function';
 import { DocumentLoader } from '../document-loader/document-loader';
 import { SchemaLoader, SchemaLoaderFunction } from '../document-loader/schema-loader';
-import { DidRootKey } from './did-document';
+import { BBSDidRootKey, DidRootKey } from './did-document';
 import { Issuer } from './issuer';
 import axios from 'axios';
 import { IPFS } from '@helpers/ipfs';
+import {
+    BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair
+} from '@mattrglobal/jsonld-signatures-bbs';
 
 /**
  * Suite interface
@@ -54,7 +57,7 @@ export class VCJS {
      * Loader
      * @private
      */
-    private loader: DocumentLoaderFunction;
+    protected loader: DocumentLoaderFunction;
     /**
      * Schema loader
      * @private
@@ -120,10 +123,38 @@ export class VCJS {
      *
      * @returns {Ed25519Signature2018} - Ed25519Signature2018
      */
-    public async createSuite(document: DidRootKey): Promise<Ed25519Signature2018> {
+    public async createSuite(document: DidRootKey | BBSDidRootKey): Promise<Ed25519Signature2018 | BbsBlsSignature2020> {
         const verificationMethod = document.getPrivateVerificationMethod();
+        switch (verificationMethod.type) {
+            case BBSDidRootKey.DID_ROOT_KEY_TYPE:
+                return this.createBBSSuite(verificationMethod);
+            default:
+                return this.createEd25519Suite(verificationMethod);
+        }
+    }
+
+    /**
+     * Create Ed25519 Suite by DID
+     *
+     * @param {any} verificationMethod - Verification Method
+     *
+     * @returns {Ed25519Signature2018} - Ed25519Signature2018
+     */
+    public async createEd25519Suite(verificationMethod: any): Promise<Ed25519Signature2018> {
         const key = await Ed25519VerificationKey2018.from(verificationMethod);
         return new Ed25519Signature2018({ key });
+    }
+
+    /**
+     * Create BBS Suite by DID
+     *
+     * @param {any} verificationMethod - Verification Method
+     *
+     * @returns {BbsBlsSignature2020} - BbsBlsSignature2020
+     */
+    public async createBBSSuite(verificationMethod: any): Promise<BbsBlsSignature2020> {
+        const key = await Bls12381G2KeyPair.from(verificationMethod);
+        return new BbsBlsSignature2020({ key });
     }
 
     /**
@@ -144,7 +175,7 @@ export class VCJS {
      */
     public async issue(
         vcDocument: VcDocument,
-        suite: Ed25519Signature2018,
+        suite: Ed25519Signature2018 | BbsBlsSignature2020,
         documentLoader: DocumentLoaderFunction
     ): Promise<VcDocument> {
         const vc: any = vcDocument.getDocument();
@@ -168,7 +199,7 @@ export class VCJS {
     public async verify(json: any, documentLoader: DocumentLoaderFunction): Promise<boolean> {
         const result = await vcjs.verifyVerifiableCredential({
             credential: json,
-            suite: new Ed25519Signature2018(),
+            suite: [new Ed25519Signature2018(), new BbsBlsSignature2020(), new BbsBlsSignatureProof2020()],
             documentLoader,
         });
         if (result.verified) {
@@ -307,21 +338,30 @@ export class VCJS {
         did: string,
         key: string | PrivateKey,
         subject: ICredentialSubject,
-        group?: any
+        group?: any,
+        signatureType: SignatureType = SignatureType.Ed25519Signature2018,
     ): Promise<VcDocument> {
-        const document = DidRootKey.createByPrivateKey(did, key);
+        const document =
+            signatureType === SignatureType.Ed25519Signature2018
+                ? DidRootKey.createByPrivateKey(did, key)
+                : await BBSDidRootKey.createByPrivateKey(did, key);
         const id = this.generateUUID();
         const suite = await this.createSuite(document);
         const vcSubject = VcSubject.create(subject);
-        for (const element of this.schemaContext) {
-            vcSubject.addContext(element);
-        }
 
-        let vc = new VcDocument();
+        const vc = new VcDocument(signatureType === SignatureType.BbsBlsSignature2020);
         vc.setId(id);
         vc.setIssuanceDate(TimestampUtils.now());
         vc.addCredentialSubject(vcSubject);
-
+        const subjectContext = Array.isArray(subject['@context'])
+            ? subject['@context']
+            : [subject['@context']];
+        for (const element of subjectContext) {
+            vc.addContext(element);
+        }
+        for (const element of this.schemaContext) {
+            vc.addContext(element);
+        }
         if (group) {
             vc.setIssuer(new Issuer(did, group.groupId));
             vc.addType(group.type);
@@ -330,8 +370,7 @@ export class VCJS {
             vc.setIssuer(new Issuer(did));
         }
 
-        vc = await this.issue(vc, suite, this.loader);
-        return vc;
+        return await this.issue(vc, suite, this.loader);
     }
 
     /**
@@ -346,7 +385,10 @@ export class VCJS {
         key: string | PrivateKey,
         vc: VcDocument
     ): Promise<VcDocument> {
-        const document = DidRootKey.createByPrivateKey(did, key);
+        const document =
+            vc.getContext().includes(VcDocument.BBS_SIGNATURE_CONTEXT)
+                ? await BBSDidRootKey.createByPrivateKey(did, key)
+                : DidRootKey.createByPrivateKey(did, key);
         const id = this.generateUUID();
         const suite = await this.createSuite(document);
         vc.setId(id);
@@ -378,7 +420,7 @@ export class VCJS {
         let vp = new VpDocument();
         vp.setId(uuid);
         vp.addVerifiableCredentials(vcs);
-        vp = await this.issuePresentation(vp, suite, this.loader);
+        vp = await this.issuePresentation(vp, suite as Ed25519Signature2018, this.loader);
         return vp;
     }
 

@@ -30,7 +30,8 @@ export class SchemaHelper {
             conditions: null,
             context: null,
             customType: null,
-            comment: null
+            comment: null,
+            isPrivate: null,
         };
         let _property = property;
         const readonly = _property.readOnly;
@@ -75,7 +76,8 @@ export class SchemaHelper {
             textColor,
             textSize,
             textBold,
-            orderPosition
+            orderPosition,
+            isPrivate,
         } = SchemaHelper.parseFieldComment(field.comment);
         if (field.isRef) {
             const { type } = SchemaHelper.parseRef(field.type);
@@ -91,6 +93,7 @@ export class SchemaHelper {
             field.textSize = textSize;
             field.textBold = textBold;
         }
+        field.isPrivate = isPrivate;
         field.required = required;
         return [field, orderPosition];
     }
@@ -796,6 +799,9 @@ export class SchemaHelper {
         comment['@id'] = field.isRef ?
             SchemaHelper.buildUrl(url, field.type) :
             'https://www.schema.org/text';
+        if (![null, undefined].includes(field.isPrivate)) {
+            comment.isPrivate = field.isPrivate;
+        }
         if (field.unit) {
             comment.unit = field.unit;
         }

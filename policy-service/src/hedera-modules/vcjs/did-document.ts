@@ -2,62 +2,52 @@ import { PrivateKey, PublicKey, TopicId } from '@hashgraph/sdk';
 import { Environment } from '../environment';
 import { Hashing } from '../hashing';
 import { IVerificationMethod, IDidDocument } from '@guardian/interfaces';
+import { Bls12381G2KeyPair } from '@mattrglobal/bls12381-key-pair';
 
 /**
- * DID root key
+ * Did Root Key Base
  */
-export class DidRootKey {
-    /**
-     * DID root key name
-     */
-    public static DID_ROOT_KEY_NAME = '#did-root-key';
-    /**
-     * DID root key type
-     */
-    public static DID_ROOT_KEY_TYPE = 'Ed25519VerificationKey2018';
-
+export abstract class DidRootKeyBase {
     /**
      * ID
      * @private
      */
-    private id: string;
+    protected id: string;
     /**
      * Type
      * @private
      */
-    private type: string;
+    protected type: string;
     /**
      * Controller
      * @private
      */
-    private controller: string;
+    protected controller: string;
     /**
      * Public key base58
      * @private
      */
-    private publicKeyBase58: string;
+    protected publicKeyBase58: string;
     /**
      * Private key base58
      * @private
      */
-    private privateKeyBase58: string;
+    protected privateKeyBase58: string;
     /**
      * Private key
      * @private
      */
-    private privateKey: PrivateKey;
+    protected privateKey: PrivateKey;
     /**
      * Public key
      * @private
      */
-    private publicKey: PublicKey;
+    protected publicKey: PublicKey;
 
     /**
      * Get method
      */
-    public getMethod(): string {
-        return DidRootKey.DID_ROOT_KEY_NAME;
-    }
+    public abstract getMethod();
 
     /**
      * Get ID
@@ -128,6 +118,108 @@ export class DidRootKey {
     }
 
     /**
+     * Get verification method
+     */
+    public getVerificationMethod(): IVerificationMethod {
+        const result: any = {};
+        result.id = this.id;
+        result.type = this.type;
+        result.controller = this.controller;
+        result.publicKeyBase58 = this.publicKeyBase58;
+        return result;
+    }
+
+    /**
+     * Get private verification method
+     */
+    public getPrivateVerificationMethod(): IVerificationMethod {
+        const result: any = {};
+        result.id = this.id;
+        result.type = this.type;
+        result.controller = this.controller;
+        result.publicKeyBase58 = this.publicKeyBase58;
+        result.privateKeyBase58 = this.privateKeyBase58;
+        return result;
+    }
+}
+
+/**
+ * BBS DID root key
+ */
+export class BBSDidRootKey extends DidRootKeyBase {
+    /**
+     * DID root key name
+     */
+    public static DID_ROOT_KEY_NAME = '#did-root-key-bbs';
+
+    /**
+     * DID root key type
+     */
+    public static DID_ROOT_KEY_TYPE = 'Bls12381G2Key2020';
+
+    /**
+     * Get method
+     */
+    public getMethod(): string {
+        return BBSDidRootKey.DID_ROOT_KEY_NAME;
+    }
+
+    /**
+     * Create by private key
+     * @param did
+     * @param key
+     */
+    public static async createByPrivateKey(
+        did: string,
+        key: PrivateKey | string
+    ): Promise<BBSDidRootKey> {
+        if (!did) {
+            throw new Error('DID cannot be ' + did);
+        }
+        if (!key) {
+            throw new Error('DID root key cannot be ' + key);
+        }
+        const privateKey =
+            typeof key === 'string' ? PrivateKey.fromString(key) : key;
+        const publicKey = privateKey.publicKey;
+        const result = new BBSDidRootKey();
+        result.privateKey = privateKey;
+        result.publicKey = publicKey;
+        const generatedKey = await Bls12381G2KeyPair.generate({
+            id: did + BBSDidRootKey.DID_ROOT_KEY_NAME,
+            controller: did,
+            seed: Buffer.from(key.toString())
+        });
+        result.id = generatedKey.id;
+        result.controller = generatedKey.controller;
+        result.type = generatedKey.type;
+        result.publicKeyBase58 = generatedKey.publicKey;
+        result.privateKeyBase58 = generatedKey.privateKey;
+        return result;
+    }
+}
+
+/**
+ * DID root key
+ */
+export class DidRootKey extends DidRootKeyBase {
+    /**
+     * DID root key name
+     */
+    public static DID_ROOT_KEY_NAME = '#did-root-key';
+    /**
+     * DID root key type
+     */
+    public static DID_ROOT_KEY_TYPE = 'Ed25519VerificationKey2018';
+
+    /**
+     * Get method
+     */
+    public getMethod(): string {
+        return DidRootKey.DID_ROOT_KEY_NAME;
+    }
+
+    /**
      * From JSON tree
      * @param json
      */
@@ -141,9 +233,6 @@ export class DidRootKey {
         result.type = json.type;
         result.controller = json.controller;
         result.publicKeyBase58 = json.publicKeyBase58;
-        if (json.privateKeyBase58) {
-            result.privateKeyBase58 = json.privateKeyBase58;
-        }
         return result;
     }
 
@@ -215,14 +304,18 @@ export class DidRootKey {
      * @param did
      * @param key
      */
-    public static createByPrivateKey(did: string, key: PrivateKey | string): DidRootKey {
+    public static createByPrivateKey(
+        did: string,
+        key: PrivateKey | string
+    ): DidRootKey {
         if (!did) {
             throw new Error('DID cannot be ' + did);
         }
         if (!key) {
             throw new Error('DID root key cannot be ' + key);
         }
-        const privateKey = (typeof key === 'string') ? PrivateKey.fromString(key) : key;
+        const privateKey =
+            typeof key === 'string' ? PrivateKey.fromString(key) : key;
         const publicKey = privateKey.publicKey;
         const result = new DidRootKey();
         result.privateKey = privateKey;
@@ -232,36 +325,13 @@ export class DidRootKey {
         result.publicKeyBase58 = Hashing.base58.encode(publicKey.toBytes());
         const privateBytes = privateKey.toBytes();
         const publicBytes = publicKey.toBytes();
-        const secretKey = new Uint8Array(publicBytes.byteLength + privateBytes.byteLength);
+        const secretKey = new Uint8Array(
+            publicBytes.byteLength + privateBytes.byteLength
+        );
         secretKey.set(new Uint8Array(privateBytes), 0);
         secretKey.set(new Uint8Array(publicBytes), privateBytes.byteLength);
         result.privateKeyBase58 = Hashing.base58.encode(secretKey);
         result.type = DidRootKey.DID_ROOT_KEY_TYPE;
-        return result;
-    }
-
-    /**
-     * Get verification method
-     */
-    public getVerificationMethod(): IVerificationMethod {
-        const result: any = {};
-        result.id = this.id;
-        result.type = this.type;
-        result.controller = this.controller;
-        result.publicKeyBase58 = this.publicKeyBase58;
-        return result;
-    }
-
-    /**
-     * Get private verification method
-     */
-    public getPrivateVerificationMethod(): IVerificationMethod {
-        const result: any = {};
-        result.id = this.id;
-        result.type = this.type;
-        result.controller = this.controller;
-        result.publicKeyBase58 = this.publicKeyBase58;
-        result.privateKeyBase58 = this.privateKeyBase58;
         return result;
     }
 }
@@ -335,6 +405,12 @@ export class DidDocumentBase {
      */
     private didRootKey: DidRootKey;
 
+    /**
+     * BBS DID root key
+     * @private
+     */
+    private bbsDidRootKey: DidRootKey;
+
     constructor() {
         this.context = DidDocumentBase.DID_DOCUMENT_CONTEXT;
     }
@@ -350,12 +426,22 @@ export class DidDocumentBase {
         rootObject[DidDocumentBase.VERIFICATION_METHOD] = [
             this.didRootKey.getVerificationMethod()
         ];
+        if (this.bbsDidRootKey) {
+            rootObject[DidDocumentBase.VERIFICATION_METHOD].push(
+                this.bbsDidRootKey.getVerificationMethod()
+            );
+        }
         rootObject[DidDocumentBase.AUTHENTICATION] = [
             this.didRootKey.getId()
         ];
         rootObject[DidDocumentBase.ASSERTION_METHOD] = [
             this.didRootKey.getMethod()
         ];
+        if (this.bbsDidRootKey) {
+            rootObject[DidDocumentBase.ASSERTION_METHOD].push(
+                this.bbsDidRootKey.getMethod()
+            );
+        }
         return rootObject;
     }
 
@@ -369,12 +455,22 @@ export class DidDocumentBase {
         rootObject[DidDocumentBase.VERIFICATION_METHOD] = [
             this.didRootKey.getPrivateVerificationMethod()
         ];
+        if (this.bbsDidRootKey) {
+            rootObject[DidDocumentBase.VERIFICATION_METHOD].push(
+                this.bbsDidRootKey.getVerificationMethod()
+            );
+        }
         rootObject[DidDocumentBase.AUTHENTICATION] = [
             this.didRootKey.getId()
         ];
         rootObject[DidDocumentBase.ASSERTION_METHOD] = [
             this.didRootKey.getMethod()
         ];
+        if (this.bbsDidRootKey) {
+            rootObject[DidDocumentBase.ASSERTION_METHOD].push(
+                this.bbsDidRootKey.getMethod()
+            );
+        }
         return rootObject;
     }
 
@@ -397,10 +493,11 @@ export class DidDocumentBase {
      * @param did
      * @param didRootKey
      */
-    public static createByPrivateKey(did: string, didRootKey: PrivateKey): DidDocumentBase {
+    public static async createByPrivateKey(did: string, didRootKey: PrivateKey): Promise<DidDocumentBase> {
         const result = new DidDocumentBase();
         result.did = did;
         result.didRootKey = DidRootKey.createByPrivateKey(did, didRootKey);
+        result.bbsDidRootKey = await BBSDidRootKey.createByPrivateKey(did, didRootKey);
         return result;
     }
 
@@ -549,7 +646,7 @@ export class DIDDocument {
     /**
      * Get document
      */
-    public getDocument(): IDidDocument {
+    public getDocument(): any {
         return this.document.getDidDocument();
     }
 
@@ -615,7 +712,7 @@ export class DIDDocument {
      * @param privateKey
      * @param topicId
      */
-    public static create(privateKey: string | PrivateKey | null, topicId: string | TopicId | null): DIDDocument {
+    public static async create(privateKey: string | PrivateKey | null, topicId: string | TopicId | null): Promise<DIDDocument> {
         const result = new DIDDocument();
         result.privateKey = null;
         if (privateKey) {
@@ -640,7 +737,7 @@ export class DIDDocument {
         result.network = Environment.network;
         result.idString = DidRootKey.publicKeyToIdString(result.publicKey);
         result.did = result.buildDid();
-        result.document = DidDocumentBase.createByPrivateKey(result.did, result.privateKey);
+        result.document = await DidDocumentBase.createByPrivateKey(result.did, result.privateKey);
         return result;
     }
 

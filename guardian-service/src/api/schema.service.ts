@@ -13,12 +13,11 @@ import {
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
-import { schemasToContext } from '@transmute/jsonld-schema';
 import { MessageAction, MessageServer, MessageType, SchemaMessage, TopicConfig, TopicHelper, UrlType } from '@hedera-modules';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger, RunFunctionAsync } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, MessageError, Logger, RunFunctionAsync, schemasToContext } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { SchemaConverterUtils } from '@helpers/schema-converter-utils';

@@ -47,7 +47,7 @@ export abstract class Message {
     /**
      * Message type
      */
-    public readonly type: MessageType;
+    public type: MessageType;
 
     /**
      * Response type
@@ -115,13 +115,13 @@ export abstract class Message {
     /**
      * To document
      */
-    public abstract toDocuments(): Promise<ArrayBuffer[]>;
+    public abstract toDocuments(key?: string): Promise<ArrayBuffer[]>;
 
     /**
      * Load documents
      * @param documents
      */
-    public abstract loadDocuments(documents: any[]): Message;
+    public abstract loadDocuments(documents: any[], key?: string): Message | Promise<Message>;
 
     /**
      * Set URLs

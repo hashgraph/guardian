@@ -115,6 +115,11 @@
                 Allow multiple answers
             </mat-checkbox>
         </div>
+        <div class="custom-field-private" *ngIf="canBePrivate">
+            <mat-checkbox color="primary" [formControl]="field.controlPrivate">
+                Private
+            </mat-checkbox>
+        </div>
     </ng-template>
     <div *ngIf="enum && !loading" class="enum-options-container">
         <mat-form-field *ngIf="this.field.controlEnum.value.length" appearance="outline" class="enum-form-field">

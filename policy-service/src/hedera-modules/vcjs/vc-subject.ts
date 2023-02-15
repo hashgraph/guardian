@@ -65,6 +65,14 @@ export class VcSubject {
     }
 
     /**
+     * Get context
+     * @returns Context
+     */
+    public getContext(): string[] {
+        return this.context;
+    }
+
+    /**
      * Get field
      * @param name
      */
@@ -111,6 +119,31 @@ export class VcSubject {
         if (this.context.indexOf(context) === -1) {
             this.context.push(context)
         }
+    }
+
+    /**
+     * Frame field
+     * @param name Name
+     */
+    public frameField(name: string): void {
+        this.document[name] = {};
+    }
+
+    /**
+     * Remove field
+     * @param name Name
+     */
+    public removeField(name: string): void {
+        delete this.document[name];
+    }
+
+    /**
+     * Set field
+     * @param name Name
+     * @param value Value
+     */
+    public setField(name: string, value: any): void {
+        this.document[name] = value;
     }
 
     /**

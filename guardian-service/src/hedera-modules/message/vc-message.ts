@@ -5,6 +5,16 @@ import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { VcMessageBody } from './message-body.interface';
 import { IPFS } from '@helpers/ipfs';
+import { Hashing } from '../hashing';
+import { SignatureType } from '@guardian/interfaces';
+import {
+    bytesToUtf8,
+    CipherStrategy,
+    decryptWithKeyDerivedFromString,
+    encryptWithKeyDerivedFromString,
+    utf8ToBytes,
+} from '@meeco/cryppo';
+import { SerializationFormat } from '@meeco/cryppo/dist/src/serialization-versions';
 
 /**
  * VC message
@@ -35,8 +45,11 @@ export class VCMessage extends Message {
      */
     public documentStatus: string;
 
-    constructor(action: MessageAction) {
-        super(action, MessageType.VCDocument);
+    constructor(
+        action: MessageAction,
+        type: MessageType = MessageType.VCDocument
+    ) {
+        super(action, type);
     }
 
     /**
@@ -56,6 +69,15 @@ export class VCMessage extends Message {
         this.document = document.getDocument();
         this.hash = document.toCredentialHash();
         this.issuer = document.getIssuerDid();
+        const proof = document.getProof();
+        switch (proof.type) {
+            case SignatureType.BbsBlsSignature2020:
+                this.type = MessageType.EVCDocument;
+                break;
+            default:
+                this.type = MessageType.VCDocument;
+                break;
+        }
     }
 
     /**
@@ -87,16 +109,30 @@ export class VCMessage extends Message {
             relationships: this.relationships,
             cid: this.getDocumentUrl(UrlType.cid),
             uri: this.getDocumentUrl(UrlType.url),
-            documentStatus: this.documentStatus
+            documentStatus: this.documentStatus,
         };
     }
 
     /**
      * To documents
      */
-    public async toDocuments(): Promise<ArrayBuffer[]> {
-        const json = JSON.stringify(this.document);
-        const buffer = Buffer.from(json);
+    public async toDocuments(key: string): Promise<ArrayBuffer[]> {
+        let document = JSON.stringify(this.document);
+        if (this.type === MessageType.EVCDocument) {
+            if (!key) {
+                throw new Error(
+                    'There is no appropriate private key to encode VC data'
+                );
+            }
+            const encryptedDocument = await encryptWithKeyDerivedFromString({
+                passphrase: key,
+                data: utf8ToBytes(document),
+                strategy: CipherStrategy.AES_GCM,
+                serializationVersion: SerializationFormat.latest_version,
+            });
+            document = encryptedDocument.serialized;
+        }
+        const buffer = Buffer.from(document);
         return [buffer];
     }
 
@@ -104,7 +140,18 @@ export class VCMessage extends Message {
      * Load documents
      * @param documents
      */
-    public loadDocuments(documents: string[]): VCMessage {
+    public async loadDocuments(
+        documents: string[],
+        key: string
+    ): Promise<VCMessage> {
+        if (this.type === MessageType.EVCDocument) {
+            const decrypted = await decryptWithKeyDerivedFromString({
+                serialized: documents[0],
+                passphrase: key,
+            });
+            this.document = bytesToUtf8(decrypted);
+            return this;
+        }
         this.document = JSON.parse(documents[0]);
         return this;
     }
@@ -131,16 +178,18 @@ export class VCMessage extends Message {
             throw new Error('JSON Object is empty');
         }
 
-        let message = new VCMessage(json.action);
+        let message = new VCMessage(json.action, json.type);
         message = Message._fromMessageObject(message, json);
         message._id = json.id;
         message._status = json.status;
         message.issuer = json.issuer;
         message.relationships = json.relationships;
-        const urls = [{
-            cid: json.cid,
-            url: IPFS.IPFS_PROTOCOL + json.cid
-        }]
+        const urls = [
+            {
+                cid: json.cid,
+                url: IPFS.IPFS_PROTOCOL + json.cid,
+            },
+        ];
         message.setUrls(urls);
         return message;
     }
