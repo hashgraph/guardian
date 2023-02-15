@@ -17,7 +17,6 @@ import { InformationConfigComponent } from './policy-configuration/blocks/main/i
 import { RolesConfigComponent } from './policy-configuration/blocks/main/roles-config/roles-config.component';
 import { FiltersAddonConfigComponent } from './policy-configuration/blocks/documents/filters-addon-config/filters-addon-config.component';
 import { SourceAddonConfigComponent } from './policy-configuration/blocks/documents/source-addon-config/source-addon-config.component';
-import { TreeFlatOverview } from './helpers/tree-flat-overview/tree-flat-overview';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { PolicyViewerComponent } from './policy-viewer/policy-viewer/policy-viewer.component';
 import { DialogBlock } from './policy-viewer/dialog-block/dialog-block.component';
@@ -55,7 +54,6 @@ import { CodeEditorDialogComponent } from './helpers/code-editor-dialog/code-edi
 import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
 import { ConfirmationDialog } from './policy-viewer/blocks/confirmation-dialog/confirmation-dialog.component';
 import { RevokeConfigComponent } from './policy-configuration/blocks/documents/revoke-config/revoke-config.component';
-import { EventsOverview } from './helpers/events-overview/events-overview';
 import { ButtonConfigComponent } from './policy-configuration/blocks/main/button-config/button-config.component';
 import { ButtonBlockComponent } from './policy-viewer/blocks/button-block/button-block.component';
 import { TokenActionConfigComponent } from './policy-configuration/blocks/tokens/token-action-config/token-action-config.component';
@@ -74,12 +72,10 @@ import { SelectBlock } from './helpers/select-block/select-block.component';
 import { CreateTokenBlockComponent } from './policy-viewer/blocks/create-token-block/create-token-block.component';
 import { CreateTokenConfigComponent } from './policy-configuration/blocks/tokens/create-token-config/create-token-config.component';
 import { TokenConfigurationComponent } from '../components/token-configuration/token-configuration.component';
-import { TreeNodeActionsComponent } from './helpers/tree-node-actions/tree-node-actions.component';
 import { MultiPolicyDialogComponent } from './helpers/multi-policy-dialog/multi-policy-dialog.component';
 import { ComparePolicyDialog } from './helpers/compare-policy-dialog/compare-policy-dialog.component';
-import {
-    HttpRequestConfigComponent
-} from './policy-configuration/blocks/main/http-request-config/http-request-config.component';
+import { HttpRequestConfigComponent } from './policy-configuration/blocks/main/http-request-config/http-request-config.component';
+import { PolicyTreeComponent } from './policy-configuration/policy-tree/policy-tree.component';
 
 @NgModule({
     declarations: [
@@ -99,7 +95,6 @@ import {
         RolesConfigComponent,
         FiltersAddonConfigComponent,
         SourceAddonConfigComponent,
-        TreeFlatOverview,
         ActionBlockComponent,
         RequestDocumentBlockComponent,
         ContainerBlockComponent,
@@ -130,7 +125,6 @@ import {
         CodeEditorDialogComponent,
         SwitchConfigComponent,
         HttpRequestConfigComponent,
-        EventsOverview,
         ConfirmationDialog,
         RevokeConfigComponent,
         ButtonConfigComponent,
@@ -150,9 +144,9 @@ import {
         CreateTokenConfigComponent,
         CreateTokenBlockComponent,
         TokenConfigurationComponent,
-        TreeNodeActionsComponent,
         MultiPolicyDialogComponent,
-        ComparePolicyDialog
+        ComparePolicyDialog,
+        PolicyTreeComponent
     ],
     imports: [
         CommonModule,
@@ -184,7 +178,6 @@ import {
         RolesConfigComponent,
         FiltersAddonConfigComponent,
         SourceAddonConfigComponent,
-        TreeFlatOverview,
         ActionBlockComponent,
         RequestDocumentBlockComponent,
         ContainerBlockComponent,
@@ -207,7 +200,6 @@ import {
         JsonPropertiesComponent,
         ReassigningConfigComponent,
         CronConfigDialog,
-        EventsOverview,
         TokenActionConfigComponent,
         DocumentValidatorConfigComponent,
         TokenConfirmationConfigComponent,

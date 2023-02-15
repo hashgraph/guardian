@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel } from 'src/app/policy-engine/structures/policy-model';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
+import { PolicyBlockModel } from "src/app/policy-engine/structures/policy-block.model";
 
 /**
  * Settings for block of 'interfaceAction' type.
@@ -13,7 +12,7 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
     encapsulation: ViewEncapsulation.Emulated
 })
 export class RevokeConfigComponent implements OnInit {
-    @Input('all') all!: BlockNode[];
+    @Input('all') all!: PolicyBlockModel[];
     @Input('schemes') schemes!: Schema[];
     @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;

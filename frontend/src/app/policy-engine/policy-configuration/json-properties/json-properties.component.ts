@@ -1,8 +1,16 @@
-import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { Schema, Token } from '@guardian/interfaces';
+import {
+    Component,
+    ComponentFactoryResolver,
+    EventEmitter,
+    Input,
+    OnInit,
+    Output,
+    SimpleChanges,
+    ViewChild,
+    ViewContainerRef
+} from '@angular/core';
 import { RegisteredBlocks } from '../../registered-blocks';
-import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
-import { PolicyBlockModel } from '../../structures/policy-model';
+import { PolicyBlockModel } from "../../structures/policy-block.model";
 
 /**
  * Settings for all blocks.

@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
+import { PolicyModel } from 'src/app/policy-engine/structures/policy.model';
+import { PolicyBlockModel } from "src/app/policy-engine/structures/policy-block.model";
 import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 import { CodeEditorDialogComponent } from '../../../../helpers/code-editor-dialog/code-editor-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 

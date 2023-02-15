@@ -1,9 +1,9 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 import { MatDialog } from '@angular/material/dialog';
 import { CronConfigDialog } from '../../../../helpers/cron-config-dialog/cron-config-dialog.component';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
+import { PolicyModel } from 'src/app/policy-engine/structures/policy.model';
+import { PolicyBlockModel } from "src/app/policy-engine/structures/policy-block.model";
 
 /**
  * Settings for block of 'timer' type.

@@ -21,6 +21,14 @@
     --pc-tabs-background-color: #d0d0d0;
     --pc-tabs-hover-color: #f0f0f0;
     --pc-prop-btn-color: #6166ff;
+
+    --pc-ui-block-background-color: #efe5fc;
+    --pc-server-block-background-color: #e2f9fe;
+    --pc-addon-block-background-color: #ffeeda;
+
+    --pc-ui-block-border-color: #c396fa;
+    --pc-server-block-border-color: #7bd0e3;
+    --pc-addon-block-border-color: #f9b465;
 }
 
 .content {
@@ -459,6 +467,7 @@
             box-sizing: border-box;
             color: var(--pc-active-icon-color);
             cursor: pointer;
+            user-select: none;
 
             .component-btn-icon {
                 position: absolute;
@@ -653,6 +662,11 @@
             right: 0;
             bottom: 0;
             overflow: auto;
+
+            &[readonly="true"] {
+                pointer-events: none;
+                filter: grayscale(1);
+            }
 
             >div {
                 position: relative;

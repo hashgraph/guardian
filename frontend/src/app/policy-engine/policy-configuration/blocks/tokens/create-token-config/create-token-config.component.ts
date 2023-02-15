@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
+import { PolicyModel } from 'src/app/policy-engine/structures/policy.model';
+import { PolicyBlockModel } from "src/app/policy-engine/structures/policy-block.model";
 
 /**
  * Settings for block of 'Create Token' type.

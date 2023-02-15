@@ -68,32 +68,57 @@
             <div class="delimiter"></div>
 
             <ng-container *ngIf="!readonly && currentView === 'blocks'">
-                <div [attr.storage-active]="policyStorage.isUndo" class="top-toolbar-btn readonly-status"
-                    (click)="undoPolicy()" title="Undo">
-                    <mat-icon>undo</mat-icon>
-                    <span>Undo</span>
-                </div>
+                <ng-container>
+                    <div [attr.storage-active]="policyStorage.isUndo" class="top-toolbar-btn readonly-status"
+                        (click)="undoPolicy()" title="Undo">
+                        <mat-icon>undo</mat-icon>
+                        <span>Undo</span>
+                    </div>
 
-                <div [attr.storage-active]="policyStorage.isRedo" class="top-toolbar-btn readonly-status"
-                    (click)="redoPolicy()" title="Redo">
-                    <mat-icon>redo</mat-icon>
-                    <span>Redo</span>
-                </div>
+                    <div [attr.storage-active]="policyStorage.isRedo" class="top-toolbar-btn readonly-status"
+                        (click)="redoPolicy()" title="Redo">
+                        <mat-icon>redo</mat-icon>
+                        <span>Redo</span>
+                    </div>
 
-                <div class="top-toolbar-btn all-status copy-blocks-mode" (click)="copyBlocksMode=!copyBlocksMode"
-                    title="Save Policy" [ngClass]="{'copy-blocks-mode-active': copyBlocksMode}">
-                    <mat-icon>content_copy</mat-icon>
-                    <span>Copy Mode</span>
-                </div>
+                    <div class="top-toolbar-btn all-status copy-blocks-mode" (click)="copyBlocksMode=!copyBlocksMode"
+                        title="Save Policy" [ngClass]="{'copy-blocks-mode-active': copyBlocksMode}">
+                        <mat-icon>content_copy</mat-icon>
+                        <span>Copy Mode</span>
+                    </div>
 
-                <div class="delimiter"></div>
+                    <div class="delimiter"></div>
+                </ng-container>
 
-                <div class="top-toolbar-btn readonly-status" title="Create Module">
-                    <mat-icon>create_new_folder</mat-icon>
-                    <span>Create Module</span>
-                </div>
+                <ng-container *ngIf="!currentBlock?.isModule && !currentBlock?.root">
+                    <div class="top-toolbar-btn readonly-status" title="Create New Module" (click)="onCreateModule()">
+                        <mat-icon>create_new_folder</mat-icon>
+                        <span>Create New Module</span>
+                    </div>
 
-                <div class="delimiter"></div>
+                    <div class="top-toolbar-btn readonly-status" title="Convert to Module"
+                        (click)="onConvertToModule()">
+                        <mat-icon>move_to_inbox</mat-icon>
+                        <span>Convert to Module</span>
+                    </div>
+
+                    <div class="delimiter"></div>
+                </ng-container>
+
+                <ng-container *ngIf="currentBlock?.isModule">
+                    <div class="top-toolbar-btn readonly-status" title="Create New Module" (click)="onCreateModule()">
+                        <mat-icon>folder_special</mat-icon>
+                        <span>Save Module</span>
+                    </div>
+
+                    <div class="top-toolbar-btn readonly-status" title="Convert to Module"
+                        (click)="onOpenModule(currentBlock)">
+                        <mat-icon>folder_open</mat-icon>
+                        <span>Open Module</span>
+                    </div>
+
+                    <div class="delimiter"></div>
+                </ng-container>
             </ng-container>
 
             <div class="top-toolbar-btn all-status" (click)="onView('blocks')" title="Blocks"
@@ -155,7 +180,8 @@
                             Modules
                         </div>
                     </div>
-                    <div class="pc-tabs-content">
+
+                    <div class="pc-tabs-content" [attr.readonly]="leftMenu">
                         <div class="components-container readonly-status" [hidden]="!options.components">
 
                             <div class="components-search">
@@ -173,7 +199,8 @@
                                         ({{componentsList.favorites.length}})</span>
                                 </div>
                                 <div class="components-group-body">
-                                    <div *ngFor="let item of componentsList.favorites" class="component-btn">
+                                    <div *ngFor="let item of componentsList.favorites" class="component-btn"
+                                        (click)="onAdd(item)">
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
@@ -188,7 +215,8 @@
                                     <span>UI Components ({{componentsList.uiComponents.length}})</span>
                                 </div>
                                 <div class="components-group-body">
-                                    <div *ngFor="let item of componentsList.uiComponents" class="component-btn">
+                                    <div *ngFor="let item of componentsList.uiComponents" class="component-btn"
+                                        (click)="onAdd(item)">
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
@@ -203,7 +231,8 @@
                                     <span>Server Components ({{componentsList.serverBlocks.length}})</span>
                                 </div>
                                 <div class="components-group-body">
-                                    <div *ngFor="let item of componentsList.serverBlocks" class="component-btn">
+                                    <div *ngFor="let item of componentsList.serverBlocks" class="component-btn"
+                                        (click)="onAdd(item)">
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
@@ -218,7 +247,8 @@
                                     <span>Addons ({{componentsList.addons.length}})</span>
                                 </div>
                                 <div class="components-group-body">
-                                    <div *ngFor="let item of componentsList.addons" class="component-btn">
+                                    <div *ngFor="let item of componentsList.addons" class="component-btn"
+                                        (click)="onAdd(item)">
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
@@ -234,7 +264,8 @@
                                     <span>unGrouped</span>
                                 </div>
                                 <div class="components-group-body">
-                                    <div *ngFor="let item of componentsList.unGrouped" class="component-btn">
+                                    <div *ngFor="let item of componentsList.unGrouped" class="component-btn"
+                                        (click)="onAdd(item)">
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
@@ -335,18 +366,30 @@
 
                 <div class="pc-tabs minimized-tabs">
                     <div class="pc-tabs-headers">
-                        <div class="tab-header tab-header-icon" [attr.selected]="moduleIndex==-1"
-                            style="width: 100px;margin-right: 6px" (click)="moduleIndex=-1">
-                            <mat-icon class="action-color">shield</mat-icon>
+                        <div class="tab-header tab-header-icon" [attr.selected]="openModule===policyModel"
+                            style="width: 100px;margin-right: 6px" (click)="onOpenPolicy()">
+                            <mat-icon class="action-color">article</mat-icon>
                             Policy
                         </div>
-                        <div class="tab-header tab-header-icon" *ngFor="let item of modules; let i=index"
-                            [attr.selected]="moduleIndex==i" (click)="moduleIndex=i">
-                            <mat-icon class="edit-color">folder</mat-icon>
-                            Module {{i}}
-                        </div>
+                        <ng-container *ngIf="policyModel.allModule">
+                            <div class="tab-header tab-header-icon" *ngFor="let item of policyModel.allModule"
+                                [attr.selected]="openModule===item" (click)="onOpenModule(item)">
+                                <mat-icon class="edit-color">folder</mat-icon>
+                                {{item.tag}}
+                            </div>
+                        </ng-container>
                     </div>
                     <div class="pc-tabs-content tree-container">
+
+
+
+
+                        <policy-tree [blocks]="openModule.dataSource" [errors]="errorsMap" [readonly]="readonly"
+                            [active]="eventVisible" (open)="onOpenModule($event)" (delete)="onDelete($event)"
+                            (select)="onSelect($event)" (reorder)="onReorder($event)">
+                        </policy-tree>
+
+
 
                     </div>
                 </div>

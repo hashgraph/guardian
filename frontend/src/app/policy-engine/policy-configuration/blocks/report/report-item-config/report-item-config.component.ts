@@ -2,7 +2,8 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEnca
 import { MatDialog } from '@angular/material/dialog';
 import { Schema, Token } from '@guardian/interfaces';
 import { IconPreviewDialog } from 'src/app/components/icon-preview-dialog/icon-preview-dialog.component';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
+import { PolicyModel } from 'src/app/policy-engine/structures/policy.model';
+import { PolicyBlockModel } from "src/app/policy-engine/structures/policy-block.model";
 import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 

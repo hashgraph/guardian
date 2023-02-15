@@ -1,6 +1,8 @@
 import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { Options } from './options';
-import { PolicyBlockModel, PolicyModel } from '../../structures/policy-model';
+import { PolicyModel } from '../../structures/policy.model';
+import { PolicyBlockModel } from "../../structures/policy-block.model";
+import { PolicyModuleModel } from "../../structures/policy-module.model";
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -8,7 +10,7 @@ import { TokenService } from 'src/app/services/token.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { Schema, SchemaHelper, Token } from '@guardian/interfaces';
 import { RegisteredBlocks } from '../../registered-blocks';
-import { PolicyStorage } from '../../structures/policy-storage';
+import { PolicyStorage } from '../../structures/storage';
 
 /**
  * The page for editing the policy and blocks.
@@ -38,8 +40,11 @@ export class PolicyConfigurationComponent implements OnInit {
     public copyBlocksMode: boolean = false;
     public eventVisible: string = 'All';
     public currentBlock!: PolicyBlockModel | undefined;
-    public moduleIndex = -1;
-    public modules: any[] = [];
+    public openModule: PolicyModel | PolicyModuleModel;
+    public templateModules: any[] = [];
+
+    public openModeType: 'Policy' | 'Module' = 'Policy';
+    public selectModeType: 'Block' | 'Module' = 'Block';
 
     readonly codeMirrorOptions = {
         theme: 'default',
@@ -80,11 +85,12 @@ export class PolicyConfigurationComponent implements OnInit {
         private schemaService: SchemaService,
         private tokenService: TokenService,
         private policyEngineService: PolicyEngineService,
-        private changeDetector: ChangeDetectorRef
+        private changeDetector: ChangeDetectorRef,
     ) {
         this.options = new Options();
         this.policyModel = new PolicyModel();
         this.policyStorage = new PolicyStorage(localStorage);
+        this.openModule = this.policyModel;
     }
 
     public ngOnInit() {
@@ -114,6 +120,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
         if (!this.policyId) {
             this.policyModel = new PolicyModel();
+            this.onOpenPolicy();
             this.loading = false;
             return;
         }
@@ -121,11 +128,13 @@ export class PolicyConfigurationComponent implements OnInit {
         this.policyEngineService.policy(this.policyId).subscribe((policy: any) => {
             if (!policy) {
                 this.policyModel = new PolicyModel();
+                this.onOpenPolicy();
                 this.loading = false;
                 return;
             }
 
             this.policyModel = new PolicyModel(policy);
+            this.onOpenPolicy();
 
             if (!this.policyModel.valid) {
                 this.loading = false;
@@ -146,21 +155,21 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.schemas = SchemaHelper.map(schemas) || [];
                 this.schemas.unshift({ type: "" } as any);
 
-                this.modules = [{
+                this.templateModules = [{
                     uuid: '1',
                     name: 'Default 1',
                     description: 'description 1',
                     tag: 'd1',
                     type: 'DEFAULT',
                     config: {}
-                },{
+                }, {
                     uuid: '2',
                     name: 'Default 2',
                     description: 'description 1',
                     tag: 'd2',
                     type: 'DEFAULT',
                     config: {}
-                },{
+                }, {
                     uuid: '3',
                     name: 'Custom 1',
                     description: 'description 1',
@@ -242,7 +251,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.modulesList.customModules = [];
 
         const search = this.searchModule ? this.searchModule.toLowerCase() : null;
-        for (const module of this.modules) {
+        for (const module of this.templateModules) {
             module.isDefault = module.type === 'DEFAULT';
 
             if (this.search && module.name.indexOf(search) === -1) {
@@ -338,16 +347,17 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public onSelect(block: any) {
         this.currentBlock = this.policyModel.getBlock(block);
+        this.selectModeType = this.currentBlock?.isModule ? 'Module' : 'Block';
         this.policyModel.checkChange();
         this.changeDetector.detectChanges();
         return false;
     }
 
-    public onAdd(type: string) {
+    public onAdd(btn: any) {
         this.currentBlock = this.policyModel.getBlock(this.currentBlock);
         if (this.currentBlock) {
-            const newBlock = this.registeredBlocks.newBlock(type as any);
-            newBlock.tag = this.policyModel.getNewTag();
+            const newBlock = this.registeredBlocks.newBlock(btn.type);
+            newBlock.tag = this.policyModel.getNewTag('Block');
             this.currentBlock.createChild(newBlock);
         }
     }
@@ -357,7 +367,46 @@ export class PolicyConfigurationComponent implements OnInit {
         return false;
     }
 
-    public onDeleteModule(item:any) {
+    public onDeleteModule(item: any) {
 
+    }
+
+    public onReorder(blocks: any[]) {
+        throw '';
+    }
+
+    public onCreateModule() {
+        this.currentBlock = this.policyModel.getBlock(this.currentBlock);
+        if (this.currentBlock) {
+            const module = this.policyModel.newModule();
+            this.currentBlock.addChild(module);
+        }
+    }
+
+    public onConvertToModule() {
+        this.currentBlock = this.policyModel.getBlock(this.currentBlock);
+        if (this.currentBlock) {
+            this.policyModel.convertModule(this.currentBlock);
+        }
+    }
+
+    public onOpenModule(module: any) {
+        const item = this.policyModel.getModule(module);
+        if (item) {
+            this.openModeType = 'Module';
+            this.openModule = item;
+            this.changeDetector.detectChanges();
+        }
+
+    }
+
+    public onOpenPolicy() {
+        this.openModule = this.policyModel;
+        this.openModeType = 'Policy';
+        this.changeDetector.detectChanges();
+    }
+
+    public get leftMenu(): boolean {
+        return (this.openModeType === 'Policy' && this.selectModeType === 'Module');
     }
 }

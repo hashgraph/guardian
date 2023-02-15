@@ -3,7 +3,9 @@ import { BlockErrorActions, GenerateUUIDv4, Schema, Token } from '@guardian/inte
 import { ReplaySubject } from 'rxjs';
 import { RegisteredBlocks } from '../../registered-blocks';
 import { IBlockAbout } from "../../structures/interfaces/block-about.interface";
-import { PolicyBlockModel, PolicyEventModel, PolicyModel } from '../../structures/policy-model';
+import { PolicyModel } from '../../structures/policy.model';
+import { PolicyBlockModel } from "../../structures/policy-block.model";
+import { PolicyEventModel } from "../../structures/policy-event.model";
 
 /**
  * Settings for all blocks.
@@ -119,7 +121,8 @@ export class CommonPropertiesComponent implements OnInit {
             target: null,
             output: "",
             input: "",
-            disabled: false
+            disabled: false,
+            actor: ""
         }
         this.block.createEvent(event);
     }

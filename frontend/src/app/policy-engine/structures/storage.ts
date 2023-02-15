@@ -3,7 +3,6 @@ interface PolicyStorageItem {
     value: string;
 }
 
-
 /**
  * Base class for storing states
  *
