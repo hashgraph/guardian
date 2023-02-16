@@ -1,9 +1,11 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { PolicyModel } from '../../structures/policy.model';
-import { PolicyTokenModel } from "../../structures/policy-token.model";
-import { PolicyGroupModel } from "../../structures/policy-group.model";
-import { PolicyRoleModel } from "../../structures/policy-role.model";
-import { PolicyTopicModel } from '../../structures/policy-topic.model';
+import {
+    PolicyModel,
+    PolicyTokenModel,
+    PolicyGroupModel,
+    PolicyRoleModel,
+    PolicyTopicModel
+} from '../../structures';
 
 /**
  * Settings for policy.

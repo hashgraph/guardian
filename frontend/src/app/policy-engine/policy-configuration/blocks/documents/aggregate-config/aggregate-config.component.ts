@@ -1,8 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { MatDialog } from '@angular/material/dialog';
-import { PolicyModel } from 'src/app/policy-engine/structures/policy.model';
-import { PolicyBlockModel } from "src/app/policy-engine/structures/policy-block.model";
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'aggregateDocument' type.

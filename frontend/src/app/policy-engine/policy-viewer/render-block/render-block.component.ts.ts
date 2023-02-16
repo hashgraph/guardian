@@ -9,7 +9,7 @@ import {
     ViewContainerRef
 } from '@angular/core';
 import { RegisteredBlocks } from '../../registered-blocks';
-import { IBlock } from '../../structures/block.interface';
+import { IBlock } from '../../structures';
 
 /**
  * Component for display all blocks.

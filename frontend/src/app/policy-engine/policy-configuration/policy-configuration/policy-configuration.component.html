@@ -144,7 +144,6 @@
             <div *ngIf="currentView === 'blocks'" class="top-toolbar-group all-status event-color"
                 [matMenuTriggerFor]="eventMenu" style="width: 60px">
 
-
                 <mat-icon *ngIf="eventVisible =='All'" class="event-color">flash_on</mat-icon>
                 <mat-icon *ngIf="eventVisible =='Action'" class="event-color">
                     <div class="action-event-icon"></div>
@@ -154,10 +153,12 @@
                 </mat-icon>
                 <mat-icon *ngIf="eventVisible =='None'" class="event-color">flash_off</mat-icon>
 
+
                 <span *ngIf="eventVisible =='All'" class="event-color">All Events</span>
                 <span *ngIf="eventVisible =='Action'" class="event-color">Action Events</span>
                 <span *ngIf="eventVisible =='Refresh'" class="event-color">Refresh Events</span>
                 <span *ngIf="eventVisible =='None'" class="event-color">Hide Events</span>
+
 
                 <div class="expand-group">
                     <mat-icon>arrow_drop_down</mat-icon>
@@ -182,7 +183,11 @@
                     </div>
 
                     <div class="pc-tabs-content" [attr.readonly]="leftMenu">
-                        <div class="components-container readonly-status" [hidden]="!options.components">
+                        <div class="components-container readonly-status" [hidden]="!options.components" cdkDropList
+                            #menuList="cdkDropList" [cdkDropListConnectedTo]="[treeList]" cdkDropListSortingDisabled
+                            [cdkDropListEnterPredicate]="noReturnPredicate"
+                            (cdkDropListDropped)="drop($event)"
+                        >
 
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
@@ -198,9 +203,15 @@
                                     <span style="padding-left: 22px">Favorites
                                         ({{componentsList.favorites.length}})</span>
                                 </div>
-                                <div class="components-group-body">
-                                    <div *ngFor="let item of componentsList.favorites" class="component-btn"
-                                        (click)="onAdd(item)">
+                                <div class="components-group-body" *ngFor="let item of componentsList.favorites">
+                                    <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                        [attr.block-type]="item.header" (click)="onAdd(item)">
+                                        <div class="drag-component">
+                                            <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                            <span class="drag-component-name">{{item.name}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="component-btn" (click)="onAdd(item)">
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
@@ -214,9 +225,15 @@
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>UI Components ({{componentsList.uiComponents.length}})</span>
                                 </div>
-                                <div class="components-group-body">
-                                    <div *ngFor="let item of componentsList.uiComponents" class="component-btn"
-                                        (click)="onAdd(item)">
+                                <div class="components-group-body" *ngFor="let item of componentsList.uiComponents">
+                                    <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                        [attr.block-type]="item.header" (click)="onAdd(item)">
+                                        <div class="drag-component">
+                                            <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                            <span class="drag-component-name">{{item.name}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="component-btn" (click)="onAdd(item)">
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
@@ -230,9 +247,15 @@
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>Server Components ({{componentsList.serverBlocks.length}})</span>
                                 </div>
-                                <div class="components-group-body">
-                                    <div *ngFor="let item of componentsList.serverBlocks" class="component-btn"
-                                        (click)="onAdd(item)">
+                                <div class="components-group-body" *ngFor="let item of componentsList.serverBlocks">
+                                    <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                        [attr.block-type]="item.header" (click)="onAdd(item)">
+                                        <div class="drag-component">
+                                            <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                            <span class="drag-component-name">{{item.name}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="component-btn" (click)="onAdd(item)">
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
@@ -246,9 +269,15 @@
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>Addons ({{componentsList.addons.length}})</span>
                                 </div>
-                                <div class="components-group-body">
-                                    <div *ngFor="let item of componentsList.addons" class="component-btn"
-                                        (click)="onAdd(item)">
+                                <div class="components-group-body" *ngFor="let item of componentsList.addons">
+                                    <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                        [attr.block-type]="item.header" (click)="onAdd(item)">
+                                        <div class="drag-component">
+                                            <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                            <span class="drag-component-name">{{item.name}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="component-btn" (click)="onAdd(item)">
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
@@ -263,9 +292,15 @@
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>unGrouped</span>
                                 </div>
-                                <div class="components-group-body">
-                                    <div *ngFor="let item of componentsList.unGrouped" class="component-btn"
-                                        (click)="onAdd(item)">
+                                <div class="components-group-body" *ngFor="let item of componentsList.unGrouped">
+                                    <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                        [attr.block-type]="item.header" (click)="onAdd(item)">
+                                        <div class="drag-component">
+                                            <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                            <span class="drag-component-name">{{item.name}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="component-btn" (click)="onAdd(item)" [attr.block-type]="item.header">
                                         <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                         <span>{{item.name}}</span>
                                         <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
@@ -385,8 +420,9 @@
 
 
                         <policy-tree [blocks]="openModule.dataSource" [errors]="errorsMap" [readonly]="readonly"
-                            [active]="eventVisible" (open)="onOpenModule($event)" (delete)="onDelete($event)"
-                            (select)="onSelect($event)" (reorder)="onReorder($event)">
+                            [active]="eventVisible" [menuList]="menuList" (open)="onOpenModule($event)"
+                            (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)"
+                            (init)="initTree($event)">
                         </policy-tree>
 
 

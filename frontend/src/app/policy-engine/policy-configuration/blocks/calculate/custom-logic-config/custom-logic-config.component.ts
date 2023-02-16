@@ -2,8 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEnca
 import { MatDialog } from '@angular/material/dialog';
 import { CodeEditorDialogComponent } from '../../../../helpers/code-editor-dialog/code-editor-dialog.component';
 import { Schema, Token, SchemaField } from '@guardian/interfaces';
-import { PolicyModel } from 'src/app/policy-engine/structures/policy.model';
-import { PolicyBlockModel } from "src/app/policy-engine/structures/policy-block.model";
+import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 @Component({
     selector: 'app-custom-logic-config',

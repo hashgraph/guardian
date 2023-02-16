@@ -1,8 +1,5 @@
 import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
-import { Options } from './options';
-import { PolicyModel } from '../../structures/policy.model';
-import { PolicyBlockModel } from "../../structures/policy-block.model";
-import { PolicyModuleModel } from "../../structures/policy-module.model";
+import { Options } from '../../structures/storage/config-options';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -10,7 +7,7 @@ import { TokenService } from 'src/app/services/token.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { Schema, SchemaHelper, Token } from '@guardian/interfaces';
 import { RegisteredBlocks } from '../../registered-blocks';
-import { PolicyStorage } from '../../structures/storage';
+import { PolicyModel, PolicyBlockModel, PolicyModuleModel, PolicyStorage } from '../../structures';
 
 /**
  * The page for editing the policy and blocks.
@@ -45,6 +42,8 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public openModeType: 'Policy' | 'Module' = 'Policy';
     public selectModeType: 'Block' | 'Module' = 'Block';
+
+    public treeList!: any;
 
     readonly codeMirrorOptions = {
         theme: 'default',
@@ -205,7 +204,7 @@ export class PolicyConfigurationComponent implements OnInit {
         //     }, 10);
         // });
 
-        this.onSelect(this.policyModel.root);
+        this.onSelect(this.openModule.root);
         // if (this.treeFlatOverview) {
         //     this.treeFlatOverview.selectItem(this.currentBlock);
         // }
@@ -346,24 +345,25 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public onSelect(block: any) {
-        this.currentBlock = this.policyModel.getBlock(block);
+        this.currentBlock = this.openModule.getBlock(block);
         this.selectModeType = this.currentBlock?.isModule ? 'Module' : 'Block';
-        this.policyModel.checkChange();
+        this.openModule.checkChange();
         this.changeDetector.detectChanges();
         return false;
     }
 
     public onAdd(btn: any) {
-        this.currentBlock = this.policyModel.getBlock(this.currentBlock);
+        this.currentBlock = this.openModule.getBlock(this.currentBlock);
         if (this.currentBlock) {
             const newBlock = this.registeredBlocks.newBlock(btn.type);
-            newBlock.tag = this.policyModel.getNewTag('Block');
+            newBlock.tag = this.openModule.getNewTag('Block');
             this.currentBlock.createChild(newBlock);
         }
     }
 
     public onDelete(block: any) {
-        this.policyModel.removeBlock(block);
+        this.openModule.removeBlock(block);
+        this.onSelect(this.openModule.root);
         return false;
     }
 
@@ -408,5 +408,17 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public get leftMenu(): boolean {
         return (this.openModeType === 'Policy' && this.selectModeType === 'Module');
+    }
+
+    initTree(event: any) {
+        this.treeList = event.treeList;
+    }
+
+    public noReturnPredicate() {
+        return false;
+    }
+
+    public drop(event: any) {
+        this.changeDetector.detectChanges();
     }
 }

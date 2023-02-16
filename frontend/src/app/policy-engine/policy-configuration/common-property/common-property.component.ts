@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema } from '@guardian/interfaces';
 import { RegisteredBlocks } from '../../registered-blocks';
-import { PolicyModel } from '../../structures/policy.model';
+import { PolicyModel } from '../../structures';
 
 /**
  * common property

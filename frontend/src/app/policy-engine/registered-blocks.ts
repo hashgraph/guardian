@@ -28,7 +28,6 @@ import { ReassigningConfigComponent } from './policy-configuration/blocks/docume
 import { TimerConfigComponent } from './policy-configuration/blocks/documents/timer-config/timer-config.component';
 import { CustomLogicConfigComponent } from './policy-configuration/blocks/calculate/custom-logic-config/custom-logic-config.component';
 import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
-import { PolicyBlockModel } from "./structures/policy-block.model";
 import { RevokeConfigComponent } from './policy-configuration/blocks/documents/revoke-config/revoke-config.component';
 import { ButtonConfigComponent } from './policy-configuration/blocks/main/button-config/button-config.component';
 import { ButtonBlockComponent } from './policy-viewer/blocks/button-block/button-block.component';
@@ -39,18 +38,21 @@ import { TokenConfirmationConfigComponent } from './policy-configuration/blocks/
 import { TokenConfirmationBlockComponent } from './policy-viewer/blocks/token-confirmation-block/token-confirmation-block.component';
 import { GroupManagerConfigComponent } from './policy-configuration/blocks/main/group-manager-config/group-manager-config.component';
 import { GroupManagerBlockComponent } from './policy-viewer/blocks/group-manager-block/group-manager-block.component';
-import { BlockType } from './structures/types/block-type.type';
-import { BlockGroup } from './structures/types/block-group.type';
-import { BlockHeaders } from './structures/types/block-headers.type';
-import { IBlockAbout } from './structures/interfaces/block-about.interface';
-import { ChildrenType } from './structures/types/children-type.type';
-import { ControlType } from './structures/types/control-type.type';
-import { BlockAbout } from './structures/block-about';
-import { IBlockSetting } from './structures/interfaces/block-setting.interface';
 import { MultiSignBlockComponent } from './policy-viewer/blocks/multi-sign-block/multi-sign-block.component';
 import { CreateTokenConfigComponent } from './policy-configuration/blocks/tokens/create-token-config/create-token-config.component';
 import { CreateTokenBlockComponent } from './policy-viewer/blocks/create-token-block/create-token-block.component';
 import { HttpRequestConfigComponent } from './policy-configuration/blocks/main/http-request-config/http-request-config.component';
+import {
+    BlockType,
+    BlockGroup,
+    BlockHeaders,
+    IBlockAbout,
+    ChildrenType,
+    ControlType,
+    BlockAbout,
+    IBlockSetting,
+    PolicyBlockModel
+} from "./structures";
 
 @Injectable()
 export class RegisteredBlocks {
@@ -602,7 +604,8 @@ export class RegisteredBlocks {
                 group: this.group[type],
                 header: this.header[type],
                 name,
-                title: this.titles[type]
+                title: this.titles[type],
+                data: `new:${type}`
             });
         }
         this.list = this.list.sort((a, b) => a.name > b.name ? 1 : -1);

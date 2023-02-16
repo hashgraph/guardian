@@ -10,7 +10,7 @@ import {
     ViewContainerRef
 } from '@angular/core';
 import { RegisteredBlocks } from '../../registered-blocks';
-import { PolicyBlockModel } from "../../structures/policy-block.model";
+import { PolicyBlockModel } from "../../structures/";
 
 /**
  * Settings for all blocks.

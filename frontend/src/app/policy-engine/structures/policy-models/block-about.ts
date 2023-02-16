@@ -1,7 +1,7 @@
 import { PolicyBlockModel } from "./policy-block.model";
-import { IBlockAbout } from "./interfaces/block-about.interface";
-import { IBlockAboutConfig } from "./interfaces/block-about-config.interface";
-import { IBlockDynamicAboutConfig } from "./interfaces/block-dynamic-about-config.interface";
+import { IBlockAboutConfig } from "../interfaces/block-about-config.interface";
+import { IBlockDynamicAboutConfig } from "../interfaces/block-dynamic-about-config.interface";
+import { IBlockAbout } from "../interfaces/block-about.interface";
 
 export class BlockAbout {
     private _propFunc: { [x: string]: Function; } = {};

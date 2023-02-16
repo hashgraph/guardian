@@ -126,7 +126,7 @@
     box-sizing: border-box;
 }
 
-.center-container{
+.center-container {
     flex: 1;
     position: relative;
     overflow: hidden;
@@ -446,6 +446,22 @@
             display: none;
         }
 
+        .components-group-body {
+            position: relative;
+            width: 210px;
+            height: 32px;
+            overflow: hidden;
+
+            .drag-btn {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 32px !important;
+                bottom: 0 !important;
+                opacity: 0 !important;
+            }
+        }
+
         &[collapsed="true"] {
             .components-group-body {
                 display: none;
@@ -488,24 +504,24 @@
                 }
             }
 
-            &:hover {
-                background: var(--pc-component-hover);
-
-                .component-btn-favorite {
-                    color: var(--pc-un-favorite-color);
-
-                    &:hover {
-                        color: var(--pc-favorite-focus-color);
-                    }
-                }
-            }
-
             .component-btn-edit {
                 color: var(--pc-active-icon-color);
             }
 
             .component-btn-delete {
                 color: var(--pc-error-color);
+            }
+        }
+
+        .components-group-body:hover .component-btn {
+            background: var(--pc-component-hover);
+
+            .component-btn-favorite {
+                color: var(--pc-un-favorite-color);
+
+                &:hover {
+                    color: var(--pc-favorite-focus-color);
+                }
             }
         }
 
@@ -678,6 +694,7 @@
             }
         }
     }
+
     .pc-tabs.minimized-tabs {
         .pc-tabs-headers {
             .tab-header {
@@ -958,7 +975,8 @@
             overflow: hidden;
             cursor: pointer;
             font-size: 12px;
-            color: var(--pc-active-icon-color);;
+            color: var(--pc-active-icon-color);
+            ;
             padding-left: 23px;
             position: relative;
             font-weight: 500;
@@ -1034,7 +1052,8 @@
             font-size: 18px;
             line-height: 10px;
             height: 18px;
-            color: var(--pc-active-icon-color);;
+            color: var(--pc-active-icon-color);
+            ;
             width: 18px;
             position: relative;
             top: 4px;
@@ -1119,7 +1138,8 @@
             width: 99%;
             font-size: 12px;
             line-height: 25px;
-            color: var(--pc-active-icon-color);;
+            color: var(--pc-active-icon-color);
+            ;
             background-color: white;
         }
 
@@ -1159,5 +1179,78 @@
         .label {
             display: flex;
         }
+    }
+}
+
+.drag-btn {
+    z-index: 1;
+    user-select: none;
+    cursor: pointer;
+
+    &.cdk-drag-placeholder {
+        opacity: 0.4 !important;
+        background: #e3e3e3 !important;
+        height: 54px;
+        display: flex;
+        position: relative;
+        align-items: center;
+    
+        >* {
+            margin: 10px 8px 10px 40px !important;
+        }
+    }
+
+    &.cdk-drag-placeholder,
+    &.cdk-drag-preview {
+        .drag-component {
+            height: 34px;
+            position: relative;
+            min-width: 160px;
+            background: #fff;
+            border: 2px solid #000;
+            box-sizing: border-box;
+            padding: 4px 12px;
+            cursor: pointer;
+            user-select: none;
+            margin: 0px 0px 0px 0px;
+            box-shadow: 4px 4px 6px 0px #00000040;
+            width: 160px;
+
+            .drag-component-icon {
+                display: block;
+                position: absolute;
+                top: 6px;
+                left: 9px;
+                color: #404040;
+                font-size: 18px;
+            }
+
+            .drag-component-name {
+                display: block;
+                padding: 2px 0px 2px 22px;
+                overflow: hidden;
+                max-width: 330px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                color: #404040;
+            }
+        }
+    }
+
+    &[block-type="UI Components"] .drag-component {
+        background: var(--pc-ui-block-background-color);
+        border-color: var(--pc-ui-block-border-color);
+    }
+
+    &[block-type="Server Blocks"] .drag-component {
+        background: var(--pc-server-block-background-color);
+        border-color: var(--pc-server-block-border-color);
+        border-radius: 20px;
+    }
+
+    &[block-type="Addons"] .drag-component {
+        background: var(--pc-addon-block-background-color);
+        border-color: var(--pc-addon-block-border-color);
+        border-radius: 6px;
     }
 }

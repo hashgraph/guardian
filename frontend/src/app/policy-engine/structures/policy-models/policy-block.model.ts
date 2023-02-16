@@ -1,6 +1,6 @@
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { GenerateUUIDv4, IArtifact } from '@guardian/interfaces';
-import { BlockType } from './types/block-type.type';
+import { BlockType } from './../types/block-type.type';
 import { PolicyEventModel } from './policy-event.model';
 import { PolicyModel } from './policy.model';
 import { IBlockConfig } from './block-config.interface';
@@ -128,6 +128,13 @@ export class PolicyBlockModel {
         this.changed = true;
     }
 
+    public get parent2(): PolicyBlockModel | null {
+        if (this._parent && !this._parent.isModule) {
+            return this._parent._parent;
+        }
+        return null;
+    }
+
     public get changed(): boolean {
         return this._changed;
     }
@@ -195,9 +202,13 @@ export class PolicyBlockModel {
         this.policy.refresh();
     }
 
-    public addChild(child: PolicyBlockModel) {
-        this._addChild(child);
+    public addChild(child: PolicyBlockModel, index?: number) {
+        this._addChild(child, index);
 
+        this.policy.refresh();
+    }
+
+    public refresh() {
         this.policy.refresh();
     }
 
@@ -218,9 +229,19 @@ export class PolicyBlockModel {
         }
     }
 
-    private _addChild(child: PolicyBlockModel) {
+    private _addChild(child: PolicyBlockModel, index?: number) {
         child._parent = this;
-        this._children.push(child);
+        if (index !== undefined && Number.isFinite(index)) {
+            if (index < 0) {
+                this._children.unshift(child);
+            } else if (index >= this._children.length) {
+                this._children.push(child);
+            } else {
+                this._children.splice(index, 0, child);
+            }
+        } else {
+            this._children.push(child);
+        }
     }
 
     private _removeChild(child: PolicyBlockModel) {
@@ -353,4 +374,14 @@ export class PolicyBlockModel {
         this.policy.refresh();
     }
 
+    public index(): number {
+        if (this.parent) {
+            return this.parent.indexOf(this);
+        }
+        return -1;
+    }
+
+    public indexOf(block: PolicyBlockModel): number {
+        return this._children.indexOf(block);
+    }
 }

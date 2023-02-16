@@ -162,20 +162,31 @@ export class EventCanvas {
         ctx.restore();
     }
 
-    public getIndexObject(event: MouseEvent): number {
-        if (!this.valid || !this.lastImage) {
+    public getPosition(event: MouseEvent): any {
+        if (this.box) {
+            return {
+                x: event.clientX - this.box.left,
+                y: event.clientY - this.box.top
+            }
+        }
+        return null
+    }
+
+    public getIndexObject(position: any): number {
+        if (this.valid && this.lastImage && position) {
+            const idx = (position.y * this.lastImage.width + position.x) * 4;
+            const a = this.lastImage.data[idx + 3];
+            let index = 0;
+            if (a == 255) {
+                const r = this.lastImage.data[idx];
+                const g = this.lastImage.data[idx + 1];
+                const b = this.lastImage.data[idx + 2];
+                index = this.fromColor(r, g, b);
+            }
+            return index;
+        } else {
             return -1;
         }
-        const idx = (event.offsetY * this.lastImage.width + event.offsetX) * 4;
-        const a = this.lastImage.data[idx + 3];
-        let index = 0;
-        if (a == 255) {
-            const r = this.lastImage.data[idx];
-            const g = this.lastImage.data[idx + 1];
-            const b = this.lastImage.data[idx + 2];
-            index = this.fromColor(r, g, b);
-        }
-        return index;
     }
 
     public getLineByIndex(index: number): BlocLine | undefined {

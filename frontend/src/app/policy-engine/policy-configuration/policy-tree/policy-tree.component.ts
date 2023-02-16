@@ -1,12 +1,11 @@
 import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
 import { RegisteredBlocks } from '../../registered-blocks';
-import { PolicyBlockModel } from "../../structures/policy-block.model";
-import { BlocLine } from './structures/event-line';
-import { BlockRect } from './structures/block-rect';
-import { FlatBlockNode } from './structures/block-node';
-import { EventCanvas } from './structures/event-canvas';
+import { FlatBlockNode } from '../../structures/tree-model/block-node';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
+import { CdkDropList } from '@angular/cdk/drag-drop';
+import { PolicyBlockModel, BlocLine, BlockRect, EventCanvas } from '../../structures';
+
 
 /**
  * Settings for all blocks.
@@ -21,15 +20,18 @@ export class PolicyTreeComponent implements OnInit {
     @Input('errors') errors!: any;
     @Input('readonly') readonly!: boolean;
     @Input('active') active!: string;
+    @Input('menuList') menuList!: any;
 
     @Output('delete') delete = new EventEmitter();
     @Output('select') select = new EventEmitter();
     @Output('reorder') reorder = new EventEmitter();
     @Output('open') open = new EventEmitter();
+    @Output('init') init = new EventEmitter();
 
     @ViewChild('parent') parentRef!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
     @ViewChild('tooltip') tooltipRef!: ElementRef<HTMLDivElement>;
+    @ViewChild('treeList') treeList!: CdkDropList<any>;
 
     public data!: FlatBlockNode[];
 
@@ -106,7 +108,9 @@ export class PolicyTreeComponent implements OnInit {
         this.canvas = new EventCanvas(
             this.parentRef?.nativeElement,
             this.canvasRef?.nativeElement
-        )
+        );
+        this.canvas.resize();
+        this.init.emit(this);
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -219,7 +223,8 @@ export class PolicyTreeComponent implements OnInit {
 
     public mousemove(event: MouseEvent) {
         if (this.tooltip && this.canvas && this.canvas.valid) {
-            const index = this.canvas.getIndexObject(event);
+            const position = this.canvas.getPosition(event);
+            const index = this.canvas.getIndexObject(position);
             const line = this.canvas.selectLine(index);
             if (line) {
                 this.tooltip.innerHTML = `
@@ -229,8 +234,8 @@ export class PolicyTreeComponent implements OnInit {
                     <div class="s4"><span>Input (Event)</span>: ${line.input}</div>
                     <div class="s5"><span>Event Actor</span>: ${this.actorMap[line.actor]}</div>
                 `;
-                this.tooltip.style.left = `${event.offsetX}px`;
-                this.tooltip.style.top = `${event.offsetY}px`;
+                this.tooltip.style.left = `${position.x}px`;
+                this.tooltip.style.top = `${position.y}px`;
                 this.showTooltip(true);
             } else {
                 this.tooltip.innerHTML = '';
@@ -268,9 +273,10 @@ export class PolicyTreeComponent implements OnInit {
         if (this.canvas && this.canvas.valid) {
             if (fastClear) {
                 this.canvas.clear();
-            }
-            if (this.active === 'None') {
-                return;
+            } else {
+                if (this.active === 'None') {
+                    return;
+                }
             }
             setTimeout(() => {
                 const boxCanvas = this.canvas.resize();
@@ -282,6 +288,7 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     private createEventsLines(data: FlatBlockNode[], boxCanvas?: DOMRect): BlocLine[] {
+        let minOffset = 0;
         const blockMap: any = {};
         for (const block of data) {
             const div = document.querySelector(`.block-container[block-id="${block.id}"] .block-body`);
@@ -289,8 +296,10 @@ export class PolicyTreeComponent implements OnInit {
                 const box = div.getBoundingClientRect();
                 const blocRect = new BlockRect(box, boxCanvas);
                 blockMap[block.name] = blocRect;
+                minOffset = Math.max(minOffset, blocRect.right.x);
             }
         }
+        minOffset += 50;
 
         const lines: BlocLine[] = [];
         for (const node of data) {
@@ -332,7 +341,7 @@ export class PolicyTreeComponent implements OnInit {
                 }
             }
         }
-        return this.sortLine(lines);
+        return this.sortLine(lines, minOffset);
     }
 
     private checkType(item: any): boolean {
@@ -348,11 +357,10 @@ export class PolicyTreeComponent implements OnInit {
         return false;
     }
 
-    private sortLine(lines: BlocLine[]): BlocLine[] {
+    private sortLine(lines: BlocLine[], minOffset: number): BlocLine[] {
         let shortLines = [];
         let otherLines = [];
 
-        let minOffset = 0;
         for (const line of lines) {
             line.selectBlock(this.currentBlock?.tag);
             if (line.short) {
@@ -360,9 +368,8 @@ export class PolicyTreeComponent implements OnInit {
             } else {
                 otherLines.push(line);
             }
-            minOffset = Math.max(minOffset, line.minOffset);
+
         }
-        minOffset += 50;
 
         const renderLine = [];
         for (const line of shortLines) {
@@ -394,7 +401,7 @@ export class PolicyTreeComponent implements OnInit {
         return renderLine;
     }
 
-    onAllCollapse() {
+    public onAllCollapse() {
         if (this.allCollapse === '2') {
             this.allCollapse = '1';
         } else {
@@ -405,11 +412,14 @@ export class PolicyTreeComponent implements OnInit {
         return false;
     }
 
-    onDelete(event: any) {
-        throw '';
+    public onDelete(event: any) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.delete.emit(this.currentBlock);
+        return false;
     }
 
-    onVisibleMoreActions(event: any) {
+    public onVisibleMoreActions(event: any) {
         if (this.visibleMoveActions === '1') {
             this.visibleMoveActions = '0';
         } else {
@@ -418,19 +428,86 @@ export class PolicyTreeComponent implements OnInit {
         this.render();
     }
 
-    onDropUp(event: any) {
-        throw '';
+    public onDropUp(event: any) {
+        this.moveBlockUpDown(-1)
     }
 
-    onDropDown(event: any) {
-        throw '';
+    public onDropDown(event: any) {
+        this.moveBlockUpDown(1)
     }
 
-    onDropLeft(event: any) {
-        throw '';
+    public onDropLeft(event: any) {
+        this.onMoveBlockLeft()
     }
 
-    onDropRight(event: any) {
-        throw '';
+    public onDropRight(event: any) {
+        this.onMoveBlockRight()
+    }
+
+    private moveBlockUpDown(position: number) {
+        const parent = this.currentBlock?.parent;
+        if (parent && parent.children) {
+            const currentBlockIndex = this.currentBlock.index();
+            const newIndex = currentBlockIndex + position;
+            if (parent.children[newIndex]) {
+                parent.children[currentBlockIndex] = parent.children[newIndex];
+                parent.children[newIndex] = this.currentBlock;
+                parent.refresh();
+                this.reorder.emit(null);
+            }
+        }
+    }
+
+    private onMoveBlockLeft() {
+        const parent = this.currentBlock?.parent;
+        const parent2 = this.currentBlock?.parent2;
+        if (parent && parent2) {
+            const parentIndex = parent.index();
+            parent.removeChild(this.currentBlock);
+            parent2.addChild(this.currentBlock, parentIndex + 1);
+            this.reorder.emit(null);
+        }
+    }
+
+    private onMoveBlockRight() {
+        const parent = this.currentBlock?.parent;
+        if (parent && parent.children) {
+            const prev = this.currentBlock.prev;
+            if (prev) {
+                parent.removeChild(this.currentBlock);
+                prev.addChild(this.currentBlock);
+                this.reorder.emit(null);
+            }
+        }
+    }
+
+    public drop(event: any) {
+        const data = event.item.data;
+        if(typeof data === 'string' && data.startsWith('new:')) {
+            this.reorder.emit(null);
+        } else {
+            this.reorder.emit(null);
+        }
+        console.log(data);
+    }
+
+    public onDragSorted(event: any) {
+        const index = event.currentIndex;
+        const items = event.container.getSortedItems();
+        const prev = items[index - 1]?.data;
+        const next = items[index]?.data;
+        const lvl = next > prev ? next : prev;
+        const placeholder = event.item.getPlaceholderElement()
+        placeholder.style.paddingLeft = `${40*lvl}px`;
+    }
+
+    public onDragEntered(event: any) {
+        const index = event.currentIndex;
+        const items = event.container.getSortedItems();
+        const prev = items[index - 1]?.data;
+        const next = items[index]?.data;
+        const lvl = next > prev ? next : prev;
+        const placeholder = event.item.getPlaceholderElement()
+        placeholder.style.paddingLeft = `${40*lvl}px`;
     }
 }

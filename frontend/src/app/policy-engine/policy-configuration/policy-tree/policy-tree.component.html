@@ -1,16 +1,38 @@
-<div class="container">
-    <div #parent class="canvas" (mousemove)="mousemove($event)" (mouseleave)="mouseleave($event)">
+<div class="container"(mousemove)="mousemove($event)" (mouseleave)="mouseleave($event)" >
+    <div #parent class="canvas" >
         <canvas #canvas></canvas>
     </div>
-    <div *ngIf="data" class="tree" [attr.readonly]="readonly" [attr.move-actions]="visibleMoveActions">
+    <div 
+        *ngIf="data" class="tree" 
+        [attr.readonly]="readonly" 
+        [attr.move-actions]="visibleMoveActions" 
+        cdkDropList 
+        #treeList="cdkDropList"
+        [cdkDropListConnectedTo]="[menuList]"
+        (cdkDropListDropped)="drop($event)"
+        (cdkDropListSorted)="onDragSorted($event)"
+        (cdkDropListEntered)="onDragEntered($event)"
+        onDragEntered
+    >
         <div class="block-all-expand" (click)="onAllCollapse()" [attr.collapsed]="allCollapse">
             <mat-icon *ngIf="allCollapse === '2'">unfold_more</mat-icon>
             <mat-icon *ngIf="allCollapse !== '2'">unfold_less</mat-icon>
         </div>
-        <div class="block-container" *ngFor="let item of data" [attr.expandable]="item.expandable"
-            [attr.collapsed]="item.collapsed" [attr.selected]="isSelect(item)" [attr.error]="isError(item)"
-            [attr.root]="item.root" [attr.block-id]="item.id" [attr.block-instance]="item.name"
-            [attr.block-type]="item.type" [style.paddingLeft]="item.offset">
+        <div class="block-container" 
+            *ngFor="let item of data" 
+            [attr.expandable]="item.expandable"
+            [attr.collapsed]="item.collapsed" 
+            [attr.selected]="isSelect(item)" 
+            [attr.error]="isError(item)"
+            [attr.root]="item.root" 
+            [attr.block-id]="item.id" 
+            [attr.block-instance]="item.name"
+            [attr.block-type]="item.type" 
+            [style.paddingLeft]="item.offset" 
+            cdkDrag
+            [cdkDragData]="item.level"
+            [cdkDragDisabled]="item.root"
+        >
             <div class="block-expand" (click)="onCollapse($event, item)">
                 <mat-icon>arrow_drop_down</mat-icon>
             </div>
