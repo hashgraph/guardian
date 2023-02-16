@@ -64,6 +64,10 @@
     box-sizing: border-box;
 }
 
+.custom-field-private {
+    flex: 8;
+}
+
 .custom-field-bold {
     flex: 5;
 }
