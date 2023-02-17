@@ -2,7 +2,7 @@
 
 Once you login as a Standard Registry and finish the setup, click on Policies tab.
 
-![](<../.gitbook/assets/image (4) (1).png>)
+![](<../.gitbook/assets/image (4) (1) (2) (1).png>)
 
 We have two options to create Policy :
 
@@ -13,7 +13,7 @@ We have two options to create Policy :
 
 1.1 To create Policy from scratch, we need to click on "Create Policy" button.
 
-![](<../.gitbook/assets/image (1) (2).png>)
+![](<../.gitbook/assets/image (1) (2) (1).png>)
 
 1.2 Once you click on Create Policy , you get a dialog box to fill out basic Policy details.
 
@@ -25,7 +25,7 @@ We have two options to create Policy :
 
 1.4 You can even edit the Policy by clicking Edit button.
 
-![](<../.gitbook/assets/image (2) (1) (1).png>)
+![](<../.gitbook/assets/image (2) (1) (1) (1).png>)
 
 1.5 When clicked on Edit, the screen is navigated to Policies configuration tab, which gives an option to add/remove any block from the Policy.
 
@@ -33,7 +33,7 @@ We have two options to create Policy :
 
 1.6 Once the Policy is configured, you can go to Policies tab and click on Publish.
 
-![](<../.gitbook/assets/image (6) (1).png>)
+![](<../.gitbook/assets/image (6) (1) (1).png>)
 
 ### 2. Importing Policy either from File or from IPFS
 
@@ -47,11 +47,11 @@ Instead of creating Policy from scratch, there is an option of importing the Pol
 
 2.1 Once the .zip file is selected, we get the Policy Import Review screen. Once everything looks good, click on Import Button.
 
-![](<../.gitbook/assets/image (8) (1).png>)
+![](<../.gitbook/assets/image (8) (1) (2).png>)
 
 2.2 The Policy can also be imported by importing it from IPFS.
 
-![](<../.gitbook/assets/image (3) (1) (2).png>)
+![](<../.gitbook/assets/image (3) (1) (2) (1).png>)
 
 2.3 To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
 
@@ -59,7 +59,7 @@ Instead of creating Policy from scratch, there is an option of importing the Pol
 1655293847.166673000 (new iREC Policy)
 ```
 
-![](<../.gitbook/assets/image (5) (1) (1).png>)
+![](<../.gitbook/assets/image (5) (1) (1) (1).png>)
 
 2.4 If the timestamp entered is correct, we get Policy Import Preview screen. If the imported Policy looks good, click on **Import** button.
 

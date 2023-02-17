@@ -16,7 +16,7 @@ Roles can be created by adding Role Property and its Value in Policy Configurato
 
 This is used for setting Permissions for a block, which limits which users can see this block or access it via the API.
 
-<figure><img src="../.gitbook/assets/image (1) (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../.gitbook/assets/image (33) (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -44,9 +44,9 @@ Groups are separate sets of documents access , which can be limited to users who
 
 
 
-<figure><img src="../.gitbook/assets/image (22).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (22) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (17) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 2.2 Usage
 
@@ -61,7 +61,7 @@ Groups are separate sets of documents access , which can be limited to users who
 
 <figure><img src="../.gitbook/assets/image (23) (3).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (16) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (16) (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 3. Switching between Groups
 

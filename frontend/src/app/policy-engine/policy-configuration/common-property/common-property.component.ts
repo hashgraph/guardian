@@ -83,7 +83,9 @@ export class CommonPropertyComponent implements OnInit {
                     this.allBlocks = [];
                 }
                 this.childrenBlocks = this.allBlocks.filter(item => item.parent === this.data?.id);
-            } else {
+            }
+
+            if (this.property.type !== 'Group' && this.property.type !== 'Array') {
                 if (this.property.default && !this.data.hasOwnProperty(this.property.name)) {
                     this.data[this.property.name] = this.property.default;
                 }

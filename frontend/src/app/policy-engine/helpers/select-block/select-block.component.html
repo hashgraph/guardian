@@ -1,8 +1,8 @@
-<mat-select [(value)]="value" [disabled]="readonly">
+<mat-select [(value)]="value" [disabled]="readonly" (selectionChange)="onChange()">
     <mat-select-trigger>
         <span class="custom">{{value}}</span>
     </mat-select-trigger>
-    <mat-option *ngFor="let item of data" [value]="item.value" (onSelectionChange)="onChange()">
+    <mat-option *ngFor="let item of data" [value]="item.value">
         <div class="block-name">
             <div class="block-icon">
                 <mat-icon>{{item.icon}}</mat-icon>

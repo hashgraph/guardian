@@ -4,7 +4,8 @@
         <mat-spinner></mat-spinner>
     </div>
     <div *ngIf="loading && taskId" class="loading">
-        <async-progess class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages" (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progess>
+        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
+            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
     </div>
 
     <ng-container *ngIf="isConfirmed; else elseTemplate">
@@ -50,7 +51,8 @@
                             <ng-container matColumnDef="name">
                                 <th mat-header-cell *matHeaderCellDef> TOKEN </th>
                                 <td mat-cell *matCellDef="let element">
-                                    {{element.tokenName}} (<dragonglass type="tokens" [params]="element.tokenId">{{element.tokenId}}</dragonglass>)
+                                    {{element.tokenName}} (<hedera-explorer type="tokens"
+                                        [params]="element.tokenId">{{element.tokenId}}</hedera-explorer>)
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="associated">
@@ -76,7 +78,8 @@
                             <ng-container matColumnDef="frozen">
                                 <th mat-header-cell *matHeaderCellDef> Frozen </th>
                                 <td mat-cell *matCellDef="let element">
-                                    <div *ngIf="element.enableFreeze" class="item-color-{{getColor(element.frozen,true)}}">
+                                    <div *ngIf="element.enableFreeze"
+                                        class="item-color-{{getColor(element.frozen,true)}}">
                                         {{element.frozen}}
                                     </div>
                                 </td>
@@ -98,6 +101,54 @@
                             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
                         </table>
+                    </ng-container>
+                </mat-tab>
+                <mat-tab label="RETIRE">
+                    <ng-container *ngIf="contractRequests; else elseTemplate">
+                        <table mat-table [dataSource]="contractRequests" class="retire-table">
+                            <ng-container matColumnDef="contractId">
+                                <th mat-header-cell *matHeaderCellDef> Contract Id </th>
+                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }">
+                                   <hedera-explorer type="accounts" [params]="element.contractId">{{element.contractId}}</hedera-explorer>
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="baseTokenId">
+                                <th mat-header-cell *matHeaderCellDef> Base Token Id </th>
+                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }">
+                                    <hedera-explorer type="tokens" [params]="element.baseTokenId">{{element.baseTokenId}}</hedera-explorer>
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="oppositeTokenId">
+                                <th mat-header-cell *matHeaderCellDef> Opposite Token Id </th>
+                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }">
+                                    <hedera-explorer type="tokens" [params]="element.oppositeTokenId">{{element.oppositeTokenId}}</hedera-explorer>
+                                </td>
+                            </ng-container>
+                            <ng-container matColumnDef="baseTokenCount">
+                                <th mat-header-cell *matHeaderCellDef> Base Token Count </th>
+                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }"> {{element.baseTokenCount}} </td>
+                            </ng-container>
+                            <ng-container matColumnDef="oppositeTokenCount">
+                                <th mat-header-cell *matHeaderCellDef> Opposite Token Count </th>
+                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }"> {{element.oppositeTokenCount}} </td>
+                            </ng-container>
+                            <ng-container matColumnDef="cancel">
+                                <th mat-header-cell *matHeaderCellDef> Operations </th>
+                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }">
+                                    <div *ngIf="!element.vcDocument" class="cancel-action-btn" (click)="cancelContractRequest(element.id)">
+                                        <span>Cancel Request</span>
+                                        <mat-icon>cancel</mat-icon>
+                                    </div>
+                                    <div *ngIf="element.vcDocument" class="view-action-btn" (click)="viewRetireRequest(element.vcDocument)">
+                                        <span>View Details</span>
+                                        <mat-icon>visibility</mat-icon>
+                                    </div>
+                                </td>
+                            </ng-container>
+                            <tr mat-header-row *matHeaderRowDef="displayedColumnsContractRequests"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumnsContractRequests;"></tr>
+                        </table>
+                        <button (click)="createRetireRequest()" mat-raised-button color="primary" style="margin: 10px;">Create Retire Request</button>
                     </ng-container>
                 </mat-tab>
             </mat-tab-group>

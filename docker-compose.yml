@@ -1,14 +1,25 @@
 version: "3.8"
 services:
   mongo:
-    image: mongo:6
+    image: mongo:6.0.3
     command: "--setParameter allowDiskUseByDefault=true"
     restart: always
     expose:
       - 27017
 
+  mongo-express:
+    image: mongo-express:1.0.0-alpha.4
+    expose:
+      - 8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_SITE_BASEURL: /mongo-admin
+    depends_on:
+      - mongo
+
   ipfs-node:
-    image: yeasy/ipfs:latest
+    image: ipfs/kubo:v0.17.0
     ports:
       - "5001:5001"
       - "5002:5002"
@@ -25,7 +36,7 @@ services:
       - 3001
 
   message-broker:
-    image: nats
+    image: nats:2.9.8
     expose:
       - 4222
     ports:
@@ -33,7 +44,7 @@ services:
     command: '--http_port 8222'
 
   vault:
-    image: vault
+    image: vault:1.12.2
     expose:
       - 8200
     ports:
@@ -60,6 +71,7 @@ services:
       dockerfile: ./worker-service/Dockerfile
     depends_on:
       - ipfs-node
+      - auth-service
     environment:
       - SERVICE_CHANNEL="worker.1"
 
@@ -69,6 +81,7 @@ services:
       dockerfile: ./worker-service/Dockerfile
     depends_on:
       - ipfs-node
+      - auth-service
     environment:
       - SERVICE_CHANNEL="worker.2"
 
@@ -95,6 +108,16 @@ services:
       - auth-service
       - logger-service
 
+  policy-service:
+    build:
+      context: .
+      dockerfile: ./policy-service/Dockerfile
+    depends_on:
+      - mongo
+      - message-broker
+      - auth-service
+      - logger-service
+
   guardian-service:
     build:
       context: .
@@ -106,6 +129,7 @@ services:
       - logger-service
       - worker-service-1
       - worker-service-2
+      - policy-service
 
   mrv-sender:
     build:
@@ -133,9 +157,10 @@ services:
       - api-gateway
       - api-docs
       - mrv-sender
+      - mongo-express
 volumes:
   mongo:
-    # volume-guardian-service:
-    # volume-ui-service:
-    # volume-mrv-sender:
-    #  volume-message-broker:
+  # volume-guardian-service:
+  # volume-ui-service:
+  # volume-mrv-sender:
+  #  volume-message-broker:

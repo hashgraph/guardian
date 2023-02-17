@@ -82,7 +82,7 @@ const PORT = process.env.PORT || 3005;
                     }
                     break;
             }
-            
+
             const fields = schema['@context'][type]['@context'];
             if(fields.policyId) {
                 vcSubject.policyId = policyId;
@@ -95,7 +95,7 @@ const PORT = process.env.PORT || 3005;
             }
 
             document = await vcHelper.createVC(vcSubject, didDocument, did);
-            console.log("created vc", document);
+            console.log('created vc', document);
         } catch (error) {
             console.error(error);
             res.status(500).json(error);

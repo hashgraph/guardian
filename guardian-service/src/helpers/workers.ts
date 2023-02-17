@@ -1,7 +1,8 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import { GenerateUUIDv4, IActiveTask, ITask, IWorkerRequest, WorkerEvents } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/service-requests-base';
-import { MessageResponse } from '@guardian/common';
+import { doNothing, MessageResponse } from '@guardian/common';
+import { Environment } from '@hedera-modules';
 
 /**
  * Workers helper
@@ -37,6 +38,9 @@ export class Workers extends ServiceRequestsBase {
      * @param priority
      */
     public addNonRetryableTask(task: ITask, priority: number): Promise<any> {
+        if (!task.data.network) {
+            task.data.network = Environment.network;
+        }
         return this.addTask(task, priority, false);
     }
 
@@ -47,6 +51,9 @@ export class Workers extends ServiceRequestsBase {
      * @param attempts
      */
     public addRetryableTask(task: ITask, priority: number, attempts: number = 0): Promise<any> {
+        if (!task.data.network) {
+            task.data.network = Environment.network;
+        }
         return this.addTask(task, priority, true, attempts);
     }
 
@@ -56,39 +63,45 @@ export class Workers extends ServiceRequestsBase {
      * @param priority
      * @param isRetryableTask
      * @param attempts
+     * @param registerCallback
      */
-    private addTask(task: ITask, priority: number, isRetryableTask: boolean = false, attempts: number = 0): Promise<any> {
-        const taskId = GenerateUUIDv4()
-        task.id = taskId;
+    private addTask(task: ITask, priority: number, isRetryableTask: boolean = false, attempts: number = 0, registerCallback = true): Promise<any> {
+        task.id = task.id || GenerateUUIDv4();
         task.priority = priority;
         attempts = attempts > 0 && attempts < this.maxRepetitions ? attempts : this.maxRepetitions;
         this.queue.push(task);
         const result = new Promise((resolve, reject) => {
-            this.tasksCallbacks.set(taskId, {
-                task,
-                number: 0,
-                callback: (data, error) => {
-                    if (error) {
-                        if (isRetryableTask) {
-                            if (this.tasksCallbacks.has(taskId)) {
-                                const callback = this.tasksCallbacks.get(taskId);
-                                callback.number++;
-                                if (callback.number > attempts) {
-                                    this.tasksCallbacks.delete(taskId);
-                                    reject(error);
-                                    return;
+
+            if (registerCallback) {
+                this.tasksCallbacks.set(task.id, {
+                    task,
+                    number: 0,
+                    callback: (data, error) => {
+                        if (error) {
+                            if (isRetryableTask) {
+                                if (this.tasksCallbacks.has(task.id)) {
+                                    const callback = this.tasksCallbacks.get(task.id);
+                                    callback.number++;
+                                    if (callback.number > attempts) {
+                                        this.tasksCallbacks.delete(task.id);
+                                        this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: task.id, data, error });
+                                        reject(error);
+                                        return;
+                                    }
                                 }
+                                this.queue.push(task);
+                            } else {
+                                this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: task.id ,data, error });
+                                reject(error);
                             }
-                            this.queue.push(task);
                         } else {
-                            reject(error);
+                            this.tasksCallbacks.delete(task.id);
+                            this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: task.id, data, error });
+                            resolve(data);
                         }
-                    } else {
-                        this.tasksCallbacks.delete(taskId);
-                        resolve(data);
                     }
-                }
-            });
+                });
+            }
         });
         this.channel.publish(WorkerEvents.QUEUE_UPDATED, null);
         return result;
@@ -111,10 +124,19 @@ export class Workers extends ServiceRequestsBase {
         });
 
         this.channel.response(WorkerEvents.TASK_COMPLETE, async (msg: any) => {
-            const activeTask = this.tasksCallbacks.get(msg.id);
-            activeTask.callback(msg.data, msg.error);
+            if (this.tasksCallbacks.has(msg.id)) {
+                const activeTask = this.tasksCallbacks.get(msg.id);
+
+                activeTask.callback(msg.data, msg.error);
+            }
             return new MessageResponse(null);
         });
+
+        this.channel.response(WorkerEvents.PUSH_TASK, async (msg: any) => {
+            const { task, priority, isRetryableTask, attempts } = msg;
+            this.addTask(task, priority, isRetryableTask, attempts).then(doNothing, doNothing);
+            return new MessageResponse(null);
+        })
     }
 
     /**

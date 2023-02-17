@@ -14,7 +14,6 @@ import { SetVersionDialog } from './set-version-dialog/set-version-dialog.compon
 import { VCViewerDialog } from './vc-dialog/vc-dialog.component';
 import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.component';
 import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.component';
-import { NgxFileDropModule } from 'ngx-file-drop';
 import { FileDragNDropComponent } from '../components/file-drag-n-drop/file-drag-n-drop.component';
 import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
 import { CommonComponentsModule } from '../common-components.module';
@@ -22,6 +21,9 @@ import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.compon
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module';
 import { ArtifactPropertiesComponent } from '../artifact-engine/artifact-properties/artifact-properties.component';
+import { SchemaConfigComponent } from './schemas/schemas.component';
+import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dialog.component';
+import { AppRoutingModule } from '../app-routing.module';
 
 @NgModule({
     declarations: [
@@ -36,7 +38,9 @@ import { ArtifactPropertiesComponent } from '../artifact-engine/artifact-propert
         SchemaViewDialog,
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,
-        EnumEditorDialog
+        EnumEditorDialog,
+        SchemaConfigComponent,
+        CompareSchemaDialog
     ],
     imports: [
         CommonModule,
@@ -48,6 +52,7 @@ import { ArtifactPropertiesComponent } from '../artifact-engine/artifact-propert
         NgxMatTimepickerModule,
         ClipboardModule,
         CodemirrorModule,
+        AppRoutingModule,
         ArtifactEngineModule
     ],
     exports: [
@@ -62,7 +67,8 @@ import { ArtifactPropertiesComponent } from '../artifact-engine/artifact-propert
         ExportSchemaDialog,
         FileDragNDropComponent,
         SchemaFieldConfigurationComponent,
-        ArtifactPropertiesComponent
+        ArtifactPropertiesComponent,
+        SchemaConfigComponent
     ]
 })
 export class SchemaEngineModule { }

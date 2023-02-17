@@ -76,6 +76,10 @@ import { CreateTokenConfigComponent } from './policy-configuration/blocks/tokens
 import { TokenConfigurationComponent } from '../components/token-configuration/token-configuration.component';
 import { TreeNodeActionsComponent } from './helpers/tree-node-actions/tree-node-actions.component';
 import { MultiPolicyDialogComponent } from './helpers/multi-policy-dialog/multi-policy-dialog.component';
+import { ComparePolicyDialog } from './helpers/compare-policy-dialog/compare-policy-dialog.component';
+import {
+    HttpRequestConfigComponent
+} from './policy-configuration/blocks/main/http-request-config/http-request-config.component';
 
 @NgModule({
     declarations: [
@@ -125,6 +129,7 @@ import { MultiPolicyDialogComponent } from './helpers/multi-policy-dialog/multi-
         CustomLogicConfigComponent,
         CodeEditorDialogComponent,
         SwitchConfigComponent,
+        HttpRequestConfigComponent,
         EventsOverview,
         ConfirmationDialog,
         RevokeConfigComponent,
@@ -146,7 +151,8 @@ import { MultiPolicyDialogComponent } from './helpers/multi-policy-dialog/multi-
         CreateTokenBlockComponent,
         TokenConfigurationComponent,
         TreeNodeActionsComponent,
-        MultiPolicyDialogComponent
+        MultiPolicyDialogComponent,
+        ComparePolicyDialog
     ],
     imports: [
         CommonModule,

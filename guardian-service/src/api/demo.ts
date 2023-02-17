@@ -6,7 +6,7 @@ import {
     Logger,
     MessageBrokerChannel,
     MessageError,
-    MessageResponse,
+    MessageResponse, RunFunctionAsync,
     SettingsContainer
 } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
@@ -90,14 +90,12 @@ export async function demoAPI(
         const { role, taskId } = msg;
         const notifier = initNotifier(apiGatewayChannel, taskId);
 
-        setImmediate(async () => {
-            try {
-                const result = await generateDemoKey(role, settingsRepository, emptyNotifier());
-                notifier.result(result);
-            } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
-                notifier.error(error);
-            }
+        RunFunctionAsync(async () => {
+            const result = await generateDemoKey(role, settingsRepository, emptyNotifier());
+            notifier.result(result);
+        }, async (error) => {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            notifier.error(error);
         });
 
         return new MessageResponse({ taskId });

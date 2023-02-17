@@ -813,6 +813,17 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
+     * Return schemas (name\id)
+     *
+     * @param {string} owner - schemas owner
+     *
+     * @returns {any[]} - schemas
+     */
+    public async getListSchemas(owner: string): Promise<any[]> {
+        return await this.request<any[]>(MessageAPI.GET_LIST_SCHEMAS, { owner });
+    }
+
+    /**
      * Upload Policy Artifacts
      *
      * @param {any} artifact - Artifact
@@ -888,6 +899,286 @@ export class Guardians extends ServiceRequestsBase {
     public async getFileIpfs(cid: string, responseType: any): Promise<any> {
         return await this.request<any>(MessageAPI.IPFS_GET_FILE, {
             cid, responseType
+        });
+    }
+
+    /**
+     * Compare two policies
+     * @param user
+     * @param type
+     * @param policyId1
+     * @param policyId2
+     * @param eventsLvl
+     * @param propLvl
+     * @param childrenLvl
+     * @param idLvl
+     */
+    public async comparePolicies(
+        user: any,
+        type: any,
+        policyId1: any,
+        policyId2: any,
+        eventsLvl: any,
+        propLvl: any,
+        childrenLvl: any,
+        idLvl: any,
+    ) {
+        return await this.request(MessageAPI.COMPARE_POLICIES, {
+            type,
+            user,
+            policyId1,
+            policyId2,
+            eventsLvl,
+            propLvl,
+            childrenLvl,
+            idLvl
+        });
+    }
+
+    /**
+     * Compare two schemas
+     * @param user
+     * @param type
+     * @param schemaId1
+     * @param schemaId2
+     * @param idLvl
+     */
+    public async compareSchemas(
+        user: any,
+        type: any,
+        schemaId1: any,
+        schemaId2: any,
+        idLvl: any,
+    ) {
+        return await this.request(MessageAPI.COMPARE_SCHEMAS, {
+            user, type, schemaId1, schemaId2, idLvl
+        });
+    }
+
+    /**
+     * Create Contract
+     * @param did
+     * @param description
+     * @returns Created Contract
+     */
+    public async createContract(
+        did: string,
+        description: string
+    ): Promise<any> {
+        return await this.request<any>(MessageAPI.CREATE_CONTRACT, {
+            did,
+            description,
+        });
+    }
+
+    /**
+     * Import Contract
+     * @param did
+     * @param contractId
+     * @param description
+     * @returns Imported Contract
+     */
+    public async importContract(
+        did: string,
+        contractId: string,
+        description: string
+    ): Promise<any> {
+        return await this.request<any>(MessageAPI.IMPORT_CONTRACT, {
+            did,
+            contractId,
+            description,
+        });
+    }
+
+    /**
+     * Create Contract
+     * @param owner
+     * @param pageIndex
+     * @param pageSize
+     * @returns Contracts And Count
+     */
+    public async getContracts(
+        owner: string,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<[any, number]> {
+        return await this.request<any>(MessageAPI.GET_CONTRACT, {
+            owner,
+            pageIndex,
+            pageSize,
+        });
+    }
+
+    /**
+     * Add User To Contract
+     * @param did
+     * @param userId
+     * @param contractId
+     * @returns Operation Success
+     */
+    public async addUser(
+        did: string,
+        userId: string,
+        contractId: string
+    ): Promise<boolean> {
+        return await this.request<any>(MessageAPI.ADD_CONTRACT_USER, {
+            did,
+            userId,
+            contractId,
+        });
+    }
+
+    /**
+     * Check Contract Status
+     * @param did
+     * @param contractId
+     * @returns Operation Success
+     */
+    public async updateStatus(
+        did: string,
+        contractId: string
+    ): Promise<boolean> {
+        return await this.request<any>(MessageAPI.CHECK_CONTRACT_STATUS, {
+            contractId,
+            did,
+        });
+    }
+
+    /**
+     * Add Contract Pair
+     * @param did
+     * @param contractId
+     * @param baseTokenId
+     * @param oppositeTokenId
+     * @param baseTokenCount
+     * @param oppositeTokenCount
+     * @returns Operation Success
+     */
+    public async addContractPair(
+        did: string,
+        contractId: string,
+        baseTokenId: string,
+        oppositeTokenId: string,
+        baseTokenCount: number,
+        oppositeTokenCount: number
+    ): Promise<void> {
+        return await this.request<any>(MessageAPI.ADD_CONTRACT_PAIR, {
+            did,
+            contractId,
+            baseTokenId,
+            oppositeTokenId,
+            baseTokenCount,
+            oppositeTokenCount,
+        });
+    }
+
+    /**
+     * Get Contracts Pairs
+     * @param did
+     * @param owner
+     * @param baseTokenId
+     * @param oppositeTokenId
+     * @returns Contracts And Pairs
+     */
+    public async getContractPair(
+        did: string,
+        owner: string,
+        baseTokenId: string,
+        oppositeTokenId: string
+    ): Promise<any> {
+        return await this.request<any>(MessageAPI.GET_CONTRACT_PAIR, {
+            did,
+            baseTokenId,
+            oppositeTokenId,
+            owner,
+        });
+    }
+
+    /**
+     * Create Retire Request
+     * @param did
+     * @param contractId
+     * @param baseTokenId
+     * @param oppositeTokenId
+     * @param baseTokenCount
+     * @param oppositeTokenCount
+     * @param baseTokenSerials
+     * @param oppositeTokenSerials
+     * @returns Operation Success
+     */
+    public async retireRequest(
+        did: string,
+        contractId: string,
+        baseTokenId: string,
+        oppositeTokenId: string,
+        baseTokenCount: number,
+        oppositeTokenCount: number,
+        baseTokenSerials: number[],
+        oppositeTokenSerials: number[]
+    ): Promise<void> {
+        return await this.request<any>(MessageAPI.ADD_RETIRE_REQUEST, {
+            did,
+            contractId,
+            baseTokenId,
+            oppositeTokenId,
+            baseTokenCount,
+            oppositeTokenCount,
+            baseTokenSerials,
+            oppositeTokenSerials,
+        });
+    }
+
+    /**
+     * Cancel Retire Request
+     * @param did
+     * @param requestId
+     * @returns Operation Success
+     */
+    public async cancelRetireRequest(
+        did: string,
+        requestId: string
+    ): Promise<void> {
+        return await this.request<any>(MessageAPI.CANCEL_RETIRE_REQUEST, {
+            did,
+            requestId,
+        });
+    }
+
+    /**
+     * Get Retire Requests
+     * @param did
+     * @param owner
+     * @param contractId
+     * @param pageIndex
+     * @param pageSize
+     * @returns Retire Requests And Count
+     */
+    public async getRetireRequests(
+        did: string,
+        owner?: string,
+        contractId?: string,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<[any, number]> {
+        return await this.request<any>(MessageAPI.GET_RETIRE_REQUEST, {
+            did,
+            owner,
+            contractId,
+            pageIndex,
+            pageSize,
+        });
+    }
+
+    /**
+     * Retire Tokens
+     * @param did
+     * @param requestId
+     * @returns Operation Success
+     */
+    public async retire(did: string, requestId: string): Promise<void> {
+        return await this.request<any>(MessageAPI.RETIRE_TOKENS, {
+            did,
+            requestId,
         });
     }
 }

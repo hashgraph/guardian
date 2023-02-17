@@ -5,9 +5,11 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 const MQ_TIMEOUT = 300000;
 /**
- * Message Chunk Size ~ 1 MB
+ * Message Chunk Size
+ * Default value ~ 1 MB
  */
-const MQ_MESSAGE_CHUNK = 1000000;
+const MQ_MESSAGE_CHUNK =
+    Math.floor(Math.abs(+process.env.MQ_MESSAGE_CHUNK)) || 1000000;
 const reqMap = new Map<string, any>();
 const chunkMap = new Map<string, any>();
 /**

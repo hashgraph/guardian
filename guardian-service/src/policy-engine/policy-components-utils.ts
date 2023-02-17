@@ -1,5 +1,4 @@
 import {
-    PolicyBlockFullArgumentList,
     PolicyBlockMap,
     PolicyTagMap,
     EventActor,
@@ -9,12 +8,9 @@ import {
     PolicyOutputEventType
 } from '@policy-engine/interfaces';
 import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
-import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInstance, IPolicyInterfaceBlock, ISerializedBlock, ISerializedBlockExtend } from './policy-engine.interface';
+import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyInstance, IPolicyInterfaceBlock } from './policy-engine.interface';
 import { Policy } from '@entity/policy';
 import { STATE_KEY } from '@policy-engine/helpers/constants';
-import { GetBlockByType } from '@policy-engine/blocks/get-block-by-type';
-import { GetOtherOptions } from '@policy-engine/helpers/get-other-options';
-import { GetBlockAbout } from '@policy-engine/blocks';
 import { DatabaseServer } from '@database-modules';
 import { IPolicyUser } from './policy-user';
 import { ExternalEvent } from './interfaces/external-event';
@@ -241,79 +237,6 @@ export class PolicyComponentsUtils {
     }
 
     /**
-     * Build block instance
-     * @param policy
-     * @param policyId
-     * @param block
-     * @param parent
-     * @param allInstances
-     * @constructor
-     */
-    public static BuildInstance(
-        policy: Policy,
-        policyId: string,
-        block: ISerializedBlock,
-        parent: IPolicyBlock,
-        allInstances: IPolicyBlock[]
-    ): IPolicyBlock {
-        const { blockType, children, ...params }: ISerializedBlockExtend = block;
-
-        if (parent) {
-            params._parent = parent;
-        }
-
-        let options = params as any;
-        if (options.options) {
-            options = Object.assign(options, options.options);
-        }
-        const blockConstructor = GetBlockByType(blockType) as any;
-        const blockInstance = new blockConstructor(
-            options.id || PolicyComponentsUtils.GenerateNewUUID(),
-            options.defaultActive,
-            options.tag,
-            options.permissions,
-            options._parent,
-            GetOtherOptions(options as PolicyBlockFullArgumentList)
-        );
-        blockInstance.setPolicyInstance(policyId, policy);
-        blockInstance.setPolicyOwner(policy.owner);
-        blockInstance.setTopicId(policy.topicId);
-
-        allInstances.push(blockInstance);
-
-        if (children && children.length) {
-            for (const child of children) {
-                PolicyComponentsUtils.BuildInstance(
-                    policy, policyId, child, blockInstance, allInstances
-                );
-            }
-        }
-
-        return blockInstance;
-    }
-
-    /**
-     * Build block instances tree
-     * @param policy
-     * @param policyId
-     * @param allInstances
-     * @constructor
-     */
-    public static BuildBlockTree(
-        policy: Policy,
-        policyId: string,
-        allInstances: IPolicyBlock[]
-
-    ): IPolicyInterfaceBlock {
-        const configObject = policy.config as ISerializedBlock;
-        const model = PolicyComponentsUtils.BuildInstance(
-            policy, policyId, configObject, null, allInstances
-        );
-
-        return model as any;
-    }
-
-    /**
      * Register policy instance
      *
      * @param policyId
@@ -443,32 +366,6 @@ export class PolicyComponentsUtils {
     }
 
     /**
-     * Run policy block instance action when external data income
-     * @param data
-     */
-    public static async ReceiveExternalData(data: any): Promise<void> {
-        const policy = await DatabaseServer.getPolicyByTag(data?.policyTag);
-        if (policy) {
-            const policyId = policy.id.toString();
-            for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
-                if (block.policyId === policyId) {
-                    await (block as any).receiveData(data);
-                }
-            }
-        } else {
-            console.log(`ExternalData: policy not found (${data?.policyTag})`);
-        }
-    }
-
-    /**
-     * Check if id already registered
-     * @param uuid
-     */
-    public static IfUUIDRegistered(uuid: string): boolean {
-        return PolicyComponentsUtils.BlockByBlockId.has(uuid);
-    }
-
-    /**
      * Get block instance by uuid
      * @param uuid
      */
@@ -514,27 +411,12 @@ export class PolicyComponentsUtils {
     }
 
     /**
-     * Return block options object
-     * @param obj
-     */
-    public static GetBlockUniqueOptionsObject(obj: any): { [key: string]: any } {
-        return obj.options;
-    }
-
-    /**
-     * Get block about
-     */
-    public static GetBlockAbout(): any {
-        return GetBlockAbout();
-    }
-
-    /**
      * Get Policy Groups
      * @param policy
      * @param user
      */
     public static async GetGroups(policy: IPolicyInstance, user: IPolicyUser): Promise<any[]> {
-        return await policy.databaseServer.getGroupsByUser(policy.policyId, user.did, {
+        return await new DatabaseServer().getGroupsByUser(policy.policyId, user.did, {
             fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active']
         });
     }
@@ -546,7 +428,7 @@ export class PolicyComponentsUtils {
      * @param uuid
      */
     public static async SelectGroup(policy: IPolicyInstance, user: IPolicyUser, uuid: string): Promise<void> {
-        await policy.databaseServer.setActiveGroup(policy.policyId, user.did, uuid);
+        await new DatabaseServer().setActiveGroup(policy.policyId, user.did, uuid);
     }
 
     /**

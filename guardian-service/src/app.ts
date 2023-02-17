@@ -12,7 +12,6 @@ import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
 import { IPFS } from '@helpers/ipfs';
 import { demoAPI } from '@api/demo';
-import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { Settings } from '@entity/settings';
@@ -46,6 +45,12 @@ import { artifactAPI } from '@api/artifact.service';
 import { Policy } from '@entity/policy';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
 import { SynchronizationService } from '@policy-engine/multi-policy-service';
+import { Contract } from '@entity/contract';
+import { contractAPI } from '@api/contract.service';
+import { RetireRequest } from '@entity/retire-request';
+import { analyticsAPI } from '@api/analytics.service';
+import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
+import { PolicyEngine } from '@policy-engine/policy-engine';
 
 export const obj = {};
 
@@ -68,8 +73,10 @@ Promise.all([
 ]).then(async values => {
     const [_, db, cn] = values;
     DB_DI.orm = db;
+    new PolicyServiceChannelsContainer().setConnection(cn);
     const channel = new MessageBrokerChannel(cn, 'guardians');
     const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
+    const policyServiceChannel = new MessageBrokerChannel(cn, 'policy-service');
 
     new Logger().setChannel(channel);
     const state = new ApplicationState('GUARDIAN_SERVICE');
@@ -141,10 +148,11 @@ Promise.all([
     }
 
     try {
-        const policyGenerator = new BlockTreeGenerator();
+        const policyEngine = new PolicyEngine();
+        policyEngine.setChannel(policyServiceChannel);
         const policyService = new PolicyEngineService(channel, apiGatewayChannel);
         policyService.registerListeners();
-        await policyGenerator.init();
+        await policyEngine.init();
         SynchronizationService.start();
     } catch (error) {
         console.error(error.message);
@@ -159,6 +167,8 @@ Promise.all([
     const settingsRepository = new DataBaseHelper(Settings);
     const topicRepository = new DataBaseHelper(Topic);
     const policyRepository = new DataBaseHelper(Policy);
+    const contractRepository = new DataBaseHelper(Contract);
+    const retireRequestRepository = new DataBaseHelper(RetireRequest);
 
     state.updateState(ApplicationStates.INITIALIZING);
 
@@ -172,6 +182,8 @@ Promise.all([
         await demoAPI(channel, apiGatewayChannel, settingsRepository);
         await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
         await artifactAPI(channel);
+        await contractAPI(channel, contractRepository, retireRequestRepository);
+	await analyticsAPI(channel);
     } catch (error) {
         console.error(error.message);
         process.exit(0);

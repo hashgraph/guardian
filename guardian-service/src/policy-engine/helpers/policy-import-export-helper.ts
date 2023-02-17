@@ -14,7 +14,7 @@ import { SchemaEntity, TopicType, GenerateUUIDv4, WorkerTaskType } from '@guardi
 import { Users } from '@helpers/users';
 import { MessageAction, MessageServer, MessageType, PolicyMessage, TopicConfig, TopicHelper } from '@hedera-modules';
 import { Topic } from '@entity/topic';
-import { importSchemaByFiles, publishSystemSchema } from '@api/schema.service';
+import { importSchemaByFiles, publishSystemSchemas } from '@api/schema.service';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
 import { DatabaseServer } from '@database-modules';
@@ -153,7 +153,9 @@ export class PolicyImportExportHelper {
             DatabaseServer.getSystemSchema(SchemaEntity.WIPE_TOKEN),
             DatabaseServer.getSystemSchema(SchemaEntity.ISSUER),
             DatabaseServer.getSystemSchema(SchemaEntity.USER_ROLE),
-            DatabaseServer.getSystemSchema(SchemaEntity.CHUNK)
+            DatabaseServer.getSystemSchema(SchemaEntity.CHUNK),
+            DatabaseServer.getSystemSchema(SchemaEntity.ACTIVITY_IMPACT),
+            DatabaseServer.getSystemSchema(SchemaEntity.TOKEN_DATA_SOURCE)
         ]);
 
         for (const schema of schemas) {
@@ -216,7 +218,6 @@ export class PolicyImportExportHelper {
         const parent = await TopicConfig.fromObject(
             await DatabaseServer.getTopicByType(policyOwner, TopicType.UserTopic), true
         );
-        console.log('!!!! parent', parent);
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
 
         let topicRow: TopicConfig;
@@ -249,21 +250,9 @@ export class PolicyImportExportHelper {
         notifier.completedAndStart('Publishing schemas');
         const systemSchemas = await PolicyImportExportHelper.getSystemSchemas();
         notifier.info(`Found ${systemSchemas.length} schemas`);
-        let num: number = 0;
-        for (const schema of systemSchemas) {
-            messageServer.setTopicObject(topicRow);
-            let name: string;
-            if (schema) {
-                schema.creator = policyOwner;
-                schema.owner = policyOwner;
-                const item = await publishSystemSchema(schema, messageServer, MessageAction.PublishSystemSchema);
-                const newItem = new DataBaseHelper(Schema).create(item);
-                await new DataBaseHelper(Schema).save(item);
-                name = newItem.name;
-            }
-            num++;
-            notifier.info(`Schema ${num} (${name || '-'}) published`);
-        }
+        messageServer.setTopicObject(topicRow);
+
+        await publishSystemSchemas(systemSchemas, messageServer, policyOwner, notifier);
 
         notifier.completed();
 

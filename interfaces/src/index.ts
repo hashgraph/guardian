@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+export { PolicyEvents } from './type/policy-events';
 export { WorkerEvents } from './type/worker-events';
 export { GenerateUUIDv4 } from './helpers/generate-uuid-v4';
 export { BlockErrorActions } from './type/block-error-actions';
@@ -27,7 +28,16 @@ export { IVPDocument } from './interface/vp-document.interface';
 export { IVP } from './interface/vp.interface';
 export { IUser, ISession } from './interface/user.interface';
 export { IWalletAccount } from './interface/wallet-account.interface';
-export { IChainItem, IReport, IReportItem, IPolicyReport, ITokenReport, IVCReport, IVPReport } from './interface/chain-item.interface';
+export {
+    IChainItem,
+    IReport,
+    IReportItem,
+    IPolicyReport,
+    ITokenReport,
+    IVCReport,
+    IVPReport,
+    IImpactReport
+} from './interface/chain-item.interface';
 export { Token } from './models/token';
 export { Schema } from './models/schema';
 export { SchemaStatus } from './type/schema-status.type';
@@ -58,3 +68,4 @@ export * from './type/workers.type';
 export { ArtifactType } from './type/artifact.type';
 export { IArtifact } from './interface/artifact.interface';
 export { TokenType } from './type/token.type';
+export { ContractStatus } from './type/contract-status.type';

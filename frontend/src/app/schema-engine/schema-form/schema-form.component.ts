@@ -3,6 +3,7 @@ import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Schema, SchemaCondition, SchemaField, UnitSystem } from '@guardian/interfaces';
+import { fullFormats } from 'ajv-formats/dist/formats';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -24,7 +25,7 @@ export const DATETIME_FORMATS = {
 enum PlaceholderByFieldType {
     Email = "example@email.com",
     Number = "123",
-    URL = "example.com",
+    URL = "https://example.com",
     String = "Please enter text here",
     IPFS = 'ipfs.io/ipfs/example-hash',
     HederaAccount = '0.0.1',
@@ -126,6 +127,17 @@ export class SchemaFormComponent implements OnInit {
 
         if (this.conditions) {
             this.conditions.forEach((cond: any) => {
+                if (this.presetDocument) {
+                    cond.preset = {};
+                    for (const thenField of cond.thenFields) {
+                        cond.preset[thenField?.name] =
+                            this.presetDocument[thenField?.name];
+                    }
+                    for (const elseField of cond.elseFields) {
+                        cond.preset[elseField?.name] =
+                            this.presetDocument[elseField?.name];
+                    }
+                }
                 cond.conditionForm = new FormGroup({});
                 this.subscribeCondition(cond.conditionForm);
                 this.conditionFields.push(...cond.thenFields);
@@ -315,7 +327,7 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (item.format === 'email') {
-            validators.push(Validators.email);
+            validators.push(Validators.pattern(fullFormats.email as RegExp));
         }
 
         if (item.type === 'number') {
@@ -323,11 +335,7 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (item.format === 'duration') {
-            validators.push(
-                Validators.pattern(
-                    /^(-?)P(?=\d|T\d)(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)([DW]))?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/
-                )
-            );
+            validators.push(Validators.pattern(fullFormats.duration as RegExp));
         }
 
         if (item.type === 'integer') {
@@ -335,7 +343,7 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (item.format === 'url') {
-            validators.push(Validators.pattern(/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/));
+            validators.push(Validators.pattern(fullFormats.url as RegExp));
         }
 
         return validators;

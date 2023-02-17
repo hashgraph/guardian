@@ -1,7 +1,8 @@
 <div class="content">
     <ng-container *ngIf="isImportTypeSelected" [ngSwitch]="this.importType">
         <ng-template [ngSwitchCase]="0">
-            <app-file-drag-n-drop fileExtension="schema" (onFileLoaded)="importFromFile($event)" dropZoneLabel="Import Schema .schema file"></app-file-drag-n-drop>
+            <app-file-drag-n-drop fileExtension="schema" (onFileLoaded)="importFromFile($event)"
+                dropZoneLabel="Import Schema .schema file"></app-file-drag-n-drop>
         </ng-template>
         <ng-template [ngSwitchCase]="1">
             <h1 mat-dialog-title>
@@ -14,8 +15,7 @@
                         <input matInput type="text" placeholder="Message timestamp" formControlName="timestamp">
                     </mat-form-field>
                     <div mat-dialog-actions>
-                        <button mat-raised-button color="primary" type="submit"
-                            [disabled]="!dataForm.valid">Ok</button>
+                        <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>
                         <button mat-button type="button" (click)="onNoClick()">Cancel</button>
                     </div>
                 </form>
@@ -41,6 +41,7 @@
     </div>
 
     <div *ngIf="loading && taskId" class="loading">
-        <async-progess class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages" (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progess>
+        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
+            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
     </div>
 </div>

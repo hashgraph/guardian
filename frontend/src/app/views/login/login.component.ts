@@ -57,7 +57,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     login(login: string, password: string) {
         this.loading = true;
         this.auth.login(login, password).subscribe((result) => {
-            console.log(result);
             this.auth.setAccessToken(result.accessToken);
             this.auth.setUsername(login);
             this.authState.updateState(true);

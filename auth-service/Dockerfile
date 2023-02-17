@@ -1,29 +1,40 @@
-FROM node:16
-ENV PLATFORM="docker"
-#ENV NODE_ENV="production"
-
-WORKDIR /usr/interfaces
+FROM node:16 AS interfacesModuleBuilder
+WORKDIR /usr/local/interfaces
 COPY ./interfaces/package*.json ./
-COPY ./interfaces/tsconfig.json ./
+COPY ./interfaces/tsconfig*.json ./
 ADD ./interfaces/src ./src/.
 RUN npm install
 RUN npm pack
 
-WORKDIR /usr/common
+FROM node:16 AS commonModuleBuilder
+WORKDIR /usr/local/common
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
 COPY ./common/package*.json ./
-COPY ./common/tsconfig.json ./
+COPY ./common/tsconfig*.json ./
+RUN npm install guardian-interfaces-*.tgz
 ADD ./common/src ./src/.
-RUN npm install /usr/interfaces/guardian-interfaces-*.tgz
-RUN npm install
 RUN npm pack
 
-WORKDIR /usr/auth-service
+FROM node:16 AS authServiceBuilder
+WORKDIR /usr/local/auth-service
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
+COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz ./
 COPY ./auth-service/package*.json ./
-COPY ./auth-service/tsconfig.json ./
-COPY ./auth-service/.env.docker ./.env
-RUN npm install --force /usr/interfaces/guardian-interfaces-*.tgz /usr/common/guardian-common-*.tgz
-RUN npm install --force
+COPY ./auth-service/tsconfig*.json ./
+RUN npm install guardian-interfaces-*.tgz guardian-common-*.tgz
 ADD ./auth-service/src ./src/.
-RUN npm run build
+RUN npm run build:prod
+
+FROM node:16
+ENV PLATFORM="docker"
+ENV NODE_ENV="production"
+WORKDIR /usr/local/auth-service
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
+COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz ./
+COPY ./auth-service/package*.json ./
+COPY ./auth-service/.env.docker ./.env
+RUN npm install --production guardian-interfaces-*.tgz guardian-common-*.tgz
+COPY --from=authServiceBuilder /usr/local/auth-service/dist ./dist
+RUN rm guardian-*.tgz
 
 CMD npm start

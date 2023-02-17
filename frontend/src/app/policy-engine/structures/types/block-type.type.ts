@@ -33,5 +33,7 @@ export enum BlockType {
     MultiSignBlock = 'multiSignBlock',
     CalculateMathVariables = 'calculateMathVariables',
     CreateToken = 'createTokenBlock',
-    SplitBlock = 'splitBlock'
+    SplitBlock = 'splitBlock',
+    ImpactAddon = 'impactAddon',
+    HttpRequest = 'httpRequestBlock'
 }

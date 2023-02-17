@@ -25,9 +25,9 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
 import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
 import { Policy as PolicyCollection } from '@entity/policy';
-import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { Topic } from '@entity/topic';
 import { Token } from '@entity/token';
+import { PolicyEngine } from '@policy-engine/policy-engine';
 
 /**
  * Restore data from hedera class
@@ -245,8 +245,6 @@ export class RestoreDataFromHedera {
         try {
             const policyMessages = await this.readTopicMessages(policyTopicId);
 
-            console.log(policyTopicId);
-
             await this.restoreTopic({
                 topicId: policyTopicId,
                 name: policyMessages[0].name,
@@ -285,10 +283,7 @@ export class RestoreDataFromHedera {
 
             // Restore policy
             const publishedPolicies = policyMessages.filter(m => m._action === 'publish-policy');
-            console.log(policyMessages);
-            console.log(publishedPolicies);
             for (const policy of publishedPolicies) {
-                console.log(policy);
                 const parsedPolicyFile = await PolicyImportExportHelper.parseZipFile(policy.document);
                 const policyObject = parsedPolicyFile.policy;
 
@@ -317,7 +312,8 @@ export class RestoreDataFromHedera {
 
                 await this.restorePolicyDocuments(policyInstanceMessages, owner, r.id.toString(), r.uuid, user, hederaAccountKey);
 
-                await new BlockTreeGenerator().generate(r.id.toString());
+                await new PolicyEngine().generateModel(r.id.toString());
+                // await new BlockTreeGenerator().generate(r.id.toString());
 
             }
         } catch (e) {
@@ -436,8 +432,6 @@ export class RestoreDataFromHedera {
         if (!currentRAMessage) {
             throw new Error('User not found');
         }
-
-        console.log(currentRAMessage);
 
         const RAMessages = await this.readTopicMessages(currentRAMessage.registrantTopicId);
 

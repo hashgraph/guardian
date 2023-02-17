@@ -76,6 +76,14 @@ export class HeaderComponent implements OnInit {
             link: '/tokens'
         },
         {
+            name: "Contracts",
+            disabled: false,
+            link: '/contracts',
+            links: [
+                '/contracts/pairs'
+            ]
+        },
+        {
             name: "Artifacts",
             disabled: false,
             link: '/artifacts'
@@ -89,6 +97,11 @@ export class HeaderComponent implements OnInit {
             name: "Policies configuration",
             disabled: false,
             link: '/policy-configuration',
+            hidden: true,
+        }, {
+            name: "Compare",
+            disabled: false,
+            link: '/compare',
             hidden: true,
         },
         {
@@ -241,7 +254,7 @@ export class HeaderComponent implements OnInit {
             return true;
         }
         if (link.links) {
-            return link.links.indexOf(this.activeLink) !== -1;
+            return link.links.indexOf(this.activeLink) !== -1 || link.links.indexOf(this.activeLinkRoot) !== -1;
         }
         if (link.pattern) {
             return link.pattern.test(this.activeLink);

@@ -17,27 +17,27 @@ The tokens are only minted when the necessary quorum of approvals (by the ‘sec
 
 Step 1: Need to click on the linking icon for the policy, which you wanted to be a primary one as shown below:
 
-<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 Step 2: We get a policy linking pop up to create a link for the primary policy or joining an existing policy:
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (6) (1).png" alt=""><figcaption></figcaption></figure>
 
 After the ‘primary’ policy is registered a special ‘link’ becomes accessible which can be used to ‘connect’ additional ‘secondary’ policies.
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Connecting Secondary Policies
 
 Step 1: We click again on the linking icon for secondary policy and will get a linking pop up as shown below:
 
-<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 Step 2: In order to make the policy as secondary, we will click on Join button and link with the primary policy.
 
 Step 3: Once, linking is performed successfully, you will get below message:
 
-<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 3. **Message Format**
 

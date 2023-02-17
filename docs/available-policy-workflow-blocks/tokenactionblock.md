@@ -20,7 +20,7 @@ This block is responsible in performing automatic actions on the token.
 
 
 
-![](<../.gitbook/assets/image (12).png>)
+![](<../.gitbook/assets/image (12) (2).png>)
 
 ![](<../.gitbook/assets/image (3) (5).png>)
 

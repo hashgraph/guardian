@@ -21,7 +21,6 @@ import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
 import { RootConfigComponent } from './views/root-config/root-config.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
-import { SchemaConfigComponent } from './views/schema-config/schema-config.component';
 import { TokenDialog } from './components/token-dialog/token-dialog.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
@@ -46,6 +45,14 @@ import { WebSocketService } from './services/web-socket.service';
 import { MessageTranslationService } from './services/message-translation-service/message-translation-service';
 import { TasksService } from './services/tasks.service';
 import { ArtifactService } from './services/artifact.service';
+import { ContractConfigComponent } from './views/contract-config/contract-config.component';
+import { ContractService } from './services/contract.service';
+import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
+import { AddPairDialogComponent } from './components/add-pair-dialog/add-pair-dialog.component';
+import { RetireTokenDialogComponent } from './components/retire-token-dialog/retire-token-dialog.component';
+import { DataInputDialogComponent } from './components/data-input-dialog/data-input-dialog.component';
+import { CompareModule } from './analytics/analytics.module';
+import { AnalyticsService } from './services/analytics.service';
 
 @NgModule({
     declarations: [
@@ -58,7 +65,6 @@ import { ArtifactService } from './services/artifact.service';
         RootConfigComponent,
         TokenConfigComponent,
         TokenDialog,
-        SchemaConfigComponent,
         AuditComponent,
         TrustChainComponent,
         NewPolicyDialog,
@@ -69,7 +75,12 @@ import { ArtifactService } from './services/artifact.service';
         DetailsLogDialog,
         ServiceStatusComponent,
         ConfirmationDialogComponent,
-        InfoComponent
+        InfoComponent,
+        ContractConfigComponent,
+        ContractRequestConfigComponent,
+        AddPairDialogComponent,
+        RetireTokenDialogComponent,
+        DataInputDialogComponent,
     ],
     imports: [
         BrowserModule,
@@ -81,7 +92,8 @@ import { ArtifactService } from './services/artifact.service';
         HttpClientModule,
         FormsModule,
         ToastrModule.forRoot(),
-        PolicyEngineModule
+        PolicyEngineModule,
+        CompareModule
     ],
     exports: [],
     providers: [
@@ -93,6 +105,7 @@ import { ArtifactService } from './services/artifact.service';
         ProfileService,
         TokenService,
         SchemaService,
+        AnalyticsService,
         AuditService,
         PolicyEngineService,
         PolicyHelper,
@@ -103,6 +116,7 @@ import { ArtifactService } from './services/artifact.service';
         DemoService,
         MessageTranslationService,
         TasksService,
+        ContractService,
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,
