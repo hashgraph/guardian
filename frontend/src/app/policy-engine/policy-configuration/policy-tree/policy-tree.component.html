@@ -2,136 +2,136 @@
     <div #parent class="canvas" >
         <canvas #canvas></canvas>
     </div>
-    <div 
-        *ngIf="data" class="tree" 
-        [attr.readonly]="readonly" 
-        [attr.move-actions]="visibleMoveActions" 
-        cdkDropList 
+    <div
+        class="drop-container"
         #treeList="cdkDropList"
+        cdkDropList
+        onDragEntered
         [cdkDropListConnectedTo]="menuList"
         (cdkDropListDropped)="drop($event)"
         (cdkDropListSorted)="onDragSorted($event)"
         (cdkDropListEntered)="onDragEntered($event)"
         [cdkDropListSortPredicate]="onDragSortPredicate"
-        onDragEntered
     >
-        <div class="block-all-expand" (click)="onAllCollapse()" [attr.collapsed]="allCollapse">
-            <mat-icon *ngIf="allCollapse === '2'">unfold_more</mat-icon>
-            <mat-icon *ngIf="allCollapse !== '2'">unfold_less</mat-icon>
-        </div>
-        <div class="block-container" 
-            *ngFor="let item of data" 
-            [attr.expandable]="item.expandable"
-            [attr.collapsed]="item.collapsed" 
-            [attr.selected]="isSelect(item)" 
-            [attr.error]="isError(item)"
-            [attr.root]="item.root" 
-            [attr.block-id]="item.id" 
-            [attr.block-instance]="item.name"
-            [attr.block-type]="item.type" 
-            [style.paddingLeft]="item.offset" 
-            cdkDrag
-            [cdkDragData]="item.level"
-            [cdkDragDisabled]="item.root"
-        >
-            <div class="block-expand" (click)="onCollapse($event, item)">
-                <mat-icon>arrow_drop_down</mat-icon>
+        <div *ngIf="data" class="tree" [attr.readonly]="readonly" [attr.move-actions]="visibleMoveActions">
+            <div class="block-all-expand" (click)="onAllCollapse()" [attr.collapsed]="allCollapse">
+                <mat-icon *ngIf="allCollapse === '2'">unfold_more</mat-icon>
+                <mat-icon *ngIf="allCollapse !== '2'">unfold_less</mat-icon>
             </div>
+            <div class="block-container" 
+                *ngFor="let item of data" 
+                [attr.expandable]="item.expandable"
+                [attr.collapsed]="item.collapsed" 
+                [attr.selected]="isSelect(item)" 
+                [attr.error]="isError(item)"
+                [attr.root]="item.root" 
+                [attr.block-id]="item.id" 
+                [attr.block-instance]="item.name"
+                [attr.block-type]="item.type" 
+                [style.paddingLeft]="item.offset" 
+                cdkDrag
+                [cdkDragData]="item.level"
+                [cdkDragDisabled]="item.root"
+            >
+                <div class="block-expand" (click)="onCollapse($event, item)">
+                    <mat-icon>arrow_drop_down</mat-icon>
+                </div>
 
-            <div *ngIf="!item.isModule && item.root" class="block-body module-body">
-                <div class="block-item" (click)="onSelect($event, item)">
-                    <div class="module-item-icon">
-                        <mat-icon>article</mat-icon>
-                    </div>
-                    <div class="module-item-name">
-                        Policy
+                <div *ngIf="!item.isModule && item.root" class="block-body module-body">
+                    <div class="block-item" (click)="onSelect($event, item)">
+                        <div class="module-item-icon">
+                            <mat-icon>article</mat-icon>
+                        </div>
+                        <div class="module-item-name">
+                            Policy
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div *ngIf="!item.isModule && !item.root" class="block-body">
-                <div class="block-item" (click)="onSelect($event, item)">
-                    <div class="block-item-icon">
-                        <mat-icon>{{item.icon}}</mat-icon>
+                <div *ngIf="!item.isModule && !item.root" class="block-body">
+                    <div class="block-item" (click)="onSelect($event, item)">
+                        <div class="block-item-icon">
+                            <mat-icon>{{item.icon}}</mat-icon>
+                        </div>
+                        <div class="block-item-name">
+                            {{item.name}}
+                        </div>
                     </div>
-                    <div class="block-item-name">
-                        {{item.name}}
+                    <div class="block-menu">
+                        <div class="move-actions-container">
+                            <button (click)="onDropUp($event)" mat-icon-button class="action-button move-action-up">
+                                <mat-icon>arrow_drop_up</mat-icon>
+                            </button>
+                            <button (click)="onDropLeft($event)" mat-icon-button class="action-button move-action-left">
+                                <mat-icon>arrow_left</mat-icon>
+                            </button>
+                            <button (click)="onDropRight($event)" mat-icon-button class="action-button move-action-right">
+                                <mat-icon>arrow_right</mat-icon>
+                            </button>
+                            <button (click)="onDropDown($event)" mat-icon-button class="action-button move-action-down">
+                                <mat-icon>arrow_drop_down</mat-icon>
+                            </button>
+                            <button (click)="onVisibleMoreActions($event)" mat-icon-button
+                                class="action-button move-more-action-button">
+                                <mat-icon>more_horiz</mat-icon>
+                            </button>
+                        </div>
+                        <div class="actions-container">
+                            <button (click)="onVisibleMoreActions($event)" mat-icon-button
+                                class="action-button more-action-button">
+                                <mat-icon>more_horiz</mat-icon>
+                            </button>
+                            <button (click)="onDelete($event)" mat-icon-button class="action-button delete-action">
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="block-menu">
-                    <div class="move-actions-container">
-                        <button (click)="onDropUp($event)" mat-icon-button class="action-button move-action-up">
-                            <mat-icon>arrow_drop_up</mat-icon>
-                        </button>
-                        <button (click)="onDropLeft($event)" mat-icon-button class="action-button move-action-left">
-                            <mat-icon>arrow_left</mat-icon>
-                        </button>
-                        <button (click)="onDropRight($event)" mat-icon-button class="action-button move-action-right">
-                            <mat-icon>arrow_right</mat-icon>
-                        </button>
-                        <button (click)="onDropDown($event)" mat-icon-button class="action-button move-action-down">
-                            <mat-icon>arrow_drop_down</mat-icon>
-                        </button>
-                        <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                            class="action-button move-more-action-button">
-                            <mat-icon>more_horiz</mat-icon>
-                        </button>
-                    </div>
-                    <div class="actions-container">
-                        <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                            class="action-button more-action-button">
-                            <mat-icon>more_horiz</mat-icon>
-                        </button>
-                        <button (click)="onDelete($event)" mat-icon-button class="action-button delete-action">
-                            <mat-icon>delete</mat-icon>
-                        </button>
-                    </div>
-                </div>
-            </div>
 
-            <div *ngIf="item.isModule" class="block-body module-body">
-                <div class="block-item" (click)="onSelect($event, item)" (dblclick)="onOpen($event, item)">
-                    <div class="module-item-icon">
-                        <svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24" version="1.1">
-                            <path style="fill:#e1933c" d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
-                            <path style="fill:#24bfe1"
-                                d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
-                            <path style="fill:#9e57f5"
-                                d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
-                        </svg>
+                <div *ngIf="item.isModule" class="block-body module-body">
+                    <div class="block-item" (click)="onSelect($event, item)" (dblclick)="onOpen($event, item)">
+                        <div class="module-item-icon">
+                            <svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24" version="1.1">
+                                <path style="fill:#e1933c" d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
+                                <path style="fill:#24bfe1"
+                                    d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
+                                <path style="fill:#9e57f5"
+                                    d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
+                            </svg>
+                        </div>
+                        <div class="module-item-name">
+                            {{item.name}}
+                        </div>
                     </div>
-                    <div class="module-item-name">
-                        {{item.name}}
-                    </div>
-                </div>
-                <div class="block-menu module-menu">
-                    <div class="move-actions-container">
-                        <button (click)="onDropUp($event)" mat-icon-button class="action-button move-action-up">
-                            <mat-icon>arrow_drop_up</mat-icon>
-                        </button>
-                        <button (click)="onDropLeft($event)" mat-icon-button class="action-button move-action-left">
-                            <mat-icon>arrow_left</mat-icon>
-                        </button>
-                        <button (click)="onDropRight($event)" mat-icon-button class="action-button move-action-right">
-                            <mat-icon>arrow_right</mat-icon>
-                        </button>
-                        <button (click)="onDropDown($event)" mat-icon-button class="action-button move-action-down">
-                            <mat-icon>arrow_drop_down</mat-icon>
-                        </button>
-                        <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                            class="action-button move-more-action-button">
-                            <mat-icon>more_horiz</mat-icon>
-                        </button>
-                    </div>
-                    <div class="actions-container">
-                        <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                            class="action-button more-action-button">
-                            <mat-icon>more_horiz</mat-icon>
-                        </button>
-                        <button (click)="onDelete($event)" mat-icon-button class="action-button delete-action">
-                            <mat-icon>delete</mat-icon>
-                        </button>
+                    <div class="block-menu module-menu">
+                        <div class="move-actions-container">
+                            <button (click)="onDropUp($event)" mat-icon-button class="action-button move-action-up">
+                                <mat-icon>arrow_drop_up</mat-icon>
+                            </button>
+                            <button (click)="onDropLeft($event)" mat-icon-button class="action-button move-action-left">
+                                <mat-icon>arrow_left</mat-icon>
+                            </button>
+                            <button (click)="onDropRight($event)" mat-icon-button class="action-button move-action-right">
+                                <mat-icon>arrow_right</mat-icon>
+                            </button>
+                            <button (click)="onDropDown($event)" mat-icon-button class="action-button move-action-down">
+                                <mat-icon>arrow_drop_down</mat-icon>
+                            </button>
+                            <button (click)="onVisibleMoreActions($event)" mat-icon-button
+                                class="action-button move-more-action-button">
+                                <mat-icon>more_horiz</mat-icon>
+                            </button>
+                        </div>
+                        <div class="actions-container">
+                            <button (click)="onVisibleMoreActions($event)" mat-icon-button
+                                class="action-button more-action-button">
+                                <mat-icon>more_horiz</mat-icon>
+                            </button>
+                            <button (click)="onDelete($event)" mat-icon-button class="action-button delete-action">
+                                <mat-icon>delete</mat-icon>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

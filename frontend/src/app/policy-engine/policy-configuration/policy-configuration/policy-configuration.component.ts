@@ -431,7 +431,11 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public onAddModule(item: any) {
-
+        this.currentBlock = this.openModule.getBlock(this.currentBlock);
+        if (this.currentBlock) {
+            const module = this.policyModel.newModule(item);
+            this.currentBlock.addChild(module);
+        }
     }
 
     public onOpenPolicy() {

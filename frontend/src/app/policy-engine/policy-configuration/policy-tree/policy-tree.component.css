@@ -29,6 +29,13 @@
     height: 64px !important;
 }
 
+.drop-container {
+    z-index: 1;
+    position: relative;
+    padding-bottom: 50px;
+    min-height: 200px;
+}
+
 .tree[readonly="true"] .block-container {
     height: 54px !important;
 }

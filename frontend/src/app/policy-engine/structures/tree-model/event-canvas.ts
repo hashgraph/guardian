@@ -3,14 +3,30 @@ import { BlocLine } from "./event-line";
 export class EventCanvas {
     public readonly valid: boolean;
 
+    private container: HTMLElement;
     private parent: any;
     private canvas: any;
     private context: any;
     private box: any;
     private lastImage: any;
+    private top: any;
+    private left: any;
 
-    constructor(parent?: HTMLCanvasElement, canvas?: HTMLCanvasElement) {
+    constructor(
+        container: HTMLElement,
+        parent?: HTMLCanvasElement,
+        canvas?: HTMLCanvasElement
+    ) {
         this.valid = false;
+        if (container.parentElement) {
+            this.container = container.parentElement;
+        } else {
+            this.container = container;
+        }
+        const box = this.container.getBoundingClientRect();
+        this.top = box.top;
+        this.left = box.left;
+
         try {
             this.parent = parent;
             this.canvas = canvas;
@@ -163,13 +179,10 @@ export class EventCanvas {
     }
 
     public getPosition(event: MouseEvent): any {
-        if (this.box) {
-            return {
-                x: event.clientX - this.box.left,
-                y: event.clientY - this.box.top
-            }
+        return {
+            x: event.clientX - this.left,
+            y: event.clientY - this.top + this.container.scrollTop
         }
-        return null
     }
 
     public getIndexObject(position: any): number {

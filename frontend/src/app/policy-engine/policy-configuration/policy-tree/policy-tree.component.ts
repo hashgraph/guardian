@@ -70,6 +70,7 @@ export class PolicyTreeComponent implements OnInit {
 
     constructor(
         public registeredBlocks: RegisteredBlocks,
+        private element: ElementRef,
         private componentFactoryResolver: ComponentFactoryResolver,
         private iconRegistry: MatIconRegistry,
         private sanitizer: DomSanitizer
@@ -125,8 +126,9 @@ export class PolicyTreeComponent implements OnInit {
     ngAfterViewInit(): void {
         this.tooltip = this.tooltipRef?.nativeElement;
         this.canvas = new EventCanvas(
+            this.element.nativeElement,
             this.parentRef?.nativeElement,
-            this.canvasRef?.nativeElement
+            this.canvasRef?.nativeElement,  
         );
         this.canvas.resize();
     }
