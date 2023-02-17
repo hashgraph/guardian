@@ -8,10 +8,11 @@
         [attr.move-actions]="visibleMoveActions" 
         cdkDropList 
         #treeList="cdkDropList"
-        [cdkDropListConnectedTo]="[menuList]"
+        [cdkDropListConnectedTo]="menuList"
         (cdkDropListDropped)="drop($event)"
         (cdkDropListSorted)="onDragSorted($event)"
         (cdkDropListEntered)="onDragEntered($event)"
+        [cdkDropListSortPredicate]="onDragSortPredicate"
         onDragEntered
     >
         <div class="block-all-expand" (click)="onAllCollapse()" [attr.collapsed]="allCollapse">

@@ -6,7 +6,6 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { CdkDropList } from '@angular/cdk/drag-drop';
 import { PolicyBlockModel, BlocLine, BlockRect, EventCanvas } from '../../structures';
 
-
 /**
  * Settings for all blocks.
  */
@@ -20,18 +19,38 @@ export class PolicyTreeComponent implements OnInit {
     @Input('errors') errors!: any;
     @Input('readonly') readonly!: boolean;
     @Input('active') active!: string;
-    @Input('menuList') menuList!: any;
+    @Input('connector') dropListConnector!: any;
 
     @Output('delete') delete = new EventEmitter();
     @Output('select') select = new EventEmitter();
     @Output('reorder') reorder = new EventEmitter();
     @Output('open') open = new EventEmitter();
-    @Output('init') init = new EventEmitter();
 
     @ViewChild('parent') parentRef!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
     @ViewChild('tooltip') tooltipRef!: ElementRef<HTMLDivElement>;
-    @ViewChild('treeList') treeList!: CdkDropList<any>;
+
+
+    @ViewChild('treeList')
+    public set treeList(value: CdkDropList<any> | undefined) {
+        if (this.dropListConnector) {
+            this.dropListConnector.body = value;
+        }
+    }
+    public get treeList(): CdkDropList<any> | undefined {
+        if (this.dropListConnector) {
+            return this.dropListConnector.body;
+        } else {
+            return undefined;
+        }
+    }
+    public get menuList(): CdkDropList<any> | string {
+        if (this.dropListConnector) {
+            return this.dropListConnector.menu;
+        } else {
+            return '';
+        }
+    }
 
     public data!: FlatBlockNode[];
 
@@ -110,7 +129,6 @@ export class PolicyTreeComponent implements OnInit {
             this.canvasRef?.nativeElement
         );
         this.canvas.resize();
-        this.init.emit(this);
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -453,7 +471,11 @@ export class PolicyTreeComponent implements OnInit {
                 parent.children[currentBlockIndex] = parent.children[newIndex];
                 parent.children[newIndex] = this.currentBlock;
                 parent.refresh();
-                this.reorder.emit(null);
+                if (position < 0) {
+                    this.reorderEvent('top');
+                } else {
+                    this.reorderEvent('bottom');
+                }
             }
         }
     }
@@ -465,7 +487,7 @@ export class PolicyTreeComponent implements OnInit {
             const parentIndex = parent.index();
             parent.removeChild(this.currentBlock);
             parent2.addChild(this.currentBlock, parentIndex + 1);
-            this.reorder.emit(null);
+            this.reorder.emit(this.reorderEvent('left'));
         }
     }
 
@@ -476,38 +498,77 @@ export class PolicyTreeComponent implements OnInit {
             if (prev) {
                 parent.removeChild(this.currentBlock);
                 prev.addChild(this.currentBlock);
-                this.reorder.emit(null);
+                this.reorder.emit(this.reorderEvent('right'));
             }
         }
     }
 
     public drop(event: any) {
         const data = event.item.data;
-        if(typeof data === 'string' && data.startsWith('new:')) {
-            this.reorder.emit(null);
+        if (typeof data === 'string' && (
+            data.startsWith('new:') || data.startsWith('module:')
+        )) {
+            const [operation, name] = data.split(':');
+            const prev = this.data[event.currentIndex - 1];
+            const next = this.data[event.currentIndex];
+            if (prev.node.root || (next && next.level > prev.level)) {
+                this.reorder.emit(this.reorderEvent('add', {
+                    operation,
+                    name,
+                    parent: prev.node,
+                    index: -1
+                }));
+            } else {
+                this.reorder.emit(this.reorderEvent('add', {
+                    operation,
+                    name,
+                    parent: prev.node.parent,
+                    index: prev.node.index() + 1
+                }));
+            }
         } else {
-            this.reorder.emit(null);
+            const block = this.data[event.previousIndex];
+            const items = this.data.filter((e: any) => e != block);
+            const prev = items[event.currentIndex - 1];
+            const next = items[event.currentIndex];
+            if (next && next.level > prev.level) {
+                block.node.appendTo(prev.node, -1);
+            } else {
+                block.node.appendTo(prev.node.parent, prev.node.index() + 1);
+            }
+            this.reorder.emit(this.reorderEvent('reorder'));
         }
-        console.log(data);
     }
 
     public onDragSorted(event: any) {
         const index = event.currentIndex;
-        const items = event.container.getSortedItems();
+        const items = event.container
+            .getSortedItems()
+            .filter((e: any) => e != event.item);
         const prev = items[index - 1]?.data;
         const next = items[index]?.data;
-        const lvl = next > prev ? next : prev;
+        const lvl = Math.max(1, next && next > prev ? next : prev);
         const placeholder = event.item.getPlaceholderElement()
-        placeholder.style.paddingLeft = `${40*lvl}px`;
+        placeholder.style.paddingLeft = `${40 * lvl}px`;
     }
 
     public onDragEntered(event: any) {
         const index = event.currentIndex;
-        const items = event.container.getSortedItems();
+        const items = event.container
+            .getSortedItems()
+            .filter((e: any) => e != event.item);
         const prev = items[index - 1]?.data;
         const next = items[index]?.data;
-        const lvl = next > prev ? next : prev;
+        const lvl = Math.max(1, next && next > prev ? next : prev);
         const placeholder = event.item.getPlaceholderElement()
-        placeholder.style.paddingLeft = `${40*lvl}px`;
+        placeholder.style.paddingLeft = `${40 * lvl}px`;
+    }
+
+    public onDragSortPredicate(index: number): boolean {
+        return index > 0;
+    }
+
+    private reorderEvent(type: string, data?: any): any {
+        return { type, data };
     }
 }

@@ -446,9 +446,10 @@
             display: none;
         }
 
-        .components-group-body {
+        .components-group-item {
             position: relative;
-            width: 210px;
+            width: 100%;
+            max-width: 220px;
             height: 32px;
             overflow: hidden;
 
@@ -489,6 +490,9 @@
                 position: absolute;
                 top: 3px;
                 left: 14px;
+                pointer-events: none;
+                width: 24px;
+                height: 24px;
             }
 
             .component-btn-favorite {
@@ -513,7 +517,7 @@
             }
         }
 
-        .components-group-body:hover .component-btn {
+        .components-group-item:hover .component-btn {
             background: var(--pc-component-hover);
 
             .component-btn-favorite {
@@ -544,6 +548,13 @@
                 opacity: 0.6;
             }
         }
+    }
+}
+
+.components-menu {
+    .cdk-drag-placeholder,
+    .cdk-drag-preview {
+        display: none !important;
     }
 }
 
@@ -1215,6 +1226,8 @@
             margin: 0px 0px 0px 0px;
             box-shadow: 4px 4px 6px 0px #00000040;
             width: 160px;
+            background: #fff;
+            border-color: #838383;
 
             .drag-component-icon {
                 display: block;
@@ -1223,6 +1236,9 @@
                 left: 9px;
                 color: #404040;
                 font-size: 18px;
+                pointer-events: none;
+                width: 24px;
+                height: 24px;
             }
 
             .drag-component-name {
@@ -1233,6 +1249,12 @@
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 color: #404040;
+            }
+        }
+        .drag-component.drag-module {
+            height: 40px;
+            .drag-component-name {
+                padding: 4px 0px 4px 30px;
             }
         }
     }

@@ -448,18 +448,29 @@ export class PolicyModel {
         }
     }
 
-    public newModule(): PolicyModuleModel {
-        const config = {
-            id: GenerateUUIDv4(),
-            tag: this.getNewTag('Module'),
-            blockType: 'module',
-            defaultActive: true,
-            children: [],
-            permissions: []
-        };
-        const module = new PolicyModuleModel(config, null, this);
-        this._tagMap[module.tag] = module;
-        return module;
+    public newModule(template?: any): PolicyModuleModel {
+        if(template) {
+            const config = JSON.parse(JSON.stringify(template.config));
+            config.id= GenerateUUIDv4();
+            config.tag= this.getNewTag('Module');
+            config.blockType= 'module';
+            config.defaultActive= true;
+            const module = new PolicyModuleModel(config, null, this);
+            this._tagMap[module.tag] = module;
+            return module;
+        } else {
+            const config = {
+                id: GenerateUUIDv4(),
+                tag: this.getNewTag('Module'),
+                blockType: 'module',
+                defaultActive: true,
+                children: [],
+                permissions: []
+            };
+            const module = new PolicyModuleModel(config, null, this);
+            this._tagMap[module.tag] = module;
+            return module;
+        }
     }
 
     public convertModule(block: PolicyBlockModel): PolicyModuleModel {

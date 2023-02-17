@@ -16,6 +16,7 @@ export class FlatBlockNode {
     public prev!: PolicyBlockModel;
     public next!: PolicyBlockModel;
     public parent!: PolicyBlockModel;
+    public data!: any;
 
     constructor(node: PolicyBlockModel) {
         this.node = node;

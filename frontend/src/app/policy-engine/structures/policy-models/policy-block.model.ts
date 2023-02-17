@@ -187,13 +187,13 @@ export class PolicyBlockModel {
         this.policy.refresh();
     }
 
-    public createChild(block: IBlockConfig) {
+    public createChild(block: IBlockConfig, index?: number) {
         delete block.children;
         const child = new PolicyBlockModel(block, this, this.policy);
         if (!child.permissions || !child.permissions.length) {
             child.permissions = this.permissions.slice();
         }
-        this._addChild(child);
+        this._addChild(child, index);
         this.policy.refresh();
     }
 
@@ -383,5 +383,18 @@ export class PolicyBlockModel {
 
     public indexOf(block: PolicyBlockModel): number {
         return this._children.indexOf(block);
+    }
+
+    public appendTo(parent: PolicyBlockModel | null, index?: number): boolean {
+        if (parent) {
+            if (this._parent) {
+                this._parent._removeChild(this);
+                this._parent = null;
+            }
+            parent.addChild(this, index);
+            this.policy.refresh();
+            return true;
+        }
+        return false;
     }
 }

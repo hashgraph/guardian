@@ -2,10 +2,10 @@
     <div *ngIf="loading" class="loading">
         <mat-spinner></mat-spinner>
     </div>
-    <!-- <div *ngIf="loading && taskId" class="loading">
+    <div *ngIf="loading && taskId" class="loading">
         <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
             (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
-    </div> -->
+    </div>
 
     <div *ngIf="!policyModel.valid" class="not-exist">
         Policy doesn't exist
@@ -106,7 +106,7 @@
                 </ng-container>
 
                 <ng-container *ngIf="currentBlock?.isModule">
-                    <div class="top-toolbar-btn readonly-status" title="Create New Module" (click)="onCreateModule()">
+                    <div class="top-toolbar-btn readonly-status" title="Create New Module" (click)="onSaveModule()">
                         <mat-icon>folder_special</mat-icon>
                         <span>Save Module</span>
                     </div>
@@ -121,29 +121,23 @@
                 </ng-container>
             </ng-container>
 
-            <div class="top-toolbar-btn all-status" (click)="onView('blocks')" title="Blocks"
-                [attr.active]="currentView == 'blocks'">
-                <mat-icon>view_agenda</mat-icon>
-                <span>Tree</span>
-            </div>
 
-            <div class="top-toolbar-btn all-status" (click)="onView('json')" title="JSON"
-                [attr.active]="currentView == 'json'">
-                <mat-icon>code</mat-icon>
-                <span>JSON</span>
-            </div>
-
-            <div class="top-toolbar-btn all-status" (click)="onView('yaml')" title="YAML"
-                [attr.active]="currentView == 'yaml'">
-                <mat-icon>segment</mat-icon>
-                <span>YAML</span>
+            <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="viewMenu" style="width: 60px">
+                <mat-icon *ngIf="currentView =='blocks'">view_agenda</mat-icon>
+                <mat-icon *ngIf="currentView =='json'">code</mat-icon>
+                <mat-icon *ngIf="currentView =='yaml'">segment</mat-icon>
+                <span *ngIf="currentView =='blocks'">Tree</span>
+                <span *ngIf="currentView =='json'">JSON</span>
+                <span *ngIf="currentView =='yaml'">YAML</span>
+                <div class="expand-group">
+                    <mat-icon>arrow_drop_down</mat-icon>
+                </div>
             </div>
 
             <div class="delimiter"></div>
 
             <div *ngIf="currentView === 'blocks'" class="top-toolbar-group all-status event-color"
                 [matMenuTriggerFor]="eventMenu" style="width: 60px">
-
                 <mat-icon *ngIf="eventVisible =='All'" class="event-color">flash_on</mat-icon>
                 <mat-icon *ngIf="eventVisible =='Action'" class="event-color">
                     <div class="action-event-icon"></div>
@@ -152,14 +146,10 @@
                     <div class="refresh-event-icon"></div>
                 </mat-icon>
                 <mat-icon *ngIf="eventVisible =='None'" class="event-color">flash_off</mat-icon>
-
-
                 <span *ngIf="eventVisible =='All'" class="event-color">All Events</span>
                 <span *ngIf="eventVisible =='Action'" class="event-color">Action Events</span>
                 <span *ngIf="eventVisible =='Refresh'" class="event-color">Refresh Events</span>
                 <span *ngIf="eventVisible =='None'" class="event-color">Hide Events</span>
-
-
                 <div class="expand-group">
                     <mat-icon>arrow_drop_down</mat-icon>
                 </div>
@@ -182,18 +172,16 @@
                         </div>
                     </div>
 
-                    <div class="pc-tabs-content" [attr.readonly]="leftMenu">
-                        <div class="components-container readonly-status" [hidden]="!options.components" cdkDropList
-                            #menuList="cdkDropList" [cdkDropListConnectedTo]="[treeList]" cdkDropListSortingDisabled
-                            [cdkDropListEnterPredicate]="noReturnPredicate"
-                            (cdkDropListDropped)="drop($event)"
-                        >
+                    <div class="pc-tabs-content components-menu" [attr.readonly]="leftMenu" cdkDropList
+                        #menuList="cdkDropList" [cdkDropListConnectedTo]="[dropListConnector.body]"
+                        cdkDropListSortingDisabled [cdkDropListEnterPredicate]="noReturnPredicate"
+                        (cdkDropListDropped)="drop($event)">
 
+                        <div class="components-container readonly-status" [hidden]="!options.components">
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
-
                             <div *ngIf="componentsList.favorites.length" class="components-group"
                                 [attr.collapsed]="options.favoritesGroup">
                                 <div class="components-group-name" (click)="collapse('favoritesGroup')">
@@ -203,19 +191,21 @@
                                     <span style="padding-left: 22px">Favorites
                                         ({{componentsList.favorites.length}})</span>
                                 </div>
-                                <div class="components-group-body" *ngFor="let item of componentsList.favorites">
-                                    <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                        [attr.block-type]="item.header" (click)="onAdd(item)">
-                                        <div class="drag-component">
-                                            <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
-                                            <span class="drag-component-name">{{item.name}}</span>
+                                <div class="components-group-body">
+                                    <div class="components-group-item" *ngFor="let item of componentsList.favorites">
+                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                            [attr.block-type]="item.header" (click)="onAdd(item)">
+                                            <div class="drag-component">
+                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                <span class="drag-component-name">{{item.name}}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="component-btn" (click)="onAdd(item)">
-                                        <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
-                                        <span>{{item.name}}</span>
-                                        <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                            (click)="setFavorite(item)">star</mat-icon>
+                                        <div class="component-btn" (click)="onAdd(item)">
+                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                            <span>{{item.name}}</span>
+                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                (click)="setFavorite(item)">star</mat-icon>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -225,19 +215,21 @@
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>UI Components ({{componentsList.uiComponents.length}})</span>
                                 </div>
-                                <div class="components-group-body" *ngFor="let item of componentsList.uiComponents">
-                                    <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                        [attr.block-type]="item.header" (click)="onAdd(item)">
-                                        <div class="drag-component">
-                                            <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
-                                            <span class="drag-component-name">{{item.name}}</span>
+                                <div class="components-group-body">
+                                    <div class="components-group-item" *ngFor="let item of componentsList.uiComponents">
+                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                            [attr.block-type]="item.header" (click)="onAdd(item)">
+                                            <div class="drag-component">
+                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                <span class="drag-component-name">{{item.name}}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="component-btn" (click)="onAdd(item)">
-                                        <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
-                                        <span>{{item.name}}</span>
-                                        <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                            (click)="setFavorite(item)">star</mat-icon>
+                                        <div class="component-btn" (click)="onAdd(item)">
+                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                            <span>{{item.name}}</span>
+                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                (click)="setFavorite(item)">star</mat-icon>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -247,19 +239,21 @@
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>Server Components ({{componentsList.serverBlocks.length}})</span>
                                 </div>
-                                <div class="components-group-body" *ngFor="let item of componentsList.serverBlocks">
-                                    <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                        [attr.block-type]="item.header" (click)="onAdd(item)">
-                                        <div class="drag-component">
-                                            <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
-                                            <span class="drag-component-name">{{item.name}}</span>
+                                <div class="components-group-body">
+                                    <div class="components-group-item" *ngFor="let item of componentsList.serverBlocks">
+                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                            [attr.block-type]="item.header" (click)="onAdd(item)">
+                                            <div class="drag-component">
+                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                <span class="drag-component-name">{{item.name}}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="component-btn" (click)="onAdd(item)">
-                                        <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
-                                        <span>{{item.name}}</span>
-                                        <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                            (click)="setFavorite(item)">star</mat-icon>
+                                        <div class="component-btn" (click)="onAdd(item)">
+                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                            <span>{{item.name}}</span>
+                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                (click)="setFavorite(item)">star</mat-icon>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -269,19 +263,21 @@
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>Addons ({{componentsList.addons.length}})</span>
                                 </div>
-                                <div class="components-group-body" *ngFor="let item of componentsList.addons">
-                                    <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                        [attr.block-type]="item.header" (click)="onAdd(item)">
-                                        <div class="drag-component">
-                                            <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
-                                            <span class="drag-component-name">{{item.name}}</span>
+                                <div class="components-group-body">
+                                    <div class="components-group-item" *ngFor="let item of componentsList.addons">
+                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                            [attr.block-type]="item.header" (click)="onAdd(item)">
+                                            <div class="drag-component">
+                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                <span class="drag-component-name">{{item.name}}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="component-btn" (click)="onAdd(item)">
-                                        <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
-                                        <span>{{item.name}}</span>
-                                        <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                            (click)="setFavorite(item)">star</mat-icon>
+                                        <div class="component-btn" (click)="onAdd(item)">
+                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                            <span>{{item.name}}</span>
+                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                (click)="setFavorite(item)">star</mat-icon>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -292,31 +288,33 @@
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>unGrouped</span>
                                 </div>
-                                <div class="components-group-body" *ngFor="let item of componentsList.unGrouped">
-                                    <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
-                                        [attr.block-type]="item.header" (click)="onAdd(item)">
-                                        <div class="drag-component">
-                                            <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
-                                            <span class="drag-component-name">{{item.name}}</span>
+                                <div class="components-group-body">
+                                    <div class="components-group-item" *ngFor="let item of componentsList.unGrouped">
+                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                            [attr.block-type]="item.header" (click)="onAdd(item)">
+                                            <div class="drag-component">
+                                                <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>
+                                                <span class="drag-component-name">{{item.name}}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="component-btn" (click)="onAdd(item)" [attr.block-type]="item.header">
-                                        <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
-                                        <span>{{item.name}}</span>
-                                        <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                            (click)="setFavorite(item)">star</mat-icon>
+                                        <div class="component-btn" (click)="onAdd(item)"
+                                            [attr.block-type]="item.header">
+                                            <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
+                                            <span>{{item.name}}</span>
+                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                (click)="setFavorite(item)">star</mat-icon>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="components-container" [hidden]="!options.library">
 
+                        <div class="components-container" [hidden]="!options.library">
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onModuleSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
-
                             <div *ngIf="modulesList.favorites.length" class="components-group"
                                 [attr.collapsed]="options.favoritesModulesGroup">
                                 <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
@@ -327,23 +325,50 @@
                                         ({{modulesList.favorites.length}})</span>
                                 </div>
                                 <div class="components-group-body">
-
-
-                                    <div *ngFor="let item of modulesList.favorites" class="component-btn">
-                                        <mat-icon class="component-btn-icon">folder</mat-icon>
-                                        <span>{{item.name}}</span>
-                                        <span class="component-btn-toolbar">
-                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                (click)="setModuleFavorite(item)">star</mat-icon>
-                                            <mat-icon [attr.readonly]="item.isDefault" class="component-btn-delete"
-                                                [attr.favorite]="item.favorite"
-                                                (click)="onDeleteModule(item)">delete</mat-icon>
-                                        </span>
+                                    <div class="components-group-item" *ngFor="let item of modulesList.favorites">
+                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                            [attr.block-type]="item.header" (click)="onAddModule(item)">
+                                            <div class="drag-component drag-module">
+                                                <div class="drag-component-icon">
+                                                    <svg xmlns:svg="http://www.w3.org/2000/svg"
+                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                        version="1.1">
+                                                        <path style="fill:#e1933c"
+                                                            d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
+                                                        <path style="fill:#24bfe1"
+                                                            d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
+                                                        <path style="fill:#9e57f5"
+                                                            d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
+                                                    </svg>
+                                                </div>
+                                                <span class="drag-component-name">{{item.name}}</span>
+                                            </div>
+                                        </div>
+                                        <div class="component-btn" (click)="onAddModule(item)">
+                                            <div class="component-btn-icon">
+                                                <svg xmlns:svg="http://www.w3.org/2000/svg"
+                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                        version="1.1">
+                                                        <path style="fill:#e1933c"
+                                                            d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
+                                                        <path style="fill:#24bfe1"
+                                                            d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
+                                                        <path style="fill:#9e57f5"
+                                                            d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
+                                                    </svg>
+                                            </div>
+                                            <span>{{item.name}}</span>
+                                            <span class="component-btn-toolbar">
+                                                <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                    (click)="setModuleFavorite(item)">star</mat-icon>
+                                                <mat-icon [attr.readonly]="item.isDefault" class="component-btn-delete"
+                                                    [attr.favorite]="item.favorite"
+                                                    (click)="onDeleteModule(item)">delete</mat-icon>
+                                            </span>
+                                        </div>
                                     </div>
-
                                 </div>
                             </div>
-
                             <div class="components-group" [attr.collapsed]="options.defaultModulesGroup">
                                 <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
@@ -351,21 +376,47 @@
                                     <span>Default Modules ({{modulesList.defaultModules.length}})</span>
                                 </div>
                                 <div class="components-group-body">
-
-
-                                    <div *ngFor="let item of modulesList.defaultModules" class="component-btn">
-                                        <mat-icon class="component-btn-icon">folder</mat-icon>
-                                        <span>{{item.name}}</span>
-                                        <span class="component-btn-toolbar">
-                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                (click)="setModuleFavorite(item)">star</mat-icon>
-                                        </span>
-
+                                    <div class="components-group-item" *ngFor="let item of modulesList.defaultModules">
+                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                            [attr.block-type]="item.header" (click)="onAddModule(item)">
+                                            <div class="drag-component drag-module">
+                                                <div class="drag-component-icon">
+                                                    <svg xmlns:svg="http://www.w3.org/2000/svg"
+                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                        version="1.1">
+                                                        <path style="fill:#e1933c"
+                                                            d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
+                                                        <path style="fill:#24bfe1"
+                                                            d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
+                                                        <path style="fill:#9e57f5"
+                                                            d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
+                                                    </svg>
+                                                </div>
+                                                <span class="drag-component-name">{{item.name}}</span>
+                                            </div>
+                                        </div>
+                                        <div class="component-btn" (click)="onAddModule(item)">
+                                            <div class="component-btn-icon">
+                                                <svg xmlns:svg="http://www.w3.org/2000/svg"
+                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                        version="1.1">
+                                                        <path style="fill:#e1933c"
+                                                            d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
+                                                        <path style="fill:#24bfe1"
+                                                            d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
+                                                        <path style="fill:#9e57f5"
+                                                            d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
+                                                    </svg>
+                                            </div>
+                                            <span>{{item.name}}</span>
+                                            <span class="component-btn-toolbar">
+                                                <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                    (click)="setModuleFavorite(item)">star</mat-icon>
+                                            </span>
+                                        </div>
                                     </div>
-
                                 </div>
                             </div>
-
                             <div class="components-group" [attr.collapsed]="options.customModulesGroup">
                                 <div class="components-group-name" (click)="collapse('customModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
@@ -373,27 +424,52 @@
                                     <span>Custom models ({{modulesList.customModules.length}})</span>
                                 </div>
                                 <div class="components-group-body">
-
-
-                                    <div *ngFor="let item of modulesList.customModules" class="component-btn">
-                                        <mat-icon class="component-btn-icon">folder</mat-icon>
-                                        <span>{{item.name}}</span>
-
-                                        <span class="component-btn-toolbar">
-                                            <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                (click)="setModuleFavorite(item)">star</mat-icon>
-                                            <mat-icon class="component-btn-delete" [attr.favorite]="item.favorite"
-                                                (click)="onDeleteModule(item)">delete</mat-icon>
-                                        </span>
+                                    <div class="components-group-item" *ngFor="let item of modulesList.customModules">
+                                        <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
+                                            [attr.block-type]="item.header" (click)="onAddModule(item)">
+                                            <div class="drag-component drag-module">
+                                                <div class="drag-component-icon">
+                                                    <svg xmlns:svg="http://www.w3.org/2000/svg"
+                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                        version="1.1">
+                                                        <path style="fill:#e1933c"
+                                                            d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
+                                                        <path style="fill:#24bfe1"
+                                                            d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
+                                                        <path style="fill:#9e57f5"
+                                                            d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
+                                                    </svg>
+                                                </div>
+                                                <span class="drag-component-name">{{item.name}}</span>
+                                            </div>
+                                        </div>
+                                        <div class="component-btn" (click)="onAddModule(item)">
+                                            <div class="component-btn-icon">
+                                                <svg xmlns:svg="http://www.w3.org/2000/svg"
+                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                        version="1.1">
+                                                        <path style="fill:#e1933c"
+                                                            d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
+                                                        <path style="fill:#24bfe1"
+                                                            d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
+                                                        <path style="fill:#9e57f5"
+                                                            d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
+                                                    </svg>
+                                            </div>
+                                            <span>{{item.name}}</span>
+                                            <span class="component-btn-toolbar">
+                                                <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
+                                                    (click)="setModuleFavorite(item)">star</mat-icon>
+                                                <mat-icon class="component-btn-delete" [attr.favorite]="item.favorite"
+                                                    (click)="onDeleteModule(item)">delete</mat-icon>
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
-
-
 
             </div>
             <div class="center-container">
@@ -420,9 +496,8 @@
 
 
                         <policy-tree [blocks]="openModule.dataSource" [errors]="errorsMap" [readonly]="readonly"
-                            [active]="eventVisible" [menuList]="menuList" (open)="onOpenModule($event)"
-                            (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)"
-                            (init)="initTree($event)">
+                            [active]="eventVisible" [connector]="dropListConnector" (open)="onOpenModule($event)"
+                            (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)">
                         </policy-tree>
 
 
@@ -564,24 +639,39 @@
 </mat-menu>
 
 <mat-menu #eventMenu="matMenu">
-    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('All')" title="Show All Events.">
+    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('All')">
         <mat-icon class="event-color">flash_on</mat-icon>
         <span class="action-color">Show All Events</span>
     </div>
-    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('Action')" title="Show Action Events.">
+    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('Action')">
         <mat-icon class="event-color">
             <div class="action-event-icon"></div>
         </mat-icon>
         <span class="action-color">Show Action Events</span>
     </div>
-    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('Refresh')" title="Show Refresh Events.">
+    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('Refresh')">
         <mat-icon class="event-color">
             <div class="refresh-event-icon"></div>
         </mat-icon>
         <span class="action-color">Show Refresh Events</span>
     </div>
-    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('None')" title="Hide All Events.">
+    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('None')">
         <mat-icon class="event-color">flash_off</mat-icon>
         <span class="action-color">Hide All Events</span>
+    </div>
+</mat-menu>
+
+<mat-menu #viewMenu="matMenu">
+    <div class="toolbar-menu all-status event-color" (click)="onView('blocks')">
+        <mat-icon class="action-color">view_agenda</mat-icon>
+        <span class="action-color">Tree</span>
+    </div>
+    <div class="toolbar-menu all-status event-color" (click)="onView('json')">
+        <mat-icon class="action-color">code</mat-icon>
+        <span class="action-color">JSON</span>
+    </div>
+    <div class="toolbar-menu all-status event-color" (click)="onView('yaml')">
+        <mat-icon class="action-color">segment</mat-icon>
+        <span class="action-color">YAML</span>
     </div>
 </mat-menu>
