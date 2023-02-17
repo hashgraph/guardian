@@ -53,7 +53,7 @@ test
 
 ### **Hedera account creation**
 
-{% swagger method="get" path="" baseUrl="/api/v1/demo/randomKey" summary="" %}
+{% swagger method="get" path="" baseUrl="/api/v1/demo/random-key" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}

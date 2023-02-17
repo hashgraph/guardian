@@ -25,10 +25,13 @@ components:
       required:
         - username
         - password
+        - password_confirmation
       properties:
         username:
           type: string
         password:
+          type: string
+        password_confirmation:
           type: string
     Account:
       type: object
@@ -964,7 +967,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /profiles/{username}:
+  /profiles:
     get:
       tags:
         - profiles
@@ -1018,7 +1021,7 @@ paths:
             schema:
               $ref: "#/components/schemas/User"
       responses:
-        201:
+        204:
           description: Successful operation.
         401:
           description: Unauthorized.
@@ -1031,7 +1034,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /profiles/push/{username}:
+  /profiles/push:
     put:
       tags:
         - profiles
@@ -1054,8 +1057,8 @@ paths:
             schema:
               $ref: "#/components/schemas/User"
       responses:
-        200:
-          description: Successful operation.
+        202:
+          description: The request has been accepted for processing, but the processing has not been completed.
           content:
             application/json:
               schema:
@@ -1070,6 +1073,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /profiles/restore:
+    put:
+      tags:
+        - profiles
+      description: Restore user profile
+      security:
+        - bearerAuth: [ ]
+      summary: Sets Hedera credentials for the user
+      parameters:
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+          description: The name of the user for whom to update the information.
+      requestBody:
+        description: Object that contains the Hedera account data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        202:
+          description: The request has been accepted for processing, but the processing has not been completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        401:
+          description: Unauthorized.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
 
   /schemas:
     get:
@@ -2194,8 +2235,8 @@ paths:
             schema:
               $ref: "#/components/schemas/Token"
       responses:
-        200:
-          description: Successful operation.
+        202:
+          description: The request has been accepted for processing, but the processing has not been completed.
           content:
             application/json:
               schema:
@@ -2362,8 +2403,8 @@ paths:
           required: true
           description: Token ID.
       responses:
-        200:
-          description: Successful operation.
+        202:
+          description: The request has been accepted for processing, but the processing has not been completed.
           content:
             application/json:
               schema:
@@ -2379,7 +2420,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /tokens/{tokenId}/{username}/grantKyc:
+  /tokens/{tokenId}/{username}/grant-kyc:
     put:
       tags:
         - tokens
@@ -2424,7 +2465,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /tokens/push/{tokenId}/{username}/grantKyc:
+  /tokens/push/{tokenId}/{username}/grant-kyc:
     put:
       tags:
         - tokens
@@ -2463,7 +2504,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /tokens/{tokenId}/{username}/revokeKyc:
+  /tokens/{tokenId}/{username}/revoke-kyc:
     put:
       tags:
         - tokens
@@ -2508,7 +2549,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /tokens/push/{tokenId}/{username}/revokeKyc:
+  /tokens/push/{tokenId}/{username}/revoke-kyc:
     put:
       tags:
         - tokens
@@ -2530,8 +2571,8 @@ paths:
           required: true
           description: Username.
       responses:
-        200:
-          description: Successful operation.
+        202:
+          description: The request has been accepted for processing, but the processing has not been completed.
           content:
             application/json:
               schema:
@@ -2614,8 +2655,8 @@ paths:
           required: true
           description: Username.
       responses:
-        200:
-          description: Successful operation.
+        202:
+          description: The request has been accepted for processing, but the processing has not been completed.
           content:
             application/json:
               schema:
@@ -2653,8 +2694,8 @@ paths:
       - bearerAuth: []
       summary: Unfreezes transfers of the specified token for the user.
       responses:
-        200:
-          description: Successful operation.
+        202:
+          description: The request has been accepted for processing, but the processing has not been completed.
           content:
             application/json:
               schema:
@@ -2698,8 +2739,8 @@ paths:
           required: true
           description: Username.
       responses:
-        200:
-          description: Successful operation.
+        202:
+          description: The request has been accepted for processing, but the processing has not been completed.
           content:
             application/json:
               schema:
@@ -2715,7 +2756,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /trustchains:
+  /trust-chains:
     get:
       tags:
         - trustchains
@@ -2777,7 +2818,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /trustchains/{hash}:
+  /trust-chains/{hash}:
     get:
       tags:
         - trustchains
@@ -4268,7 +4309,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /demo/randomKey:
+  /demo/random-key:
     get:
       tags:
         - demo

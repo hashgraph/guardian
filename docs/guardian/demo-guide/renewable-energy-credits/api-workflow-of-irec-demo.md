@@ -64,7 +64,7 @@ Password
 
 ### Generating Root Key
 
-{% swagger method="get" path="" baseUrl="/demo/randomKey" summary="To Generate Root Key" %}
+{% swagger method="get" path="" baseUrl="/demo/random-key" summary="To Generate Root Key" %}
 {% swagger-description %}
 Generating Root Key
 {% endswagger-description %}
@@ -251,7 +251,7 @@ rootPassword
 
 ### Generate User Key
 
-{% swagger method="get" path="" baseUrl="/demo/randomKey" summary="Generating User Key" %}
+{% swagger method="get" path="" baseUrl="/demo/random-key" summary="Generating User Key" %}
 {% swagger-description %}
 
 {% endswagger-description %}

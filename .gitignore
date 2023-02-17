@@ -21,3 +21,5 @@ runtime-data/
 # OSX related metadata removal and IDE nonsense
 .DS_store
 .idea
+
+*.pem

@@ -1,6 +1,9 @@
+import hpp from 'hpp';
+
 import {
     accountAPI,
     trustchainsAPI,
+    trustChainsAPI,
     demoAPI,
     profileAPI,
     schemaAPI,
@@ -48,6 +51,7 @@ Promise.all([
             type: 'binary/octet-stream'
         }));
         app.use(fileupload());
+        app.use(hpp());
         const channel = new MessageBrokerChannel(cn, 'guardian');
         const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
         new Logger().setChannel(channel);
@@ -62,7 +66,6 @@ Promise.all([
         wsService.init();
 
         new TaskManager().setDependecies(wsService, apiGatewayChannel);
-
         ////////////////////////////////////////
 
         // Config routes
@@ -74,7 +77,7 @@ Promise.all([
         app.use('/schemas', authorizationHelper, schemaAPI);
         app.use('/tokens', authorizationHelper, tokenAPI);
         app.use('/artifact', authorizationHelper, artifactAPI);
-        app.use('/trustchains/', authorizationHelper, trustchainsAPI);
+        app.use('/trust-chains/', authorizationHelper, trustChainsAPI);
         app.use('/external/', externalAPI);
         app.use('/demo/', demoAPI);
         app.use('/ipfs', authorizationHelper, ipfsAPI);
@@ -83,7 +86,17 @@ Promise.all([
         app.use('/analytics/', authorizationHelper, analyticsAPI);
         app.use('/contracts', authorizationHelper, contractAPI);
         app.use('/modules', authorizationHelper, moduleAPI);
+
+        /**
+         * @deprecatedtokens.ts:470:1
+         */
+        app.use('/trustchains/', authorizationHelper, trustchainsAPI);
         /////////////////////////////////////////
+
+        // middleware error handler
+        app.use((err, req, res, next) => {
+            return res.status(err?.status || 500).json({ code: err?.status || 500, message: err.message })
+        });
 
         server.listen(PORT, () => {
             new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);

@@ -2,7 +2,7 @@
 
 ### BUILDING AND RETURNING A TRUSTCHAIN
 
-{% swagger method="get" path="" baseUrl="/trustchains/{hash}" summary="Returns a trustchain for a VP document" %}
+{% swagger method="get" path="" baseUrl="/trust-chains/{hash}" summary="Returns a trustchain for a VP document" %}
 {% swagger-description %}
 Builds and returns a trustchain, from the VP to the root VC document. Only users with the Auditor role are allowed to make the request.
 {% endswagger-description %}

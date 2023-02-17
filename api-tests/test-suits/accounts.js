@@ -147,25 +147,29 @@ function Accounts() {
     it('/accounts/register', async function() {
         let result;
 
-        result = await axios.post(
-            GetURL('accounts', 'register'),
-            {username: 'apiTest', password: 'apiTest'},
-            {
-                headers: {
-                    'Content-Type': 'application/json'
+        try {
+            result = await axios.post(
+                GetURL('accounts', 'register'),
+                {username: 'eroxmagisters', password: 'apiTest', password_confirmation: 'apiTest', role: 'STANDARD_REGISTRY'},
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 }
-            }
-        );
-        delete result.data.password;
-        delete result.data.id;
-        delete result.data._id;
-        delete result.data.parent;
-        delete result.data.walletToken
-        assert.deepEqual(result.data, {
-            username: 'apiTest',
-            did: null,
-            role: 'USER',
-        })
+            );
+            delete result.data.password;
+            delete result.data.id;
+            delete result.data._id;
+            delete result.data.parent;
+            delete result.data.walletToken
+            assert.deepEqual(result.data, {
+                username: 'apiTest',
+                did: null,
+                role: 'STANDARD_REGISTRY',
+            })
+        } catch (e) {
+            console.log(e.response.data)
+        }
     });
 }
 

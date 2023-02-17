@@ -57,7 +57,7 @@ export class RegisterComponent implements OnInit {
         if (this.loginForm.valid) {
             const d = this.loginForm.value;
             this.loading = true;
-            this.auth.createUser(d.login, d.password, d.role).subscribe((result) => {
+            this.auth.createUser(d.login, d.password, d.confirmPassword, d.role).subscribe((result) => {
                 if(result.error) {
                     this.error = result.error;
                     this.loading = false;
@@ -67,7 +67,7 @@ export class RegisterComponent implements OnInit {
                     this.auth.setAccessToken(result.accessToken);
                     this.auth.setUsername(d.login);
                     this.authState.updateState(true);
-                    if (result.role == UserRole.STANDARD_REGISTRY) {
+                    if (result.role === UserRole.STANDARD_REGISTRY) {
                         this.router.navigate(['/config']);
                     } else {
                         this.router.navigate(['/']);

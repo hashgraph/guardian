@@ -11175,7 +11175,7 @@
 			]
 		},
 		{
-			"name": "trustchains",
+			"name": "trust-chains",
 			"item": [
 				{
 					"name": "Returns a list of all VP documents.",
@@ -11198,12 +11198,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/trustchains",
+							"raw": "{{baseUrl}}/trust-chains",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"trustchains"
+								"trust-chains"
 							]
 						},
 						"description": "Requests all VP documents. Only users with the Auditor role are allowed to make the request."
@@ -11221,12 +11221,12 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/trustchains",
+									"raw": "{{baseUrl}}/trust-chains",
 									"host": [
 										"{{baseUrl}}"
 									],
 									"path": [
-										"trustchains"
+										"trust-chains"
 									]
 								}
 							},
@@ -11254,7 +11254,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/trustchains",
+									"raw": "{{baseUrl}}/trust-chains",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -11287,7 +11287,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/trustchains",
+									"raw": "{{baseUrl}}/trust-chains",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -11320,7 +11320,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/trustchains",
+									"raw": "{{baseUrl}}/trust-chains",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -11364,7 +11364,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/trustchains/:hash",
+							"raw": "{{baseUrl}}/trust-chains/:hash",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -11395,7 +11395,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/trustchains/:hash",
+									"raw": "{{baseUrl}}/trust-chains/:hash",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -11436,7 +11436,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/trustchains/:hash",
+									"raw": "{{baseUrl}}/trust-chains/:hash",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -11477,7 +11477,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/trustchains/:hash",
+									"raw": "{{baseUrl}}/trust-chains/:hash",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -11518,7 +11518,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/trustchains/:hash",
+									"raw": "{{baseUrl}}/trust-chains/:hash",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -19052,7 +19052,7 @@
 					]
 				},
 				{
-					"name": "/demo/randomKey",
+					"name": "/demo/random-key",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -19072,7 +19072,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/demo/randomKey",
+							"raw": "{{baseUrl}}/demo/random-key",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -19096,7 +19096,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/demo/randomKey",
+									"raw": "{{baseUrl}}/demo/random-key",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -19130,7 +19130,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/demo/randomKey",
+									"raw": "{{baseUrl}}/demo/random-key",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -19164,7 +19164,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/demo/randomKey",
+									"raw": "{{baseUrl}}/demo/random-key",
 									"host": [
 										"{{baseUrl}}"
 									],
@@ -19198,7 +19198,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{baseUrl}}/demo/randomKey",
+									"raw": "{{baseUrl}}/demo/random-key",
 									"host": [
 										"{{baseUrl}}"
 									],
