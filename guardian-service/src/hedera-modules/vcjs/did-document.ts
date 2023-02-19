@@ -2,7 +2,7 @@ import { PrivateKey, PublicKey, TopicId } from '@hashgraph/sdk';
 import { Environment } from '../environment';
 import { Hashing } from '../hashing';
 import { IVerificationMethod, IDidDocument } from '@guardian/interfaces';
-import { Bls12381G2KeyPair } from '@mattrglobal/bls12381-key-pair';
+import { Bls12381G2KeyPair } from '@mattrglobal/jsonld-signatures-bbs';
 
 /**
  * Did Root Key Base
@@ -188,7 +188,7 @@ export class BBSDidRootKey extends DidRootKeyBase {
         const generatedKey = await Bls12381G2KeyPair.generate({
             id: did + BBSDidRootKey.DID_ROOT_KEY_NAME,
             controller: did,
-            seed: Buffer.from(key.toString())
+            seed: Buffer.from(privateKey.toStringDer())
         });
         result.id = generatedKey.id;
         result.controller = generatedKey.controller;

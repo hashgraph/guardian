@@ -58,7 +58,7 @@ export class FieldControl {
             this.controlArray = new FormControl(field.isArray);
             this.controlUnit = new FormControl(field.unit);
             this.controlRemoteLink = new FormControl(field.remoteLink);
-            this.controlPrivate = new FormControl(field.isPrivate);
+            this.controlPrivate = new FormControl(field.isPrivate || false);
             this.controlEnum = new FormArray([]);
             field.enum?.forEach(item => {
                 this.controlEnum.push(new FormControl(item))

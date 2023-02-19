@@ -357,7 +357,9 @@ export class VCJS {
             ? subject['@context']
             : [subject['@context']];
         for (const element of subjectContext) {
-            vc.addContext(element);
+            if (element) {
+                vc.addContext(element);
+            }
         }
         for (const element of this.schemaContext) {
             vc.addContext(element);
