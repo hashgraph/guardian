@@ -148,6 +148,33 @@ export class VcHelper extends VCJS {
     }
 
     /**
+     * Set Ids for nested nodes in subject
+     * @param subject Subject
+     * @returns Subject
+     */
+    private setNestedNodeIds(subject: any): any {
+        if (!subject || typeof subject !== 'object') {
+            return subject;
+        }
+        if (subject && !subject.id) {
+            subject.id = this.generateUUID();
+        }
+        for (const subjectFieldKey of Object.keys(subject)) {
+            const subjectField = subject[subjectFieldKey];
+            if (!Array.isArray(subjectField)) {
+                subject[subjectFieldKey] = this.setNestedNodeIds(subjectField);
+            } else {
+                for (let i = 0; i < subject[subjectFieldKey].length; i++) {
+                    subject[subjectFieldKey][i] = this.setNestedNodeIds(
+                        subject[subjectFieldKey][i]
+                    );
+                }
+            }
+        }
+        return subject;
+    }
+
+    /**
      * Create VC Document
      *
      * @param {string} did - DID
@@ -171,7 +198,7 @@ export class VcHelper extends VCJS {
                 return await super.createVC(
                     did,
                     key,
-                    subject,
+                    this.setNestedNodeIds(JSON.parse(JSON.stringify(subject))),
                     group,
                     SignatureType.BbsBlsSignature2020
                 );
