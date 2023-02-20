@@ -17,7 +17,7 @@ export class SecretManager {
 
   static getSecretManagerType(secretManagerType?: SecretManagerType): SecretManagerType {
     if (!secretManagerType) {
-      secretManagerType = this.defaultType();
+      secretManagerType = SecretManager.defaultType();
     }
     else if (!Object.values(SecretManagerType).includes(secretManagerType)) {
       throw new Error('Invalid Secret Manager Type')
@@ -27,7 +27,7 @@ export class SecretManager {
   }
 
   static New(secretManagerType?: SecretManagerType): SecretManagerBase {
-    secretManagerType = this.getSecretManagerType(secretManagerType)
+    secretManagerType = SecretManager.getSecretManagerType(secretManagerType)
 
     const configs = SecretManagerConfigs.getConfig(secretManagerType)
 
