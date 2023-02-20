@@ -1,5 +1,5 @@
-import { SecretManagerBase, SecretManagerType } from "../secret-manager";
-import { SecretManager } from "../secret-manager/SecretManager";
+import { SecretManagerBase, SecretManagerType } from '../secret-manager';
+import { SecretManager } from '../secret-manager/secret-manager';
 import crypto from 'crypto';
 
 export class Wallet {
@@ -18,7 +18,7 @@ export class Wallet {
    * @param key
    */
   public async getKey(token: string, type: string, key: string): Promise<string> {
-    const result = await this.secretManager.getSecrets(`wallet/${this.generateKeyName(token, type, key)}`);   
+    const result = await this.secretManager.getSecrets(`wallet/${this.generateKeyName(token, type, key)}`);
     return result ? result.privateKey : null;
   }
 

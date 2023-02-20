@@ -1,4 +1,4 @@
-import { Wallet } from "./Wallet";
+import { Wallet } from './wallet';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
@@ -15,20 +15,20 @@ function setCertsPath(certsPath: string) {
 }
 
 async function test_wallet_by_guardian() {
-  console.log("Test Wallet by Guardian")
-  
+  console.log('Test Wallet by Guardian')
+
   dotenv.config({path: guardian_env_path, override: true})
   setCertsPath(guardian_certs_path)
 
   const wallet = new Wallet()
-  await wallet.setKey("token1", "OPERATOR", "privateKey", "123456")
-  const data = await wallet.getKey("token1", "OPERATOR", "privateKey")
+  await wallet.setKey('token1', 'OPERATOR', 'privateKey', '123456')
+  const data = await wallet.getKey('token1', 'OPERATOR', 'privateKey')
 
   console.log(data);
 }
 
 async function test_wallet() {
   await test_wallet_by_guardian()
-} 
+}
 
 test_wallet()

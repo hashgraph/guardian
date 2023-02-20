@@ -1,12 +1,12 @@
-import { AwsSecretManagerConfigs } from "./aws/AwsSecretManagerConfigs"
-import { HcpVaultSecretManagerConfigs } from "./hashicorp/HcpVaultSecretManagerConfigs"
-import { ISecretManagerConfigs } from "./SecretManagerConfigBase"
+import { AwsSecretManagerConfigs } from './aws/aws-secret-manager-configs'
+import { HcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs'
+import { ISecretManagerConfigs } from './secret-manager-config-base'
 
 export enum SecretManagerType {
-  HCP_VAULT = "hcp",
-  AWS = "aws",
-  GCP = "gcp",
-  AZURE = "azure"
+  HCP_VAULT = 'hcp',
+  AWS = 'aws',
+  GCP = 'gcp',
+  AZURE = 'azure'
 }
 
 export class SecretManagerConfigs {
@@ -21,7 +21,7 @@ export class SecretManagerConfigs {
       case SecretManagerType.AZURE:
         return /* AzureSecretsManagerConfig.getConfigs() */
       default:
-        throw new Error("Invalid Secret Manager Type")
+        throw new Error('Invalid Secret Manager Type')
     }
   }
 }

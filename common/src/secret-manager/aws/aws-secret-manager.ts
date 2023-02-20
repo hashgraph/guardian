@@ -1,6 +1,6 @@
-import { SecretsManagerClient, GetSecretValueCommand, CreateSecretCommand, UpdateSecretCommand } from "@aws-sdk/client-secrets-manager";
-import { SecretManagerBase } from "../SecretManagerBase";
-import { IAwsSecretManagerConfigs } from "./AwsSecretManagerConfigs";
+import { SecretsManagerClient, GetSecretValueCommand, CreateSecretCommand, UpdateSecretCommand } from '@aws-sdk/client-secrets-manager';
+import { SecretManagerBase } from '../secret-manager-base';
+import { IAwsSecretManagerConfigs } from './aws-secret-manager-configs';
 
 export class AwsSecretManager implements SecretManagerBase {
   private client: SecretsManagerClient;
@@ -16,35 +16,35 @@ export class AwsSecretManager implements SecretManagerBase {
     return this.baseSecretPath + path;
   }
 
-  public async existsSecrets(path: string): Promise<boolean> {  
+  public async existsSecrets(path: string): Promise<boolean> {
     try {
       await this.client.send(
         new GetSecretValueCommand({
           SecretId: this.getSecretId(path),
-          VersionStage: "AWSCURRENT",
+          VersionStage: 'AWSCURRENT',
         })
       );
-      
+
       return true;
     } catch (ex) {
-      if (ex.name == 'ResourceNotFoundException') {
+      if (ex.name === 'ResourceNotFoundException') {
         return false;
       }
       throw ex;
     }
   }
 
-  public async getSecrets(path: string): Promise<any> {  
+  public async getSecrets(path: string): Promise<any> {
     try {
       const response = await this.client.send(
         new GetSecretValueCommand({
           SecretId: this.getSecretId(path),
-          VersionStage: "AWSCURRENT",
+          VersionStage: 'AWSCURRENT',
         })
       );
       return JSON.parse(response.SecretString);
     } catch (ex) {
-      if (ex.name == 'ResourceNotFoundException') {
+      if (ex.name === 'ResourceNotFoundException') {
         return null;
       }
       throw ex;
@@ -53,14 +53,14 @@ export class AwsSecretManager implements SecretManagerBase {
 
   async setSecrets(path: string, data: any): Promise<any> {
     try {
-      if (await this.existsSecrets(path)) {        
+      if (await this.existsSecrets(path)) {
         await this.client.send(
           new UpdateSecretCommand({
             SecretId: this.getSecretId(path),
             SecretString: JSON.stringify(data)
           })
         );
-      } else {        
+      } else {
         await this.createSecrets(path, data);
       }
     } catch (ex) {

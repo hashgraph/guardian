@@ -1,5 +1,5 @@
-import { IAwsSecretManagerConfigs } from './aws/AwsSecretManagerConfigs'
-import { IHcpVaultSecretManagerConfigs } from './hashicorp/HcpVaultSecretManagerConfigs'
+import { IAwsSecretManagerConfigs } from './aws/aws-secret-manager-configs'
+import { IHcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs'
 
 export type ISecretManagerConfigs = IHcpVaultSecretManagerConfigs | IAwsSecretManagerConfigs;
 

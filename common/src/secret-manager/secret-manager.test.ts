@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
-import { SecretManager } from './SecretManager';
-import { SecretManagerBase } from './SecretManagerBase';
+import { SecretManager } from './secret-manager';
+import { SecretManagerBase } from './secret-manager-base';
 
 const auth_env_path = path.join(process.cwd(), '../auth-service/.env')
 const guardian_env_path = path.join(process.cwd(), '../guardian-service/.env')
@@ -17,8 +17,8 @@ let secretManager: SecretManagerBase;
 
 
 function setVaultCommonConfig() {
-  process.env.VAULT_ADDRESS = "https://localhost:8200"
-  process.env.VAULT_API_VERSION = "v1"
+  process.env.VAULT_ADDRESS = 'https://localhost:8200'
+  process.env.VAULT_API_VERSION = 'v1'
 }
 
 function setCertsPath(certsPath: string) {
@@ -31,7 +31,7 @@ function setCertsPath(certsPath: string) {
 async function test_secretkey() {
   setVaultCommonConfig()
 
-  console.log("Test Auth Secretkey")
+  console.log('Test Auth Secretkey')
 
   dotenv.config({path: auth_env_path, override: true})
   setCertsPath(auth_certs_path)
@@ -43,11 +43,11 @@ async function test_secretkey() {
 
 async function test_apikey_ipfs() {
 
-  console.log("Test IPFS API KEY")
-  
+  console.log('Test IPFS API KEY')
+
   dotenv.config({path: worker_env_path, override: true})
   setCertsPath(worker_certs_path)
-  
+
   secretManager = SecretManager.New()
   const data = await secretManager.getSecrets('apikey/ipfs')
   console.log(data)
@@ -55,11 +55,11 @@ async function test_apikey_ipfs() {
 
 async function test_operator_key_guardian() {
 
-  console.log("Test OPERATOR KEY/ID by Guardian")
-  
+  console.log('Test OPERATOR KEY/ID by Guardian')
+
   dotenv.config({path: guardian_env_path, override: true})
-  setCertsPath(guardian_certs_path)  
-  
+  setCertsPath(guardian_certs_path)
+
   secretManager = SecretManager.New()
   const data = await secretManager.getSecrets('keys/operator')
   console.log(data)
@@ -67,11 +67,11 @@ async function test_operator_key_guardian() {
 
 async function test_operator_key_policy() {
 
-  console.log("Test OPERATOR KEY/ID by Policy Service")
-  
+  console.log('Test OPERATOR KEY/ID by Policy Service')
+
   dotenv.config({path: policy_env_path, override: true})
-  setCertsPath(policy_certs_path)  
-  
+  setCertsPath(policy_certs_path)
+
   secretManager = SecretManager.New()
   const data = await secretManager.getSecrets('keys/operator')
   console.log(data)
@@ -79,14 +79,14 @@ async function test_operator_key_policy() {
 
 async function test_wallet_guardian() {
 
-  console.log("Test Wallet by Guardian Service")
-  
+  console.log('Test Wallet by Guardian Service')
+
   dotenv.config({path: guardian_env_path, override: true})
-  setCertsPath(guardian_certs_path)  
-  
+  setCertsPath(guardian_certs_path)
+
   secretManager = SecretManager.New()
   await secretManager.setSecrets('wallet/test_guardian', {
-    private_key: "0x1234567890abcdef",
+    private_key: '0x1234567890abcdef',
   })
 
   const data = await secretManager.getSecrets('wallet/test_guardian')
@@ -95,14 +95,14 @@ async function test_wallet_guardian() {
 
 async function test_wallet_policy() {
 
-  console.log("Test Wallet by Policy Service")
-  
+  console.log('Test Wallet by Policy Service')
+
   dotenv.config({path: policy_env_path, override: true})
-  setCertsPath(policy_certs_path)  
-  
+  setCertsPath(policy_certs_path)
+
   secretManager = SecretManager.New()
   await secretManager.setSecrets('wallet/test_policy', {
-    private_key: "0xABCDEF0987654321",
+    private_key: '0xABCDEF0987654321',
   })
 
   const data = await secretManager.getSecrets('wallet/test_policy')
@@ -111,15 +111,15 @@ async function test_wallet_policy() {
 
 async function test_secretmanager() {
   await test_secretkey()
-  
+
   await test_apikey_ipfs()
 
   await test_operator_key_guardian()
 
   await test_operator_key_policy()
-  
+
   await test_wallet_guardian()
-  
+
   await test_wallet_policy()
 }
 

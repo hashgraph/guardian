@@ -1,13 +1,13 @@
-import NodeVault from "node-vault"
-import { SecretManagerBase } from "../SecretManagerBase";
-import { ApproleCrential, IHcpVaultSecretManagerConfigs } from "./HcpVaultSecretManagerConfigs";
+import NodeVault from 'node-vault'
+import { SecretManagerBase } from '../secret-manager-base';
+import { ApproleCrential, IHcpVaultSecretManagerConfigs } from './hcp-vault-secret-manager-configs';
 
 export class HcpVaultSecretManager implements SecretManagerBase {
   private approle: ApproleCrential;
   private vault: NodeVault.client;
 
   constructor(config: IHcpVaultSecretManagerConfigs) {
-    this.approle = config.approleCredential  
+    this.approle = config.approleCredential
 
     this.vault = NodeVault({
       apiVersion: config.apiVersion,
@@ -31,10 +31,10 @@ export class HcpVaultSecretManager implements SecretManagerBase {
       const result = await this.vault.read(this.getSecretId(path))
       return result.data.data
     } catch(ex) {
-      if(ex.response.statusCode == 404) {
+      if(ex.response.statusCode === 404) {
         return null;
       }
-      throw Error("Retreive Secret Failed: " + ex)
+      throw Error('Retreive Secret Failed: ' + ex)
     }
   }
 
@@ -43,7 +43,7 @@ export class HcpVaultSecretManager implements SecretManagerBase {
     try {
       await this.vault.write(this.getSecretId(path), { data })
     } catch(ex) {
-      throw new Error("Write Secrets Failed: " + ex)
+      throw new Error('Write Secrets Failed: ' + ex)
     }
   }
 

@@ -1,9 +1,9 @@
-import { HcpVaultSecretManager } from "./hashicorp/HcpVaultSecretManager";
-import { SecretManagerConfigs, SecretManagerType } from "./SecretManagerConfig";
-import { SecretManagerBase } from "./SecretManagerBase";
-import { AwsSecretManager } from "./aws/AwsSecretManager";
-import { IHcpVaultSecretManagerConfigs } from "./hashicorp/HcpVaultSecretManagerConfigs";
-import { IAwsSecretManagerConfigs } from "./aws/AwsSecretManagerConfigs";
+import { HcpVaultSecretManager } from './hashicorp/hcp-vault-secret-manager';
+import { SecretManagerConfigs, SecretManagerType } from './secret-manager-config';
+import { SecretManagerBase } from './secret-manager-base';
+import { AwsSecretManager } from './aws/aws-secret-manager';
+import { IHcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs';
+import { IAwsSecretManagerConfigs } from './aws/aws-secret-manager-configs';
 
 export class SecretManager {
   static defaultType(): SecretManagerType {
@@ -20,7 +20,7 @@ export class SecretManager {
       secretManagerType = this.defaultType();
     }
     else if (!Object.values(SecretManagerType).includes(secretManagerType)) {
-      throw new Error("Invalid Secret Manager Type")
+      throw new Error('Invalid Secret Manager Type')
     }
 
     return secretManagerType;
@@ -28,7 +28,7 @@ export class SecretManager {
 
   static New(secretManagerType?: SecretManagerType): SecretManagerBase {
     secretManagerType = this.getSecretManagerType(secretManagerType)
-    
+
     const configs = SecretManagerConfigs.getConfig(secretManagerType)
 
     switch (secretManagerType) {
@@ -41,7 +41,7 @@ export class SecretManager {
       case SecretManagerType.AZURE:
         return /* new AzureSecretManager(config) */
       default:
-        throw new Error("Invalid Secret Manager Type")
+        throw new Error('Invalid Secret Manager Type')
     }
   }
 }
