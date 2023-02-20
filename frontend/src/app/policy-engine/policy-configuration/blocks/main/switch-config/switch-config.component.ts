@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
@@ -29,7 +28,7 @@ export class SwitchConfigComponent implements OnInit {
 
     block!: any;
 
-    constructor(public registeredBlocks: RegisteredBlocks) {
+    constructor() {
     }
 
     ngOnInit(): void {
@@ -62,9 +61,5 @@ export class SwitchConfigComponent implements OnInit {
 
     onRemoveCondition(i: number) {
         this.block.conditions.splice(i, 1);
-    }
-
-    getIcon(block: any) {
-        return this.registeredBlocks.getIcon(block.blockType);
     }
 }

@@ -1,22 +1,25 @@
-import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
-import { Options } from '../../structures/storage/config-options';
-import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin, Observable } from 'rxjs';
-import { SchemaService } from 'src/app/services/schema.service';
-import { TokenService } from 'src/app/services/token.service';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { GenerateUUIDv4, Schema, SchemaHelper, Token } from '@guardian/interfaces';
-import { RegisteredBlocks } from '../../registered-blocks';
-import { PolicyModel, PolicyBlockModel, PolicyModuleModel, PolicyStorage } from '../../structures';
 import { CdkDropList } from '@angular/cdk/drag-drop';
-import * as yaml from 'js-yaml';
-import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
+import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
+import { GenerateUUIDv4, Schema, SchemaHelper, Token } from '@guardian/interfaces';
+import * as yaml from 'js-yaml';
+import { forkJoin, Observable } from 'rxjs';
+import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
-import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
 import { InformService } from 'src/app/services/inform.service';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { SchemaService } from 'src/app/services/schema.service';
 import { TasksService } from 'src/app/services/tasks.service';
+import { TokenService } from 'src/app/services/token.service';
+import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
+import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
+import { RegisteredService } from '../../registered-service/registered.service';
+import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage } from '../../structures';
+import { Options } from '../../structures/storage/config-options';
+import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 
 enum OperationMode {
     none,
@@ -108,12 +111,21 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.policyStorage.isUndo;
     }
 
+    public get rightBottomMenu() {
+        return (this.options.rightBottomMenu || this.isRoot);
+    }
+
+    public get isRoot() {
+        return this.currentBlock && (this.currentBlock === this.openModule || this.currentBlock.root);
+    }
+
     private operationMode: OperationMode = OperationMode.none;
     public taskId: string | undefined = undefined;
     public expectedTaskMessages: number = 0;
 
+    private treeOverview!: PolicyTreeComponent;
+
     constructor(
-        private registeredBlocks: RegisteredBlocks,
         private route: ActivatedRoute,
         private router: Router,
         private schemaService: SchemaService,
@@ -123,11 +135,21 @@ export class PolicyConfigurationComponent implements OnInit {
         private dialog: MatDialog,
         private informService: InformService,
         private taskService: TasksService,
+        private matIconRegistry: MatIconRegistry,
+        private domSanitizer: DomSanitizer,
+        private registeredService: RegisteredService
     ) {
         this.options = new Options();
         this.policyModel = new PolicyModel();
         this.policyStorage = new PolicyStorage(localStorage);
         this.openModule = this.policyModel;
+        this.matIconRegistry.addSvgIconLiteral('policy-module', this.domSanitizer.bypassSecurityTrustHtml(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path style="fill:#e1933c" d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
+                <path style="fill:#24bfe1" d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
+                <path style="fill:#9e57f5" d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
+            </svg>
+        `));
     }
 
     public ngOnInit() {
@@ -180,14 +202,14 @@ export class PolicyConfigurationComponent implements OnInit {
 
             forkJoin([
                 this.tokenService.getTokens(),
-                this.policyEngineService.blockAbout(),
+                this.policyEngineService.getBlockInformation(),
                 this.schemaService.getSchemas(this.policyModel.topicId)
             ]).subscribe((data: any) => {
                 const tokens = data[0] || [];
-                const blockAbout = data[1] || {};
+                const blockInformation = data[1] || {};
                 const schemas = data[2] || [];
 
-                this.registeredBlocks.registerConfig(blockAbout);
+                this.registeredService.registerConfig(blockInformation);
                 this.tokens = tokens.map((e: any) => new Token(e));
                 this.schemas = SchemaHelper.map(schemas) || [];
                 this.schemas.unshift({ type: "" } as any);
@@ -219,6 +241,11 @@ export class PolicyConfigurationComponent implements OnInit {
 
         this.policyModel.subscribe(() => {
             this.saveState();
+            setTimeout(() => {
+                if (this.treeOverview) {
+                    this.treeOverview.render();
+                }
+            }, 10);
         });
 
         this.onSelect(this.openModule.root);
@@ -226,6 +253,10 @@ export class PolicyConfigurationComponent implements OnInit {
         this.updateModules();
 
         setTimeout(() => { this.loading = false; }, 500);
+    }
+
+    public onInitViewer(event: PolicyTreeComponent) {
+        this.treeOverview = event;
     }
 
     private updatePolicyModel(policy: any) {
@@ -247,7 +278,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private updateComponents() {
-        const all = this.registeredBlocks.getAll();
+        const all = this.registeredService.getAll();
         this.componentsList.favorites = [];
         this.componentsList.uiComponents = [];
         this.componentsList.serverBlocks = [];
@@ -348,7 +379,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public onAdd(btn: any) {
         this.currentBlock = this.openModule.getBlock(this.currentBlock);
         if (this.currentBlock) {
-            const newBlock = this.registeredBlocks.newBlock(btn.type);
+            const newBlock = this.registeredService.getBlockConfig(btn.type);
             newBlock.tag = this.openModule.getNewTag('Block');
             this.currentBlock.createChild(newBlock);
         }
@@ -365,7 +396,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.changeDetector.detectChanges();
         } else if (event.type === 'add' && event.data) {
             if (event.data.operation === 'new') {
-                const config = this.registeredBlocks.newBlock(event.data.name);
+                const config = this.registeredService.getBlockConfig(event.data.name);
                 config.tag = this.openModule.getNewTag('Block');
                 event.data.parent?.createChild(config, event.data.index);
             }
@@ -424,7 +455,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public onDeleteModule(item: any) {
-        this.templateModules =  this.templateModules.filter(e => e.uuid !== item.uuid);
+        this.templateModules = this.templateModules.filter(e => e.uuid !== item.uuid);
         localStorage.setItem('template-modules', JSON.stringify(this.templateModules));
         this.updateModules();
         this.changeDetector.detectChanges();

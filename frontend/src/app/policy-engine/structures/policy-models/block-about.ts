@@ -1,4 +1,4 @@
-import { PolicyBlockModel } from "./policy-block.model";
+import { PolicyBlockModel } from "./block.model";
 import { IBlockAboutConfig } from "../interfaces/block-about-config.interface";
 import { IBlockDynamicAboutConfig } from "../interfaces/block-dynamic-about-config.interface";
 import { IBlockAbout } from "../interfaces/block-about.interface";
@@ -8,11 +8,18 @@ export class BlockAbout {
     private _propVal: { [x: string]: any; } = {};
     private _setProp(about: any, dynamic: any, name: string) {
         this._propVal[name] = about[name];
-        if (dynamic && dynamic[name]) {
-            this._propFunc[name] = dynamic[name];
+        if (dynamic && dynamic[name] !== undefined && dynamic[name] !== null) {
+            if(typeof dynamic[name] === 'function') {
+                this._propFunc[name] = dynamic[name];
+            } else {
+                this._propVal[name] = dynamic[name];
+                this._propFunc[name] = (value: any, block: any, prev?: IBlockAbout, next?: boolean) => {
+                    return value;
+                };
+            }
         } else {
             this._propFunc[name] = (value: any, block: any, prev?: IBlockAbout, next?: boolean) => {
-                return this._propVal[name];
+                return value;
             };
         }
     }
@@ -27,7 +34,7 @@ export class BlockAbout {
         this._setProp(about, dynamic, 'defaultEvent');
     }
 
-    public get(block: PolicyBlockModel): IBlockAbout {
+    public getAbout(block: PolicyBlockModel): IBlockAbout {
         return {
             post: this._propFunc.post(this._propVal.post, block),
             get: this._propFunc.get(this._propVal.get, block),

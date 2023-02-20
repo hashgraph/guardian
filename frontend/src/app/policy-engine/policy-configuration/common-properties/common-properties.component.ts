@@ -1,6 +1,6 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
 import { BlockErrorActions, GenerateUUIDv4, Schema, Token } from '@guardian/interfaces';
-import { RegisteredBlocks } from '../../registered-blocks';
+import { RegisteredService } from '../../registered-service/registered.service';
 import {
     IBlockAbout,
     PolicyModel,
@@ -58,13 +58,11 @@ export class CommonPropertiesComponent implements OnInit {
         }
     ];
     events: PolicyEventModel[] = [];
-    inputEvents: any[] = [];
-    outputEvents: any[] = [];
     defaultEvent: boolean = false;
     customProperties!: any[] | undefined;
 
     constructor(
-        public registeredBlocks: RegisteredBlocks,
+        private registeredService: RegisteredService,
         private componentFactoryResolver: ComponentFactoryResolver
     ) {
     }
@@ -145,36 +143,39 @@ export class CommonPropertiesComponent implements OnInit {
 
     loadEvents(block: PolicyBlockModel) {
         this.events = block.events;
-        const about = this.registeredBlocks.getAbout(block.blockType, block);
-        this.inputEvents = about.input;
-        this.outputEvents = about.output;
+        const about = this.registeredService.getAbout(block);
         this.defaultEvent = about.defaultEvent;
     }
 
     getIcon(block: PolicyBlockModel) {
-        return this.registeredBlocks.getIcon(block.blockType);
+        return this.registeredService.getIcon(block.blockType);
     }
 
-    getOutputEvents(event: PolicyEventModel) {
+    private getAbout(block: PolicyBlockModel | null): any {
         try {
-            if (event.source && event.source.blockType) {
-                const about = this.registeredBlocks.getAbout(event.source.blockType, event.source);
-                return about.output || [];
+            if (block && block.blockType) {
+                return this.registeredService.getAbout(block);
             }
-            return [];
+            return null;
         } catch (error) {
+            return null;
+        }
+    }
+
+    getOutputEvents(event: PolicyEventModel): string[] {
+        const about = this.getAbout(event.source);
+        if (about && about.output) {
+            return about.output;
+        } else {
             return [];
         }
     }
 
-    getInputEvents(event: PolicyEventModel) {
-        try {
-            if (event.target && event.target.blockType) {
-                const about = this.registeredBlocks.getAbout(event.target.blockType, event.target);
-                return about.input || [];
-            }
-            return [];
-        } catch (error) {
+    getInputEvents(event: PolicyEventModel): string[] {
+        const about = this.getAbout(event.target);
+        if (about && about.input) {
+            return about.input;
+        } else {
             return [];
         }
     }
@@ -192,9 +193,9 @@ export class CommonPropertiesComponent implements OnInit {
                 this.block.properties.onErrorAction = BlockErrorActions.NO_ACTION;
             }
             this.configContainer.clear();
-            const factory: any = this.registeredBlocks.getProperties(block.blockType);
-            const customProperties = this.registeredBlocks.getCustomProperties(block.blockType);
-            this.about = this.registeredBlocks.bindAbout(block.blockType, block);
+            const factory: any = this.registeredService.getProperties(block.blockType);
+            const customProperties = this.registeredService.getCustomProperties(block.blockType);
+            this.about = this.registeredService.bindAbout(block);
             this.loadFactory(factory, customProperties);
         }, 10);
     }
@@ -225,6 +226,10 @@ export class CommonPropertiesComponent implements OnInit {
                     this.loading = false;
                 }, 200);
             }, 20);
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+            }, 200);
         }
     }
 

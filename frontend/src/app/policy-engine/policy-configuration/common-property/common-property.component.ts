@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema } from '@guardian/interfaces';
-import { RegisteredBlocks } from '../../registered-blocks';
+import { RegisteredService } from '../../registered-service/registered.service';
 import { PolicyModel } from '../../structures';
 
 /**
@@ -47,16 +47,12 @@ export class CommonPropertyComponent implements OnInit {
     childrenBlocks: any[] = [];
     loaded: boolean = false;
 
-    constructor(public registeredBlocks: RegisteredBlocks) {
+    constructor(private registeredService: RegisteredService) {
 
     }
 
     ngOnInit(): void {
         this.needUpdate = true;
-    }
-
-    getIcon(block: any) {
-        return this.registeredBlocks.getIcon(block.blockType);
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -74,7 +70,7 @@ export class CommonPropertyComponent implements OnInit {
                     this.allBlocks = this.policy.allBlocks.map(item => {
                         return {
                             name: item.tag,
-                            icon: this.getIcon(item),
+                            icon: this.registeredService.getIcon(item.blockType),
                             value: item.tag,
                             parent: item?.parent?.id
                         }

@@ -9,7 +9,6 @@ import {
     ViewChild,
     ViewContainerRef
 } from '@angular/core';
-import { RegisteredBlocks } from '../../registered-blocks';
 import { PolicyBlockModel } from "../../structures/";
 
 /**
@@ -58,7 +57,6 @@ export class JsonPropertiesComponent implements OnInit {
     loading: boolean = false;
 
     constructor(
-        public registeredBlocks: RegisteredBlocks,
         private componentFactoryResolver: ComponentFactoryResolver
     ) {
         this.codeMirrorOptions.mode = 'application/ld+json';

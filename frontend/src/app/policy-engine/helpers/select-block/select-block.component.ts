@@ -1,4 +1,6 @@
 import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@angular/core';
+import { RegisteredService } from '../../registered-service/registered.service';
+import { PolicyBlockModel } from '../../structures';
 
 /**
  * SelectBlock.
@@ -9,7 +11,7 @@ import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@
     styleUrls: ['./select-block.component.css']
 })
 export class SelectBlock {
-    @Input('blocks') allBlocks!: any[];
+    @Input('blocks') allBlocks!: PolicyBlockModel[];
     @Input('readonly') readonly!: boolean;
 
     @Input('value') value!: any;
@@ -17,7 +19,7 @@ export class SelectBlock {
 
     data?:any[];
 
-    constructor() {
+    constructor(private registeredService: RegisteredService) {
     }
 
     onChange() {
@@ -26,7 +28,17 @@ export class SelectBlock {
 
     ngOnChanges(changes: SimpleChanges) {
         setTimeout(() => {
-            this.data = this.allBlocks;
+            if(this.allBlocks) {
+                this.data = this.allBlocks.map(block => {
+                    return {
+                        name: block.tag,
+                        value: block.tag,
+                        icon: this.registeredService.getIcon(block.blockType)
+                    }
+                });
+            } else {
+                this.data = [];
+            }
         }, 0);
     }
 }

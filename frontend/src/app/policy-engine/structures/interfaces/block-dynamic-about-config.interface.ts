@@ -1,4 +1,4 @@
-import { PolicyBlockModel } from "../policy-models/policy-block.model";
+import { PolicyBlockModel } from "../policy-models/block.model";
 import { ChildrenType } from "../types/children-type.type";
 import { ControlType } from "../types/control-type.type";
 import { IBlockAbout } from "./block-about.interface";

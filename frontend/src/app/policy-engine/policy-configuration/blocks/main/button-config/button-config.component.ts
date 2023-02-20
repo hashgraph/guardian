@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { Schema, Token, UserType } from '@guardian/interfaces';
-import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
+import { Schema, Token } from '@guardian/interfaces';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
@@ -27,7 +26,7 @@ export class ButtonConfigComponent implements OnInit {
 
     block!: any;
 
-    constructor(public registeredBlocks: RegisteredBlocks) {
+    constructor() {
     }
 
     ngOnInit(): void {
@@ -60,10 +59,6 @@ export class ButtonConfigComponent implements OnInit {
             filters: []
         })
         this.propHidden.buttons[this.block.uiMetaData.buttons.length - 1] = {};
-    }
-
-    getIcon(block: any) {
-        return this.registeredBlocks.getIcon(block.blockType);
     }
 
     addFilter(button: any) {

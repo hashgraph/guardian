@@ -1,6 +1,6 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { IEventConfig } from './event-config.interface';
-import { PolicyBlockModel } from "./policy-block.model";
+import { IEventConfig } from './interfaces/event-config.interface';
+import { PolicyBlockModel } from "./block.model";
 
 export class PolicyEventModel {
     private readonly block: PolicyBlockModel;

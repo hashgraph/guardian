@@ -33,7 +33,6 @@ import { FiltersAddonBlockComponent } from './policy-viewer/blocks/filters-addon
 import { HelpIcon } from './helpers/help-icon/help-icon.component';
 import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
 import { AppRoutingModule } from '../app-routing.module';
-import { RegisteredBlocks } from './registered-blocks';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { SavePolicyDialog } from './helpers/save-policy-dialog/save-policy-dialog.component';
 import { ImportPolicyDialog } from './helpers/import-policy-dialog/import-policy-dialog.component';
@@ -76,6 +75,8 @@ import { MultiPolicyDialogComponent } from './helpers/multi-policy-dialog/multi-
 import { ComparePolicyDialog } from './helpers/compare-policy-dialog/compare-policy-dialog.component';
 import { HttpRequestConfigComponent } from './policy-configuration/blocks/main/http-request-config/http-request-config.component';
 import { PolicyTreeComponent } from './policy-configuration/policy-tree/policy-tree.component';
+import { ModulePropertiesComponent } from './policy-configuration/module-properties/module-properties.component';
+import { RegisteredService } from './registered-service/registered.service';
 
 @NgModule({
     declarations: [
@@ -146,7 +147,8 @@ import { PolicyTreeComponent } from './policy-configuration/policy-tree/policy-t
         TokenConfigurationComponent,
         MultiPolicyDialogComponent,
         ComparePolicyDialog,
-        PolicyTreeComponent
+        PolicyTreeComponent,
+        ModulePropertiesComponent
     ],
     imports: [
         CommonModule,
@@ -210,7 +212,7 @@ import { PolicyTreeComponent } from './policy-configuration/policy-tree/policy-t
         TokenConfigurationComponent
     ],
     providers: [
-        RegisteredBlocks
+        RegisteredService
     ]
 })
 export class PolicyEngineModule { }

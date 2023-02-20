@@ -25,6 +25,11 @@ export class Options {
     private _defaultModulesGroup: boolean;
     private _customModulesGroup: boolean;
 
+    private _descriptionModule: boolean;
+    private _inputsModule: boolean;
+    private _outputsModule: boolean;
+    private _variablesModule: boolean;
+
     private _favoritesModules: any;
 
     constructor() {
@@ -48,12 +53,17 @@ export class Options {
         this._addonsGroup = false;
         this._unGroup = false;
 
-        this._rightTopMenu  = false;
+        this._rightTopMenu = false;
         this._rightBottomMenu = false;
 
         this._favoritesModulesGroup = false;
         this._defaultModulesGroup = false;
         this._customModulesGroup = false;
+
+        this._descriptionModule = true;
+        this._inputsModule = false;
+        this._outputsModule = false;
+        this._variablesModule = false;
 
         this._favorites = {};
         this._favoritesModules = {};
@@ -79,10 +89,13 @@ export class Options {
             this.unGroup = localStorage.getItem('POLICY_CONFIG_UN_GROUP') === 'true';
             this.rightTopMenu = localStorage.getItem('POLICY_CONFIG_RIGHT_TOP') === 'true';
             this.rightBottomMenu = localStorage.getItem('POLICY_CONFIG_RIGHT_BOTTOM') === 'true';
-
             this.favoritesModulesGroup = localStorage.getItem('POLICY_CONFIG_FAVORITES_MODULES_GROUP') === 'true';
             this.defaultModulesGroup = localStorage.getItem('POLICY_CONFIG_DEFAULT_MODULES_GROUP') === 'true';
             this.customModulesGroup = localStorage.getItem('POLICY_CONFIG_CUSTOM_MODULES_GROUP') === 'true';
+            this.descriptionModule = localStorage.getItem('POLICY_CONFIG_DESCRIPTION_MODULE') === 'true';
+            this.inputsModule = localStorage.getItem('POLICY_CONFIG_INPUTS_MODULE') === 'true';
+            this.outputsModule = localStorage.getItem('POLICY_CONFIG_OUTPUTS_MODULE') === 'true';
+            this.variablesModule = localStorage.getItem('POLICY_CONFIG_VARIABLES_MODULE') === 'true';
 
             const json1 = localStorage.getItem('POLICY_CONFIG_FAVORITES');
             if (typeof json1 === 'string' && json1.startsWith('{')) {
@@ -129,6 +142,10 @@ export class Options {
             localStorage.setItem('POLICY_CONFIG_DEFAULT_MODULES_GROUP', String(this.defaultModulesGroup));
             localStorage.setItem('POLICY_CONFIG_CUSTOM_MODULES_GROUP', String(this.customModulesGroup));
             localStorage.setItem('POLICY_CONFIG_FAVORITES_MODULES', JSON.stringify(this._favoritesModules));
+            localStorage.setItem('POLICY_CONFIG_DESCRIPTION_MODULE', String(this.descriptionModule));
+            localStorage.setItem('POLICY_CONFIG_INPUTS_MODULE', String(this.inputsModule));
+            localStorage.setItem('POLICY_CONFIG_OUTPUTS_MODULE', String(this.outputsModule));
+            localStorage.setItem('POLICY_CONFIG_VARIABLES_MODULE', String(this.variablesModule));
         } catch (error) {
             console.error(error);
         }
@@ -207,6 +224,18 @@ export class Options {
     }
     public get customModulesGroup() {
         return this._customModulesGroup;
+    }
+    public get descriptionModule() {
+        return this._descriptionModule;
+    }
+    public get inputsModule() {
+        return this._inputsModule;
+    }
+    public get outputsModule() {
+        return this._outputsModule;
+    }
+    public get variablesModule() {
+        return this._variablesModule;
     }
 
     public set components(value: boolean) {
@@ -306,6 +335,42 @@ export class Options {
         }
     }
 
+    public set descriptionModule(value: boolean) {
+        if (value) {
+            this._descriptionModule = true;
+            this._inputsModule = false;
+            this._outputsModule = false;
+            this._variablesModule = false;
+        }
+    }
+
+    public set inputsModule(value: boolean) {
+        if (value) {
+            this._descriptionModule = false;
+            this._inputsModule = true;
+            this._outputsModule = false;
+            this._variablesModule = false;
+        }
+    }
+
+    public set outputsModule(value: boolean) {
+        if (value) {
+            this._descriptionModule = false;
+            this._inputsModule = false;
+            this._outputsModule = true;
+            this._variablesModule = false;
+        }
+    }
+
+    public set variablesModule(value: boolean) {
+        if (value) {
+            this._descriptionModule = false;
+            this._inputsModule = false;
+            this._outputsModule = false;
+            this._variablesModule = true;
+        }
+    }
+
     public set favoritesGroup(value: boolean) {
         this._favoritesGroup = value;
     }
@@ -359,7 +424,7 @@ export class Options {
     }
 
     public setModuleFavorite(name: string, value: boolean): void {
-        if(value) {
+        if (value) {
             this._favoritesModules[name] = value;
         } else {
             delete this._favoritesModules[name];
@@ -367,30 +432,56 @@ export class Options {
     }
 
     public select(name: string) {
-        if (name === 'components') {
-            this.components = true;
-        } else if (name === 'library') {
-            this.library = true;
-        } else if (name === 'description') {
-            this.description = true;
-        } else if (name === 'roles') {
-            this.roles = true;
-        } else if (name === 'groups') {
-            this.groups = true;
-        } else if (name === 'topics') {
-            this.topics = true;
-        } else if (name === 'tokens') {
-            this.tokens = true;
-        } else if (name === 'properties') {
-            this.properties = true;
-        } else if (name === 'artifacts') {
-            this.artifacts = true;
-        } else if (name === 'events') {
-            this.events = true;
-        } else if (name === 'json') {
-            this.json = true;
-        } else {
-            return;
+        switch (name) {
+            case 'components':
+                this.components = true;
+                break;
+            case 'library':
+                this.library = true;
+                break;
+            case 'description':
+                this.description = true;
+                break;
+            case 'roles':
+                this.roles = true;
+                break;
+            case 'groups':
+                this.groups = true;
+                break;
+            case 'topics':
+                this.topics = true;
+                break;
+            case 'tokens':
+                this.tokens = true;
+                break;
+            case 'properties':
+                this.properties = true;
+                break;
+            case 'artifacts':
+                this.artifacts = true;
+                break;
+            case 'events':
+                this.events = true;
+                break;
+            case 'json':
+                this.json = true;
+                break;
+
+            case 'descriptionModule':
+                this.descriptionModule = true;
+                break;
+            case 'inputsModule':
+                this.inputsModule = true;
+                break;
+            case 'outputsModule':
+                this.outputsModule = true;
+                break;
+            case 'variablesModule':
+                this.variablesModule = true;
+                break;
+
+            default:
+                return;
         }
     }
 

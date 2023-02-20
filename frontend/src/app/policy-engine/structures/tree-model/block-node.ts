@@ -1,4 +1,4 @@
-import { PolicyBlockModel } from "../policy-models/policy-block.model";
+import { PolicyBlockModel } from "../policy-models/block.model";
 
 export class FlatBlockNode {
     public id!: string;

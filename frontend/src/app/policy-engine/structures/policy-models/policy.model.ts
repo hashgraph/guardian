@@ -6,10 +6,10 @@ import {
 import { PolicyRoleModel } from './policy-role.model';
 import { PolicyGroupModel } from './policy-group.model';
 import { PolicyTokenModel } from './policy-token.model';
-import { PolicyEventModel } from './policy-event.model';
-import { PolicyBlockModel } from './policy-block.model';
-import { PolicyModuleModel } from "./policy-module.model";
-import { IBlockConfig } from './block-config.interface';
+import { PolicyEventModel } from './block-event.model';
+import { PolicyBlockModel } from './block.model';
+import { PolicyModuleModel } from "./module.model";
+import { IBlockConfig } from './interfaces/block-config.interface';
 import { PolicyTopicModel } from './policy-topic.model';
 
 export class PolicyModel {
@@ -319,14 +319,27 @@ export class PolicyModel {
         }
     }
 
-    private buildBlock(config: IBlockConfig) {
-        if (config) {
-            this._config = new PolicyBlockModel(config, null, this);
+    private _buildBlock(config: IBlockConfig, parent: PolicyModuleModel | PolicyBlockModel | null) {
+        let block: PolicyModuleModel | PolicyBlockModel;
+        if (config.blockType === 'module') {
+            block = new PolicyModuleModel(config, parent, this);
         } else {
-            this._config = new PolicyBlockModel({
-                blockType: "interfaceContainerBlock"
-            }, null, this);
+            block = new PolicyBlockModel(config, parent, this);
         }
+        if (Array.isArray(config.children)) {
+            for (const childConfig of config.children) {
+                const child = this._buildBlock(childConfig, block);
+                block.children.push(child);
+            }
+        }
+        return block;
+    }
+
+    private buildBlock(config: IBlockConfig) {
+        if (!config) {
+            config = { blockType: "interfaceContainerBlock" };
+        }
+        this._config = this._buildBlock(config, null);
         this._config.root = true;
         this._refresh();
     }
@@ -449,12 +462,12 @@ export class PolicyModel {
     }
 
     public newModule(template?: any): PolicyModuleModel {
-        if(template) {
+        if (template) {
             const config = JSON.parse(JSON.stringify(template.config));
-            config.id= GenerateUUIDv4();
-            config.tag= this.getNewTag('Module');
-            config.blockType= 'module';
-            config.defaultActive= true;
+            config.id = GenerateUUIDv4();
+            config.tag = this.getNewTag('Module');
+            config.blockType = 'module';
+            config.defaultActive = true;
             const module = new PolicyModuleModel(config, null, this);
             this._tagMap[module.tag] = module;
             return module;
@@ -476,7 +489,7 @@ export class PolicyModel {
     public convertModule(block: PolicyBlockModel): PolicyModuleModel {
         const module = this.newModule();
         const parent = block.parent;
-        if(parent) {
+        if (parent) {
             parent.replace(block, module);
         }
         module.addChild(block);

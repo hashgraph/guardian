@@ -8,7 +8,7 @@ import {
     ViewChild,
     ViewContainerRef
 } from '@angular/core';
-import { RegisteredBlocks } from '../../registered-blocks';
+import { RegisteredService } from '../../registered-service/registered.service';
 import { IBlock } from '../../structures';
 
 /**
@@ -33,7 +33,7 @@ export class RenderBlockComponent {
     private isViewInitialized: boolean = false;
 
     constructor(
-        public registeredBlocks: RegisteredBlocks,
+        private registeredService: RegisteredService,
         private componentFactoryResolver: ComponentFactoryResolver,
         private viewContainerRef: ViewContainerRef,
         private cdRef: ChangeDetectorRef
@@ -77,7 +77,7 @@ export class RenderBlockComponent {
             this.componentRef.destroy();
         }
         this.target.clear();
-        const factory: any = this.registeredBlocks.getFactory(this.blockType);
+        const factory: any = this.registeredService.getFactory(this.blockType);
         if (factory) {
             let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
             this.componentRef = this.target.createComponent(componentFactory);

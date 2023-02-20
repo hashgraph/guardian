@@ -81,8 +81,10 @@ export class BlocLine {
             this.setColor(225, 0, 0);
         } else if (this.selectedEnd) {
             this.setColor(0, 128, 0);
+        } else if (this.dash) {
+            this.setColor(175, 175, 175);
         } else {
-            this.setColor(136, 136, 136);
+            this.setColor(110, 110, 110);
         }
     }
 }

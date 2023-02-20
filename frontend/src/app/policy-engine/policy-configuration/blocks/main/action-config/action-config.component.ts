@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token, UserType } from '@guardian/interfaces';
-import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
@@ -30,7 +29,7 @@ export class ActionConfigComponent implements OnInit {
 
     block!: any;
 
-    constructor(public registeredBlocks: RegisteredBlocks) {
+    constructor() {
     }
 
     ngOnInit(): void {
@@ -73,9 +72,5 @@ export class ActionConfigComponent implements OnInit {
             tooltip: '',
             type: 'text',
         })
-    }
-
-    getIcon(block: any) {
-        return this.registeredBlocks.getIcon(block.blockType);
     }
 }

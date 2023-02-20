@@ -1,10 +1,8 @@
 import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { RegisteredBlocks } from '../../registered-blocks';
 import { FlatBlockNode } from '../../structures/tree-model/block-node';
-import { MatIconRegistry } from '@angular/material/icon';
-import { DomSanitizer } from '@angular/platform-browser';
 import { CdkDropList } from '@angular/cdk/drag-drop';
 import { PolicyBlockModel, BlocLine, BlockRect, EventCanvas } from '../../structures';
+import { RegisteredService } from '../../registered-service/registered.service';
 
 /**
  * Settings for all blocks.
@@ -25,6 +23,7 @@ export class PolicyTreeComponent implements OnInit {
     @Output('select') select = new EventEmitter();
     @Output('reorder') reorder = new EventEmitter();
     @Output('open') open = new EventEmitter();
+    @Output('init') init = new EventEmitter();
 
     @ViewChild('parent') parentRef!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -69,11 +68,9 @@ export class PolicyTreeComponent implements OnInit {
     private _visibleMoveActions: string = '0';
 
     constructor(
-        public registeredBlocks: RegisteredBlocks,
+        private registeredService: RegisteredService,
         private element: ElementRef,
-        private componentFactoryResolver: ComponentFactoryResolver,
-        private iconRegistry: MatIconRegistry,
-        private sanitizer: DomSanitizer
+        private componentFactoryResolver: ComponentFactoryResolver
     ) {
         this.actorMap = {};
         this.actorMap[''] = 'Event Initiator';
@@ -121,6 +118,7 @@ export class PolicyTreeComponent implements OnInit {
         } catch (error) {
             console.error(error)
         }
+        this.init.emit(this);
     }
 
     ngAfterViewInit(): void {
@@ -182,9 +180,9 @@ export class PolicyTreeComponent implements OnInit {
             node.level = level;
             node.root = block === this.root;
             node.expandable = block.expandable && !node.root;
-            node.about = this.registeredBlocks.getAbout(block.blockType, block);
-            node.icon = this.registeredBlocks.getIcon(block.blockType);
-            node.type = this.registeredBlocks.getHeader(block.blockType);
+            node.about = this.registeredService.getAbout(block);
+            node.icon = this.registeredService.getIcon(block.blockType);
+            node.type = this.registeredService.getHeader(block.blockType);
             node.collapsed = this.getCollapsed(node);
             node.parent = parent;
             node.offset = `${this.paddingLeft * level}px`;

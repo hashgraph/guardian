@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
 import { CodeEditorDialogComponent } from '../../../../helpers/code-editor-dialog/code-editor-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
@@ -32,9 +31,8 @@ export class HttpRequestConfigComponent implements OnInit {
     block!: any;
 
     constructor(
-        public registeredBlocks: RegisteredBlocks,
         private dialog: MatDialog
-        ) {
+    ) {
     }
 
     ngOnInit(): void {
@@ -66,10 +64,6 @@ export class HttpRequestConfigComponent implements OnInit {
 
     onRemoveHeader(i: number) {
         this.block.headers.splice(i, 1);
-    }
-
-    getIcon(block: any) {
-        return this.registeredBlocks.getIcon(block.blockType);
     }
 
     editBody($event: MouseEvent) {

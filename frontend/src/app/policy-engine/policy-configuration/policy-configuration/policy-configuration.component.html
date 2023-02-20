@@ -111,7 +111,7 @@
                         <span>Save Module</span>
                     </div>
 
-                    <div class="top-toolbar-btn readonly-status" title="Convert to Module"
+                    <div *ngIf="openModeType !== 'Module'" class="top-toolbar-btn readonly-status" title="Convert to Module"
                         (click)="onOpenModule(currentBlock)">
                         <mat-icon>folder_open</mat-icon>
                         <span>Open Module</span>
@@ -330,32 +330,14 @@
                                             [attr.block-type]="item.header" (click)="onAddModule(item)">
                                             <div class="drag-component drag-module">
                                                 <div class="drag-component-icon">
-                                                    <svg xmlns:svg="http://www.w3.org/2000/svg"
-                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                        version="1.1">
-                                                        <path style="fill:#e1933c"
-                                                            d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
-                                                        <path style="fill:#24bfe1"
-                                                            d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
-                                                        <path style="fill:#9e57f5"
-                                                            d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
-                                                    </svg>
+                                                    <mat-icon svgIcon="policy-module"></mat-icon>
                                                 </div>
                                                 <span class="drag-component-name">{{item.name}}</span>
                                             </div>
                                         </div>
                                         <div class="component-btn" (click)="onAddModule(item)">
                                             <div class="component-btn-icon">
-                                                <svg xmlns:svg="http://www.w3.org/2000/svg"
-                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                        version="1.1">
-                                                        <path style="fill:#e1933c"
-                                                            d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
-                                                        <path style="fill:#24bfe1"
-                                                            d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
-                                                        <path style="fill:#9e57f5"
-                                                            d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
-                                                    </svg>
+                                                <mat-icon svgIcon="policy-module"></mat-icon>
                                             </div>
                                             <span>{{item.name}}</span>
                                             <span class="component-btn-toolbar">
@@ -381,32 +363,14 @@
                                             [attr.block-type]="item.header" (click)="onAddModule(item)">
                                             <div class="drag-component drag-module">
                                                 <div class="drag-component-icon">
-                                                    <svg xmlns:svg="http://www.w3.org/2000/svg"
-                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                        version="1.1">
-                                                        <path style="fill:#e1933c"
-                                                            d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
-                                                        <path style="fill:#24bfe1"
-                                                            d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
-                                                        <path style="fill:#9e57f5"
-                                                            d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
-                                                    </svg>
+                                                    <mat-icon svgIcon="policy-module"></mat-icon>
                                                 </div>
                                                 <span class="drag-component-name">{{item.name}}</span>
                                             </div>
                                         </div>
                                         <div class="component-btn" (click)="onAddModule(item)">
                                             <div class="component-btn-icon">
-                                                <svg xmlns:svg="http://www.w3.org/2000/svg"
-                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                        version="1.1">
-                                                        <path style="fill:#e1933c"
-                                                            d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
-                                                        <path style="fill:#24bfe1"
-                                                            d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
-                                                        <path style="fill:#9e57f5"
-                                                            d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
-                                                    </svg>
+                                                <mat-icon svgIcon="policy-module"></mat-icon>
                                             </div>
                                             <span>{{item.name}}</span>
                                             <span class="component-btn-toolbar">
@@ -429,32 +393,14 @@
                                             [attr.block-type]="item.header" (click)="onAddModule(item)">
                                             <div class="drag-component drag-module">
                                                 <div class="drag-component-icon">
-                                                    <svg xmlns:svg="http://www.w3.org/2000/svg"
-                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                        version="1.1">
-                                                        <path style="fill:#e1933c"
-                                                            d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
-                                                        <path style="fill:#24bfe1"
-                                                            d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
-                                                        <path style="fill:#9e57f5"
-                                                            d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
-                                                    </svg>
+                                                    <mat-icon svgIcon="policy-module"></mat-icon>
                                                 </div>
                                                 <span class="drag-component-name">{{item.name}}</span>
                                             </div>
                                         </div>
                                         <div class="component-btn" (click)="onAddModule(item)">
                                             <div class="component-btn-icon">
-                                                <svg xmlns:svg="http://www.w3.org/2000/svg"
-                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                        version="1.1">
-                                                        <path style="fill:#e1933c"
-                                                            d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
-                                                        <path style="fill:#24bfe1"
-                                                            d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
-                                                        <path style="fill:#9e57f5"
-                                                            d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
-                                                    </svg>
+                                                <mat-icon svgIcon="policy-module"></mat-icon>
                                             </div>
                                             <span>{{item.name}}</span>
                                             <span class="component-btn-toolbar">
@@ -497,7 +443,8 @@
 
                         <policy-tree [blocks]="openModule.dataSource" [errors]="errorsMap" [readonly]="readonly"
                             [active]="eventVisible" [connector]="dropListConnector" (open)="onOpenModule($event)"
-                            (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)">
+                            (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)"
+                            (init)="onInitViewer($event)">
                         </policy-tree>
 
 
@@ -509,10 +456,9 @@
             <div class="right-toolbar">
 
                 <div class="right-top-toolbar" [attr.collapse-top]="options.rightTopMenu"
-                    [attr.collapse-bottom]="options.rightBottomMenu">
+                    [attr.collapse-bottom]="rightBottomMenu">
 
-
-                    <div class="pc-tabs">
+                    <div *ngIf="openModeType === 'Policy'" class="pc-tabs">
                         <div class="pc-tabs-headers">
                             <div class="tab-header" [attr.selected]="options.description"
                                 (click)="select('description')">
@@ -530,7 +476,6 @@
                             <div class="tab-header" [attr.selected]="options.tokens" (click)="select('tokens')">
                                 Tokens
                             </div>
-
                             <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
                                 (click)="collapse('rightTopMenu')">
                                 <mat-icon>keyboard_double_arrow_up</mat-icon>
@@ -560,9 +505,48 @@
                         </div>
                     </div>
 
+                    <div *ngIf="openModeType === 'Module'" class="pc-tabs">
+                        <div class="pc-tabs-headers">
+                            <div class="tab-header" [attr.selected]="options.descriptionModule" (click)="select('descriptionModule')">
+                                Description
+                            </div>
+                            <div class="tab-header" [attr.selected]="options.inputsModule" (click)="select('inputsModule')">
+                                Inputs
+                            </div>
+                            <div class="tab-header" [attr.selected]="options.outputsModule" (click)="select('outputsModule')">
+                                Outputs
+                            </div>
+                            <div class="tab-header" [attr.selected]="options.variablesModule" (click)="select('variablesModule')">
+                                Variables
+                            </div>
+                            <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
+                                (click)="collapse('rightTopMenu')">
+                                <mat-icon>keyboard_double_arrow_up</mat-icon>
+                            </div>
+                        </div>
+                        <div class="pc-tabs-content">
+                            <div class="prop-container readonly-status" [hidden]="!options.descriptionModule">
+                                <module-properties [module]="openModule" [readonly]="readonly"
+                                    type="Main"></module-properties>
+                            </div>
+                            <div class="prop-container readonly-status" [hidden]="!options.inputsModule">
+                                <module-properties [module]="openModule" [readonly]="readonly"
+                                    type="Inputs"></module-properties>
+                            </div>
+                            <div class="prop-container readonly-status" [hidden]="!options.outputsModule">
+                                <module-properties [module]="openModule" [readonly]="readonly"
+                                    type="Outputs"></module-properties>
+                            </div>
+                            <div class="prop-container readonly-status" [hidden]="!options.variablesModule">
+                                <module-properties [module]="openModule" [readonly]="readonly"
+                                    type="Variables"></module-properties>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="right-bottom-toolbar" [attr.collapse-top]="options.rightTopMenu"
-                    [attr.collapse-bottom]="options.rightBottomMenu">
+
+                <div class="right-bottom-toolbar" *ngIf="currentBlock && !isRoot" 
+                    [attr.collapse-top]="options.rightTopMenu" [attr.collapse-bottom]="options.rightBottomMenu">
 
                     <div class="pc-tabs">
                         <div class="pc-tabs-headers">
@@ -585,22 +569,18 @@
                         </div>
                         <div class="pc-tabs-content">
                             <div class="prop-container readonly-status" [hidden]="!options.properties">
-                                <common-properties *ngIf="currentBlock" [policy]="policyModel" [block]="currentBlock"
-                                    [schemas]="schemas" [readonly]="readonly" [tokens]="tokens"
-                                    type="Common"></common-properties>
+                                <common-properties [policy]="policyModel" [block]="currentBlock" [schemas]="schemas" [readonly]="readonly"
+                                    [tokens]="tokens" type="Common"></common-properties>
                             </div>
                             <div class="prop-container readonly-status" [hidden]="!options.events">
-                                <common-properties *ngIf="currentBlock" [policy]="policyModel" [block]="currentBlock"
-                                    [schemas]="schemas" [readonly]="readonly" [tokens]="tokens"
-                                    type="Events"></common-properties>
+                                <common-properties [policy]="policyModel" [block]="currentBlock" [schemas]="schemas" [readonly]="readonly"
+                                    [tokens]="tokens" type="Events"></common-properties>
                             </div>
                             <div class="prop-container readonly-status" [hidden]="!options.artifacts">
-                                <artifact-properties *ngIf="currentBlock" [readonly]="readonly" [policyId]="policyId"
-                                    [block]="currentBlock"></artifact-properties>
+                                <artifact-properties [readonly]="readonly" [policyId]="policyId" [block]="currentBlock"></artifact-properties>
                             </div>
                             <div class="prop-container readonly-status" [hidden]="!options.json">
-                                <json-properties *ngIf="options.json && currentBlock" [block]="currentBlock"
-                                    [readonly]="readonly"></json-properties>
+                                <json-properties *ngIf="options.json" [block]="currentBlock" [readonly]="readonly"></json-properties>
                             </div>
                         </div>
                     </div>

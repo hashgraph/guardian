@@ -1,10 +1,10 @@
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { GenerateUUIDv4, IArtifact } from '@guardian/interfaces';
-import { BlockType } from './../types/block-type.type';
-import { PolicyEventModel } from './policy-event.model';
+import { BlockType } from '../types/block-type.type';
+import { PolicyEventModel } from './block-event.model';
 import { PolicyModel } from './policy.model';
-import { IBlockConfig } from './block-config.interface';
-import { IEventConfig } from './event-config.interface';
+import { IBlockConfig } from './interfaces/block-config.interface';
+import { IEventConfig } from './interfaces/event-config.interface';
 
 export class PolicyBlockModel {
     private readonly policy: PolicyModel;
@@ -44,15 +44,6 @@ export class PolicyBlockModel {
 
         this.properties = clone;
 
-        this._children = [];
-        if (Array.isArray(config.children)) {
-            for (const child of config.children) {
-                this._children.push(
-                    new PolicyBlockModel(child, this, this.policy)
-                );
-            }
-        }
-
         this._events = [];
         if (Array.isArray(config.events)) {
             for (const event of config.events) {
@@ -63,6 +54,8 @@ export class PolicyBlockModel {
         }
 
         this._artifacts = config.artifacts || [];
+
+        this._children = [];
     }
 
     public get isModule(): boolean {

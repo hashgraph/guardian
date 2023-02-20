@@ -152,7 +152,7 @@ export class PolicyEngineService {
         });
     }
 
-    public blockAbout(): Observable<any> {
+    public getBlockInformation(): Observable<any> {
         return this.http.get<any>(`${this.url}/blocks/about`);
     }
 

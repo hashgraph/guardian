@@ -1,4 +1,4 @@
-import { PolicyBlockModel } from "./policy-block.model";
+import { PolicyBlockModel } from "../block.model";
 
 export interface IEventConfig {
     id: string;

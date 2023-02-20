@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
 import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
@@ -29,7 +28,7 @@ export class DocumentSourceComponent implements OnInit {
     block!: any;
     allBlocks!: any[];
 
-    constructor(public registeredBlocks: RegisteredBlocks) {
+    constructor() {
     }
 
     ngOnInit(): void {
@@ -68,13 +67,7 @@ export class DocumentSourceComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         if (this.policy?.allBlocks) {
-            this.allBlocks = this.policy.allBlocks.map(item => {
-                return {
-                    name: item.tag,
-                    icon: this.getIcon(item),
-                    value: item.tag
-                }
-            });
+            this.allBlocks = this.policy.allBlocks;
         } else {
             this.allBlocks = [];
         }
@@ -94,9 +87,5 @@ export class DocumentSourceComponent implements OnInit {
         field.dialogClass = "";
         field.dialogType = "";
         field.bindBlock = "";
-    }
-
-    getIcon(block: any) {
-        return this.registeredBlocks.getIcon(block.blockType);
     }
 }
