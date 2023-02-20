@@ -6,7 +6,6 @@ export class Wallet {
   private readonly secretManager: SecretManagerBase;
   private readonly encryptionAlg = process.env.HASHICORP_ENCRIPTION_ALG || 'sha512';
 
-
   constructor(secretManagerType?: SecretManagerType) {
     this.secretManager = SecretManager.New(secretManagerType)
   }

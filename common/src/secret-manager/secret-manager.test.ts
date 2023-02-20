@@ -15,7 +15,6 @@ const worker_certs_path = path.join('../worker-service/tls/vault/client')
 
 let secretManager: SecretManagerBase;
 
-
 function setVaultCommonConfig() {
   process.env.VAULT_ADDRESS = 'https://localhost:8200'
   process.env.VAULT_API_VERSION = 'v1'
@@ -26,7 +25,6 @@ function setCertsPath(certsPath: string) {
   process.env.VAULT_CLIENT_CERT = `${certsPath}/tls.crt`
   process.env.VAULT_CLIENT_KEY = `${certsPath}/tls.key`
 }
-
 
 async function test_secretkey() {
   setVaultCommonConfig()
