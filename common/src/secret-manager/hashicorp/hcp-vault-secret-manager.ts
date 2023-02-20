@@ -3,8 +3,8 @@ import { SecretManagerBase } from '../secret-manager-base';
 import { ApproleCrential, IHcpVaultSecretManagerConfigs } from './hcp-vault-secret-manager-configs';
 
 export class HcpVaultSecretManager implements SecretManagerBase {
-  private approle: ApproleCrential;
-  private vault: NodeVault.client;
+  private readonly approle: ApproleCrential;
+  private readonly vault: NodeVault.client;
 
   constructor(config: IHcpVaultSecretManagerConfigs) {
     this.approle = config.approleCredential

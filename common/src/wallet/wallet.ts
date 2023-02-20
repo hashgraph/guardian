@@ -3,7 +3,7 @@ import { SecretManager } from '../secret-manager/secret-manager';
 import crypto from 'crypto';
 
 export class Wallet {
-  private secretManager: SecretManagerBase;
+  private readonly secretManager: SecretManagerBase;
   private readonly encryptionAlg = process.env.HASHICORP_ENCRIPTION_ALG || 'sha512';
 
 

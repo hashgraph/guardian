@@ -3,8 +3,8 @@ import { SecretManagerBase } from '../secret-manager-base';
 import { IAwsSecretManagerConfigs } from './aws-secret-manager-configs';
 
 export class AwsSecretManager implements SecretManagerBase {
-  private client: SecretsManagerClient;
-  private baseSecretPath = 'guardian/';
+  private readonly client: SecretsManagerClient;
+  private readonly baseSecretPath = 'guardian/';
 
   constructor(configs: IAwsSecretManagerConfigs) {
     this.client = new SecretsManagerClient({
