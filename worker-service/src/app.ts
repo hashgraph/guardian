@@ -1,4 +1,10 @@
-import { ApplicationState, Logger, MessageBrokerChannel, SettingsContainer } from '@guardian/common';
+import {
+    ApplicationState,
+    Logger,
+    MessageBrokerChannel,
+    SettingsContainer,
+    ValidateConfiguration
+} from '@guardian/common';
 import { Worker } from './api/worker';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
 import { ApplicationStates } from '@guardian/interfaces';
@@ -24,12 +30,29 @@ Promise.all([
     settingsContainer.setChannel(channel);
     await settingsContainer.init('IPFS_STORAGE_API_KEY');
 
-    await state.updateState(ApplicationStates.INITIALIZING);
-    const w = new Worker(channel, channelName);
-    w.init();
+    const validator = new ValidateConfiguration();
 
-    await state.updateState(ApplicationStates.READY);
-    logger.info('Worker started', [channelName]);
+    validator.setValidator(async () => {
+        if (!settingsContainer.settings.IPFS_STORAGE_API_KEY) {
+            return false;
+        }
+        return true;
+    });
+
+    validator.setValidAction(async () => {
+        await state.updateState(ApplicationStates.INITIALIZING);
+        const w = new Worker(channel, channelName);
+        w.init();
+
+        await state.updateState(ApplicationStates.READY);
+        logger.info('Worker started', [channelName]);
+    });
+
+    validator.setInvalidAction(async () => {
+        await state.updateState(ApplicationStates.BAD_CONFIGURATION);
+    });
+
+    await validator.validate();
 }, (reason) => {
     console.log(reason);
     process.exit(0);
