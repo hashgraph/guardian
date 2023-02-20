@@ -2,11 +2,11 @@ import { Wallet } from './wallet';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-const guardian_env_path = path.join(process.cwd(), '../guardian-service/.env')
-const policy_env_path = path.join(process.cwd(), '../policy-service/.env')
+const guardianEnvPath = path.join(process.cwd(), '../guardian-service/.env')
+const policyEnvPath = path.join(process.cwd(), '../policy-service/.env')
 
-const guardian_certs_path = path.join('../guardian-service/tls/vault/client')
-const policy_certs_path = path.join('../policy-service/tls/vault/client')
+const guardianCertsPath = path.join('../guardian-service/tls/vault/client')
+const policyCertsPath = path.join('../policy-service/tls/vault/client')
 
 function setCertsPath(certsPath: string) {
   process.env.VAULT_CA_CERT = `${certsPath}/ca.crt`
@@ -17,8 +17,8 @@ function setCertsPath(certsPath: string) {
 async function test_wallet_by_guardian() {
   console.log('Test Wallet by Guardian')
 
-  dotenv.config({path: guardian_env_path, override: true})
-  setCertsPath(guardian_certs_path)
+  dotenv.config({path: guardianEnvPath, override: true})
+  setCertsPath(guardianCertsPath)
 
   const wallet = new Wallet()
   await wallet.setKey('token1', 'OPERATOR', 'privateKey', '123456')

@@ -3,15 +3,15 @@ import * as path from 'path';
 import { SecretManager } from './secret-manager';
 import { SecretManagerBase } from './secret-manager-base';
 
-const auth_env_path = path.join(process.cwd(), '../auth-service/.env')
-const guardian_env_path = path.join(process.cwd(), '../guardian-service/.env')
-const policy_env_path = path.join(process.cwd(), '../policy-service/.env')
-const worker_env_path = path.join(process.cwd(), '../worker-service/.env')
+const authEnvPath = path.join(process.cwd(), '../auth-service/.env')
+const guardianEnvPath = path.join(process.cwd(), '../guardian-service/.env')
+const policyEnvPath = path.join(process.cwd(), '../policy-service/.env')
+const workerEnvPath = path.join(process.cwd(), '../worker-service/.env')
 
-const auth_certs_path = path.join('../auth-service/tls/vault/client')
-const guardian_certs_path = path.join('../guardian-service/tls/vault/client')
-const policy_certs_path = path.join('../policy-service/tls/vault/client')
-const worker_certs_path = path.join('../worker-service/tls/vault/client')
+const authCertsPath = path.join('../auth-service/tls/vault/client')
+const guardianCertsPath = path.join('../guardian-service/tls/vault/client')
+const policyCertsPath = path.join('../policy-service/tls/vault/client')
+const workerCertsPath = path.join('../worker-service/tls/vault/client')
 
 let secretManager: SecretManagerBase;
 
@@ -31,8 +31,8 @@ async function test_secretkey() {
 
   console.log('Test Auth Secretkey')
 
-  dotenv.config({path: auth_env_path, override: true})
-  setCertsPath(auth_certs_path)
+  dotenv.config({path: authEnvPath, override: true})
+  setCertsPath(authCertsPath)
 
   secretManager = SecretManager.New()
   let data = await secretManager.getSecrets('secretkey/auth')
@@ -43,8 +43,8 @@ async function test_apikey_ipfs() {
 
   console.log('Test IPFS API KEY')
 
-  dotenv.config({path: worker_env_path, override: true})
-  setCertsPath(worker_certs_path)
+  dotenv.config({path: workerEnvPath, override: true})
+  setCertsPath(workerCertsPath)
 
   secretManager = SecretManager.New()
   const data = await secretManager.getSecrets('apikey/ipfs')
@@ -55,8 +55,8 @@ async function test_operator_key_guardian() {
 
   console.log('Test OPERATOR KEY/ID by Guardian')
 
-  dotenv.config({path: guardian_env_path, override: true})
-  setCertsPath(guardian_certs_path)
+  dotenv.config({path: guardianEnvPath, override: true})
+  setCertsPath(guardianCertsPath)
 
   secretManager = SecretManager.New()
   const data = await secretManager.getSecrets('keys/operator')
@@ -67,8 +67,8 @@ async function test_operator_key_policy() {
 
   console.log('Test OPERATOR KEY/ID by Policy Service')
 
-  dotenv.config({path: policy_env_path, override: true})
-  setCertsPath(policy_certs_path)
+  dotenv.config({path: policyEnvPath, override: true})
+  setCertsPath(policyCertsPath)
 
   secretManager = SecretManager.New()
   const data = await secretManager.getSecrets('keys/operator')
@@ -79,8 +79,8 @@ async function test_wallet_guardian() {
 
   console.log('Test Wallet by Guardian Service')
 
-  dotenv.config({path: guardian_env_path, override: true})
-  setCertsPath(guardian_certs_path)
+  dotenv.config({path: guardianEnvPath, override: true})
+  setCertsPath(guardianCertsPath)
 
   secretManager = SecretManager.New()
   await secretManager.setSecrets('wallet/test_guardian', {
@@ -95,8 +95,8 @@ async function test_wallet_policy() {
 
   console.log('Test Wallet by Policy Service')
 
-  dotenv.config({path: policy_env_path, override: true})
-  setCertsPath(policy_certs_path)
+  dotenv.config({path: policyEnvPath, override: true})
+  setCertsPath(policyCertsPath)
 
   secretManager = SecretManager.New()
   await secretManager.setSecrets('wallet/test_policy', {
