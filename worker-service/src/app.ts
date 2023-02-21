@@ -31,17 +31,25 @@ Promise.all([
     settingsContainer.setChannel(channel);
     await settingsContainer.init('IPFS_STORAGE_API_KEY');
 
+    await state.updateState(ApplicationStates.INITIALIZING);
+    const w = new Worker(channel, channelName);
+    w.init();
+
     const validator = new ValidateConfiguration();
 
+    let timer = null;
     validator.setValidator(async () => {
+        if (timer) {
+            clearInterval(timer);
+        }
         if (!settingsContainer.settings.IPFS_STORAGE_API_KEY) {
             return false;
         }
 
         try {
-            const decoded = decode(settingsContainer.settings.IPFS_STORAGE_API_KEY) as any;
-            if (decoded.iss !== 'web3-storage') {
-                return false;
+            const decoded = decode(settingsContainer.settings.IPFS_STORAGE_API_KEY);
+            if (!decoded) {
+                return false
             }
         } catch (e) {
             return false
@@ -51,16 +59,14 @@ Promise.all([
     });
 
     validator.setValidAction(async () => {
-        await state.updateState(ApplicationStates.INITIALIZING);
-        const w = new Worker(channel, channelName);
-        w.init();
-
         await state.updateState(ApplicationStates.READY);
         logger.info('Worker started', [channelName]);
     });
 
     validator.setInvalidAction(async () => {
-        await state.updateState(ApplicationStates.BAD_CONFIGURATION);
+        timer = setInterval(async () => {
+            await state.updateState(ApplicationStates.BAD_CONFIGURATION);
+        }, 1000)
     });
 
     await validator.validate();

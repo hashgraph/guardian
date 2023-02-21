@@ -133,7 +133,11 @@ Promise.all([
     workersHelper.initListeners();
 
     const validator = new ValidateConfiguration();
+    let timer = null;
     validator.setValidator(async () => {
+        if (timer) {
+            clearInterval(timer);
+        }
         try {
             if (!/^\d+\.\d+\.\d+/.test(settingsContainer.settings.OPERATOR_ID)) {
                 throw new Error(settingsContainer.settings.OPERATOR_ID + 'is wrong');
@@ -229,7 +233,9 @@ Promise.all([
     });
 
     validator.setInvalidAction(async () => {
-        await state.updateState(ApplicationStates.BAD_CONFIGURATION);
+        timer = setInterval(async () => {
+            await state.updateState(ApplicationStates.BAD_CONFIGURATION);
+        }, 1000)
     });
 
     await validator.validate();
