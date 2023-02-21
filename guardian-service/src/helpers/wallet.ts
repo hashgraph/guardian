@@ -60,7 +60,7 @@ export class Wallet extends ServiceRequestsBase {
      public async getUserKey(did: string, type: KeyType, key: string): Promise<any> {
         const user = new Users();
         const { walletToken } = await user.getUserById(did);
-        
+
         const wallet = new WalletManager();
         return await wallet.getKey(walletToken, type, key);
     }
@@ -75,7 +75,7 @@ export class Wallet extends ServiceRequestsBase {
     public async setUserKey(did: string, type: KeyType, key: string, value: any) {
         const user = new Users();
         const { walletToken } = await user.getUserById(did);
-        
+
         const wallet = new WalletManager();
         await wallet.setKey(walletToken, type, key, value);
     }

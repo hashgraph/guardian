@@ -2,7 +2,6 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { AuthEvents, IRootConfig, UserRole } from '@guardian/interfaces';
 import { ServiceRequestsBase } from '@helpers/service-requests-base';
 import { KeyType, Wallet } from '@helpers/wallet';
-import { Inject } from '@helpers/decorators/inject';
 import { AuthenticatedRequest, IAuthUser } from '@guardian/common';
 
 /**

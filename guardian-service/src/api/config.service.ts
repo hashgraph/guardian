@@ -53,7 +53,7 @@ export async function configAPI(
                 OPERATOR_ID: settings.operatorId,
                 OPERATOR_KEY: settings.operatorKey,
             });
-            
+
             await new Workers().updateSettings({
                 ipfsStorageApiKey: settings.ipfsStorageApiKey
             });
