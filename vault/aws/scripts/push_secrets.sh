@@ -18,7 +18,7 @@ push_secrets() {
         echo $SECRET_DATA
         
         aws secretsmanager create-secret \
-            --name "guardian/test/$SECRET_NAME" \
+            --name "$SECRET_NAME" \
             --secret-string "$SECRET_DATA"
     done
 }
