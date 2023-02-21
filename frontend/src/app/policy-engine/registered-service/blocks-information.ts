@@ -44,7 +44,6 @@ import {
     BlockType,
     BlockGroup,
     BlockHeaders,
-    IBlockAbout,
     PolicyBlockModel,
     IBlockSetting
 } from "../structures";
@@ -168,7 +167,7 @@ const Action: IBlockSetting = {
         group: BlockGroup.UnGrouped
     }],
     about: {
-        output: (value: any, block: PolicyBlockModel, prev?: IBlockAbout, next?: boolean) => {
+        output: (value: any, block: PolicyBlockModel) => {
             const result = value ? value.slice() : [];
             if (block.properties.type == 'selector') {
                 if (block.properties.uiMetaData?.options) {
@@ -196,7 +195,7 @@ const ButtonBlock: IBlockSetting = {
     factory: ButtonBlockComponent,
     property: ButtonConfigComponent,
     about: {
-        output: (value: any, block: PolicyBlockModel, prev?: IBlockAbout, next?: boolean) => {
+        output: (value: any, block: PolicyBlockModel) => {
             const result = value ? value.slice() : [];
             if (block.properties.uiMetaData?.buttons) {
                 for (const c of block.properties.uiMetaData.buttons) {
@@ -218,7 +217,7 @@ const Switch: IBlockSetting = {
     factory: null,
     property: SwitchConfigComponent,
     about: {
-        output: (value: any, block: PolicyBlockModel, prev?: IBlockAbout, next?: boolean) => {
+        output: (value: any, block: PolicyBlockModel) => {
             const result = value ? value.slice() : [];
             if (block.properties.conditions) {
                 for (const c of block.properties.conditions) {

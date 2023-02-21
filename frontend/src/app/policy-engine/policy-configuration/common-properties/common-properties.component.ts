@@ -5,7 +5,10 @@ import {
     IBlockAbout,
     PolicyModel,
     PolicyBlockModel,
-    PolicyEventModel
+    PolicyEventModel,
+    PolicyModuleModel,
+    IModuleVariables,
+    RoleVariables
 } from "../../structures";
 
 /**
@@ -19,11 +22,8 @@ import {
 export class CommonPropertiesComponent implements OnInit {
     @ViewChild("configContainer", { read: ViewContainerRef }) configContainer!: ViewContainerRef;
 
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
+    @Input('module') module!: PolicyModel | PolicyModuleModel;
     @Input('readonly') readonly!: boolean;
     @Input('type') type!: string;
 
@@ -60,7 +60,9 @@ export class CommonPropertiesComponent implements OnInit {
     events: PolicyEventModel[] = [];
     defaultEvent: boolean = false;
     customProperties!: any[] | undefined;
-
+    roles!: RoleVariables[];
+    private moduleVariables!: IModuleVariables | null;
+    
     constructor(
         private registeredService: RegisteredService,
         private componentFactoryResolver: ComponentFactoryResolver
@@ -68,6 +70,7 @@ export class CommonPropertiesComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.roles = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }
@@ -127,7 +130,7 @@ export class CommonPropertiesComponent implements OnInit {
     }
 
     onRemoveEvent(event: PolicyEventModel) {
-        this.policy.removeEvent(event);
+        this.module.removeEvent(event);
     }
 
     load(block: PolicyBlockModel) {
@@ -143,18 +146,14 @@ export class CommonPropertiesComponent implements OnInit {
 
     loadEvents(block: PolicyBlockModel) {
         this.events = block.events;
-        const about = this.registeredService.getAbout(block);
+        const about = this.registeredService.getAbout(block, this.module);
         this.defaultEvent = about.defaultEvent;
     }
 
-    getIcon(block: PolicyBlockModel) {
-        return this.registeredService.getIcon(block.blockType);
-    }
-
-    private getAbout(block: PolicyBlockModel | null): any {
+    private getAbout(block: PolicyModuleModel | PolicyBlockModel | null): any {
         try {
             if (block && block.blockType) {
-                return this.registeredService.getAbout(block);
+                return this.registeredService.getAbout(block, this.module);
             }
             return null;
         } catch (error) {
@@ -185,6 +184,19 @@ export class CommonPropertiesComponent implements OnInit {
             return;
         }
 
+        this.roles = [{
+            name: 'Owner',
+            value: 'OWNER',
+        }, {
+            name: 'No Role',
+            value: 'NO_ROLE',
+        }, {
+            name: 'Any Role',
+            value: 'ANY_ROLE',
+        }];
+        this.moduleVariables = block.moduleVariables;
+        this.roles = this.moduleVariables?.roles || [];
+
         this.about = undefined;
         this.customProperties = undefined;
         setTimeout(() => {
@@ -195,7 +207,7 @@ export class CommonPropertiesComponent implements OnInit {
             this.configContainer.clear();
             const factory: any = this.registeredService.getProperties(block.blockType);
             const customProperties = this.registeredService.getCustomProperties(block.blockType);
-            this.about = this.registeredService.bindAbout(block);
+            this.about = this.registeredService.bindAbout(block, this.module);
             this.loadFactory(factory, customProperties);
         }, 10);
     }
@@ -209,10 +221,7 @@ export class CommonPropertiesComponent implements OnInit {
                 }
                 let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
                 let componentRef: any = this.configContainer.createComponent(componentFactory);
-                componentRef.instance.policy = this.policy;
                 componentRef.instance.currentBlock = this.currentBlock;
-                componentRef.instance.schemas = this.schemas;
-                componentRef.instance.tokens = this.tokens;
                 componentRef.instance.readonly = this.readonly;
                 setTimeout(() => {
                     this.loading = false;
@@ -250,7 +259,8 @@ export class CommonPropertiesComponent implements OnInit {
             block.silentlySetPermissions(currentBlock.permissions.slice());
         }
         if (block === currentBlock) {
-            this.policy.emitUpdate();
+            this.module.emitUpdate();
         }
     }
 }
+

@@ -417,6 +417,10 @@
     display: none !important;
 }
 
+.tree[readonly="true"] .block-body,
+.block-container[root="true"] .block-body {
+    grid-template-columns: auto 1px !important;
+}
 
 
 

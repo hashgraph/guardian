@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
+import { IModuleVariables, PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'interfaceAction' type.
@@ -12,15 +12,21 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures'
     encapsulation: ViewEncapsulation.Emulated
 })
 export class RevokeConfigComponent implements OnInit {
-    @Input('all') all!: PolicyBlockModel[];
-    @Input('schemes') schemes!: Schema[];
-    @Input('tokens') tokens!: Token[];
-    @Input('readonly') readonly!: boolean;
-    @Input('roles') roles!: string[];
-    @Input('topics') topics!: any[];
+    // @Input('all') all!: PolicyBlockModel[];
+    // @Input('schemes') schemes!: Schema[];
+    // @Input('tokens') tokens!: Token[];
+    // @Input('readonly') readonly!: boolean;
+    // @Input('roles') roles!: string[];
+    // @Input('topics') topics!: any[];
+    // @Input('block') currentBlock!: PolicyBlockModel;
+    // @Output() onInit = new EventEmitter();
+
     @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
+    private moduleVariables!: IModuleVariables | null;
+    
     propHidden: any = {
         main: false,
         optionsGroup: false,
@@ -44,6 +50,7 @@ export class RevokeConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
+        this.moduleVariables = block.moduleVariables;
         this.block = block.properties;
         this.block.uiMetaData = this.block.uiMetaData || {};
         this.block.uiMetaData.options = this.block.uiMetaData.options || [];

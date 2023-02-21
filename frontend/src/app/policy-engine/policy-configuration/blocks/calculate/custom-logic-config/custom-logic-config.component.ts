@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEnca
 import { MatDialog } from '@angular/material/dialog';
 import { CodeEditorDialogComponent } from '../../../../helpers/code-editor-dialog/code-editor-dialog.component';
 import { Schema, Token, SchemaField } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
+import { IModuleVariables, PolicyBlockModel, PolicyModel, SchemaVariables } from 'src/app/policy-engine/structures';
 
 @Component({
     selector: 'app-custom-logic-config',
@@ -11,34 +11,36 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures'
     encapsulation: ViewEncapsulation.Emulated
 })
 export class CustomLogicConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
-    block!: any;
+    private moduleVariables!: IModuleVariables | null;
 
+    block!: any;
     propHidden: any = {
         outputSchemaGroup: false
     };
+    schemas!: SchemaVariables[];
 
     constructor(
         private dialog: MatDialog
     ) { }
 
     ngOnInit(): void {
+        this.schemas = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }
 
     load(block: PolicyBlockModel) {
+        this.moduleVariables = block.moduleVariables;
         this.block = block.properties;
         this.block.uiMetaData = this.block.uiMetaData || {}
         this.block.expression = this.block.expression || ''
         this.block.documentSigner = this.block.documentSigner || '';
         this.block.idType = this.block.idType || '';
+        this.schemas = this.moduleVariables?.schemas || [];
     }
 
     editExpression($event: MouseEvent) {
@@ -59,10 +61,9 @@ export class CustomLogicConfigComponent implements OnInit {
 
     onSelectOutput() {
         this.block.inputFields = [];
-        const schema = this.schemas.find(e => e.iri == this.block.outputSchema)
-        if (schema) {
-            for (let i = 0; i < schema.fields.length; i++) {
-                const field = schema.fields[i];
+        const schema = this.schemas.find(e => e.value == this.block.outputSchema);
+        if (schema && schema.data) {
+            for (const field of schema.data.fields) {
                 this.block.inputFields.push({
                     name: field.name,
                     title: field.description,

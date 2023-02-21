@@ -1,22 +1,44 @@
 import { PolicyModel } from './policy.model';
+import { IModuleVariables } from "./variables/module-variables.interface";
 import { IModuleConfig } from "./interfaces/module-config.interface";
 import { PolicyBlockModel } from './block.model';
 import { PolicyEventModel } from './block-event.model';
 import { ModuleEventModel } from './module-event.model';
 import { ModuleVariableModel } from './module-variable.model';
+import { group } from '@angular/animations';
+import { GroupVariables } from './variables/group-variables';
+import { RoleVariables } from './variables/role-variables';
+import { SchemaVariables } from './variables/schema-variables';
+import { TokenTemplateVariables } from './variables/token-template-variables';
+import { TokenVariables } from './variables/token-variables';
+import { TopicVariables } from './variables/topic-variables';
 
 export class PolicyModuleModel extends PolicyBlockModel {
-    private _dataSource!: PolicyBlockModel[];
-    private _tagMap: { [tag: string]: PolicyBlockModel; } = {};
-    private _idMap: { [tag: string]: PolicyBlockModel; } = {};
-    private _allBlocks!: PolicyBlockModel[];
-    private _allEvents!: PolicyEventModel[];
-    private _inputEvents!: ModuleEventModel[];
-    private _outputEvents!: ModuleEventModel[];
-    private _variables!: ModuleVariableModel[];
+    protected _dataSource!: PolicyBlockModel[];
+    protected _tagMap: { [tag: string]: PolicyBlockModel; } = {};
+    protected _idMap: { [tag: string]: PolicyBlockModel; } = {};
+    protected _allBlocks!: PolicyBlockModel[];
+    protected _allEvents!: PolicyEventModel[];
+    protected _inputEvents!: ModuleEventModel[];
+    protected _outputEvents!: ModuleEventModel[];
+    protected _variables!: ModuleVariableModel[];
+    protected _internalEvents: PolicyEventModel[];
+    protected _lastVariables!: IModuleVariables;
 
-    constructor(config: IModuleConfig, parent: PolicyBlockModel | null, policy: PolicyModel) {
-        super(config, parent, policy);
+    public get internalEvents(): PolicyEventModel[] {
+        return this._internalEvents;
+    }
+
+    public get allEvents(): PolicyEventModel[] {
+        return this._allEvents;
+    }
+
+    public get allBlocks(): PolicyBlockModel[] {
+        return this._allBlocks;
+    }
+
+    constructor(config: IModuleConfig, parent: PolicyBlockModel | null) {
+        super(config, parent);
 
         this._inputEvents = [];
         if (config.inputEvents && Array.isArray(config.inputEvents)) {
@@ -38,19 +60,50 @@ export class PolicyModuleModel extends PolicyBlockModel {
                 this._variables.push(new ModuleVariableModel(variable, this));
             }
         }
+
+        this._internalEvents = [];
+        if (Array.isArray(config.internalEvents)) {
+            for (const event of config.internalEvents) {
+                const item = new PolicyEventModel(event, this);
+                this._internalEvents.push(item);
+            }
+        }
     }
 
     public get dataSource(): PolicyBlockModel[] {
         return this._dataSource;
     }
 
-    private registeredBlock(block: PolicyBlockModel | PolicyModuleModel) {
-        this._allBlocks.push(block);
-        for (const event of block.events) {
-            this._allEvents.push(event);
+    public override setModule(module: PolicyModel | PolicyModuleModel | undefined): void {
+        if (module !== this) {
+            this._module = module;
+        } else {
+            console.error('Invalid module');
         }
-        for (const child of block.children) {
-            this.registeredBlock(child);
+    }
+
+    private registeredBlock(block: PolicyBlockModel | PolicyModuleModel) {
+        if (block === this) {
+            this._allBlocks.push(block);
+            for (const event of this.internalEvents) {
+                this._allEvents.push(event);
+            }
+            for (const child of block.children) {
+                this.registeredBlock(child);
+            }
+        } else if (block instanceof PolicyModuleModel && block.isModule) {
+            this._allBlocks.push(block);
+            for (const event of block.events) {
+                this._allEvents.push(event);
+            }
+        } else {
+            this._allBlocks.push(block);
+            for (const event of block.events) {
+                this._allEvents.push(event);
+            }
+            for (const child of block.children) {
+                this.registeredBlock(child);
+            }
         }
     }
 
@@ -64,7 +117,12 @@ export class PolicyModuleModel extends PolicyBlockModel {
             this._tagMap[block.tag] = block;
             this._idMap[block.id] = block;
         }
+        for (const event of this._allEvents) {
+            event.source = this._tagMap[event.sourceTag];
+            event.target = this._tagMap[event.targetTag];
+        }
         this._dataSource = [this];
+        this.updateVariables();
     }
 
     public get isModule(): boolean {
@@ -80,7 +138,7 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public set name(value: string) {
-        this.changed = true;
+        this._changed = true;
     }
 
     public get description(): string {
@@ -88,7 +146,7 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public set description(value: string) {
-        this.changed = true;
+        this._changed = true;
     }
 
     public get inputEvents(): ModuleEventModel[] {
@@ -137,11 +195,13 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public addInputEvent(event: ModuleEventModel) {
+        this._changed = true;
         this._inputEvents.push(event);
         this.emitUpdate();
     }
 
     public removeInputEvent(event: ModuleEventModel) {
+        this._changed = true;
         const index = this._inputEvents.findIndex((c) => c.id == event.id);
         if (index !== -1) {
             this._inputEvents.splice(index, 1);
@@ -158,11 +218,13 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public addOutputEvent(event: ModuleEventModel) {
+        this._changed = true;
         this._outputEvents.push(event);
         this.emitUpdate();
     }
 
     public removeOutputEvent(event: ModuleEventModel) {
+        this._changed = true;
         const index = this._outputEvents.findIndex((c) => c.id == event.id);
         if (index !== -1) {
             this._outputEvents.splice(index, 1);
@@ -180,11 +242,13 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public addVariable(variable: ModuleVariableModel) {
+        this._changed = true;
         this._variables.push(variable);
         this.emitUpdate();
     }
 
     public removeVariable(variable: ModuleVariableModel) {
+        this._changed = true;
         const index = this._variables.findIndex((c) => c.id == variable.id);
         if (index !== -1) {
             this._variables.splice(index, 1);
@@ -208,5 +272,60 @@ export class PolicyModuleModel extends PolicyBlockModel {
             json.outputEvents.push(event.getJSON());
         }
         return json;
+    }
+
+    private updateVariables(): void {
+        this._lastVariables = {
+            module: this,
+            schemas: [],
+            tokens: [],
+            roles: [],
+            groups: [],
+            tokenTemplates: [],
+            topics: [],
+        }
+        if (this._variables) {
+            for (const variable of this._variables) {
+                switch (variable.type) {
+                    case 'Schema':
+                        this._lastVariables.schemas.push(new SchemaVariables(variable));
+                        break;
+                    case 'Token':
+                        this._lastVariables.tokens.push(new TokenVariables(variable));
+                        break;
+                    case 'Role':
+                        this._lastVariables.roles.push(new RoleVariables(variable));
+                        break;
+                    case 'Group':
+                        this._lastVariables.groups.push(new GroupVariables(variable));
+                        break;
+                    case 'TokenTemplate':
+                        this._lastVariables.tokenTemplates.push(new TokenTemplateVariables(variable));
+                        break;
+                    case 'Topic':
+                        this._lastVariables.topics.push(new TopicVariables(variable));
+                        break;
+
+                }
+            }
+        }
+    }
+
+    public get moduleVariables(): IModuleVariables {
+        return this._lastVariables;
+    }
+
+    public override emitUpdate() {
+        this.updateVariables();
+        this._changed = false;
+        if (this._module) {
+            this._module.emitUpdate();
+        }
+    }
+
+    public createTopic(topic: any) {
+        // topic.name = `New Topic ${this.policyTopics.length}`;
+        // const e = new PolicyTopicModel(topic, this);
+        // this.addTopic(e);
     }
 }

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
 import { MatDialog } from '@angular/material/dialog';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
+import { IModuleVariables, PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'aggregateDocument' type.
@@ -13,12 +13,11 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures'
     encapsulation: ViewEncapsulation.Emulated
 })
 export class AggregateConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
+
+    private moduleVariables!: IModuleVariables | null;
 
     propHidden: any = {
         main: false,
@@ -43,6 +42,7 @@ export class AggregateConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
+        this.moduleVariables = block.moduleVariables;
         this.block = block.properties;
         this.block.expressions = this.block.expressions || [];
         this.block.uiMetaData = this.block.uiMetaData || {}

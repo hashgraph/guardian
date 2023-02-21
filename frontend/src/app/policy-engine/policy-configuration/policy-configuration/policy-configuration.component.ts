@@ -111,12 +111,8 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.policyStorage.isUndo;
     }
 
-    public get rightBottomMenu() {
-        return (this.options.rightBottomMenu || this.isRoot);
-    }
-
-    public get isRoot() {
-        return this.currentBlock && (this.currentBlock === this.openModule || this.currentBlock.root);
+    public get isRootModule() {
+        return this.currentBlock && (this.currentBlock === this.openModule);
     }
 
     private operationMode: OperationMode = OperationMode.none;
@@ -233,6 +229,9 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private finishedLoad() {
+        this.policyModel.setTokens(this.tokens);
+        this.policyModel.setSchemas(this.schemas);
+
         this.readonly = this.policyModel.readonly;
         this.codeMirrorOptions.readOnly = this.readonly;
 
@@ -240,6 +239,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.checkState();
 
         this.policyModel.subscribe(() => {
+            this.changeDetector.detectChanges();
             this.saveState();
             setTimeout(() => {
                 if (this.treeOverview) {
@@ -266,6 +266,8 @@ export class PolicyConfigurationComponent implements OnInit {
         }
 
         this.policyModel = new PolicyModel(policy);
+        this.policyModel.setTokens(this.tokens);
+        this.policyModel.setSchemas(this.schemas);
 
         this.currentView = 'blocks';
         this.errors = [];

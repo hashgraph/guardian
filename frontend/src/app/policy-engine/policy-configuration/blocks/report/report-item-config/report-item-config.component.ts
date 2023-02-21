@@ -4,7 +4,7 @@ import { Schema, Token } from '@guardian/interfaces';
 import { IconPreviewDialog } from 'src/app/components/icon-preview-dialog/icon-preview-dialog.component';
 import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
+import { IModuleVariables, PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'reportItemBlock' type.
@@ -16,12 +16,11 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures'
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ReportItemConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
+
+    private moduleVariables!: IModuleVariables | null;
 
     fileLoading = false;
 
@@ -54,6 +53,7 @@ export class ReportItemConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
+        this.moduleVariables = block.moduleVariables;
         this.block = block.properties;
         this.block.filters = this.block.filters || [];
         this.block.dynamicFilters = this.block.dynamicFilters || [];

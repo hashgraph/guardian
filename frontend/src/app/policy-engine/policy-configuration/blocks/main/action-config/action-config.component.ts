@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token, UserType } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
+import { IModuleVariables, PolicyBlockModel, PolicyModel, SchemaVariables } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'interfaceAction' type.
@@ -12,12 +12,11 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures'
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ActionConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
+
+    private moduleVariables!: IModuleVariables | null;
 
     propHidden: any = {
         main: false,
@@ -28,11 +27,13 @@ export class ActionConfigComponent implements OnInit {
     };
 
     block!: any;
+    schemas!: SchemaVariables[];
 
     constructor() {
     }
 
     ngOnInit(): void {
+        this.schemas = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }
@@ -42,9 +43,11 @@ export class ActionConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
+        this.moduleVariables = block.moduleVariables;
         this.block = block.properties;
         this.block.uiMetaData = this.block.uiMetaData || {};
         this.block.uiMetaData.options = this.block.uiMetaData.options || [];
+        this.schemas = this.moduleVariables?.schemas || [];
     }
 
     onHide(item: any, prop: any) {

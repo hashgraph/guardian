@@ -1,7 +1,7 @@
 import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
 import { FlatBlockNode } from '../../structures/tree-model/block-node';
 import { CdkDropList } from '@angular/cdk/drag-drop';
-import { PolicyBlockModel, BlocLine, BlockRect, EventCanvas } from '../../structures';
+import { PolicyBlockModel, BlocLine, BlockRect, EventCanvas, PolicyModel, PolicyModuleModel } from '../../structures';
 import { RegisteredService } from '../../registered-service/registered.service';
 
 /**
@@ -13,6 +13,7 @@ import { RegisteredService } from '../../registered-service/registered.service';
     styleUrls: ['./policy-tree.component.css']
 })
 export class PolicyTreeComponent implements OnInit {
+    @Input('module') module!: PolicyModel | PolicyModuleModel;
     @Input('blocks') blocks!: PolicyBlockModel[];
     @Input('errors') errors!: any;
     @Input('readonly') readonly!: boolean;
@@ -180,7 +181,7 @@ export class PolicyTreeComponent implements OnInit {
             node.level = level;
             node.root = block === this.root;
             node.expandable = block.expandable && !node.root;
-            node.about = this.registeredService.getAbout(block);
+            node.about = this.registeredService.getAbout(block, this.module);
             node.icon = this.registeredService.getIcon(block.blockType);
             node.type = this.registeredService.getHeader(block.blockType);
             node.collapsed = this.getCollapsed(node);

@@ -3,30 +3,27 @@ import { GenerateUUIDv4, IArtifact } from '@guardian/interfaces';
 import { BlockType } from '../types/block-type.type';
 import { PolicyEventModel } from './block-event.model';
 import { PolicyModel } from './policy.model';
+import { IModuleVariables } from "./variables/module-variables.interface";
 import { IBlockConfig } from './interfaces/block-config.interface';
 import { IEventConfig } from './interfaces/event-config.interface';
+import { PolicyModuleModel } from './module.model';
 
 export class PolicyBlockModel {
-    private readonly policy: PolicyModel;
-
     public readonly id: string;
     public readonly blockType: string;
-
-    private _parent: PolicyBlockModel | null;
-    private _children: PolicyBlockModel[];
-    private _events: PolicyEventModel[];
-    private _artifacts!: IArtifact[];
-    private _root: boolean;
-
     public readonly properties: { [name: string]: any; };
 
-    private _changed: boolean;
+    protected _module: PolicyModel | PolicyModuleModel | undefined;
+    protected _parent: PolicyBlockModel | null;
+    protected _children: PolicyBlockModel[];
+    protected _events: PolicyEventModel[];
+    protected _artifacts!: IArtifact[];
+    protected _root: boolean;
+    protected _changed: boolean;
 
-    constructor(config: IBlockConfig, parent: PolicyBlockModel | null, policy: PolicyModel) {
+    constructor(config: IBlockConfig, parent: PolicyBlockModel | null) {
         this._changed = false;
         this._root = false;
-
-        this.policy = policy;
 
         this.id = config.id || GenerateUUIDv4();
         this.blockType = config.blockType;
@@ -47,15 +44,17 @@ export class PolicyBlockModel {
         this._events = [];
         if (Array.isArray(config.events)) {
             for (const event of config.events) {
-                this._events.push(
-                    new PolicyEventModel(event, this)
-                );
+                this._events.push(new PolicyEventModel(event, this));
             }
         }
 
         this._artifacts = config.artifacts || [];
 
         this._children = [];
+    }
+
+    public setModule(module: PolicyModel | PolicyModuleModel | undefined): void {
+        this._module = module;
     }
 
     public get isModule(): boolean {
@@ -134,8 +133,8 @@ export class PolicyBlockModel {
 
     public set changed(value: boolean) {
         this._changed = value;
-        if (this.policy) {
-            this.policy.changed = true;
+        if (this._module) {
+            this._module.changed = true;
         }
     }
 
@@ -169,40 +168,50 @@ export class PolicyBlockModel {
             this.parent._removeChild(this);
         }
         this._parent = null;
-
-        this.policy.refresh();
+        if (this._module) {
+            this._module.refresh();
+        }
     }
 
     public removeChild(child: PolicyBlockModel) {
         this._removeChild(child);
         child._parent = null;
-
-        this.policy.refresh();
+        if (this._module) {
+            this._module.refresh();
+        }
     }
 
     public createChild(block: IBlockConfig, index?: number) {
         delete block.children;
-        const child = new PolicyBlockModel(block, this, this.policy);
+        const child = new PolicyBlockModel(block, this);
+        child.setModule(this._module);
         if (!child.permissions || !child.permissions.length) {
             child.permissions = this.permissions.slice();
         }
         this._addChild(child, index);
-        this.policy.refresh();
+        if (this._module) {
+            this._module.refresh();
+        }
     }
 
     public copyChild(block: IBlockConfig) {
         this._copyChild(block);
-        this.policy.refresh();
+        if (this._module) {
+            this._module.refresh();
+        }
     }
 
     public addChild(child: PolicyBlockModel, index?: number) {
         this._addChild(child, index);
-
-        this.policy.refresh();
+        if (this._module) {
+            this._module.refresh();
+        }
     }
 
-    public refresh() {
-        this.policy.refresh();
+    public refresh(): void {
+        if (this._module) {
+            this._module.refresh();
+        }
     }
 
     private _copyChild(block: IBlockConfig) {
@@ -211,8 +220,11 @@ export class PolicyBlockModel {
         delete block.children;
         delete block.events;
 
-        const newBlock = new PolicyBlockModel(block, this, this.policy);
-        newBlock.tag = this.policy.getNewTag('Block', newBlock);
+        const newBlock = new PolicyBlockModel(block, this);
+        newBlock.setModule(this._module);
+        if (this._module) {
+            newBlock.tag = this._module.getNewTag('Block', newBlock);
+        }
         this._addChild(newBlock);
 
         if (Array.isArray(children)) {
@@ -247,14 +259,16 @@ export class PolicyBlockModel {
     public createEvent(event: IEventConfig) {
         const e = new PolicyEventModel(event, this);
         this._addEvent(e);
-
-        this.policy.refresh();
+        if (this._module) {
+            this._module.refresh();
+        }
     }
 
     public addEvent(event: PolicyEventModel) {
         this._addEvent(event);
-
-        this.policy.refresh();
+        if (this._module) {
+            this._module.refresh();
+        }
     }
 
     private _addEvent(event: PolicyEventModel) {
@@ -265,7 +279,9 @@ export class PolicyBlockModel {
         const index = this._events.findIndex((c) => c.id == event.id);
         if (index !== -1) {
             this._events.splice(index, 1);
-            this.policy.refresh();
+            if (this._module) {
+                this._module.refresh();
+            }
         }
     }
 
@@ -289,7 +305,9 @@ export class PolicyBlockModel {
 
     public emitUpdate() {
         this._changed = false;
-        this.policy.emitUpdate();
+        if (this._module) {
+            this._module.emitUpdate();
+        }
     }
 
     public getJSON(): any {
@@ -304,12 +322,13 @@ export class PolicyBlockModel {
         for (const block of this.children) {
             json.children.push(block.getJSON());
         }
-        for (const event of this.policy.allEvents) {
-            if (event.isSource(this)) {
-                json.events.push(event.getJSON());
+        if (this._module) {
+            for (const event of this._module.allEvents) {
+                if (event.isSource(this)) {
+                    json.events.push(event.getJSON());
+                }
             }
         }
-
         return json;
     }
 
@@ -329,8 +348,9 @@ export class PolicyBlockModel {
         for (const key of keys2) {
             this.properties[key] = object[key];
         }
-
-        this.policy.emitUpdate();
+        if (this._module) {
+            this._module.emitUpdate();
+        }
     }
 
     public checkChange() {
@@ -364,7 +384,9 @@ export class PolicyBlockModel {
         } else {
             this._children.push(newItem);
         }
-        this.policy.refresh();
+        if (this._module) {
+            this._module.refresh();
+        }
     }
 
     public index(): number {
@@ -385,9 +407,18 @@ export class PolicyBlockModel {
                 this._parent = null;
             }
             parent.addChild(this, index);
-            this.policy.refresh();
+            if (this._module) {
+                this._module.refresh();
+            }
             return true;
         }
         return false;
+    }
+    
+    public get moduleVariables(): IModuleVariables | null {
+        if (this._module) {
+            return this._module.moduleVariables;
+        }
+        return null;
     }
 }

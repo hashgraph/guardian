@@ -17,7 +17,7 @@
         <td class="propRowCell cellName">Schema</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.schema" [disabled]="readonly">
-                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
                     <span *ngIf="schema.status"> ({{schema.status}})</span>
@@ -51,7 +51,8 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Assigned to Group</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.onlyAssignByGroupDocuments" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.onlyAssignByGroupDocuments"
+                [readonly]="readonly">
         </td>
     </tr>
 

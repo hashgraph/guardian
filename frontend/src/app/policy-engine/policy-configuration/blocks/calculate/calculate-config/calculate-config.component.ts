@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { Schema, SchemaField, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
+import { Schema, Token } from '@guardian/interfaces';
+import { IModuleVariables, PolicyBlockModel, SchemaVariables } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -12,14 +12,11 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures'
     encapsulation: ViewEncapsulation.Emulated
 })
 export class CalculateConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
-
-
     @Output() onInit = new EventEmitter();
+
+    private moduleVariables!: IModuleVariables | null;
 
     propHidden: any = {
         inputSchemaGroup: false,
@@ -27,11 +24,13 @@ export class CalculateConfigComponent implements OnInit {
     };
 
     block!: any;
+    schemas!: SchemaVariables[];
 
     constructor() {
     }
 
     ngOnInit(): void {
+        this.schemas = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }
@@ -41,6 +40,7 @@ export class CalculateConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
+        this.moduleVariables = block.moduleVariables;
         this.block = block.properties;
         this.block.inputFields = this.block.inputFields || [];
         this.block.outputFields = this.block.outputFields || [];
@@ -50,6 +50,8 @@ export class CalculateConfigComponent implements OnInit {
         if (!this.block.outputSchema) {
             this.block.outputFields = [];
         }
+
+        this.schemas = this.moduleVariables?.schemas || [];
     }
 
     onHide(item: any, prop: any) {
@@ -58,10 +60,9 @@ export class CalculateConfigComponent implements OnInit {
 
     onSelectInput() {
         this.block.inputFields = [];
-        const schema = this.schemas.find(e => e.iri == this.block.inputSchema)
-        if (schema) {
-            for (let i = 0; i < schema.fields.length; i++) {
-                const field = schema.fields[i];
+        const schema = this.schemas.find(e => e.value == this.block.inputSchema);
+        if (schema && schema.data) {
+            for (const field of schema.data.fields) {
                 this.block.inputFields.push({
                     name: field.name,
                     title: field.description,
@@ -73,10 +74,9 @@ export class CalculateConfigComponent implements OnInit {
 
     onSelectOutput() {
         this.block.outputFields = [];
-        const schema = this.schemas.find(e => e.iri == this.block.outputSchema)
-        if (schema) {
-            for (let i = 0; i < schema.fields.length; i++) {
-                const field = schema.fields[i];
+        const schema = this.schemas.find(e => e.value == this.block.outputSchema);
+        if (schema && schema.data) {
+            for (const field of schema.data.fields) {
                 this.block.outputFields.push({
                     name: field.name,
                     title: field.description,

@@ -11,33 +11,45 @@ import { PolicyBlockModel } from '../../structures';
     styleUrls: ['./select-block.component.css']
 })
 export class SelectBlock {
-    @Input('blocks') allBlocks!: PolicyBlockModel[];
+    @Input('blocks') blocks!: PolicyBlockModel[];
     @Input('readonly') readonly!: boolean;
-
-    @Input('value') value!: any;
+    @Input('value') value: string | PolicyBlockModel | null | undefined;
+    @Input('type') type!: string;
     @Output('valueChange') valueChange = new EventEmitter<any>();
+    @Output('change') change = new EventEmitter<any>();
 
-    data?:any[];
+    data?: any[];
+    text: string | null | undefined;
 
     constructor(private registeredService: RegisteredService) {
     }
 
     onChange() {
+        if (this.value && typeof this.value === 'object') {
+            this.text === this.value.tag;
+        } else {
+            this.text = this.value;
+        }
         this.valueChange.emit(this.value);
+        this.change.emit();
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        if (this.value && typeof this.value === 'object') {
+            this.text === this.value.tag;
+        } else {
+            this.text = this.value;
+        }
         setTimeout(() => {
-            if(this.allBlocks) {
-                this.data = this.allBlocks.map(block => {
-                    return {
+            this.data = [];
+            if (this.blocks) {
+                for (const block of this.blocks) {
+                    this.data.push({
                         name: block.tag,
-                        value: block.tag,
+                        value: this.type === 'object' ? block : block.tag,
                         icon: this.registeredService.getIcon(block.blockType)
-                    }
-                });
-            } else {
-                this.data = [];
+                    });
+                }
             }
         }, 0);
     }

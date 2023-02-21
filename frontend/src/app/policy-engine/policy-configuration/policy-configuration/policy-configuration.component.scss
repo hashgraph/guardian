@@ -625,7 +625,9 @@
                 margin-left: 1px;
                 position: relative;
                 user-select: none;
-
+                max-width: 50%;
+                margin-right: auto;
+                
                 &:hover {
                     background: var(--pc-tabs-hover-color);
                 }
@@ -1088,7 +1090,7 @@
         }
 
         .readonly-prop {
-            padding-left: 2px;
+            padding-left: 6px;
             color: rgba(0, 0, 0, .45);
             max-width: 328px;
             display: block;

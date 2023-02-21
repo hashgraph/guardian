@@ -86,12 +86,9 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Permissions</td>
                     <td class="propRowCell">
-                        <mat-select [(ngModel)]="block.permissions" multiple [disabled]="readonly"
-                            (selectionChange)="onSave()">
-                            <mat-option value="OWNER">Owner</mat-option>
-                            <mat-option value="NO_ROLE">No Role</mat-option>
-                            <mat-option value="ANY_ROLE">Any Role</mat-option>
-                            <mat-option *ngFor="let item of policy.policyRoles" [value]="item.name">{{item.name}}
+                        <mat-select [(ngModel)]="block.permissions" multiple [disabled]="readonly" (selectionChange)="onSave()">
+                            <mat-option *ngFor="let item of roles" [value]="item.value">
+                                {{item.name}}
                             </mat-option>
                         </mat-select>
                     </td>
@@ -129,7 +126,8 @@
                     <td class="propRowCell">
                         <mat-select [(value)]="block.properties.onErrorAction" [disabled]="readonly"
                             (selectionChange)="onSave()">
-                            <mat-option *ngFor="let item of errorActions" [value]="item.value">{{item.label}}
+                            <mat-option *ngFor="let item of errorActions" [value]="item.value">
+                                {{item.label}}
                             </mat-option>
                         </mat-select>
                     </td>
@@ -171,8 +169,11 @@
                         <td class="propHeaderCell"></td>
                     </tr>
                     <div *ngFor="let property of customProperties" common-property class="custom-properties"
-                        [data]="block.properties" [property]="property" [readonly]="readonly"
-                        [collapse]="propHidden.customProperties" [schemas]="schemas" [policy]="policy"
+                        [block]="currentBlock" 
+                        [data]="block.properties" 
+                        [property]="property" 
+                        [readonly]="readonly"
+                        [collapse]="propHidden.customProperties" 
                         (update)="onSave()">
                     </div>
                 </ng-container>
@@ -265,7 +266,7 @@
                     </tr>
                 </ng-container>
 
-                <ng-container *ngFor="let item of policy.allEvents; let i=index">
+                <ng-container *ngFor="let item of module.allEvents; let i=index">
                     <ng-container *ngIf="isOutputEvent(item) || isInputEvent(item)">
                         <tr class="propHeader">
                             <td class="propRowCol" (click)="onHide(propHidden.eventsGroup, i)"
@@ -319,21 +320,13 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Source</td>
                             <td class="propRowCell">
-                                <mat-select [(value)]="item.source" [disabled]="readonly" (selectionChange)="onSave()">
-                                    <mat-select-trigger>
-                                        <span class="custom">
-                                            {{item.sourceTag}}
-                                        </span>
-                                    </mat-select-trigger>
-                                    <mat-option *ngFor="let block of policy.allBlocks" [value]="block">
-                                        <div class="block-name">
-                                            <div class="block-icon">
-                                                <mat-icon>{{getIcon(block)}}</mat-icon>
-                                            </div>
-                                            {{block.tag}}
-                                        </div>
-                                    </mat-option>
-                                </mat-select>
+                                <select-block
+                                    [blocks]="module.allBlocks"
+                                    [(value)]="item.source"
+                                    [readonly]="readonly"
+                                    type="object"
+                                    (change)="onSave()"
+                                ></select-block>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
@@ -354,21 +347,13 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Target</td>
                             <td class="propRowCell">
-                                <mat-select [(value)]="item.target" [disabled]="readonly" (selectionChange)="onSave()">
-                                    <mat-select-trigger>
-                                        <span class="custom">
-                                            {{item.targetTag}}
-                                        </span>
-                                    </mat-select-trigger>
-                                    <mat-option *ngFor="let block of policy.allBlocks" [value]="block">
-                                        <div class="block-name">
-                                            <div class="block-icon">
-                                                <mat-icon>{{getIcon(block)}}</mat-icon>
-                                            </div>
-                                            {{block.tag}}
-                                        </div>
-                                    </mat-option>
-                                </mat-select>
+                                <select-block
+                                    [blocks]="module.allBlocks"
+                                    [(value)]="item.target"
+                                    [readonly]="readonly"
+                                    type="object"
+                                    (change)="onSave()"
+                                ></select-block>
                             </td>
                         </tr>
                         <tr *ngIf="isInputEvent(item)" class="propRow subRow"

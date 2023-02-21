@@ -1,6 +1,6 @@
 <mat-select [(value)]="value" [disabled]="readonly" (selectionChange)="onChange()">
     <mat-select-trigger>
-        <span class="custom">{{value}}</span>
+        <span class="custom">{{text}}</span>
     </mat-select-trigger>
     <mat-option *ngFor="let item of data" [value]="item.value">
         <div class="block-name">

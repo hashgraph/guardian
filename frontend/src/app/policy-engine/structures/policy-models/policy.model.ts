@@ -2,6 +2,8 @@ import {
     GenerateUUIDv4,
     GroupRelationshipType,
     PolicyType,
+    Schema,
+    Token,
 } from '@guardian/interfaces';
 import { PolicyRoleModel } from './policy-role.model';
 import { PolicyGroupModel } from './policy-group.model';
@@ -11,6 +13,13 @@ import { PolicyBlockModel } from './block.model';
 import { PolicyModuleModel } from "./module.model";
 import { IBlockConfig } from './interfaces/block-config.interface';
 import { PolicyTopicModel } from './policy-topic.model';
+import { IModuleVariables } from './variables/module-variables.interface';
+import { TopicVariables } from './variables/topic-variables';
+import { TokenTemplateVariables } from './variables/token-template-variables';
+import { GroupVariables } from './variables/group-variables';
+import { RoleVariables } from './variables/role-variables';
+import { TokenVariables } from './variables/token-variables';
+import { SchemaVariables } from './variables/schema-variables';
 
 export class PolicyModel {
     public readonly valid: boolean;
@@ -44,7 +53,9 @@ export class PolicyModel {
     private _allEvents!: PolicyEventModel[];
     private _dataSource!: PolicyBlockModel[];
     private _allModules!: PolicyModuleModel[];
-
+    private _tokens!: Token[];
+    private _schemas!: Schema[];
+    private _lastVariables!: IModuleVariables;
     private _changed: boolean;
 
     public readonly isDraft: boolean = false;
@@ -176,6 +187,7 @@ export class PolicyModel {
     }
 
     public createTopic(topic: any) {
+        topic.name = `New Topic ${this.policyTopics.length}`;
         const e = new PolicyTopicModel(topic, this);
         this.addTopic(e);
     }
@@ -253,8 +265,9 @@ export class PolicyModel {
     }
 
     private registeredBlock(block: PolicyBlockModel | PolicyModuleModel) {
-        if (block.isModule) {
-            this._allModules.push(block as PolicyModuleModel);
+        if (block instanceof PolicyModuleModel && block.isModule) {
+            this._allModules.push(block);
+            this._allBlocks.push(block);
             for (const event of block.events) {
                 this._allEvents.push(event);
             }
@@ -319,16 +332,23 @@ export class PolicyModel {
         }
     }
 
-    private _buildBlock(config: IBlockConfig, parent: PolicyModuleModel | PolicyBlockModel | null) {
+    private _buildBlock(
+        config: IBlockConfig,
+        parent: PolicyModuleModel | PolicyBlockModel | null,
+        module: PolicyModuleModel | PolicyModel
+    ) {
         let block: PolicyModuleModel | PolicyBlockModel;
         if (config.blockType === 'module') {
-            block = new PolicyModuleModel(config, parent, this);
+            block = new PolicyModuleModel(config, parent);
+            block.setModule(module);
+            module = block as PolicyModuleModel;
         } else {
-            block = new PolicyBlockModel(config, parent, this);
+            block = new PolicyBlockModel(config, parent);
+            block.setModule(module);
         }
         if (Array.isArray(config.children)) {
             for (const childConfig of config.children) {
-                const child = this._buildBlock(childConfig, block);
+                const child = this._buildBlock(childConfig, block, module);
                 block.children.push(child);
             }
         }
@@ -339,7 +359,7 @@ export class PolicyModel {
         if (!config) {
             config = { blockType: "interfaceContainerBlock" };
         }
-        this._config = this._buildBlock(config, null);
+        this._config = this._buildBlock(config, null, this);
         this._config.root = true;
         this._refresh();
     }
@@ -381,6 +401,8 @@ export class PolicyModel {
         }
 
         this._dataSource = [this._config];
+
+        this.updateVariables();
     }
 
     public refresh() {
@@ -444,6 +466,7 @@ export class PolicyModel {
     }
 
     public emitUpdate() {
+        this.updateVariables();
         this._changed = false;
         if (this._subscriber) {
             this._subscriber();
@@ -468,7 +491,8 @@ export class PolicyModel {
             config.tag = this.getNewTag('Module');
             config.blockType = 'module';
             config.defaultActive = true;
-            const module = new PolicyModuleModel(config, null, this);
+            const module = new PolicyModuleModel(config, null);
+            module.setModule(this);
             this._tagMap[module.tag] = module;
             return module;
         } else {
@@ -480,7 +504,8 @@ export class PolicyModel {
                 children: [],
                 permissions: []
             };
-            const module = new PolicyModuleModel(config, null, this);
+            const module = new PolicyModuleModel(config, null);
+            module.setModule(this);
             this._tagMap[module.tag] = module;
             return module;
         }
@@ -494,5 +519,61 @@ export class PolicyModel {
         }
         module.addChild(block);
         return module;
+    }
+
+    private updateVariables(): void {
+        this._lastVariables = {
+            module: this,
+            schemas: [],
+            tokens: [],
+            roles: [],
+            groups: [],
+            tokenTemplates: [],
+            topics: [],
+        }
+        if (this._schemas) {
+            for (const schema of this._schemas) {
+                this._lastVariables.schemas.push(new SchemaVariables(schema));
+            }
+        }
+        if (this._tokens) {
+            for (const token of this._tokens) {
+                this._lastVariables.tokens.push(new TokenVariables(token));
+            }
+        }
+        if (this._policyRoles) {
+            for (const role of this._policyRoles) {
+                this._lastVariables.roles.push(new RoleVariables(role));
+            }
+        }
+        if (this._policyGroups) {
+            for (const group of this._policyGroups) {
+                this._lastVariables.groups.push(new GroupVariables(group));
+            }
+        }
+        if (this._policyTokens) {
+            for (const tokenTemplate of this._policyTokens) {
+                this._lastVariables.tokenTemplates.push(new TokenTemplateVariables(tokenTemplate));
+            }
+        }
+        if (this._policyTopics) {
+            for (const topic of this._policyTopics) {
+                this._lastVariables.topics.push(new TopicVariables(topic));
+            }
+        }
+    }
+
+    public get moduleVariables(): IModuleVariables {
+        return this._lastVariables;
+    }
+
+    public setSchemas(schemas: Schema[]): void {
+        this._schemas = schemas;
+        this.updateVariables();
+    }
+
+    public setTokens(tokens: Token[]): void {
+        this._tokens = tokens;
+        this.updateVariables();
     }
 }

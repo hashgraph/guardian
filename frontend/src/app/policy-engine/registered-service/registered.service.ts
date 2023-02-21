@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { BlockAbout, BlockType, ChildrenDisplaySettings, ChildrenType, ControlType, IBlockAbout, IBlockDynamicAboutConfig, IBlockSetting, PolicyBlockModel, PolicyModuleModel } from '../structures';
+import { BlockAbout, BlockType, ChildrenDisplaySettings, ChildrenType, ControlType, IBlockAbout, IBlockDynamicAboutConfig, IBlockSetting, PolicyBlockModel, PolicyModel, PolicyModuleModel } from '../structures';
 import blocks from './blocks-information'
 import modules from './module-information'
 
@@ -151,19 +151,25 @@ export class RegisteredService {
         return this.blockProperties[blockType];
     }
 
-    public bindAbout(block: PolicyModuleModel | PolicyBlockModel): IBlockAbout {
+    public bindAbout(
+        block: PolicyModuleModel | PolicyBlockModel,
+        module: PolicyModel | PolicyModuleModel
+    ): IBlockAbout {
         if (this.blockAbout[block.blockType]) {
-            return this.blockAbout[block.blockType].bind(block);
+            return this.blockAbout[block.blockType].bind(block, module);
         } else {
-            return this.defaultAbout.bind(block);
+            return this.defaultAbout.bind(block, module);
         }
     }
 
-    public getAbout(block: PolicyModuleModel | PolicyBlockModel): IBlockAbout {
+    public getAbout(
+        block: PolicyModuleModel | PolicyBlockModel,
+        module: PolicyModel | PolicyModuleModel
+    ): IBlockAbout {
         if (this.blockAbout[block.blockType]) {
-            return this.blockAbout[block.blockType].getAbout(block);
+            return this.blockAbout[block.blockType].getAbout(block, module);
         } else {
-            return this.defaultAbout.getAbout(block);
+            return this.defaultAbout.getAbout(block, module);
         }
     }
 

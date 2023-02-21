@@ -2,6 +2,8 @@ import { PolicyBlockModel } from "./block.model";
 import { IBlockAboutConfig } from "../interfaces/block-about-config.interface";
 import { IBlockDynamicAboutConfig } from "../interfaces/block-dynamic-about-config.interface";
 import { IBlockAbout } from "../interfaces/block-about.interface";
+import { PolicyModel } from "./policy.model";
+import { PolicyModuleModel } from "./module.model";
 
 export class BlockAbout {
     private _propFunc: { [x: string]: Function; } = {};
@@ -9,16 +11,16 @@ export class BlockAbout {
     private _setProp(about: any, dynamic: any, name: string) {
         this._propVal[name] = about[name];
         if (dynamic && dynamic[name] !== undefined && dynamic[name] !== null) {
-            if(typeof dynamic[name] === 'function') {
+            if (typeof dynamic[name] === 'function') {
                 this._propFunc[name] = dynamic[name];
             } else {
                 this._propVal[name] = dynamic[name];
-                this._propFunc[name] = (value: any, block: any, prev?: IBlockAbout, next?: boolean) => {
+                this._propFunc[name] = (value: any, block: any, module?: PolicyModel | PolicyModuleModel) => {
                     return value;
                 };
             }
         } else {
-            this._propFunc[name] = (value: any, block: any, prev?: IBlockAbout, next?: boolean) => {
+            this._propFunc[name] = (value: any, block: any, module?: PolicyModel | PolicyModuleModel) => {
                 return value;
             };
         }
@@ -34,52 +36,54 @@ export class BlockAbout {
         this._setProp(about, dynamic, 'defaultEvent');
     }
 
-    public getAbout(block: PolicyBlockModel): IBlockAbout {
+    public getAbout(
+        block: PolicyBlockModel,
+        module: PolicyModel | PolicyModuleModel
+    ): IBlockAbout {
         return {
-            post: this._propFunc.post(this._propVal.post, block),
-            get: this._propFunc.get(this._propVal.get, block),
-            input: this._propFunc.input(this._propVal.input, block),
-            output: this._propFunc.output(this._propVal.output, block),
-            children: this._propFunc.children(this._propVal.children, block),
-            control: this._propFunc.control(this._propVal.control, block),
-            defaultEvent: this._propFunc.defaultEvent(this._propVal.defaultEvent, block),
+            post: this._propFunc.post(this._propVal.post, block, module),
+            get: this._propFunc.get(this._propVal.get, block, module),
+            input: this._propFunc.input(this._propVal.input, block, module),
+            output: this._propFunc.output(this._propVal.output, block, module),
+            children: this._propFunc.children(this._propVal.children, block, module),
+            control: this._propFunc.control(this._propVal.control, block, module),
+            defaultEvent: this._propFunc.defaultEvent(this._propVal.defaultEvent, block, module),
         };
     }
 
-    public bind(block: PolicyBlockModel, prev?: IBlockAbout, next?: boolean): IBlockAbout {
+    public bind(
+        block: PolicyBlockModel,
+        module: PolicyModel | PolicyModuleModel
+    ): IBlockAbout {
         const bind = {
             _block: block,
-            _prev: prev,
-            _next: next,
+            _module: module,
             _func: this._propFunc,
             _val: this._propVal,
             get post() {
-                return this._func.post(this._val.post, this._block, this._prev, this._next);
+                return this._func.post(this._val.post, this._block, this._module);
             },
             get get() {
-                return this._func.get(this._val.get, this._block, this._prev, this._next);
+                return this._func.get(this._val.get, this._block, this._module);
             },
             get input() {
-                return this._func.input(this._val.input, this._block, this._prev, this._next);
+                return this._func.input(this._val.input, this._block, this._module);
             },
             get output() {
-                return this._func.output(this._val.output, this._block, this._prev, this._next);
+                return this._func.output(this._val.output, this._block, this._module);
             },
             get children() {
-                return this._func.children(this._val.children, this._block, this._prev, this._next);
+                return this._func.children(this._val.children, this._block, this._module);
             },
             get control() {
-                return this._func.control(this._val.control, this._block, this._prev, this._next);
+                return this._func.control(this._val.control, this._block, this._module);
             },
             get defaultEvent() {
-                return this._func.defaultEvent(this._val.defaultEvent, this._block, this._prev, this._next);
+                return this._func.defaultEvent(this._val.defaultEvent, this._block, this._module);
             },
-            set prev(value: IBlockAbout) {
-                this._prev = value;
+            set module(value: PolicyModel | PolicyModuleModel) {
+                this._module = value;
             },
-            set next(value: boolean) {
-                this._next = value;
-            }
         };
         return bind;
     }

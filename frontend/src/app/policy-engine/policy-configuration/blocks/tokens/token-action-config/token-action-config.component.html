@@ -4,7 +4,9 @@
         <td class="propRowCell cellName">Token</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.tokenId" [disabled]="readonly">
-                <mat-option *ngFor="let token of tokens" [value]="token.tokenId">{{token.tokenName}}</mat-option>
+                <mat-option *ngFor="let token of tokens" [value]="token.value">
+                    {{token.name}}
+                </mat-option>
             </mat-select>
         </td>
     </tr>
@@ -13,8 +15,8 @@
         <td class="propRowCell cellName">Token Template</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.template" [disabled]="readonly">
-                <mat-option *ngFor="let token of policy.policyTokens" [value]="token.templateTokenTag">
-                    {{token.templateTokenTag}}
+                <mat-option *ngFor="let token of tokenTemplate" [value]="token.value">
+                    {{token.name}}
                 </mat-option>
             </mat-select>
         </td>

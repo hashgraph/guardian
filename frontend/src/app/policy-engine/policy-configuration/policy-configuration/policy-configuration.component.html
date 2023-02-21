@@ -437,18 +437,19 @@
                         </ng-container>
                     </div>
                     <div class="pc-tabs-content tree-container">
-
-
-
-
-                        <policy-tree [blocks]="openModule.dataSource" [errors]="errorsMap" [readonly]="readonly"
-                            [active]="eventVisible" [connector]="dropListConnector" (open)="onOpenModule($event)"
-                            (delete)="onDelete($event)" (select)="onSelect($event)" (reorder)="onReorder($event)"
+                        <policy-tree 
+                            [module]="openModule"
+                            [blocks]="openModule.dataSource" 
+                            [errors]="errorsMap" 
+                            [readonly]="readonly"
+                            [active]="eventVisible" 
+                            [connector]="dropListConnector" 
+                            (open)="onOpenModule($event)"
+                            (delete)="onDelete($event)" 
+                            (select)="onSelect($event)" 
+                            (reorder)="onReorder($event)"
                             (init)="onInitViewer($event)">
                         </policy-tree>
-
-
-
                     </div>
                 </div>
 
@@ -456,7 +457,7 @@
             <div class="right-toolbar">
 
                 <div class="right-top-toolbar" [attr.collapse-top]="options.rightTopMenu"
-                    [attr.collapse-bottom]="rightBottomMenu">
+                    [attr.collapse-bottom]="options.rightBottomMenu">
 
                     <div *ngIf="openModeType === 'Policy'" class="pc-tabs">
                         <div class="pc-tabs-headers">
@@ -545,7 +546,7 @@
                     </div>
                 </div>
 
-                <div class="right-bottom-toolbar" *ngIf="currentBlock && !isRoot" 
+                <div class="right-bottom-toolbar" *ngIf="currentBlock && !isRootModule" 
                     [attr.collapse-top]="options.rightTopMenu" [attr.collapse-bottom]="options.rightBottomMenu">
 
                     <div class="pc-tabs">
@@ -569,12 +570,18 @@
                         </div>
                         <div class="pc-tabs-content">
                             <div class="prop-container readonly-status" [hidden]="!options.properties">
-                                <common-properties [policy]="policyModel" [block]="currentBlock" [schemas]="schemas" [readonly]="readonly"
-                                    [tokens]="tokens" type="Common"></common-properties>
+                                <common-properties 
+                                    [module]="openModule" 
+                                    [block]="currentBlock" 
+                                    [readonly]="readonly"
+                                    type="Common"></common-properties>
                             </div>
                             <div class="prop-container readonly-status" [hidden]="!options.events">
-                                <common-properties [policy]="policyModel" [block]="currentBlock" [schemas]="schemas" [readonly]="readonly"
-                                    [tokens]="tokens" type="Events"></common-properties>
+                                <common-properties 
+                                    [module]="openModule" 
+                                    [block]="currentBlock" 
+                                    [readonly]="readonly"
+                                    type="Events"></common-properties>
                             </div>
                             <div class="prop-container readonly-status" [hidden]="!options.artifacts">
                                 <artifact-properties [readonly]="readonly" [policyId]="policyId" [block]="currentBlock"></artifact-properties>
@@ -584,8 +591,33 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
+
+                <div class="right-bottom-toolbar" *ngIf="currentBlock && isRootModule" 
+                    [attr.collapse-top]="options.rightTopMenu" [attr.collapse-bottom]="options.rightBottomMenu">
+
+                    <div class="pc-tabs">
+                        <div class="pc-tabs-headers">
+                            <div class="tab-header" [attr.selected]="true" (click)="select('events')">
+                                Events
+                            </div>
+                            <div class="tabs-icon" [attr.collapsed]="!options.rightBottomMenu"
+                                (click)="collapse('rightBottomMenu')">
+                                <mat-icon>keyboard_double_arrow_up</mat-icon>
+                            </div>
+                        </div>
+                        <div class="pc-tabs-content">
+                            <div class="prop-container readonly-status">
+                                <common-properties 
+                                    [module]="openModule" 
+                                    [block]="currentBlock" 
+                                    [readonly]="readonly"
+                                    type="Events"></common-properties>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>

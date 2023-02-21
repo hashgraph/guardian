@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
+import { IModuleVariables, PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'interfaceDocumentsSource' type.
@@ -12,12 +12,11 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures'
     encapsulation: ViewEncapsulation.Emulated
 })
 export class DocumentSourceComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
+
+    private moduleVariables!: IModuleVariables | null;
 
     propHidden: any = {
         fieldsGroup: false,
@@ -66,8 +65,9 @@ export class DocumentSourceComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        if (this.policy?.allBlocks) {
-            this.allBlocks = this.policy.allBlocks;
+        this.moduleVariables = block.moduleVariables;
+        if (this.moduleVariables?.module?.allBlocks) {
+            this.allBlocks = this.moduleVariables?.module?.allBlocks;
         } else {
             this.allBlocks = [];
         }

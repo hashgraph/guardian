@@ -7,7 +7,8 @@ import {
     IBlockSetting,
     ChildrenType,
     ControlType,
-    PolicyModuleModel
+    PolicyModuleModel,
+    PolicyModel
 } from "../structures";
 
 const Module: IBlockSetting = {
@@ -51,10 +52,16 @@ const Module: IBlockSetting = {
     about: {
         post: false,
         get: false,
-        input: (value: any, block: PolicyModuleModel): string[] => {
+        input: (value: any, block: PolicyModuleModel, module?: PolicyModel | PolicyModuleModel): string[] => {
+            if(block === module) {
+                return block.outputEvents.map(e => e.name);
+            }
             return block.inputEvents.map(e => e.name);
         },
-        output: (value: any, block: PolicyModuleModel): string[] => {
+        output: (value: any, block: PolicyModuleModel, module?: PolicyModel | PolicyModuleModel): string[] => {
+            if(block === module) {
+                return block.inputEvents.map(e => e.name);
+            }
             return block.outputEvents.map(e => e.name);
         },
         children: ChildrenType.Any,

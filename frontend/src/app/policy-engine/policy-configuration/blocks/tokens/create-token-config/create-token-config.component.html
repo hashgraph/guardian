@@ -13,8 +13,8 @@
         <td class="propRowCell cellName">Token Template</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.template" [disabled]="readonly">
-                <mat-option *ngFor="let token of policy.policyTokens" [value]="token.templateTokenTag">
-                    {{token.templateTokenTag}}
+                <mat-option *ngFor="let token of tokenTemplate" [value]="token.value">
+                    {{token.name}}
                 </mat-option>
             </mat-select>
         </td>

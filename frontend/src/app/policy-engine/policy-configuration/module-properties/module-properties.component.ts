@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import {
     PolicyModel,
     PolicyTokenModel,
@@ -36,7 +36,7 @@ export class ModulePropertiesComponent implements OnInit {
     inputs: ModuleEventModel[] = [];
     outputs: ModuleEventModel[] = [];
 
-    constructor() {
+    constructor(private changeDetector: ChangeDetectorRef) {
     }
 
     ngOnInit(): void {

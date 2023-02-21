@@ -5,7 +5,7 @@
         <td class="propRowCell cellName">Available Roles</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.roles" [disabled]="readonly" multiple>
-                <mat-option *ngFor="let item of policy.policyRoles" [value]="item.name">{{item.name}}</mat-option>
+                <mat-option *ngFor="let item of roles" [value]="item.value">{{item.name}}</mat-option>
             </mat-select>
         </td>
     </tr>
@@ -14,7 +14,7 @@
         <td class="propRowCell cellName">Available Groups</td>
         <td class="propRowCell">
             <mat-select [(value)]="block.groups" [disabled]="readonly" multiple>
-                <mat-option *ngFor="let item of policy.policyGroups" [value]="item.name">{{item.name}}</mat-option>
+                <mat-option *ngFor="let item of groups" [value]="item.value">{{item.name}}</mat-option>
             </mat-select>
         </td>
     </tr>
