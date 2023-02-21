@@ -97,7 +97,7 @@ export class Worker {
         private readonly channelName: string
     ) {
         const secretManager = SecretManager.New()
-        secretManager.getSecrets("apikey/ipfs").
+        secretManager.getSecrets('apikey/ipfs').
             then(secrets => {
                 const { IPFS_STORAGE_API_KEY } = secrets;
                 this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
@@ -133,7 +133,7 @@ export class Worker {
             await secretManager.setSecrets('apikey/ipfs', {
                 IPFS_STORAGE_API_KEY: msg.ipfsStorageApiKey,
             });
-            this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);            
+            this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
         });
 
         HederaSDKHelper.setTransactionResponseCallback(async (client: any) => {
