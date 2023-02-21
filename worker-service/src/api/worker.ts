@@ -1,4 +1,4 @@
-import { Logger, MessageBrokerChannel, SettingsContainer } from '@guardian/common';
+import { Logger, MessageBrokerChannel, SettingsContainer, ValidateConfiguration } from '@guardian/common';
 import {
     ExternalMessageEvents,
     ITask,
@@ -124,9 +124,11 @@ export class Worker {
             }
         });
 
-        this.channel.subscribe(WorkerEvents.UPDATE_SETTINGS, (msg: any) => {
-            new SettingsContainer().updateSetting('IPFS_STORAGE_API_KEY', msg.ipfsStorageApiKey);
+        this.channel.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
+            await new SettingsContainer().updateSetting('IPFS_STORAGE_API_KEY', msg.ipfsStorageApiKey);
             this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
+            const validator = new ValidateConfiguration();
+            await validator.validate();
         });
 
         HederaSDKHelper.setTransactionResponseCallback(async (client: any) => {

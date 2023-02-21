@@ -134,8 +134,15 @@ Promise.all([
     workersHelper.initListeners();
 
     const validator = new ValidateConfiguration();
+    let timer = null;
     validator.setValidator(async () => {
+        if (timer) {
+            clearInterval(timer);
+        }
         try {
+            if (!/^\d+\.\d+\.\d+/.test(settingsContainer.settings.OPERATOR_ID)) {
+                throw new Error(settingsContainer.settings.OPERATOR_ID + 'is wrong');
+            }
             AccountId.fromString(settingsContainer.settings.OPERATOR_ID);
         } catch (error) {
             await new Logger().error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
@@ -150,6 +157,9 @@ Promise.all([
         }
         try {
             if (process.env.INITIALIZATION_TOPIC_KEY) {
+                if (!/^\d+\.\d+\.\d+/.test(settingsContainer.settings.INITIALIZATION_TOPIC_ID)) {
+                    throw new Error(settingsContainer.settings.INITIALIZATION_TOPIC_ID + 'is wrong');
+                }
                 TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
             }
         } catch (error) {
@@ -224,7 +234,9 @@ Promise.all([
     });
 
     validator.setInvalidAction(async () => {
-        await state.updateState(ApplicationStates.BAD_CONFIGURATION);
+        timer = setInterval(async () => {
+            await state.updateState(ApplicationStates.BAD_CONFIGURATION);
+        }, 1000)
     });
 
     await validator.validate();
