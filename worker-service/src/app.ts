@@ -8,6 +8,7 @@ import {
 import { Worker } from './api/worker';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
 import { ApplicationStates } from '@guardian/interfaces';
+import { decode } from 'jsonwebtoken';
 
 Promise.all([
     MessageBrokerChannel.connect('WORKERS_SERVICE')
@@ -36,6 +37,16 @@ Promise.all([
         if (!settingsContainer.settings.IPFS_STORAGE_API_KEY) {
             return false;
         }
+
+        try {
+            const decoded = decode(settingsContainer.settings.IPFS_STORAGE_API_KEY) as any;
+            if (decoded.iss !== 'web3-storage') {
+                return false;
+            }
+        } catch (e) {
+            return false
+        }
+
         return true;
     });
 

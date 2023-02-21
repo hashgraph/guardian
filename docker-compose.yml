@@ -104,7 +104,6 @@ services:
     depends_on:
       - mongo
       - message-broker
-      - guardian-service
       - auth-service
       - logger-service
 
