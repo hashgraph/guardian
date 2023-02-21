@@ -4,6 +4,11 @@ import { SecretManagerType } from './secret-manager-config';
 
 process.env.AWS_REGION = 'eu-central-1';
 
+/**
+ * Test AWS Secret Manager
+ * @async
+ * @function
+ */
 async function test_aws_secretmanager() {
   const secretManager = SecretManager.New(SecretManagerType.AWS) as AwsSecretManager
 

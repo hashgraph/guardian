@@ -2,8 +2,21 @@ import NodeVault from 'node-vault'
 import { SecretManagerBase } from '../secret-manager-base';
 import { ApproleCrential, IHcpVaultSecretManagerConfigs } from './hcp-vault-secret-manager-configs';
 
+/**
+ * This class is responsible for managing secrets in Hashicorp Vault
+ * It implements the SecretManagerBase interface
+ */
 export class HcpVaultSecretManager implements SecretManagerBase {
+  /**
+   * Approle credential
+   * @private
+   */
   private readonly approle: ApproleCrential;
+
+  /**
+   * The client is responsible for communicating with Hashicorp Vault
+   * @private
+   */
   private readonly vault: NodeVault.client;
 
   constructor(config: IHcpVaultSecretManagerConfigs) {
@@ -16,6 +29,13 @@ export class HcpVaultSecretManager implements SecretManagerBase {
     } as NodeVault.Option);
   }
 
+  /**
+   * Login to Vault by Approle
+   * @private
+   * @async
+   * @returns void
+   * @throws Error if any error occurs
+   */
   private async loginByApprole(): Promise<void> {
     const result = await this.vault.approleLogin({
       role_id: this.approle.roleId,
@@ -25,6 +45,15 @@ export class HcpVaultSecretManager implements SecretManagerBase {
     this.vault.token = result.auth.client_token;
   }
 
+  /**
+   * Get secrets from Vault
+   * @param path secret path
+   * @returns secret data
+   * @returns null if the secret does not exist
+   * @throws Error if any error occurs
+   * @async
+   * @public
+   */
   async getSecrets(path: string): Promise<any> {
     await this.loginByApprole()
     try {
@@ -38,7 +67,16 @@ export class HcpVaultSecretManager implements SecretManagerBase {
     }
   }
 
-  async setSecrets(path: string, data: any): Promise<any> {
+  /**
+   * Update secrets in Vault
+   * @param path secret path
+   * @param data secret data
+   * @returns void
+   * @throws Error if any error occurs
+   * @async
+   * @public
+   */
+  async setSecrets(path: string, data: any): Promise<void> {
     await this.loginByApprole()
     try {
       await this.vault.write(this.getSecretId(path), { data })
@@ -47,6 +85,12 @@ export class HcpVaultSecretManager implements SecretManagerBase {
     }
   }
 
+  /**
+   * Get secret id from the base path and the path
+   * @param path secret path
+   * @returns secret id
+   * @private
+   */
   private getSecretId(path: string): string {
     return `secret/data/${path}`;
   }

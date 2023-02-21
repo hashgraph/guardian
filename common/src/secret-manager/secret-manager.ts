@@ -5,7 +5,14 @@ import { AwsSecretManager } from './aws/aws-secret-manager';
 import { IHcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs';
 import { IAwsSecretManagerConfigs } from './aws/aws-secret-manager-configs';
 
+/**
+ * Class to get secret manager
+ */
 export class SecretManager {
+  /**
+   * Get default secret manager type set in environment variable SECRET_MANAGER or HCP_VAULT if not set
+   * @returns default secret manager type
+   */
   static defaultType(): SecretManagerType {
     const typeFromEnv = process.env.SECRET_MANAGER as SecretManagerType
     if (typeFromEnv && Object.values(SecretManagerType).includes(typeFromEnv)) {
@@ -15,6 +22,13 @@ export class SecretManager {
     }
   }
 
+  /**
+   * Get secret manager type from default or provided type
+   * @param secretManagerType optional secret manager type
+   * @returns secret manager type
+   * @throws Error if the secret manager type is invalid
+   * @static
+   */
   static getSecretManagerType(secretManagerType?: SecretManagerType): SecretManagerType {
     if (!secretManagerType) {
       secretManagerType = SecretManager.defaultType();
@@ -26,6 +40,11 @@ export class SecretManager {
     return secretManagerType;
   }
 
+  /**
+   * Instantiate secret manager of specified type or default type
+   * @param secretManagerType optional secret manager type
+   * @returns Secret Manager
+   */
   static New(secretManagerType?: SecretManagerType): SecretManagerBase {
     secretManagerType = SecretManager.getSecretManagerType(secretManagerType)
 

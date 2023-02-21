@@ -15,17 +15,27 @@ const workerCertsPath = path.join('../worker-service/tls/vault/client')
 
 let secretManager: SecretManagerBase;
 
+/**
+ * Set common configs for Vault
+ */
 function setVaultCommonConfig() {
   process.env.VAULT_ADDRESS = 'https://localhost:8200'
   process.env.VAULT_API_VERSION = 'v1'
 }
 
+/**
+ * Set Vault TLS options
+ * @param certsPath
+ */
 function setCertsPath(certsPath: string) {
   process.env.VAULT_CA_CERT = `${certsPath}/ca.crt`
   process.env.VAULT_CLIENT_CERT = `${certsPath}/tls.crt`
   process.env.VAULT_CLIENT_KEY = `${certsPath}/tls.key`
 }
 
+/**
+ * Test get Auth Service Secretkey from Vault by Auth Service
+ */
 async function test_secretkey() {
   setVaultCommonConfig()
 
@@ -39,6 +49,9 @@ async function test_secretkey() {
   console.log(data)
 }
 
+/**
+ * Test get IPFS API KEY from Vault by Worker Service
+ */
 async function test_apikey_ipfs() {
 
   console.log('Test IPFS API KEY')
@@ -51,6 +64,9 @@ async function test_apikey_ipfs() {
   console.log(data)
 }
 
+/**
+ * Test get Operator Key/ID from Vault by Guardian Service
+ */
 async function test_operator_key_guardian() {
 
   console.log('Test OPERATOR KEY/ID by Guardian')
@@ -63,6 +79,9 @@ async function test_operator_key_guardian() {
   console.log(data)
 }
 
+/**
+ * Test get Operator Key/ID from Vault by Policy Service
+ */
 async function test_operator_key_policy() {
 
   console.log('Test OPERATOR KEY/ID by Policy Service')
@@ -75,6 +94,9 @@ async function test_operator_key_policy() {
   console.log(data)
 }
 
+/**
+ * Test get Operator Key/ID from Vault by Guardian Service
+ */
 async function test_wallet_guardian() {
 
   console.log('Test Wallet by Guardian Service')
@@ -91,6 +113,9 @@ async function test_wallet_guardian() {
   console.log(data)
 }
 
+/**
+ * Test get Operator Key/ID from Vault by Policy Service
+ */
 async function test_wallet_policy() {
 
   console.log('Test Wallet by Policy Service')
@@ -107,6 +132,9 @@ async function test_wallet_policy() {
   console.log(data)
 }
 
+/**
+ * Test Secret Manager
+ */
 async function test_secretmanager() {
   await test_secretkey()
 

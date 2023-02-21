@@ -2,8 +2,19 @@ import { SecretManagerBase, SecretManagerType } from '../secret-manager';
 import { SecretManager } from '../secret-manager/secret-manager';
 import crypto from 'crypto';
 
+/**
+ * Class to manage wallet by Secret Manager Resources
+ */
 export class Wallet {
+  /**
+   * Secret Manager Instance
+   * @private
+   */
   private readonly secretManager: SecretManagerBase;
+  /**
+   * Encryption algorithm
+   * @private
+   */
   private readonly encryptionAlg = process.env.HASHICORP_ENCRIPTION_ALG || 'sha512';
 
   constructor(secretManagerType?: SecretManagerType) {
