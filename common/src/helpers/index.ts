@@ -7,3 +7,4 @@ export * from './service-requests-base';
 export * from './run-function-async';
 export * from './do-nothing';
 export * from './schemas-to-context';
+export * from './validate-configuration';

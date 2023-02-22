@@ -148,6 +148,7 @@ export class Workers extends ServiceRequestsBase {
          */
         ipfsStorageApiKey: string
     }) {
+        console.log('update worker settings', settings);
         this.channel.publish(WorkerEvents.UPDATE_SETTINGS, settings);
     }
 }
