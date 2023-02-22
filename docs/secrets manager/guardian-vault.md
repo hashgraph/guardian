@@ -4,6 +4,19 @@ Guardian Vault is intended to provide supports in securely storing sensitive dat
 
 Although Cloud infrastructures like Google, Azure and AWS offer secure Secret Manager Service to make the configuration very simple without the burden of deployment process, there are on-premise native technologies such as Hashicorp Vault that provide Cloud Agnostic solutions. Currently, Guardian supports __AWS Secrets Manager__ and __Hashicorp Vault__ as its core secrets manager.
 
+<img src="../.gitbook/assets/Secrets Manager Architecture.jpg">
+
+In the current Architecture, each service has permission to read/write/update secrets directly instead of handling operations through a central service like Auth Service. Secrets are considered as resources and categorized into different divisions and according to categories and subcategories Policies are created and consequently based on need-to-know basis principal roles per services with essential policies are generated in order that each service is assigned permissions that it requires to access the secrets. As an example, Auth Service does not need to know anything about the user wallets, but only requires access to auth secret key.
+
+<img src="../.gitbook/assets/Vault Resource Policy.jpg">
+
+As expected in production all connections between vault and services are secured by TLS communication. Communication with AWS Secrets Manager is handled within a private network.
+
+## Software Architecture
+Secret Manager module is  designed to handle interactions with Secret Manager infrastructures. Adapter classes are prepared in the lowest level to provide interfaces to each Secret Manager Infra, and the high level SecretManager class instantiates the right adapter according to configurations, and Hashicorp vault by default. Configuration to select the infrastructure is handled in the .env file located in the root directory of the guardian by the SECRET_MANAGER variable. In case of AWS, another variable, AWS_REGION must be also set as a common variable that will be populated to all services through a docker-compose file. Additionally, while selecting AWS as secret manager, the Vault docker container is not required to be deployed, for this reason the docker-compose files are separated.
+On top of the Secret Manager module, Wallet module is located to specifically store private keys using the Secret manager adapter. Wallet Manager stores private keys in wallet/{wallet_id} path in which wallet_id is the hash value of concatenation of token, type and key parameters.
+As storing secrets and keys to the database is highly insecure, the database vault is removed. On the other hand by providing direct access to secret managers by services, the channel to request read and write to the vault is deleted.
+
 ## Hashicorp Vault
 Several scripts and config files are provided to smoothly start and configure Hashicorp Vault instance. Here are the steps to run Vault instance:
 
