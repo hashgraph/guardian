@@ -414,10 +414,14 @@ export class PolicyBlockModel {
         }
         return false;
     }
-    
+
+    public get blockVariables(): IModuleVariables | null {
+        return null;
+    }
+
     public get moduleVariables(): IModuleVariables | null {
         if (this._module) {
-            return this._module.moduleVariables;
+            return this._module.blockVariables;
         }
         return null;
     }

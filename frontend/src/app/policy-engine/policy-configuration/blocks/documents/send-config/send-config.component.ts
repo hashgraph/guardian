@@ -31,6 +31,7 @@ export class SendConfigComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.topics = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }
@@ -67,7 +68,7 @@ export class SendConfigComponent implements OnInit {
 
     selectTopic(event: any) {
         if (event.value === 'new') {
-            this.moduleVariables?.module?.createTopic({
+            const name = this.moduleVariables?.module?.createTopic({
                 description: '',
                 type: 'any',
                 static: false

@@ -1,0 +1,89 @@
+<div class="content">
+    <div *ngIf="loading && !taskId" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+
+    <!-- <div *ngIf="loading && taskId" class="loading">
+        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
+            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
+    </div> -->
+
+    <ng-container *ngIf="!isConfirmed">
+        <div class="not-exist">
+            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="isConfirmed && modules">
+        <div class="actions-container">
+            <button mat-raised-button color="primary" (click)="newModules()" class="toolbar-btn add">
+                <mat-icon>add</mat-icon>
+                <span>Create New</span>
+            </button>
+            <button mat-raised-button color="primary" (click)="importModules()" class="toolbar-btn">
+                <mat-icon>file_open</mat-icon>
+                <span>Import</span>
+            </button>
+        </div>
+        <div class="table-container">
+            <table mat-table [dataSource]="modules" class="table">
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef> Name </th>
+                    <td mat-cell *matCellDef="let element">
+                        {{ element.name }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="description">
+                    <th mat-header-cell *matHeaderCellDef> Description </th>
+                    <td mat-cell *matCellDef="let element">
+                        {{ element.description }}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef> Status/Actions </th>
+                    <td mat-cell *matCellDef="let element">
+                        <select-menu-button class="btn-draft" *ngIf="element.status == 'DRAFT'">
+                            Draft
+                        </select-menu-button>
+                        <select-menu-button class="btn-publish" *ngIf="element.status == 'PUBLISH'">
+                            Published
+                        </select-menu-button>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="operations">
+                    <th mat-header-cell *matHeaderCellDef>Operations</th>
+                    <td mat-cell *matCellDef="let element">
+                        <div class="commands-line">
+                            <div class="btn-icon-import" (click)="exportModules(element)" title="Export Policy"
+                                matTooltip="Export" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                                <mat-icon>import_export</mat-icon>
+                            </div>
+                            <div class="btn-icon-edit" [routerLink]="['/policy-configuration']"
+                                [queryParams]="{ policyId: element.id }" title="Policies configuration"
+                                matTooltip="Edit" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                                <mat-icon>edit</mat-icon>
+                            </div>
+                            <div *ngIf="element.status =='DRAFT'" class="btn-icon-delete"
+                                (click)="deleteModule(element)" matTooltip="Delete" matTooltipPosition="above"
+                                matTooltipClass="guardian-tooltip">
+                                <mat-icon>delete</mat-icon>
+                            </div>
+                            <div *ngIf="element.status !='DRAFT'" class="btn-icon-delete-des">
+                                <mat-icon>delete</mat-icon>
+                            </div>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="columns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+            </table>
+        </div>
+        <div class="table-paginator">
+            <mat-paginator [length]="modulesCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
+                [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
+            </mat-paginator>
+        </div>
+    </ng-container>
+</div>

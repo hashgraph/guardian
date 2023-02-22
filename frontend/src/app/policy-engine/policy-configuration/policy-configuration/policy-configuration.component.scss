@@ -888,26 +888,6 @@
                 }
             }
 
-            *[offset="1"] .cellName,
-            .subRow .cellName {
-                padding-left: 20px !important;
-            }
-
-            *[offset="2"] .cellName,
-            .subRow-2 .cellName {
-                padding-left: 30px !important;
-            }
-
-            *[offset="3"] .cellName,
-            .subRow-3 .cellName {
-                padding-left: 40px !important;
-            }
-
-            *[offset="4"] .cellName,
-            .subRow-4 .cellName {
-                padding-left: 50px !important;
-            }
-
             .propRowCell {
                 width: var(--col-value-width);
                 max-width: var(--col-value-width);
@@ -988,6 +968,26 @@
                     outline: none;
                 }
             }
+        }
+
+        *[offset="1"] .cellName,
+        .subRow .cellName {
+            padding-left: 20px !important;
+        }
+
+        *[offset="2"] .cellName,
+        .subRow-2 .cellName {
+            padding-left: 30px !important;
+        }
+
+        *[offset="3"] .cellName,
+        .subRow-3 .cellName {
+            padding-left: 40px !important;
+        }
+
+        *[offset="4"] .cellName,
+        .subRow-4 .cellName {
+            padding-left: 50px !important;
         }
 
         .remove-cell input {

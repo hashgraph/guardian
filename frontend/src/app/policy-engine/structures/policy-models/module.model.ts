@@ -5,7 +5,6 @@ import { PolicyBlockModel } from './block.model';
 import { PolicyEventModel } from './block-event.model';
 import { ModuleEventModel } from './module-event.model';
 import { ModuleVariableModel } from './module-variable.model';
-import { group } from '@angular/animations';
 import { GroupVariables } from './variables/group-variables';
 import { RoleVariables } from './variables/role-variables';
 import { SchemaVariables } from './variables/schema-variables';
@@ -232,11 +231,11 @@ export class PolicyModuleModel extends PolicyBlockModel {
         }
     }
 
-    public createVariable() {
+    public createVariable(type?: string, name?: string): void {
         const e = new ModuleVariableModel({
-            name: '',
+            name: name || '',
             description: '',
-            type: 'String',
+            type: type || 'String',
         }, this);
         this.addVariable(e);
     }
@@ -311,8 +310,15 @@ export class PolicyModuleModel extends PolicyBlockModel {
         }
     }
 
-    public get moduleVariables(): IModuleVariables {
+    public get blockVariables(): IModuleVariables | null {
         return this._lastVariables;
+    }
+
+    public get moduleVariables(): IModuleVariables | null {
+        if (this._module) {
+            return this._module.blockVariables;
+        }
+        return null;
     }
 
     public override emitUpdate() {
@@ -323,9 +329,10 @@ export class PolicyModuleModel extends PolicyBlockModel {
         }
     }
 
-    public createTopic(topic: any) {
-        // topic.name = `New Topic ${this.policyTopics.length}`;
-        // const e = new PolicyTopicModel(topic, this);
-        // this.addTopic(e);
+    public createTopic(topic: any): string {
+        const topics = this._variables.filter(e => e.type === 'Topic');
+        const name = `New Topic ${topics.length}`;
+        this.createVariable('Topic', name);
+        return name;
     }
 }

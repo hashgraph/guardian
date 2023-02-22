@@ -124,6 +124,12 @@ export class HeaderComponent implements OnInit {
             link: '/trust-chain'
         }];
 
+
+
+
+
+
+
         this.links = this.linksConfig.default;
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
@@ -278,5 +284,116 @@ export class HeaderComponent implements OnInit {
         return policyRoles.map((item: any) => {
             return `${item.name} (${item.version}): ${item.role}`
         }).join('\r\n');
+    }
+
+
+
+
+
+    public isActiveLink(type: string): boolean {
+        switch (type) {
+            case 'SR_UP':
+                return this.activeLinkRoot === '/config';
+            case 'SR_TOKENS':
+                return (
+                    this.activeLinkRoot === '/tokens' ||
+                    this.activeLinkRoot === '/contracts' ||
+                    this.activeLinkRoot === '/contracts/pairs'
+                );
+            case 'SR_POLICIES':
+                return (
+                    this.activeLinkRoot === '/schemas' ||
+                    this.activeLinkRoot === '/artifacts' ||
+                    this.activeLinkRoot === '/modules' ||
+                    this.activeLinkRoot === '/policy-viewer' ||
+                    this.activeLinkRoot === '/policy-configuration' ||
+                    this.activeLinkRoot === '/compare' ||
+                    /^\/policy-configuration\/\w+/.test(this.activeLinkRoot) ||
+                    this.activeLinkRoot === 'policy-configuration'
+                );
+            case 'SR_ADMIN':
+                return (
+                    this.activeLinkRoot === '/admin/settings' ||
+                    this.activeLinkRoot === '/admin/logs' ||
+                    this.activeLinkRoot === '/admin/status'
+                );
+            case 'SR_TOKENS_LIST':
+                return this.activeLinkRoot === '/tokens';
+            case 'SR_CONTRACTS':
+                return this.activeLinkRoot === '/contracts';
+            case 'SR_CONTRACTS_PAIRS':
+                return this.activeLinkRoot === '/contracts/pairs';
+            case 'SR_SCHEMAS':
+                return this.activeLinkRoot === '/schemas';
+            case 'SR_ARTIFACTS':
+                return this.activeLinkRoot === '/artifacts';
+            case 'SR_MODULES':
+                return this.activeLinkRoot === '/modules';
+            case 'SR_POLICIES_LIST':
+                return this.activeLinkRoot === '/policy-viewer';
+            case 'SR_VIEWER':
+                return /^\/policy-viewer\/\w+/.test(this.activeLinkRoot);
+            case 'SR_EDITOR':
+                return this.activeLinkRoot === 'policy-configuration';
+            case 'SR_COMPARE':
+                return this.activeLinkRoot === '/compare';
+            case 'SR_SETTINGS':
+                return this.activeLinkRoot === '/admin/settings';
+            case 'SR_LOGS':
+                return this.activeLinkRoot === '/admin/logs';
+            case 'SR_STATUS':
+                return this.activeLinkRoot === '/admin/status';
+        }
+        return false;
+    }
+
+    public routActive(type: string): boolean {
+        switch (type) {
+            case 'SR_UP':
+                this.router.navigate(['/config']);
+                return true;
+            case 'SR_TOKENS':
+                return false;
+            case 'SR_POLICIES':
+                return false;
+            case 'SR_ADMIN':
+                return false;
+            case 'SR_TOKENS_LIST':
+                this.router.navigate(['/tokens']);
+                return true;
+            case 'SR_CONTRACTS':
+                this.router.navigate(['/contracts']);
+                return true;
+            case 'SR_CONTRACTS_PAIRS':
+                return false;
+            case 'SR_SCHEMAS':
+                this.router.navigate(['/schemas']);
+                return true;
+            case 'SR_ARTIFACTS':
+                this.router.navigate(['/artifacts']);
+                return true;
+            case 'SR_MODULES':
+                this.router.navigate(['/modules']);
+                return true;
+            case 'SR_POLICIES_LIST':
+                this.router.navigate(['/policy-viewer']);
+                return true;
+            case 'SR_VIEWER':
+                return false;
+            case 'SR_EDITOR':
+                return false;
+            case 'SR_COMPARE':
+                return false;
+            case 'SR_SETTINGS':
+                this.router.navigate(['/admin/settings']);
+                return true;
+            case 'SR_LOGS':
+                this.router.navigate(['/admin/logs']);
+                return true;
+            case 'SR_STATUS':
+                this.router.navigate(['/admin/status']);
+                return true;
+        }
+        return false;
     }
 }

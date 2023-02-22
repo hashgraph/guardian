@@ -30,6 +30,7 @@ export class RolesConfigComponent implements OnInit {
 
     ngOnInit(): void {
         this.roles = [];
+        this.groups = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }

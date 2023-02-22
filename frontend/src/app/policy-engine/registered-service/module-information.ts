@@ -1,3 +1,4 @@
+import { ModuleComponent } from "../policy-configuration/blocks/module/module.component";
 import {
     BlockType,
     BlockGroup,
@@ -17,7 +18,7 @@ const Module: IBlockSetting = {
     group: BlockGroup.Module,
     header: BlockHeaders.Module,
     factory: null,
-    property: null,
+    property: ModuleComponent,
     allowedChildren: [
         { type: BlockType.Information },
         { type: BlockType.PolicyRoles },

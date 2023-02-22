@@ -186,10 +186,11 @@ export class PolicyModel {
         return undefined;
     }
 
-    public createTopic(topic: any) {
+    public createTopic(topic: any): string {
         topic.name = `New Topic ${this.policyTopics.length}`;
         const e = new PolicyTopicModel(topic, this);
         this.addTopic(e);
+        return topic.name;
     }
 
     public addTopic(topic: PolicyTopicModel) {
@@ -563,10 +564,6 @@ export class PolicyModel {
         }
     }
 
-    public get moduleVariables(): IModuleVariables {
-        return this._lastVariables;
-    }
-
     public setSchemas(schemas: Schema[]): void {
         this._schemas = schemas;
         this.updateVariables();
@@ -575,5 +572,13 @@ export class PolicyModel {
     public setTokens(tokens: Token[]): void {
         this._tokens = tokens;
         this.updateVariables();
+    }
+
+    public get blockVariables(): IModuleVariables | null {
+        return this._lastVariables;    
+    }
+
+    public get moduleVariables(): IModuleVariables | null {
+        return null;
     }
 }

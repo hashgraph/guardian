@@ -77,6 +77,8 @@ import { HttpRequestConfigComponent } from './policy-configuration/blocks/main/h
 import { PolicyTreeComponent } from './policy-configuration/policy-tree/policy-tree.component';
 import { ModulePropertiesComponent } from './policy-configuration/module-properties/module-properties.component';
 import { RegisteredService } from './registered-service/registered.service';
+import { ModuleComponent } from './policy-configuration/blocks/module/module.component';
+import { ModulesListComponent } from './modules-list/modules-list.component';
 
 @NgModule({
     declarations: [
@@ -148,7 +150,9 @@ import { RegisteredService } from './registered-service/registered.service';
         MultiPolicyDialogComponent,
         ComparePolicyDialog,
         PolicyTreeComponent,
-        ModulePropertiesComponent
+        ModulePropertiesComponent,
+        ModuleComponent,
+        ModulesListComponent
     ],
     imports: [
         CommonModule,
@@ -209,7 +213,8 @@ import { RegisteredService } from './registered-service/registered.service';
         GroupManagerConfigComponent,
         GroupManagerBlockComponent,
         InviteDialogComponent,
-        TokenConfigurationComponent
+        TokenConfigurationComponent,
+        ModulesListComponent
     ],
     providers: [
         RegisteredService
