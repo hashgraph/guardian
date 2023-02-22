@@ -57,19 +57,4 @@ export class CustomLogicConfigComponent implements OnInit {
             this.block.expression = result.expression;
         })
     }
-
-    onSelectOutput() {
-        this.block.inputFields = [];
-        const schema = this.schemas.find(e => e.iri == this.block.outputSchema)
-        if (schema) {
-            for (let i = 0; i < schema.fields.length; i++) {
-                const field = schema.fields[i];
-                this.block.inputFields.push({
-                    name: field.name,
-                    title: field.description,
-                    value: field.name
-                })
-            }
-        }
-    }
 }
