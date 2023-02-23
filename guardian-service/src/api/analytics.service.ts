@@ -4,14 +4,6 @@ import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@gu
 import { MessageAPI } from '@guardian/interfaces';
 import * as crypto from 'crypto';
 import { PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaModel, TokenModel } from '@analytics';
-import { serviceResponseTimeHistogram } from '../utils/metrics';
-
-/**
- * Metric label for guardian service
- */
-const metricsLabels = {
-    operation: 'guardian_service_analytics_service'
-};
 
 /**
  * API analytics
@@ -20,7 +12,6 @@ const metricsLabels = {
  */
 export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void> {
     ApiResponse(channel, MessageAPI.COMPARE_POLICIES, async (msg) => {
-        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             const {
                 type,
@@ -128,22 +119,19 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
 
             const comparator = new PolicyComparator(options);
             const result = comparator.compare(policyModel1, policyModel2);
-            timer({ ...metricsLabels, success: 'true' });
-            if (type === 'csv') {
+            if(type === 'csv') {
                 const csv = comparator.csv(result);
                 return new MessageResponse(csv);
             } else {
                 return new MessageResponse(result);
             }
         } catch (error) {
-            timer({ ...metricsLabels, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
 
     ApiResponse(channel, MessageAPI.COMPARE_SCHEMAS, async (msg) => {
-        const timer = serviceResponseTimeHistogram.startTimer();
         try {
             const {
                 type,
@@ -172,7 +160,6 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
             model2.update(options);
             const comparator = new SchemaComparator(options);
             const result = comparator.compare(model1, model2);
-            timer({ ...metricsLabels, success: 'true' });
             if(type === 'csv') {
                 const csv = comparator.csv(result);
                 return new MessageResponse(csv);
@@ -180,7 +167,6 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
                 return new MessageResponse(result);
             }
         } catch (error) {
-            timer({ ...metricsLabels, success: 'false' });
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }

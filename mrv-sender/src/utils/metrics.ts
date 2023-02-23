@@ -4,7 +4,7 @@ import guardianServicePrometheusMetrics from 'prometheus-api-metrics';
 
 const app = express();
 
-const PORT = process.env.METRICS_PORT || 5007;
+const PORT = process.env.PORT || 5008;
 
 export const startMetricsServer = () => {
   app.use(guardianServicePrometheusMetrics());
@@ -15,6 +15,6 @@ export const startMetricsServer = () => {
   });
 
   app.listen(PORT, () => {
-    console.log(`guardian-service metrics server started at http://localhost:${PORT}`);
+    console.log(`mrv-sender metrics server started at http://localhost:${PORT}`);
   });
 }

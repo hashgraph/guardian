@@ -4,7 +4,7 @@ import guardianServicePrometheusMetrics from 'prometheus-api-metrics';
 
 const app = express();
 
-const PORT = process.env.METRICS_PORT || 5007;
+const PORT = process.env.METRICS_PORT || 5005;
 
 export const startMetricsServer = () => {
   app.use(guardianServicePrometheusMetrics());

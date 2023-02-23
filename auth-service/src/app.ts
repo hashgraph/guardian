@@ -7,6 +7,7 @@ import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { InitializeVault } from './vaults';
 import { ImportKeysFromDatabase } from '@helpers/import-keys-from-database';
+import { startMetricsServer } from './utils/metrics';
 
 Promise.all([
     Migration({
@@ -49,6 +50,8 @@ Promise.all([
         console.error(error.message);
         process.exit(1);
     }
+
+    startMetricsServer();
 }, (reason) => {
     console.log(reason);
     process.exit(0);

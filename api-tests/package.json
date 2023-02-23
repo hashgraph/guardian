@@ -12,6 +12,7 @@
   "devDependencies": {
     "chai": "^4.3.5",
     "mocha": "^9.2.0",
+    "chai-http": "^4.3.0",
     "mocha-junit-reporter": "^2.0.2",
     "tree-kill": "^1.2.2"
   },

@@ -90,6 +90,10 @@ services:
     build:
       context: .
       dockerfile: ./auth-service/Dockerfile
+    expose:
+      - 5005
+    ports:
+      - '5005:5005'
     depends_on:
       - mongo
       - vault
@@ -113,6 +117,10 @@ services:
     build:
       context: .
       dockerfile: ./policy-service/Dockerfile
+    expose:
+      - 5006
+    ports:
+      - "5006:5006"
     depends_on:
       - mongo
       - message-broker
@@ -124,9 +132,9 @@ services:
       context: .
       dockerfile: ./guardian-service/Dockerfile
     expose:
-      - 3003
+      - 5007
     ports:
-      - "3003:3003"
+      - "5007:5007"
     depends_on:
       - mongo
       - message-broker
@@ -141,7 +149,10 @@ services:
       context: .
       dockerfile: ./mrv-sender/Dockerfile
     expose:
-      - 3005
+      - 3003
+      - 5008
+    ports:
+      - "5008:5008"
 
   topic-viewer:
     build:
@@ -149,6 +160,9 @@ services:
       dockerfile: ./topic-viewer/Dockerfile
     expose:
       - 3006
+      - 5009
+    ports:
+      - "5009:5009"
 
   web-proxy:
     build:

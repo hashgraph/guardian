@@ -5,10 +5,14 @@ import { DefaultDocumentLoader } from './document-loader/document-loader-default
 import { VCHelper } from './vc-helper';
 import path from 'path';
 import fs from 'fs';
+import { startMetricsServer } from './utils/metrics';
 
+/**
+ * GenerateMode enum
+ */
 enum GenerateMode {
-    TEMPLATES = "TEMPLATES",
-    VALUES = "VALUES"
+    TEMPLATES = 'TEMPLATES',
+    VALUES = 'VALUES'
 }
 
 const PORT = process.env.PORT || 3005;
@@ -27,21 +31,18 @@ const PORT = process.env.PORT || 3005;
 
     app.get('/templates', async (req: Request, res: Response) => {
         const directoryPath = path.join(__dirname, '..', 'templates');
-        fs.readdir(directoryPath, function (err, files) {
+        fs.readdir(directoryPath, (err, files) => {
             res.status(200).json(files);
         });
     });
 
     app.post('/mrv-generate', async (req: Request, res: Response) => {
-        const { num, config, setting, mode } = req.body;
+        const { config, setting, mode } = req.body;
         const {
             url,
-            topic,
             hederaAccountId,
-            hederaAccountKey,
             installer,
             did,
-            key,
             policyId,
             type,
             context,
@@ -54,23 +55,22 @@ const PORT = process.env.PORT || 3005;
         vcDocumentLoader.setDocument(schema);
         vcDocumentLoader.setContext(context);
 
-        let document, vc;
+        let document;
         try {
-            const date = (new Date()).toISOString();
             let vcSubject: any = {
                 ...context
             };
 
-            switch(mode) {
+            switch (mode) {
                 case GenerateMode.TEMPLATES:
-                    let data: any = fs.readFileSync(path.join(__dirname, '..', 'templates', setting.fileName));
+                    const data: any = fs.readFileSync(path.join(__dirname, '..', 'templates', setting.fileName));
                     vcSubject = Object.assign(vcSubject, JSON.parse(data));
                     break;
                 case GenerateMode.VALUES:
                     if (setting) {
                         const keys = Object.keys(setting);
-                        for (let i = 0; i < keys.length; i++) {
-                            const key = keys[i];
+                        for (const element of keys) {
+                            const key = element;
                             const item = setting[key];
                             if (item.random) {
                                 const _decimal = Math.pow(10, item.decimal + 1);
@@ -103,10 +103,10 @@ const PORT = process.env.PORT || 3005;
         }
 
         const body = {
-            document: document,
-            ref: ref,
+            document,
+            ref,
             owner: installer,
-            policyTag: policyTag
+            policyTag
         }
 
         try {
@@ -122,6 +122,7 @@ const PORT = process.env.PORT || 3005;
         res.status(200).json(document);
     });
 
+    startMetricsServer();
     app.listen(PORT, () => {
         console.log('Sender started at port', PORT);
     })

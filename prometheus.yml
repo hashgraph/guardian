@@ -6,8 +6,3 @@ scrape_configs:
       metrics_path: /api/v1/metrics
       static_configs:
           - targets: ["host.docker.internal:3000"]
-          
-    - job_name: "guardian-service"
-      scrape_interval: 5s
-      static_configs:
-        -   targets: ["host.docker.internal:3003"]
