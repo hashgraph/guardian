@@ -361,7 +361,7 @@ export class PolicyModel {
             config = { blockType: "interfaceContainerBlock" };
         }
         this._config = this._buildBlock(config, null, this);
-        this._config.root = true;
+        this._config.isRoot = true;
         this._refresh();
     }
 
@@ -580,5 +580,9 @@ export class PolicyModel {
 
     public get moduleVariables(): IModuleVariables | null {
         return null;
+    }
+
+    public getRootModule(): PolicyModel | PolicyModuleModel {
+        return this;
     }
 }

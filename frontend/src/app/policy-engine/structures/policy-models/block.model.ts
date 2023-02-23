@@ -7,13 +7,14 @@ import { IModuleVariables } from "./variables/module-variables.interface";
 import { IBlockConfig } from './interfaces/block-config.interface';
 import { IEventConfig } from './interfaces/event-config.interface';
 import { PolicyModuleModel } from './module.model';
+import { TemplateModel } from './template.model';
 
 export class PolicyBlockModel {
     public readonly id: string;
     public readonly blockType: string;
     public readonly properties: { [name: string]: any; };
 
-    protected _module: PolicyModel | PolicyModuleModel | undefined;
+    protected _module: PolicyModel | PolicyModuleModel | TemplateModel | undefined;
     protected _parent: PolicyBlockModel | null;
     protected _children: PolicyBlockModel[];
     protected _events: PolicyEventModel[];
@@ -53,7 +54,7 @@ export class PolicyBlockModel {
         this._children = [];
     }
 
-    public setModule(module: PolicyModel | PolicyModuleModel | undefined): void {
+    public setModule(module: PolicyModel | PolicyModuleModel | TemplateModel | undefined): void {
         this._module = module;
     }
 
@@ -61,7 +62,7 @@ export class PolicyBlockModel {
         return false;
     }
 
-    public get root(): boolean {
+    public get isRoot(): boolean {
         return this._root;
     }
 
@@ -87,7 +88,7 @@ export class PolicyBlockModel {
         this.changed = true;
     }
 
-    public set root(value: boolean) {
+    public set isRoot(value: boolean) {
         this._root = value;
     }
 

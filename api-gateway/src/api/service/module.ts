@@ -71,6 +71,20 @@ moduleAPI.get('/menu', permissionHelper(UserRole.STANDARD_REGISTRY), async (req:
     }
 });
 
+moduleAPI.get('/:uuid', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const guardian = new Guardians();
+        if (!req.params.uuid) {
+            throw new Error('Invalid uuid');
+        }
+        const item = await guardian.getModuleById(req.params.uuid, req.user.did);
+        res.status(200).json(item);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: error.code || 500, message: error.message });
+    }
+});
+
 moduleAPI.put('/:uuid', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardian = new Guardians();

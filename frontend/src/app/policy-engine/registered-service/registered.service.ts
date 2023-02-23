@@ -67,6 +67,8 @@ export class RegisteredService {
                 defaultEvent: false
             }, this.about[key]);
         }
+
+        this.update();
     }
 
     private registerBlock(setting: IBlockSetting): void {
@@ -79,7 +81,6 @@ export class RegisteredService {
         this.allowedChildren[type] = setting.allowedChildren;
         this.about[type] = setting.about;
         this.types.push(type);
-        this.update();
     }
 
     private registerModule(setting: IBlockSetting): void {

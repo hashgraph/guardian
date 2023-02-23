@@ -512,7 +512,7 @@ export class PolicyTreeComponent implements OnInit {
             const [operation, name] = data.split(':');
             const prev = this.data[event.currentIndex - 1];
             const next = this.data[event.currentIndex];
-            if (prev.node.root || (next && next.level > prev.level)) {
+            if (prev.node.isRoot || (next && next.level > prev.level)) {
                 this.reorder.emit(this.reorderEvent('add', {
                     operation,
                     name,

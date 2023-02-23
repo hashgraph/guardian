@@ -88,16 +88,13 @@ export async function modulesAPI(
 
     ApiResponse(channel, MessageAPI.GET_MENU_MODULES, async (msg) => {
         try {
-            console.log('----', msg);
             if (!msg.owner) {
                 return new MessageError('Invalid load modules parameter');
             }
-            console.log('----', msg);
             const items = await DatabaseServer.getModules({
                 owner: msg.owner,
                 menu: 'show'
             });
-            console.log('----', items);
             return new MessageResponse(items);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -151,6 +148,24 @@ export async function modulesAPI(
 
             const result = await DatabaseServer.updateModule(item);
             return new MessageResponse(result);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse(channel, MessageAPI.GET_MODULE, async (msg) => {
+        try {
+            if (!msg.uuid || !msg.owner) {
+                return new MessageError('Invalid load modules parameter');
+            }
+            console.log( msg)
+            const item = await DatabaseServer.getModuleById(msg.uuid);
+            console.log( item.owner, msg.owner)
+            if (!item || item.owner !== msg.owner) {
+                throw new Error('Invalid module');
+            }
+            return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

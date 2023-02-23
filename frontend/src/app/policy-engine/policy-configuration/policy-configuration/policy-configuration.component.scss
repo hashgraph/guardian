@@ -515,7 +515,11 @@
             color: var(--pc-active-icon-color);
             cursor: pointer;
             user-select: none;
-
+            max-width: 220px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            
             .component-btn-icon {
                 position: absolute;
                 top: 3px;

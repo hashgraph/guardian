@@ -27,6 +27,12 @@
         </div>
         <div class="table-container">
             <table mat-table [dataSource]="modules" class="table">
+                <ng-container matColumnDef="uuid">
+                    <th mat-header-cell *matHeaderCellDef> UUID </th>
+                    <td mat-cell *matCellDef="let element">
+                        {{ element.uuid }}
+                    </td>
+                </ng-container>
                 <ng-container matColumnDef="name">
                     <th mat-header-cell *matHeaderCellDef> Name </th>
                     <td mat-cell *matCellDef="let element">
@@ -82,13 +88,13 @@
                     <th mat-header-cell *matHeaderCellDef></th>
                     <td mat-cell *matCellDef="let element">
                         <div class="commands-line">
-                            <div class="btn-icon-import" (click)="exportModules(element)"
-                                matTooltip="Export" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                            <div class="btn-icon-import" (click)="exportModules(element)" matTooltip="Export"
+                                matTooltipPosition="above" matTooltipClass="guardian-tooltip">
                                 <mat-icon>import_export</mat-icon>
                             </div>
                             <div class="btn-icon-edit" [routerLink]="['/policy-configuration']"
-                                [queryParams]="{ policyId: element.id }"
-                                matTooltip="Edit" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                                [queryParams]="{ moduleId: element.uuid }" matTooltip="Edit" matTooltipPosition="above"
+                                matTooltipClass="guardian-tooltip">
                                 <mat-icon>edit</mat-icon>
                             </div>
                             <div *ngIf="element.status =='DRAFT'" class="btn-icon-delete"

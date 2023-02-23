@@ -1241,4 +1241,14 @@ export class Guardians extends ServiceRequestsBase {
     ): Promise<any> {
         return await this.request<any>(MessageAPI.SHOW_MODULES, { uuid, show, owner });
     }
+
+    /**
+    * Delete module
+    * @param uuid
+    * @param owner
+    * @returns Operation Success
+    */
+    public async getModuleById(uuid: string, owner: string): Promise<boolean> {
+        return await this.request<any>(MessageAPI.GET_MODULE, { uuid, owner });
+    }
 }

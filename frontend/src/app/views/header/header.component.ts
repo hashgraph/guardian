@@ -334,7 +334,7 @@ export class HeaderComponent implements OnInit {
             case 'SR_VIEWER':
                 return /^\/policy-viewer\/\w+/.test(this.activeLinkRoot);
             case 'SR_EDITOR':
-                return this.activeLinkRoot === 'policy-configuration';
+                return this.activeLinkRoot === '/policy-configuration';
             case 'SR_COMPARE':
                 return this.activeLinkRoot === '/compare';
             case 'SR_SETTINGS':

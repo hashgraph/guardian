@@ -11,6 +11,7 @@ import { SchemaVariables } from './variables/schema-variables';
 import { TokenTemplateVariables } from './variables/token-template-variables';
 import { TokenVariables } from './variables/token-variables';
 import { TopicVariables } from './variables/topic-variables';
+import { TemplateModel } from './template.model';
 
 export class PolicyModuleModel extends PolicyBlockModel {
     protected _dataSource!: PolicyBlockModel[];
@@ -34,6 +35,10 @@ export class PolicyModuleModel extends PolicyBlockModel {
 
     public get allBlocks(): PolicyBlockModel[] {
         return this._allBlocks;
+    }
+
+    public get root(): PolicyBlockModel {
+        return this;
     }
 
     constructor(config: IModuleConfig, parent: PolicyBlockModel | null) {
@@ -73,7 +78,7 @@ export class PolicyModuleModel extends PolicyBlockModel {
         return this._dataSource;
     }
 
-    public override setModule(module: PolicyModel | PolicyModuleModel | undefined): void {
+    public override setModule(module: PolicyModel | PolicyModuleModel | TemplateModel | undefined): void {
         if (module !== this) {
             this._module = module;
         } else {
@@ -334,5 +339,9 @@ export class PolicyModuleModel extends PolicyBlockModel {
         const name = `New Topic ${topics.length}`;
         this.createVariable('Topic', name);
         return name;
+    }
+
+    public getRootModule(): PolicyModel | PolicyModuleModel {
+        return this;
     }
 }

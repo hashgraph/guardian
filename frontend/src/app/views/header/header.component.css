@@ -243,8 +243,7 @@ a[hidden="true"] {
     background: #fff;
 }
 .only-active {
-    width: 1px !important;
-    opacity: 0 !important;
+    display: none !important;
 }
 .only-active[active="true"] { 
     display: inline-flex !important;

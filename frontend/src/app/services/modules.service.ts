@@ -19,6 +19,10 @@ export class ModulesService {
         return this.http.get<any>(`${this.url}`, { observe: 'response' });
     }
 
+    public getById(uuid: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${uuid}`);
+    }
+
     public create(module: any): Observable<void> {
         return this.http.post<any>(`${this.url}/`, module);
     }

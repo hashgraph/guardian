@@ -334,6 +334,12 @@
     padding-left: 10px;
 }
 
+.mat-column-uuid {
+    width: 135px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
 .btn-menu {
     color: #3f51b5;
     position: relative;

@@ -21,6 +21,12 @@ export class NewModuleDialog {
         public dialogRef: MatDialogRef<NewModuleDialog>,
         private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
+            if(data) {
+                this.dataForm.setValue({
+                    name: data.name || '',
+                    description: data.description || '',
+                });
+            }
     }
 
     ngOnInit() {
