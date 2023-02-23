@@ -434,7 +434,7 @@ export class ReportBlock {
 
             const reportItems = ref.getItems();
             for (const reportItem of reportItems) {
-                const [documentsNotFound, resultFields] = await reportItem.run(
+                const [documentsNotFound] = await reportItem.run(
                     documents,
                     variables
                 );
