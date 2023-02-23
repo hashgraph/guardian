@@ -934,7 +934,7 @@ export class PolicyEngineService {
                     key: newPrivateKey
                 };
 
-                const didObject = DIDDocument.create(treasury.key, topic.topicId);
+                const didObject = await DIDDocument.create(treasury.key, topic.topicId);
                 const userDID = didObject.getDid();
 
                 const u = await DatabaseServer.getVirtualUsers(policyId);

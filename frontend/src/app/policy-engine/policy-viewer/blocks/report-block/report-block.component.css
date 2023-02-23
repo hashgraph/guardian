@@ -260,6 +260,25 @@ a[disabled="true"] {
     padding-right: 10px;
 }
 
+.empty-documents .chain-id {
+    border-bottom: unset;
+    padding: unset;
+    margin: unset;
+}
+
+.empty-documents-description {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    height: 170px;
+}
+
+.empty-documents-description mat-icon {
+    font-size: 115px;
+    height: 115px;
+    width: 115px;
+}
+
 .chain-title span {
     font-size: 12px;
     font-weight: normal;

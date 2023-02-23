@@ -603,7 +603,10 @@ export interface IPolicyReportItemBlock extends IPolicyBlock {
      * @param fieldsResult
      * @param mapVariables
      */
-    run(fieldsResult: any[], mapVariables: any): Promise<any>;
+    run(
+        fieldsResult: any[],
+        mapVariables: any
+    ): Promise<[documentsNotFound: boolean, resultFields: any]>;
 
     /**
      * Get items
