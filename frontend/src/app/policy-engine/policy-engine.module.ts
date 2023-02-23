@@ -79,6 +79,7 @@ import { ModulePropertiesComponent } from './policy-configuration/module-propert
 import { RegisteredService } from './registered-service/registered.service';
 import { ModuleComponent } from './policy-configuration/blocks/module/module.component';
 import { ModulesListComponent } from './modules-list/modules-list.component';
+import { NewModuleDialog } from './helpers/new-module-dialog/new-module-dialog.component';
 
 @NgModule({
     declarations: [
@@ -152,7 +153,8 @@ import { ModulesListComponent } from './modules-list/modules-list.component';
         PolicyTreeComponent,
         ModulePropertiesComponent,
         ModuleComponent,
-        ModulesListComponent
+        ModulesListComponent,
+        NewModuleDialog
     ],
     imports: [
         CommonModule,

@@ -10,6 +10,7 @@ import { forkJoin, Observable } from 'rxjs';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { InformService } from 'src/app/services/inform.service';
+import { ModulesService } from 'src/app/services/modules.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TasksService } from 'src/app/services/tasks.service';
@@ -115,6 +116,14 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.currentBlock && (this.currentBlock === this.openModule);
     }
 
+    public get isTree(): boolean {
+        return this.currentView === 'blocks';
+    }
+
+    public get leftMenu(): boolean {
+        return (this.openModeType === 'Policy' && this.selectModeType === 'Module') || !this.isTree;
+    }
+
     private operationMode: OperationMode = OperationMode.none;
     public taskId: string | undefined = undefined;
     public expectedTaskMessages: number = 0;
@@ -133,7 +142,8 @@ export class PolicyConfigurationComponent implements OnInit {
         private taskService: TasksService,
         private matIconRegistry: MatIconRegistry,
         private domSanitizer: DomSanitizer,
-        private registeredService: RegisteredService
+        private registeredService: RegisteredService,
+        private modulesService: ModulesService
     ) {
         this.options = new Options();
         this.policyModel = new PolicyModel();
@@ -199,23 +209,19 @@ export class PolicyConfigurationComponent implements OnInit {
             forkJoin([
                 this.tokenService.getTokens(),
                 this.policyEngineService.getBlockInformation(),
-                this.schemaService.getSchemas(this.policyModel.topicId)
+                this.schemaService.getSchemas(this.policyModel.topicId),
+                this.modulesService.menuList()
             ]).subscribe((data: any) => {
                 const tokens = data[0] || [];
                 const blockInformation = data[1] || {};
                 const schemas = data[2] || [];
+                const modules = data[3] || [];
 
                 this.registeredService.registerConfig(blockInformation);
                 this.tokens = tokens.map((e: any) => new Token(e));
                 this.schemas = SchemaHelper.map(schemas) || [];
                 this.schemas.unshift({ type: "" } as any);
-
-                const t = localStorage.getItem('template-modules');
-                if (t) {
-                    this.templateModules = JSON.parse(t);
-                } else {
-                    this.templateModules = [];
-                }
+                this.templateModules = modules;
 
                 this.finishedLoad();
             }, (error) => {
@@ -440,28 +446,30 @@ export class PolicyConfigurationComponent implements OnInit {
         const item = this.policyModel.getModule(this.currentBlock);
         if (item) {
             const json = item.getJSON();
-            const id = GenerateUUIDv4();
-            this.templateModules.push({
-                data: `module:${id}`,
-                uuid: id,
+            const module = {
                 name: item.tag,
                 description: item.tag,
-                tag: item.tag,
-                type: 'CUSTOM',
                 config: json
-            })
-            localStorage.setItem('template-modules', JSON.stringify(this.templateModules));
-            this.updateModules();
-            this.changeDetector.detectChanges();
+            }
+            this.loading = true;
+            this.modulesService.create(module).subscribe((result) => {
+                this.templateModules.push(result);
+                this.updateModules();
+                this.changeDetector.detectChanges()
+                setTimeout(() => { this.loading = false; }, 500);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
         }
     }
 
-    public onDeleteModule(item: any) {
-        this.templateModules = this.templateModules.filter(e => e.uuid !== item.uuid);
-        localStorage.setItem('template-modules', JSON.stringify(this.templateModules));
-        this.updateModules();
-        this.changeDetector.detectChanges();
-    }
+    // public onDeleteModule(item: any) {
+    //     this.templateModules = this.templateModules.filter(e => e.uuid !== item.uuid);
+    //     localStorage.setItem('template-modules', JSON.stringify(this.templateModules));
+    //     this.updateModules();
+    //     this.changeDetector.detectChanges();
+    // }
 
     public onAddModule(item: any) {
         this.currentBlock = this.openModule.getBlock(this.currentBlock);
@@ -475,10 +483,6 @@ export class PolicyConfigurationComponent implements OnInit {
         this.openModule = this.policyModel;
         this.openModeType = 'Policy';
         this.changeDetector.detectChanges();
-    }
-
-    public get leftMenu(): boolean {
-        return (this.openModeType === 'Policy' && this.selectModeType === 'Module');
     }
 
     public noReturnPredicate() {

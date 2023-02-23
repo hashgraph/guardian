@@ -53,6 +53,7 @@ import { RetireTokenDialogComponent } from './components/retire-token-dialog/ret
 import { DataInputDialogComponent } from './components/data-input-dialog/data-input-dialog.component';
 import { CompareModule } from './analytics/analytics.module';
 import { AnalyticsService } from './services/analytics.service';
+import { ModulesService } from './services/modules.service';
 
 @NgModule({
     declarations: [
@@ -117,6 +118,7 @@ import { AnalyticsService } from './services/analytics.service';
         MessageTranslationService,
         TasksService,
         ContractService,
+        ModulesService,
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,

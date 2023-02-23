@@ -53,7 +53,7 @@
             <div class="delimiter"></div>
 
             <div *ngIf="policyModel.isDraft" class="top-toolbar-btn all-status" (click)="validationPolicy()"
-                title="Validation Policy" [attr.errors-count]="errorsCount" [attr.readonly]="currentView != 'blocks'">
+                title="Validation Policy" [attr.errors-count]="errorsCount" [attr.readonly]="!isTree">
                 <mat-icon>task_alt</mat-icon>
                 <span>Validation</span>
                 <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
@@ -67,7 +67,7 @@
 
             <div class="delimiter"></div>
 
-            <ng-container *ngIf="!readonly && currentView === 'blocks'">
+            <ng-container *ngIf="!readonly && isTree">
                 <ng-container>
                     <div [attr.storage-active]="policyStorage.isUndo" class="top-toolbar-btn readonly-status"
                         (click)="undoPolicy()" title="Undo">
@@ -82,7 +82,7 @@
                     </div>
 
                     <div class="top-toolbar-btn all-status copy-blocks-mode" (click)="copyBlocksMode=!copyBlocksMode"
-                        title="Save Policy" [ngClass]="{'copy-blocks-mode-active': copyBlocksMode}">
+                        title="Copy Mode" [ngClass]="{'copy-blocks-mode-active': copyBlocksMode}" style="width: 68px">
                         <mat-icon>content_copy</mat-icon>
                         <span>Copy Mode</span>
                     </div>
@@ -123,12 +123,12 @@
 
 
             <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="viewMenu" style="width: 60px">
-                <mat-icon *ngIf="currentView =='blocks'">view_agenda</mat-icon>
-                <mat-icon *ngIf="currentView =='json'">code</mat-icon>
-                <mat-icon *ngIf="currentView =='yaml'">segment</mat-icon>
-                <span *ngIf="currentView =='blocks'">Tree</span>
-                <span *ngIf="currentView =='json'">JSON</span>
-                <span *ngIf="currentView =='yaml'">YAML</span>
+                <mat-icon *ngIf="currentView == 'blocks'">view_agenda</mat-icon>
+                <mat-icon *ngIf="currentView == 'json'">code</mat-icon>
+                <mat-icon *ngIf="currentView == 'yaml'">segment</mat-icon>
+                <span *ngIf="currentView == 'blocks'">Tree</span>
+                <span *ngIf="currentView == 'json'">JSON</span>
+                <span *ngIf="currentView == 'yaml'">YAML</span>
                 <div class="expand-group">
                     <mat-icon>arrow_drop_down</mat-icon>
                 </div>
@@ -136,26 +136,27 @@
 
             <div class="delimiter"></div>
 
-            <div *ngIf="currentView === 'blocks'" class="top-toolbar-group all-status event-color"
-                [matMenuTriggerFor]="eventMenu" style="width: 60px">
-                <mat-icon *ngIf="eventVisible =='All'" class="event-color">flash_on</mat-icon>
-                <mat-icon *ngIf="eventVisible =='Action'" class="event-color">
-                    <div class="action-event-icon"></div>
-                </mat-icon>
-                <mat-icon *ngIf="eventVisible =='Refresh'" class="event-color">
-                    <div class="refresh-event-icon"></div>
-                </mat-icon>
-                <mat-icon *ngIf="eventVisible =='None'" class="event-color">flash_off</mat-icon>
-                <span *ngIf="eventVisible =='All'" class="event-color">All Events</span>
-                <span *ngIf="eventVisible =='Action'" class="event-color">Action Events</span>
-                <span *ngIf="eventVisible =='Refresh'" class="event-color">Refresh Events</span>
-                <span *ngIf="eventVisible =='None'" class="event-color">Hide Events</span>
-                <div class="expand-group">
-                    <mat-icon>arrow_drop_down</mat-icon>
+            <ng-container *ngIf="isTree">
+                <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="eventMenu" style="width: 60px">
+                    <mat-icon *ngIf="eventVisible =='All'" class="event-color">flash_on</mat-icon>
+                    <mat-icon *ngIf="eventVisible =='Action'" class="event-color">
+                        <div class="action-event-icon"></div>
+                    </mat-icon>
+                    <mat-icon *ngIf="eventVisible =='Refresh'" class="event-color">
+                        <div class="refresh-event-icon"></div>
+                    </mat-icon>
+                    <mat-icon *ngIf="eventVisible =='None'" class="event-color">flash_off</mat-icon>
+                    <span *ngIf="eventVisible =='All'" class="event-color">All Events</span>
+                    <span *ngIf="eventVisible =='Action'" class="event-color">Action Events</span>
+                    <span *ngIf="eventVisible =='Refresh'" class="event-color">Refresh Events</span>
+                    <span *ngIf="eventVisible =='None'" class="event-color">Hide Events</span>
+                    <div class="expand-group">
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </div>
                 </div>
-            </div>
-
-            <div class="delimiter"></div>
+            
+                <div class="delimiter"></div>
+            </ng-container>
         </div>
 
         <div class="main-container">
@@ -343,9 +344,9 @@
                                             <span class="component-btn-toolbar">
                                                 <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
                                                     (click)="setModuleFavorite(item)">star</mat-icon>
-                                                <mat-icon [attr.readonly]="item.isDefault" class="component-btn-delete"
+                                                <!-- <mat-icon [attr.readonly]="item.isDefault" class="component-btn-delete"
                                                     [attr.favorite]="item.favorite"
-                                                    (click)="onDeleteModule(item)">delete</mat-icon>
+                                                    (click)="onDeleteModule(item)">delete</mat-icon> -->
                                             </span>
                                         </div>
                                     </div>
@@ -406,8 +407,8 @@
                                             <span class="component-btn-toolbar">
                                                 <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
                                                     (click)="setModuleFavorite(item)">star</mat-icon>
-                                                <mat-icon class="component-btn-delete" [attr.favorite]="item.favorite"
-                                                    (click)="onDeleteModule(item)">delete</mat-icon>
+                                                <!-- <mat-icon class="component-btn-delete" [attr.favorite]="item.favorite"
+                                                    (click)="onDeleteModule(item)">delete</mat-icon> -->
                                             </span>
                                         </div>
                                     </div>
@@ -420,8 +421,12 @@
             </div>
             <div class="center-container">
 
+                <div *ngIf="!isTree" class="textarea-code">
+                    <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions" (ngModelChange)="saveState()">
+                    </ngx-codemirror>
+                </div>
 
-                <div class="pc-tabs minimized-tabs">
+                <div *ngIf="isTree" class="pc-tabs minimized-tabs">
                     <div class="pc-tabs-headers">
                         <div class="tab-header tab-header-icon" [attr.selected]="openModule===policyModel"
                             style="width: 100px;margin-right: 6px" (click)="onOpenPolicy()">

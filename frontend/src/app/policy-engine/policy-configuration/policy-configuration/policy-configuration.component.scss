@@ -143,6 +143,20 @@
     background-size: 20px 20px;
 }
 
+.textarea-code {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    resize: none;
+    overflow: scroll;
+    width: 100%;
+    margin: 0px;
+    border: none;
+    padding: 0; 
+}
+
 .right-toolbar {
     height: 100%;
     width: 485px;
@@ -220,6 +234,18 @@
         background: rgb(252 252 252) !important;
         border: 1px solid rgb(252 252 252) !important;
         cursor: default !important;
+    }
+
+    .copy-blocks-mode-active {
+        background-color: #d1d1d1 !important;
+
+        &:active {
+            background-color: #ffffff !important;
+        }
+
+        &:hover {
+            background-color: #d1d1d1 !important;
+        }
     }
 
     .top-toolbar-group,
@@ -556,6 +582,7 @@
 }
 
 .components-menu {
+
     .cdk-drag-placeholder,
     .cdk-drag-preview {
         display: none !important;
@@ -627,7 +654,7 @@
                 user-select: none;
                 max-width: 50%;
                 margin-right: auto;
-                
+
                 &:hover {
                     background: var(--pc-tabs-hover-color);
                 }
@@ -1223,7 +1250,7 @@
         display: flex;
         position: relative;
         align-items: center;
-    
+
         >* {
             margin: 10px 8px 10px 40px !important;
         }
@@ -1269,8 +1296,10 @@
                 color: #404040;
             }
         }
+
         .drag-component.drag-module {
             height: 40px;
+
             .drag-component-name {
                 padding: 4px 0px 4px 30px;
             }

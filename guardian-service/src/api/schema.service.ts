@@ -962,9 +962,9 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 otherOptions.limit = 100;
             }
 
-            const [schemas, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+            const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
 
-            return new MessageResponse({ schemas, count });
+            return new MessageResponse({ items, count });
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

@@ -7,7 +7,6 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
 import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-policy-dialog.component';
-import { NewPolicyDialog } from '../helpers/new-policy-dialog/new-policy-dialog.component';
 import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -17,6 +16,8 @@ import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dia
 import { MultiPolicyDialogComponent } from '../helpers/multi-policy-dialog/multi-policy-dialog.component';
 import { ToastrService } from 'ngx-toastr';
 import { ComparePolicyDialog } from '../helpers/compare-policy-dialog/compare-policy-dialog.component';
+import { ModulesService } from 'src/app/services/modules.service';
+import { NewModuleDialog } from '../helpers/new-module-dialog/new-module-dialog.component';
 
 enum OperationMode {
     None,
@@ -46,6 +47,8 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         'name',
         'description',
         'status',
+        'operation',
+        'menu',
         'operations'
     ];
 
@@ -82,7 +85,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
 
     constructor(
         private profileService: ProfileService,
-        private policyEngineService: PolicyEngineService,
+        private modulesService: ModulesService,
         private wsService: WebSocketService,
         private tokenService: TokenService,
         private route: ActivatedRoute,
@@ -148,7 +151,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
 
     private loadAllModules() {
         this.loading = true;
-        this.policyEngineService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
+        this.modulesService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
             this.modules = policiesResponse.body || [];
             this.modulesCount = policiesResponse.headers.get('X-Total-Count') || this.modules.length;
             setTimeout(() => {
@@ -451,7 +454,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     }
 
     public newModules() {
-        const dialogRef = this.dialog.open(NewPolicyDialog, {
+        const dialogRef = this.dialog.open(NewModuleDialog, {
             width: '650px',
             panelClass: 'g-dialog',
             disableClose: true,
@@ -460,15 +463,19 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
+                const module = {
+                    name: result.name,
+                    description: result.description,
+                    config: {
+                        blockType: 'module'
+                    }
+                }
                 this.loading = true;
-                // this.policyEngineService.pushCreate(result).subscribe((result) => {
-                //     const { taskId, expectation } = result;
-                //     this.taskId = taskId;
-                //     this.expectedTaskMessages = expectation;
-                //     this.mode = OperationMode.Create;
-                // }, (e) => {
-                //     this.loading = false;
-                // });
+                this.modulesService.create(module).subscribe((result) => {
+                    this.loadAllModules();
+                }, (e) => {
+                    this.loading = false;
+                });
             }
         });
     }
@@ -486,14 +493,25 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 return;
             }
             this.loading = true;
-            // this.policyEngineService.pushDelete(element.id).subscribe((result) => {
-            //     const { taskId, expectation } = result;
-            //     this.taskId = taskId;
-            //     this.expectedTaskMessages = expectation;
-            //     this.mode = OperationMode.Delete;
-            // }, (e) => {
-            //     this.loading = false;
-            // });
+            this.modulesService.delete(element.uuid).subscribe((result) => {
+                this.loadAllModules();
+            }, (e) => {
+                this.loading = false;
+            });
         });
+    }
+
+    public publishModule(element: any) {
+
+    }
+
+    public showModule(element: any, value: boolean) {
+        this.loading = true;
+        (value ? this.modulesService.show(element.uuid) : this.modulesService.hide(element.uuid))
+            .subscribe((result) => {
+                this.loadAllModules();
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }

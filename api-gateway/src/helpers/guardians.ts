@@ -21,6 +21,20 @@ import { ServiceRequestsBase } from './service-requests-base';
 type IFilter = any;
 
 /**
+ * Items and count
+ */
+interface ResponseAndCount<U> {
+    /**
+     * Return count
+     */
+    count: number;
+    /**
+     * Schemas array
+     */
+    items: U[];
+}
+
+/**
  * Guardians service
  */
 @Singleton
@@ -83,18 +97,9 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @param {Object} [params] - filters
      *
-     * @returns {IVPDocument[]} - VP Documents
+     * @returns {ResponseAndCount<IVPDocument>} - VP Documents
      */
-    public async getVpDocuments(params?: IFilter): Promise<{
-        /**
-         * Return VP Documents
-         */
-        vp: IVPDocument[],
-        /**
-         * Return count
-         */
-        count: number
-    }> {
+    public async getVpDocuments(params?: IFilter): Promise<ResponseAndCount<IVPDocument>> {
         return await this.request<any>(MessageAPI.GET_VP_DOCUMENTS, params);
     }
 
@@ -476,22 +481,13 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async getSchemasByOwner<T extends {
-        /**
-         * Schemas array
-         */
-        schemas: ISchema[],
-        /**
-         * Total count
-         */
-        count: number
-    }>(
+    public async getSchemasByOwner(
         did: string,
         topicId?: string,
         pageIndex?: any,
         pageSize?: any
-    ): Promise<T> {
-        return await this.request<T>(MessageAPI.GET_SCHEMAS, {
+    ): Promise<ResponseAndCount<ISchema>> {
+        return await this.request(MessageAPI.GET_SCHEMAS, {
             owner: did,
             topicId,
             pageIndex,
@@ -507,13 +503,10 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {ISchema[]} - all schemas
      */
     public async getSchemasByUUID(uuid: string): Promise<ISchema[]> {
-        const { schemas } = await this.request<{
-            /**
-             * Schemas array
-             */
-            schemas: ISchema[]
-        }>(MessageAPI.GET_SCHEMAS, { uuid });
-        return schemas;
+        const { items } = await this.request<ResponseAndCount<ISchema>>(
+            MessageAPI.GET_SCHEMAS, { uuid }
+        );
+        return items;
     }
 
     /**
@@ -769,21 +762,12 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async getSystemSchemas<T extends {
-        /**
-         * Schemas array
-         */
-        schemas: ISchema[],
-        /**
-         * Total count
-         */
-        count: number
-    }>(
+    public async getSystemSchemas(
         owner: string,
         pageIndex?: any,
         pageSize?: any
-    ): Promise<T> {
-        return await this.request<T>(MessageAPI.GET_SYSTEM_SCHEMAS, {
+    ): Promise<ResponseAndCount<ISchema>> {
+        return await this.request<ResponseAndCount<ISchema>>(MessageAPI.GET_SYSTEM_SCHEMAS, {
             owner,
             pageIndex,
             pageSize
@@ -850,7 +834,12 @@ export class Guardians extends ServiceRequestsBase {
      *
      * @returns - Artifact
      */
-    public async getArtifacts(owner, policyId, pageIndex, pageSize): Promise<any> {
+    public async getArtifacts(
+        owner: string,
+        policyId: string,
+        pageIndex: string,
+        pageSize: string,
+    ): Promise<any> {
         return await this.request<any>(MessageAPI.GET_ARTIFACTS, {
             owner,
             policyId,
@@ -1180,5 +1169,76 @@ export class Guardians extends ServiceRequestsBase {
             did,
             requestId,
         });
+    }
+
+
+
+
+    /**
+     * Create Module
+     * @param module
+     * @param owner
+     * @returns module
+     */
+    public async createModule(module: any, owner: string): Promise<any> {
+        return await this.request<any>(MessageAPI.CREATE_MODULE, { module, owner });
+    }
+
+    /**
+     * Return modules
+     *
+     * @param {IFilter} [params]
+     *
+     * @returns {ResponseAndCount<any>}
+     */
+    public async getModule(params?: IFilter): Promise<ResponseAndCount<any>> {
+        return await this.request<any>(MessageAPI.GET_MODULES, params);
+    }
+
+    /**
+    * Delete module
+    * @param uuid
+    * @param owner
+    * @returns Operation Success
+    */
+    public async deleteModule(uuid: string, owner: string): Promise<boolean> {
+        return await this.request<any>(MessageAPI.DELETE_MODULES, { uuid, owner });
+    }
+
+    /**
+     * Return modules
+     * @param owner
+     * @returns modules
+     */
+    public async getMenuModule(owner: string): Promise<any[]> {
+        return await this.request<any>(MessageAPI.GET_MENU_MODULES, { owner });
+    }
+
+    /**
+     * Update modules
+     * @param uuid
+     * @param module
+     * @param owner
+     * @returns module
+     */
+    public async updateModule(
+        uuid: string,
+        module: any,
+        owner: string
+    ): Promise<any> {
+        return await this.request<any>(MessageAPI.UPDATE_MODULES, { uuid, module, owner });
+    }
+
+    /**
+     * Show modules
+     * @param owner
+     * @returns module
+     */
+    public async showModule(
+        uuid: any,
+        show: boolean,
+        owner: string
+    ): Promise<any> {
+        return await this.request<any>(MessageAPI.SHOW_MODULES, { uuid, show, owner });
     }
 }
