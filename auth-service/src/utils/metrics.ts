@@ -15,6 +15,6 @@ export const startMetricsServer = () => {
   });
 
   app.listen(PORT, () => {
-    console.log(`guardian-service metrics server started at http://localhost:${PORT}`);
+    console.log(`auth-service metrics server started at http://localhost:${PORT}`);
   });
 }

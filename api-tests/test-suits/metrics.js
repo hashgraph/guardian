@@ -47,6 +47,14 @@ function Metrics() {
                     done();
                 });
         });
+        it('GET mrv-sender /metrics', (done) => {
+            chai.request('http://localhost:5008')
+                .get('/metrics')
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    done();
+                });
+        });
     });
 }
 
