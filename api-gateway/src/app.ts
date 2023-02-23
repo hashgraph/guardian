@@ -31,7 +31,7 @@ import { contractAPI } from '@api/service/contract';
 
 const PORT = process.env.PORT || 3002;
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
-const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '10mb';
+const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 
 Promise.all([
     MessageBrokerChannel.connect('API_GATEWAY'),
