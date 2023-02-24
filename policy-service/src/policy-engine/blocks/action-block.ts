@@ -108,7 +108,7 @@ export class InterfaceDocumentActionBlock {
             const hederaAccountKey = hederaAccount.hederaAccountKey;
             const schemaObject = await ref.databaseServer.getSchemaByIRI(ref.options.schema);
             const schema = new Schema(schemaObject);
-            const didDocument = DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));
+            const didDocument = await DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));
             result = {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
                 body: {
@@ -125,7 +125,7 @@ export class InterfaceDocumentActionBlock {
                         'type': schema.type,
                         '@context': [schema.contextURL]
                     },
-                    'didDocument': didDocument.getPrivateDidDocument(),
+                    'didDocument': await didDocument.getPrivateDidDocument(),
                     'policyId': ref.policyId,
                     'policyTag': policy.policyTag,
                     'ref': sensorDid

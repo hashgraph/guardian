@@ -37,11 +37,13 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 const filters: IPolicyBlock[] = [];
 
                 for (const child of this.children) {
-                    if (child.blockClassName === 'DataSourceAddon') {
+                    if (child.blockType === 'filtersAddon') {
                         filters.push(child);
                     } else if (child.blockClassName === 'SourceAddon') {
                         for (const filter of child.children) {
-                            filters.push(filter);
+                            if (filter.blockType === 'filtersAddon') {
+                                filters.push(filter);
+                            }
                         }
                     }
                 }

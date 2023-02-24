@@ -1,7 +1,7 @@
 <!-- UI Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="block">
     <ng-container>
-        
+
         <tr class="propHeader" [attr.collapse]="propHidden.metaData">
             <td class="propRowCol" (click)="onHide(propHidden, 'buttonsGroup')">
                 <mat-icon *ngIf="block.uiMetaData.buttons.length">expand_more</mat-icon>
@@ -62,6 +62,14 @@
                     <td class="propRowCell cellName">Dialog Description</td>
                     <td class="propRowCell">
                         <input class="prop-input" [(ngModel)]="button.description" [readonly]="readonly">
+                    </td>
+                </tr>
+                <tr class="propRow subRow-2"
+                    [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+                    <td class="propRowCol"></td>
+                    <td class="propRowCell cellName">Dialog Result Field Path</td>
+                    <td class="propRowCell">
+                        <input class="prop-input" placeholder="comment" [(ngModel)]="button.dialogResultFieldPath" [readonly]="readonly">
                     </td>
                 </tr>
             </ng-template>

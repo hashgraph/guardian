@@ -23,6 +23,9 @@ export class DefaultDocumentLoader extends DocumentLoader {
         if ((securityContexts.contexts as Map<string, object>).has(iri)) {
             return true;
         }
+        if (iri === 'https://w3id.org/security/bbs/v1') {
+            return true;
+        }
         return false;
     }
 
@@ -47,6 +50,12 @@ export class DefaultDocumentLoader extends DocumentLoader {
             return {
                 documentUrl: iri,
                 document: securityContexts.contexts.get(iri),
+            };
+        }
+        if (iri === 'https://w3id.org/security/bbs/v1') {
+            return {
+                documentUrl: iri,
+                document: securityContexts.contexts.get(securityContexts.constants.BLS12381_2020_V1_URL)
             };
         }
         throw new Error('IRI not found: ' + iri);

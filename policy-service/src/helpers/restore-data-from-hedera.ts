@@ -390,7 +390,7 @@ export class RestoreDataFromHedera {
     async findAllUserTopics(username: string, hederaAccountID: string, hederaAccountKey): Promise<any[]> {
         const mainTopicMessages = await this.getMainTopicMessages();
 
-        const did = DIDDocument.create(hederaAccountKey, null);
+        const did = await DIDDocument.create(hederaAccountKey, null);
         const didString = did.getDid();
 
         const foundMessages = mainTopicMessages.filter(m => !!m.did).filter(m => m.did?.includes(didString));
@@ -411,7 +411,7 @@ export class RestoreDataFromHedera {
      * @param userTopic
      */
     async restoreRootAuthority(username: string, hederaAccountID: string, hederaAccountKey, userTopic: string): Promise<void> {
-        const did = DIDDocument.create(hederaAccountKey, null);
+        const did = await DIDDocument.create(hederaAccountKey, null);
         const didString = did.getDid();
 
         // didString = 'did:hedera:testnet:zYVrjgg5HmNJVdn9j81P3k8ZeJfmdFv8SzsKAwPk5cB'

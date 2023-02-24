@@ -20,15 +20,15 @@ This folder contains sub folders for each Methodology and their authors (with ma
 4. Tolam Earth - OCI
 5. Improved Cookstove - OCI
 6. Tamuwa VER 
-7. eWaste Policy - KrypC(Coming soon)
-8. TBA-X (Coming soon)
+7. KrypC GCC 
+8. eWaste Policy - KrypC(Coming soon)
 9. TBA-X (Coming soon)
-10. TBA-D (Coming soon)
-11. Carbontricity (Coming soon)
-12. VN (Coming soon)
-13. Evercity (Coming soon)
-14. Zeru.Earth (Coming soon)
-15. KrypC GCC (Coming soon) 
+10. TBA-X (Coming soon)
+11. TBA-D (Coming soon)
+12. Carbontricity (Coming soon)
+13. VN (Coming soon)
+14. Evercity (Coming soon)
+15. Zeru.Earth (Coming soon)
 
 ### Emission Policies
 

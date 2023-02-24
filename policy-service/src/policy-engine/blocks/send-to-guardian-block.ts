@@ -134,7 +134,7 @@ export class SendToGuardianBlock {
     private async getVPRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
         let old: any = null;
         if (document.hash) {
-            old = await ref.databaseServer.getVcDocument({
+            old = await ref.databaseServer.getVpDocument({
                 where: {
                     hash: { $eq: document.hash },
                     hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
@@ -178,24 +178,18 @@ export class SendToGuardianBlock {
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
         let old = await this.getVCRecord(document, operation, ref);
-
-        let updateStatus = false;
         if (old) {
-            updateStatus = old.option?.status !== document.option?.status;
             old = this.mapDocument(old, document);
             old = await ref.databaseServer.updateVC(old);
         } else {
-            updateStatus = !!document.option?.status;
             delete document.id;
             delete document._id;
             old = await ref.databaseServer.saveVC(document);
         }
-
-        if (updateStatus) {
+        if (!ref.options.skipSaveState) {
             await ref.databaseServer.saveDocumentState({
                 documentId: old.id,
-                status: old.option.status,
-                reason: old.comment
+                document: old
             });
         }
         return old;

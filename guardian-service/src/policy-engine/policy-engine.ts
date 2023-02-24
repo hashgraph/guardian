@@ -1,4 +1,11 @@
 import {
+    GenerateUUIDv4,
+    IRootConfig,
+    IUser,
+    ModelHelper,
+    PolicyEvents,
+    PolicyType,
+    Schema,
     SchemaEntity,
     SchemaStatus,
     TopicType,
@@ -10,12 +17,9 @@ import {
     PolicyType,
     IRootConfig,
     GenerateUUIDv4, PolicyEvents, WorkerTaskType
+    UserRole
 } from '@guardian/interfaces';
-import {
-    DataBaseHelper,
-    IAuthUser,
-    Logger, ServiceRequestsBase, Singleton
-} from '@guardian/common';
+import { DataBaseHelper, IAuthUser, Logger, ServiceRequestsBase, Singleton } from '@guardian/common';
 import {
     MessageAction,
     MessageServer,
@@ -149,7 +153,7 @@ export class PolicyEngine extends ServiceRequestsBase{
         } else {
             userFull.setUsername(regUser.username);
         }
-        const groups = await policy.databaseServer.getGroupsByUser(policy.policyId, userFull.did);
+        const groups = await new DatabaseServer().getGroupsByUser(policy.id, userFull.did);
         for (const group of groups) {
             if (group.active !== false) {
                 return userFull.setGroup(group);

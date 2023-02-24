@@ -3,6 +3,7 @@
  */
 export enum MessageType {
     VCDocument = 'VC-Document',
+    EVCDocument = 'EVC-Document',
     VPDocument = 'VP-Document',
     DIDDocument = 'DID-Document',
     Policy = 'Policy',

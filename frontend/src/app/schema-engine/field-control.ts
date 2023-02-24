@@ -27,6 +27,7 @@ export class FieldControl {
     public controlColor: FormControl;
     public controlSize: FormControl;
     public controlBold: FormControl;
+    public controlPrivate: FormControl;
     private readonly _defaultFieldMap!: any;
     private _entityType!: FormControl;
 
@@ -57,6 +58,7 @@ export class FieldControl {
             this.controlArray = new FormControl(field.isArray);
             this.controlUnit = new FormControl(field.unit);
             this.controlRemoteLink = new FormControl(field.remoteLink);
+            this.controlPrivate = new FormControl(field.isPrivate || false);
             this.controlEnum = new FormArray([]);
             field.enum?.forEach(item => {
                 this.controlEnum.push(new FormControl(item))
@@ -84,6 +86,7 @@ export class FieldControl {
             this.controlColor = new FormControl('#000000');
             this.controlSize = new FormControl(18);
             this.controlBold = new FormControl(false);
+            this.controlPrivate = new FormControl(false);
         }
         this._entityType.valueChanges
             .pipe(takeUntil(destroyEvent))
@@ -140,6 +143,10 @@ export class FieldControl {
         return this.controlBold.value;
     }
 
+    public get isPrivate(): boolean {
+        return this.controlPrivate.value;
+    }
+
     public createGroup(): FormGroup {
         return new FormGroup({
             controlKey: this.controlKey,
@@ -154,6 +161,7 @@ export class FieldControl {
             controlColor: this.controlColor,
             controlSize: this.controlSize,
             controlBold: this.controlBold,
+            controlPrivate: this.controlPrivate,
         });
     }
 
@@ -174,6 +182,7 @@ export class FieldControl {
                 ? group.controlSize + 'px'
                 : undefined;
             const textBold = group.controlBold;
+            const isPrivate = group.controlPrivate;
             return {
                 key,
                 title,
@@ -187,6 +196,7 @@ export class FieldControl {
                 textColor,
                 textSize,
                 textBold,
+                isPrivate,
             };
         } else {
             return null;

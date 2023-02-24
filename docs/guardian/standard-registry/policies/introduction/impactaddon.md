@@ -4,18 +4,18 @@ This Addon for the mint block which allows to add additional info for the token 
 
 ### 1. Properties
 
-| Property Name    | Description                                                                                         | Example                                                                                                   |
-| ---------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Tag              | Unique name for the logic block.                                                                    | impactAddon\_1                                                                                            |
-| Permissions      | Which entity has rights to interact at this part of the workflow.                                   | Standard Registry                                                                                         |
-| Default Active   | Shows whether this block is active at this time and whether it needs to be shown.                   | Checked or UnChecked                                                                                      |
-| Stop Propagation | End processing here, don't pass control to the next block.                                          | Checked or UnChecked                                                                                      |
-| On Errors        | Called if the system error has occurs in the Block                                                  | <ul><li>No action</li></ul><ul><li>Retry</li></ul><ul><li>Go to step</li></ul><ul><li>Go to tag</li></ul> |
-| Impact Type      | shows the type of the impact                                                                        | Primary Impacts / Secondary Impacts                                                                       |
-| Label            | Title of the Impact                                                                                 | Test                                                                                                      |
-| Description      | Description of the impact                                                                           | Impact description                                                                                        |
-| Amount (Formula) | Formula for calculating the impact quantitative representation based on the data from the source VC | field0                                                                                                    |
-| Unit             | Unit of measurement of impact amounts                                                               | Kg                                                                                                        |
+| Property Name    | Description                                                                                         | Example                                                                                                   | Status |
+| ---------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------ |
+| Tag              | Unique name for the logic block.                                                                    | impactAddon\_1                                                                                            |        |
+| Permissions      | Which entity has rights to interact at this part of the workflow.                                   | Standard Registry                                                                                         |        |
+| Default Active   | Shows whether this block is active at this time and whether it needs to be shown.                   | Checked or UnChecked                                                                                      |        |
+| Stop Propagation | End processing here, don't pass control to the next block.                                          | Checked or UnChecked                                                                                      |        |
+| On Errors        | Called if the system error has occurs in the Block                                                  | <ul><li>No action</li></ul><ul><li>Retry</li></ul><ul><li>Go to step</li></ul><ul><li>Go to tag</li></ul> |        |
+| Impact Type      | shows the type of the impact                                                                        | Primary Impacts / Secondary Impacts                                                                       |        |
+| Label            | Title of the Impact                                                                                 | Test                                                                                                      |        |
+| Description      | Description of the impact                                                                           | Impact description                                                                                        |        |
+| Amount (Formula) | Formula for calculating the impact quantitative representation based on the data from the source VC | field0                                                                                                    |        |
+| Unit             | Unit of measurement of impact amounts                                                               | Kg                                                                                                        |        |
 
 
 

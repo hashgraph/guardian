@@ -31,7 +31,10 @@ export class ReportItemBlock {
      * @param resultFields
      * @param variables
      */
-    public async run(resultFields: IReportItem[], variables: any): Promise<any> {
+    public async run(
+        resultFields: IReportItem[],
+        variables: any
+    ): Promise<[documentsNotFound: boolean, resultFields: any]> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportItemBlock>(this);
         const icon = ref.options.icon;
         const title = ref.options.title;
@@ -98,6 +101,8 @@ export class ReportItemBlock {
         const vcDocuments: any = multiple
             ? await ref.databaseServer.getVcDocuments(filtersToVc)
             : [await ref.databaseServer.getVcDocument(filtersToVc)];
+        const notFoundDocuments = vcDocuments.filter((vc) => vc).length < 1;
+        item.notFoundDocuments = notFoundDocuments;
 
         for (const vcDocument of vcDocuments) {
             if (vcDocument) {
@@ -145,6 +150,6 @@ export class ReportItemBlock {
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, null, null));
 
-        return resultFields;
+        return [notFoundDocuments, resultFields];
     }
 }

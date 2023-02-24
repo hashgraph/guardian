@@ -11,13 +11,13 @@ import {
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
-import { schemasToContext } from '@transmute/jsonld-schema';
 import { MessageAction, MessageServer, SchemaMessage, TopicConfig, TopicHelper, UrlType } from '@hedera-modules';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
+import { schemasToContext } from '@guardian/common';
 
 export const schemaCache = {};
 

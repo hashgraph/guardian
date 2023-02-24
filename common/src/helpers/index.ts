@@ -4,6 +4,7 @@ export * from './db-helper';
 export * from './migration';
 export * from './settings-container';
 export * from './service-requests-base';
-export * from './run-function-async'
-export * from './do-nothing'
-export * from './validate-configuration'
+export * from './run-function-async';
+export * from './do-nothing';
+export * from './schemas-to-context';
+export * from './validate-configuration';

@@ -71,6 +71,6 @@ Instead of creating Policy from scratch, there is an option of importing the Pol
 
 2.6 There is also an option to Export the Policy. To export the policy click on Export button. Once, you click on Export, you get Export dialog, where we have two exporting options: Copy message Identifier and saving the Policy as file.
 
-![](<../.gitbook/assets/image (10) (1).png>)
+![](<../.gitbook/assets/image (10) (1) (2).png>)
 
 When you click on Save to file, Policy is exported as a .zip file.

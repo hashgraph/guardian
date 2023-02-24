@@ -5,6 +5,7 @@
     "@mikro-orm/core": "~5.3.0",
     "@mikro-orm/migrations-mongodb": "~5.3.0",
     "@mikro-orm/mongodb": "~5.3.0",
+    "@transmute/jsonld-schema": "^0.7.0-unstable.80",
     "express": "^4.17.1",
     "nats": "^2.6.1",
     "reflect-metadata": "^0.1.13",

@@ -36,6 +36,7 @@ export class SchemaFieldConfigurationComponent implements OnInit {
     @Input('schemaTypes') schemaTypes!: any[];
     @Input('extended') extended!: boolean;
     @Input('value') value!: any;
+    @Input('private') canBePrivate!: boolean;
 
     @Output('remove') remove = new EventEmitter<any>();
 
