@@ -58,7 +58,7 @@ Promise.all([
             }
         }
         if (process.env.IPFS_PROVIDER === 'local') {
-            if (process.env.IPFS_NODE_ADDRESS) {
+            if (!process.env.IPFS_NODE_ADDRESS) {
                 return false
             }
         }
