@@ -9,7 +9,7 @@ import {
     IUser,
     PolicyType,
     IRootConfig,
-    GenerateUUIDv4, PolicyEvents
+    GenerateUUIDv4, PolicyEvents, WorkerTaskType
 } from '@guardian/interfaces';
 import {
     DataBaseHelper,
@@ -43,6 +43,9 @@ import { ISerializedErrors } from './policy-validation-results-container';
 import { Artifact } from '@entity/artifact';
 import { MultiPolicy } from '@entity/multi-policy';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
+import { KeyType, Wallet } from '@helpers/wallet';
+import { Workers } from '@helpers/workers';
+import { Token } from '@entity/token';
 
 /**
  * Result of publishing
@@ -487,6 +490,72 @@ export class PolicyEngine extends ServiceRequestsBase{
             const tokenIds = findAllEntities(model.config, ['tokenId']);
             const tokens = await DatabaseServer.getTokens({tokenId: {$in: tokenIds}, owner: model.owner});
             for (const token of tokens) {
+                if (token.draftToken) {
+                    const workers = new Workers();
+                    const tokenData = await workers.addRetryableTask({
+                        type: WorkerTaskType.CREATE_TOKEN,
+                        data: {
+                            operatorId: root.hederaAccountId,
+                            operatorKey: root.hederaAccountKey,
+                            tokenName: token.tokenName,
+                            tokenSymbol: token.tokenSymbol,
+                            tokenType: token.tokenType,
+                            initialSupply: token.initialSupply,
+                            decimals: token.decimals,
+                            changeSupply: true,
+                            enableAdmin: token.enableAdmin,
+                            enableFreeze: token.enableFreeze,
+                            enableKYC: token.enableKYC,
+                            enableWipe: token.enableWipe,
+                        }
+                    }, 1);
+                    const wallet = new Wallet();
+                    await Promise.all([
+                        wallet.setUserKey(
+                            root.did,
+                            KeyType.TOKEN_TREASURY_KEY,
+                            tokenData.tokenId,
+                            tokenData.treasuryKey
+                        ),
+                        wallet.setUserKey(
+                            root.did,
+                            KeyType.TOKEN_ADMIN_KEY,
+                            tokenData.tokenId,
+                            tokenData.adminKey
+                        ),
+                        wallet.setUserKey(
+                            root.did,
+                            KeyType.TOKEN_FREEZE_KEY,
+                            tokenData.tokenId,
+                            tokenData.freezeKey
+                        ),
+                        wallet.setUserKey(
+                            root.did,
+                            KeyType.TOKEN_KYC_KEY,
+                            tokenData.tokenId,
+                            tokenData.kycKey
+                        ),
+                        wallet.setUserKey(
+                            root.did,
+                            KeyType.TOKEN_SUPPLY_KEY,
+                            tokenData.tokenId,
+                            tokenData.supplyKey
+                        ),
+                        wallet.setUserKey(
+                            root.did,
+                            KeyType.TOKEN_WIPE_KEY,
+                            tokenData.tokenId,
+                            tokenData.wipeKey
+                        )
+                    ]);
+
+                    replaceAllEntities(model.config, ['tokenId'], token.tokenId, tokenData.tokenId);
+                    token.tokenId = tokenData.tokenId;
+                    token.draftToken = false;
+                    token.adminId = tokenData.treasuryId;
+                    await new DataBaseHelper(Token).save(token);
+                    await DatabaseServer.updatePolicy(model);
+                }
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
                 tokenMessage.setDocument(token);
                 await messageServer

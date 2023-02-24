@@ -10,7 +10,7 @@ export class TokenConfigurationComponent implements OnInit {
     @Input('preset') preset?: any;
     @Input('dataForm') dataForm!: FormGroup;
     @Input('readonly') readonly?: any;
-    
+
     ft: any;
 
     constructor() { }
@@ -48,6 +48,7 @@ export class TokenConfigurationComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        console.log(this);
         if (this.preset) {
             this.dataForm.patchValue(this.preset);
             for (let presetEntry of Object.entries(this.preset)) {
