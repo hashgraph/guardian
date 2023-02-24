@@ -10,13 +10,10 @@ import { DataBaseNamingStrategy } from './db-naming-strategy';
 /**
  * Common connection config
  */
-
-
-
-export const COMMON_CONNECTION_CONFIG: any = {
+export const COMMON_CONNECTION_CONFIG:any = {
     type: 'mongo',
     namingStrategy: DataBaseNamingStrategy,
-    dbName: `${process.env.ENV}_${process.env.DB_DATABASE}`,
+    dbName:process.env.ENV ? `${process.env.ENV}_${process.env.DB_DATABASE}` : process.env.DB_DATABASE,
     clientUrl:`mongodb://${process.env.DB_HOST}`,
     entities: [
         'dist/entity/*.js'
