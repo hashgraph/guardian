@@ -22,14 +22,14 @@ export class TokenDialog {
         changeSupply: [true, Validators.required],
         enableFreeze: [false, Validators.required],
         enableKYC: [false, Validators.required],
-        enableWipe: [true, Validators.required],
+        enableWipe: [true, Validators.required]
     });
     title: string = "New Token";
     description: string = "";
     token: any = null;
     valid: boolean = true;
     readonly: boolean = false;
-    
+
     constructor(
         public dialogRef: MatDialogRef<TokenDialog>,
         private fb: FormBuilder,
@@ -50,7 +50,11 @@ export class TokenDialog {
             if (data.token) {
                 this.dataForm?.patchValue(data.token);
                 this.token = data.token;
-                this.readonly = true;
+                if (data.token.draftToken) {
+                    this.readonly = false;
+                } else {
+                    this.readonly = true;
+                }
             }
         }
     }

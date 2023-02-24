@@ -10,7 +10,7 @@ import {
 import JSZip from 'jszip';
 import { Token } from '@entity/token';
 import { Schema } from '@entity/schema';
-import { SchemaEntity, TopicType, GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
+import { SchemaEntity, TopicType, GenerateUUIDv4 } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
 import { MessageAction, MessageServer, MessageType, PolicyMessage, TopicConfig, TopicHelper } from '@hedera-modules';
 import { Topic } from '@entity/topic';
@@ -19,9 +19,7 @@ import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
 import { DatabaseServer } from '@database-modules';
 import { DataBaseHelper } from '@guardian/common';
-import { Workers } from '@helpers/workers';
 import { Artifact } from '@entity/artifact';
-import { KeyType, Wallet } from '@helpers/wallet';
 
 /**
  * Policy import export helper
@@ -261,81 +259,26 @@ export class PolicyImportExportHelper {
             notifier.start('Import tokens');
             const tokenRepository = new DataBaseHelper(Token);
             for (const token of tokens) {
-                const workers = new Workers();
-                const tokenData = await workers.addRetryableTask({
-                    type: WorkerTaskType.CREATE_TOKEN,
-                    data: {
-                        operatorId: root.hederaAccountId,
-                        operatorKey: root.hederaAccountKey,
-                        tokenName: token.tokenName,
-                        tokenSymbol: token.tokenSymbol,
-                        tokenType: token.tokenType,
-                        initialSupply: token.initialSupply,
-                        decimals: token.decimals,
-                        changeSupply: true,
-                        enableAdmin: !!(token.enableAdmin || token.adminKey),
-                        enableFreeze: !!(token.enableFreeze || token.freezeKey),
-                        enableKYC: !!(token.enableKYC || token.kycKey),
-                        enableWipe: !!(token.enableWipe || token.wipeKey),
-                    }
-                }, 1);
-                const wallet = new Wallet();
-                await Promise.all([
-                    wallet.setUserKey(
-                        root.did,
-                        KeyType.TOKEN_TREASURY_KEY,
-                        tokenData.tokenId,
-                        tokenData.treasuryKey
-                    ),
-                    wallet.setUserKey(
-                        root.did,
-                        KeyType.TOKEN_ADMIN_KEY,
-                        tokenData.tokenId,
-                        tokenData.adminKey
-                    ),
-                    wallet.setUserKey(
-                        root.did,
-                        KeyType.TOKEN_FREEZE_KEY,
-                        tokenData.tokenId,
-                        tokenData.freezeKey
-                    ),
-                    wallet.setUserKey(
-                        root.did,
-                        KeyType.TOKEN_KYC_KEY,
-                        tokenData.tokenId,
-                        tokenData.kycKey
-                    ),
-                    wallet.setUserKey(
-                        root.did,
-                        KeyType.TOKEN_SUPPLY_KEY,
-                        tokenData.tokenId,
-                        tokenData.supplyKey
-                    ),
-                    wallet.setUserKey(
-                        root.did,
-                        KeyType.TOKEN_WIPE_KEY,
-                        tokenData.tokenId,
-                        tokenData.wipeKey
-                    )
-                ]);
                 const tokenObject = tokenRepository.create({
-                    tokenId: tokenData.tokenId,
-                    tokenName: tokenData.tokenName,
-                    tokenSymbol: tokenData.tokenSymbol,
-                    tokenType: tokenData.tokenType,
-                    decimals: tokenData.decimals,
-                    initialSupply: tokenData.initialSupply,
-                    adminId: tokenData.treasuryId,
-                    changeSupply: !!tokenData.supplyKey,
-                    enableAdmin: !!tokenData.adminKey,
-                    enableKYC: !!tokenData.kycKey,
-                    enableFreeze: !!tokenData.freezeKey,
-                    enableWipe: !!tokenData.wipeKey,
+                    tokenId: GenerateUUIDv4(),
+                    tokenName: token.tokenName,
+                    tokenSymbol: token.tokenSymbol,
+                    tokenType: token.tokenType,
+                    decimals: token.decimals,
+                    initialSupply: token.initialSupply,
+                    adminId: null,
+                    changeSupply: !!token.supplyKey,
+                    enableAdmin: !!token.adminKey,
+                    enableKYC: !!token.kycKey,
+                    enableFreeze: !!token.freezeKey,
+                    enableWipe: !!token.wipeKey,
                     owner: root.did,
-                    policyId: null
+                    policyId: null,
+                    draftToken: true
                 });
                 await tokenRepository.save(tokenObject);
-                replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenData.tokenId);
+                console.log(tokenObject);
+                replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenObject.tokenId);
             }
             notifier.completed();
         }

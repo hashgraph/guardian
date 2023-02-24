@@ -184,88 +184,99 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
  * @param notifier
  */
 async function updateToken(oldToken: Token, newToken: Token, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<Token> {
-    if (!newToken.tokenName) {
-        throw new Error('Invalid Token Name');
-    }
+    if (oldToken.draftToken) {
+        notifier.start('Update token');
+        const tokenObject = Object.assign(oldToken, newToken);
+        tokenObject.draftToken = true;
+        const result = await tokenRepository.update(tokenObject);
+        notifier.completed();
 
-    if (!newToken.tokenSymbol) {
-        throw new Error('Invalid Token Symbol');
-    }
+        return result;
+    } else {
 
-    if (!oldToken.enableAdmin) {
-        throw new Error('Invalid Admin Key');
-    }
-
-    const changes: { [x: string]: any } = {};
-    if (oldToken.tokenName !== newToken.tokenName) {
-        changes.tokenName = newToken.tokenName;
-    }
-    if (oldToken.tokenSymbol !== newToken.tokenSymbol) {
-        changes.tokenSymbol = newToken.tokenSymbol;
-    }
-
-    notifier.start('Resolve Hedera account');
-    const users = new Users();
-    const wallet = new Wallet();
-    const workers = new Workers();
-
-    const root = await users.getHederaAccount(oldToken.owner);
-
-    const adminKey = await wallet.getUserKey(
-        oldToken.owner,
-        KeyType.TOKEN_ADMIN_KEY,
-        oldToken.tokenId
-    );
-
-    notifier.completedAndStart('Update token');
-
-    const tokenData = await workers.addNonRetryableTask({
-        type: WorkerTaskType.UPDATE_TOKEN,
-        data: {
-            tokenId: oldToken.tokenId,
-            operatorId: root.hederaAccountId,
-            operatorKey: root.hederaAccountKey,
-            adminKey,
-            changes
+        if (!newToken.tokenName) {
+            throw new Error('Invalid Token Name');
         }
-    }, 1);
 
-    notifier.completedAndStart('Save token in DB');
+        if (!newToken.tokenSymbol) {
+            throw new Error('Invalid Token Symbol');
+        }
 
-    oldToken.tokenName = newToken.tokenName;
-    oldToken.tokenSymbol = newToken.tokenSymbol;
+        if (!oldToken.enableAdmin) {
+            throw new Error('Invalid Admin Key');
+        }
 
-    const result = await tokenRepository.update(oldToken);
+        const changes: { [x: string]: any } = {};
+        if (oldToken.tokenName !== newToken.tokenName) {
+            changes.tokenName = newToken.tokenName;
+        }
+        if (oldToken.tokenSymbol !== newToken.tokenSymbol) {
+            changes.tokenSymbol = newToken.tokenSymbol;
+        }
 
-    const saveKeys = [];
-    if (changes.enableFreeze) {
-        saveKeys.push(wallet.setUserKey(
-            root.did,
-            KeyType.TOKEN_FREEZE_KEY,
-            tokenData.tokenId,
-            tokenData.freezeKey
-        ));
+        notifier.start('Resolve Hedera account');
+        const users = new Users();
+        const wallet = new Wallet();
+        const workers = new Workers();
+
+        const root = await users.getHederaAccount(oldToken.owner);
+
+        const adminKey = await wallet.getUserKey(
+            oldToken.owner,
+            KeyType.TOKEN_ADMIN_KEY,
+            oldToken.tokenId
+        );
+
+        notifier.completedAndStart('Update token');
+
+        const tokenData = await workers.addNonRetryableTask({
+            type: WorkerTaskType.UPDATE_TOKEN,
+            data: {
+                tokenId: oldToken.tokenId,
+                operatorId: root.hederaAccountId,
+                operatorKey: root.hederaAccountKey,
+                adminKey,
+                changes
+            }
+        }, 1);
+
+        notifier.completedAndStart('Save token in DB');
+
+        oldToken.tokenName = newToken.tokenName;
+        oldToken.tokenSymbol = newToken.tokenSymbol;
+
+        const result = await tokenRepository.update(oldToken);
+
+        const saveKeys = [];
+        if (changes.enableFreeze) {
+            saveKeys.push(wallet.setUserKey(
+                root.did,
+                KeyType.TOKEN_FREEZE_KEY,
+                tokenData.tokenId,
+                tokenData.freezeKey
+            ));
+        }
+        if (changes.enableKYC) {
+            saveKeys.push(wallet.setUserKey(
+                root.did,
+                KeyType.TOKEN_KYC_KEY,
+                tokenData.tokenId,
+                tokenData.kycKey
+            ));
+        }
+        if (changes.enableWipe) {
+            saveKeys.push(wallet.setUserKey(
+                root.did,
+                KeyType.TOKEN_WIPE_KEY,
+                tokenData.tokenId,
+                tokenData.wipeKey
+            ));
+        }
+        await Promise.all(saveKeys);
+
+        notifier.completed();
+        return result;
     }
-    if (changes.enableKYC) {
-        saveKeys.push(wallet.setUserKey(
-            root.did,
-            KeyType.TOKEN_KYC_KEY,
-            tokenData.tokenId,
-            tokenData.kycKey
-        ));
-    }
-    if (changes.enableWipe) {
-        saveKeys.push(wallet.setUserKey(
-            root.did,
-            KeyType.TOKEN_WIPE_KEY,
-            tokenData.tokenId,
-            tokenData.wipeKey
-        ));
-    }
-    await Promise.all(saveKeys);
-
-    notifier.completed();
-    return result;
 }
 
 /**

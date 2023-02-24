@@ -1,15 +1,14 @@
 import {
-    GenerateUUIDv4,
-    IRootConfig,
-    IUser,
-    ModelHelper,
-    PolicyEvents,
-    PolicyType,
-    Schema,
     SchemaEntity,
-    SchemaHelper,
     SchemaStatus,
     TopicType,
+    ModelHelper,
+    SchemaHelper,
+    Schema,
+    IUser,
+    PolicyType,
+    IRootConfig,
+    GenerateUUIDv4, PolicyEvents, WorkerTaskType,
     UserRole
 } from '@guardian/interfaces';
 import { DataBaseHelper, IAuthUser, Logger, ServiceRequestsBase, Singleton } from '@guardian/common';
@@ -23,20 +22,9 @@ import {
     TopicConfig,
     TopicHelper
 } from '@hedera-modules'
-import {
-    findAllEntities,
-    getArtifactType,
-    replaceAllEntities,
-    replaceArtifactProperties,
-    SchemaFields
-} from '@helpers/utils';
-import {
-    deleteSchema,
-    findAndDryRunSchema,
-    findAndPublishSchema,
-    incrementSchemaVersion,
-    publishSystemSchemas
-} from '@api/schema.service';
+import { findAllEntities, getArtifactType, replaceAllEntities, replaceArtifactProperties, SchemaFields } from '@helpers/utils';
+import { IPolicyInstance } from './policy-engine.interface';
+import { incrementSchemaVersion, findAndPublishSchema, findAndDryRunSchema, deleteSchema, publishSystemSchemas } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { VcHelper } from '@helpers/vc-helper';
 import { Users } from '@helpers/users';
@@ -51,6 +39,9 @@ import { ISerializedErrors } from './policy-validation-results-container';
 import { Artifact } from '@entity/artifact';
 import { MultiPolicy } from '@entity/multi-policy';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
+import { KeyType, Wallet } from '@helpers/wallet';
+import { Workers } from '@helpers/workers';
+import { Token } from '@entity/token';
 
 /**
  * Result of publishing
@@ -138,15 +129,15 @@ export class PolicyEngine extends ServiceRequestsBase{
      * @param policy
      * @param user
      */
-    public async getUser(policy: Policy, user: IUser): Promise<IPolicyUser> {
+    public async getUser(policy: IPolicyInstance, user: IUser): Promise<IPolicyUser> {
         const regUser = await this.users.getUser(user.username);
         if (!regUser || !regUser.did) {
             throw new Error(`Forbidden`);
         }
         const userFull = new PolicyUser(regUser.did);
-        if (policy.status === PolicyType.DRY_RUN) {
+        if (policy.dryRun) {
             if (user.role === UserRole.STANDARD_REGISTRY) {
-                const virtualUser = await DatabaseServer.getVirtualUser(policy.id);
+                const virtualUser = await DatabaseServer.getVirtualUser(policy.policyId);
                 userFull.setVirtualUser(virtualUser);
             } else {
                 throw new Error(`Forbidden`);
@@ -154,7 +145,7 @@ export class PolicyEngine extends ServiceRequestsBase{
         } else {
             userFull.setUsername(regUser.username);
         }
-        const groups = await new DatabaseServer().getGroupsByUser(policy.id, userFull.did);
+        const groups = await new DatabaseServer().getGroupsByUser(policy.policyId, userFull.did);
         for (const group of groups) {
             if (group.active !== false) {
                 return userFull.setGroup(group);
@@ -495,6 +486,72 @@ export class PolicyEngine extends ServiceRequestsBase{
             const tokenIds = findAllEntities(model.config, ['tokenId']);
             const tokens = await DatabaseServer.getTokens({tokenId: {$in: tokenIds}, owner: model.owner});
             for (const token of tokens) {
+                if (token.draftToken) {
+                    const workers = new Workers();
+                    const tokenData = await workers.addRetryableTask({
+                        type: WorkerTaskType.CREATE_TOKEN,
+                        data: {
+                            operatorId: root.hederaAccountId,
+                            operatorKey: root.hederaAccountKey,
+                            tokenName: token.tokenName,
+                            tokenSymbol: token.tokenSymbol,
+                            tokenType: token.tokenType,
+                            initialSupply: token.initialSupply,
+                            decimals: token.decimals,
+                            changeSupply: true,
+                            enableAdmin: token.enableAdmin,
+                            enableFreeze: token.enableFreeze,
+                            enableKYC: token.enableKYC,
+                            enableWipe: token.enableWipe,
+                        }
+                    }, 1);
+                    const wallet = new Wallet();
+                    await Promise.all([
+                        wallet.setUserKey(
+                            root.did,
+                            KeyType.TOKEN_TREASURY_KEY,
+                            tokenData.tokenId,
+                            tokenData.treasuryKey
+                        ),
+                        wallet.setUserKey(
+                            root.did,
+                            KeyType.TOKEN_ADMIN_KEY,
+                            tokenData.tokenId,
+                            tokenData.adminKey
+                        ),
+                        wallet.setUserKey(
+                            root.did,
+                            KeyType.TOKEN_FREEZE_KEY,
+                            tokenData.tokenId,
+                            tokenData.freezeKey
+                        ),
+                        wallet.setUserKey(
+                            root.did,
+                            KeyType.TOKEN_KYC_KEY,
+                            tokenData.tokenId,
+                            tokenData.kycKey
+                        ),
+                        wallet.setUserKey(
+                            root.did,
+                            KeyType.TOKEN_SUPPLY_KEY,
+                            tokenData.tokenId,
+                            tokenData.supplyKey
+                        ),
+                        wallet.setUserKey(
+                            root.did,
+                            KeyType.TOKEN_WIPE_KEY,
+                            tokenData.tokenId,
+                            tokenData.wipeKey
+                        )
+                    ]);
+
+                    replaceAllEntities(model.config, ['tokenId'], token.tokenId, tokenData.tokenId);
+                    token.tokenId = tokenData.tokenId;
+                    token.draftToken = false;
+                    token.adminId = tokenData.treasuryId;
+                    await new DataBaseHelper(Token).save(token);
+                    await DatabaseServer.updatePolicy(model);
+                }
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
                 tokenMessage.setDocument(token);
                 await messageServer
@@ -943,7 +1000,7 @@ export class PolicyEngine extends ServiceRequestsBase{
      * @param data
      */
     public async createMultiPolicy(
-        policy: Policy,
+        policyInstance: IPolicyInstance,
         userAccount: IRootConfig,
         root: IRootConfig,
         data: any,
@@ -951,13 +1008,13 @@ export class PolicyEngine extends ServiceRequestsBase{
 
         const multipleConfig = DatabaseServer.createMultiPolicy({
             uuid: GenerateUUIDv4(),
-            instanceTopicId: policy.instanceTopicId,
+            instanceTopicId: policyInstance.instanceTopicId,
             mainPolicyTopicId: data.mainPolicyTopicId,
             synchronizationTopicId: data.synchronizationTopicId,
             owner: userAccount.did,
             user: userAccount.hederaAccountId,
             policyOwner: root.hederaAccountId,
-            type: data.mainPolicyTopicId === policy.instanceTopicId ? 'Main' : 'Sub',
+            type: data.mainPolicyTopicId === policyInstance.instanceTopicId ? 'Main' : 'Sub',
         });
 
         const message = new SynchronizationMessage(MessageAction.CreateMultiPolicy);

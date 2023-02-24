@@ -28,6 +28,7 @@ import { PolicyEngine } from './policy-engine';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { findAllEntities } from '@helpers/utils';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
+import { IPolicyInstance } from '@policy-engine/policy-engine.interface';
 
 /**
  * Policy engine service
@@ -1129,7 +1130,7 @@ export class PolicyEngineService {
                     return new MessageError(new Error('Policy is already bound'));
                 } else {
                     const root = await this.users.getHederaAccount(policy.owner);
-                    const result = await this.policyEngine.createMultiPolicy(policy, userAccount, root, data);
+                    const result = await this.policyEngine.createMultiPolicy(policy as any as IPolicyInstance, userAccount, root, data);
                     return new MessageResponse(result);
                 }
             } catch (error) {
