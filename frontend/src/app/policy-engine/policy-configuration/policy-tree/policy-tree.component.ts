@@ -311,10 +311,10 @@ export class PolicyTreeComponent implements OnInit {
         const blockMap: any = {};
         for (const block of data) {
             const div = document.querySelector(`.block-container[block-id="${block.id}"] .block-body`);
-            if (block.name && div) {
+            if (block.node.tag && div) {
                 const box = div.getBoundingClientRect();
                 const blocRect = new BlockRect(box, boxCanvas);
-                blockMap[block.name] = blocRect;
+                blockMap[block.node.tag] = blocRect;
                 minOffset = Math.max(minOffset, blocRect.right.x);
             }
         }

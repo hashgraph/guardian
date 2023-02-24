@@ -39,6 +39,7 @@ export class PolicyBlockModel {
         const clone: any = { ...config };
         delete clone.children;
         delete clone.events;
+        delete clone.artifacts;
 
         this.properties = clone;
 
@@ -50,7 +51,6 @@ export class PolicyBlockModel {
         }
 
         this._artifacts = config.artifacts || [];
-
         this._children = [];
     }
 
@@ -165,72 +165,60 @@ export class PolicyBlockModel {
     }
 
     public remove() {
-        if (this.parent) {
-            this.parent._removeChild(this);
-        }
-        this._parent = null;
-        if (this._module) {
-            this._module.refresh();
+        if (this._parent) {
+            this._parent._removeChild(this);
+            this._parent.refresh();
+            this._parent = null;
         }
     }
 
     public removeChild(child: PolicyBlockModel) {
         this._removeChild(child);
         child._parent = null;
-        if (this._module) {
-            this._module.refresh();
-        }
+        this.refresh();
     }
 
     public createChild(block: IBlockConfig, index?: number) {
-        delete block.children;
-        const child = new PolicyBlockModel(block, this);
-        child.setModule(this._module);
-        if (!child.permissions || !child.permissions.length) {
-            child.permissions = this.permissions.slice();
-        }
-        this._addChild(child, index);
-        if (this._module) {
-            this._module.refresh();
-        }
+        this._createChild(block, this._module, index);
+        this.refresh();
     }
 
-    public copyChild(block: IBlockConfig) {
-        this._copyChild(block);
-        if (this._module) {
-            this._module.refresh();
-        }
+    public pasteChild(block: IBlockConfig) {
+        this._pasteChild(block, this._module);
+        this.refresh();
     }
 
     public addChild(child: PolicyBlockModel, index?: number) {
         this._addChild(child, index);
-        if (this._module) {
-            this._module.refresh();
-        }
+        this.refresh();
     }
 
-    public refresh(): void {
-        if (this._module) {
-            this._module.refresh();
+    protected _createChild(block: IBlockConfig, module: any, index?: number) {
+        delete block.children;
+        const child = new PolicyBlockModel(block, this);
+        child.setModule(module);
+        if (!child.permissions || !child.permissions.length) {
+            child.permissions = this.permissions.slice();
         }
+        this._addChild(child, index);
     }
 
-    private _copyChild(block: IBlockConfig) {
+    protected _pasteChild(block: IBlockConfig, module: any) {
         block.id = GenerateUUIDv4();
         const children = block.children;
         delete block.children;
         delete block.events;
 
         const newBlock = new PolicyBlockModel(block, this);
-        newBlock.setModule(this._module);
-        if (this._module) {
-            newBlock.tag = this._module.getNewTag('Block', newBlock);
+        newBlock.setModule(module);
+        if (module) {
+            newBlock.tag = module.getNewTag('Block', newBlock);
         }
         this._addChild(newBlock);
 
         if (Array.isArray(children)) {
             for (const child of children) {
-                newBlock._copyChild(child);
+                newBlock._pasteChild(child, module);
             }
         }
     }
@@ -260,16 +248,12 @@ export class PolicyBlockModel {
     public createEvent(event: IEventConfig) {
         const e = new PolicyEventModel(event, this);
         this._addEvent(e);
-        if (this._module) {
-            this._module.refresh();
-        }
+        this.refresh();
     }
 
     public addEvent(event: PolicyEventModel) {
         this._addEvent(event);
-        if (this._module) {
-            this._module.refresh();
-        }
+        this.refresh();
     }
 
     private _addEvent(event: PolicyEventModel) {
@@ -280,9 +264,7 @@ export class PolicyBlockModel {
         const index = this._events.findIndex((c) => c.id == event.id);
         if (index !== -1) {
             this._events.splice(index, 1);
-            if (this._module) {
-                this._module.refresh();
-            }
+            this.refresh();
         }
     }
 
@@ -373,7 +355,8 @@ export class PolicyBlockModel {
     }
 
     public append(parent: PolicyBlockModel) {
-        parent.addChild(this);
+        parent._addChild(this);
+        parent.refresh();
     }
 
     public replace(oldItem: PolicyBlockModel, newItem: PolicyBlockModel) {
@@ -385,9 +368,7 @@ export class PolicyBlockModel {
         } else {
             this._children.push(newItem);
         }
-        if (this._module) {
-            this._module.refresh();
-        }
+        this.refresh();
     }
 
     public index(): number {
@@ -407,10 +388,8 @@ export class PolicyBlockModel {
                 this._parent._removeChild(this);
                 this._parent = null;
             }
-            parent.addChild(this, index);
-            if (this._module) {
-                this._module.refresh();
-            }
+            parent._addChild(this, index);
+            parent.refresh();
             return true;
         }
         return false;
@@ -425,5 +404,17 @@ export class PolicyBlockModel {
             return this._module.blockVariables;
         }
         return null;
+    }
+
+    public refreshData(): void {
+        return;
+    }
+
+    public refresh(): void {
+        if (this._module) {
+            this._module.refresh();
+        } else {
+            this.refreshData();
+        }
     }
 }

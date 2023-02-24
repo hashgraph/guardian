@@ -102,31 +102,3 @@ moduleAPI.put('/:uuid', permissionHelper(UserRole.STANDARD_REGISTRY), async (req
         res.status(500).send({ code: error.code || 500, message: error.message });
     }
 });
-
-moduleAPI.put('/:uuid/show', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
-    try {
-        const guardian = new Guardians();
-        if (!req.params.uuid) {
-            throw new Error('Invalid uuid');
-        }
-        const result = await guardian.showModule(req.params.uuid, true, req.user.did);
-        res.status(201).json(result);
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: error.code || 500, message: error.message });
-    }
-});
-
-moduleAPI.put('/:uuid/hide', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
-    try {
-        const guardian = new Guardians();
-        if (!req.params.uuid) {
-            throw new Error('Invalid uuid');
-        }
-        const result = await guardian.showModule(req.params.uuid, false, req.user.did);
-        res.status(201).json(result);
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: error.code || 500, message: error.message });
-    }
-});

@@ -26,7 +26,7 @@
                 [attr.error]="isError(item)"
                 [attr.root]="item.root" 
                 [attr.block-id]="item.id" 
-                [attr.block-instance]="item.name"
+                [attr.block-instance]="item.node.tag"
                 [attr.block-type]="item.type" 
                 [style.paddingLeft]="item.offset" 
                 cdkDrag
@@ -48,13 +48,31 @@
                     </div>
                 </div>
 
+                <div *ngIf="item.isModule && item.root" class="block-body module-body">
+                    <div class="block-item" (click)="onSelect($event, item)">
+                        <div class="module-item-icon">
+                            <svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24" version="1.1">
+                                <path style="fill:#e1933c" d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
+                                <path style="fill:#24bfe1"
+                                    d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
+                                <path style="fill:#9e57f5"
+                                    d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
+                            </svg>
+                        </div>
+                        <div class="module-item-name">
+                            Module
+                        </div>
+                    </div>
+                </div>
+
                 <div *ngIf="!item.isModule && !item.root" class="block-body">
                     <div class="block-item" (click)="onSelect($event, item)">
                         <div class="block-item-icon">
                             <mat-icon>{{item.icon}}</mat-icon>
                         </div>
                         <div class="block-item-name">
-                            {{item.name}}
+                            {{item.node.tag}}
                         </div>
                     </div>
                     <div class="block-menu">
@@ -88,7 +106,7 @@
                     </div>
                 </div>
 
-                <div *ngIf="item.isModule" class="block-body module-body">
+                <div *ngIf="item.isModule && !item.root" class="block-body module-body">
                     <div class="block-item" (click)="onSelect($event, item)" (dblclick)="onOpen($event, item)">
                         <div class="module-item-icon">
                             <svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg"
@@ -101,7 +119,7 @@
                             </svg>
                         </div>
                         <div class="module-item-name">
-                            {{item.name}}
+                            {{item.node.tag}}
                         </div>
                     </div>
                     <div class="block-menu module-menu">

@@ -75,12 +75,6 @@ export class PolicyModule extends BaseEntity {
     createDate: Date = new Date();
 
     /**
-     * Menu
-     */
-    @Property({ nullable: true })
-    menu?: string;
-
-    /**
      * Type
      */
     @Property({ nullable: true })
@@ -94,7 +88,6 @@ export class PolicyModule extends BaseEntity {
         this.status = this.status || PolicyType.DRAFT;
         this.uuid = this.uuid || GenerateUUIDv4();
         this.codeVersion = this.codeVersion || '1.0.0';
-        this.menu = this.menu || 'hidden';
         this.type = this.type || 'CUSTOM';
     }
 }

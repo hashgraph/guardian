@@ -1,10 +1,10 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
-    <tr class="propRow" *ngIf="block.blockType=='interfaceStepBlock'">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+    <tr class="propRow" *ngIf="properties.blockType=='interfaceStepBlock'">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Cyclic</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.cyclic" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.cyclic" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
 
@@ -19,14 +19,14 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.uiMetaData.type" [disabled]="readonly">
+            <mat-select [(value)]="properties.uiMetaData.type" [disabled]="readonly" (change)="onSave()">
                 <mat-option value="blank">BLANK</mat-option>
                 <mat-option value="tabs">TABS</mat-option>
             </mat-select>

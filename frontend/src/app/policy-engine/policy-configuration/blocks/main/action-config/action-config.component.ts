@@ -17,7 +17,8 @@ export class ActionConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         optionsGroup: false,
@@ -26,7 +27,7 @@ export class ActionConfigComponent implements OnInit {
         dropdownGroup: false
     };
 
-    block!: any;
+    properties!: any;
     schemas!: SchemaVariables[];
 
     constructor() {
@@ -44,9 +45,10 @@ export class ActionConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.uiMetaData.options = this.block.uiMetaData.options || [];
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {};
+        this.properties.uiMetaData.options = this.properties.uiMetaData.options || [];
         this.schemas = this.moduleVariables?.schemas || [];
     }
 
@@ -55,8 +57,8 @@ export class ActionConfigComponent implements OnInit {
     }
 
     addOptions() {
-        this.block.uiMetaData.options.push({
-            tag: `Option_${this.block.uiMetaData.options.length}`,
+        this.properties.uiMetaData.options.push({
+            tag: `Option_${this.properties.uiMetaData.options.length}`,
             title: '',
             name: '',
             tooltip: '',
@@ -66,14 +68,18 @@ export class ActionConfigComponent implements OnInit {
     }
 
     addFilters() {
-        if (!this.block.filters) {
-            this.block.filters = [];
+        if (!this.properties.filters) {
+            this.properties.filters = [];
         }
-        this.block.filters.push({
+        this.properties.filters.push({
             title: '',
             name: '',
             tooltip: '',
             type: 'text',
         })
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

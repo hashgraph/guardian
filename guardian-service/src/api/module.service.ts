@@ -129,31 +129,6 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.SHOW_MODULES, async (msg) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid load modules parameter');
-            }
-            const { uuid, show, owner } = msg;
-            const item = await DatabaseServer.getModuleById(uuid);
-            if (!item || item.owner !== owner) {
-                throw new Error('Invalid module');
-            }
-
-            if (show) {
-                item.menu = 'show';
-            } else {
-                item.menu = 'hidden';
-            }
-
-            const result = await DatabaseServer.updateModule(item);
-            return new MessageResponse(result);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
     ApiResponse(channel, MessageAPI.GET_MODULE, async (msg) => {
         try {
             if (!msg.uuid || !msg.owner) {

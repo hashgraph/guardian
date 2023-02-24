@@ -18,15 +18,18 @@ export class SelectBlock {
     @Output('valueChange') valueChange = new EventEmitter<any>();
     @Output('change') change = new EventEmitter<any>();
 
-    data?: any[];
-    text: string | null | undefined;
+    public text: string | null | undefined;
+    public search: string = '';
+    public searchData?: any[];
+    private searchTimeout!: any;
+    private data?: any[];
 
     constructor(private registeredService: RegisteredService) {
     }
 
     onChange() {
         if (this.value && typeof this.value === 'object') {
-            this.text === this.value.tag;
+            this.text = this.value.tag;
         } else {
             this.text = this.value;
         }
@@ -36,7 +39,7 @@ export class SelectBlock {
 
     ngOnChanges(changes: SimpleChanges) {
         if (this.value && typeof this.value === 'object') {
-            this.text === this.value.tag;
+            this.text = this.value.tag;
         } else {
             this.text = this.value;
         }
@@ -44,13 +47,32 @@ export class SelectBlock {
             this.data = [];
             if (this.blocks) {
                 for (const block of this.blocks) {
+                    const search = (block.tag || '').toLocaleLowerCase();
                     this.data.push({
                         name: block.tag,
                         value: this.type === 'object' ? block : block.tag,
-                        icon: this.registeredService.getIcon(block.blockType)
+                        icon: this.registeredService.getIcon(block.blockType),
+                        search
                     });
                 }
             }
+            this.update();
         }, 0);
+    }
+
+    public onSearch(event: any) {
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(() => {
+            this.update();
+        }, 200);
+    }
+
+    public update() {
+        const search = this.search ? this.search.toLowerCase() : null;
+        if(search) {
+            this.searchData = this.data?.filter(item => item.search.indexOf(search) !== -1);
+        } else {
+            this.searchData = this.data;
+        }
     }
 }

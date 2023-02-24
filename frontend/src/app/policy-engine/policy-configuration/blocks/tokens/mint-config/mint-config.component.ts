@@ -17,12 +17,13 @@ export class MintConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
     };
 
-    block!: any;
+    properties!: any;
     tokens!: TokenVariables[];
     tokenTemplate!: TokenTemplateVariables[];
 
@@ -42,8 +43,9 @@ export class MintConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {};
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {};
 
         this.tokens = this.moduleVariables?.tokens || [];
         this.tokenTemplate = this.moduleVariables?.tokenTemplates || [];
@@ -54,12 +56,16 @@ export class MintConfigComponent implements OnInit {
     }
 
     changeAccountType() {
-        delete this.block.accountId;
-        delete this.block.accountIdValue;
+        delete this.properties.accountId;
+        delete this.properties.accountIdValue;
     }
 
     onUseTemplateChange() {
-        delete this.block.tokenId;
-        delete this.block.template;
+        delete this.properties.tokenId;
+        delete this.properties.template;
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

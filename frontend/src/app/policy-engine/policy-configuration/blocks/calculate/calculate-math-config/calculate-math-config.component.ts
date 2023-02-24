@@ -17,13 +17,14 @@ export class CalculateMathConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         equationsGroup: false,
         equations: {},
     };
 
-    block!: any;
+    properties!: any;
 
     constructor() {
     }
@@ -39,8 +40,9 @@ export class CalculateMathConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.equations = this.block.equations || [];
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.equations = this.properties.equations || [];
     }
 
     onHide(item: any, prop: any) {
@@ -48,13 +50,17 @@ export class CalculateMathConfigComponent implements OnInit {
     }
 
     addEquation() {
-        this.block.equations.push({
+        this.properties.equations.push({
             variable: '',
             formula: ''
         })
     }
 
     onRemoveEquation(i: number) {
-        this.block.equations.splice(i, 1);
+        this.properties.equations.splice(i, 1);
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

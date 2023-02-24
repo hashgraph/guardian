@@ -1,10 +1,10 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
-    <tr *ngIf="block.dataType" class="propRow" [attr.collapse]="propHidden.main">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+    <tr *ngIf="properties.dataType" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Data Type (deprecated)</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.dataType" [disabled]="readonly">
+            <mat-select [(value)]="properties.dataType" [disabled]="readonly" (change)="onSave()">
                 <mat-option value=""></mat-option>
                 <mat-option value="vc-documents">Collection (VC)</mat-option>
                 <mat-option value="did-documents">Collection (DID)</mat-option>
@@ -21,7 +21,7 @@
             Data Source
         </td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.dataSource" [disabled]="readonly" (selectionChange)="onDataSource($event)">
+            <mat-select [(value)]="properties.dataSource" [disabled]="readonly" (selectionChange)="onDataSource($event)">
                 <mat-option value="auto">Auto</mat-option>
                 <mat-option value="database">Database</mat-option>
                 <mat-option value="hedera">Hedera Topic</mat-option>
@@ -29,12 +29,12 @@
         </td>
     </tr>
 
-    <ng-container *ngIf="block.dataSource=='hedera'">
+    <ng-container *ngIf="properties.dataSource=='hedera'">
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Hedera Topic</td>
             <td class="propRowCell">
-                <mat-select [(value)]="block.topic" [disabled]="readonly" (selectionChange)="selectTopic($event)">
+                <mat-select [(value)]="properties.topic" [disabled]="readonly" (selectionChange)="selectTopic($event)">
                     <mat-option class="link" value="new">
                         <span class="mat-option-link">
                             <mat-icon>add</mat-icon>
@@ -57,7 +57,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Topic Owner</td>
             <td class="propRowCell">
-                <mat-select [(value)]="block.topicOwner" [disabled]="readonly">
+                <mat-select [(value)]="properties.topicOwner" [disabled]="readonly" (change)="onSave()">
                     <mat-option value=""></mat-option>
                     <mat-option value="user">Current User</mat-option>
                     <mat-option value="owner">Document Owner</mat-option>
@@ -70,7 +70,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Memo</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.memo" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.memo" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
     </ng-container>
@@ -79,7 +79,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Entity Type</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.entityType" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.entityType" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
 
@@ -96,7 +96,7 @@
         </td>
     </tr>
 
-    <ng-container *ngFor="let option of block.options; let i=index">
+    <ng-container *ngFor="let option of properties.options; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.optionGroup">
             <td class="propRowCol" (click)="onHide(propHidden.options, i)" [attr.collapse]="propHidden.options[i]">
                 <mat-icon>arrow_drop_down</mat-icon>
@@ -114,14 +114,14 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Name</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="option.name" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="option.name" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.optionGroup || propHidden.options[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Value</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="option.value" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="option.value" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
     </ng-container>

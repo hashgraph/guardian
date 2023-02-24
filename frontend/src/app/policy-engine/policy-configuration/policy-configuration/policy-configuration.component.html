@@ -12,59 +12,89 @@
     </div>
     <div *ngIf="isModuleValid" class="policy-configuration" [attr.readonly]="readonly">
         <div class="top-toolbar">
-
-            <div class="top-toolbar-btn readonly-status" (click)="savePolicy()" title="Save Policy">
-                <mat-icon>save</mat-icon>
-                <span>Save</span>
-            </div>
-
-            <div class="top-toolbar-btn all-status" (click)="saveAsPolicy()" title="Save Policy">
-                <mat-icon>save</mat-icon>
-                <span>Save As</span>
-            </div>
-
-            <div class="delimiter"></div>
-
-            <div *ngIf="policyModel.isDraft" class="top-toolbar-group all-status" [matMenuTriggerFor]="publishMenu">
-                <mat-icon class="edit-color">edit</mat-icon>
-                <span class="edit-color">Draft</span>
-                <div class="expand-group">
-                    <mat-icon>arrow_drop_down</mat-icon>
+            <ng-container *ngIf="rootType === 'Policy'">
+                <div class="top-toolbar-btn readonly-status" (click)="savePolicy()" title="Save Policy">
+                    <mat-icon>save</mat-icon>
+                    <span>Save</span>
                 </div>
-            </div>
-
-            <div *ngIf="policyModel.isDryRun" class="top-toolbar-group all-status" style="width: 60px"
-                [matMenuTriggerFor]="dryRunMenu">
-                <mat-icon class="dry-run-color">build</mat-icon>
-                <span class="dry-run-color">
-                    In Dry Run
-                </span>
-                <div class="expand-group">
-                    <mat-icon>arrow_drop_down</mat-icon>
+    
+                <div class="top-toolbar-btn all-status" (click)="saveAsPolicy()" title="Save Policy">
+                    <mat-icon>save</mat-icon>
+                    <span>Save As</span>
                 </div>
-            </div>
+    
+                <div class="delimiter"></div>
 
-            <div *ngIf="policyModel.isPublished" class="top-toolbar-btn top-toolbar-label">
-                <mat-icon class="publish-color">public</mat-icon>
-                <span class="publish-color">Published</span>
-            </div>
+                <div *ngIf="policyModel.isDraft" class="top-toolbar-group all-status" [matMenuTriggerFor]="publishMenu">
+                    <mat-icon class="edit-color">edit</mat-icon>
+                    <span class="edit-color">Draft</span>
+                    <div class="expand-group">
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </div>
+                </div>
+            
+                <div *ngIf="policyModel.isDryRun" class="top-toolbar-group all-status" style="width: 60px"
+                    [matMenuTriggerFor]="dryRunMenu">
+                    <mat-icon class="dry-run-color">build</mat-icon>
+                    <span class="dry-run-color">
+                        In Dry Run
+                    </span>
+                    <div class="expand-group">
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </div>
+                </div>
+            
+                <div *ngIf="policyModel.isPublished" class="top-toolbar-btn top-toolbar-label">
+                    <mat-icon class="publish-color">public</mat-icon>
+                    <span class="publish-color">Published</span>
+                </div>
+            
+                <div class="delimiter"></div>
+            
+                <div *ngIf="policyModel.isDraft" class="top-toolbar-btn all-status" (click)="validationPolicy()"
+                    title="Validation Policy" [attr.errors-count]="errorsCount" [attr.readonly]="!isTree">
+                    <mat-icon>task_alt</mat-icon>
+                    <span>Validation</span>
+                    <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
+                </div>
+            
+                <div *ngIf="policyModel.isDryRun || policyModel.isPublished" class="top-toolbar-btn all-status"
+                    [routerLink]="['/policy-viewer', policyId]">
+                    <mat-icon>double_arrow</mat-icon>
+                    <span>Go</span>
+                </div>
+            
+                <div class="delimiter"></div>
+            </ng-container>
 
-            <div class="delimiter"></div>
+            <ng-container *ngIf="rootType === 'Module'">
+                <div class="top-toolbar-btn readonly-status" (click)="updateModule()" title="Save Module">
+                    <mat-icon>save</mat-icon>
+                    <span>Save</span>
+                </div>
+    
+                <div class="top-toolbar-btn all-status" (click)="saveAsModule()" title="Save Module">
+                    <mat-icon>save</mat-icon>
+                    <span>Save As</span>
+                </div>
+    
+                <div class="delimiter"></div>
 
-            <div *ngIf="policyModel.isDraft" class="top-toolbar-btn all-status" (click)="validationPolicy()"
-                title="Validation Policy" [attr.errors-count]="errorsCount" [attr.readonly]="!isTree">
-                <mat-icon>task_alt</mat-icon>
-                <span>Validation</span>
-                <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
-            </div>
+                <div *ngIf="templateModel.isDraft" class="top-toolbar-group all-status" [matMenuTriggerFor]="publishMenu2">
+                    <mat-icon class="edit-color">edit</mat-icon>
+                    <span class="edit-color">Draft</span>
+                    <div class="expand-group">
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </div>
+                </div>
+        
+                <div *ngIf="templateModel.isPublished" class="top-toolbar-btn top-toolbar-label">
+                    <mat-icon class="publish-color">public</mat-icon>
+                    <span class="publish-color">Published</span>
+                </div>
 
-            <div *ngIf="policyModel.isDryRun || policyModel.isPublished" class="top-toolbar-btn all-status"
-                [routerLink]="['/policy-viewer', policyId]">
-                <mat-icon>double_arrow</mat-icon>
-                <span>Go</span>
-            </div>
-
-            <div class="delimiter"></div>
+                <div class="delimiter"></div>
+            </ng-container>
 
             <ng-container *ngIf="!readonly && isTree">
                 <ng-container>
@@ -89,7 +119,11 @@
                     <div class="delimiter"></div>
                 </ng-container>
 
-                <ng-container *ngIf="!currentBlock?.isModule && !currentBlock?.isRoot">
+                <ng-container *ngIf="
+                    rootType === 'Policy' && 
+                    openType !== 'Sub' &&
+                    !currentBlock?.isModule && 
+                    !currentBlock?.isRoot">
                     <div class="top-toolbar-btn readonly-status" title="Create New Module" (click)="onCreateModule()">
                         <mat-icon>create_new_folder</mat-icon>
                         <span>Create New Module</span>
@@ -104,7 +138,7 @@
                     <div class="delimiter"></div>
                 </ng-container>
 
-                <ng-container *ngIf="currentBlock?.isModule">
+                <ng-container *ngIf="rootType === 'Policy' && currentBlock?.isModule">
                     <div class="top-toolbar-btn readonly-status" title="Create New Module" (click)="onSaveModule()">
                         <mat-icon>folder_special</mat-icon>
                         <span>Save Module</span>
@@ -173,12 +207,14 @@
                         </div>
                     </div>
 
-                    <div class="pc-tabs-content components-menu" [attr.readonly]="disableLeftMenu" cdkDropList
+                    <div class="pc-tabs-content components-menu" cdkDropList
                         #menuList="cdkDropList" [cdkDropListConnectedTo]="[dropListConnector.body]"
                         cdkDropListSortingDisabled [cdkDropListEnterPredicate]="noReturnPredicate"
                         (cdkDropListDropped)="drop($event)">
 
-                        <div class="components-container readonly-status" [hidden]="!options.components">
+                        <div class="components-container readonly-status" 
+                            [attr.readonly]="disableComponentMenu"
+                            [hidden]="!options.components">
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
@@ -205,7 +241,7 @@
                                             <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                             <span>{{item.name}}</span>
                                             <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                (click)="setFavorite(item)">star</mat-icon>
+                                                (click)="setFavorite($event, item)">star</mat-icon>
                                         </div>
                                     </div>
                                 </div>
@@ -229,7 +265,7 @@
                                             <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                             <span>{{item.name}}</span>
                                             <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                (click)="setFavorite(item)">star</mat-icon>
+                                                (click)="setFavorite($event, item)">star</mat-icon>
                                         </div>
                                     </div>
                                 </div>
@@ -253,7 +289,7 @@
                                             <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                             <span>{{item.name}}</span>
                                             <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                (click)="setFavorite(item)">star</mat-icon>
+                                                (click)="setFavorite($event, item)">star</mat-icon>
                                         </div>
                                     </div>
                                 </div>
@@ -277,7 +313,7 @@
                                             <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                             <span>{{item.name}}</span>
                                             <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                (click)="setFavorite(item)">star</mat-icon>
+                                                (click)="setFavorite($event, item)">star</mat-icon>
                                         </div>
                                     </div>
                                 </div>
@@ -303,15 +339,16 @@
                                             <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>
                                             <span>{{item.name}}</span>
                                             <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                (click)="setFavorite(item)">star</mat-icon>
+                                                (click)="setFavorite($event, item)">star</mat-icon>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-
-                        <div class="components-container" [hidden]="!options.library">
+                        <div class="components-container" 
+                            [attr.readonly]="disableModuleMenu" 
+                            [hidden]="!options.library">
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onModuleSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
@@ -343,7 +380,7 @@
                                             <span>{{item.name}}</span>
                                             <span class="component-btn-toolbar">
                                                 <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                    (click)="setModuleFavorite(item)">star</mat-icon>
+                                                    (click)="setModuleFavorite($event, item)">star</mat-icon>
                                                 <!-- <mat-icon [attr.readonly]="item.isDefault" class="component-btn-delete"
                                                     [attr.favorite]="item.favorite"
                                                     (click)="onDeleteModule(item)">delete</mat-icon> -->
@@ -376,7 +413,7 @@
                                             <span>{{item.name}}</span>
                                             <span class="component-btn-toolbar">
                                                 <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                    (click)="setModuleFavorite(item)">star</mat-icon>
+                                                    (click)="setModuleFavorite($event, item)">star</mat-icon>
                                             </span>
                                         </div>
                                     </div>
@@ -406,7 +443,7 @@
                                             <span>{{item.name}}</span>
                                             <span class="component-btn-toolbar">
                                                 <mat-icon class="component-btn-favorite" [attr.favorite]="item.favorite"
-                                                    (click)="setModuleFavorite(item)">star</mat-icon>
+                                                    (click)="setModuleFavorite($event, item)">star</mat-icon>
                                                 <!-- <mat-icon class="component-btn-delete" [attr.favorite]="item.favorite"
                                                     (click)="onDeleteModule(item)">delete</mat-icon> -->
                                             </span>
@@ -428,15 +465,23 @@
 
                 <div *ngIf="isTree" class="pc-tabs minimized-tabs">
                     <div class="pc-tabs-headers">
-                        <div class="tab-header tab-header-icon" [attr.selected]="openModule===policyModel"
-                            style="width: 100px;margin-right: 6px" (click)="onOpenRoot(policyModel)">
+                        <div *ngIf="rootType ==='Policy'" class="tab-header tab-header-icon" 
+                            [attr.selected]="openModule===policyModel" (click)="onOpenRoot(policyModel)"
+                            style="width: 100px;margin-right: 6px">
                             <mat-icon class="action-color">article</mat-icon>
                             Policy
                         </div>
+                        <div *ngIf="rootType ==='Module'" class="tab-header tab-header-icon" 
+                            [attr.selected]="true" (click)="onOpenRoot(policyModel)"
+                            style="width: 100px;margin-right: 6px">
+                            <mat-icon class="module-root-icon action-color" svgIcon="policy-module"></mat-icon>
+                            Module
+                        </div>
                         <ng-container *ngIf="allSubModule">
-                            <div class="tab-header tab-header-icon" *ngFor="let item of allSubModule"
-                                [attr.selected]="openModule===item" (click)="onOpenModule(item)">
-                                <mat-icon class="edit-color">folder</mat-icon>
+                            <div class="tab-header tab-header-icon" *ngFor="let item of allSubModule" 
+                                [attr.selected]="openModule===item"
+                                (click)="onOpenModule(item)">
+                                <mat-icon class="module-root-icon edit-color" svgIcon="policy-module"></mat-icon>
                                 {{item.tag}}
                             </div>
                         </ng-container>
@@ -456,7 +501,7 @@
                 <div class="right-top-toolbar" [attr.collapse-top]="options.rightTopMenu"
                     [attr.collapse-bottom]="options.rightBottomMenu">
 
-                    <div *ngIf="openType === 'Root'" class="pc-tabs">
+                    <div *ngIf="openType === 'Root' && rootType ==='Policy'" class="pc-tabs">
                         <div class="pc-tabs-headers">
                             <div class="tab-header" [attr.selected]="options.description"
                                 (click)="select('description')">
@@ -503,7 +548,7 @@
                         </div>
                     </div>
 
-                    <div *ngIf="openType === 'Sub'" class="pc-tabs">
+                    <div *ngIf="openType === 'Sub' || rootType ==='Module'" class="pc-tabs">
                         <div class="pc-tabs-headers">
                             <div class="tab-header" [attr.selected]="options.descriptionModule"
                                 (click)="select('descriptionModule')">
@@ -628,6 +673,14 @@
         title="Run without making any persistent changes or executing transaction.">
         <mat-icon class="dry-run-color">build</mat-icon>
         <span class="dry-run-color">Dry Run</span>
+    </div>
+</mat-menu>
+
+<mat-menu #publishMenu2="matMenu">
+    <div class="toolbar-menu all-status publish-color" (click)="tryPublishModule()"
+        title="Release version into public domain.">
+        <mat-icon class="publish-color">public</mat-icon>
+        <span class="publish-color">Publish</span>
     </div>
 </mat-menu>
 

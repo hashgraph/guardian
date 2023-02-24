@@ -1,9 +1,9 @@
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Input Documents</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.inputDocuments" [disabled]="readonly">
+            <mat-select [(value)]="properties.inputDocuments" [disabled]="readonly" (change)="onSave()">
                 <mat-option value="aggregate">Aggregate</mat-option>
                 <mat-option value="separate">Separate</mat-option>
             </mat-select>
@@ -16,7 +16,7 @@
         </td>
         <td class="propRowCell cellName">Input Schema</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.inputSchema" [disabled]="readonly" (selectionChange)="onSelectInput()">
+            <mat-select [(value)]="properties.inputSchema" [disabled]="readonly" (selectionChange)="onSelectInput()">
                 <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
@@ -25,21 +25,21 @@
             </mat-select>
         </td>
     </tr>
-    <ng-container *ngIf="block.inputSchema">
+    <ng-container *ngIf="properties.inputSchema">
         <tr class="propRow subRow" [attr.collapse]="propHidden.inputSchemaGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName cellTitle">Description</td>
             <td class="propRowCell cellTitle">Alias</td>
         </tr>
     </ng-container>
-    <ng-container *ngFor="let field of block.inputFields; let i=index">
+    <ng-container *ngFor="let field of properties.inputFields; let i=index">
         <tr class="propRow subRow" [attr.collapse]="propHidden.inputSchemaGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">
                 <span class="lvl" [attr.lvl]="field.lvl">{{field.title}}</span>
             </td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.value" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.value" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
     </ng-container>
@@ -51,7 +51,7 @@
         </td>
         <td class="propRowCell cellName">Output Schema</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.outputSchema" [disabled]="readonly" (selectionChange)="onSelectOutput()">
+            <mat-select [(value)]="properties.outputSchema" [disabled]="readonly" (selectionChange)="onSelectOutput()">
                 <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
@@ -60,21 +60,21 @@
             </mat-select>
         </td>
     </tr>
-    <ng-container *ngIf="block.outputSchema">
+    <ng-container *ngIf="properties.outputSchema">
         <tr class="propRow subRow" [attr.collapse]="propHidden.outputSchemaGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName cellTitle">Description</td>
             <td class="propRowCell cellTitle">Variable</td>
         </tr>
     </ng-container>
-    <ng-container *ngFor="let field of block.outputFields; let i=index">
+    <ng-container *ngFor="let field of properties.outputFields; let i=index">
         <tr class="propRow subRow" [attr.collapse]="propHidden.outputSchemaGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">
                 <span class="lvl" [attr.lvl]="field.lvl">{{field.title}}</span>
             </td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.value" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.value" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
     </ng-container>

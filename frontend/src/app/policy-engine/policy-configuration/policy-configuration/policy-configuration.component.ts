@@ -126,11 +126,24 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.currentView === 'blocks';
     }
 
-    public get disableLeftMenu(): boolean {
+    public get disableComponentMenu(): boolean {
         return (
-            this.openType === 'Root' &&
+            !this.isTree ||
+            (
+                this.selectType === 'Module' &&
+                this.openType === 'Root' &&
+                this.rootType === 'Policy'
+            )
+        );
+    }
+
+    public get disableModuleMenu(): boolean {
+        return (
+            !this.isTree ||
+            this.rootType === 'Module' ||
+            this.openType === 'Sub' ||
             this.selectType === 'Module'
-        ) || !this.isTree;
+        );
     }
 
     private operationMode: OperationMode = OperationMode.none;
@@ -369,10 +382,12 @@ export class PolicyConfigurationComponent implements OnInit {
             return true;
         }
         if (storageItem.view === 'json' || storageItem.view === 'blocks') {
-            return storageItem.value === JSONconfig;
+            const json = storageItem.value;
+            return json === JSONconfig;
         }
         if (storageItem.view === 'yaml') {
-            return this.yamlToJson(storageItem.value) === JSONconfig;
+            const json = this.yamlToJson(storageItem.value);
+            return json === JSONconfig;
         }
         return true;
     }
@@ -485,7 +500,9 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    public setFavorite(item: any) {
+    public setFavorite(event: any, item: any) {
+        event.preventDefault();
+        event.stopPropagation();
         this.options.setFavorite(item.type, !item.favorite);
         this.options.save();
         this.updateComponents();
@@ -498,7 +515,9 @@ export class PolicyConfigurationComponent implements OnInit {
         }, 200);
     }
 
-    public setModuleFavorite(item: any) {
+    public setModuleFavorite(event: any, item: any) {
+        event.preventDefault();
+        event.stopPropagation();
         this.options.setModuleFavorite(item.uuid, !item.favorite);
         this.options.save();
         this.updateModules();
@@ -620,7 +639,6 @@ export class PolicyConfigurationComponent implements OnInit {
                 }, (e) => {
                     this.loading = false;
                 });
-
             });
         }
     }
@@ -739,9 +757,9 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loadState(item);
     }
 
-    private onCopyBlock(block?: any) {
+    private onPasteBlock(block?: any) {
         if (this.currentBlock && block) {
-            this.currentBlock.copyChild(block);
+            this.currentBlock.pasteChild(block);
         }
     }
 
@@ -766,7 +784,7 @@ export class PolicyConfigurationComponent implements OnInit {
             evt.preventDefault();
             try {
                 const parsedBlockData = JSON.parse(evt.clipboardData?.getData('text') || "null");
-                this.onCopyBlock(parsedBlockData);
+                this.onPasteBlock(parsedBlockData);
             }
             catch {
                 console.warn("Block data is incorrect");
@@ -1038,5 +1056,52 @@ export class PolicyConfigurationComponent implements OnInit {
                 }
             });
         }
+    }
+
+    public tryPublishModule() {
+        this.loading = true;
+        this.modulesService.publish(this.moduleId).subscribe((result) => {
+            this.loadData();
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    public updateModule() {
+        const module = this.templateModel.getJSON();
+        this.loading = true;
+        this.modulesService.update(this.moduleId, module).subscribe((result) => {
+            this.loadData();
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    public saveAsModule() {
+        const module = this.templateModel.getJSON();
+        delete module.id;
+        delete module.uuid;
+        const dialogRef = this.dialog.open(NewModuleDialog, {
+            width: '650px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
+            data: module
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (!result) {
+                return;
+            }
+            module.name = result.name;
+            module.description = result.description;
+            this.loading = true;
+            this.modulesService.create(module).subscribe((result) => {
+                this.router.navigate(['/policy-configuration'], { queryParams: { moduleId: result.uuid } });
+            }, (e) => {
+                this.loading = false;
+            });
+        });
     }
 }

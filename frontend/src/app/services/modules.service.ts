@@ -2,8 +2,9 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
+
 /**
- * Services for working from user profile.
+ * Services for working from modules.
  */
 @Injectable()
 export class ModulesService {
@@ -23,27 +24,37 @@ export class ModulesService {
         return this.http.get<any>(`${this.url}/${uuid}`);
     }
 
-    public create(module: any): Observable<void> {
+    public create(module: any): Observable<any> {
         return this.http.post<any>(`${this.url}/`, module);
-    }
-
-    public delete(uuid: string): Observable<boolean> {
-        return this.http.delete<boolean>(`${this.url}/${uuid}`);
     }
 
     public menuList(): Observable<any[]> {
         return this.http.get<any[]>(`${this.url}/menu`);
     }
 
+    public delete(uuid: string): Observable<boolean> {
+        return this.http.delete<boolean>(`${this.url}/${uuid}`);
+    }
+
     public update(uuid: string, module: any): Observable<any> {
         return this.http.put<any[]>(`${this.url}/${uuid}`, module);
     }
 
-    public show(uuid: string): Observable<any> {
-        return this.http.put<any[]>(`${this.url}/${uuid}/show`, null);
+    public publish(uuid: string): Observable<any> {
+        return this.http.put<any[]>(`${this.url}/${uuid}/publish`, null);
     }
 
-    public hide(uuid: string): Observable<any> {
-        return this.http.put<any[]>(`${this.url}/${uuid}/hide`, null);
+    public pushPublish(uuid: string): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<any>(`${this.url}/${uuid}/push/publish`, null);
+    }
+
+    public exportInFile(uuid: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${uuid}/export/file`, {
+            responseType: 'arraybuffer'
+        });
+    }
+
+    public exportInMessage(uuid: string): Observable<any> {
+        return this.http.get(`${this.url}/${uuid}/export/message`);
     }
 }

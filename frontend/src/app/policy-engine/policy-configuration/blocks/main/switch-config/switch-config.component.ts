@@ -17,7 +17,8 @@ export class SwitchConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         options: false,
@@ -25,7 +26,7 @@ export class SwitchConfigComponent implements OnInit {
         conditions: {},
     };
 
-    block!: any;
+    properties!: any;
 
     constructor() {
     }
@@ -41,9 +42,10 @@ export class SwitchConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.executionFlow = this.block.executionFlow || 'firstTrue';
-        this.block.conditions = this.block.conditions || [];
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.executionFlow = this.properties.executionFlow || 'firstTrue';
+        this.properties.conditions = this.properties.conditions || [];
     }
 
     onHide(item: any, prop: any) {
@@ -51,8 +53,8 @@ export class SwitchConfigComponent implements OnInit {
     }
 
     addCondition() {
-        this.block.conditions.push({
-            tag: `Condition_${this.block.conditions.length}`,
+        this.properties.conditions.push({
+            tag: `Condition_${this.properties.conditions.length}`,
             type: 'equal',
             value: '',
             actor: '',
@@ -60,6 +62,10 @@ export class SwitchConfigComponent implements OnInit {
     }
 
     onRemoveCondition(i: number) {
-        this.block.conditions.splice(i, 1);
+        this.properties.conditions.splice(i, 1);
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

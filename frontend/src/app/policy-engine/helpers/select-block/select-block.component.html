@@ -2,7 +2,11 @@
     <mat-select-trigger>
         <span class="custom">{{text}}</span>
     </mat-select-trigger>
-    <mat-option *ngFor="let item of data" [value]="item.value">
+    <div class="components-search">
+        <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
+        <mat-icon class="components-search-icon">search</mat-icon>
+    </div>
+    <mat-option *ngFor="let item of searchData" [value]="item.value">
         <div class="block-name">
             <div class="block-icon">
                 <mat-icon>{{item.icon}}</mat-icon>

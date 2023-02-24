@@ -17,14 +17,15 @@ export class SendConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         optionGroup: false,
         options: {}
     };
 
-    block!: any;
+    properties!: any;
     topics!: TopicVariables[];
 
     constructor() {
@@ -42,11 +43,12 @@ export class SendConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.options = this.block.options || [];
-        if (!this.block.dataType && !this.block.dataSource) {
-            this.block.dataSource = 'auto';
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {};
+        this.properties.options = this.properties.options || [];
+        if (!this.properties.dataType && !this.properties.dataSource) {
+            this.properties.dataSource = 'auto';
         }
         this.topics = this.moduleVariables?.topics || [];
     }
@@ -56,14 +58,14 @@ export class SendConfigComponent implements OnInit {
     }
 
     addOption() {
-        this.block.options.push({
+        this.properties.options.push({
             name: '',
             value: ''
         })
     }
 
     removeOption(i: number) {
-        this.block.options.splice(i, 1);
+        this.properties.options.splice(i, 1);
     }
 
     selectTopic(event: any) {
@@ -73,10 +75,14 @@ export class SendConfigComponent implements OnInit {
                 type: 'any',
                 static: false
             });
-            this.block.topic = name;
+            this.properties.topic = name;
         }
     }
 
     onDataSource(event: any) {
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

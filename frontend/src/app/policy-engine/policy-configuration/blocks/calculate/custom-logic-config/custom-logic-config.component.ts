@@ -16,8 +16,9 @@ export class CustomLogicConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
-    block!: any;
+    private item!: PolicyBlockModel;
+    
+    properties!: any;
     propHidden: any = {
         outputSchemaGroup: false
     };
@@ -35,11 +36,12 @@ export class CustomLogicConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {}
-        this.block.expression = this.block.expression || ''
-        this.block.documentSigner = this.block.documentSigner || '';
-        this.block.idType = this.block.idType || '';
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {}
+        this.properties.expression = this.properties.expression || ''
+        this.properties.documentSigner = this.properties.documentSigner || '';
+        this.properties.idType = this.properties.idType || '';
         this.schemas = this.moduleVariables?.schemas || [];
     }
 
@@ -48,28 +50,32 @@ export class CustomLogicConfigComponent implements OnInit {
             width: '80%',
             panelClass: 'g-dialog',
             data: {
-                expression: this.block.expression,
+                expression: this.properties.expression,
                 readonly: this.readonly
             },
             autoFocus: true,
             disableClose: true
         })
         dialogRef.afterClosed().subscribe(result => {
-            this.block.expression = result.expression;
+            this.properties.expression = result.expression;
         })
     }
 
     onSelectOutput() {
-        this.block.inputFields = [];
-        const schema = this.schemas.find(e => e.value == this.block.outputSchema);
+        this.properties.inputFields = [];
+        const schema = this.schemas.find(e => e.value == this.properties.outputSchema);
         if (schema && schema.data) {
             for (const field of schema.data.fields) {
-                this.block.inputFields.push({
+                this.properties.inputFields.push({
                     name: field.name,
                     title: field.description,
                     value: field.name
                 })
             }
         }
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

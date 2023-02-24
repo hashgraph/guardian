@@ -17,7 +17,8 @@ export class ModuleComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false
     };
@@ -87,5 +88,9 @@ export class ModuleComponent implements OnInit {
             });
             this.properties[item.key] = name;
         }
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

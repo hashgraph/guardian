@@ -1,20 +1,20 @@
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
-    <tr *ngIf="!block.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+    <tr *ngIf="!properties.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.tokenId" [disabled]="readonly">
+            <mat-select [(value)]="properties.tokenId" [disabled]="readonly" (change)="onSave()">
                 <mat-option *ngFor="let token of tokens" [value]="token.value">
                     {{token.name}}
                 </mat-option>
             </mat-select>
         </td>
     </tr>
-    <tr *ngIf="block.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
+    <tr *ngIf="properties.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token Template</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.template" [disabled]="readonly">
+            <mat-select [(value)]="properties.template" [disabled]="readonly" (change)="onSave()">
                 <mat-option *ngFor="let token of tokenTemplate" [value]="token.value">
                     {{token.name}}
                 </mat-option>
@@ -25,24 +25,24 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Account Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.accountType" [disabled]="readonly">
+            <mat-select [(value)]="properties.accountType" [disabled]="readonly" (change)="onSave()">
                 <mat-option value="default">Default</mat-option>
                 <mat-option value="custom">Custom</mat-option>
             </mat-select>
         </td>
     </tr>
-    <tr *ngIf="block.accountType==='custom'" class="propRow" [attr.collapse]="propHidden.main">
+    <tr *ngIf="properties.accountType==='custom'" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Account Id (Field)</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.accountId" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.accountId" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Action</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.action" [disabled]="readonly">
+            <mat-select [(value)]="properties.action" [disabled]="readonly" (change)="onSave()">
                 <mat-option value="associate">Associate</mat-option>
                 <mat-option value="dissociate">Dissociate</mat-option>
             </mat-select>

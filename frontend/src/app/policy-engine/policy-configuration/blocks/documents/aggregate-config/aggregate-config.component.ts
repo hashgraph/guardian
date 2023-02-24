@@ -18,7 +18,8 @@ export class AggregateConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         options: false,
@@ -26,7 +27,7 @@ export class AggregateConfigComponent implements OnInit {
         expressions: {},
     };
 
-    block!: any;
+    properties!: any;
     allTimer!: PolicyBlockModel[];
 
     constructor(private dialog: MatDialog) {
@@ -43,9 +44,10 @@ export class AggregateConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.expressions = this.block.expressions || [];
-        this.block.uiMetaData = this.block.uiMetaData || {}
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.expressions = this.properties.expressions || [];
+        this.properties.uiMetaData = this.properties.uiMetaData || {}
     }
 
     onHide(item: any, prop: any) {
@@ -53,13 +55,17 @@ export class AggregateConfigComponent implements OnInit {
     }
 
     addExpression() {
-        this.block.expressions.push({
+        this.properties.expressions.push({
             name: '',
             value: '',
         })
     }
 
     onRemoveExpression(i: number) {
-        this.block.expressions.splice(i, 1);
+        this.properties.expressions.splice(i, 1);
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

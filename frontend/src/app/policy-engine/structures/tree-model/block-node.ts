@@ -2,7 +2,6 @@ import { PolicyBlockModel } from "../policy-models/block.model";
 
 export class FlatBlockNode {
     public id!: string;
-    public name!: string;
     public isModule!: boolean;
     public about!: any;
     public root!: boolean;
@@ -21,7 +20,6 @@ export class FlatBlockNode {
     constructor(node: PolicyBlockModel) {
         this.node = node;
         this.id = node.id;
-        this.name = node.tag;
         this.isModule = node.isModule;
     }
 }

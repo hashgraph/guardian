@@ -16,12 +16,13 @@ export class RolesConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
     };
 
-    block!: any;
+    properties!: any;
     roles!: RoleVariables[];
     groups!: GroupVariables[];
 
@@ -41,13 +42,18 @@ export class RolesConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {};
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {};
         this.roles = this.moduleVariables?.roles || [];
         this.groups = this.moduleVariables?.groups || [];
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

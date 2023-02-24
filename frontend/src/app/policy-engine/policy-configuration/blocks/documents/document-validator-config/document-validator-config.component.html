@@ -1,10 +1,10 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Document Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.documentType" [disabled]="readonly">
+            <mat-select [(value)]="properties.documentType" [disabled]="readonly" (change)="onSave()">
                 <mat-option value="vc-document">VC Document</mat-option>
                 <mat-option value="vp-document">VP Document</mat-option>
                 <mat-option value="related-vc-document">Related VC Document</mat-option>
@@ -16,7 +16,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Check Schema</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.schema" [disabled]="readonly">
+            <mat-select [(value)]="properties.schema" [disabled]="readonly" (change)="onSave()">
                 <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
@@ -29,28 +29,28 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Check Owned by User</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.checkOwnerDocument" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkOwnerDocument" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Check Owned by Group</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.checkOwnerByGroupDocument" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkOwnerByGroupDocument" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Check Assigned to User</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.checkAssignDocument" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkAssignDocument" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Check Assigned to Group</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.checkAssignByGroupDocument" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkAssignByGroupDocument" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propHeader">
@@ -66,7 +66,7 @@
             </div>
         </td>
     </tr>
-    <ng-container *ngFor="let condition of block.conditions; let i=index">
+    <ng-container *ngFor="let condition of properties.conditions; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.conditionsGroup">
             <td class="propRowCol" (click)="onHide(propHidden.conditions, i)"
                 [attr.collapse]="propHidden.conditions[i]">
@@ -83,7 +83,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
-                <mat-select [(value)]="condition.type" [disabled]="readonly">
+                <mat-select [(value)]="condition.type" [disabled]="readonly" (change)="onSave()">
                     <mat-option value="equal">Equal</mat-option>
                     <mat-option value="not_equal">Not Equal</mat-option>
                     <mat-option value="in">In</mat-option>
@@ -95,14 +95,14 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Field</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="condition.field" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="condition.field" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Value</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="condition.value" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="condition.value" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
     </ng-container>

@@ -48,7 +48,6 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         'description',
         'status',
         'operation',
-        'menu',
         'operations'
     ];
 
@@ -264,18 +263,6 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     //     });
     // }
 
-    // exportPolicy(element: any) {
-    //     this.policyEngineService.exportInMessage(element.id)
-    //         .subscribe(exportedPolicy => this.dialog.open(ExportPolicyDialog, {
-    //             width: '700px',
-    //             panelClass: 'g-dialog',
-    //             data: {
-    //                 policy: exportedPolicy
-    //             },
-    //             autoFocus: false
-    //         }));
-    // }
-
     // importPolicy(messageId?: string) {
     //     const dialogRef = this.dialog.open(ImportPolicyDialog, {
     //         width: '500px',
@@ -450,7 +437,15 @@ export class ModulesListComponent implements OnInit, OnDestroy {
 
     public exportModules(element: any) {
         this.loading = true;
-        throw '';
+        this.modulesService.exportInMessage(element.id)
+            .subscribe(module => this.dialog.open(ExportPolicyDialog, {
+                width: '700px',
+                panelClass: 'g-dialog',
+                data: {
+                    module: module
+                },
+                autoFocus: false
+            }));
     }
 
     public newModules() {
@@ -466,6 +461,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 const module = {
                     name: result.name,
                     description: result.description,
+                    menu: "show",
                     config: {
                         blockType: 'module'
                     }
@@ -503,15 +499,5 @@ export class ModulesListComponent implements OnInit, OnDestroy {
 
     public publishModule(element: any) {
 
-    }
-
-    public showModule(element: any, value: boolean) {
-        this.loading = true;
-        (value ? this.modulesService.show(element.uuid) : this.modulesService.hide(element.uuid))
-            .subscribe((result) => {
-                this.loadAllModules();
-            }, (e) => {
-                this.loading = false;
-            });
     }
 }

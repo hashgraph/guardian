@@ -1,5 +1,5 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
             <mat-icon>arrow_drop_down</mat-icon>
@@ -11,21 +11,21 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Description</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.uiMetaData.description" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.uiMetaData.description" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.uiMetaData.type" [disabled]="readonly">
+            <mat-select [(value)]="properties.uiMetaData.type" [disabled]="readonly" (change)="onSave()">
                 <mat-option value="loader">LOADER</mat-option>
                 <mat-option value="text">TEXT</mat-option>
             </mat-select>

@@ -1,5 +1,5 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
             <mat-icon>arrow_drop_down</mat-icon>
@@ -11,14 +11,14 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Enable common sorting</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="block.uiMetaData.enableSorting" [readonly]="readonly">
+            <input type="checkbox" [(ngModel)]="properties.uiMetaData.enableSorting" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propHeader">
@@ -33,12 +33,12 @@
             </div>
         </td>
     </tr>
-    <ng-container *ngFor="let field of block.uiMetaData.fields; let i=index">
+    <ng-container *ngFor="let field of properties.uiMetaData.fields; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.fieldsGroup">
             <td class="propRowCol" (click)="onHide(propHidden.fields, i)" [attr.collapse]="propHidden.fields[i]">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>
-            <td class="propRowCell cellName">Field {{i}}</td>
+            <td class="propRowCell cellName">{{getFieldName(field, i)}}</td>
             <td class="propRowCell not-editable-text">
                 {{field.name}}
             </td>
@@ -47,7 +47,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Field Path</td>
             <td class="propRowCell">
-                <document-path [(value)]="field.name" [readonly]="readonly"></document-path>
+                <document-path [(value)]="field.name" [readonly]="readonly" (change)="onSave()"></document-path>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
@@ -66,35 +66,35 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Title</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.title" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.title" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Tooltip</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.tooltip" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.tooltip" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Cell Content</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.content" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.content" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">UI Class</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.uiClass" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.uiClass" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">width</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.width" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.width" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
@@ -116,7 +116,7 @@
                     Action
                 </td>
                 <td class="propRowCell">
-                    <mat-select [(value)]="field.action" [disabled]="readonly">
+                    <mat-select [(value)]="field.action" [disabled]="readonly" (change)="onSave()">
                         <mat-option value="link">LINK</mat-option>
                         <mat-option value="dialog">DIALOG</mat-option>
                     </mat-select>
@@ -141,21 +141,21 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Dialog Type</td>
                     <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="field.dialogType" [readonly]="readonly">
+                        <input class="prop-input" [(ngModel)]="field.dialogType" [readonly]="readonly" (blur)="onSave()">
                     </td>
                 </tr>
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Dialog Content</td>
                     <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="field.dialogContent" [readonly]="readonly">
+                        <input class="prop-input" [(ngModel)]="field.dialogContent" [readonly]="readonly" (blur)="onSave()">
                     </td>
                 </tr>
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Dialog Class</td>
                     <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="field.dialogClass" [readonly]="readonly">
+                        <input class="prop-input" [(ngModel)]="field.dialogClass" [readonly]="readonly" (blur)="onSave()">
                     </td>
                 </tr>
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">

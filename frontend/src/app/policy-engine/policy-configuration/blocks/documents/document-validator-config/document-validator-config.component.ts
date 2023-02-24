@@ -17,14 +17,15 @@ export class DocumentValidatorConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         conditionsGroup: false,
         conditions: {},
     };
 
-    block!: any;
+    properties!: any;
     schemas!: SchemaVariables[];
     
     constructor() {
@@ -42,8 +43,9 @@ export class DocumentValidatorConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.conditions = this.block.conditions || [];
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.conditions = this.properties.conditions || [];
         this.schemas = this.moduleVariables?.schemas || [];
     }
 
@@ -52,10 +54,14 @@ export class DocumentValidatorConfigComponent implements OnInit {
     }
 
     addCondition() {
-        this.block.conditions.push({
+        this.properties.conditions.push({
             value: '',
             field: '',
             type: 'equal',
         })
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

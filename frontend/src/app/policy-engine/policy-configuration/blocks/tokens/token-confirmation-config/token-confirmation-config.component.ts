@@ -17,12 +17,13 @@ export class TokenConfirmationConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
 
     propHidden: any = {
         main: false,
     };
 
-    block!: any;
+    properties!: any;
     tokens!: TokenVariables[];
     tokenTemplate!: TokenTemplateVariables[];
 
@@ -42,7 +43,8 @@ export class TokenConfirmationConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
+        this.item = block;
+        this.properties = block.properties;
         this.tokens = this.moduleVariables?.tokens || [];
         this.tokenTemplate = this.moduleVariables?.tokenTemplates || [];
     }
@@ -52,7 +54,11 @@ export class TokenConfirmationConfigComponent implements OnInit {
     }
 
     onUseTemplateChange() {
-        delete this.block.tokenId;
-        delete this.block.template;
+        delete this.properties.tokenId;
+        delete this.properties.template;
+    }
+
+    onSave() {
+        this.item.changed = true;
     }
 }

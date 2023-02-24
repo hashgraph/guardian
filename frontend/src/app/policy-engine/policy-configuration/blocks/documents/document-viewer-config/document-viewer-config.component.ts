@@ -17,14 +17,15 @@ export class DocumentSourceComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         fieldsGroup: false,
         fields: {},
         insertGroup: false
     };
 
-    block!: any;
+    properties!: any;
     allBlocks!: any[];
 
     constructor() {
@@ -56,7 +57,7 @@ export class DocumentSourceComponent implements OnInit {
     }
 
     addField() {
-        this.block.uiMetaData.fields.push({
+        this.properties.uiMetaData.fields.push({
             title: '',
             name: '',
             tooltip: '',
@@ -71,9 +72,10 @@ export class DocumentSourceComponent implements OnInit {
         } else {
             this.allBlocks = [];
         }
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.uiMetaData.fields = this.block.uiMetaData.fields || [];
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {};
+        this.properties.uiMetaData.fields = this.properties.uiMetaData.fields || [];
     }
 
     onHide(item: any, prop: any) {
@@ -87,5 +89,17 @@ export class DocumentSourceComponent implements OnInit {
         field.dialogClass = "";
         field.dialogType = "";
         field.bindBlock = "";
+    }
+
+    getFieldName(field:any, i:number):string {
+        if(field && field.title) {
+            return field.title;
+        } else {
+            return 'Field ' + i;
+        }
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

@@ -12,6 +12,7 @@ import { TokenTemplateVariables } from './variables/token-template-variables';
 import { TokenVariables } from './variables/token-variables';
 import { TopicVariables } from './variables/topic-variables';
 import { TemplateModel } from './template.model';
+import { IBlockConfig } from './interfaces/block-config.interface';
 
 export class PolicyModuleModel extends PolicyBlockModel {
     protected _dataSource!: PolicyBlockModel[];
@@ -24,6 +25,9 @@ export class PolicyModuleModel extends PolicyBlockModel {
     protected _variables!: ModuleVariableModel[];
     protected _internalEvents: PolicyEventModel[];
     protected _lastVariables!: IModuleVariables;
+
+    protected _name!: string;
+    protected _description!: string;
 
     public get internalEvents(): PolicyEventModel[] {
         return this._internalEvents;
@@ -111,24 +115,6 @@ export class PolicyModuleModel extends PolicyBlockModel {
         }
     }
 
-    public refresh() {
-        this._tagMap = {};
-        this._idMap = {};
-        this._allBlocks = [];
-        this._allEvents = [];
-        this.registeredBlock(this);
-        for (const block of this._allBlocks) {
-            this._tagMap[block.tag] = block;
-            this._idMap[block.id] = block;
-        }
-        for (const event of this._allEvents) {
-            event.source = this._tagMap[event.sourceTag];
-            event.target = this._tagMap[event.targetTag];
-        }
-        this._dataSource = [this];
-        this.updateVariables();
-    }
-
     public get isModule(): boolean {
         return true;
     }
@@ -138,18 +124,20 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public get name(): string {
-        return '';
+        return this._name;
     }
 
     public set name(value: string) {
+        this._name = value;
         this._changed = true;
     }
 
     public get description(): string {
-        return '';
+        return this._description;
     }
 
     public set description(value: string) {
+        this._description = value;
         this._changed = true;
     }
 
@@ -343,5 +331,41 @@ export class PolicyModuleModel extends PolicyBlockModel {
 
     public getRootModule(): PolicyModel | PolicyModuleModel {
         return this;
+    }
+
+    public override createChild(block: IBlockConfig, index?: number) {
+        this._createChild(block, this, index);
+        this.refresh();
+    }
+
+    public override pasteChild(block: IBlockConfig) {
+        this._pasteChild(block, this);
+        this.refresh();
+    }
+
+    public refreshData() {
+        this._tagMap = {};
+        this._idMap = {};
+        this._allBlocks = [];
+        this._allEvents = [];
+        this.registeredBlock(this);
+        for (const block of this._allBlocks) {
+            this._tagMap[block.tag] = block;
+            this._idMap[block.id] = block;
+        }
+        for (const event of this._allEvents) {
+            event.source = this._tagMap[event.sourceTag];
+            event.target = this._tagMap[event.targetTag];
+        }
+        this._dataSource = [this];
+        this.updateVariables();
+    }
+
+    public override refresh(): void {
+        if (this._module) {
+            this._module.refresh();
+        } else {
+            this.refreshData();
+        }
     }
 }

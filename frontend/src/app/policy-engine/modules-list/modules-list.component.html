@@ -69,21 +69,6 @@
                         </div>
                     </td>
                 </ng-container>
-                <ng-container matColumnDef="menu">
-                    <th mat-header-cell *matHeaderCellDef> Menu Status </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div *ngIf="element.menu === 'show'" class="btn-menu" (click)="showModule(element, false)"
-                            matTooltip="Hide" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
-                            <mat-icon>visibility</mat-icon>
-                            <span>Visible</span>
-                        </div>
-                        <div *ngIf="element.menu !== 'show'" class="btn-menu" (click)="showModule(element, true)"
-                            matTooltip="Show" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
-                            <mat-icon>visibility_off</mat-icon>
-                            <span>Hidden</span>
-                        </div>
-                    </td>
-                </ng-container>
                 <ng-container matColumnDef="operations">
                     <th mat-header-cell *matHeaderCellDef></th>
                     <td mat-cell *matCellDef="let element">

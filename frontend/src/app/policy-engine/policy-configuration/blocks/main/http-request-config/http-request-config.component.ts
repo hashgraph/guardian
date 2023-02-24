@@ -19,7 +19,8 @@ export class HttpRequestConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         options: false,
@@ -27,7 +28,7 @@ export class HttpRequestConfigComponent implements OnInit {
         conditions: {},
     };
 
-    block!: any;
+    properties!: any;
 
     constructor(
         private dialog: MatDialog
@@ -45,8 +46,9 @@ export class HttpRequestConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.headers = this.block.headers || [];
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.headers = this.properties.headers || [];
     }
 
     onHide(item: any, prop: any) {
@@ -54,8 +56,8 @@ export class HttpRequestConfigComponent implements OnInit {
     }
 
     addHeader() {
-        this.block.headers.push({
-            tag: `Condition_${this.block.headers.length}`,
+        this.properties.headers.push({
+            tag: `Condition_${this.properties.headers.length}`,
             type: 'equal',
             value: '',
             actor: '',
@@ -63,7 +65,7 @@ export class HttpRequestConfigComponent implements OnInit {
     }
 
     onRemoveHeader(i: number) {
-        this.block.headers.splice(i, 1);
+        this.properties.headers.splice(i, 1);
     }
 
     editBody($event: MouseEvent) {
@@ -72,14 +74,18 @@ export class HttpRequestConfigComponent implements OnInit {
             panelClass: 'g-dialog',
             data: {
                 mode: 'json',
-                expression: this.block.messageBody,
+                expression: this.properties.messageBody,
                 readonly: this.readonly
             },
             autoFocus: true,
             disableClose: true
         })
         dialogRef.afterClosed().subscribe(result => {
-            this.block.messageBody = result.expression;
+            this.properties.messageBody = result.expression;
         })
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

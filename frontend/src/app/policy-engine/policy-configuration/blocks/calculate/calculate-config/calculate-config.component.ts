@@ -17,13 +17,14 @@ export class CalculateConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         inputSchemaGroup: false,
         outputSchemaGroup: false
     };
 
-    block!: any;
+    properties!: any;
     schemas!: SchemaVariables[];
 
     constructor() {
@@ -41,14 +42,15 @@ export class CalculateConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.inputFields = this.block.inputFields || [];
-        this.block.outputFields = this.block.outputFields || [];
-        if (!this.block.inputSchema) {
-            this.block.inputFields = [];
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.inputFields = this.properties.inputFields || [];
+        this.properties.outputFields = this.properties.outputFields || [];
+        if (!this.properties.inputSchema) {
+            this.properties.inputFields = [];
         }
-        if (!this.block.outputSchema) {
-            this.block.outputFields = [];
+        if (!this.properties.outputSchema) {
+            this.properties.outputFields = [];
         }
 
         this.schemas = this.moduleVariables?.schemas || [];
@@ -59,11 +61,11 @@ export class CalculateConfigComponent implements OnInit {
     }
 
     onSelectInput() {
-        this.block.inputFields = [];
-        const schema = this.schemas.find(e => e.value == this.block.inputSchema);
+        this.properties.inputFields = [];
+        const schema = this.schemas.find(e => e.value == this.properties.inputSchema);
         if (schema && schema.data) {
             for (const field of schema.data.fields) {
-                this.block.inputFields.push({
+                this.properties.inputFields.push({
                     name: field.name,
                     title: field.description,
                     value: field.name
@@ -73,16 +75,20 @@ export class CalculateConfigComponent implements OnInit {
     }
 
     onSelectOutput() {
-        this.block.outputFields = [];
-        const schema = this.schemas.find(e => e.value == this.block.outputSchema);
+        this.properties.outputFields = [];
+        const schema = this.schemas.find(e => e.value == this.properties.outputSchema);
         if (schema && schema.data) {
             for (const field of schema.data.fields) {
-                this.block.outputFields.push({
+                this.properties.outputFields.push({
                     name: field.name,
                     title: field.description,
                     value: ''
                 })
             }
         }
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

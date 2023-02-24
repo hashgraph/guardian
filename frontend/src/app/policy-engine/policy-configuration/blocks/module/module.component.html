@@ -15,7 +15,7 @@
                 {{item.name}}
             </td>
             <td *ngIf="item.type ==='Schema'" class="propRowCell">
-                <mat-select [(value)]="properties[item.key]" [disabled]="readonly">
+                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">
                     <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                         {{schema.name}}
                         <span *ngIf="schema.version"> ({{schema.version}})</span>
@@ -24,24 +24,24 @@
                 </mat-select>
             </td>
             <td *ngIf="item.type ==='Token'" class="propRowCell">
-                <mat-select [(value)]="properties[item.key]" [disabled]="readonly">
+                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">
                     <mat-option *ngFor="let token of tokens" [value]="token.value">
                         {{token.name}}
                     </mat-option>
                 </mat-select>
             </td>
             <td *ngIf="item.type ==='Role'" class="propRowCell">
-                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" multiple>
+                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">
                     <mat-option *ngFor="let item of roles" [value]="item.value">{{item.name}}</mat-option>
                 </mat-select>
             </td>
             <td *ngIf="item.type ==='Group'" class="propRowCell">
-                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" multiple>
+                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">
                     <mat-option *ngFor="let item of groups" [value]="item.value">{{item.name}}</mat-option>
                 </mat-select>
             </td>
             <td *ngIf="item.type ==='TokenTemplate'" class="propRowCell">
-                <mat-select [(value)]="properties[item.key]" [disabled]="readonly">
+                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">
                     <mat-option *ngFor="let token of tokenTemplate" [value]="token.value">
                         {{token.name}}
                     </mat-option>
@@ -64,7 +64,7 @@
                 </mat-select>
             </td>
             <td *ngIf="item.type ==='String'" class="propRowCell">
-                <input class="prop-input" [(ngModel)]="properties[item.key]" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties[item.key]" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.main || variablesHidden[i]">

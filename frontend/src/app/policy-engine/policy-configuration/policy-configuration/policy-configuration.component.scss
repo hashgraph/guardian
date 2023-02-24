@@ -656,8 +656,6 @@
                 margin-left: 1px;
                 position: relative;
                 user-select: none;
-                max-width: 50%;
-                margin-right: auto;
 
                 &:hover {
                     background: var(--pc-tabs-hover-color);
@@ -739,6 +737,11 @@
                 &[hidden] {
                     display: none;
                 }
+
+                &[readonly="true"] {
+                    pointer-events: none;
+                    filter: grayscale(1);
+                }
             }
         }
     }
@@ -787,6 +790,7 @@
                 height: 20px;
                 width: 20px;
                 pointer-events: none;
+                color: var(--pc-header-color);
             }
 
             &[collapse="true"] mat-icon {
@@ -1088,6 +1092,17 @@
             padding: 4px 5px 4px 5px;
             box-sizing: border-box;
             box-shadow: 0px -2px 0 0 var(--pc-prop-border-color), 0px 1px 0 0 var(--pc-prop-border-color), 2px 0px 0 0 var(--pc-prop-border-color);
+
+            &::after {
+                pointer-events: none;
+                position: absolute;
+                content: "";
+                top: -4px;
+                left: -26px;
+                right: -4px;
+                bottom: 0px;
+                border-top: 1px solid var(--pc-border-color);
+            }
         }
 
         .propRowBottom {
@@ -1326,4 +1341,15 @@
         border-color: var(--pc-addon-block-border-color);
         border-radius: 6px;
     }
+}
+
+.right-bottom-toolbar .tab-header {
+    max-width: 50%;
+    margin-right: auto;
+}
+
+.module-root-icon {
+    width: 20px;
+    left: 7px !important;
+    top: 4px !important;
 }

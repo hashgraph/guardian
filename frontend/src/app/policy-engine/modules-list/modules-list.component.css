@@ -104,10 +104,6 @@
     width: 110px;
 }
 
-.table .mat-column-operation {
-    width: 200px;
-}
-
 .table .mat-column-status {
     width: 110px;
 }
@@ -341,7 +337,6 @@
 }
 
 .btn-menu {
-    color: #3f51b5;
     position: relative;
     padding: 6px 0px 6px 34px;
     cursor: pointer;
@@ -356,4 +351,12 @@
     position: absolute;
     left: 3px;
     top: 5px;
+}
+
+.btn-menu-visible {
+    color: #119116;
+}
+
+.btn-menu-hidden {
+    color: #3f51b5;
 }

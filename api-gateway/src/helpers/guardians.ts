@@ -1230,19 +1230,6 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
-     * Show modules
-     * @param owner
-     * @returns module
-     */
-    public async showModule(
-        uuid: any,
-        show: boolean,
-        owner: string
-    ): Promise<any> {
-        return await this.request<any>(MessageAPI.SHOW_MODULES, { uuid, show, owner });
-    }
-
-    /**
     * Delete module
     * @param uuid
     * @param owner

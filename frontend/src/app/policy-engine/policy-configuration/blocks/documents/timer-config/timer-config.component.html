@@ -1,5 +1,5 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'options')" [attr.collapse]="propHidden.options">
             <mat-icon>arrow_drop_down</mat-icon>
@@ -11,21 +11,21 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Start Date</td>
         <td class="propRowCell">
-            <datetime-picker [(value)]="block.startDate" [readonly]="readonly"></datetime-picker>
+            <datetime-picker [(value)]="properties.startDate" [readonly]="readonly"></datetime-picker>
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.options">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">End Date</td>
         <td class="propRowCell">
-            <datetime-picker [(value)]="block.endDate" [readonly]="readonly"></datetime-picker>
+            <datetime-picker [(value)]="properties.endDate" [readonly]="readonly"></datetime-picker>
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.options">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Period</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.period" [disabled]="readonly" (closed)="selectPeriod()">
+            <mat-select [(value)]="properties.period" [disabled]="readonly" (closed)="selectPeriod()">
                 <mat-option value="yearly">Yearly</mat-option>
                 <mat-option value="monthly">Monthly</mat-option>
                 <mat-option value="weekly">Weekly</mat-option>
@@ -35,18 +35,18 @@
             </mat-select>
         </td>
     </tr>
-    <tr class="propRow" *ngIf="block.period == 'custom'" [attr.collapse]="propHidden.options">
+    <tr class="propRow" *ngIf="properties.period == 'custom'" [attr.collapse]="propHidden.options">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Mask</td>
         <td class="propRowCell">
-            <span>{{block.periodMask}}</span>
+            <span>{{properties.periodMask}}</span>
         </td>
     </tr>
-    <tr class="propRow" *ngIf="block.period == 'custom'" [attr.collapse]="propHidden.options">
+    <tr class="propRow" *ngIf="properties.period == 'custom'" [attr.collapse]="propHidden.options">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Interval</td>
         <td class="propRowCell">
-            <span>{{block.periodInterval}}</span>
+            <span>{{properties.periodInterval}}</span>
         </td>
     </tr>
 

@@ -17,12 +17,14 @@ export class ButtonConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         buttonsGroup: false,
         buttons: {}
     };
 
-    block!: any;
+    properties!: any;
 
     constructor() {
     }
@@ -38,10 +40,11 @@ export class ButtonConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.uiMetaData.buttons = this.block.uiMetaData.buttons || [];
-        for (const i in this.block.uiMetaData.buttons) {
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {};
+        this.properties.uiMetaData.buttons = this.properties.uiMetaData.buttons || [];
+        for (const i in this.properties.uiMetaData.buttons) {
             this.propHidden.buttons[i] = {};
         }
     }
@@ -51,13 +54,13 @@ export class ButtonConfigComponent implements OnInit {
     }
 
     addButton() {
-        this.block.uiMetaData.buttons.push({
-            tag: `Button_${this.block.uiMetaData.buttons.length}`,
+        this.properties.uiMetaData.buttons.push({
+            tag: `Button_${this.properties.uiMetaData.buttons.length}`,
             name: '',
             type: 'selector',
             filters: []
         })
-        this.propHidden.buttons[this.block.uiMetaData.buttons.length - 1] = {};
+        this.propHidden.buttons[this.properties.uiMetaData.buttons.length - 1] = {};
     }
 
     addFilter(button: any) {
@@ -69,10 +72,14 @@ export class ButtonConfigComponent implements OnInit {
     }
 
     onRemoveButton(i: number) {
-        this.block.uiMetaData.buttons.splice(i, 1);
+        this.properties.uiMetaData.buttons.splice(i, 1);
     }
 
     onRemoveFilter(button: any, i: number) {
         button.filters.splice(i, 1);
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

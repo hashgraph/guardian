@@ -18,8 +18,6 @@ export class TemplateModel {
     public readonly messageId!: string;
     public readonly topicId!: string;
 
-    private _name!: string;
-    private _description!: string;
     private _config!: PolicyModuleModel;
     private _changed: boolean;
 
@@ -45,9 +43,10 @@ export class TemplateModel {
         this.status = template.status;
         this.messageId = template.messageId;
         this.topicId = template.topicId;
-
-        this.buildModule(template);
+        
         this.buildBlock(template.config);
+        this._config.name = template.name;
+        this._config.description = template.description;
 
         this.isDraft = this.status === PolicyType.DRAFT;
         this.isPublished = this.status === PolicyType.PUBLISH;
@@ -55,20 +54,20 @@ export class TemplateModel {
     }
 
     public get name(): string {
-        return this._name;
+        return this._config.name;
     }
 
     public set name(value: string) {
-        this._name = value;
+        this._config.name = value;
         this.changed = true;
     }
 
     public get description(): string {
-        return this._description;
+        return this._config.description;
     }
 
     public set description(value: string) {
-        this._description = value;
+        this._config.description = value;
         this.changed = true;
     }
 
@@ -84,33 +83,46 @@ export class TemplateModel {
         this._changed = value;
     }
 
-    private buildModule(policy: any) {
-        this._name = policy.name;
-        this._description = policy.description;
-    }
-
     private buildBlock(config: IBlockConfig) {
         if (!config) {
             config = { blockType: "module" };
         }
-        this._config = new PolicyModuleModel(config, null);
-        this._config.setModule(this);
+        this._config = this._buildBlock(config, null, this) as PolicyModuleModel;
+        this._config.isRoot = true;
         this._config.refresh();
+    }
+
+    private _buildBlock(
+        config: IBlockConfig,
+        parent: PolicyModuleModel | PolicyBlockModel | null,
+        module: PolicyModuleModel | TemplateModel
+    ) {
+        let block: PolicyModuleModel | PolicyBlockModel;
+        if (config.blockType === 'module') {
+            block = new PolicyModuleModel(config, parent);
+            block.setModule(module);
+            module = block as PolicyModuleModel;
+        } else {
+            block = new PolicyBlockModel(config, parent);
+            block.setModule(module);
+        }
+        if (Array.isArray(config.children)) {
+            for (const childConfig of config.children) {
+                const child = this._buildBlock(childConfig, block, module);
+                block.children.push(child);
+            }
+        }
+        return block;
     }
 
     public rebuild(object?: any) {
         if (object) {
             if (object.config) {
-                this.buildModule(object.config);
                 this.buildBlock(object.config);
             } else {
                 this.buildBlock(object);
             }
         }
-        this.emitUpdate();
-    }
-
-    public refresh() {
         this.emitUpdate();
     }
 
@@ -142,6 +154,7 @@ export class TemplateModel {
 
     private _subscriber!: Function;
     public subscribe(fn: Function) {
+        this._changed = false;
         this._subscriber = fn;
     }
 
@@ -172,6 +185,15 @@ export class TemplateModel {
     }
 
     public getBlock(block: any): PolicyBlockModel | undefined {
-        return this._config,this.getBlock(block);
+        return this._config, this.getBlock(block);
+    }
+
+    public refreshData() {
+        this._config.refreshData();
+        this.emitUpdate();
+    }
+
+    public refresh(): void {
+        this.refreshData();
     }
 }

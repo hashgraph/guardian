@@ -17,12 +17,13 @@ export class ContainerConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
     };
 
-    block!: any;
+    properties!: any;
 
     constructor() {
     }
@@ -38,12 +39,17 @@ export class ContainerConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {}
-        this.block.uiMetaData.type = this.block.uiMetaData.type || 'blank';
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {}
+        this.properties.uiMetaData.type = this.properties.uiMetaData.type || 'blank';
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

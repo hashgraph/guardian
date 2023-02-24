@@ -362,7 +362,7 @@ export class PolicyModel {
         }
         this._config = this._buildBlock(config, null, this);
         this._config.isRoot = true;
-        this._refresh();
+        this._refreshData();
     }
 
     public rebuild(object?: any) {
@@ -377,7 +377,7 @@ export class PolicyModel {
         this.emitUpdate();
     }
 
-    private _refresh() {
+    private _refreshData() {
         this._tagMap = {};
         this._idMap = {};
         this._allBlocks = [];
@@ -393,7 +393,7 @@ export class PolicyModel {
         for (const module of this._allModules) {
             this._tagMap[module.tag] = module;
             this._idMap[module.id] = module;
-            module.refresh();
+            module.refreshData();
         }
 
         for (const event of this._allEvents) {
@@ -404,11 +404,6 @@ export class PolicyModel {
         this._dataSource = [this._config];
 
         this.updateVariables();
-    }
-
-    public refresh() {
-        this._refresh();
-        this.emitUpdate();
     }
 
     public getNewTag(type: string, block?: PolicyBlockModel): string {
@@ -476,6 +471,7 @@ export class PolicyModel {
 
     private _subscriber!: Function;
     public subscribe(fn: Function) {
+        this._changed = false;
         this._subscriber = fn;
     }
 
@@ -492,8 +488,7 @@ export class PolicyModel {
             config.tag = this.getNewTag('Module');
             config.blockType = 'module';
             config.defaultActive = true;
-            const module = new PolicyModuleModel(config, null);
-            module.setModule(this);
+            const module = this._buildBlock(config, null, this) as PolicyModuleModel;
             this._tagMap[module.tag] = module;
             return module;
         } else {
@@ -584,5 +579,14 @@ export class PolicyModel {
 
     public getRootModule(): PolicyModel | PolicyModuleModel {
         return this;
+    }
+
+    public refreshData() {
+        this._refreshData();
+        this.emitUpdate();
+    }
+
+    public refresh(): void {
+        this.refreshData();
     }
 }

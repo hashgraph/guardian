@@ -1,10 +1,10 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Output Schema</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.outputSchema" [disabled]="readonly" (selectionChange)="onSelectOutput()">
+            <mat-select [(value)]="properties.outputSchema" [disabled]="readonly" (selectionChange)="onSelectOutput()">
                 <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
@@ -14,11 +14,11 @@
         </td>
     </tr>
 
-    <tr class="propRow" [attr.readonly]="readonly" *ngIf="block">
+    <tr class="propRow" [attr.readonly]="readonly" *ngIf="properties">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Document Signer</td>
         <td class="propRowCell remove-cell">
-            <mat-select [(ngModel)]="block.documentSigner" [disabled]="readonly">
+            <mat-select [(ngModel)]="properties.documentSigner" [disabled]="readonly" (change)="onSave()">
                 <mat-option value="">Policy Owner</mat-option>
                 <mat-option value="owner">First Document Owner</mat-option>
                 <mat-option value="issuer">First Document Issuer</mat-option>
@@ -30,7 +30,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Id Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.idType" [disabled]="readonly">
+            <mat-select [(value)]="properties.idType" [disabled]="readonly" (change)="onSave()">
                 <mat-option value=""></mat-option>
                 <mat-option value="DID">DID (New DID)</mat-option>
                 <mat-option value="UUID">UUID (New UUID)</mat-option>
@@ -44,7 +44,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Expression</td>
         <td class="propRowCell">
-            <input class="prop-input" type="text" [(ngModel)]="block.expression" [readonly]="true" (click)="editExpression($event)">
+            <input class="prop-input" type="text" [(ngModel)]="properties.expression" [readonly]="true" (click)="editExpression($event)">
         </td>
     </tr>
 </table>

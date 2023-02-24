@@ -17,14 +17,15 @@ export class SourceAddonConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         filtersGroup: false,
         filters: {},
     };
 
-    block!: any;
+    properties!: any;
     schemas!: SchemaVariables[];
 
     constructor() {
@@ -42,8 +43,9 @@ export class SourceAddonConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.filters = this.block.filters || [];
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.filters = this.properties.filters || [];
         this.schemas = this.moduleVariables?.schemas || [];
     }
 
@@ -52,10 +54,14 @@ export class SourceAddonConfigComponent implements OnInit {
     }
 
     addField() {
-        this.block.filters.push({
+        this.properties.filters.push({
             value: '',
             field: '',
             type: 'equal',
         })
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

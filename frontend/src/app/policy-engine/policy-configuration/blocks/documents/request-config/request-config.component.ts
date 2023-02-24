@@ -17,7 +17,8 @@ export class RequestConfigComponent implements OnInit {
     @Output() onInit = new EventEmitter();
 
     private moduleVariables!: IModuleVariables | null;
-
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         privateFieldsGroup: false,
@@ -25,7 +26,7 @@ export class RequestConfigComponent implements OnInit {
         presetFields: {}
     };
 
-    block!: any;
+    properties!: any;
     schemas!: SchemaVariables[];
 
     presetMap: any;
@@ -46,17 +47,18 @@ export class RequestConfigComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.uiMetaData.type = this.block.uiMetaData.type || 'page';
-        this.block.presetFields = this.block.presetFields || [];
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {};
+        this.properties.uiMetaData.type = this.properties.uiMetaData.type || 'page';
+        this.properties.presetFields = this.properties.presetFields || [];
 
         this.schemas = this.moduleVariables?.schemas || [];
 
-        const schema = this.schemas.find(e => e.value == this.block.schema);
-        const presetSchema = this.schemas.find(e => e.value == this.block.presetSchema);
+        const schema = this.schemas.find(e => e.value == this.properties.schema);
+        const presetSchema = this.schemas.find(e => e.value == this.properties.presetSchema);
         if (!schema || !presetSchema) {
-            this.block.presetFields = [];
+            this.properties.presetFields = [];
         }
         this.presetMap = [];
         if (presetSchema?.data?.fields) {
@@ -74,16 +76,16 @@ export class RequestConfigComponent implements OnInit {
     }
 
     onSelectInput() {
-        this.block.presetFields = [];
+        this.properties.presetFields = [];
         this.presetMap = [];
 
-        const schema = this.schemas.find(e => e.value == this.block.schema);
-        const presetSchema = this.schemas.find(e => e.value == this.block.presetSchema);
+        const schema = this.schemas.find(e => e.value == this.properties.schema);
+        const presetSchema = this.schemas.find(e => e.value == this.properties.presetSchema);
 
         if (schema && presetSchema) {
             if (schema.data?.fields) {
                 for (const field of schema.data.fields) {
-                    this.block.presetFields.push({
+                    this.properties.presetFields.push({
                         name: field.name,
                         title: field.description,
                         value: null,
@@ -110,9 +112,13 @@ export class RequestConfigComponent implements OnInit {
             const f = this.presetMap[i];
             dMap[f.title] = f.name;
         }
-        for (let i = 0; i < this.block.presetFields.length; i++) {
-            const f = this.block.presetFields[i];
+        for (let i = 0; i < this.properties.presetFields.length; i++) {
+            const f = this.properties.presetFields[i];
             f.value = dMap[f.title];
         }
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }
