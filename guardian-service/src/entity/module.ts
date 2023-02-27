@@ -1,5 +1,5 @@
 import { BaseEntity } from '@guardian/common';
-import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
+import { GenerateUUIDv4, ModuleStatus } from '@guardian/interfaces';
 import { BeforeCreate, Entity, Property, Unique } from '@mikro-orm/core';
 
 /**
@@ -36,7 +36,7 @@ export class PolicyModule extends BaseEntity {
      * Module status
      */
     @Property({ nullable: true })
-    status?: PolicyType;
+    status?: ModuleStatus;
 
     /**
      * Module creator
@@ -85,7 +85,7 @@ export class PolicyModule extends BaseEntity {
      */
     @BeforeCreate()
     setDefaults() {
-        this.status = this.status || PolicyType.DRAFT;
+        this.status = this.status || ModuleStatus.DRAFT;
         this.uuid = this.uuid || GenerateUUIDv4();
         this.codeVersion = this.codeVersion || '1.0.0';
         this.type = this.type || 'CUSTOM';

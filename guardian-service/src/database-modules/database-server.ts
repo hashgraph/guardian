@@ -2091,11 +2091,19 @@ export class DatabaseServer {
     }
 
     /**
-     * Get Modules By UUID
+     * Get Module By UUID
      * @param uuid
      */
     public static async getModuleById(uuid: string): Promise<PolicyModule> {
         return await new DataBaseHelper(PolicyModule).findOne({ uuid });
+    }
+
+    /**
+     * Get Module
+     * @param filters
+     */
+    public static async getModule(filters: any): Promise<PolicyModule> {
+        return await new DataBaseHelper(PolicyModule).findOne(filters);
     }
 
     /**
