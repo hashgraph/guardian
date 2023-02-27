@@ -28,7 +28,7 @@ import { PolicyEngine } from './policy-engine';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { findAllEntities } from '@helpers/utils';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
-import { IPolicyInstance } from '@policy-engine/policy-engine.interface';
+
 
 /**
  * Policy engine service
@@ -148,8 +148,7 @@ export class PolicyEngineService {
             return;
         }
 
-        // const policyInstance = PolicyComponentsUtils.GetPolicyInstance(policy.id.toString());
-        const userGroups = await PolicyComponentsUtils.GetGroups({policyId: policy.id.toString()} as any, user);
+        const userGroups = await PolicyComponentsUtils.GetGroups(policy.id.toString(), user);
 
         let userGroup = userGroups.find(g => g.active !== false);
         if (!userGroup) {
@@ -195,7 +194,7 @@ export class PolicyEngineService {
         };
 
         this.channel.subscribe(PolicyEvents.BLOCK_UPDATE_BROADCAST, (msg: any) => {
-            const {type, args} = msg;
+            const { type, args } = msg;
 
             switch (type) {
                 case 'update':
@@ -227,7 +226,7 @@ export class PolicyEngineService {
                 const policyId = policy.id.toString();
                 const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
                 if (serviceChannelEntity) {
-                    const {channel, name} = serviceChannelEntity;
+                    const { channel, name } = serviceChannelEntity;
                     await channel.request([name, PolicyEvents.MRV_DATA].join('.'), {
                         policyId,
                         data: msg
@@ -558,7 +557,7 @@ export class PolicyEngineService {
 
                 const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
                 if (serviceChannelEntity) {
-                    const {channel, name} = serviceChannelEntity;
+                    const { channel, name } = serviceChannelEntity;
                     const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_DATA].join('.'), {
                         user,
                         blockId,
@@ -579,7 +578,7 @@ export class PolicyEngineService {
 
                 const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
                 if (serviceChannelEntity) {
-                    const {channel, name} = serviceChannelEntity;
+                    const { channel, name } = serviceChannelEntity;
                     const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_DATA_BY_TAG].join('.'), {
                         user,
                         tag,
@@ -600,7 +599,7 @@ export class PolicyEngineService {
 
                 const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
                 if (serviceChannelEntity) {
-                    const {channel, name} = serviceChannelEntity;
+                    const { channel, name } = serviceChannelEntity;
                     const blockData = await channel.request([name, PolicyEvents.SET_BLOCK_DATA].join('.'), {
                         user,
                         blockId,
@@ -622,7 +621,7 @@ export class PolicyEngineService {
 
                 const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
                 if (serviceChannelEntity) {
-                    const {channel, name} = serviceChannelEntity;
+                    const { channel, name } = serviceChannelEntity;
                     const blockData = await channel.request([name, PolicyEvents.SET_BLOCK_DATA_BY_TAG].join('.'), {
                         user,
                         tag,
@@ -644,7 +643,7 @@ export class PolicyEngineService {
 
                 const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
                 if (serviceChannelEntity) {
-                    const {channel, name} = serviceChannelEntity;
+                    const { channel, name } = serviceChannelEntity;
                     const blockData = await channel.request([name, PolicyEvents.BLOCK_BY_TAG].join('.'), {
                         tag,
                         policyId,
@@ -664,7 +663,7 @@ export class PolicyEngineService {
 
                 const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
                 if (serviceChannelEntity) {
-                    const {channel, name} = serviceChannelEntity;
+                    const { channel, name } = serviceChannelEntity;
                     const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_PARENTS].join('.'), {
                         blockId
                     });
@@ -683,7 +682,7 @@ export class PolicyEngineService {
 
                 const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
                 if (serviceChannelEntity) {
-                    const {channel, name} = serviceChannelEntity;
+                    const { channel, name } = serviceChannelEntity;
                     const blockData = await channel.request([name, PolicyEvents.GET_POLICY_GROUPS].join('.'), {
                         user,
                         policyId
@@ -703,7 +702,7 @@ export class PolicyEngineService {
 
                 const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
                 if (serviceChannelEntity) {
-                    const {channel, name} = serviceChannelEntity;
+                    const { channel, name } = serviceChannelEntity;
                     const blockData = await channel.request([name, PolicyEvents.SELECT_POLICY_GROUP].join('.'), {
                         user,
                         policyId,
@@ -924,7 +923,7 @@ export class PolicyEngineService {
 
                     const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
                     if (serviceChannelEntity) {
-                        const {channel, name} = serviceChannelEntity;
+                        const { channel, name } = serviceChannelEntity;
                         await channel.request([name, PolicyEvents.MRV_DATA].join('.'), {
                             policyId,
                             data: msg
@@ -1130,7 +1129,7 @@ export class PolicyEngineService {
                     return new MessageError(new Error('Policy is already bound'));
                 } else {
                     const root = await this.users.getHederaAccount(policy.owner);
-                    const result = await this.policyEngine.createMultiPolicy(policy as any as IPolicyInstance, userAccount, root, data);
+                    const result = await this.policyEngine.createMultiPolicy(policy, userAccount, root, data);
                     return new MessageResponse(result);
                 }
             } catch (error) {
