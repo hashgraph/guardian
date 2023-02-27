@@ -1,6 +1,5 @@
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
 import {
     IPolicyBlock,
@@ -285,31 +284,5 @@ export class CreateTokenBlock {
         await ref.saveState();
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, null));
-    }
-
-    /**
-     * Validate block data
-     * @param resultsContainer
-     */
-    public async validate(
-        resultsContainer: PolicyValidationResultsContainer
-    ): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (!ref.options.template) {
-                resultsContainer.addBlockError(ref.uuid, 'Template can not be empty');
-                return;
-            }
-            const policyTokens = ref.policyInstance.policyTokens || [];
-            const tokenConfig = policyTokens.find(e => e.templateTokenTag === ref.options.template);
-            if (!tokenConfig) {
-                resultsContainer.addBlockError(ref.uuid, `Token "${ref.options.template}" does not exist`);
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(
-                ref.uuid,
-                `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`
-            );
-        }
     }
 }

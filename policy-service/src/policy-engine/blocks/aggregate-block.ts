@@ -1,6 +1,5 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { AggregateVC } from '@entity/aggregate-documents';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
@@ -320,50 +319,5 @@ export class AggregateBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             documents: ExternalDocuments(docs)
         }));
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (ref.options.aggregateType === 'cumulative') {
-                const variables: any = {};
-                if (ref.options.expressions) {
-                    for (const expression of ref.options.expressions) {
-                        variables[expression.name] = true;
-                    }
-                }
-                if (!ref.options.condition) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "condition" does not set');
-                } else if (typeof ref.options.condition !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "condition" must be a string');
-                } else {
-                    const vars = PolicyUtils.variables(ref.options.condition);
-                    for (const varName of vars) {
-                        if (!variables[varName]) {
-                            resultsContainer.addBlockError(ref.uuid, `Variable '${varName}' not defined`);
-                        }
-                    }
-                }
-            } else if(ref.options.aggregateType !== 'period') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "aggregateType" must be one of period, cumulative');
-            }
-            if (
-                ref.options.groupByFields &&
-                ref.options.groupByFields.length > 0
-            ) {
-                if (ref.options.groupByFields.find((item) => !item.fieldPath)) {
-                    resultsContainer.addBlockError(
-                        ref.uuid,
-                        'Field path in group fields can not be empty'
-                    );
-                }
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

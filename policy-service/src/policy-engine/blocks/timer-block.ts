@@ -1,7 +1,6 @@
 import moment from 'moment';
 import { CronJob } from 'cron';
 import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/decorators';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { AnyBlockType, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { PolicyInputEventType as PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
@@ -281,27 +280,5 @@ export class TimerBlock {
             ref.log(`stop scheduler for: ${id}`);
         }
         await ref.saveState();
-    }
-
-    /**
-     * Validate block data
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (!ref.options.startDate) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "startDate" does not set');
-            } else if (typeof ref.options.startDate !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "startDate" must be a string');
-            }
-            if (!ref.options.period) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "period" does not set');
-            } else if (typeof ref.options.period !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "period" must be a string');
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

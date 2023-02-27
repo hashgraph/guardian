@@ -2,7 +2,6 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@poli
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
@@ -287,27 +286,6 @@ export class SplitBlock {
             await this.addDocs(ref, event.user, docs);
         } else {
             await this.addDocs(ref, event.user, [docs]);
-        }
-    }
-
-    /**
-     * Validate block data
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (!ref.options.threshold) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "threshold" does not set');
-            } else {
-                try {
-                    parseFloat(ref.options.threshold);
-                } catch (error) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "threshold" must be a Number');
-                }
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

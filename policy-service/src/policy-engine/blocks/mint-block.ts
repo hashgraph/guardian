@@ -1,7 +1,6 @@
 import { ActionCallback, TokenBlock } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage, MessageMemo } from '@hedera-modules';
@@ -402,52 +401,5 @@ export class MintBlock {
             documents: ExternalDocuments(docs),
             result: ExternalDocuments(vp),
         }));
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (ref.options.useTemplate) {
-                if (!ref.options.template) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "template" does not set');
-                }
-                const policyTokens = ref.policyInstance.policyTokens || [];
-                const tokenConfig = policyTokens.find(e => e.templateTokenTag === ref.options.template);
-                if (!tokenConfig) {
-                    resultsContainer.addBlockError(ref.uuid, `Token "${ref.options.template}" does not exist`);
-                }
-            } else {
-                if (!ref.options.tokenId) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
-                } else if (typeof ref.options.tokenId !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-                } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
-                    resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
-                }
-            }
-
-            if (!ref.options.rule) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
-            } else if (typeof ref.options.rule !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
-            }
-
-            const accountType = ['default', 'custom', 'custom-value'];
-            if (accountType.indexOf(ref.options.accountType) === -1) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "accountType" must be one of ' + accountType.join(','));
-            }
-            if (ref.options.accountType === 'custom' && !ref.options.accountId) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "accountId" does not set');
-            }
-            if (ref.options.accountType === 'custom-value' && !/^\d+\.\d+\.\d+$/.test(ref.options.accountIdValue)) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "accountIdValue" has invalid hedera account value');
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

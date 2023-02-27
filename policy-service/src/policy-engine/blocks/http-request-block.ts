@@ -16,7 +16,6 @@ import { Workers } from '@helpers/workers';
 import { WorkerTaskType } from '@guardian/interfaces';
 import { VcHelper } from '@helpers/vc-helper';
 import { VcDocument } from '@hedera-modules';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 /**
  * Http request block
@@ -183,21 +182,4 @@ export class HttpRequestBlock {
             ref.error(PolicyUtils.getErrorMessage(error));
         }
     }
-
-    /**
-     * Validate block data
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-
-        if (!ref.options.url?.trim()) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "url" must be set');
-        }
-
-        if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].find(item => item === ref.options.method?.toUpperCase())) {
-            resultsContainer.addBlockError(ref.uuid, `Option "method" must be "GET", "POST", "PUT", "PATCH" or "DELETE"`);
-        }
-    }
-
 }

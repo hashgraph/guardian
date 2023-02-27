@@ -40,6 +40,7 @@ import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Workers } from '@helpers/workers';
 import { Token } from '@entity/token';
+import { PolicyValidator } from '@policy-engine/block-validators';
 
 /**
  * Result of publishing
@@ -933,7 +934,6 @@ export class PolicyEngine extends ServiceRequestsBase {
      */
     public async validateModel(policy: Policy | string): Promise<ISerializedErrors> {
         let policyId: string;
-
         if (typeof policy === 'string') {
             policyId = policy
             policy = await DatabaseServer.getPolicyById(policyId);
@@ -943,22 +943,12 @@ export class PolicyEngine extends ServiceRequestsBase {
             }
             policyId = policy.id.toString();
         }
-
-        const { name } = PolicyServiceChannelsContainer.createIfNotExistServiceChannel(policyId);
-
-        this.channel.publish(PolicyEvents.GENERATE_POLICY, {
-            policy,
-            policyId,
-            policyServiceName: name,
-            skipRegistration: false
-        });
-
-        return new Promise((resolve) => {
-            this.policyReadyCallbacks.set(policyId, (data) => {
-                this.destroyModel(policyId);
-                resolve(data);
-            })
-        });
+        
+        const policyValidator = new PolicyValidator(policy);
+        policyValidator.registerBlock(policy.config);
+        policyValidator.addPermissions(policy.policyRoles);
+        await policyValidator.validate();
+        return policyValidator.getSerializedErrors();
     }
 
     /**

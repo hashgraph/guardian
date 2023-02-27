@@ -2,7 +2,6 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@poli
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyComponentsUtils } from '../policy-components-utils';
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IPolicyBlock, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
@@ -162,58 +161,5 @@ export class TokenActionBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             action: ref.options.action
         }));
-    }
-
-    /**
-     * Validate block data
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            const accountType = ['default', 'custom'];
-            if (accountType.indexOf(ref.options.accountType) === -1) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "accountType" must be one of ' + accountType.join(','));
-            }
-            const types = ref.options.accountType === 'default' ? [
-                'associate',
-                'dissociate',
-                'freeze',
-                'unfreeze',
-                'grantKyc',
-                'revokeKyc',
-            ] : [
-                'freeze',
-                'unfreeze',
-                'grantKyc',
-                'revokeKyc',
-            ];
-            if (types.indexOf(ref.options.action) === -1) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "action" must be one of ' + types.join(','));
-            }
-            if (ref.options.useTemplate) {
-                if (!ref.options.template) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "template" does not set');
-                }
-                const policyTokens = ref.policyInstance.policyTokens || [];
-                const tokenConfig = policyTokens.find(e => e.templateTokenTag === ref.options.template);
-                if (!tokenConfig) {
-                    resultsContainer.addBlockError(ref.uuid, `Token "${ref.options.template}" does not exist`);
-                }
-            } else {
-                if (!ref.options.tokenId) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
-                } else if (typeof ref.options.tokenId !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-                } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
-                    resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
-                }
-            }
-            if (ref.options.accountType === 'custom' && !ref.options.accountId) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "accountId" does not set');
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

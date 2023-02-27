@@ -1,5 +1,4 @@
 import { CalculateAddon } from '@policy-engine/helpers/decorators';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateAddon } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
@@ -227,48 +226,5 @@ export class CalculateMathVariables {
             }
         }
         return variables;
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
-        try {
-            if (ref.options.selectors) {
-                for (const filter of ref.options.selectors) {
-                    if (!filter.sourceField) {
-                        resultsContainer.addBlockError(ref.uuid, `Incorrect Source Field: ${filter.sourceField}`);
-                        return;
-                    }
-                    if (!filter.comparisonValue) {
-                        resultsContainer.addBlockError(ref.uuid, `Incorrect filter: ${filter.comparisonValue}`);
-                        return;
-                    }
-                }
-            }
-            if (ref.options.variables) {
-                for (const variable of ref.options.variables) {
-                    if (!variable.variablePath) {
-                        resultsContainer.addBlockError(ref.uuid, `Incorrect Variable Path: ${variable.variablePath}`);
-                        return;
-                    }
-                }
-            }
-            if (ref.options.sourceSchema) {
-                if (typeof ref.options.sourceSchema !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "sourceSchema" must be a string');
-                    return;
-                }
-                const sourceSchema = await ref.databaseServer.getSchemaByIRI(ref.options.sourceSchema, ref.topicId);
-                if (!sourceSchema) {
-                    resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.sourceSchema}" does not exist`);
-                    return;
-                }
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

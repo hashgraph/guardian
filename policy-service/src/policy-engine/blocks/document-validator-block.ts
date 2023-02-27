@@ -4,7 +4,6 @@ import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
@@ -198,42 +197,5 @@ export class DocumentValidatorBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
             documents: ExternalDocuments(event?.data?.data)
         }));
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            const types = [
-                'vc-document',
-                'vp-document',
-                'related-vc-document',
-                'related-vp-document'
-            ];
-            if (types.indexOf(ref.options.documentType) === -1) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "documentType" must be one of ' + types.join(','));
-            }
-
-            if (ref.options.schema) {
-                if (typeof ref.options.schema !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-                    return;
-                }
-                const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
-                if (!schema) {
-                    resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
-                    return;
-                }
-            }
-
-            if (ref.options.conditions && !Array.isArray(ref.options.conditions)) {
-                resultsContainer.addBlockError(ref.uuid, `conditions option must be an array`);
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

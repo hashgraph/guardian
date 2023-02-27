@@ -4,7 +4,6 @@ import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@polic
 import { PolicyRole, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { Logger } from '@guardian/common';
@@ -459,30 +458,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public setTopicId(id: string): void {
                 this.topicId = id;
-            }
-
-            /**
-             * Validate block options
-             * @param resultsContainer
-             */
-            public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-                resultsContainer.registerBlock(this as any as IPolicyBlock);
-                if (resultsContainer.countTags(this.tag) > 1) {
-                    resultsContainer.addBlockError(this.uuid, `Tag ${this.tag} already exist`);
-                }
-                const permission = resultsContainer.permissionsNotExist(this.permissions);
-                if (permission) {
-                    resultsContainer.addBlockError(this.uuid, `Permission ${permission} not exist`);
-                }
-                if (typeof super.validate === 'function') {
-                    await super.validate(resultsContainer)
-                }
-                if (Array.isArray(this.children)) {
-                    for (const child of this.children) {
-                        await child.validate(resultsContainer);
-                    }
-                }
-                return;
             }
 
             /**
