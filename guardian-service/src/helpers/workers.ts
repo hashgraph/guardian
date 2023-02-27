@@ -43,7 +43,11 @@ export class Workers extends ServiceRequestsBase {
         }
         if ([null, undefined].includes(task.data.customClientNodes)) {
             task.data.customClientNodes = Environment.customClientNodes;
+        }
+        if (!task.data.nodes) {
             task.data.nodes = Environment.nodes;
+        }
+        if (!task.data.mirrorNodes) {
             task.data.mirrorNodes = Environment.mirrorNodes;
         }
         return this.addTask(task, priority, false);
@@ -61,7 +65,11 @@ export class Workers extends ServiceRequestsBase {
         }
         if ([null, undefined].includes(task.data.customClientNodes)) {
             task.data.customClientNodes = Environment.customClientNodes;
+        }
+        if (!task.data.nodes) {
             task.data.nodes = Environment.nodes;
+        }
+        if (!task.data.mirrorNodes) {
             task.data.mirrorNodes = Environment.mirrorNodes;
         }
         return this.addTask(task, priority, true, attempts);
