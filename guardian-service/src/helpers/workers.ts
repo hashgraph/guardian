@@ -42,7 +42,7 @@ export class Workers extends ServiceRequestsBase {
             task.data.network = Environment.network;
         }
         if ([null, undefined].includes(task.data.customClientNodes)) {
-            task.data.usingCustomNodes = Environment.customClientNodes;
+            task.data.customClientNodes = Environment.customClientNodes;
             task.data.nodes = Environment.nodes;
             task.data.mirrorNodes = Environment.mirrorNodes;
         }
@@ -60,7 +60,7 @@ export class Workers extends ServiceRequestsBase {
             task.data.network = Environment.network;
         }
         if ([null, undefined].includes(task.data.customClientNodes)) {
-            task.data.usingCustomNodes = Environment.customClientNodes;
+            task.data.customClientNodes = Environment.customClientNodes;
             task.data.nodes = Environment.nodes;
             task.data.mirrorNodes = Environment.mirrorNodes;
         }

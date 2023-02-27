@@ -133,7 +133,7 @@ Promise.all([
             Environment.setNodes(nodes);
             Environment.setMirrorNodes(mirrorNodes);
         } catch (error) {
-            await new Logger().error(error, ['GUARDIAN_SERVICE']);
+            throw error;
         }
     }
     MessageServer.setLang(process.env.MESSAGE_LANG);

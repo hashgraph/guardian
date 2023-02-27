@@ -1,4 +1,4 @@
-import { AccountId, Client } from '@hashgraph/sdk';
+import { AccountId, Client, LedgerId } from '@hashgraph/sdk';
 
 /**
  * Environment class
@@ -165,10 +165,12 @@ export class Environment {
      */
     public static createClient(): Client {
         if (Environment._customClientNodes) {
-            return Client.forNetwork(Environment._nodes).setMirrorNetwork(
-                Environment._mirrorNodes
-            );
+            const client = Client.forNetwork(
+                Environment._nodes
+            ).setMirrorNetwork(Environment._mirrorNodes);
+            return Environment.setClientLedgerId(client);
         }
+
         switch (Environment._network) {
             case 'mainnet':
                 return Client.forMainnet();
@@ -182,11 +184,36 @@ export class Environment {
             case 'localnode':
                 const node = {} as any;
                 node[`${Environment._localnodeaddress}:50211`] = new AccountId(3)
-                return Client.forNetwork(node).setMirrorNetwork(`${Environment._localnodeaddress}:5600`);
+                const client = Client.forNetwork(node).setMirrorNetwork(`${Environment._localnodeaddress}:5600`);
+                return Environment.setClientLedgerId(client);
 
             default:
                 throw new Error(`Unknown network: ${Environment._network}`)
         }
+    }
+
+    /**
+     * Set client ledger id
+     * @param client Client
+     */
+    private static setClientLedgerId(client: Client): Client {
+        switch (Environment._network) {
+            case 'mainnet':
+                client.setLedgerId(LedgerId.MAINNET);
+                break;
+            case 'testnet':
+                client.setLedgerId(LedgerId.TESTNET);
+                break;
+            case 'previewnet':
+                client.setLedgerId(LedgerId.PREVIEWNET);
+                break;
+            case 'localnode':
+                client.setLedgerId(LedgerId.LOCAL_NODE);
+                break;
+            default:
+                throw new Error(`Unknown network: ${Environment._network}`);
+        }
+        return client;
     }
 
     /**
