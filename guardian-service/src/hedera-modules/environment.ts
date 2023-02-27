@@ -62,6 +62,24 @@ export class Environment {
     private static _topicsApi: string = Environment.HEDERA_TESTNET_TOPIC_API;
 
     /**
+     * Hedera nodes
+     * @private
+     */
+    private static _nodes: any = {};
+
+    /**
+     * Hedera mirror nodes
+     * @private
+     */
+    private static _mirrorNodes: string[] = [];
+
+    /**
+     * Using custom nodes
+     * @private
+     */
+    private static _customClientNodes: boolean = false;
+
+    /**
      * Set network
      * @param network
      * @param mirrornode
@@ -119,9 +137,38 @@ export class Environment {
     }
 
     /**
+     * Set hedera nodes
+     * @param nodes Hedera nodes
+     */
+    public static setNodes(nodes: any) {
+        Environment._nodes = nodes;
+    }
+
+    /**
+     * Set hedera mirror nodes
+     * @param mirrorNodes Hedera mirror nodes
+     */
+    public static setMirrorNodes(mirrorNodes: string[]) {
+        Environment._mirrorNodes = mirrorNodes;
+    }
+
+    /**
+     * Set custom client nodes
+     * @param customClientNodes Custom client nodes
+     */
+    public static setCustomClientNodes(customClientNodes: boolean) {
+        Environment._customClientNodes = customClientNodes;
+    }
+
+    /**
      * Create client
      */
     public static createClient(): Client {
+        if (Environment._customClientNodes) {
+            return Client.forNetwork(Environment._nodes).setMirrorNetwork(
+                Environment._mirrorNodes
+            );
+        }
         switch (Environment._network) {
             case 'mainnet':
                 return Client.forMainnet();
@@ -161,6 +208,27 @@ export class Environment {
      */
     public static get localNodeProtocol(): string {
         return Environment._localnodeprotocol;
+    }
+
+    /**
+     * Nodes
+     */
+    public static get nodes(): any {
+        return Environment._nodes;
+    }
+
+    /**
+     * Mirror nodes
+     */
+    public static get mirrorNodes(): string[] {
+        return Environment._mirrorNodes;
+    }
+
+    /**
+     * Custom client nodes
+     */
+    public static get customClientNodes(): boolean {
+        return Environment._customClientNodes;
     }
 
     /**

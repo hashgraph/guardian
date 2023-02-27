@@ -41,6 +41,11 @@ export class Workers extends ServiceRequestsBase {
         if (!task.data.network) {
             task.data.network = Environment.network;
         }
+        if ([null, undefined].includes(task.data.customClientNodes)) {
+            task.data.usingCustomNodes = Environment.customClientNodes;
+            task.data.nodes = Environment.nodes;
+            task.data.mirrorNodes = Environment.mirrorNodes;
+        }
         return this.addTask(task, priority, false);
     }
 
@@ -53,6 +58,11 @@ export class Workers extends ServiceRequestsBase {
     public addRetryableTask(task: ITask, priority: number, attempts: number = 0): Promise<any> {
         if (!task.data.network) {
             task.data.network = Environment.network;
+        }
+        if ([null, undefined].includes(task.data.customClientNodes)) {
+            task.data.usingCustomNodes = Environment.customClientNodes;
+            task.data.nodes = Environment.nodes;
+            task.data.mirrorNodes = Environment.mirrorNodes;
         }
         return this.addTask(task, priority, true, attempts);
     }

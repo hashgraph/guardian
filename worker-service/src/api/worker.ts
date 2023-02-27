@@ -188,7 +188,10 @@ export class Worker {
         const networkOptions: NetworkOptions = {
             network: task.data.network,
             localNodeAddress: task.data.localNodeAddress,
-            localNodeProtocol: task.data.localNodeProtocol
+            localNodeProtocol: task.data.localNodeProtocol,
+            customClientNodes: task.data.customClientNodes,
+            nodes: task.data.nodes,
+            mirrorNodes: task.data.mirrorNodes
         }
         try {
             switch (task.type) {

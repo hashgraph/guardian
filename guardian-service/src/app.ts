@@ -121,6 +121,21 @@ Promise.all([
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
+    const customClientNodes =
+        process.env.CUSTOM_CLIENT_NODES?.toLowerCase() === 'true';
+    Environment.setCustomClientNodes(customClientNodes);
+    if (customClientNodes) {
+        try {
+            const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
+            const mirrorNodes = JSON.parse(
+                process.env.HEDERA_CUSTOM_MIRROR_NODES
+            );
+            Environment.setNodes(nodes);
+            Environment.setMirrorNodes(mirrorNodes);
+        } catch (error) {
+            await new Logger().error(error, ['GUARDIAN_SERVICE']);
+        }
+    }
     MessageServer.setLang(process.env.MESSAGE_LANG);
     TransactionLogger.init(channel, process.env.LOG_LEVEL as TransactionLogLvl);
 
