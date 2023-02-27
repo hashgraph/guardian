@@ -1,6 +1,7 @@
-import { MessageBrokerChannel, Singleton } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { PolicyEngine } from '@policy-engine/policy-engine';
+import { Policy } from '@entity/policy';
 
 /**
  * Container entity
@@ -24,9 +25,10 @@ export class PolicyServiceChannelsContainer {
     /**
      * Create new policy service name
      * @param policyId
+     * @param policy
      */
-    static createPolicyServiceChannel(policyId): IContainerEntity {
-        return new PolicyServiceChannelsContainer().createPolicyServiceChannel(policyId);
+    static createPolicyServiceChannel(policyId, policy): IContainerEntity {
+        return new PolicyServiceChannelsContainer().createPolicyServiceChannel(policyId, policy);
     }
 
     /**
@@ -48,11 +50,12 @@ export class PolicyServiceChannelsContainer {
     /**
      * Create service channel if not exist
      * @param policyId
+     * @param policy
      */
-    static createIfNotExistServiceChannel(policyId): IContainerEntity {
+    static createIfNotExistServiceChannel(policyId, policy): IContainerEntity {
         let entity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
         if (!entity) {
-            entity = PolicyServiceChannelsContainer.createPolicyServiceChannel(policyId);
+            entity = PolicyServiceChannelsContainer.createPolicyServiceChannel(policyId, policy);
         }
         return entity;
     }
@@ -76,8 +79,9 @@ export class PolicyServiceChannelsContainer {
     /**
      * Create new policy service name
      * @param policyId
+     * @param policy
      */
-    private createPolicyServiceChannel(policyId: string): IContainerEntity {
+    private createPolicyServiceChannel(policyId: string, policy: Policy): IContainerEntity {
         const name = `policy-${policyId}-${GenerateUUIDv4()}`;
         const channel = new MessageBrokerChannel(this.cn, name);
         const entity = {name, channel};
@@ -85,7 +89,16 @@ export class PolicyServiceChannelsContainer {
 
         channel.subscribe(PolicyEvents.POLICY_READY, (msg: any) => {
             PolicyEngine.runReadyEvent(msg.policyId, msg.data);
-        })
+        });
+
+        channel.subscribe(PolicyEvents.POLICY_INITIALIZATION_ERROR, (msg: any) => {
+            console.error('Policy initialization error', msg.error);
+            this.channelsMap.delete(policyId);
+        });
+
+        channel.response(PolicyEvents.GET_POLICY_CONFIG, async () => {
+            return new MessageResponse(policy);
+        });
 
         return entity;
     }

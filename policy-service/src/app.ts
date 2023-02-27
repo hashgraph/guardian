@@ -3,16 +3,18 @@ import {
     ApplicationState,
     Logger
 } from '@guardian/common';
-import { ApplicationStates } from '@guardian/interfaces';
+import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import { policyAPI } from '@api/policy.service';
+
+const SERVICE_CHANNEL = `policy-service-${GenerateUUIDv4()}`;
 
 export const obj = {};
 
 Promise.all([
-    MessageBrokerChannel.connect('policy-service')
+    MessageBrokerChannel.connect(SERVICE_CHANNEL)
 ]).then(async values => {
     const [cn] = values;
-    const channel = new MessageBrokerChannel(cn, 'policy-service');
+    const channel = new MessageBrokerChannel(cn, SERVICE_CHANNEL);
 
     new Logger().setChannel(channel);
     const state = new ApplicationState('POLICY_SERVICE');

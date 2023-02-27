@@ -2,8 +2,12 @@
  * Policy events
  */
 export enum PolicyEvents {
+    POLICY_LIST_UPDATED = 'policy-list-updated',
+    GET_POLICY_ITEM = 'get-policy-item',
     GENERATE_POLICY = 'generate-policy',
     POLICY_READY = 'policy-ready',
+    POLICY_INITIALIZATION_ERROR = 'policy-initialization-error',
+    GET_POLICY_CONFIG = 'get-policy-config',
     DELETE_POLICY = 'delete-policy',
     VALIDATE_POLICY = 'validate-policy',
     GET_BLOCK_DATA = 'get-block-data',

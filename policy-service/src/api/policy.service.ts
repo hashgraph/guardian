@@ -1,34 +1,25 @@
 import { Logger, MessageBrokerChannel } from '@guardian/common';
 import { PolicyEvents } from '@guardian/interfaces';
 import path from 'path';
-import { fork, ChildProcess } from 'node:child_process';
+import { fork } from 'node:child_process';
 import * as process from 'process';
 
 /**
- * Policy processes
+ * Max policy instances
  */
-const models = new Map<string, ChildProcess>();
+const MAX_POLICY_INSTANCES = (process.env.MAX_POLICY_INSTANCES) ? parseInt(process.env.MAX_POLICY_INSTANCES, 10) : 1000;
+
+/**
+ * Refresh interval
+ */
+const REQUEST_REFRESH_INTERVAL = (process.env.REQUEST_REFRESH_INTERVAL) ? parseInt(process.env.REQUEST_REFRESH_INTERVAL, 10) * 1000 : 10000;
 
 /**
  * Policy module path
  */
 export const POLICY_PROCESS_PATH = path.join(__dirname, 'policy-process');
 
-/**
- * Stop policy process
- * @param policyId
- * @param policyServiceName
- */
-function stopPolicyProcess(policyId: string, policyServiceName: string): void {
-    const logger = new Logger();
-
-    if (models.has(policyServiceName)) {
-        models.get(policyServiceName).kill(9);
-        models.delete(policyServiceName);
-
-        logger.info(`Policy process killed`, ['POLICY-SERVICE', policyId]);
-    }
-}
+let processCount = 0;
 
 /**
  * Run policy process
@@ -38,18 +29,14 @@ function stopPolicyProcess(policyId: string, policyServiceName: string): void {
  * @param skipRegistration
  * @param resultsContainer
  */
-function runPolicyProcess(policy: unknown, policyId: string, policyServiceName: string, skipRegistration: boolean, resultsContainer: unknown): void {
-    stopPolicyProcess(policyId, policyServiceName);
-
+function runPolicyProcess(policyId: string, policyServiceName: string, skipRegistration: boolean): void {
     const logger = new Logger();
 
     const childEnvironment = Object.assign(process.env, {
         POLICY_START_OPTIONS: JSON.stringify({
-            policy,
             policyId,
             policyServiceName,
             skipRegistration,
-            resultsContainer
         }),
 
     })
@@ -65,8 +52,33 @@ function runPolicyProcess(policy: unknown, policyId: string, policyServiceName: 
     });
     childProcess.on('exit', (code) => {
         logger.info(`Policy process exit with code ${code}`, ['POLICY-SERVICE', policyId]);
+        --processCount;
     });
-    models.set(policyServiceName, childProcess);
+}
+
+/**
+ * Request and run policy process
+ * @param channel
+ */
+async function requestAndRunPolicyProcess(channel: MessageBrokerChannel): Promise<void> {
+    if (processCount <= MAX_POLICY_INSTANCES) {
+        processCount++;
+        const data = await channel.request(['guardians', PolicyEvents.GET_POLICY_ITEM].join('.'), {});
+        if (data?.body) {
+            const {
+                policyServiceName,
+                policyId,
+                skipRegistration
+            } = data.body as any;
+
+            console.log(policyId);
+            runPolicyProcess(policyId, policyServiceName, skipRegistration)
+        } else {
+            processCount--;
+        }
+    } else {
+        console.log('maximum instances exceed', processCount);
+    }
 }
 
 /**
@@ -75,21 +87,11 @@ function runPolicyProcess(policy: unknown, policyId: string, policyServiceName: 
  * @param channel - channel
  */
 export async function policyAPI(channel: MessageBrokerChannel): Promise<void> {
-    channel.subscribe(PolicyEvents.GENERATE_POLICY, async (data: any) => {
-        const {
-            policy,
-            policyServiceName,
-            policyId,
-            skipRegistration,
-            resultsContainer
-        } = data;
+    setInterval(async () => {
+        await requestAndRunPolicyProcess(channel);
+    }, REQUEST_REFRESH_INTERVAL)
 
-        runPolicyProcess(policy, policyId, policyServiceName, skipRegistration, resultsContainer);
-    });
-
-    channel.subscribe(PolicyEvents.DELETE_POLICY, async (data: any) => {
-        const { policyId, policyServiceName } = data;
-
-        stopPolicyProcess(policyId, policyServiceName);
+    channel.subscribe(PolicyEvents.POLICY_LIST_UPDATED, async () => {
+       await requestAndRunPolicyProcess(channel);
     });
 }

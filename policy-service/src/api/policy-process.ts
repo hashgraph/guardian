@@ -15,9 +15,9 @@ import { IPFS } from '@helpers/ipfs';
 import { CommonVariables } from '@helpers/common-variables';
 import { PolicyEvents } from '@guardian/interfaces';
 import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { Policy } from '@entity/policy';
 
 const {
-    policy,
     policyId,
     policyServiceName,
     skipRegistration
@@ -60,10 +60,30 @@ Promise.all([
 
     new Logger().info(`Process for with id ${policyId} was started started PID: ${process.pid}, SERVICE_CHANNEL: ${process.env.SERVICE_CHANNEL}`, ['POLICY', policyId]);
 
-    const generator = new BlockTreeGenerator();
-    await generator.generate(policy, skipRegistration, resultsContainer);
+    try {
+        const policyResponse = await channel.request([policyServiceName, PolicyEvents.GET_POLICY_CONFIG].join('.'), {});
 
-    channel.publish(PolicyEvents.POLICY_READY, { policyId: policyId.toString(), data: resultsContainer.getSerializedErrors() });
-    new Logger().info('Start policy', ['POLICY', policy.name, policyId.toString()]);
+        const policy = policyResponse.body as Policy;
+        if (!policy) {
+            throw new Error('Cannot read policy config')
+        }
+
+        const generator = new BlockTreeGenerator();
+        await generator.generate(policy, skipRegistration, resultsContainer);
+
+        channel.publish(PolicyEvents.POLICY_READY, { policyId: policyId.toString(), data: resultsContainer.getSerializedErrors() });
+
+        new Logger().info('Start policy', ['POLICY', policy.name, policyId.toString()]);
+
+    } catch (e) {
+        await channel.publish(PolicyEvents.POLICY_INITIALIZATION_ERROR, {error: e.message});
+        setTimeout(() => {
+            process.exit(-1);
+        }, 1000);
+    }
+
+    channel.response(PolicyEvents.DELETE_POLICY, (msg) => {
+        process.exit(0);
+    });
 
 });

@@ -42,6 +42,7 @@ import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Workers } from '@helpers/workers';
 import { Token } from '@entity/token';
+import { PolicyQueue } from '@policy-engine/policy-queue';
 
 /**
  * Result of publishing
@@ -92,7 +93,7 @@ export class PolicyEngine extends ServiceRequestsBase{
      * Policy ready callbacks
      * @private
      */
-    private readonly policyReadyCallbacks: Map<string, (data: any) => void> = new Map();
+    private readonly policyReadyCallbacks: Map<string, (data: any, error?: any) => void> = new Map();
 
     /**
      * Initialization
@@ -924,13 +925,16 @@ export class PolicyEngine extends ServiceRequestsBase{
     public async destroyModel(policyId: string): Promise<void> {
         const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
         if (serviceChannelEntity) {
-            const {name} = serviceChannelEntity;
+            const {channel, name} = serviceChannelEntity;
             PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
-            this.channel.publish(PolicyEvents.DELETE_POLICY, {
-                policyId,
-                policyServiceName: name
-
-            });
+            // TODO: Remove it
+            try {
+                await channel.request([name, PolicyEvents.DELETE_POLICY].join('.'), {
+                    policyId
+                });
+            } catch (e) {
+                console.error(e.message);
+            }
         }
     }
 
@@ -943,17 +947,18 @@ export class PolicyEngine extends ServiceRequestsBase{
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
         }
-        const { name } = PolicyServiceChannelsContainer.createPolicyServiceChannel(policyId);
-
-        this.channel.publish(PolicyEvents.GENERATE_POLICY, {
+        new PolicyQueue().addPolicy({
             policy,
             policyId,
-            policyServiceName: name,
             skipRegistration: false
         });
 
-        return new Promise((resolve) => {
-            this.policyReadyCallbacks.set(policyId, (data) => {
+        return new Promise((resolve, reject) => {
+            this.policyReadyCallbacks.set(policyId, (data, error?) => {
+                if (error) {
+                    reject(error);
+                    return
+                }
                 resolve(data);
             })
         });
@@ -976,17 +981,18 @@ export class PolicyEngine extends ServiceRequestsBase{
             policyId = policy.id.toString();
         }
 
-        const { name } = PolicyServiceChannelsContainer.createIfNotExistServiceChannel(policyId);
-
-        this.channel.publish(PolicyEvents.GENERATE_POLICY, {
+        new PolicyQueue().addPolicy({
             policy,
             policyId,
-            policyServiceName: name,
             skipRegistration: false
         });
 
-        return new Promise((resolve) => {
-            this.policyReadyCallbacks.set(policyId, (data) => {
+        return new Promise((resolve, reject) => {
+            this.policyReadyCallbacks.set(policyId, (data, error) => {
+                if (error) {
+                    reject(error);
+                    return
+                }
                 this.destroyModel(policyId);
                 resolve(data);
             })

@@ -51,6 +51,7 @@ import { RetireRequest } from '@entity/retire-request';
 import { analyticsAPI } from '@api/analytics.service';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyEngine } from '@policy-engine/policy-engine';
+import { PolicyQueue } from '@policy-engine/policy-queue';
 
 export const obj = {};
 
@@ -79,6 +80,9 @@ Promise.all([
     const policyServiceChannel = new MessageBrokerChannel(cn, 'policy-service');
 
     new Logger().setChannel(channel);
+    const policyQueue = new PolicyQueue();
+    policyQueue.setChannel(channel);
+    await policyQueue.initListeners();
     const state = new ApplicationState('GUARDIAN_SERVICE');
     state.setChannel(channel);
     const settingsContainer = new SettingsContainer();
