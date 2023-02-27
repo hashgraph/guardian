@@ -13,14 +13,16 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Can Be Empty</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="properties.canBeEmpty" [readonly]="readonly" (blur)="onSave()">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.canBeEmpty" [readonly]="readonly"
+                (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Field</td>
         <td class="propRowCell">
-            <document-path [(value)]="properties.field" [readonly]="readonly" [displayTooltip]="true" (change)="onSave()"></document-path>
+            <document-path [(value)]="properties.field" [readonly]="readonly" [displayTooltip]="true"
+                (change)="onSave()"></document-path>
         </td>
     </tr>
 
@@ -38,14 +40,16 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Name</td>
             <td class="propRowCell">
-                <document-path [(value)]="properties.optionName" [readonly]="readonly" [displayTooltip]="true" (change)="onSave()"></document-path>
+                <document-path [(value)]="properties.optionName" [readonly]="readonly" [displayTooltip]="true"
+                    (change)="onSave()"></document-path>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.dropdownGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Value</td>
             <td class="propRowCell">
-                <document-path [(value)]="properties.optionValue" [readonly]="readonly" [displayTooltip]="true" (change)="onSave()"></document-path>
+                <document-path [(value)]="properties.optionValue" [readonly]="readonly" [displayTooltip]="true"
+                    (change)="onSave()"></document-path>
             </td>
         </tr>
     </ng-container>
@@ -68,7 +72,8 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Button Content</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="properties.uiMetaData.content" [readonly]="readonly" (blur)="onSave()">
+            <input class="prop-input" [(ngModel)]="properties.uiMetaData.content" [readonly]="readonly"
+                (blur)="onSave()">
         </td>
     </tr>
 </table>

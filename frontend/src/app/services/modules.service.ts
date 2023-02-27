@@ -57,4 +57,28 @@ export class ModulesService {
     public exportInMessage(uuid: string): Observable<any> {
         return this.http.get(`${this.url}/${uuid}/export/message`);
     }
+
+    public previewByMessage(messageId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
+    }
+
+    public previewByFile(policyFile: any): Observable<any> {
+        return this.http.post<any[]>(`${this.url}/import/file/preview`, policyFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public importByMessage(messageId: string): Observable<any[]> {
+        return this.http.post<any[]>(`${this.url}/import/message`, { messageId });
+    }
+
+    public importByFile(file: any): Observable<any[]> {
+        return this.http.post<any[]>(`${this.url}/import/file`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
 }

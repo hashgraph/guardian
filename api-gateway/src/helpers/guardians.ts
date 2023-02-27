@@ -1230,12 +1230,76 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
-    * Delete module
-    * @param uuid
-    * @param owner
-    * @returns Operation Success
-    */
+     * Delete module
+     * @param uuid
+     * @param owner
+     * @returns Operation Success
+     */
     public async getModuleById(uuid: string, owner: string): Promise<boolean> {
         return await this.request<any>(MessageAPI.GET_MODULE, { uuid, owner });
+    }
+
+    /**
+     * Get module export file
+     * @param uuid
+     * @param owner
+     */
+    public async exportModuleFile(uuid: string, owner: string) {
+        return await this.rawRequest(MessageAPI.MODULE_EXPORT_FILE, { uuid, owner });
+    }
+
+    /**
+     * Get module export message id
+     * @param uuid
+     * @param owner
+     */
+    public async exportModuleMessage(uuid: string, owner: string) {
+        return await this.request(MessageAPI.MODULE_EXPORT_MESSAGE, { uuid, owner });
+    }
+
+    /**
+     * Load module file for import
+     * @param zip
+     * @param owner
+     */
+    public async importModuleFile(zip: any, owner: string) {
+        return await this.request(MessageAPI.MODULE_IMPORT_FILE, { zip, owner });
+    }
+
+    /**
+     * Import module from message
+     * @param messageId
+     * @param owner
+     */
+    public async importModuleMessage(messageId: string, owner: string) {
+        return await this.request(MessageAPI.MODULE_IMPORT_MESSAGE, { messageId, owner });
+    }
+
+    /**
+     * Get module info from file
+     * @param zip
+     * @param owner
+     */
+    public async previewModuleFile(zip: any, owner: string) {
+        return await this.request(MessageAPI.MODULE_IMPORT_FILE_PREVIEW, { zip, owner });
+    }
+
+    /**
+     * Get module info from message
+     * @param messageId
+     * @param owner
+     */
+    public async previewModuleMessage(messageId: string, owner: string) {
+        return await this.request(MessageAPI.MODULE_IMPORT_MESSAGE_PREVIEW, { messageId, owner });
+    }
+
+    /**
+     * Publish module
+     * @param uuid
+     * @param owner
+     * @param module
+     */
+    public async publishPolicy(uuid: string, owner: string, module: any) {
+        return await this.request(MessageAPI.PUBLISH_MODULES, { uuid, owner, module });
     }
 }

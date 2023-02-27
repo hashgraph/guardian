@@ -11,8 +11,8 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Use Template</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" (change)="onUseTemplateChange()" [(ngModel)]="properties.useTemplate"
-                [readonly]="readonly" (blur)="onSave()">
+            <input class="prop-input" type="checkbox" (change)="onUseTemplateChange()"
+                [(ngModel)]="properties.useTemplate" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr *ngIf="!properties.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
@@ -48,7 +48,8 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Account Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.accountType" [disabled]="readonly" (selectionChange)="changeAccountType()">
+            <mat-select [(value)]="properties.accountType" [disabled]="readonly"
+                (selectionChange)="changeAccountType()">
                 <mat-option value="default">Default</mat-option>
                 <mat-option value="custom">Custom Account Field</mat-option>
                 <mat-option value="custom-value">Custom Account Value</mat-option>
@@ -74,7 +75,8 @@
         <td class="propRowCell cellName">Memo</td>
         <td class="propRowCell">
             <span class="mint-memo-prefix" matTooltip="VP message identifier">**********.*********</span>
-            <input class="prop-input" class="mint-memo-input" [(ngModel)]="properties.memo" [readonly]="readonly" (blur)="onSave()">
+            <input class="prop-input" class="mint-memo-input" [(ngModel)]="properties.memo" [readonly]="readonly"
+                (blur)="onSave()">
         </td>
     </tr>
 </table>

@@ -9,6 +9,7 @@ export { DidDocumentStatus } from './type/did-status.type';
 export { DocumentSignature } from './type/document-signature.type';
 export { DocumentStatus } from './type/document-status.type';
 export { PolicyType } from './type/policy.type';
+export { ModuleStatus } from './type/module-status.type';
 export { RootState } from './type/root-state.type';
 export { PolicyEngineEvents } from './type/policy-engine-events';
 export { SchemaEntity } from './type/schema-entity.type';

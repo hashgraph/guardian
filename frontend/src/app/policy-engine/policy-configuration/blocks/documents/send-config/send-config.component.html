@@ -21,7 +21,8 @@
             Data Source
         </td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.dataSource" [disabled]="readonly" (selectionChange)="onDataSource($event)">
+            <mat-select [(value)]="properties.dataSource" [disabled]="readonly"
+                (selectionChange)="onDataSource($event)">
                 <mat-option value="auto">Auto</mat-option>
                 <mat-option value="database">Database</mat-option>
                 <mat-option value="hedera">Hedera Topic</mat-option>
@@ -42,17 +43,14 @@
                         </span>
                     </mat-option>
                     <mat-option value="root">Policy Instance</mat-option>
-                    <mat-option *ngFor="let topic of topics" 
-                        [value]="topic.name"
-                        [matTooltip]="topic.description" 
-                        matTooltipPosition="above" 
-                        matTooltipClass="guardian-tooltip">
+                    <mat-option *ngFor="let topic of topics" [value]="topic.name" [matTooltip]="topic.description"
+                        matTooltipPosition="above" matTooltipClass="guardian-tooltip">
                         {{topic.name}}
                     </mat-option>
                 </mat-select>
             </td>
         </tr>
-    
+
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Topic Owner</td>
@@ -74,7 +72,7 @@
             </td>
         </tr>
     </ng-container>
-    
+
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Entity Type</td>

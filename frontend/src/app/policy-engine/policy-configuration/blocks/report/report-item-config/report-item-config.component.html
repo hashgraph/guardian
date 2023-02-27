@@ -1,8 +1,7 @@
 <!-- Config Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'properties')"
-            [attr.collapse]="propHidden.properties">
+        <td class="propRowCol" (click)="onHide(propHidden, 'properties')" [attr.collapse]="propHidden.properties">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Properties</td>
@@ -27,7 +26,8 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Visible</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="properties.visible" [readonly]="readonly" (blur)="onSave()">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.visible" [readonly]="readonly"
+                (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.properties">
@@ -129,14 +129,16 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Field Path</td>
                 <td class="propRowCell">
-                    <document-path [(value)]="properties.dynamicFilters[i].field" [readonly]="readonly" (change)="onSave()"></document-path>
+                    <document-path [(value)]="properties.dynamicFilters[i].field" [readonly]="readonly"
+                        (change)="onSave()"></document-path>
                 </td>
             </tr>
             <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Next Item Field Path</td>
                 <td class="propRowCell">
-                    <document-path [(value)]="properties.dynamicFilters[i].nextItemField" [readonly]="readonly" (change)="onSave()">
+                    <document-path [(value)]="properties.dynamicFilters[i].nextItemField" [readonly]="readonly"
+                        (change)="onSave()">
                     </document-path>
                 </td>
             </tr>
@@ -221,14 +223,16 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Name</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="properties.variables[i].name" [readonly]="readonly" (blur)="onSave()">
+                <input class="prop-input" [(ngModel)]="properties.variables[i].name" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.variableGroup || propHidden.variables[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Value</td>
             <td class="propRowCell">
-                <document-path [(value)]="properties.variables[i].value" [readonly]="readonly" [displayTooltip]="true" (change)="onSave()">
+                <document-path [(value)]="properties.variables[i].value" [readonly]="readonly" [displayTooltip]="true"
+                    (change)="onSave()">
                 </document-path>
             </td>
         </tr>
@@ -289,14 +293,16 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Field</td>
             <td class="propRowCell">
-                <document-path [(value)]="properties.filters[i].field" [readonly]="readonly" (change)="onSave()"></document-path>
+                <document-path [(value)]="properties.filters[i].field" [readonly]="readonly"
+                    (change)="onSave()"></document-path>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Value</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="properties.filters[i].value" [readonly]="readonly" (blur)="onSave()">
+                <input class="prop-input" [(ngModel)]="properties.filters[i].value" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
     </ng-container>

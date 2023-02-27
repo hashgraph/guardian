@@ -18,7 +18,8 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Enable common sorting</td>
         <td class="propRowCell">
-            <input type="checkbox" [(ngModel)]="properties.uiMetaData.enableSorting" [readonly]="readonly" (blur)="onSave()">
+            <input type="checkbox" [(ngModel)]="properties.uiMetaData.enableSorting" [readonly]="readonly"
+                (blur)="onSave()">
         </td>
     </tr>
     <tr class="propHeader">
@@ -132,7 +133,8 @@
                         Bind Block
                     </td>
                     <td class="propRowCell">
-                        <select-block [(value)]="field.bindBlock" [readonly]="readonly" [blocks]="allBlocks"></select-block>
+                        <select-block [(value)]="field.bindBlock" [readonly]="readonly"
+                            [blocks]="allBlocks"></select-block>
                     </td>
                 </tr>
             </ng-container>
@@ -141,21 +143,24 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Dialog Type</td>
                     <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="field.dialogType" [readonly]="readonly" (blur)="onSave()">
+                        <input class="prop-input" [(ngModel)]="field.dialogType" [readonly]="readonly"
+                            (blur)="onSave()">
                     </td>
                 </tr>
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Dialog Content</td>
                     <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="field.dialogContent" [readonly]="readonly" (blur)="onSave()">
+                        <input class="prop-input" [(ngModel)]="field.dialogContent" [readonly]="readonly"
+                            (blur)="onSave()">
                     </td>
                 </tr>
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Dialog Class</td>
                     <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="field.dialogClass" [readonly]="readonly" (blur)="onSave()">
+                        <input class="prop-input" [(ngModel)]="field.dialogClass" [readonly]="readonly"
+                            (blur)="onSave()">
                     </td>
                 </tr>
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
@@ -167,7 +172,8 @@
                         Bind Block
                     </td>
                     <td class="propRowCell">
-                        <select-block [(value)]="field.bindBlock" [readonly]="readonly" [blocks]="allBlocks"></select-block>
+                        <select-block [(value)]="field.bindBlock" [readonly]="readonly"
+                            [blocks]="allBlocks"></select-block>
                     </td>
                 </tr>
             </ng-container>

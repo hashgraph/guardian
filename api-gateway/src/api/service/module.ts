@@ -102,3 +102,83 @@ moduleAPI.put('/:uuid', permissionHelper(UserRole.STANDARD_REGISTRY), async (req
         res.status(500).send({ code: error.code || 500, message: error.message });
     }
 });
+
+moduleAPI.get('/:uuid/export/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const guardian = new Guardians();
+    try {
+        console.log('111');
+        const file: any = await guardian.exportModuleFile(req.params.uuid, req.user.did);
+        console.log('222', file);
+        res.setHeader('Content-disposition', `attachment; filename=module_${Date.now()}`);
+        res.setHeader('Content-type', 'application/zip');
+        res.send(file);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message });
+    }
+});
+
+moduleAPI.get('/:uuid/export/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const guardian = new Guardians();
+    try {
+        res.send(await guardian.exportModuleMessage(req.params.uuid, req.user.did));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
+moduleAPI.post('/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const guardian = new Guardians();
+    try {
+        const module = await guardian.importModuleMessage(req.body.messageId, req.user.did);
+        res.status(201).send(module);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
+moduleAPI.post('/import/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const guardian = new Guardians();
+    try {
+        const module = await guardian.importModuleFile(req.body, req.user.did);
+        res.status(201).send(module);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
+moduleAPI.post('/import/message/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const guardian = new Guardians();
+    try {
+        const module = await guardian.previewModuleMessage(req.body.messageId, req.user.did);
+        res.send(module);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
+moduleAPI.post('/import/file/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const guardian = new Guardians();
+    try {
+        const module = await guardian.previewModuleFile(req.body, req.user.did);
+        res.send(module);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+    }
+});
+
+moduleAPI.put('/:uuid/publish', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+    const guardian = new Guardians();
+    try {
+        const module = await guardian.publishPolicy(req.params.uuid, req.user.did, req.body);
+        res.json(module);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message || error });
+    }
+});

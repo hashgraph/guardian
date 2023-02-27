@@ -1,6 +1,7 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'equationsGroup')" [attr.collapse]="propHidden.equationsGroup">
+        <td class="propRowCol" (click)="onHide(propHidden, 'equationsGroup')"
+            [attr.collapse]="propHidden.equationsGroup">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Equations</td>
