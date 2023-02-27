@@ -43,12 +43,29 @@ To know more information about events, please look at [events.md](events.md "men
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="blockType: 'InformationBlock'" summary="" %}
+{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="uiMetaData" required="true" %}
-{}
+{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
+Policy ID
 {% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Block UUID
+{% endswagger-parameter %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+  "uiMetaData": {
+    "description": "The page will refresh automatically once the application is approved.",
+    "type": "text",
+    "title": "Submitted for Approval"
+  }
+}
+
+```
+{% endswagger-response %}
 {% endswagger %}

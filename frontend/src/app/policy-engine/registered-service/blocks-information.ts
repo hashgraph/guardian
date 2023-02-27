@@ -260,6 +260,10 @@ const DocumentsViewer: IBlockSetting = {
             type: BlockType.DocumentsSourceAddon,
             group: BlockGroup.UnGrouped,
         },
+        {
+            type: BlockType.HistoryAddon,
+            group: BlockGroup.UnGrouped,
+        }
     ],
 }
 
@@ -382,6 +386,9 @@ const DocumentsSourceAddon: IBlockSetting = {
     allowedChildren: [{
         type: BlockType.FiltersAddon,
         group: BlockGroup.UnGrouped
+    }, {
+        type: BlockType.SelectiveAttributes,
+        group: BlockGroup.UnGrouped
     }]
 }
 
@@ -393,6 +400,24 @@ const PaginationAddon: IBlockSetting = {
     factory: PaginationAddonBlockComponent,
     property: null,
 }
+
+const HistoryAddon: IBlockSetting = {
+    type: BlockType.HistoryAddon,
+    icon: 'history',
+    group: BlockGroup.Documents,
+    header: BlockHeaders.Addons,
+    factory: null,
+    property: null,
+};
+
+const SelectiveAttributes: IBlockSetting = {
+    type: BlockType.SelectiveAttributes,
+    icon: 'rule_folder',
+    group: BlockGroup.Documents,
+    header: BlockHeaders.Addons,
+    factory: null,
+    property: null,
+};
 
 const TimerBlock: IBlockSetting = {
     type: BlockType.TimerBlock,
@@ -571,5 +596,7 @@ export default [
     CalculateMathAddon,
     CalculateMathVariables,
     Report,
-    ReportItem
+    ReportItem,
+    HistoryAddon,
+    SelectiveAttributes
 ];

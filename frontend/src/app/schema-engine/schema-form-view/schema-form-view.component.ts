@@ -78,7 +78,7 @@ export class SchemaFormViewComponent implements OnInit {
                         })
                         .finally(() => {
                             item.loading = false;
-                            this.changeDetector.markForCheck();
+                            this.changeDetector.detectChanges();
                         });
                 }
             }
@@ -107,15 +107,17 @@ export class SchemaFormViewComponent implements OnInit {
                         item.isInvalidType = true;
                     }
                     if (this.isIPFS(field)) {
-                        for (const fieldItem of value) {
-                            fieldItem.loading = true;
-                            this.ipfs
-                                .getImageByLink(fieldItem.value)
-                                .then((res) => {
-                                    fieldItem.imgSrc = res;
-                                })
-                                .finally(() => (fieldItem.loading = false));
-                        }
+                        Promise.all(
+                            value.map((fieldItem: any) => {
+                                fieldItem.loading = true;
+                                return this.ipfs
+                                    .getImageByLink(fieldItem.value)
+                                    .then((res) => {
+                                        fieldItem.imgSrc = res;
+                                    })
+                                    .finally(() => (fieldItem.loading = false));
+                            })
+                        ).finally(() => this.changeDetector.detectChanges());
                     }
                 }
 

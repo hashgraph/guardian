@@ -16,7 +16,7 @@ This block allows to manage group membership, add and remove users from the grou
 
 
 
-<figure><img src="../.gitbook/assets/image (23).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (23) (4).png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Usage
 

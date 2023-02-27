@@ -70,3 +70,4 @@ export { ArtifactType } from './type/artifact.type';
 export { IArtifact } from './interface/artifact.interface';
 export { TokenType } from './type/token.type';
 export { ContractStatus } from './type/contract-status.type';
+export { SignatureType } from './type/signature.type';

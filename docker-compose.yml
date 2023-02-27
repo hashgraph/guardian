@@ -19,7 +19,7 @@ services:
       - mongo
 
   ipfs-node:
-    image: ipfs/kubo:v0.17.0
+    image: ipfs/kubo:v0.18.1
     ports:
       - "5001:5001"
       - "5002:5002"

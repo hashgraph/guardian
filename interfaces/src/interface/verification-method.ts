@@ -9,7 +9,7 @@ export interface IVerificationMethod {
     /**
      * Type
      */
-    type: 'Ed25519VerificationKey2018';
+    type: 'Ed25519VerificationKey2018' | 'Bls12381G2Key2020';
     /**
      * Controller
      */

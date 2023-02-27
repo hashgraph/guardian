@@ -4,7 +4,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Output Schema</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.outputSchema" [disabled]="readonly" (selectionChange)="onSelectOutput()">
+            <mat-select [(value)]="properties.outputSchema" [disabled]="readonly">
                 <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>

@@ -26,7 +26,7 @@ import {
     DB_DI,
     Migration,
     COMMON_CONNECTION_CONFIG,
-    SettingsContainer
+    SettingsContainer, ValidateConfiguration
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import {
@@ -84,81 +84,12 @@ Promise.all([
     state.setChannel(channel);
     const settingsContainer = new SettingsContainer();
     settingsContainer.setChannel(channel);
+
     await settingsContainer.init('OPERATOR_ID', 'OPERATOR_KEY');
 
-    const { OPERATOR_ID, OPERATOR_KEY } = settingsContainer.settings;
-
-    // Check configuration
-    try {
-        AccountId.fromString(OPERATOR_ID);
-    } catch (error) {
-        await new Logger().error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
-        process.exit(0);
-    }
-    try {
-        PrivateKey.fromString(OPERATOR_KEY);
-    } catch (error) {
-        await new Logger().error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        process.exit(0);
-    }
-    try {
-        if (process.env.INITIALIZATION_TOPIC_ID) {
-            TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
-        }
-    } catch (error) {
-        await new Logger().error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        process.exit(0);
-    }
-    try {
-        if (process.env.INITIALIZATION_TOPIC_KEY) {
-            PrivateKey.fromString(process.env.INITIALIZATION_TOPIC_KEY);
-        }
-    } catch (error) {
-        await new Logger().error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
-        process.exit(0);
-    }
-
-    /////////////
     await state.updateState(ApplicationStates.STARTED);
 
-    Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
-    Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
-    Environment.setNetwork(process.env.HEDERA_NET);
-    MessageServer.setLang(process.env.MESSAGE_LANG);
-    TransactionLogger.init(channel, process.env.LOG_LEVEL as TransactionLogLvl);
-
-    IPFS.setChannel(channel);
-    new ExternalEventChannel().setChannel(channel);
-
-    new Wallet().setChannel(channel);
-    new Users().setChannel(channel);
-    const workersHelper = new Workers();
-    workersHelper.setChannel(channel);
-    workersHelper.initListeners();
-
-    if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
-        process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
-            type: WorkerTaskType.NEW_TOPIC,
-            data: {
-                hederaAccountId: OPERATOR_ID,
-                hederaAccountKey: OPERATOR_KEY,
-                dryRun: false,
-                topicMemo: TopicMemo.getGlobalTopicMemo()
-            }
-        }, 1);
-    }
-
-    try {
-        const policyEngine = new PolicyEngine();
-        policyEngine.setChannel(policyServiceChannel);
-        const policyService = new PolicyEngineService(channel, apiGatewayChannel);
-        policyService.registerListeners();
-        await policyEngine.init();
-        SynchronizationService.start();
-    } catch (error) {
-        console.error(error.message);
-        process.exit(0);
-    }
+    const { OPERATOR_ID, OPERATOR_KEY} = settingsContainer.settings;
 
     const didDocumentRepository = new DataBaseHelper(DidDocument);
     const vcDocumentRepository = new DataBaseHelper(VcDocument);
@@ -170,8 +101,6 @@ Promise.all([
     const policyRepository = new DataBaseHelper(Policy);
     const contractRepository = new DataBaseHelper(Contract);
     const retireRequestRepository = new DataBaseHelper(RetireRequest);
-
-    state.updateState(ApplicationStates.INITIALIZING);
 
     try {
         await configAPI(channel, settingsRepository, topicRepository);
@@ -191,31 +120,129 @@ Promise.all([
         process.exit(0);
     }
 
-    try {
-        await setDefaultSchema();
-    } catch (error) {
-        console.error(error.message);
-        process.exit(0);
-    }
+    Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
+    Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
+    Environment.setNetwork(process.env.HEDERA_NET);
+    MessageServer.setLang(process.env.MESSAGE_LANG);
+    TransactionLogger.init(channel, process.env.LOG_LEVEL as TransactionLogLvl);
 
-    try {
-        await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'), channel);
-    } catch (error) {
-        console.error(error.message);
-        // process.exit(0);
-    }
+    IPFS.setChannel(channel);
+    new ExternalEventChannel().setChannel(channel);
 
-    await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
+    new Wallet().setChannel(channel);
+    new Users().setChannel(channel);
+    const workersHelper = new Workers();
+    workersHelper.setChannel(channel);
+    workersHelper.initListeners();
 
-    await state.updateState(ApplicationStates.READY);
-
-    try {
-        if (process.env.SEND_KEYS_TO_VAULT?.toLowerCase() === 'true') {
-            await sendKeysToVault(db.em);
+    const validator = new ValidateConfiguration();
+    let timer = null;
+    validator.setValidator(async () => {
+        if (timer) {
+            clearInterval(timer);
         }
-    } catch (error) {
-        console.error(error.message);
-    }
+        try {
+            if (!/^\d+\.\d+\.\d+/.test(settingsContainer.settings.OPERATOR_ID)) {
+                throw new Error(settingsContainer.settings.OPERATOR_ID + 'is wrong');
+            }
+            AccountId.fromString(settingsContainer.settings.OPERATOR_ID);
+        } catch (error) {
+            await new Logger().error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
+            return false;
+            // process.exit(0);
+        }
+        try {
+            PrivateKey.fromString(settingsContainer.settings.OPERATOR_KEY);
+        } catch (error) {
+            await new Logger().error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            return false;
+        }
+        try {
+            if (process.env.INITIALIZATION_TOPIC_KEY) {
+                if (!/^\d+\.\d+\.\d+/.test(settingsContainer.settings.INITIALIZATION_TOPIC_ID)) {
+                    throw new Error(settingsContainer.settings.INITIALIZATION_TOPIC_ID + 'is wrong');
+                }
+                TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
+            }
+        } catch (error) {
+            await new Logger().error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            return false;
+            // process.exit(0);
+        }
+        try {
+            if (process.env.INITIALIZATION_TOPIC_KEY) {
+                PrivateKey.fromString(process.env.INITIALIZATION_TOPIC_KEY);
+            }
+        } catch (error) {
+            await new Logger().error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            return false;
+            // process.exit(0);
+        }
+
+        return true;
+    });
+
+    validator.setValidAction(async () => {
+        if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
+            process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
+                type: WorkerTaskType.NEW_TOPIC,
+                data: {
+                    hederaAccountId: OPERATOR_ID,
+                    hederaAccountKey: OPERATOR_KEY,
+                    dryRun: false,
+                    topicMemo: TopicMemo.getGlobalTopicMemo()
+                }
+            }, 1);
+        }
+
+        try {
+            const policyEngine = new PolicyEngine();
+            policyEngine.setChannel(policyServiceChannel);
+            const policyService = new PolicyEngineService(channel, apiGatewayChannel);
+            policyService.registerListeners();
+            await policyEngine.init();
+            SynchronizationService.start();
+        } catch (error) {
+            console.error(error.message);
+            process.exit(0);
+        }
+
+        state.updateState(ApplicationStates.INITIALIZING);
+
+        try {
+            await setDefaultSchema();
+        } catch (error) {
+            console.error(error.message);
+            process.exit(0);
+        }
+
+        try {
+            await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'), channel);
+        } catch (error) {
+            console.error(error.message);
+        }
+
+        await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
+
+        await state.updateState(ApplicationStates.READY);
+
+        try {
+            if (process.env.SEND_KEYS_TO_VAULT?.toLowerCase() === 'true') {
+                await sendKeysToVault(db.em);
+            }
+        } catch (error) {
+            console.error(error.message);
+        }
+    });
+
+    validator.setInvalidAction(async () => {
+        timer = setInterval(async () => {
+            await state.updateState(ApplicationStates.BAD_CONFIGURATION);
+        }, 1000)
+    });
+
+    await validator.validate();
+
 }, (reason) => {
     console.log(reason);
     process.exit(0);

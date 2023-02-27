@@ -76,6 +76,16 @@ export function SourceAddon(options: Partial<PolicyBlockDecoratorOptions>) {
 
                 return filters;
             }
+
+            /**
+             * Get common addons
+             * @protected
+             */
+            protected getSelectiveAttributes(): IPolicyBlock[] {
+                return this.children.filter(child => {
+                    return child.blockType === 'selectiveAttributes';
+                })
+            }
         }
     }
 }

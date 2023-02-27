@@ -18,6 +18,10 @@
     color: green;
 }
 
+.bad-configuration-status {
+    color: red;
+}
+
 .stopped-status {
     color: red;
 }

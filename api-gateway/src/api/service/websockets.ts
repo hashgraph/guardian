@@ -1,7 +1,15 @@
 import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
-import { IUpdateUserInfoMessage, IUpdateUserBalanceMessage, MessageAPI, IUpdateBlockMessage, IErrorBlockMessage, IStatus } from '@guardian/interfaces';
+import {
+    IUpdateUserInfoMessage,
+    IUpdateUserBalanceMessage,
+    MessageAPI,
+    IUpdateBlockMessage,
+    IErrorBlockMessage,
+    IStatus,
+    ApplicationStates
+} from '@guardian/interfaces';
 import { Guardians } from '@helpers/guardians';
 import { MessageBrokerChannel, MessageResponse, Logger } from '@guardian/common';
 
@@ -15,11 +23,18 @@ export class WebSocketsService {
      */
     private readonly wss: WebSocket.Server;
 
+    /**
+     * Known services
+     * @private
+     */
+    private readonly knownServices: {[key: string]: ApplicationStates};
+
     constructor(
         private readonly server: Server,
         private readonly channel: MessageBrokerChannel
     ) {
         this.wss = new WebSocket.Server({ server: this.server });
+        this.knownServices = {}
     }
 
     /**
@@ -113,6 +128,10 @@ export class WebSocketsService {
 
         this.channel.response(MessageAPI.UPDATE_STATUS, async (msg) => {
             this.wss.clients.forEach((client: any) => {
+                for (const [key, value] of Object.entries(msg)) {
+                    this.knownServices[key] = value;
+                }
+
                 this.send(client, {
                     type: MessageAPI.UPDATE_STATUS,
                     data: msg
@@ -174,14 +193,15 @@ export class WebSocketsService {
                         guardians.getStatus(),
                         auth.getStatus()
                     ]);
+
                     ws.send(JSON.stringify(
                         {
                             type: MessageAPI.GET_STATUS,
-                            data: {
+                            data: Object.assign(this.knownServices, {
                                 LOGGER_SERVICE,
                                 GUARDIAN_SERVICE,
                                 AUTH_SERVICE
-                            }
+                            })
                         }
                     ));
                     break;

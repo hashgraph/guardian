@@ -1,4 +1,3 @@
-
 export enum BlockType {
     Container = 'interfaceContainerBlock',
     DocumentsViewer = 'interfaceDocumentsSourceBlock',
@@ -36,5 +35,7 @@ export enum BlockType {
     SplitBlock = 'splitBlock',
     ImpactAddon = 'impactAddon',
     HttpRequest = 'httpRequestBlock',
+    HistoryAddon = 'historyAddon',
+    SelectiveAttributes = 'selectiveAttributes',
     Module = 'module'
 }

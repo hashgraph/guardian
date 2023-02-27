@@ -81,6 +81,15 @@
         </td>
     </tr>
 
+
+    <tr class="propRow" [attr.collapse]="propHidden.main" *ngIf="['database', 'auto'].includes(block.dataSource)">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Skip save state</td>
+        <td class="propRowCell">
+            <input class="prop-input" type="checkbox" [(ngModel)]="block.skipSaveState" [readonly]="readonly">
+        </td>
+    </tr>
+
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'optionGroup')" [attr.collapse]="propHidden.optionGroup">
             <mat-icon>arrow_drop_down</mat-icon>

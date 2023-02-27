@@ -165,7 +165,9 @@ export class MessageServer {
      * @private
      */
     private async sendIPFS<T extends Message>(message: T): Promise<T> {
-        const buffers = await message.toDocuments();
+        const buffers = await message.toDocuments(
+            this.clientOptions.operatorKey
+        );
         if (buffers && buffers.length) {
             const time = await this.messageStartLog('IPFS');
             const promises = buffers.map(buffer => {
@@ -191,7 +193,10 @@ export class MessageServer {
             return this.getFile(url.cid, message.responseType);
         });
         const documents = await Promise.all(promises);
-        message = message.loadDocuments(documents) as T;
+        message = (await message.loadDocuments(
+            documents,
+            this.clientOptions.operatorKey
+        )) as T;
         return message;
     }
 
@@ -207,7 +212,7 @@ export class MessageServer {
                 return IPFS.getFile(url.cid, message.responseType);
             });
         const documents = await Promise.all(promises);
-        message = message.loadDocuments(documents) as T;
+        message = await message.loadDocuments(documents) as T;
         return message;
     }
 
@@ -261,6 +266,7 @@ export class MessageServer {
         let message: Message;
         json.type = json.type || type;
         switch (json.type) {
+            case MessageType.EVCDocument:
             case MessageType.VCDocument:
                 message = VCMessage.fromMessageObject(json);
                 break;

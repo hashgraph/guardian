@@ -8,6 +8,7 @@ import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { StateField } from '@policy-engine/helpers/decorators';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import ObjGet from 'lodash.get';
 
 /**
  * Document source block with UI
@@ -76,7 +77,8 @@ export class InterfaceDocumentsSource {
             }
         });
 
-        const commonAddons = ref.getCommonAddons().map(addon => {
+        const commonAddonBlocks = ref.getCommonAddons();
+        const commonAddons = commonAddonBlocks.map(addon => {
             return {
                 id: addon.uuid,
                 uiMetaData: addon.options.uiMetaData,
@@ -84,7 +86,7 @@ export class InterfaceDocumentsSource {
             }
         });
 
-        const pagination = ref.getCommonAddons().find(addon => {
+        const pagination = commonAddonBlocks.find(addon => {
             return addon.blockType === 'paginationAddon';
         }) as IPolicyAddonBlock;
 
@@ -93,20 +95,72 @@ export class InterfaceDocumentsSource {
             paginationData = await pagination.getState(user);
         }
 
+        const history = commonAddonBlocks.find((addon) => {
+            return addon.blockType === 'historyAddon';
+        }) as IPolicyAddonBlock;
+
+        // Property viewHistory was deprecated in documentsSourceAddon blocks 11.02.23
+        const deprecatedViewHistory = !!commonAddonBlocks
+            .filter((addon) => addon.blockType === 'documentsSourceAddon')
+            .find((addon) => {
+                return addon.options.viewHistory;
+            });
+
+        const enableCommonSorting = ref.options.uiMetaData.enableSorting;
         const sortState = this.state[user.id] || {};
-        let data: any = ref.options.uiMetaData.enableSorting
-            ? await this.getDataByAggregationFilters(ref, user, sortState, paginationData)
+        let data: any = enableCommonSorting
+            ? await this.getDataByAggregationFilters(ref, user, sortState, paginationData, deprecatedViewHistory, history)
             : await ref.getGlobalSources(user, paginationData);
+
+        if (
+            !enableCommonSorting &&
+            (history || deprecatedViewHistory)
+        ) {
+            for (const document of data) {
+                document.history = (
+                    await ref.databaseServer.getDocumentStates({
+                        documentId: document.id,
+                    })
+                ).map((state) =>
+                    Object.assign(
+                        {},
+                        {
+                            labelValue: ObjGet(
+                                state.document,
+                                history
+                                    ? history.options.timelineLabelPath ||
+                                          'option.status'
+                                    : 'option.status'
+                            ),
+                            comment: ObjGet(
+                                state.document,
+                                history
+                                    ? history.options.timelineDescriptionPath ||
+                                          'option.comment'
+                                    : 'option.comment'
+                            ),
+                            created: state.created,
+                        }
+                    )
+                );
+            }
+        }
 
         for (const child of ref.children) {
             data = await child.joinData(data, user, ref);
         }
 
-        return Object.assign({
-            data,
-            blocks: filters,
-            commonAddons
-        }, ref.options.uiMetaData, sortState);
+        return Object.assign(
+            {
+                data,
+                blocks: filters,
+                commonAddons,
+            },
+            Object.assign(ref.options.uiMetaData, {
+                viewHistory: !!history || deprecatedViewHistory,
+            }),
+            sortState
+        );
     }
 
     /**
@@ -117,7 +171,7 @@ export class InterfaceDocumentsSource {
      * @param paginationData Paginaton data
      * @returns Data
      */
-    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: IPolicyUser, sortState: any, paginationData: any) {
+    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: IPolicyUser, sortState: any, paginationData: any, deprecatedHistory?: boolean, history? : IPolicyAddonBlock) {
         const filtersAndDataType = await ref.getGlobalSourcesFilters(user);
         const aggregation = [...filtersAndDataType.filters, {
             $match: {
@@ -125,39 +179,55 @@ export class InterfaceDocumentsSource {
             }
         }, {
             $set: {
-                'historyDocumentId': {
+                'option': {
                     $cond: {
                         if: {
                             $or: [
-                                { $eq: [null, '$historyDocumentId'] },
-                                { $not: '$historyDocumentId' }
+                                { $eq: [null, '$newOption'] },
+                                { $not: '$newOption' }
                             ]
                         },
-                        then: '',
-                        else: '$historyDocumentId'
+                        then: '$option',
+                        else: '$newOption'
                     }
                 }
             }
         }, {
-            $lookup: {
-                from: `${ref.databaseServer.getDryRun() ? 'dry_run' : 'document_state'}`,
-                localField: 'historyDocumentId',
-                foreignField: 'documentId',
-                as: 'history'
-            }
-        }, {
-            $set: {
-                'history': {
-                    $cond: {
-                        if: {
-                            $eq: [[], '$history']
-                        },
-                        then: null,
-                        else: '$history'
-                    }
-                }
-            }
+            $unset: 'newOptions',
         }];
+
+        if (history || deprecatedHistory) {
+            aggregation.push({
+                $lookup: {
+                    from: `${
+                        ref.databaseServer.getDryRun()
+                            ? 'dry_run'
+                            : 'document_state'
+                    }`,
+                    localField: 'id',
+                    foreignField: 'documentId',
+                    pipeline: [
+                        {
+                            $set: {
+                                labelValue: history
+                                    ? '$document.' +
+                                      (history.options.timelineLabelPath ||
+                                          'option.status')
+                                    : '$document.option.status',
+                                comment: history
+                                    ? '$document.' +
+                                      (history.options
+                                          .timelineDescriptionPath ||
+                                          'option.comment')
+                                    : '$document.option.comment',
+                                created: '$created',
+                            },
+                        },
+                    ],
+                    as: 'history',
+                },
+            });
+        }
 
         if (sortState.orderField && sortState.orderDirection) {
             const sortObject = {};
@@ -181,9 +251,9 @@ export class InterfaceDocumentsSource {
             aggregation.push({
                 $skip: paginationData.itemsPerPage * paginationData.page
             },
-                {
-                    $limit: paginationData.itemsPerPage
-                })
+            {
+                $limit: paginationData.itemsPerPage
+            });
         }
 
         switch (filtersAndDataType.dataType) {

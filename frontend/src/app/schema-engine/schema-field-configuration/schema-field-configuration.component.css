@@ -48,7 +48,9 @@
     margin: 0;
 }
 
-.custom-field-required, .custom-field-bold {
+.custom-field-required,
+.custom-field-bold,
+.custom-field-private {
     flex: 14;
     padding: 15px 20px;
     margin: 3px 0 0 0;
@@ -60,6 +62,10 @@
     flex-direction: column;
     overflow: hidden;
     box-sizing: border-box;
+}
+
+.custom-field-private {
+    flex: 8;
 }
 
 .custom-field-bold {

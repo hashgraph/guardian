@@ -335,7 +335,7 @@ export class RequestVcDocumentBlock {
             if (idType === 'DID') {
                 const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);
 
-                const didObject = DIDDocument.create(null, topic.topicId);
+                const didObject = await DIDDocument.create(null, topic.topicId);
                 const did = didObject.getDid();
                 const key = didObject.getPrivateKeyString();
 

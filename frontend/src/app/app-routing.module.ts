@@ -159,11 +159,12 @@ const routes: Routes = [
         path: 'admin', component: AdminHeaderComponent, canActivate: [StandardRegistryGuard], canActivateChild: [StandardRegistryGuard],
         children: [
             { path: 'status', component: ServiceStatusComponent },
-            { path: 'settings', component: SettingsViewComponent, canActivate: [ServicesStatusGuard] },
+            { path: 'settings', component: SettingsViewComponent },
             { path: 'logs', component: LogsViewComponent }
         ]
     },
     { path: 'status', component: ServiceStatusComponent },
+    { path: 'settings', component: SettingsViewComponent },
     { path: 'audit', component: AuditComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
     { path: 'trust-chain', component: TrustChainComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
 
