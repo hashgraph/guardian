@@ -74,12 +74,6 @@ export class Environment {
     private static _mirrorNodes: string[] = [];
 
     /**
-     * Using custom nodes
-     * @private
-     */
-    private static _customClientNodes: boolean = false;
-
-    /**
      * Set network
      * @param network
      * @param mirrornode
@@ -153,66 +147,37 @@ export class Environment {
     }
 
     /**
-     * Set custom client nodes
-     * @param customClientNodes Custom client nodes
-     */
-    public static setCustomClientNodes(customClientNodes: boolean) {
-        Environment._customClientNodes = customClientNodes;
-    }
-
-    /**
      * Create client
      */
     public static createClient(): Client {
-        if (Environment._customClientNodes) {
-            const client = Client.forNetwork(
-                Environment._nodes
-            ).setMirrorNetwork(Environment._mirrorNodes);
-            return Environment.setClientLedgerId(client);
-        }
+        let client: Client;
 
         switch (Environment._network) {
             case 'mainnet':
-                return Client.forMainnet();
-
+                client = Client.forMainnet();
+                break;
             case 'testnet':
-                return Client.forTestnet();
-
+                client =  Client.forTestnet();
+                break;
             case 'previewnet':
-                return Client.forPreviewnet();
-
+                client =  Client.forPreviewnet();
+                break;
             case 'localnode':
                 const node = {} as any;
                 node[`${Environment._localnodeaddress}:50211`] = new AccountId(3)
-                const client = Client.forNetwork(node).setMirrorNetwork(`${Environment._localnodeaddress}:5600`);
-                return Environment.setClientLedgerId(client);
-
+                client = Client.forNetwork(node).setMirrorNetwork(`${Environment._localnodeaddress}:5600`);
+                break;
             default:
                 throw new Error(`Unknown network: ${Environment._network}`)
         }
-    }
 
-    /**
-     * Set client ledger id
-     * @param client Client
-     */
-    private static setClientLedgerId(client: Client): Client {
-        switch (Environment._network) {
-            case 'mainnet':
-                client.setLedgerId(LedgerId.MAINNET);
-                break;
-            case 'testnet':
-                client.setLedgerId(LedgerId.TESTNET);
-                break;
-            case 'previewnet':
-                client.setLedgerId(LedgerId.PREVIEWNET);
-                break;
-            case 'localnode':
-                client.setLedgerId(LedgerId.LOCAL_NODE);
-                break;
-            default:
-                throw new Error(`Unknown network: ${Environment._network}`);
+        if (Environment._nodes && Object.keys(Environment._nodes).length) {
+            client.setNetwork(Environment._nodes);
         }
+        if (Environment._mirrorNodes?.length) {
+            client.setMirrorNetwork(Environment._mirrorNodes);
+        }
+
         return client;
     }
 
@@ -249,13 +214,6 @@ export class Environment {
      */
     public static get mirrorNodes(): string[] {
         return Environment._mirrorNodes;
-    }
-
-    /**
-     * Custom client nodes
-     */
-    public static get customClientNodes(): boolean {
-        return Environment._customClientNodes;
     }
 
     /**

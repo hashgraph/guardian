@@ -90,11 +90,6 @@ export class NetworkOptions {
     public localNodeProtocol: string = '';
 
     /**
-     * Custom client nodes
-     */
-    public customClientNodes: boolean = false;
-
-    /**
      * Hedera nodes
      */
     public nodes: any = {};
@@ -155,7 +150,6 @@ export class HederaSDKHelper {
         Environment.setLocalNodeProtocol(networkOptions.localNodeProtocol);
         Environment.setNodes(networkOptions.nodes);
         Environment.setMirrorNodes(networkOptions.mirrorNodes);
-        Environment.setCustomClientNodes(networkOptions.customClientNodes);
         this.dryRun = dryRun || null;
         this.client = Environment.createClient();
         if (operatorId && operatorKey) {
