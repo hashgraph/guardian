@@ -43,6 +43,33 @@ Promise.all([
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
+    if (process.env.HEDERA_CUSTOM_NODES) {
+        try {
+            const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
+            Environment.setNodes(nodes);
+        } catch (error) {
+            await new Logger().warn(
+                'HEDERA_CUSTOM_NODES field in settings: ' + error.message,
+                ['POLICY', policy.name, policyId.toString()]
+            );
+            console.warn(error);
+        }
+    }
+    if (process.env.HEDERA_CUSTOM_MIRROR_NODES) {
+        try {
+            const mirrorNodes = JSON.parse(
+                process.env.HEDERA_CUSTOM_MIRROR_NODES
+            );
+            Environment.setMirrorNodes(mirrorNodes);
+        } catch (error) {
+            await new Logger().warn(
+                'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
+                    error.message,
+                ['POLICY', policy.name, policyId.toString()]
+            );
+            console.warn(error);
+        }
+    }
     MessageServer.setLang(process.env.MESSAGE_LANG);
 
     const channel = new MessageBrokerChannel(cn, policyServiceName);
