@@ -229,7 +229,9 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 this.loading = false;
                 const tokens = data
                     .map((e: any) => new Token(e))
-                    .filter((token: Token) => token.enableWipe);
+                    .filter(
+                        (token: Token) => token.enableWipe && !token.draftToken
+                    );
                 const dialogRef = this.dialog.open(AddPairDialogComponent, {
                     width: '650px',
                     panelClass: 'g-dialog',

@@ -37,7 +37,7 @@ export class TaskManager {
         'Create random key': 4,
         'Connect user': 16,
         'Preview policy message': 6,
-        'Create token': 6,
+        'Create token': 5,
         'Associate/dissociate token': 6,
         'Grant/revoke KYC': 6,
         'Delete policy': 3,

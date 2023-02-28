@@ -83,6 +83,18 @@ export class Environment {
     private static _accountsApi: string = Environment.HEDERA_TESTNET_ACCOUNT_API;
 
     /**
+     * Hedera nodes
+     * @private
+     */
+    private static _nodes: any = {};
+
+    /**
+     * Hedera mirror nodes
+     * @private
+     */
+    private static _mirrorNodes: string[] = [];
+
+    /**
      * Set network
      * @param network
      * @param mirrornode
@@ -146,27 +158,54 @@ export class Environment {
     }
 
     /**
+     * Set hedera nodes
+     * @param nodes Hedera nodes
+     */
+    public static setNodes(nodes: any) {
+        Environment._nodes = nodes;
+    }
+
+    /**
+     * Set hedera mirror nodes
+     * @param mirrorNodes Hedera mirror nodes
+     */
+    public static setMirrorNodes(mirrorNodes: string[]) {
+        Environment._mirrorNodes = mirrorNodes;
+    }
+
+    /**
      * Create client
      */
     public static createClient(): Client {
+        let client: Client;
+
         switch (Environment._network) {
             case 'mainnet':
-                return Client.forMainnet();
-
+                client = Client.forMainnet();
+                break;
             case 'testnet':
-                return Client.forTestnet();
-
+                client =  Client.forTestnet();
+                break;
             case 'previewnet':
-                return Client.forPreviewnet();
-
+                client =  Client.forPreviewnet();
+                break;
             case 'localnode':
                 const node = {} as any;
                 node[`${Environment._localnodeaddress}:50211`] = new AccountId(3)
-                return Client.forNetwork(node).setMirrorNetwork(`${Environment._localnodeaddress}:5600`);
-
+                client = Client.forNetwork(node).setMirrorNetwork(`${Environment._localnodeaddress}:5600`);
+                break;
             default:
                 throw new Error(`Unknown network: ${Environment._network}`)
         }
+
+        if (Environment._nodes && Object.keys(Environment._nodes).length) {
+            client.setNetwork(Environment._nodes);
+        }
+        if (Environment._mirrorNodes?.length) {
+            client.setMirrorNetwork(Environment._mirrorNodes);
+        }
+
+        return client;
     }
 
     /**
@@ -198,5 +237,19 @@ export class Environment {
      */
     public static get HEDERA_ACCOUNT_API(): string {
         return Environment._accountsApi;
+    }
+
+    /**
+     * Nodes
+     */
+    public static get nodes(): any {
+        return Environment._nodes;
+    }
+
+    /**
+     * Mirror nodes
+     */
+    public static get mirrorNodes(): string[] {
+        return Environment._mirrorNodes;
     }
 }
