@@ -377,7 +377,7 @@ export class PolicyTreeComponent implements OnInit {
 
         const renderLine = [];
         for (const line of shortLines) {
-            line.calc(0);
+            line.calc(line.direction ? line.minOffset : line.minOffset + 10);
             if (line.selected) {
                 renderLine.push(line);
             } else {
