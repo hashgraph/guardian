@@ -3,7 +3,7 @@ import { CronJob } from 'cron';
 import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { AnyBlockType, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { PolicyInputEventType as PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
+import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { IPolicyEvent } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyUtils } from '@policy-engine/helpers/utils';

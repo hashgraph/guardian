@@ -125,6 +125,26 @@
     box-shadow: -1px -2px 2px 0px #5161e161 !important;
 }
 
+.block-container[error="true"] .block-item {
+    border-color: #ff2c2c !important;
+    background: #ffd1d1 !important;
+}
+
+.block-container[error="true"] .module-body .block-item::after {
+    border-color: #ff2c2c !important;
+    background: #ffd1d1 !important;
+}
+
+.block-container[error="true"][selected="true"] .block-item {
+    border-color: #ff2c2c !important;
+    box-shadow: 4px 4px 6px 0px #00000040, 0px 0px 4px 1px #ff2c2ccc !important;
+}
+
+.block-container[error="true"][selected="true"] .module-body .block-item::after {
+    border-color: #ff2c2c !important;
+    box-shadow: -1px -2px 2px 0px #ff2c2c61 !important;
+}
+
 .block-item-icon {
     position: absolute;
     top: 6px;

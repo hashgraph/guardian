@@ -8,6 +8,7 @@ import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { MessageAction, MessageServer, MessageType, ModuleMessage, TopicConfig } from '@hedera-modules';
 import { Users } from '@helpers/users';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
+import { ModuleValidator } from '@policy-engine/block-validators/module-validator';
 
 /**
  * Generate Zip File
@@ -110,15 +111,14 @@ export async function validateAndPublish(uuid: string, owner: string, notifier: 
     }
 }
 
-
 /**
  * Validate Model
  * @param module
  */
-export async function validateModel(module: PolicyModule | string): Promise<ISerializedErrors> {
-    return {
-        blocks: []
-    }
+export async function validateModel(module: PolicyModule): Promise<ISerializedErrors> {
+    const moduleValidator = new ModuleValidator(module.config);
+    await moduleValidator.validate();
+    return moduleValidator.getSerializedErrors();
 }
 
 /**

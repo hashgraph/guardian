@@ -673,6 +673,33 @@ export class PolicyConfigurationComponent implements OnInit {
         this.changeDetector.detectChanges();
     }
 
+    private setErrors(results: any) {
+        const blocks = results.blocks;
+        const modules = results.modules;
+        const commonErrors = results.errors;
+        this.errors = [];
+        for (const block of blocks) {
+            if(!block.isValid) {
+                this.errors.push(block);
+            }
+        }
+        for (const module of modules) {
+            if(!module.isValid) {
+                this.errors.push(module);
+            }
+            for (const block of module.blocks) {
+                if(!block.isValid) {
+                    this.errors.push(block);
+                }
+            }
+        }
+        this.errorsCount = this.errors.length;
+        this.errorsMap = {};
+        for (const element of this.errors) {
+            this.errorsMap[element.id] = element.errors;
+        }
+        this.errorMessage(commonErrors);
+    }
 
     private chanceView(type: string) {
         if (type == this.currentView) {
@@ -859,7 +886,7 @@ export class PolicyConfigurationComponent implements OnInit {
             if (root) {
                 this.loading = true;
                 this.policyEngineService.update(this.policyId, root).subscribe((policy: any) => {
-                    if (!policy) {
+                    if (policy) {
                         this.updatePolicyModel(policy);
                     } else {
                         this.policyModel = new PolicyModel();
@@ -887,20 +914,10 @@ export class PolicyConfigurationComponent implements OnInit {
         }
         this.policyEngineService.validate(object).subscribe((data: any) => {
             const { policy, results } = data;
-
             const config = policy.config;
             this.policyModel.rebuild(config);
-
-            const errors = results.blocks.filter((block: any) => !block.isValid);
-            this.errors = errors;
-            this.errorsCount = errors.length;
-            this.errorsMap = {};
-            for (let i = 0; i < errors.length; i++) {
-                const element = errors[i];
-                this.errorsMap[element.id] = element.errors;
-            }
-            this.errorMessage(results.errors);
-            this.onSelect(this.policyModel.root);
+            this.setErrors(results);
+            this.onSelect(this.openModule.root);
             this.loading = false;
         }, (e) => {
             this.loading = false;
@@ -941,16 +958,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.clearState();
                 this.loadData();
             } else {
-                const blocks = errors.blocks;
-                const invalidBlocks = blocks.filter((block: any) => !block.isValid);
-                this.errors = invalidBlocks;
-                this.errorsCount = invalidBlocks.length;
-                this.errorsMap = {};
-                for (let i = 0; i < invalidBlocks.length; i++) {
-                    const element = invalidBlocks[i];
-                    this.errorsMap[element.id] = element.errors;
-                }
-                this.errorMessage(errors.errors);
+                this.setErrors(errors);
                 this.loading = false;
             }
         }, (e) => {
@@ -1037,16 +1045,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         if (isValid) {
                             this.loadData();
                         } else {
-                            const blocks = errors.blocks;
-                            const invalidBlocks = blocks.filter((block: any) => !block.isValid);
-                            this.errors = invalidBlocks;
-                            this.errorsCount = invalidBlocks.length;
-                            this.errorsMap = {};
-                            for (let i = 0; i < invalidBlocks.length; i++) {
-                                const element = invalidBlocks[i];
-                                this.errorsMap[element.id] = element.errors;
-                            }
-                            this.errorMessage(errors.errors);
+                            this.setErrors(errors);
                             this.loading = false;
                         }
                         break;

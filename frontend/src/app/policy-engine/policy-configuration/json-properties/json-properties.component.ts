@@ -80,7 +80,13 @@ export class JsonPropertiesComponent implements OnInit {
         this.errors = [];
         this.block = block;
         if (this.block) {
-            this.code = JSON.stringify(block.getJSON(), null, 2);
+            const json = block.getJSON();
+            delete json.children;
+            delete json.artifacts;
+            delete json.events;
+            delete json.innerEvents;
+
+            this.code = JSON.stringify(json, null, 2);
         } else {
             this.code = '';
         }

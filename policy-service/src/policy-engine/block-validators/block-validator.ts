@@ -1,7 +1,7 @@
 import * as mathjs from 'mathjs';
 import { PolicyValidator } from "./policy-validator";
-import { IBlockErrors } from "./block-errors.interface";
-import { IBlockProp } from "./block-prop.interface";
+import { IBlockErrors } from "./interfaces/block-errors.interface";
+import { IBlockProp } from "./interfaces/block-prop.interface";
 
 import { InterfaceDocumentActionBlock } from "./blocks/action-block";
 import { AggregateBlock } from './blocks/aggregate-block';
@@ -41,6 +41,8 @@ import { SwitchBlock } from './blocks/switch-block';
 import { TimerBlock } from './blocks/timer-block';
 import { TokenActionBlock } from './blocks/token-action-block';
 import { TokenConfirmationBlock } from './blocks/token-confirmation-block';
+import { ModuleValidator } from './module-validator';
+import { ModuleBlock } from './blocks/module';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -81,6 +83,7 @@ export const validators = [
     TimerBlock,
     TokenActionBlock,
     TokenConfirmationBlock,
+    ModuleBlock
 ];
 
 export class BlockValidator {
@@ -93,7 +96,7 @@ export class BlockValidator {
      * Errors
      * @private
      */
-    private readonly validator: PolicyValidator;
+    private readonly validator: PolicyValidator | ModuleValidator;
     /**
      * UUID
      * @private
@@ -127,11 +130,11 @@ export class BlockValidator {
 
     constructor(
         config: any,
-        validator: PolicyValidator
+        validator: PolicyValidator | ModuleValidator
     ) {
         this.errors = [];
         this.validator = validator;
-        this.uuid = config.uuid;
+        this.uuid = config.id;
         this.blockType = config.blockType;
         this.tag = config.tag;
         this.permissions = config.permissions;

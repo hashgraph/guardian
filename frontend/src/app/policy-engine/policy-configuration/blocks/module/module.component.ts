@@ -18,7 +18,7 @@ export class ModuleComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlockModel;
-    
+
     propHidden: any = {
         main: false
     };
@@ -63,15 +63,17 @@ export class ModuleComponent implements OnInit {
 
         this.properties = block.properties;
         this.variables = [];
-        for (const item of block.variables) {
-            const key = (item.name || '').replace(/ /ig, '_');
-            this.variables.push({
-                key,
-                type: item.type,
-                name: item.name,
-                description: item.description,
-                value: this.properties[key]
-            })
+        if (Array.isArray(block.variables)) {
+            for (const item of block.variables) {
+                const key = (item.name || '').replace(/ /ig, '_');
+                this.variables.push({
+                    key,
+                    type: item.type,
+                    name: item.name,
+                    description: item.description,
+                    value: this.properties[key]
+                })
+            }
         }
     }
 
@@ -89,7 +91,7 @@ export class ModuleComponent implements OnInit {
             this.properties[item.key] = name;
         }
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

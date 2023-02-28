@@ -1,10 +1,19 @@
 import { IBlockErrors } from "./block-errors.interface";
 
 /**
- * Serialized errors
+ * Module errors
  */
+export interface IModulesErrors {
+    /**
+     * ID
+     */
+    id: string;
 
-export interface ISerializedErrors {
+    /**
+     * Is valid
+     */
+    isValid: boolean;
+
     /**
      * Blocks
      */

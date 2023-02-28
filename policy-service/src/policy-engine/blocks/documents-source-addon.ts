@@ -33,11 +33,11 @@ export class DocumentsSourceAddon {
      @StateField()
      private state;
 
-     constructor() {
-         if (!this.state) {
-             this.state = {};
-         }
-     }
+    constructor() {
+        if (!this.state) {
+            this.state = {};
+        }
+    }
 
     /**
      * Set block data

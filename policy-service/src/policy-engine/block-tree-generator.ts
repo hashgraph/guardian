@@ -257,7 +257,6 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             return policyValidator.getSerializedErrors();
         }
         const policyConfig = policy.config;
-
         policyValidator.registerBlock(policyConfig);
         policyValidator.addPermissions(policy.policyRoles);
         await policyValidator.validate();

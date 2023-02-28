@@ -13,6 +13,7 @@ import { TokenVariables } from './variables/token-variables';
 import { TopicVariables } from './variables/topic-variables';
 import { TemplateModel } from './template.model';
 import { IBlockConfig } from './interfaces/block-config.interface';
+import { IEventConfig } from './interfaces/event-config.interface';
 
 export class PolicyModuleModel extends PolicyBlockModel {
     protected _dataSource!: PolicyBlockModel[];
@@ -23,14 +24,14 @@ export class PolicyModuleModel extends PolicyBlockModel {
     protected _inputEvents!: ModuleEventModel[];
     protected _outputEvents!: ModuleEventModel[];
     protected _variables!: ModuleVariableModel[];
-    protected _internalEvents: PolicyEventModel[];
+    protected _innerEvents: PolicyEventModel[];
     protected _lastVariables!: IModuleVariables;
 
     protected _name!: string;
     protected _description!: string;
 
-    public get internalEvents(): PolicyEventModel[] {
-        return this._internalEvents;
+    public get innerEvents(): PolicyEventModel[] {
+        return this._innerEvents;
     }
 
     public get allEvents(): PolicyEventModel[] {
@@ -69,11 +70,11 @@ export class PolicyModuleModel extends PolicyBlockModel {
             }
         }
 
-        this._internalEvents = [];
-        if (Array.isArray(config.internalEvents)) {
-            for (const event of config.internalEvents) {
+        this._innerEvents = [];
+        if (Array.isArray(config.innerEvents)) {
+            for (const event of config.innerEvents) {
                 const item = new PolicyEventModel(event, this);
-                this._internalEvents.push(item);
+                this._innerEvents.push(item);
             }
         }
     }
@@ -93,7 +94,7 @@ export class PolicyModuleModel extends PolicyBlockModel {
     private registeredBlock(block: PolicyBlockModel | PolicyModuleModel) {
         if (block === this) {
             this._allBlocks.push(block);
-            for (const event of this.internalEvents) {
+            for (const event of this.innerEvents) {
                 this._allEvents.push(event);
             }
             for (const child of block.children) {
@@ -249,10 +250,18 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public override getJSON(): any {
-        const json: any = super.getJSON();
+        const json: any = { ...this.properties };
+        json.id = this.id;
+        json.blockType = this.blockType;
+        json.tag = this.tag;
+        json.children = [];
+        json.events = [];
+        json.artifacts = this.artifacts || [];
         json.variables = [];
         json.inputEvents = [];
         json.outputEvents = [];
+        json.outputEvents = [];
+        json.innerEvents = [];
 
         for (const variable of this.variables) {
             json.variables.push(variable.getJSON());
@@ -263,6 +272,24 @@ export class PolicyModuleModel extends PolicyBlockModel {
         for (const event of this.outputEvents) {
             json.outputEvents.push(event.getJSON());
         }
+
+        if (this._module) {
+            for (const event of this._module.allEvents) {
+                if (event.isSource(this)) {
+                    json.events.push(event.getJSON());
+                }
+            }
+        }
+
+        for (const event of this.allEvents) {
+            if (event.isSource(this)) {
+                json.innerEvents.push(event.getJSON());
+            }
+        }
+
+        for (const block of this.children) {
+            json.children.push(block.getJSON());
+        }
         return json;
     }
 
@@ -271,7 +298,16 @@ export class PolicyModuleModel extends PolicyBlockModel {
             module: this,
             schemas: [],
             tokens: [],
-            roles: [],
+            roles: [{
+                name: 'Owner',
+                value: 'OWNER',
+            }, {
+                name: 'No Role',
+                value: 'NO_ROLE',
+            }, {
+                name: 'Any Role',
+                value: 'ANY_ROLE',
+            }],
             groups: [],
             tokenTemplates: [],
             topics: [],
@@ -297,7 +333,6 @@ export class PolicyModuleModel extends PolicyBlockModel {
                     case 'Topic':
                         this._lastVariables.topics.push(new TopicVariables(variable));
                         break;
-
                 }
             }
         }
@@ -367,5 +402,38 @@ export class PolicyModuleModel extends PolicyBlockModel {
         } else {
             this.refreshData();
         }
+    }
+
+    public createInnerEvent(event: IEventConfig) {
+        const e = new PolicyEventModel(event, this);
+        this._addInnerEvent(e);
+        this.refresh();
+    }
+
+    public addInnerEvent(event: PolicyEventModel) {
+        this._addInnerEvent(event);
+        this.refresh();
+    }
+
+    private _addInnerEvent(event: PolicyEventModel) {
+        this._innerEvents.push(event);
+    }
+
+    public removeInnerEvent(event: PolicyEventModel) {
+        const index = this._innerEvents.findIndex((c) => c.id == event.id);
+        if (index !== -1) {
+            this._innerEvents.splice(index, 1);
+            this.refresh();
+        }
+    }
+
+    public getActiveEvents(): PolicyEventModel[] {
+        const events = super.getActiveEvents();
+        for (const event of this.innerEvents) {
+            if (!event.disabled) {
+                events.push(event);
+            }
+        }
+        return events;
     }
 }

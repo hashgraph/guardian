@@ -524,7 +524,16 @@ export class PolicyModel {
             module: this,
             schemas: [],
             tokens: [],
-            roles: [],
+            roles: [{
+                name: 'Owner',
+                value: 'OWNER',
+            }, {
+                name: 'No Role',
+                value: 'NO_ROLE',
+            }, {
+                name: 'Any Role',
+                value: 'ANY_ROLE',
+            }],
             groups: [],
             tokenTemplates: [],
             topics: [],

@@ -1353,3 +1353,31 @@
     left: 7px !important;
     top: 4px !important;
 }
+
+.errors-properties  {
+    max-height: 200px;
+    overflow: auto;
+}
+
+.errors-property {
+    border-radius: 3px;
+    border: 1px solid #f90000;
+    padding: 5px;
+    color: #f90000;
+    background: #fff2f2;
+    position: relative;
+    padding-left: 10px;
+    margin: 5px 5px 5px 5px;
+    box-sizing: border-box;
+}
+
+.json-errors {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    z-index: 99;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #c9c9c9;
+}

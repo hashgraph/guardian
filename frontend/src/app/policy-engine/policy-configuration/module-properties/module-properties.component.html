@@ -1,4 +1,9 @@
 <div class="grid-setting policy-properties" [attr.readonly]="readonly">
+    <div *ngIf="errors" class="errors-properties">
+        <div *ngFor="let item of errors" class="errors-property">
+            <span>{{item}}</span>
+        </div>
+    </div>
     <div class="table">
         <div class="table-body" #body>
             <table class="properties">

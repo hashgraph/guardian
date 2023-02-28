@@ -184,16 +184,6 @@ export class CommonPropertiesComponent implements OnInit {
             return;
         }
 
-        this.roles = [{
-            name: 'Owner',
-            value: 'OWNER',
-        }, {
-            name: 'No Role',
-            value: 'NO_ROLE',
-        }, {
-            name: 'Any Role',
-            value: 'ANY_ROLE',
-        }];
         this.moduleVariables = block.moduleVariables;
         this.roles = this.moduleVariables?.roles || [];
 

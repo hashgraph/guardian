@@ -21,6 +21,7 @@ export class PolicyBlockModel {
     protected _artifacts!: IArtifact[];
     protected _root: boolean;
     protected _changed: boolean;
+    protected _defaultEvent: PolicyEventModel | null | undefined;
 
     constructor(config: IBlockConfig, parent: PolicyBlockModel | null) {
         this._changed = false;
@@ -318,6 +319,7 @@ export class PolicyBlockModel {
     public rebuild(object: any) {
         delete object.children;
         delete object.events;
+        delete object.innerEvents;
 
         const keys1 = Object.keys(this.properties);
         const keys2 = Object.keys(object);
@@ -416,5 +418,34 @@ export class PolicyBlockModel {
         } else {
             this.refreshData();
         }
+    }
+
+    public setAbout(about: any): void {
+        if (about && about.defaultEvent) {
+            this._defaultEvent = new PolicyEventModel({
+                actor: '',
+                disabled: false,
+                input: 'RunEvent',
+                output: 'RunEvent',
+                source: this.tag,
+                target: this.next?.tag || '',
+            }, this);
+            this._defaultEvent.default = true;
+        } else {
+            this._defaultEvent = null;
+        }
+    }
+
+    public getActiveEvents(): PolicyEventModel[] {
+        const events: PolicyEventModel[] = [];
+        if (!this.properties.stopPropagation && this._defaultEvent) {
+            events.push(this._defaultEvent);
+        }
+        for (const event of this.events) {
+            if (!event.disabled) {
+                events.push(event);
+            }
+        }
+        return events;
     }
 }

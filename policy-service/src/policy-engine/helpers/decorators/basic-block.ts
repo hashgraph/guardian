@@ -127,6 +127,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public actions: any[];
             /**
+             * Block events
+             */
+            public events: EventConfig[]
+            /**
              * Dry-run
              */
             private _dryRun: string;
@@ -149,8 +153,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 const active = _defaultActive || defaultOptions.defaultActive || !parent;
 
                 super(
-                    defaultOptions.blockType, defaultOptions.commonBlock,
-                    tag, active, permissions, _uuid, parent, _options
+                    defaultOptions.blockType,
+                    defaultOptions.commonBlock,
+                    tag,
+                    active,
+                    permissions,
+                    _uuid,
+                    parent,
+                    _options
                 );
                 this._dryRun = null;
                 this.logger = new Logger();
@@ -168,6 +178,18 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
                 this.actions.push([PolicyInputEventType.RunEvent, this.runAction]);
                 this.actions.push([PolicyInputEventType.RefreshEvent, this.refreshAction]);
+
+                this.events = [];
+                if (Array.isArray(this.options?.events)) {
+                    for (const e of this.options.events) {
+                        this.events.push(e);
+                    }
+                }
+                if (Array.isArray(this.options?.innerEvents)) {
+                    for (const e of this.options.innerEvents) {
+                        this.events.push(e);
+                    }
+                }
             }
 
             /**
@@ -185,13 +207,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     return this.parent.getNextChild(this.uuid);
                 }
                 return undefined;
-            }
-
-            /**
-             * Block events getter
-             */
-            public get events(): EventConfig[] {
-                return this.options.events || [];
             }
 
             /**

@@ -1,7 +1,7 @@
 import { PolicyBlockModel } from "../block.model";
 
 export interface IEventConfig {
-    id: string;
+    id?: string;
     actor: string;
     disabled: boolean;
     input: string;

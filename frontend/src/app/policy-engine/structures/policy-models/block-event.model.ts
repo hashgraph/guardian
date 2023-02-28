@@ -15,10 +15,13 @@ export class PolicyEventModel {
     private _sourceTag: string;
     private _target: PolicyBlockModel | null;
     private _targetTag: string;
-
     private _changed: boolean;
 
+    public default: boolean;
+
     constructor(event: IEventConfig, block: PolicyBlockModel) {
+        this.default = false;
+
         this._changed = false;
 
         this.block = block;

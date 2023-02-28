@@ -2,10 +2,11 @@ import { DatabaseServer } from "@database-modules";
 import { Policy } from "@entity/policy";
 import { PolicyType } from "@guardian/interfaces";
 import { BlockValidator } from "./block-validator";
-import { ISerializedErrors } from "./serialized-errors.interface";
+import { ModuleValidator } from "./module-validator";
+import { ISerializedErrors } from "./interfaces/serialized-errors.interface";
 
 /**
- * Validation results container
+ * Policy Validator
  */
 export class PolicyValidator {
     /**
@@ -18,6 +19,11 @@ export class PolicyValidator {
      * @private
      */
     private readonly blocks: Map<string, BlockValidator>;
+    /**
+     * Modules map
+     * @private
+     */
+    private readonly modules: Map<string, ModuleValidator>;
     /**
      * Common errors
      * @private
@@ -56,6 +62,7 @@ export class PolicyValidator {
 
     constructor(policy: Policy) {
         this.blocks = new Map();
+        this.modules = new Map();
         this.tags = new Map();
         this.errors = [];
         this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
@@ -85,11 +92,9 @@ export class PolicyValidator {
                 this.blocks.set(block.id, validator);
             }
         } else {
-            console.log('111', block);
             validator = new BlockValidator(block, this);
             this.errors.push(`UUID not set`);
         }
-
         if (block.tag) {
             if (this.tags.has(block.tag)) {
                 this.tags.set(block.tag, 2);
@@ -97,10 +102,15 @@ export class PolicyValidator {
                 this.tags.set(block.tag, 1);
             }
         }
-        if (Array.isArray(block.children)) {
-            for (const child of block.children) {
-                const v = this.registerBlock(child);
-                validator.addChild(v);
+        if (block.blockType === 'module') {
+            const module = new ModuleValidator(block);
+            this.modules.set(block.id, module);
+        } else {
+            if (Array.isArray(block.children)) {
+                for (const child of block.children) {
+                    const v = this.registerBlock(child);
+                    validator.addChild(v);
+                }
             }
         }
         return validator;
@@ -114,14 +124,25 @@ export class PolicyValidator {
         this.permissions.push(role);
     }
 
-
+    /**
+     * Clear
+     */
     public clear() {
+        for (const item of this.modules.values()) {
+            item.clear();
+        }
         for (const item of this.blocks.values()) {
             item.clear();
         }
     }
 
+    /**
+     * Validate
+     */
     public async validate() {
+        for (const item of this.modules.values()) {
+            await item.validate();
+        }
         for (const item of this.blocks.values()) {
             await item.validate();
         }
@@ -177,6 +198,10 @@ export class PolicyValidator {
      * Get serialized errors
      */
     public getSerializedErrors(): ISerializedErrors {
+        const modulesErrors = [];
+        for (const item of this.modules.values()) {
+            modulesErrors.push(item.getSerializedErrors());
+        }
         const blocksErrors = [];
         for (const item of this.blocks.values()) {
             blocksErrors.push(item.getSerializedErrors());
@@ -193,6 +218,7 @@ export class PolicyValidator {
         return {
             errors: commonErrors,
             blocks: blocksErrors,
+            modules: modulesErrors,
         }
     }
 
@@ -209,7 +235,6 @@ export class PolicyValidator {
      * @param iri
      */
     public async getSchema(iri: string): Promise<any> {
-        console.log('getSchemaByIRI', iri, this.topicId)
         return await this.databaseServer.getSchemaByIRI(iri, this.topicId);
     }
 
@@ -217,7 +242,7 @@ export class PolicyValidator {
      * Get Token Template
      * @param templateName
      */
-    public getTokenTemplate(templateName: string): Promise<any> {
+    public getTokenTemplate(templateName: string): any {
         return this.policyTokens.find(e => e.templateTokenTag === templateName);
     }
 
@@ -233,95 +258,7 @@ export class PolicyValidator {
      * Get Topic Template
      * @param topicName
      */
-    public getTopicTemplate(topicName: string): Promise<any> {
+    public getTopicTemplate(topicName: string): any {
         return this.policyTopics.find(e => e.name === topicName);
     }
-
-
-
-
-
-
-
-    // /**
-    //  * Add block to map if not added
-    //  * @param block
-    //  */
-    // public registerBlock(block: IPolicyBlock): void {
-    //     if (!this.blocks.has(block.uuid)) {
-    //         this.blocks.set(block.uuid, {
-    //             isValid: true,
-    //             errors: [],
-    //             block
-    //         });
-    //     }
-    // }
-
-    // /**
-    //  * Add block error
-    //  * @param uuid
-    //  * @param error
-    //  */
-    // public addBlockError(uuid: string, error: string): void {
-    //     const block = this.blocks.get(uuid);
-    //     block.isValid = false;
-    //     block.errors.push(error);
-    // }
-
-
-
-    // /**
-    //  * Add error
-    //  * @param error
-    //  */
-    // public addError(error: string): void {
-    //     this.errors.push(error);
-    // }
-
-    // /**
-    //  * Add tag
-    //  * @param tag
-    //  */
-    // public addTag(tag: string): void {
-    //     this.tags.push(tag);
-    // }
-
-    // /**
-    //  * Is tag exist
-    //  * @param tag
-    //  */
-    // public isTagExist(tag: string): boolean {
-    //     return !!this.tags.find(item => item === tag);
-    // }
-
-    // /**
-    //  * Is permission exist
-    //  * @param permission
-    //  */
-    // public isPermissionExist(permission: string): boolean {
-    //     return !!this.permissions.find(item => item === permission);
-    // }
-
-    // /**
-    //  * Permissions not exist
-    //  * @param permissions
-    //  */
-    // public permissionsNotExist(permissions: string[]): string | null {
-    //     if (permissions) {
-    //         for (const permission of permissions) {
-    //             if (this.permissions.indexOf(permission) === -1) {
-    //                 return permission;
-    //             }
-    //         }
-    //     }
-    //     return null;
-    // }
-
-    // /**
-    //  * Count tags
-    //  * @param tag
-    //  */
-    // public countTags(tag: string): number {
-    //     return this.tags.filter(t => t === tag).length;
-    // }
 }

@@ -1,4 +1,5 @@
 import { ModuleComponent } from "../policy-configuration/blocks/module/module.component";
+import { ContainerBlockComponent } from "../policy-viewer/blocks/container-block/container-block.component";
 import {
     BlockType,
     BlockGroup,
@@ -17,7 +18,7 @@ const Module: IBlockSetting = {
     icon: 'folder',
     group: BlockGroup.Module,
     header: BlockHeaders.Module,
-    factory: null,
+    factory: ContainerBlockComponent,
     property: ModuleComponent,
     allowedChildren: [
         { type: BlockType.Information },

@@ -127,7 +127,7 @@ export class PolicyTreeComponent implements OnInit {
         this.canvas = new EventCanvas(
             this.element.nativeElement,
             this.parentRef?.nativeElement,
-            this.canvasRef?.nativeElement,  
+            this.canvasRef?.nativeElement,
         );
         this.canvas.resize();
     }
@@ -187,6 +187,7 @@ export class PolicyTreeComponent implements OnInit {
             node.collapsed = this.getCollapsed(node);
             node.parent = parent;
             node.offset = `${this.paddingLeft * level}px`;
+            block.setAbout(node.about);
 
             result.push(node);
             this.collapsedMap.set(node.id, node.collapsed);
@@ -255,6 +256,11 @@ export class PolicyTreeComponent implements OnInit {
                 `;
                 this.tooltip.style.left = `${position.x}px`;
                 this.tooltip.style.top = `${position.y}px`;
+                if (position.y > 200) {
+                    this.tooltip.style.transform = 'translate(-50%, -100%) translate(0, -8px)';
+                } else {
+                    this.tooltip.style.transform = 'translate(-50%, 0%) translate(0, 20px)';
+                }
                 this.showTooltip(true);
             } else {
                 this.tooltip.innerHTML = '';
@@ -319,36 +325,15 @@ export class PolicyTreeComponent implements OnInit {
             }
         }
         minOffset += 50;
-
         const lines: BlocLine[] = [];
         for (const node of data) {
             const block = node.node;
-            if (
-                !block.properties.stopPropagation &&
-                node.about.defaultEvent &&
-                this.checkType(block)
-            ) {
-                const sourceTag = block.tag;
-                const targetTag = block.next?.tag || '';
-                const start = blockMap[sourceTag];
-                const end = blockMap[targetTag];
-                if (start && end) {
-                    const line = new BlocLine(start, end, true);
-                    line.dash = false;
-                    line.startTag = sourceTag;
-                    line.endTag = targetTag;
-                    line.actor = '';
-                    line.input = 'RunEvent';
-                    line.output = 'RunEvent';
-                    lines.push(line);
-                }
-            }
-            for (const event of block.events) {
-                if (!event.disabled && this.checkType(event)) {
+            for (const event of block.getActiveEvents()) {
+                if (this.checkType(event)) {
                     const start = blockMap[event.sourceTag];
                     const end = blockMap[event.targetTag];
                     if (start && end) {
-                        const line = new BlocLine(start, end);
+                        const line = new BlocLine(start, end, event.default);
                         line.dash = event.input == 'RefreshEvent';
                         line.startTag = event.sourceTag;
                         line.endTag = event.targetTag;

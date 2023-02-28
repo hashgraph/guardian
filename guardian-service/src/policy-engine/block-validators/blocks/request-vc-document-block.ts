@@ -13,7 +13,6 @@ export class RequestVcDocumentBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
-            console.log('22222222')
             // Test schema options
             if (!ref.options.schema) {
                 validator.addError('Option "schema" does not set');

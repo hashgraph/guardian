@@ -22,6 +22,7 @@ export class ModulePropertiesComponent implements OnInit {
     @Input('module') module!: any;
     @Input('readonly') readonly!: boolean;
     @Input('type') type!: string;
+    @Input('errors') errors!: any[];
 
     @ViewChild('body') body?: ElementRef;
 

@@ -467,6 +467,11 @@
                     <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions" (ngModelChange)="saveState()">
                     </ngx-codemirror>
                 </div>
+                <div *ngIf="!isTree && errors?.length" class="json-errors">
+                    <div *ngFor="let item of errors" class="errors-property">
+                        <span>{{item}}</span>
+                    </div>
+                </div>
 
                 <div *ngIf="isTree" class="pc-tabs minimized-tabs">
                     <div class="pc-tabs-headers">
@@ -529,7 +534,7 @@
                                 <mat-icon>keyboard_double_arrow_up</mat-icon>
                             </div>
                         </div>
-                        <div class="pc-tabs-content">
+                        <div class="pc-tabs-content" [attr.readonly]="!isTree">
                             <div class="prop-container readonly-status" [hidden]="!options.description">
                                 <policy-properties [policy]="policyModel" [readonly]="readonly"
                                     type="Main"></policy-properties>
@@ -576,22 +581,22 @@
                                 <mat-icon>keyboard_double_arrow_up</mat-icon>
                             </div>
                         </div>
-                        <div class="pc-tabs-content">
+                        <div class="pc-tabs-content" [attr.readonly]="!isTree">
                             <div class="prop-container readonly-status" [hidden]="!options.descriptionModule">
                                 <module-properties [module]="openModule" [readonly]="readonly"
-                                    type="Main"></module-properties>
+                                    type="Main" [errors]="errorsMap[openModule.id]"></module-properties>
                             </div>
                             <div class="prop-container readonly-status" [hidden]="!options.inputsModule">
                                 <module-properties [module]="openModule" [readonly]="readonly"
-                                    type="Inputs"></module-properties>
+                                    type="Inputs" [errors]="errorsMap[openModule.id]"></module-properties>
                             </div>
                             <div class="prop-container readonly-status" [hidden]="!options.outputsModule">
                                 <module-properties [module]="openModule" [readonly]="readonly"
-                                    type="Outputs"></module-properties>
+                                    type="Outputs" [errors]="errorsMap[openModule.id]"></module-properties>
                             </div>
                             <div class="prop-container readonly-status" [hidden]="!options.variablesModule">
                                 <module-properties [module]="openModule" [readonly]="readonly"
-                                    type="Variables"></module-properties>
+                                    type="Variables" [errors]="errorsMap[openModule.id]"></module-properties>
                             </div>
                         </div>
                     </div>
@@ -619,8 +624,13 @@
                                 <mat-icon>keyboard_double_arrow_up</mat-icon>
                             </div>
                         </div>
-                        <div class="pc-tabs-content">
+                        <div class="pc-tabs-content" [attr.readonly]="!isTree">
                             <div class="prop-container readonly-status" [hidden]="!options.properties">
+                                <div *ngIf="errorsMap[currentBlock.id]" class="errors-properties">
+                                    <div *ngFor="let item of errorsMap[currentBlock.id]" class="errors-property">
+                                        <span>{{item}}</span>
+                                    </div>
+                                </div>
                                 <common-properties [module]="openModule" [block]="currentBlock" [readonly]="readonly"
                                     type="Common"></common-properties>
                             </div>
