@@ -87,7 +87,7 @@ a {
     border-left: 1px solid currentColor;
     padding-left: 10px;
 }
- 
+
 
 .item-color {
     width: 42px;
@@ -300,6 +300,7 @@ a {
 .btn-settings.btn-settings-des {
     color: #b5b5b5;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
 .table-container .mat-column-delete {

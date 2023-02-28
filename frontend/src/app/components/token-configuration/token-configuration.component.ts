@@ -15,6 +15,14 @@ export class TokenConfigurationComponent implements OnInit {
 
     constructor() { }
 
+    get notDraftToken(): boolean {
+        return !this.dataForm?.get('draftToken')?.value;
+    }
+
+    set notDraftToken(value: any) {
+        this.dataForm?.patchValue({ draftToken: !value });
+    }
+
     get enableAdmin(): any {
         return this.dataForm?.get('enableAdmin')?.value;
     }
