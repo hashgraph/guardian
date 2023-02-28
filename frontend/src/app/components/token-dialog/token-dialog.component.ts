@@ -13,6 +13,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 export class TokenDialog {
     started = false;
     dataForm = this.fb.group({
+        draftToken: [true, Validators.required],
         tokenName: ['Token Name', Validators.required],
         tokenSymbol: ['F', Validators.required],
         tokenType: ['fungible', Validators.required],

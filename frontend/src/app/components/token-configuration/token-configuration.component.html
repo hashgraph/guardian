@@ -1,4 +1,10 @@
 <form *ngIf="dataForm" [formGroup]="dataForm" [attr.immutable]="readonly">
+    <div class="key-value immutable">
+        <div class="switch-btn">
+            <switch-button [on-label]="'Published'" [off-label]="'Draft'" [(value)]="notDraftToken"></switch-button>
+        </div>
+    </div>
+
     <mat-form-field class="example-full-width" appearance="outline">
         <mat-label>* Token Name</mat-label>
         <input matInput type="text" placeholder="Token Name" formControlName="tokenName">
