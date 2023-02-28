@@ -11,7 +11,7 @@ import {
     DataBaseHelper,
     RunFunctionAsync
 } from '@guardian/common';
-import { MessageAPI, IToken, WorkerTaskType } from '@guardian/interfaces';
+import { MessageAPI, IToken, WorkerTaskType, GenerateUUIDv4 } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { Workers } from '@helpers/workers';
 
@@ -93,85 +93,25 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
     const users = new Users();
     const root = await users.getHederaAccount(owner);
 
-    notifier.completedAndStart('Create token');
-
-    const workers = new Workers();
-    const tokenData = await workers.addNonRetryableTask({
-        type: WorkerTaskType.CREATE_TOKEN,
-        data: {
-            operatorId: root.hederaAccountId,
-            operatorKey: root.hederaAccountKey,
-            changeSupply,
-            decimals,
-            enableAdmin,
-            enableFreeze,
-            enableKYC,
-            enableWipe,
-            initialSupply,
-            tokenName,
-            tokenSymbol,
-            tokenType
-        }
-    }, 1);
-
-    notifier.completedAndStart('Save token in DB');
+    notifier.completedAndStart('Create and save token in DB');
     const tokenObject = tokenRepository.create({
-        tokenId: tokenData.tokenId,
-        tokenName: tokenData.tokenName,
-        tokenSymbol: tokenData.tokenSymbol,
-        tokenType: tokenData.tokenType,
-        decimals: tokenData.decimals,
-        initialSupply: tokenData.initialSupply,
-        adminId: tokenData.treasuryId,
-        changeSupply: !!tokenData.supplyKey,
-        enableAdmin: !!tokenData.adminKey,
-        enableKYC: !!tokenData.kycKey,
-        enableFreeze: !!tokenData.freezeKey,
-        enableWipe: !!tokenData.wipeKey,
+        tokenId: GenerateUUIDv4(),
+        tokenName,
+        tokenSymbol,
+        tokenType,
+        decimals,
+        initialSupply,
+        adminId: null,
+        changeSupply,
+        enableAdmin,
+        enableFreeze,
+        enableKYC,
+        enableWipe,
         owner: root.did,
-        policyId: null
+        policyId: null,
+        draftToken: true
     });
     const result = await tokenRepository.save(tokenObject);
-    const wallet = new Wallet();
-    await Promise.all([
-        wallet.setUserKey(
-            root.did,
-            KeyType.TOKEN_TREASURY_KEY,
-            tokenData.tokenId,
-            tokenData.treasuryKey
-        ),
-        wallet.setUserKey(
-            root.did,
-            KeyType.TOKEN_ADMIN_KEY,
-            tokenData.tokenId,
-            tokenData.adminKey
-        ),
-        wallet.setUserKey(
-            root.did,
-            KeyType.TOKEN_FREEZE_KEY,
-            tokenData.tokenId,
-            tokenData.freezeKey
-        ),
-        wallet.setUserKey(
-            root.did,
-            KeyType.TOKEN_KYC_KEY,
-            tokenData.tokenId,
-            tokenData.kycKey
-        ),
-        wallet.setUserKey(
-            root.did,
-            KeyType.TOKEN_SUPPLY_KEY,
-            tokenData.tokenId,
-            tokenData.supplyKey
-        ),
-        wallet.setUserKey(
-            root.did,
-            KeyType.TOKEN_WIPE_KEY,
-            tokenData.tokenId,
-            tokenData.wipeKey
-        )
-    ]);
-
     notifier.completed();
     return result;
 }
