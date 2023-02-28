@@ -1,9 +1,8 @@
 import * as mathjs from 'mathjs';
-import { PolicyValidator } from "./policy-validator";
-import { IBlockErrors } from "./interfaces/block-errors.interface";
-import { IBlockProp } from "./interfaces/block-prop.interface";
-
-import { InterfaceDocumentActionBlock } from "./blocks/action-block";
+import { PolicyValidator } from './policy-validator';
+import { IBlockErrors } from './interfaces/block-errors.interface';
+import { IBlockProp } from './interfaces/block-prop.interface';
+import { InterfaceDocumentActionBlock } from './blocks/action-block';
 import { AggregateBlock } from './blocks/aggregate-block';
 import { ButtonBlock } from './blocks/button-block';
 import { CalculateContainerBlock } from './blocks/calculate-block';
@@ -86,6 +85,9 @@ export const validators = [
     ModuleBlock
 ];
 
+/**
+ * Block Validator
+ */
 export class BlockValidator {
     /**
      * Errors
@@ -148,10 +150,17 @@ export class BlockValidator {
         this.children = [];
     }
 
+    /**
+     * Add child block
+     */
     public addChild(item: BlockValidator): void {
         this.children.push(item);
     }
 
+    /**
+     * Get Properties
+     * @private
+     */
     private _getRef(): IBlockProp {
         return {
             blockType: this.blockType,
@@ -160,6 +169,9 @@ export class BlockValidator {
         };
     }
 
+    /**
+     * Get Properties
+     */
     public getRef(): IBlockProp {
         return {
             blockType: this.blockType,
@@ -168,14 +180,23 @@ export class BlockValidator {
         };
     }
 
+    /**
+     * Add error
+     */
     public addError(error: string): void {
         this.errors.push(error);
     }
 
+    /**
+     * Clear errors
+     */
     public clear(): void {
         this.errors.length = 0;
     }
 
+    /**
+     * Validate
+     */
     public async validate(): Promise<void> {
         try {
             if (this.validator.tagCount(this.tag) > 1) {
@@ -211,7 +232,7 @@ export class BlockValidator {
 
     /**
      * Tag not exist
-     * @param permissions
+     * @param tag
      */
     public tagNotExist(tag: string): boolean {
         return !this.validator.getTag(tag);
@@ -271,7 +292,6 @@ export class BlockValidator {
             }
         }).call(mathjs, formula);
     }
-
 
     /**
      * Get Variables

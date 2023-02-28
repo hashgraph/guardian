@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Filters addon
  */
 export class FiltersAddonBlock {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'filtersAddon';
 
     /**

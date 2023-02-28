@@ -1,6 +1,6 @@
 import { permissionHelper } from '@auth/authorization-helper';
 import { Response, Router } from 'express';
-import { PolicyType, UserRole } from '@guardian/interfaces';
+import { UserRole } from '@guardian/interfaces';
 import { AuthenticatedRequest, Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 

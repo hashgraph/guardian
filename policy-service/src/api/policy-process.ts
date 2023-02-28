@@ -89,13 +89,12 @@ Promise.all([
     const policyConfig = await DatabaseServer.getPolicyById(policyId);
     const generator = new BlockTreeGenerator();
     const policyValidator = new PolicyValidator(policyConfig);
-    console.log('---- generate');
+
     await generator.generate(policyConfig, skipRegistration, policyValidator);
 
-    channel.publish(PolicyEvents.POLICY_READY, { 
-        policyId: policyId.toString(), 
-        data: policyValidator.getSerializedErrors() 
+    channel.publish(PolicyEvents.POLICY_READY, {
+        policyId: policyId.toString(),
+        data: policyValidator.getSerializedErrors()
     });
     new Logger().info('Start policy', ['POLICY', policy.name, policyId.toString()]);
-
 });

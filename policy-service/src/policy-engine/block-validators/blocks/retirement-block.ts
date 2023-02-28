@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Retirement block
  */
 export class RetirementBlock {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'retirementDocumentBlock';
 
     /**

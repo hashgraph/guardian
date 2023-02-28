@@ -55,7 +55,10 @@ enum Operation {
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: [
+        { path: 'options.topic', alias: 'topic', type: 'Topic' }
+    ]
 })
 export class SendToGuardianBlock {
     /**

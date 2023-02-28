@@ -22,7 +22,8 @@ import { PolicyInputEventType } from '@policy-engine/interfaces/policy-event-typ
         input: null,
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class ModuleBlock {
     /**
@@ -73,5 +74,43 @@ export class ModuleBlock {
                 return;
             }
         }
+    }
+
+    /**
+     * Get Variable
+     * @param user
+     */
+    getModuleVariable(value: any[] | any, type: string): any {
+        if(Array.isArray(value)) {
+            const result = [];
+            for (const v of value) {
+                result.push(this.getVariable(v, type));
+            }
+            return result;
+        } else {
+            return this.getVariable(value, type);
+        }
+    }
+
+    /**
+     * Get Variable
+     * @param user
+     */
+    private getVariable(value: any, type: string): any {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        if (Array.isArray(ref.options.variables)) {
+            for (const variable of ref.options.variables) {
+                if (type) {
+                    if (value === variable.name && variable.type === type) {
+                        return ref.options[variable.name];
+                    }
+                } else {
+                    if (value === variable.name) {
+                        return variable.value;
+                    }
+                }
+            }
+        }
+        return value;
     }
 }

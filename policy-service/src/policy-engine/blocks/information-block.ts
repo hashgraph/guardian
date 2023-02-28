@@ -23,7 +23,8 @@ import { IPolicyUser } from '@policy-engine/policy-user';
         ],
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class InformationBlock {
     /**

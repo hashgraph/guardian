@@ -27,7 +27,8 @@ import ObjGet from 'lodash.get';
         ],
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class InterfaceDocumentsSource {
     /**

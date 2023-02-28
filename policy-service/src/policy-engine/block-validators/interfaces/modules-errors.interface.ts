@@ -1,4 +1,4 @@
-import { IBlockErrors } from "./block-errors.interface";
+import { IBlockErrors } from './block-errors.interface';
 
 /**
  * Module errors

@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Documents source addon
  */
 export class DocumentsSourceAddon {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'documentsSourceAddon';
 
     /**

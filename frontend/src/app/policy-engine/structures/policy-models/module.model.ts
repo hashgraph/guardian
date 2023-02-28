@@ -173,10 +173,10 @@ export class PolicyModuleModel extends PolicyBlockModel {
                 if (block) {
                     this._tagMap[name] = block;
                 }
-                return name;
+                return `${this.tag}:${name}`;
             }
         }
-        return type;
+        return `${this.tag}:${name}`;
     }
 
     public createInputEvent() {

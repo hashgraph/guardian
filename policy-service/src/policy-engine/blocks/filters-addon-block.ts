@@ -22,7 +22,8 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
         input: null,
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class FiltersAddonBlock {
     /**

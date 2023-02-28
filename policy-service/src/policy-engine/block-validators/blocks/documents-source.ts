@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Document source block with UI
  */
 export class InterfaceDocumentsSource {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'interfaceDocumentsSourceBlock';
 
     /**

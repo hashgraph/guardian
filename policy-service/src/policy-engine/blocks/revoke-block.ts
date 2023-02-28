@@ -35,6 +35,7 @@ export const RevokedStatus = 'Revoked';
 @EventBlock({
     blockType: 'revokeBlock',
     commonBlock: false,
+    variables: []
 })
 export class RevokeBlock {
     /**

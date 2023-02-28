@@ -1,6 +1,6 @@
 import { BaseEntity } from '@guardian/common';
 import { GenerateUUIDv4, ModuleStatus } from '@guardian/interfaces';
-import { BeforeCreate, Entity, Property, Unique } from '@mikro-orm/core';
+import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
 
 /**
  * PolicyModule collection

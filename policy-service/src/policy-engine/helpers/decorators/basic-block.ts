@@ -138,6 +138,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Block class name
              */
             public readonly blockClassName = 'BasicBlock';
+            /**
+             * Block variables
+             */
+            public readonly variables: any[];
 
             constructor(
                 _uuid: string,
@@ -190,6 +194,8 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                         this.events.push(e);
                     }
                 }
+
+                this.variables = defaultOptions.variables || [];
             }
 
             /**
@@ -473,6 +479,26 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public setTopicId(id: string): void {
                 this.topicId = id;
+            }
+
+            /**
+             * Register Variables
+             */
+            public registerVariables(): void {
+                const modules = PolicyComponentsUtils.GetModule<any>(this);
+                if(!modules) {
+                    return;
+                }
+
+                for (let index = 0; index < this.permissions.length; index++) {
+                    this.permissions[index] = modules.getModuleVariable(this.permissions[index], 'Role');
+                }
+
+                for (const variable of this.variables) {
+                    PolicyComponentsUtils.ReplaceObjectValue(this, variable.path, (value: any) => {
+                        return modules.getModuleVariable(value, variable.type);
+                    });
+                }
             }
 
             /**

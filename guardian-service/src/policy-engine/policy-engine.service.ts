@@ -29,7 +29,6 @@ import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { findAllEntities } from '@helpers/utils';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 
-
 /**
  * Policy engine service
  */

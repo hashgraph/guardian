@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Custom logic block
  */
 export class CustomLogicBlock {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'customLogicBlock';
 
     /**
@@ -12,6 +15,6 @@ export class CustomLogicBlock {
      * @param config
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
-
+        return;
     }
 }

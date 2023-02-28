@@ -48,7 +48,8 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
             title: 'Source field',
             type: PropertyType.Path
         }]
-    }
+    },
+    variables: []
 })
 export class SplitBlock {
     /**

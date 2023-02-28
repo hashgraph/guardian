@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Aggregate block
  */
 export class AggregateBlock {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'aggregateDocumentBlock';
 
     /**

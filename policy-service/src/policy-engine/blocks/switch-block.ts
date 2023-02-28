@@ -28,7 +28,8 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
             PolicyOutputEventType.RefreshEvent
         ],
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class SwitchBlock {
     /**

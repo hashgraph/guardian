@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Document Buttons with UI
  */
 export class ButtonBlock {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'buttonBlock';
 
     /**

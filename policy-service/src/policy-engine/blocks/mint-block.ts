@@ -37,7 +37,11 @@ import { MintService } from '@policy-engine/multi-policy-service/mint-service';
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: [
+        { path: 'options.tokenId', alias: 'token', type: 'Token' },
+        { path: 'options.template', alias: 'template', type: 'TokenTemplate' }
+    ]
 })
 export class MintBlock {
     /**

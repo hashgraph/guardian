@@ -160,6 +160,11 @@ export interface IPolicyBlock {
     setPolicyInstance(policyId: string, policy: any): void;
 
     /**
+     * Register Variables
+     */
+    registerVariables(): void;
+
+    /**
      * Set topic id
      * @param id
      */

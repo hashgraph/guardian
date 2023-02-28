@@ -23,7 +23,10 @@ import ObjSet from 'lodash.set';
         input: null,
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: [
+        { path: 'options.schema', alias: 'schema', type: 'Schema' }
+    ]
 })
 export class DocumentsSourceAddon {
     /**

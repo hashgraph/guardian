@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Document action clock with UI
  */
 export class InterfaceDocumentActionBlock {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'interfaceActionBlock';
 
     /**

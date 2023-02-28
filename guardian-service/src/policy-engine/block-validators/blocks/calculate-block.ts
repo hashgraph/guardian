@@ -7,6 +7,9 @@ import { Schema } from '@guardian/interfaces';
  * Calculate block
  */
 export class CalculateContainerBlock {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'calculateContainerBlock';
 
     /**

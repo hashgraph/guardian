@@ -52,7 +52,8 @@ enum DocumentStatus {
             type: PropertyType.Input,
             default: '50'
         }]
-    }
+    },
+    variables: []
 })
 export class MultiSignBlock {
     /**

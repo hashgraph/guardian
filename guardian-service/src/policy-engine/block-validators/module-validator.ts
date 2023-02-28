@@ -1,9 +1,8 @@
 /**
  * Module Validator
  */
-
-import { BlockValidator } from "./block-validator";
-import { IModulesErrors } from "./interfaces/modules-errors.interface";
+import { BlockValidator } from './block-validator';
+import { IModulesErrors } from './interfaces/modules-errors.interface';
 
 /**
  * Module Validator
@@ -113,6 +112,8 @@ export class ModuleValidator {
                     case 'Topic':
                         this.topics.push(variable.name);
                         break;
+                    default:
+                        break;
                 }
             }
         }
@@ -176,7 +177,6 @@ export class ModuleValidator {
         return validator;
     }
 
-
     /**
      * Tag Count
      * @param tag
@@ -187,7 +187,6 @@ export class ModuleValidator {
         }
         return 0;
     }
-
 
     /**
      * Permissions not exist
@@ -211,7 +210,6 @@ export class ModuleValidator {
     public getTag(tag: string): boolean {
         return this.tags.has(tag);
     }
-
 
     /**
      * Get Schema
@@ -283,12 +281,12 @@ export class ModuleValidator {
      * Get serialized errors
      */
     public getSerializedErrors(): IModulesErrors {
-        let isValid = !this.errors.length;
+        let valid = !this.errors.length;
         const blocksErrors = [];
         for (const item of this.blocks.values()) {
             const result = item.getSerializedErrors()
             blocksErrors.push(result);
-            isValid = isValid && result.isValid;
+            valid = valid && result.isValid;
         }
         for (const item of this.errors) {
             blocksErrors.push({
@@ -301,7 +299,7 @@ export class ModuleValidator {
         const commonErrors = this.errors.slice();
         return {
             id: this.uuid,
-            isValid: isValid,
+            isValid: valid,
             errors: commonErrors,
             blocks: blocksErrors
         }

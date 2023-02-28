@@ -42,6 +42,9 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
         ],
         defaultEvent: true,
     },
+    variables: [
+        { path: 'options.template', alias: 'template', type: 'TokenTemplate' }
+    ]
 })
 export class CreateTokenBlock {
     /**
@@ -97,9 +100,7 @@ export class CreateTokenBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         const policyTokens = ref.policyInstance.policyTokens || [];
-        const tokenTemplate = policyTokens.find(
-            (item) => item.templateTokenTag === ref.options.template
-        );
+        const tokenTemplate = policyTokens.find((item) => item.templateTokenTag === ref.options.template);
         const templateFields = Object.keys(tokenTemplate);
         for (const fieldName of templateFields) {
             if (
@@ -170,9 +171,7 @@ export class CreateTokenBlock {
 
             // #region Create new token
             const policyTokens = ref.policyInstance.policyTokens || [];
-            const tokenTemplate = policyTokens.find(
-                (item) => item.templateTokenTag === ref.options.template
-            );
+            const tokenTemplate = policyTokens.find((item) => item.templateTokenTag === ref.options.template);
             if (!tokenTemplate) {
                 throw new BlockActionError(
                     'Token template not found',

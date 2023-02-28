@@ -38,7 +38,8 @@ import { VcDocument } from '@entity/vc-document';
         ],
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class ReportBlock {
     /**

@@ -121,7 +121,8 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
                 }]
             }
         }]
-    }
+    },
+    variables: []
 })
 export class CalculateMathVariables {
     /**

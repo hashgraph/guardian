@@ -1,5 +1,5 @@
-import { IBlockErrors } from "./block-errors.interface";
-import { IModulesErrors } from "./modules-errors.interface";
+import { IBlockErrors } from './block-errors.interface';
+import { IModulesErrors } from './modules-errors.interface';
 
 /**
  * Serialized errors

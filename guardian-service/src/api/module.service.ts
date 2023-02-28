@@ -46,7 +46,6 @@ export async function parseZipFile(zipFile: any): Promise<any> {
     return { module };
 }
 
-
 /**
  * Prepare module for preview by message
  * @param messageId
@@ -77,8 +76,6 @@ export async function preparePreviewMessage(messageId: string, owner: string, no
     notifier.completed();
     return json;
 }
-
-
 
 /**
  * Validate and publish module
@@ -183,7 +180,7 @@ export async function modulesAPI(
      * Create new module
      *
      * @param payload - module
-     * 
+     *
      * @returns {PolicyModule} new module
      */
     ApiResponse(channel, MessageAPI.CREATE_MODULE, async (msg) => {
@@ -203,7 +200,6 @@ export async function modulesAPI(
             return new MessageError(error);
         }
     });
-
 
     ApiResponse(channel, MessageAPI.GET_MODULES, async (msg) => {
         try {
@@ -269,7 +265,6 @@ export async function modulesAPI(
         }
     });
 
-
     ApiResponse(channel, MessageAPI.UPDATE_MODULES, async (msg) => {
         try {
             if (!msg) {
@@ -311,8 +306,6 @@ export async function modulesAPI(
             return new MessageError(error);
         }
     });
-
-
 
     ApiResponse(channel, MessageAPI.MODULE_EXPORT_FILE, async (msg) => {
         try {
@@ -455,7 +448,7 @@ export async function modulesAPI(
 
     ApiResponse(channel, MessageAPI.PUBLISH_MODULES, async (msg) => {
         try {
-            const { uuid, owner, module } = msg;
+            const { uuid, owner } = msg;
             const result = await validateAndPublish(uuid, owner, emptyNotifier());
             return new MessageResponse({
                 module: result.item,

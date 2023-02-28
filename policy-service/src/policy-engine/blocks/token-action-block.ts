@@ -31,7 +31,11 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: [
+        { path: 'options.tokenId', alias: 'token', type: 'Token' },
+        { path: 'options.template', alias: 'template', type: 'TokenTemplate' }
+    ]
 })
 export class TokenActionBlock {
     /**
@@ -65,9 +69,7 @@ export class TokenActionBlock {
 
         let token;
         if (!ref.options.useTemplate) {
-            token = await ref.databaseServer.getTokenById(
-                ref.options.tokenId
-            );
+            token = await ref.databaseServer.getTokenById(ref.options.tokenId);
         }
 
         let account: IHederaAccount = null;
@@ -85,10 +87,7 @@ export class TokenActionBlock {
             }
             if (ref.options.useTemplate) {
                 if (doc.tokens) {
-                    token = await ref.databaseServer.getTokenById(
-                        doc.tokens[ref.options.template],
-                        ref.dryRun
-                    );
+                    token = await ref.databaseServer.getTokenById(doc.tokens[ref.options.template], ref.dryRun);
                 }
             }
         }

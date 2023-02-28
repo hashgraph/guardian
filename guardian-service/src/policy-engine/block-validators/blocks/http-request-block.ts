@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Http request block
  */
 export class HttpRequestBlock {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'httpRequestBlock';
 
     /**

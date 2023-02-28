@@ -33,7 +33,8 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
             PolicyOutputEventType.TimerEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: []
 })
 export class TimerBlock {
     /**

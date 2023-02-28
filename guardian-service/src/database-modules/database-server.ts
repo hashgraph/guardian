@@ -2065,13 +2065,6 @@ export class DatabaseServer {
         return await new DataBaseHelper(MultiPolicyTransaction).count({ policyId, status: 'Waiting' });
     }
 
-
-
-
-
-
-
-
     /**
      * Create createModules
      * @param module

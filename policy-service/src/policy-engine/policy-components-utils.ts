@@ -299,6 +299,7 @@ export class PolicyComponentsUtils {
         blockInstance.setPolicyInstance(policyId, policy);
         blockInstance.setPolicyOwner(policy.owner);
         blockInstance.setTopicId(policy.topicId);
+        blockInstance.registerVariables();
 
         allInstances.push(blockInstance);
 
@@ -661,6 +662,47 @@ export class PolicyComponentsUtils {
                     await callback(data);
                 }
             }
+        }
+    }
+
+    /**
+     * Get Parent Module
+     * @param block
+     */
+    public static GetModule<T>(block: any): T {
+        if (!block || !block._parent) {
+            return null;
+        }
+        if (block._parent.blockType === 'module') {
+            return block._parent;
+        }
+        return PolicyComponentsUtils.GetModule(block._parent);
+    }
+
+    /**
+     * Replace Value by path
+     * @param block
+     * @param path
+     * @param newValue
+     */
+    public static ReplaceObjectValue(data: any, path: string, newValue: Function): void {
+        try {
+            const keys = path.split('.');
+            let value = data;
+            for (let i = 0; i < keys.length - 1; i++) {
+                const key = keys[i];
+                if (value) {
+                    value = value[key];
+                } else {
+                    return;
+                }
+            }
+            if (value) {
+                const lastKey = keys[keys.length - 1];
+                value[lastKey] = newValue(value[lastKey]);
+            }
+        } catch (error) {
+            return;
         }
     }
 }

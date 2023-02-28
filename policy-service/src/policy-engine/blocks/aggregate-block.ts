@@ -49,7 +49,8 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
                 }]
             }
         }]
-    }
+    },
+    variables: []
 })
 export class AggregateBlock {
     /**

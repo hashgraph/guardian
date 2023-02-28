@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Send to guardian
  */
 export class SendToGuardianBlock {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'sendToGuardianBlock';
 
     /**

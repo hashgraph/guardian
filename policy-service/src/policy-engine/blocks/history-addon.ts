@@ -29,6 +29,7 @@ import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfac
             type: PropertyType.Path,
             default: ''
         }]
-    }
+    },
+    variables: []
 })
 export class HistoryAddon { }

@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Split block
  */
 export class SplitBlock {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'splitBlock';
 
     /**

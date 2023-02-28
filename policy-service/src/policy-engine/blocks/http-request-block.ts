@@ -4,7 +4,6 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@poli
 import { ActionCallback } from '@policy-engine/helpers/decorators';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import {
-    IPolicyBlock,
     IPolicyCalculateBlock,
     IPolicyDocument,
     IPolicyEventState
@@ -39,7 +38,8 @@ import { VcDocument } from '@hedera-modules';
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: []
 })
 export class HttpRequestBlock {
 

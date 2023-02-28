@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Information block
  */
 export class TokenConfirmationBlock {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'tokenConfirmationBlock';
 
     /**

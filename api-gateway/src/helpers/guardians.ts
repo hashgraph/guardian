@@ -1171,9 +1171,6 @@ export class Guardians extends ServiceRequestsBase {
         });
     }
 
-
-
-
     /**
      * Create Module
      * @param module
@@ -1196,11 +1193,11 @@ export class Guardians extends ServiceRequestsBase {
     }
 
     /**
-    * Delete module
-    * @param uuid
-    * @param owner
-    * @returns Operation Success
-    */
+     * Delete module
+     * @param uuid
+     * @param owner
+     * @returns Operation Success
+     */
     public async deleteModule(uuid: string, owner: string): Promise<boolean> {
         return await this.request<any>(MessageAPI.DELETE_MODULES, { uuid, owner });
     }

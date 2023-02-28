@@ -943,7 +943,6 @@ export class PolicyEngine extends ServiceRequestsBase {
             }
             policyId = policy.id.toString();
         }
-        
         const policyValidator = new PolicyValidator(policy);
         policyValidator.registerBlock(policy.config);
         policyValidator.addPermissions(policy.policyRoles);

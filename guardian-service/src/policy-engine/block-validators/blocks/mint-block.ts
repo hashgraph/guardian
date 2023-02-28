@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Mint block
  */
 export class MintBlock {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'mintDocumentBlock';
 
     /**

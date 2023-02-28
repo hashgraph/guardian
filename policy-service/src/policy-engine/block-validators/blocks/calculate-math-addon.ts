@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Calculate math addon
  */
 export class CalculateMathAddon {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'calculateMathAddon';
 
     /**
@@ -25,7 +28,6 @@ export class CalculateMathAddon {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);
         }
     }
-
 
     /**
      * Get variables

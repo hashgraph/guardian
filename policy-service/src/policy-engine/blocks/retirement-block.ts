@@ -36,7 +36,10 @@ import { MintService } from '@policy-engine/multi-policy-service/mint-service';
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: [
+        { path: 'options.tokenId', alias: 'token', type: 'Token' }
+    ]
 })
 export class RetirementBlock {
     /**
@@ -163,7 +166,7 @@ export class RetirementBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        const token = await ref.databaseServer.getTokenById(ref.options.tokenI);
+        const token = await ref.databaseServer.getTokenById(ref.options.tokenId);
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }

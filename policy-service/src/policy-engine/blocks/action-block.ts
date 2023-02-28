@@ -31,7 +31,10 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
         ],
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: [
+        { path: 'options.schema', alias: 'schema', type: 'Schema' }
+    ]
 })
 export class InterfaceDocumentActionBlock {
     /**

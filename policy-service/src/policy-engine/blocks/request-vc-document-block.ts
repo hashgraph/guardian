@@ -38,7 +38,10 @@ import deepEqual from 'deep-equal';
             PolicyOutputEventType.RefreshEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: [
+        { path: 'options.schema', alias: 'schema', type: 'Schema' }
+    ]
 })
 export class RequestVcDocumentBlock {
     /**

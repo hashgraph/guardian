@@ -23,7 +23,8 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
         input: null,
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class ReportItemBlock {
     /**
@@ -34,7 +35,7 @@ export class ReportItemBlock {
     public async run(
         resultFields: IReportItem[],
         variables: any
-    ): Promise<[documentsNotFound: boolean, resultFields: any]> {
+    ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportItemBlock>(this);
         const icon = ref.options.icon;
         const title = ref.options.title;

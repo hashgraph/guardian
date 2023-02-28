@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp, PropertyValidator } from '@policy-engine/bl
  * Calculate math addon
  */
 export class TokenOperationAddon {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'impactAddon';
 
     /**

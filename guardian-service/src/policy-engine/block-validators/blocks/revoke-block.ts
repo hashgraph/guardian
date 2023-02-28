@@ -4,6 +4,9 @@ import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
  * Revoke document action with UI
  */
 export class RevokeBlock {
+    /**
+     * Block type
+     */
     public static readonly blockType: string = 'revokeBlock';
 
     /**

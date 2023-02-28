@@ -1,9 +1,9 @@
-import { DatabaseServer } from "@database-modules";
-import { Policy } from "@entity/policy";
-import { PolicyType } from "@guardian/interfaces";
-import { BlockValidator } from "./block-validator";
-import { ModuleValidator } from "./module-validator";
-import { ISerializedErrors } from "./interfaces/serialized-errors.interface";
+import { DatabaseServer } from '@database-modules';
+import { Policy } from '@entity/policy';
+import { PolicyType } from '@guardian/interfaces';
+import { BlockValidator } from './block-validator';
+import { ModuleValidator } from './module-validator';
+import { ISerializedErrors } from './interfaces/serialized-errors.interface';
 
 /**
  * Policy Validator

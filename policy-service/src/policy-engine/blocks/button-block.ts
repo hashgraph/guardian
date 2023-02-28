@@ -24,7 +24,8 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
         ],
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class ButtonBlock {
     /**

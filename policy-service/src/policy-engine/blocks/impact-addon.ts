@@ -1,6 +1,6 @@
 import { TokenAddon } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyCalculateAddon } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
@@ -61,7 +61,8 @@ import { BlockActionError } from '@policy-engine/errors';
             title: 'Unit',
             type: PropertyType.Input
         }]
-    }
+    },
+    variables: []
 })
 export class TokenOperationAddon {
     /**

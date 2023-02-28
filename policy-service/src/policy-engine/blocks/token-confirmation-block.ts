@@ -32,7 +32,10 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: false
-    }
+    },
+    variables: [
+        { path: 'options.tokenId', alias: 'token', type: 'Token' }
+    ]
 })
 export class TokenConfirmationBlock {
     /**
@@ -123,7 +126,7 @@ export class TokenConfirmationBlock {
             hederaAccountKey: data.hederaAccountKey
         }
 
-        let token;
+        let token:any;
         if (ref.options.useTemplate) {
             if (state.tokenId) {
                 token = await ref.databaseServer.getTokenById(state.tokenId, ref.dryRun);
