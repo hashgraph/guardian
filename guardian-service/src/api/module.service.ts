@@ -260,8 +260,7 @@ export async function modulesAPI(
                 return new MessageError('Invalid load modules parameter');
             }
             const items = await DatabaseServer.getModules({
-                owner: msg.owner,
-                menu: 'show'
+                owner: msg.owner
             });
             return new MessageResponse(items);
         } catch (error) {
