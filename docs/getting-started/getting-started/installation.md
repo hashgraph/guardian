@@ -404,26 +404,28 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 
 ### .env / .env.docker Parameters in `guardian-service`
 
-| Parameter                              | Purpose                                                                            | Example                     |
-| -------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------- |
-| MQ\_ADDRESS                            | Web Socket Address                                                                 | localhost                   |
-| SERVICE\_CHANNEL                       | Version of the Guardian                                                            | guardian.1                  |
-| DB\_HOST                               | Hostname of the Database                                                           | localhost                   |
-| DB\_DATABASE                           | Database Name                                                                      | guardian\_db                |
-| INITIAL\_BALANCE                       | Initial Balance Value                                                              | 500                         |
-| INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                         |
-| OPERATOR\_ID                           | The ID of the operation                                                            | -                           |
-| OPERATOR\_KEY                          | Private key of the operator                                                        | -                           |
-| LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                     |
-| LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                  |
-| HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet |
-| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialization topic.                                                | 0.0.2030                    |
-| MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                       |
-| LOG\_LEVEL                             | Level of the Logs                                                                  | 2                           |
-| SEND\_KEYS\_TO\_VAULT                  | Checked if keys to be sent to vault                                                | True/False                  |
-| MULTI\_POLICY\_SCHEDULER               | to set custom cron mask (timer mask) for sync job                                  | 0 0 \* \* \*                |
-| CONTRACT\_FILE\_ID                     | Defines the file identifier in hedera to create smart-contract.                    | 0.0.6276                    |
-| MQ\_MESSAGE\_CHUNK                     | To set up the message chunk size                                                   | 500000                      |
+| Parameter                              | Purpose                                                                            | Example                            |
+| -------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------- |
+| MQ\_ADDRESS                            | Web Socket Address                                                                 | localhost                          |
+| SERVICE\_CHANNEL                       | Version of the Guardian                                                            | guardian.1                         |
+| DB\_HOST                               | Hostname of the Database                                                           | localhost                          |
+| DB\_DATABASE                           | Database Name                                                                      | guardian\_db                       |
+| INITIAL\_BALANCE                       | Initial Balance Value                                                              | 500                                |
+| INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                                |
+| OPERATOR\_ID                           | The ID of the operation                                                            | -                                  |
+| OPERATOR\_KEY                          | Private key of the operator                                                        | -                                  |
+| LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                            |
+| LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                         |
+| HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet        |
+| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialization topic.                                                | 0.0.2030                           |
+| MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                              |
+| LOG\_LEVEL                             | Level of the Logs                                                                  | 2                                  |
+| SEND\_KEYS\_TO\_VAULT                  | Checked if keys to be sent to vault                                                | True/False                         |
+| MULTI\_POLICY\_SCHEDULER               | to set custom cron mask (timer mask) for sync job                                  | 0 0 \* \* \*                       |
+| CONTRACT\_FILE\_ID                     | Defines the file identifier in hedera to create smart-contract.                    | 0.0.6276                           |
+| MQ\_MESSAGE\_CHUNK                     | To set up the message chunk size                                                   | 500000                             |
+| HEDERA\_CUSTOM\_NODES                  | Define hedera nodes to execute and pay transaction fee                             | 0.testnet.hedera.com:50211":"0.0.3 |
+| HEDERA\_CUSTOM\_MIRROR\_NODES          | Define hedera mirror nodes                                                         | testnet.mirrornode.hedera.com:443" |
 
 ### .env / .env.docker Parameters in api-gateway
 
