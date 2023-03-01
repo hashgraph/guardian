@@ -9,7 +9,7 @@
             {{title}}
         </div>
         <div *ngIf="token" class="g-dialog-title">
-            
+
         </div>
         <div class="g-dialog-actions">
             <div *ngIf="!token" class="g-dialog-actions-btn" (click)="onCreate()"
@@ -26,7 +26,7 @@
             {{description}}
         </div>
         <div style="padding: 20px 35px 30px 35px">
-            <app-token-configuration [dataForm]="dataForm" [readonly]="readonly"></app-token-configuration>
+            <app-token-configuration [dataForm]="dataForm" [readonly]="readonly" [hide-type]="hideType"></app-token-configuration>
         </div>
     </div>
 </div>

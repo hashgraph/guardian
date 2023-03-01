@@ -30,12 +30,14 @@ export class TokenDialog {
     token: any = null;
     valid: boolean = true;
     readonly: boolean = false;
+    hideType: boolean = false;
 
     constructor(
         public dialogRef: MatDialogRef<TokenDialog>,
         private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         if (data) {
+            this.hideType = !!data.hideType;
             if (data.title) {
                 this.title = data.title;
             } else {

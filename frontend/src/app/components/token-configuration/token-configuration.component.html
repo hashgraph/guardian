@@ -1,5 +1,5 @@
 <form *ngIf="dataForm" [formGroup]="dataForm" [attr.immutable]="readonly">
-    <div class="key-value immutable">
+    <div class="key-value immutable" *ngIf="!hideType">
         <div class="switch-btn">
             <switch-button [on-label]="'Published'" [off-label]="'Draft'" [(value)]="notDraftToken"></switch-button>
         </div>
