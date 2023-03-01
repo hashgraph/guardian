@@ -34,11 +34,12 @@ There are different types of Field Types:
   * Prefix
   * Postfix
 * Enum
+* Encrypted Verifiable Credential
 
 Each of the above field types can be marked as either Marked or optional by checking the Required Field checkbox.
 
 {% hint style="info" %}
-**Note:**
+**Note: Important points to be noted when "Account" type is selected:**
 
 1. Account field type need to be referred in ‘tokenConfirmationBlock’ and ‘tokenActionBlock’. They can be present both in the parent and child documents.
 2. If there are multiple fields of the ‘Account’ with the same name, then the value from the most immediate scope, i.e. from the current (‘child’) document is used.
@@ -53,6 +54,15 @@ Each of the above field types can be marked as either Marked or optional by chec
 Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm](https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm)
 
 3\. If we put more than five options, it will be automatically loaded to IPFS.
+{% endhint %}
+
+{% hint style="info" %}
+**Note: Important points to be noted when "Encrypted Verifiable Credential" type is selected:**
+
+1. Fields in schema can be marked as private (only when schema has Encrypted Verifiable Credential type) as shown below.
+2. Encrypted Verifiable Credential will be published in IPFS with AES GCM encryption.
+3. If VP contains Encrypted Verifiable Credential, fields marked as private will be automatically removed.\
+
 {% endhint %}
 
 Once the above details are added, click on the Create button.

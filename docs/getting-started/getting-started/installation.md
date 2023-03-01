@@ -425,6 +425,17 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | CONTRACT\_FILE\_ID                     | Defines the file identifier in hedera to create smart-contract.                    | 0.0.6276                    |
 | MQ\_MESSAGE\_CHUNK                     | To set up the message chunk size                                                   | 500000                      |
 
+### .env / .env.docker Parameters in api-gateway
+
+| Parameter            | Purpose                              | Example                   |
+| -------------------- | ------------------------------------ | ------------------------- |
+| MQ\_ADDRESS          | Web Socket Address                   | message-broker            |
+| SERVICE\_CHANNEL     | Channel of the service               | api-gateway               |
+| MRV\_ADDRESS         | MRV Address location                 | http://message-broker/mrv |
+| MQ\_MESSAGE\_CHUNK   | To set up the message chunk size     | 500000                    |
+| RAW\_REQUEST\_LIMIT  | Define request limit                 | 1 gb                      |
+| JSON\_REQUEST\_LIMIT | Define limit for body in Json format | 1 gb                      |
+
 ### Restoring account from Database/Hashicorp vault during Setup.
 
 For backup all data, we need to create dump of all used mongodb databases and hashicorp vault (if it use)
