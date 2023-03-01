@@ -361,7 +361,7 @@ export class PolicyBlockModel {
         parent.refresh();
     }
 
-    public replace(oldItem: PolicyBlockModel, newItem: PolicyBlockModel) {
+    public _replace(oldItem: PolicyBlockModel, newItem: PolicyBlockModel) {
         oldItem.parent = null;
         newItem.parent = this;
         const index = this._children.findIndex((c) => c.id == oldItem.id);
@@ -370,6 +370,10 @@ export class PolicyBlockModel {
         } else {
             this._children.push(newItem);
         }
+    }
+
+    public replace(oldItem: PolicyBlockModel, newItem: PolicyBlockModel) {
+        this._replace(oldItem, newItem);
         this.refresh();
     }
 

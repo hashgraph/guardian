@@ -178,7 +178,7 @@ export class PolicyModel {
     }
 
     public getBlock(block: any): PolicyBlockModel | undefined {
-        return this._idMap[block.id];
+        return this._idMap[block?.id];
     }
 
     public getModule(module: any): PolicyModuleModel | undefined {
@@ -513,9 +513,10 @@ export class PolicyModel {
         const module = this.newModule();
         const parent = block.parent;
         if (parent) {
-            parent.replace(block, module);
+            parent._replace(block, module);
         }
         module.addChild(block);
+        this.refresh();
         return module;
     }
 

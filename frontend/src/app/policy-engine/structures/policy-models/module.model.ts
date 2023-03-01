@@ -251,6 +251,13 @@ export class PolicyModuleModel extends PolicyBlockModel {
 
     public override getJSON(): any {
         const json: any = { ...this.properties };
+        delete json.children;
+        delete json.events;
+        delete json.artifacts;
+        delete json.variables;
+        delete json.inputEvents;
+        delete json.outputEvents;
+        delete json.innerEvents;
         json.id = this.id;
         json.blockType = this.blockType;
         json.tag = this.tag;
@@ -259,7 +266,6 @@ export class PolicyModuleModel extends PolicyBlockModel {
         json.artifacts = this.artifacts || [];
         json.variables = [];
         json.inputEvents = [];
-        json.outputEvents = [];
         json.outputEvents = [];
         json.innerEvents = [];
 
