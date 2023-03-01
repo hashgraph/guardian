@@ -81,7 +81,7 @@
                                 Variable Type
                             </td>
                             <td class="propRowCell">
-                                <mat-select [(ngModel)]="item.type" [disabled]="readonly" (valueChange)="onEditVariable(item)">
+                                <mat-select [(ngModel)]="item.type" [disabled]="readonly" (valueChange)="onEditVariable(item, true)">
                                     <mat-option value="Schema">Schema</mat-option>
                                     <mat-option value="Token">Token</mat-option>
                                     <mat-option value="TokenTemplate">Token Template</mat-option>

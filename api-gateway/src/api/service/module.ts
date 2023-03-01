@@ -175,10 +175,20 @@ moduleAPI.post('/import/file/preview', permissionHelper(UserRole.STANDARD_REGIST
 moduleAPI.put('/:uuid/publish', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const guardian = new Guardians();
     try {
-        const module = await guardian.publishPolicy(req.params.uuid, req.user.did, req.body);
+        const module = await guardian.publishModule(req.params.uuid, req.user.did, req.body);
         res.json(module);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).send({ code: 500, message: error.message || error });
+    }
+});
+
+moduleAPI.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
+    const guardian = new Guardians();
+    try {
+        res.send(await guardian.validateModule(req.user.did, req.body));
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).send({ code: 500, message: error.message });
     }
 });

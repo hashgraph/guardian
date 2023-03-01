@@ -123,7 +123,7 @@ export class TemplateModel {
                 this.buildBlock(object);
             }
         }
-        this.emitUpdate();
+        this.refresh();
     }
 
     public getJSON(): any {
@@ -141,7 +141,6 @@ export class TemplateModel {
             createDate: this.createDate,
             config: this._config.getJSON(),
         };
-        json.config = this._config.getJSON();
         return json;
     }
 

@@ -674,21 +674,21 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private setErrors(results: any) {
-        const blocks = results.blocks;
-        const modules = results.modules;
-        const commonErrors = results.errors;
+        const blocks = results.blocks || [];
+        const modules = results.modules || [];
+        const commonErrors = results.errors || [];
         this.errors = [];
         for (const block of blocks) {
-            if(!block.isValid) {
+            if (!block.isValid) {
                 this.errors.push(block);
             }
         }
         for (const module of modules) {
-            if(!module.isValid) {
+            if (!module.isValid) {
                 this.errors.push(module);
             }
             for (const block of module.blocks) {
-                if(!block.isValid) {
+                if (!block.isValid) {
                     this.errors.push(block);
                 }
             }
@@ -1101,6 +1101,21 @@ export class PolicyConfigurationComponent implements OnInit {
             }, (e) => {
                 this.loading = false;
             });
+        });
+    }
+
+    public validationModule() {
+        this.loading = true;
+        const module = this.templateModel.getJSON();
+        this.modulesService.validate(module).subscribe((data: any) => {
+            const { module, results } = data;
+            this.templateModel.rebuild(module);
+            this.setErrors(results);
+            this.onOpenRoot(this.templateModel);
+            this.onSelect(this.openModule.root);
+            this.loading = false;
+        }, (e) => {
+            this.loading = false;
         });
     }
 }

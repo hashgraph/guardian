@@ -17,12 +17,12 @@
                     <mat-icon>save</mat-icon>
                     <span>Save</span>
                 </div>
-    
+
                 <div class="top-toolbar-btn all-status" (click)="saveAsPolicy()" title="Save Policy">
                     <mat-icon>save</mat-icon>
                     <span>Save As</span>
                 </div>
-    
+
                 <div class="delimiter"></div>
 
                 <div *ngIf="policyModel.isDraft" class="top-toolbar-group all-status" [matMenuTriggerFor]="publishMenu">
@@ -32,7 +32,7 @@
                         <mat-icon>arrow_drop_down</mat-icon>
                     </div>
                 </div>
-            
+
                 <div *ngIf="policyModel.isDryRun" class="top-toolbar-group all-status" style="width: 60px"
                     [matMenuTriggerFor]="dryRunMenu">
                     <mat-icon class="dry-run-color">build</mat-icon>
@@ -43,27 +43,27 @@
                         <mat-icon>arrow_drop_down</mat-icon>
                     </div>
                 </div>
-            
+
                 <div *ngIf="policyModel.isPublished" class="top-toolbar-btn top-toolbar-label">
                     <mat-icon class="publish-color">public</mat-icon>
                     <span class="publish-color">Published</span>
                 </div>
-            
+
                 <div class="delimiter"></div>
-            
+
                 <div *ngIf="policyModel.isDraft" class="top-toolbar-btn all-status" (click)="validationPolicy()"
                     title="Validation Policy" [attr.errors-count]="errorsCount" [attr.readonly]="!isTree">
                     <mat-icon>task_alt</mat-icon>
                     <span>Validation</span>
                     <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
                 </div>
-            
+
                 <div *ngIf="policyModel.isDryRun || policyModel.isPublished" class="top-toolbar-btn all-status"
                     [routerLink]="['/policy-viewer', policyId]">
                     <mat-icon>double_arrow</mat-icon>
                     <span>Go</span>
                 </div>
-            
+
                 <div class="delimiter"></div>
             </ng-container>
 
@@ -72,25 +72,33 @@
                     <mat-icon>save</mat-icon>
                     <span>Save</span>
                 </div>
-    
+
                 <div class="top-toolbar-btn all-status" (click)="saveAsModule()" title="Save Module">
                     <mat-icon>save</mat-icon>
                     <span>Save As</span>
                 </div>
-    
+
                 <div class="delimiter"></div>
 
-                <div *ngIf="templateModel.isDraft" class="top-toolbar-group all-status" [matMenuTriggerFor]="publishMenu2">
+                <div *ngIf="templateModel.isDraft" class="top-toolbar-group all-status"
+                    [matMenuTriggerFor]="publishMenu2">
                     <mat-icon class="edit-color">edit</mat-icon>
                     <span class="edit-color">Draft</span>
                     <div class="expand-group">
                         <mat-icon>arrow_drop_down</mat-icon>
                     </div>
                 </div>
-        
+
                 <div *ngIf="templateModel.isPublished" class="top-toolbar-btn top-toolbar-label">
                     <mat-icon class="publish-color">public</mat-icon>
                     <span class="publish-color">Published</span>
+                </div>
+
+                <div *ngIf="templateModel.isDraft" class="top-toolbar-btn all-status" (click)="validationModule()"
+                    title="Validation Module" [attr.errors-count]="errorsCount" [attr.readonly]="!isTree">
+                    <mat-icon>task_alt</mat-icon>
+                    <span>Validation</span>
+                    <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
                 </div>
 
                 <div class="delimiter"></div>
@@ -149,8 +157,8 @@
                         <span>Save Module</span>
                     </div>
 
-                    <div *ngIf="openType !== 'Sub'" class="top-toolbar-btn readonly-status"
-                        title="Convert to Module" (click)="onOpenModule(currentBlock)">
+                    <div *ngIf="openType !== 'Sub'" class="top-toolbar-btn readonly-status" title="Convert to Module"
+                        (click)="onOpenModule(currentBlock)">
                         <mat-icon>folder_open</mat-icon>
                         <span>Open Module</span>
                     </div>
@@ -212,13 +220,11 @@
                         </div>
                     </div>
 
-                    <div class="pc-tabs-content components-menu" cdkDropList
-                        #menuList="cdkDropList" [cdkDropListConnectedTo]="[dropListConnector.body]"
-                        cdkDropListSortingDisabled [cdkDropListEnterPredicate]="noReturnPredicate"
-                        (cdkDropListDropped)="drop($event)">
+                    <div class="pc-tabs-content components-menu" cdkDropList #menuList="cdkDropList"
+                        [cdkDropListConnectedTo]="[dropListConnector.body]" cdkDropListSortingDisabled
+                        [cdkDropListEnterPredicate]="noReturnPredicate" (cdkDropListDropped)="drop($event)">
 
-                        <div class="components-container readonly-status" 
-                            [attr.readonly]="disableComponentMenu"
+                        <div class="components-container readonly-status" [attr.readonly]="disableComponentMenu"
                             [hidden]="!options.components">
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
@@ -351,8 +357,7 @@
                             </div>
                         </div>
 
-                        <div class="components-container" 
-                            [attr.readonly]="disableModuleMenu" 
+                        <div class="components-container" [attr.readonly]="disableModuleMenu"
                             [hidden]="!options.library">
                             <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onModuleSearch($event)">
@@ -475,22 +480,20 @@
 
                 <div *ngIf="isTree" class="pc-tabs minimized-tabs">
                     <div class="pc-tabs-headers">
-                        <div *ngIf="rootType ==='Policy'" class="tab-header tab-header-icon" 
+                        <div *ngIf="rootType ==='Policy'" class="tab-header tab-header-icon"
                             [attr.selected]="openModule===policyModel" (click)="onOpenRoot(policyModel)"
                             style="width: 100px;margin-right: 6px">
                             <mat-icon class="action-color">article</mat-icon>
                             Policy
                         </div>
-                        <div *ngIf="rootType ==='Module'" class="tab-header tab-header-icon" 
-                            [attr.selected]="true" (click)="onOpenRoot(policyModel)"
-                            style="width: 100px;margin-right: 6px">
+                        <div *ngIf="rootType ==='Module'" class="tab-header tab-header-icon" [attr.selected]="true"
+                            (click)="onOpenRoot(policyModel)" style="width: 100px;margin-right: 6px">
                             <mat-icon class="module-root-icon action-color" svgIcon="policy-module"></mat-icon>
                             Module
                         </div>
                         <ng-container *ngIf="allSubModule">
-                            <div class="tab-header tab-header-icon" *ngFor="let item of allSubModule" 
-                                [attr.selected]="openModule===item"
-                                (click)="onOpenModule(item)">
+                            <div class="tab-header tab-header-icon" *ngFor="let item of allSubModule"
+                                [attr.selected]="openModule===item" (click)="onOpenModule(item)">
                                 <mat-icon class="module-root-icon edit-color" svgIcon="policy-module"></mat-icon>
                                 {{item.tag}}
                             </div>
@@ -583,20 +586,20 @@
                         </div>
                         <div class="pc-tabs-content" [attr.readonly]="!isTree">
                             <div class="prop-container readonly-status" [hidden]="!options.descriptionModule">
-                                <module-properties [module]="openModule" [readonly]="readonly"
-                                    type="Main" [errors]="errorsMap[openModule.id]"></module-properties>
+                                <module-properties [module]="openModule" [readonly]="readonly" type="Main"
+                                    [errors]="errorsMap[openModule.id]"></module-properties>
                             </div>
                             <div class="prop-container readonly-status" [hidden]="!options.inputsModule">
-                                <module-properties [module]="openModule" [readonly]="readonly"
-                                    type="Inputs" [errors]="errorsMap[openModule.id]"></module-properties>
+                                <module-properties [module]="openModule" [readonly]="readonly" type="Inputs"
+                                    [errors]="errorsMap[openModule.id]"></module-properties>
                             </div>
                             <div class="prop-container readonly-status" [hidden]="!options.outputsModule">
-                                <module-properties [module]="openModule" [readonly]="readonly"
-                                    type="Outputs" [errors]="errorsMap[openModule.id]"></module-properties>
+                                <module-properties [module]="openModule" [readonly]="readonly" type="Outputs"
+                                    [errors]="errorsMap[openModule.id]"></module-properties>
                             </div>
                             <div class="prop-container readonly-status" [hidden]="!options.variablesModule">
-                                <module-properties [module]="openModule" [readonly]="readonly"
-                                    type="Variables" [errors]="errorsMap[openModule.id]"></module-properties>
+                                <module-properties [module]="openModule" [readonly]="readonly" type="Variables"
+                                    [errors]="errorsMap[openModule.id]"></module-properties>
                             </div>
                         </div>
                     </div>

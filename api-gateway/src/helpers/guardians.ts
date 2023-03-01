@@ -1296,7 +1296,16 @@ export class Guardians extends ServiceRequestsBase {
      * @param owner
      * @param module
      */
-    public async publishPolicy(uuid: string, owner: string, module: any) {
+    public async publishModule(uuid: string, owner: string, module: any) {
         return await this.request(MessageAPI.PUBLISH_MODULES, { uuid, owner, module });
+    }
+
+    /**
+     * Publish module
+     * @param owner
+     * @param module
+     */
+    public async validateModule(owner: string, module: any) {
+        return await this.request(MessageAPI.VALIDATE_MODULES, { owner, module });
     }
 }

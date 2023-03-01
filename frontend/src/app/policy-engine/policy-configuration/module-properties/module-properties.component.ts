@@ -59,7 +59,8 @@ export class ModulePropertiesComponent implements OnInit {
         this.module.createVariable();
     }
 
-    onEditVariable(variable: ModuleVariableModel) {
+    onEditVariable(variable: ModuleVariableModel, refresh = false) {
+        variable.changed = true;
         variable.emitUpdate();
     }
 
@@ -72,6 +73,7 @@ export class ModulePropertiesComponent implements OnInit {
     }
 
     onEditInput(input: ModuleEventModel) {
+        input.changed = true;
         input.emitUpdate();
     }
 
@@ -84,6 +86,7 @@ export class ModulePropertiesComponent implements OnInit {
     }
 
     onEditOutput(output: ModuleEventModel) {
+        output.changed = true;
         output.emitUpdate();
     }
 

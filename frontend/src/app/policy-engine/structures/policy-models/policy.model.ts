@@ -522,21 +522,27 @@ export class PolicyModel {
     private updateVariables(): void {
         this._lastVariables = {
             module: this,
-            schemas: [],
-            tokens: [],
-            roles: [{
-                name: 'Owner',
-                value: 'OWNER',
-            }, {
-                name: 'No Role',
-                value: 'NO_ROLE',
-            }, {
-                name: 'Any Role',
-                value: 'ANY_ROLE',
-            }],
-            groups: [],
-            tokenTemplates: [],
-            topics: [],
+            schemas: [
+                new SchemaVariables(),
+            ],
+            tokens: [
+                new TokenVariables(),
+            ],
+            roles: [
+                new RoleVariables(),
+                new RoleVariables('Owner', 'OWNER'),
+                new RoleVariables('No Role', 'NO_ROLE'),
+                new RoleVariables('Any Role', 'ANY_ROLE')
+            ],
+            groups: [
+                new GroupVariables(),
+            ],
+            tokenTemplates: [
+                new TokenTemplateVariables(),
+            ],
+            topics: [
+                new TopicVariables(),
+            ]
         }
         if (this._schemas) {
             for (const schema of this._schemas) {
@@ -581,7 +587,7 @@ export class PolicyModel {
     }
 
     public get blockVariables(): IModuleVariables | null {
-        return this._lastVariables;    
+        return this._lastVariables;
     }
 
     public get moduleVariables(): IModuleVariables | null {

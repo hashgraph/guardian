@@ -6,17 +6,23 @@ export class GroupVariables {
     public value?: string;
     public data?: PolicyGroupModel;
 
-    constructor(group: PolicyGroupModel | ModuleVariableModel | string) {
+    constructor(group?: PolicyGroupModel | ModuleVariableModel | string, value?: string) {
         if (typeof group === 'string') {
             this.name = group;
             this.value = group;
         } else if(group instanceof ModuleVariableModel) {
             this.name = group.name;
             this.value = group.name;
-        } else {
+        } else if (group) {
             this.name = group.name;
             this.value = group.name;
             this.data = group;
+        } else {
+            this.name = '';
+            this.value = '';
+        }
+        if (value !== undefined) {
+            this.value = value;
         }
     }
 }

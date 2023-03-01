@@ -460,4 +460,19 @@ export async function modulesAPI(
             return new MessageError(error);
         }
     });
+
+    ApiResponse(channel, MessageAPI.VALIDATE_MODULES, async (msg) => {
+        try {
+            const { module } = msg;
+            console.log('---- module', module)
+            const results = await validateModel(module);
+            return new MessageResponse({
+                results,
+                module
+            });
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
 }
