@@ -309,7 +309,6 @@ export class PolicyModuleModel extends PolicyBlockModel {
                 new TokenVariables(),
             ],
             roles: [
-                new RoleVariables(),
                 new RoleVariables('Owner', 'OWNER'),
                 new RoleVariables('No Role', 'NO_ROLE'),
                 new RoleVariables('Any Role', 'ANY_ROLE')
