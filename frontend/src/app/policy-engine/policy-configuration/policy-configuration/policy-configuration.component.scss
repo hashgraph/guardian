@@ -180,9 +180,9 @@
     background: white;
 
     &[collapse-top="true"] {
-        max-height: 39px;
-        height: 39px;
-        min-height: 39px;
+        max-height: 35px;
+        height: 35px;
+        min-height: 35px;
     }
 
     &[collapse-bottom="true"] {
@@ -191,9 +191,9 @@
     }
 
     &[collapse-top="true"][collapse-bottom="true"] {
-        max-height: 39px;
-        height: 39px;
-        min-height: 39px;
+        max-height: 35px;
+        height: 35px;
+        min-height: 35px;
     }
 }
 
@@ -209,15 +209,15 @@
     }
 
     &[collapse-bottom="true"] {
-        max-height: 39px;
-        height: 39px;
-        min-height: 39px;
+        max-height: 31px;
+        height: 31px;
+        min-height: 31px;
     }
 
     &[collapse-top="true"][collapse-bottom="true"] {
-        max-height: 39px;
-        height: 39px;
-        min-height: 39px;
+        max-height: 31px;
+        height: 31px;
+        min-height: 31px;
     }
 }
 
@@ -706,13 +706,24 @@
                 mat-icon {
                     position: absolute;
                     left: 4px;
-                    top: 4px;
+                    top: 5px;
+                    font-size: 22px;
                 }
 
-                &[collapsed="true"] mat-icon {
-                    left: 4px;
-                    top: 4px;
-                    transform: rotate(180deg);
+                .tabs-icon-full {
+                    display: none;
+                }
+
+                .tabs-icon-min {
+                    display: block;
+                }
+
+                &[collapsed="true"] .tabs-icon-full {
+                    display: block;
+                }
+
+                &[collapsed="true"] .tabs-icon-min {
+                    display: none;
                 }
             }
         }

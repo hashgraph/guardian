@@ -534,7 +534,8 @@
                             </div>
                             <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
                                 (click)="collapse('rightTopMenu')">
-                                <mat-icon>keyboard_double_arrow_up</mat-icon>
+                                <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
+                                <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
                             </div>
                         </div>
                         <div class="pc-tabs-content" [attr.readonly]="!isTree">
@@ -581,7 +582,8 @@
                             </div>
                             <div class="tabs-icon" [attr.collapsed]="options.rightTopMenu"
                                 (click)="collapse('rightTopMenu')">
-                                <mat-icon>keyboard_double_arrow_up</mat-icon>
+                                <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
+                                <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
                             </div>
                         </div>
                         <div class="pc-tabs-content" [attr.readonly]="!isTree">
@@ -622,9 +624,10 @@
                             <div class="tab-header" [attr.selected]="options.json" (click)="select('json')">
                                 Json
                             </div>
-                            <div class="tabs-icon" [attr.collapsed]="!options.rightBottomMenu"
+                            <div class="tabs-icon" [attr.collapsed]="options.rightBottomMenu"
                                 (click)="collapse('rightBottomMenu')">
-                                <mat-icon>keyboard_double_arrow_up</mat-icon>
+                                <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
+                                <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
                             </div>
                         </div>
                         <div class="pc-tabs-content" [attr.readonly]="!isTree">
@@ -661,9 +664,10 @@
                             <div class="tab-header" [attr.selected]="true" (click)="select('events')">
                                 Events
                             </div>
-                            <div class="tabs-icon" [attr.collapsed]="!options.rightBottomMenu"
+                            <div class="tabs-icon" [attr.collapsed]="options.rightBottomMenu"
                                 (click)="collapse('rightBottomMenu')">
-                                <mat-icon>keyboard_double_arrow_up</mat-icon>
+                                <mat-icon class="tabs-icon-full">open_in_full</mat-icon>
+                                <mat-icon class="tabs-icon-min">close_fullscreen</mat-icon>
                             </div>
                         </div>
                         <div class="pc-tabs-content">
