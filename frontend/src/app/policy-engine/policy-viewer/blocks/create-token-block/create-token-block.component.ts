@@ -111,6 +111,7 @@ export class CreateTokenBlockComponent implements OnInit {
                 this.content = uiMetaData.content;
                 this.buttonClass = uiMetaData.buttonClass;
                 this.description = uiMetaData.description;
+                this.title = uiMetaData.title;
             }
             if (this.type == 'page') {
                 this.title = uiMetaData.title;
@@ -147,7 +148,8 @@ export class CreateTokenBlockComponent implements OnInit {
             disableClose: true,
             data: {
                 title: this.title,
-                description: this.description
+                description: this.description,
+                hideType: true
             }
         });
         dialogRef.afterClosed().subscribe((res: any) => {

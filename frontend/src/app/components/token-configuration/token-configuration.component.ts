@@ -10,6 +10,7 @@ export class TokenConfigurationComponent implements OnInit {
     @Input('preset') preset?: any;
     @Input('dataForm') dataForm!: FormGroup;
     @Input('readonly') readonly?: any;
+    @Input('hide-type') hideType: boolean = false;
 
     ft: any;
 
