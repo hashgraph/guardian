@@ -208,6 +208,9 @@ a[hidden="true"] {
     flex-direction: row;
     padding: 0px 42px;
 }
+.nav-list[disabled='true'] .nav-list-item {
+    pointer-events: none;
+}
 
 .nav-list-item {
     height: 48px;

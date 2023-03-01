@@ -2,7 +2,7 @@
     <mat-toolbar color="primary">
         <span class="btn-home" (click)="onHome()">Guardian</span>
 
-        <div *ngIf="role==='STANDARD_REGISTRY'" class="nav-list">
+        <div *ngIf="isLogin && role==='STANDARD_REGISTRY'" class="nav-list" [attr.disabled]="commonLinksDisabled">
             <div class="nav-list-item" [attr.active]="isActiveLink('SR_UP')" (click)="routActive('SR_UP')">
                 User Profile
             </div>
@@ -80,41 +80,31 @@
         </mat-menu>
 
 
-
-
-
-
-
-        <div *ngIf="role==='USER'" class="nav-list">
-            <div class="nav-list-item">
+        <div *ngIf="isLogin && role==='USER'" class="nav-list" [attr.disabled]="commonLinksDisabled">
+            <div class="nav-list-item" [attr.active]="isActiveLink('USER_UP')" (click)="routActive('USER_UP')">
                 User Profile
             </div>
-            <div class="nav-list-item">
+            <div class="nav-list-item" [attr.active]="isActiveLink('USER_TOKENS')" (click)="routActive('USER_TOKENS')">
                 Tokens
             </div>
-            <div class="nav-list-item">
+            <div class="nav-list-item" [attr.active]="isActiveLink('USER_RETIRE')" (click)="routActive('USER_RETIRE')">
+                Token Retire
+            </div>
+            <div class="nav-list-item" [attr.active]="isActiveLink('USER_POLICIES')"
+                (click)="routActive('USER_POLICIES')">
                 Policies
             </div>
         </div>
 
-        <div *ngIf="role==='AUDITOR'" class="nav-list">
-            <div class="nav-list-item">
+        <div *ngIf="isLogin && role==='AUDITOR'" class="nav-list" [attr.disabled]="commonLinksDisabled">
+            <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_UP')" (click)="routActive('AUDITOR_UP')">
                 Audit
             </div>
-            <div class="nav-list-item">
+            <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_TRUST_CHAIN')"
+                (click)="routActive('AUDITOR_TRUST_CHAIN')">
                 Trust Chain
             </div>
         </div>
-
-
-
-        <!-- <div *ngIf="links" class="nav-bar">
-            <nav mat-tab-nav-bar backgroundColor="primary" animationDuration="0ms">
-                <a mat-tab-link *ngFor="let link of links" (click)="rout(link)"
-                    [disabled]="link.disabled || commonLinksDisabled" [active]="isActive(link)"
-                    [attr.hidden]="isHidden(link)"> {{link.name}} </a>
-            </nav>
-        </div> -->
 
         <div class="user-content-info" *ngIf="isLogin || displayDemoAccounts">
             <div *ngIf="username" class="user-balance" [attr.balance-type]="balanceType">
