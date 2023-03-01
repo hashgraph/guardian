@@ -293,7 +293,6 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.registeredService.registerConfig(blockInformation);
                 this.tokens = tokens.map((e: any) => new Token(e));
                 this.schemas = SchemaHelper.map(schemas) || [];
-                this.schemas.unshift({ type: "" } as any);
                 this.templateModules = modules;
                 this.policyModel.setTokens(this.tokens);
                 this.policyModel.setSchemas(this.schemas);
