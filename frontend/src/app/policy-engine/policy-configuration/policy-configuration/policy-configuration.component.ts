@@ -408,7 +408,10 @@ export class PolicyConfigurationComponent implements OnInit {
             this.errors = [];
             this.errorsCount = -1;
             this.errorsMap = {};
-            this.currentBlock = this.rootModule.root;
+            this.openModule =
+                this.rootModule.getModule(this.openModule) ||
+                this.rootModule.getRootModule();
+            this.currentBlock = this.openModule.root;
         }
         return true;
     }

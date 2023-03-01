@@ -195,4 +195,8 @@ export class TemplateModel {
     public refresh(): void {
         this.refreshData();
     }
+
+    public getModule(module: any): PolicyModuleModel | undefined {
+        return this._config;
+    }
 }

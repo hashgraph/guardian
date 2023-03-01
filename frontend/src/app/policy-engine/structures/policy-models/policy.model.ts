@@ -182,7 +182,7 @@ export class PolicyModel {
     }
 
     public getModule(module: any): PolicyModuleModel | undefined {
-        if (this._idMap[module.id]?.isModule) {
+        if (this._idMap[module?.id]?.isModule) {
             return this._idMap[module.id] as PolicyModuleModel;
         }
         return undefined;

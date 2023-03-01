@@ -162,21 +162,21 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public getBlock(block: any): PolicyBlockModel | undefined {
-        return this._idMap[block.id];
+        return this._idMap[block?.id];
     }
 
     public getNewTag(type: string, block?: PolicyBlockModel): string {
         let name = type;
         for (let i = 1; i < 1000; i++) {
-            name = `${type}_${i}`;
+            name = `${this.tag}:${type}_${i}`;
             if (!this._tagMap[name]) {
                 if (block) {
                     this._tagMap[name] = block;
                 }
-                return `${this.tag}:${name}`;
+                return name;
             }
         }
-        return `${this.tag}:${name}`;
+        return `${this.tag}:${type}`;
     }
 
     public createInputEvent() {
