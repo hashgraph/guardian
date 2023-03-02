@@ -9,7 +9,7 @@ services:
         ports:
             - 27017:27017
     ipfs-node:
-        image: ipfs/kubo:v0.17.0
+        image: ipfs/kubo:v0.18.1
         ports:
             - "5001:5001"
             - "5002:5002"
@@ -17,6 +17,9 @@ services:
             - "4002:4002"
             - "8080:8080"
             - "8081:8081"
+        volumes:
+            - ./runtime-data/ipfs/staging:/export:rw
+            - ./runtime-data/ipfs/data:/data/ipfs:rw
     message-broker:
         image: nats:2.9.8
         expose:

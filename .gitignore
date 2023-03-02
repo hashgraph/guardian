@@ -16,6 +16,7 @@ tsconfig.tsbuildinfo
 !.yarn/versions
 .pnp.*
 node_modules
+runtime-data/
 
 # OSX related metadata removal and IDE nonsense
 .DS_store

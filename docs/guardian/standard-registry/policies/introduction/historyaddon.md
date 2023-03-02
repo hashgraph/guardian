@@ -14,4 +14,4 @@ This block turn on history on interfaceDocumentsSourceBlock. This block should b
 | timelineLabelPath       | Label of timeline point                                                           | “option.status”. It is default value if setting is empty  |        |
 | timelineDescriptionPath | Description of timeline point                                                     | “option.comment”. It is default value if setting is empty |        |
 
-<figure><img src="../../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (9) (4).png" alt=""><figcaption></figcaption></figure>
