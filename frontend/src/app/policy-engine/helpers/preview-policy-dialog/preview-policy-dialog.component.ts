@@ -22,6 +22,9 @@ export class PreviewPolicyDialog {
 
     module!: any;
 
+    public innerWidth: any;
+    public innerHeight: any;
+
     constructor(
         public dialogRef: MatDialogRef<PreviewPolicyDialog>,
         private policyEngineService: PolicyEngineService,
@@ -56,6 +59,8 @@ export class PreviewPolicyDialog {
     }
 
     ngOnInit() {
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
         this.loading = false;
     }
 

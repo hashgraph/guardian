@@ -88,6 +88,10 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             color: '#4caf50'
         }
     ];
+
+    public innerWidth: any;
+    public innerHeight: any;
+
     constructor(
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
@@ -127,6 +131,8 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
         this.loading = true;
         this.loadPolicy();
     }
@@ -450,15 +456,35 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     }
 
     createMultiPolicy(element: any) {
-        const dialogRef = this.dialog.open(MultiPolicyDialogComponent, {
-            width: '650px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
-            data: {
-                policyId: element.id
-            }
-        });
+        let dialogRef;
+        if (this.innerWidth <= 810) {
+            dialogRef = this.dialog.open(MultiPolicyDialogComponent, {
+                width: `${this.innerWidth.toString()}px`,
+                maxWidth: '100vw',
+                height: `${this.innerHeight - 125}px`, // CHANGE THE 125 TO THE HEADER HEIGHT VARIABLE
+                position: {
+                    'bottom': '0'
+                },
+                panelClass: 'g-dialog',
+                hasBackdrop: true, // Shadows beyond the dialog
+                closeOnNavigation: true,
+                autoFocus: false,
+                id: 'g-cenas',
+                data: {
+                    policyId: element.id
+                }
+            });
+        } else {
+            dialogRef = this.dialog.open(MultiPolicyDialogComponent, {
+                width: '650px',
+                panelClass: 'g-dialog',
+                disableClose: true,
+                autoFocus: false,
+                data: {
+                    policyId: element.id
+                }
+            });
+        }
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.importPolicyDetails(result);

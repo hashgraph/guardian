@@ -126,3 +126,93 @@ form {
 .version-container .field-version {
     margin-bottom: 0px;
 }
+
+@media (max-width: 810px) {
+
+    .g-dialog-header {
+        width: 90%;
+        padding: 16px 0 22px 0;
+
+        box-shadow: none;
+        margin: 0 auto 32px;
+    }
+
+    .g-dialog-title {
+        font-family: 'Roboto';
+        font-style: normal;
+        font-weight: 600 !important;
+        font-size: 24px !important;
+        line-height: 28px;
+        color: #222222 !important;
+        order: 2;
+        padding-right: 10px !important;
+    }
+
+    .g-dialog-cancel {
+        order: 3;
+        margin-right: 0 !important;
+    }
+
+    .g-dialog-actions {
+        display: none !important;
+    }
+
+    .g-dialog-body {
+        width: 90%;
+        margin: 0 auto !important;
+        padding: 0;
+        position: relative;
+    }
+    
+    .context {
+        padding: 0;
+    }
+
+    .policy-header {
+        font-family: 'Roboto';
+        font-style: normal;
+        font-weight: 600 !important;
+        font-size: 24px !important;
+        line-height: 28px;
+        color: #222222 !important;
+        text-align: left;
+        margin-bottom: 32px;
+        padding: 0;
+    }
+
+    .delimiter {
+        display: none;
+    }
+
+    .field {
+        margin-bottom: 24px;
+    }
+
+    .field-name {
+        margin-bottom: 12px;
+    }
+
+    .policy {
+        margin-bottom: 100px;
+    }
+
+    .page-btns {
+        width: 75%;
+        margin: 32px auto 0;
+        padding-top: 10px;
+        padding-bottom: 16px;
+        position: fixed;
+        bottom: 89px;
+        left: 50%;
+        transform: translateX(-50%);
+        
+        background-color: white;
+    }
+    
+    #create-btn {
+        width: 90%;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+}

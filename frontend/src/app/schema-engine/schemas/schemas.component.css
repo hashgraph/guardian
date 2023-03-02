@@ -288,3 +288,19 @@ a {
     left: 10px;
     top: 7px;
 }
+
+@media (max-width: 810px) {
+    .actions {
+        grid-template-columns: auto auto;
+        grid-template-rows: auto;
+        height: 140px;
+    }
+
+    .actions ::ng-deep button.mat-raised-button.mat-primary {
+        margin: 0px 10px;
+    }
+
+    .new-import-btn {
+        margin: 0 6px;
+    }
+}

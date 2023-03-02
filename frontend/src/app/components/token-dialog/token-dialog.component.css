@@ -17,3 +17,68 @@
 .g-dialog-actions-btn {
     min-width: 210px !important;
 }
+
+@media (max-width: 810px) {
+
+    .g-dialog-header {
+        width: 90%;
+        padding: 22px 0;
+
+        box-shadow: none;
+        margin: 0 auto;
+    }
+
+    .g-dialog-title {
+        font-family: 'Roboto';
+        font-style: normal;
+        font-weight: 600 !important;
+        font-size: 24px !important;
+        line-height: 28px;
+        color: #222222 !important;
+        order: 2;
+    }
+
+    .g-dialog-cancel {
+        order: 3;
+        margin-right: 0 !important;
+    }
+
+    .g-dialog-body {
+        width: 90%;
+        margin: 0 auto !important;
+        padding: 0;
+    }
+
+    .page-btns {
+        width: 90%;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 10px;
+        margin-top: 20px;
+        
+        background-color: white;
+        padding: 20px 0;
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    #cancel-btn {
+        border: 1px solid #2C78F6;
+        background: none !important;
+        color: #2C78F6;
+        grid-column: 1;
+    }
+
+    #create-btn {
+        grid-column: 2;
+        background: #2C78F6;
+    }
+
+    #create-btn[disabled] {
+        opacity: 0.5;
+        background: #2C78F6;
+        color: white;
+    }
+}

@@ -22,7 +22,7 @@
         <div *ngIf="system">
 
         </div>
-        <div style="text-align: end">
+        <div style="text-align: end" class="new-import-btn">
             <button *ngIf="system || (!system && isConfirmed)" mat-raised-button color="primary" (click)="newSchemas()" class="toolbar-btn add">
                 <mat-icon>add</mat-icon>
                 <span>Create New</span>

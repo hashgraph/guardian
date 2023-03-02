@@ -430,3 +430,11 @@ a.go-back-link mat-icon {
     font-weight: 500;
     color: #464646;
 }
+
+
+@media (max-width: 810px) {
+    .policy-header {
+        box-shadow: none;
+        border: none;
+    }
+}
