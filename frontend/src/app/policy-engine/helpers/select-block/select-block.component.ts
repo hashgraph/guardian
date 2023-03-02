@@ -11,6 +11,7 @@ import { PolicyBlockModel } from '../../structures';
     styleUrls: ['./select-block.component.css']
 })
 export class SelectBlock {
+    @Input('root') root!: any;
     @Input('blocks') blocks!: PolicyBlockModel[];
     @Input('readonly') readonly!: boolean;
     @Input('value') value: string | PolicyBlockModel | null | undefined;
@@ -29,7 +30,7 @@ export class SelectBlock {
 
     onChange() {
         if (this.value && typeof this.value === 'object') {
-            this.text = this.value.tag;
+            this.text = this.value === this.root ? 'Module' : this.value.tag;
         } else {
             this.text = this.value;
         }
@@ -39,7 +40,7 @@ export class SelectBlock {
 
     ngOnChanges(changes: SimpleChanges) {
         if (this.value && typeof this.value === 'object') {
-            this.text = this.value.tag;
+            this.text = this.value === this.root ? 'Module' : this.value.tag;
         } else {
             this.text = this.value;
         }
@@ -48,10 +49,12 @@ export class SelectBlock {
             if (this.blocks) {
                 for (const block of this.blocks) {
                     const search = (block.tag || '').toLocaleLowerCase();
+                    const root = block === this.root;
                     this.data.push({
-                        name: block.tag,
+                        name: root ? 'Module' : block.tag,
                         value: this.type === 'object' ? block : block.tag,
                         icon: this.registeredService.getIcon(block.blockType),
+                        root,
                         search
                     });
                 }
@@ -69,7 +72,7 @@ export class SelectBlock {
 
     public update() {
         const search = this.search ? this.search.toLowerCase() : null;
-        if(search) {
+        if (search) {
             this.searchData = this.data?.filter(item => item.search.indexOf(search) !== -1);
         } else {
             this.searchData = this.data;

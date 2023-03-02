@@ -293,10 +293,8 @@ export class PolicyModel {
     }
 
     public removeEvent(event: any) {
-        const item = this._allEvents.find(e => e.id == event.id);
-        if (item) {
-            item.remove();
-        }
+        this._allEvents = this._allEvents.filter(e => e.id !== event?.id);
+        event?.remove();
     }
 
     private buildPolicy(policy: any) {

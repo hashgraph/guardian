@@ -49,6 +49,9 @@ export class PolicyModuleModel extends PolicyBlockModel {
     constructor(config: IModuleConfig, parent: PolicyBlockModel | null) {
         super(config, parent);
 
+        this._name = config.name || '';
+        this._description = config.description || '';
+
         this._inputEvents = [];
         if (config.inputEvents && Array.isArray(config.inputEvents)) {
             for (const event of config.inputEvents) {
@@ -154,6 +157,13 @@ export class PolicyModuleModel extends PolicyBlockModel {
         return this._variables;
     }
 
+    public removeEvent(event: any) {
+        this._allEvents = this._allEvents.filter(e => e.id !== event?.id);
+        this._innerEvents = this._innerEvents.filter(e => e.id !== event?.id);
+        this._events = this._events.filter(e => e.id !== event?.id);
+        event?.remove();
+    }
+
     public removeBlock(block: any) {
         const item = this._idMap[block.id];
         if (item) {
@@ -250,7 +260,11 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public override getJSON(): any {
-        const json: any = { ...this.properties };
+        const json: any = {
+            name: this._name,
+            description: this._description,
+            ...this.properties
+        };
         delete json.children;
         delete json.events;
         delete json.artifacts;

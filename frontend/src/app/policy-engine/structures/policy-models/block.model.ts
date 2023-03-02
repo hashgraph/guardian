@@ -261,12 +261,19 @@ export class PolicyBlockModel {
         this._events.push(event);
     }
 
-    public removeEvent(event: PolicyEventModel) {
-        const index = this._events.findIndex((c) => c.id == event.id);
+    public _removeEvent(event: PolicyEventModel) {
+        const index = this._events.findIndex((c) => c.id == event?.id);
         if (index !== -1) {
             this._events.splice(index, 1);
-            this.refresh();
         }
+    }
+
+    public removeEvent(event: PolicyEventModel) {
+        const index = this._events.findIndex((c) => c.id == event?.id);
+        if (index !== -1) {
+            this._events.splice(index, 1);
+        }
+        event?.remove();
     }
 
     public addArtifact(artifact: IArtifact) {
@@ -431,8 +438,8 @@ export class PolicyBlockModel {
                 disabled: false,
                 input: 'RunEvent',
                 output: 'RunEvent',
-                source: this.tag,
-                target: this.next?.tag || '',
+                source: '',
+                target: '',
             }, this);
             this._defaultEvent.default = true;
         } else {
@@ -443,6 +450,8 @@ export class PolicyBlockModel {
     public getActiveEvents(): PolicyEventModel[] {
         const events: PolicyEventModel[] = [];
         if (!this.properties.stopPropagation && this._defaultEvent) {
+            this._defaultEvent.sourceTag = this.tag;
+            this._defaultEvent.targetTag = this.next?.tag || '';
             events.push(this._defaultEvent);
         }
         for (const event of this.events) {

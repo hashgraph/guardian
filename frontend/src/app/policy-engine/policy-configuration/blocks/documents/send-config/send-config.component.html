@@ -36,16 +36,16 @@
             <td class="propRowCell cellName">Hedera Topic</td>
             <td class="propRowCell">
                 <mat-select [(value)]="properties.topic" [disabled]="readonly" (selectionChange)="selectTopic($event)">
+                    <mat-option *ngFor="let topic of topics" [value]="topic.name" [matTooltip]="topic.description"
+                        matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                        {{topic.name}}
+                    </mat-option>
+                    <mat-option value="root">Policy Instance</mat-option>
                     <mat-option class="link" value="new">
                         <span class="mat-option-link">
                             <mat-icon>add</mat-icon>
                             <span>Create new topic</span>
                         </span>
-                    </mat-option>
-                    <mat-option value="root">Policy Instance</mat-option>
-                    <mat-option *ngFor="let topic of topics" [value]="topic.name" [matTooltip]="topic.description"
-                        matTooltipPosition="above" matTooltipClass="guardian-tooltip">
-                        {{topic.name}}
                     </mat-option>
                 </mat-select>
             </td>

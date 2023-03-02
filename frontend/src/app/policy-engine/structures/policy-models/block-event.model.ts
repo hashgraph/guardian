@@ -100,6 +100,10 @@ export class PolicyEventModel {
         return this._sourceTag;
     }
 
+    public set sourceTag(value: string) {
+        this._sourceTag = value;
+    }
+
     public get target(): PolicyBlockModel | null {
         return this._target;
     }
@@ -114,6 +118,10 @@ export class PolicyEventModel {
             return this._target.tag;
         }
         return this._targetTag;
+    }
+
+    public set targetTag(value: string) {
+        this._targetTag = value;
     }
 
     public get changed(): boolean {
@@ -158,7 +166,8 @@ export class PolicyEventModel {
 
     public remove() {
         if (this.block) {
-            this.block.removeEvent(this);
+            this.block._removeEvent(this);
+            this.block.refresh();
         }
     }
 

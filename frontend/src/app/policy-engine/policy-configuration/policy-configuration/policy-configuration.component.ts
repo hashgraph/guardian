@@ -1073,6 +1073,7 @@ export class PolicyConfigurationComponent implements OnInit {
         const module = this.templateModel.getJSON();
         this.loading = true;
         this.modulesService.update(this.moduleId, module).subscribe((result) => {
+            this.clearState();
             this.loadData();
         }, (e) => {
             console.error(e.error);

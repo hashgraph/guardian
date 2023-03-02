@@ -30,3 +30,44 @@
 .ns {
     user-select: none;
 }
+
+.prop-input-event {
+    color: #35a307;
+    height: 14px !important;
+    width: 20px !important;
+    line-height: 14px !important;
+    overflow: visible !important;
+    display: inline-block !important;
+    border-left: 2px solid #35a307;
+    margin: 0px 2px 0px 2px;
+    position: relative;
+    top: 4px;
+}
+.prop-input-event mat-icon {
+    position: relative !important;
+    font-size: 20px !important;
+    height: 20px;
+    width: 20px;
+    top: -3px;
+}
+
+.prop-output-icon {
+    color: #c53227;
+    height: 14px !important;
+    width: 20px !important;
+    line-height: 14px !important;
+    overflow: visible !important;
+    display: inline-block !important;
+    border-left: 2px solid #c53227;
+    margin: 0px 2px 0px 2px;
+    position: relative;
+    top: 4px;
+}
+
+.prop-output-icon mat-icon {
+    position: relative !important;
+    font-size: 20px !important;
+    height: 20px;
+    width: 20px;
+    top: -3px;
+}

@@ -16,9 +16,10 @@ export class DocumentSourceComponent implements OnInit {
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
+    public module: any;
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlockModel;
-    
+
     propHidden: any = {
         fieldsGroup: false,
         fields: {},
@@ -67,8 +68,9 @@ export class DocumentSourceComponent implements OnInit {
 
     load(block: PolicyBlockModel) {
         this.moduleVariables = block.moduleVariables;
-        if (this.moduleVariables?.module?.allBlocks) {
-            this.allBlocks = this.moduleVariables?.module?.allBlocks;
+        this.module = this.moduleVariables?.module;
+        if (this.module?.allBlocks) {
+            this.allBlocks = this.module?.allBlocks;
         } else {
             this.allBlocks = [];
         }
@@ -91,14 +93,14 @@ export class DocumentSourceComponent implements OnInit {
         field.bindBlock = "";
     }
 
-    getFieldName(field:any, i:number):string {
-        if(field && field.title) {
+    getFieldName(field: any, i: number): string {
+        if (field && field.title) {
             return field.title;
         } else {
             return 'Field ' + i;
         }
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

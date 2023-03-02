@@ -45,3 +45,13 @@
     color: var(--pc-border-color);
     font-size: 18px;
 }
+
+.block-name[root="true"] {
+    font-weight: 500;
+    font-size: 14px;
+    padding-left: 2px;
+}
+
+.block-name[root="true"] .block-icon {
+    display: none;
+}
