@@ -1,8 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token, UserType } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
-import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
+import { IModuleVariables, PolicyBlockModel, PolicyModel, SchemaVariables } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'interfaceAction' type.
@@ -14,13 +12,13 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ActionConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         optionsGroup: false,
@@ -29,12 +27,14 @@ export class ActionConfigComponent implements OnInit {
         dropdownGroup: false
     };
 
-    block!: any;
+    properties!: any;
+    schemas!: SchemaVariables[];
 
-    constructor(public registeredBlocks: RegisteredBlocks) {
+    constructor() {
     }
 
     ngOnInit(): void {
+        this.schemas = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }
@@ -44,9 +44,12 @@ export class ActionConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.uiMetaData.options = this.block.uiMetaData.options || [];
+        this.moduleVariables = block.moduleVariables;
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {};
+        this.properties.uiMetaData.options = this.properties.uiMetaData.options || [];
+        this.schemas = this.moduleVariables?.schemas || [];
     }
 
     onHide(item: any, prop: any) {
@@ -54,8 +57,8 @@ export class ActionConfigComponent implements OnInit {
     }
 
     addOptions() {
-        this.block.uiMetaData.options.push({
-            tag: `Option_${this.block.uiMetaData.options.length}`,
+        this.properties.uiMetaData.options.push({
+            tag: `Option_${this.properties.uiMetaData.options.length}`,
             title: '',
             name: '',
             tooltip: '',
@@ -65,18 +68,18 @@ export class ActionConfigComponent implements OnInit {
     }
 
     addFilters() {
-        if (!this.block.filters) {
-            this.block.filters = [];
+        if (!this.properties.filters) {
+            this.properties.filters = [];
         }
-        this.block.filters.push({
+        this.properties.filters.push({
             title: '',
             name: '',
             tooltip: '',
             type: 'text',
         })
     }
-
-    getIcon(block: any) {
-        return this.registeredBlocks.getIcon(block.blockType);
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

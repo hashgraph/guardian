@@ -1,5 +1,4 @@
 import { DocumentStatus, PolicyRole } from '@guardian/interfaces';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { EventConfig, IPolicyEvent } from './interfaces';
 import { DatabaseServer } from '@database-modules';
@@ -161,6 +160,11 @@ export interface IPolicyBlock {
     setPolicyInstance(policyId: string, policy: any): void;
 
     /**
+     * Register Variables
+     */
+    registerVariables(): void;
+
+    /**
      * Set topic id
      * @param id
      */
@@ -226,12 +230,6 @@ export interface IPolicyBlock {
      * Block destructor
      */
     destroy(): void;
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    validate(resultsContainer: PolicyValidationResultsContainer): Promise<void>;
 
     /**
      * Is child active

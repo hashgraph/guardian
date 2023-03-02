@@ -1,10 +1,10 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.type" [disabled]="readonly">
+            <mat-select [(value)]="properties.type" [disabled]="readonly" (change)="onSave()">
                 <mat-option value="selector">Selector</mat-option>
                 <mat-option value="download">Download</mat-option>
                 <mat-option value="dropdown">Dropdown</mat-option>
@@ -14,7 +14,7 @@
 
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>expand_more</mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">UI</td>
         <td class="propHeaderCell"></td>
@@ -23,22 +23,22 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
 
-    <ng-container *ngIf="block.type == 'selector'">
+    <ng-container *ngIf="properties.type == 'selector'">
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Field</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.field" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.field" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol" (click)="onHide(propHidden, 'optionsGroup')"
                 [attr.collapse]="propHidden.optionsGroup">
-                <mat-icon *ngIf="block.uiMetaData.options.length">expand_more</mat-icon>
+                <mat-icon *ngIf="properties.uiMetaData.options.length">arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Options</td>
             <td class="propRowCell">
@@ -48,10 +48,10 @@
                 </div>
             </td>
         </tr>
-        <ng-container *ngFor="let option of block.uiMetaData.options; let i=index">
+        <ng-container *ngFor="let option of properties.uiMetaData.options; let i=index">
             <tr class="propRow subRow" [attr.collapse]="propHidden.main || propHidden.optionsGroup">
                 <td class="propRowCol" (click)="onHide(propHidden.options, i)" [attr.collapse]="propHidden.options[i]">
-                    <mat-icon>expand_more</mat-icon>
+                    <mat-icon>arrow_drop_down</mat-icon>
                 </td>
                 <td class="propRowCell cellName">Options {{i}}</td>
                 <td class="propRowCell">{{option.name}}</td>
@@ -62,7 +62,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Option Tag</td>
                 <td class="propRowCell">
-                    <input class="prop-input" [(ngModel)]="option.tag" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="option.tag" [readonly]="readonly" (blur)="onSave()">
                 </td>
             </tr>
             <tr class="propRow subRow-2"
@@ -70,7 +70,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Name</td>
                 <td class="propRowCell">
-                    <input class="prop-input" [(ngModel)]="option.name" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="option.name" [readonly]="readonly" (blur)="onSave()">
                 </td>
             </tr>
             <tr class="propRow subRow-2"
@@ -78,7 +78,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Value</td>
                 <td class="propRowCell">
-                    <input class="prop-input" [(ngModel)]="option.value" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="option.value" [readonly]="readonly" (blur)="onSave()">
                 </td>
             </tr>
             <tr class="propRow subRow-2"
@@ -86,7 +86,7 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">User</td>
                 <td class="propRowCell">
-                    <mat-select [(value)]="option.user" [disabled]="readonly">
+                    <mat-select [(value)]="option.user" [disabled]="readonly" (change)="onSave()">
                         <mat-option value="owner">Owner</mat-option>
                         <mat-option value="current">Current</mat-option>
                     </mat-select>
@@ -97,24 +97,25 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">UI Class</td>
                 <td class="propRowCell">
-                    <input class="prop-input" [(ngModel)]="option.uiClass" [readonly]="readonly">
+                    <input class="prop-input" [(ngModel)]="option.uiClass" [readonly]="readonly" (blur)="onSave()">
                 </td>
             </tr>
         </ng-container>
     </ng-container>
 
-    <ng-container *ngIf="block.type == 'dropdown'">
+    <ng-container *ngIf="properties.type == 'dropdown'">
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Button Content</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.content" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.content" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol" (click)="onHide(propHidden, 'dropdownGroup')"
                 [attr.collapse]="propHidden.dropdownGroup">
-                <mat-icon>expand_more</mat-icon>
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Dropdown Options</td>
             <td class="propRowCell">
@@ -124,36 +125,37 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Name</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.name" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.name" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Value</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.value" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.value" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Field</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.field" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.field" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
     </ng-container>
 
-    <ng-container *ngIf="block.type == 'download'">
+    <ng-container *ngIf="properties.type == 'download'">
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Button Content</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.content" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.content" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol" (click)="onHide(propHidden, 'fileGroup')" [attr.collapse]="propHidden.fileGroup">
-                <mat-icon>expand_more</mat-icon>
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">File Options</td>
             <td class="propRowCell">
@@ -163,8 +165,8 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Schema</td>
             <td class="propRowCell">
-                <mat-select [(value)]="block.schema" [disabled]="readonly">
-                    <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
+                <mat-select [(value)]="properties.schema" [disabled]="readonly" (change)="onSave()">
+                    <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                         {{schema.name}}
                         <span *ngIf="schema.version"> ({{schema.version}})</span>
                         <span *ngIf="schema.status"> ({{schema.status}})</span>
@@ -176,7 +178,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Target Url</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.targetUrl" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.targetUrl" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
     </ng-container>

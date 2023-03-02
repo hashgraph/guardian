@@ -1,8 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
-import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
+import { IModuleVariables, PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'switch' and 'interfaceStepBlock' types.
@@ -14,13 +12,13 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
     encapsulation: ViewEncapsulation.Emulated
 })
 export class SwitchConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         options: false,
@@ -28,9 +26,9 @@ export class SwitchConfigComponent implements OnInit {
         conditions: {},
     };
 
-    block!: any;
+    properties!: any;
 
-    constructor(public registeredBlocks: RegisteredBlocks) {
+    constructor() {
     }
 
     ngOnInit(): void {
@@ -43,9 +41,11 @@ export class SwitchConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        this.block = block.properties;
-        this.block.executionFlow = this.block.executionFlow || 'firstTrue';
-        this.block.conditions = this.block.conditions || [];
+        this.moduleVariables = block.moduleVariables;
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.executionFlow = this.properties.executionFlow || 'firstTrue';
+        this.properties.conditions = this.properties.conditions || [];
     }
 
     onHide(item: any, prop: any) {
@@ -53,8 +53,8 @@ export class SwitchConfigComponent implements OnInit {
     }
 
     addCondition() {
-        this.block.conditions.push({
-            tag: `Condition_${this.block.conditions.length}`,
+        this.properties.conditions.push({
+            tag: `Condition_${this.properties.conditions.length}`,
             type: 'equal',
             value: '',
             actor: '',
@@ -62,10 +62,10 @@ export class SwitchConfigComponent implements OnInit {
     }
 
     onRemoveCondition(i: number) {
-        this.block.conditions.splice(i, 1);
+        this.properties.conditions.splice(i, 1);
     }
-
-    getIcon(block: any) {
-        return this.registeredBlocks.getIcon(block.blockType);
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

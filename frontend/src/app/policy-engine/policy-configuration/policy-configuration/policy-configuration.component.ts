@@ -1,26 +1,27 @@
+import { CdkDropList } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
-import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
-import { SchemaService } from 'src/app/services/schema.service';
-import { Schema, SchemaHelper, SchemaStatus, Token } from '@guardian/interfaces';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { forkJoin, Observable } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { TokenService } from 'src/app/services/token.service';
-import { RegisteredBlocks } from '../../registered-blocks';
-import { BlockGroup } from "../../structures/types/block-group.type";
-import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
-import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
+import { GenerateUUIDv4, Schema, SchemaHelper, Token } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
-import { Clipboard } from '@angular/cdk/clipboard';
+import { forkJoin, Observable } from 'rxjs';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
-import { EventsOverview } from '../../helpers/events-overview/events-overview';
-import { PolicyBlockModel, PolicyModel } from '../../structures/policy-model';
-import { PolicyStorage } from '../../structures/policy-storage';
-import { TreeFlatOverview } from '../../helpers/tree-flat-overview/tree-flat-overview';
-import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
-import { TasksService } from 'src/app/services/tasks.service';
+import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { InformService } from 'src/app/services/inform.service';
+import { ModulesService } from 'src/app/services/modules.service';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { SchemaService } from 'src/app/services/schema.service';
+import { TasksService } from 'src/app/services/tasks.service';
+import { TokenService } from 'src/app/services/token.service';
+import { NewModuleDialog } from '../../helpers/new-module-dialog/new-module-dialog.component';
+import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
+import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
+import { RegisteredService } from '../../registered-service/registered.service';
+import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, TemplateModel } from '../../structures';
+import { Options } from '../../structures/storage/config-options';
+import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 
 enum OperationMode {
     none,
@@ -34,30 +35,41 @@ enum OperationMode {
 @Component({
     selector: 'app-policy-configuration',
     templateUrl: './policy-configuration.component.html',
-    styleUrls: ['./policy-configuration.component.css']
+    styleUrls: ['./policy-configuration.component.scss']
 })
 export class PolicyConfigurationComponent implements OnInit {
-    loading: boolean = true;
-    policyModel: PolicyModel;
-    currentBlock: PolicyBlockModel | undefined;
-    newBlockType: string;
-    readonly!: boolean;
-    currentView: string = 'blocks';
-    code!: string;
+    public loading: boolean = true;
+    public options: Options;
+    public readonly!: boolean;
 
-    schemas!: Schema[];
-    tokens!: Token[];
-    policyId!: string;
-    errors: any[] = [];
-    errorsCount: number = -1;
-    errorsMap: any;
-    private _undoDepth: number = 0;
+    public policyId!: string;
+    public moduleId!: string;
 
-    colGroup1 = false;
-    colGroup2 = false;
-    colGroup3 = true;
+    public policyModel!: PolicyModel;
+    public templateModel!: TemplateModel;
+    public openModule!: PolicyModel | PolicyModuleModel;
+    public rootModule!: PolicyModel | TemplateModel;
+    public currentBlock!: PolicyBlockModel | undefined;
 
-    codeMirrorOptions: any = {
+    public schemas!: Schema[];
+    public tokens!: Token[];
+    public errors: any[] = [];
+    public errorsCount: number = -1;
+    public errorsMap: any;
+    public currentView: string = 'blocks';
+    public search: string = '';
+    public searchModule: string = '';
+    public storage: PolicyStorage;
+    public copyBlocksMode: boolean = false;
+    public eventVisible: string = 'All';
+    public templateModules: any[] = [];
+    public code!: string;
+
+    public openType: 'Root' | 'Sub' = 'Root';
+    public rootType: 'Policy' | 'Module' = 'Policy';
+    public selectType: 'Block' | 'Module' = 'Block';
+
+    readonly codeMirrorOptions = {
         theme: 'default',
         mode: 'application/ld+json',
         styleActiveLine: true,
@@ -75,258 +87,619 @@ export class PolicyConfigurationComponent implements OnInit {
         readOnly: false,
         viewportMargin: Infinity
     };
-
-    propTab: string = 'Properties';
-    policyTab: string = 'Description';
-    blockToCopy?: BlockNode;
-    copyBlocksMode: boolean = false;
-    groupBlocks: any = {
-        Main: [],
-        Documents: [],
-        Tokens: [],
-        Calculate: [],
-        Report: [],
-        UnGroupedBlocks: []
+    readonly componentsList: any = {
+        favorites: [],
+        uiComponents: [],
+        serverBlocks: [],
+        addons: [],
+        unGrouped: [],
     };
-    allEvents: any[] = [];
-    eventVisible: string = 'All';
-    eventsOverview!: EventsOverview;
-    treeFlatOverview!: TreeFlatOverview;
-    policyStorage: PolicyStorage;
+    readonly modulesList: any = {
+        favorites: [],
+        defaultModules: [],
+        customModules: [],
+    };
+    private _searchTimeout!: any;
 
-    operationMode: OperationMode = OperationMode.none;
-    taskId: string | undefined = undefined;
-    expectedTaskMessages: number = 0;
+    public dropListConnector: any = {
+        menu: null,
+        body: null
+    }
 
-    constructor(
-        public registeredBlocks: RegisteredBlocks,
-        private schemaService: SchemaService,
-        private tokenService: TokenService,
-        private policyEngineService: PolicyEngineService,
-        private route: ActivatedRoute,
-        private router: Router,
-        private dialog: MatDialog,
-        private taskService: TasksService,
-        private informService: InformService,
-        private changeDetector: ChangeDetectorRef
-    ) {
-        this.newBlockType = 'interfaceContainerBlock';
-        this.policyModel = new PolicyModel();
-        this.policyStorage = new PolicyStorage(localStorage);
+    @ViewChild('menuList')
+    public set menuList(value: CdkDropList<any>) {
+        this.dropListConnector.menu = value;
+    }
+    public get menuList(): CdkDropList<any> {
+        return this.dropListConnector.menu;
     }
 
     private get hasChanges() {
-        return this.policyStorage.isUndo;
+        return this.storage.isUndo;
     }
 
-    ngOnInit() {
+    public get isRootModule() {
+        return this.currentBlock && (this.currentBlock === this.openModule);
+    }
+
+    public get isTree(): boolean {
+        return this.currentView === 'blocks';
+    }
+
+    public get disableComponentMenu(): boolean {
+        return (
+            !this.isTree ||
+            (
+                this.selectType === 'Module' &&
+                this.openType === 'Root' &&
+                this.rootType === 'Policy'
+            )
+        );
+    }
+
+    public get disableModuleMenu(): boolean {
+        return (
+            !this.isTree ||
+            this.rootType === 'Module' ||
+            this.openType === 'Sub' ||
+            this.selectType === 'Module'
+        );
+    }
+
+    private operationMode: OperationMode = OperationMode.none;
+    public taskId: string | undefined = undefined;
+    public expectedTaskMessages: number = 0;
+
+    private treeOverview!: PolicyTreeComponent;
+
+    public get isModuleValid(): boolean {
+        return this.rootModule?.valid;
+    }
+
+    public get allSubModule(): PolicyModuleModel[] {
+        return this.policyModel.allModule;
+    }
+
+    constructor(
+        private route: ActivatedRoute,
+        private router: Router,
+        private schemaService: SchemaService,
+        private tokenService: TokenService,
+        private policyEngineService: PolicyEngineService,
+        private changeDetector: ChangeDetectorRef,
+        private dialog: MatDialog,
+        private informService: InformService,
+        private taskService: TasksService,
+        private matIconRegistry: MatIconRegistry,
+        private domSanitizer: DomSanitizer,
+        private registeredService: RegisteredService,
+        private modulesService: ModulesService
+    ) {
+        this.options = new Options();
+        this.policyModel = new PolicyModel();
+        this.storage = new PolicyStorage(localStorage);
+        this.openModule = this.policyModel;
+        this.matIconRegistry.addSvgIconLiteral('policy-module', this.domSanitizer.bypassSecurityTrustHtml(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path style="fill:#e1933c" d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
+                <path style="fill:#24bfe1" d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
+                <path style="fill:#9e57f5" d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
+            </svg>
+        `));
+    }
+
+    public ngOnInit() {
         this.loading = true;
+        this.options.load();
         this.route.queryParams.subscribe(queryParams => {
-            this.loadPolicy();
+            this.loadData();
         });
     }
 
-    loadPolicy(): void {
-        const policyId = this.route.snapshot.queryParams['policyId'];
-        if (!policyId) {
-            this.policyModel = new PolicyModel();
+    public select(name: string) {
+        this.options.select(name);
+        this.options.save();
+    }
+
+    public collapse(name: string) {
+        this.options.collapse(name);
+        this.options.save();
+    }
+
+    private loadData(): void {
+        this.errors = [];
+        this.errorsCount = -1;
+        this.errorsMap = {};
+        this.currentView = 'blocks';
+        this.policyId = this.route.snapshot.queryParams['policyId'];
+        this.moduleId = this.route.snapshot.queryParams['moduleId'];
+
+        if (this.policyId) {
+            this.loadPolicy();
+        } else if (this.moduleId) {
+            this.loadModule();
+        } else {
             this.loading = false;
             return;
         }
+    }
 
-        this.policyId = policyId;
-        forkJoin([
-            this.tokenService.getTokens(),
-            this.policyEngineService.blockAbout(),
-            this.policyEngineService.policy(policyId)
-        ]).subscribe((data: any) => {
-            const tokens = data[0] || [];
-            const blockAbout = data[1] || {};
-            const policy = data[2];
-
-            this.registeredBlocks.registerConfig(blockAbout);
-            this.tokens = tokens.map((e: any) => new Token(e));
-
-            this.setPolicy(policy);
-
-            if (!this.policyModel.valid) {
-                setTimeout(() => { this.loading = false; }, 500);
+    private loadModule(): void {
+        this.rootType = 'Module';
+        this.modulesService.getById(this.moduleId).subscribe((module: any) => {
+            if (!module) {
+                this.policyModel = new PolicyModel();
+                this.onOpenRoot(this.policyModel);
+                this.loading = false;
                 return;
             }
 
-            this.schemaService.getSchemas(this.policyModel.topicId).subscribe((data2: any) => {
-                const schemas = data2 || [];
-                this.schemas = SchemaHelper.map(schemas) || [];
-                this.schemas.unshift({ type: "" } as any);
-                setTimeout(() => { this.loading = false; }, 500);
-            }, (e) => {
-                this.loading = false;
-                console.error(e.error);
-            });
+            this.templateModel = new TemplateModel(module);
+            this.onOpenRoot(this.templateModel);
 
-            this.policyStorage.load(this.policyModel.id);
-            this.checkState();
+            if (!this.templateModel.valid) {
+                this.loading = false;
+                return;
+            }
+
+            forkJoin([
+                this.policyEngineService.getBlockInformation(),
+                this.modulesService.menuList()
+            ]).subscribe((data: any) => {
+                const blockInformation = data[0] || {};
+                const modules = data[1] || [];
+                this.registeredService.registerConfig(blockInformation);
+                this.templateModules = modules;
+                this.finishedLoad(this.templateModel);
+            }, (error) => {
+                this.loading = false;
+                console.error(error);
+            });
         }, (error) => {
             this.loading = false;
             console.error(error);
         });
     }
 
-    setPolicy(policy: any) {
-        if (!policy) {
-            this.policyModel = new PolicyModel();
+    private loadPolicy(): void {
+        this.rootType = 'Policy';
+        this.policyEngineService.policy(this.policyId).subscribe((policy: any) => {
+            if (!policy) {
+                this.policyModel = new PolicyModel();
+                this.onOpenRoot(this.policyModel);
+                this.loading = false;
+                return;
+            }
+
+            this.policyModel = new PolicyModel(policy);
+            this.onOpenRoot(this.policyModel);
+
+            if (!this.policyModel.valid) {
+                this.loading = false;
+                return;
+            }
+
+            forkJoin([
+                this.tokenService.getTokens(),
+                this.policyEngineService.getBlockInformation(),
+                this.schemaService.getSchemas(this.policyModel.topicId),
+                this.modulesService.menuList()
+            ]).subscribe((data: any) => {
+                const tokens = data[0] || [];
+                const blockInformation = data[1] || {};
+                const schemas = data[2] || [];
+                const modules = data[3] || [];
+
+                this.registeredService.registerConfig(blockInformation);
+                this.tokens = tokens.map((e: any) => new Token(e));
+                this.schemas = SchemaHelper.map(schemas) || [];
+                this.templateModules = modules;
+                this.policyModel.setTokens(this.tokens);
+                this.policyModel.setSchemas(this.schemas);
+
+                this.finishedLoad(this.policyModel);
+            }, (error) => {
+                this.loading = false;
+                console.error(error);
+            });
+        }, (error) => {
+            this.loading = false;
+            console.error(error);
+        });
+    }
+
+    private finishedLoad(module: PolicyModel | TemplateModel) {
+        this.readonly = module.readonly;
+        this.codeMirrorOptions.readOnly = this.readonly;
+
+        this.storage.load(module.id);
+        this.checkState();
+
+        module.subscribe(() => {
+            this.changeDetector.detectChanges();
+            this.saveState();
+            setTimeout(() => {
+                if (this.treeOverview) {
+                    this.treeOverview.render();
+                }
+            }, 10);
+        });
+
+        this.onSelect(this.openModule.root);
+        this.updateComponents();
+        this.updateModules();
+
+        setTimeout(() => { this.loading = false; }, 500);
+    }
+
+    private checkState() {
+        if (!this.rootModule || this.readonly) {
             return;
         }
+        if (this.compareState(this.rootModule.getJSON(), this.storage.current)) {
+            this.rewriteState();
+        } else {
+            const applyChangesDialog = this.dialog.open(ConfirmationDialogComponent, {
+                data: {
+                    dialogTitle: "Apply latest changes",
+                    dialogText: "Do you want to apply latest changes?"
+                },
+                disableClose: true
+            })
+            applyChangesDialog.afterClosed().subscribe((result) => {
+                if (result) {
+                    this.loadState(this.storage.current);
+                } else {
+                    this.rewriteState();
+                }
+            })
+        }
+    }
+
+    private rewriteState() {
+        if (!this.rootModule) {
+            return;
+        }
+        const json = this.rootModule.getJSON();
+        const value = this.objectToJson(json);
+        this.storage.set('blocks', value);
+    }
+
+
+    private clearState() {
+        if (!this.rootModule) {
+            return;
+        }
+        const json = this.rootModule.getJSON();
+        const value = this.objectToJson(json);
+        this.storage.set('blocks', null);
+    }
+
+    private compareState(policy: any, storageItem: any): boolean {
+        const JSONconfig = this.objectToJson(policy);
+        if (!storageItem) {
+            return true;
+        }
+        if (storageItem.view === 'json' || storageItem.view === 'blocks') {
+            const json = storageItem.value;
+            return json === JSONconfig;
+        }
+        if (storageItem.view === 'yaml') {
+            const json = this.yamlToJson(storageItem.value);
+            return json === JSONconfig;
+        }
+        return true;
+    }
+
+    private loadState(root: any) {
+        if (!this.rootModule || !root) {
+            return;
+        }
+        if (this.currentView !== root.view) {
+            this.currentView = root.view;
+            this.chanceView(root.view);
+        }
+        if (root.view === 'yaml' || root.view === 'json') {
+            this.code = root.value;
+        }
+        if (root.view === 'blocks') {
+            const policy = this.jsonToObject(root.value);
+            this.rootModule.rebuild(policy);
+            this.errors = [];
+            this.errorsCount = -1;
+            this.errorsMap = {};
+            this.openModule =
+                this.rootModule.getModule(this.openModule) ||
+                this.rootModule.getRootModule();
+            this.currentBlock = this.openModule.root;
+        }
+        return true;
+    }
+
+    public saveState() {
+        if (!this.rootModule || this.readonly) {
+            return;
+        }
+        if (this.currentView == 'blocks') {
+            const json = this.objectToJson(this.rootModule.getJSON());
+            this.storage.push(this.currentView, json);
+        } else if (this.currentView == 'yaml') {
+            this.storage.push(this.currentView, this.code);
+        } else if (this.currentView == 'json') {
+            this.storage.push(this.currentView, this.code);
+        }
+    }
+
+    public onInitViewer(event: PolicyTreeComponent) {
+        this.treeOverview = event;
+    }
+
+    private updatePolicyModel(policy: any) {
         this.policyModel = new PolicyModel(policy);
+        this.policyModel.setTokens(this.tokens);
+        this.policyModel.setSchemas(this.schemas);
+
         this.currentView = 'blocks';
-        this.readonly = this.policyModel.readonly;
         this.errors = [];
         this.errorsCount = -1;
         this.errorsMap = {};
-        this.codeMirrorOptions.readOnly = this.readonly;
-        this.onSelect(this.policyModel.root);
-        this.policyModel.subscribe(() => {
-            this.saveState();
-            setTimeout(() => {
-                if (this.eventsOverview) {
-                    this.eventsOverview.render();
-                }
-            }, 10);
-        })
-        if (this.treeFlatOverview) {
-            this.treeFlatOverview.selectItem(this.currentBlock);
-        }
+
+        this.clearState();
+        this.onOpenRoot(this.policyModel);
+        this.finishedLoad(this.policyModel);
     }
 
-    updateTopMenu(block?: PolicyBlockModel) {
-        if (!block) {
-            return;
-        }
-
-        const allowedChildren = this.registeredBlocks.getAllowedChildren(block.blockType);
-        const groupBlocks: any = {};
-        const unGroupedBlocks: any[] = [];
-        for (const key in BlockGroup) {
-            this.groupBlocks[key] = [];
-        }
-
-        for (let i = 0; i < allowedChildren.length; i++) {
-            const allowedChild = allowedChildren[i];
-            const type = allowedChild.type;
-            if (!allowedChild.group) {
-                allowedChild.group = this.registeredBlocks.getGroup(allowedChild.type);
-            }
-            if (!allowedChild.header) {
-                allowedChild.header = this.registeredBlocks.getHeader(allowedChild.type);
-            }
-            if (!groupBlocks[allowedChild.group]) {
-                groupBlocks[allowedChild.group] = {};
-            }
-            if (allowedChild.group === BlockGroup.UnGrouped) {
-                unGroupedBlocks.push({
-                    type: type,
-                    icon: this.registeredBlocks.getIcon(type),
-                    name: this.registeredBlocks.getName(type),
-                    title: this.registeredBlocks.getTitle(type)
-                });
+    private updateComponents() {
+        const all = this.registeredService.getAll();
+        this.componentsList.favorites = [];
+        this.componentsList.uiComponents = [];
+        this.componentsList.serverBlocks = [];
+        this.componentsList.addons = [];
+        this.componentsList.unGrouped = [];
+        const search = this.search ? this.search.toLowerCase() : null;
+        for (const block of all) {
+            if (this.search && block.search.indexOf(search) === -1) {
                 continue;
             }
-            if (!groupBlocks[allowedChild.group][allowedChild.header]) {
-                groupBlocks[allowedChild.group][allowedChild.header] = [];
+            if (block.header === 'UI Components') {
+                this.componentsList.uiComponents.push(block);
+            } else if (block.header === 'Server Blocks') {
+                this.componentsList.serverBlocks.push(block);
+            } else if (block.header === 'Addons') {
+                this.componentsList.addons.push(block);
+            } else {
+                this.componentsList.unGrouped.push(block);
             }
-            groupBlocks[allowedChild.group][allowedChild.header].push({
-                type: type,
-                icon: this.registeredBlocks.getIcon(type),
-                name: this.registeredBlocks.getName(type),
-                title: this.registeredBlocks.getTitle(type)
-            });
-        }
-
-        const groupBlockKeys = Object.keys(groupBlocks);
-        for (let i = 0; i < groupBlockKeys.length; i++) {
-            const groupName = groupBlockKeys[i];
-            const groupsWithHeaders = groupBlocks[groupName];
-            const groupsWithHeadersKeys = Object.keys(groupsWithHeaders);
-            for (let j = 0; j < groupsWithHeadersKeys.length; j++) {
-                const subGroupName = groupsWithHeadersKeys[j];
-                const subGroupElements = groupsWithHeaders[groupsWithHeadersKeys[j]];
-                this.groupBlocks[groupName].push({
-                    name: subGroupName
-                });
-                this.groupBlocks[groupName] = this.groupBlocks[groupName].concat(subGroupElements);
+            block.favorite = this.options.getFavorite(block.type);
+            if (block.favorite) {
+                this.componentsList.favorites.push(block);
             }
         }
-
-        this.groupBlocks.unGroupedBlocks = unGroupedBlocks;
     }
 
-    public onInitViewer(event: EventsOverview) {
-        this.eventsOverview = event;
-    }
+    private updateModules() {
+        this.modulesList.favorites = [];
+        this.modulesList.defaultModules = [];
+        this.modulesList.customModules = [];
 
-    public onInitTree(event: TreeFlatOverview) {
-        this.treeFlatOverview = event;
-    }
+        const search = this.searchModule ? this.searchModule.toLowerCase() : null;
+        for (const module of this.templateModules) {
+            module.isDefault = module.type === 'DEFAULT';
+            module.data = `module:${module.uuid}`;
 
-    public onSelect(block: any) {
-        this.currentBlock = this.policyModel.getBlock(block);
-        this.policyModel.checkChange();
-        this.updateTopMenu(this.currentBlock);
-        this.changeDetector.detectChanges();
-        return false;
-    }
-
-    public onAdd(type: string) {
-        this.currentBlock = this.policyModel.getBlock(this.currentBlock);
-        if (this.currentBlock) {
-            const newBlock = this.registeredBlocks.newBlock(type as any);
-            newBlock.tag = this.policyModel.getNewTag();
-            this.currentBlock.createChild(newBlock);
-        }
-    }
-
-    public onDelete(block: BlockNode) {
-        this.policyModel.removeBlock(block);
-        return false;
-    }
-
-    public onReorder(blocks: BlockNode[]) {
-        const root = blocks[0];
-        if (root) {
-            this.policyModel.rebuild(root.getJSON());
-        } else {
-            this.policyModel.rebuild();
-        }
-    }
-
-    public onColGroup(n: number) {
-        if (n == 1) {
-            this.colGroup1 = !this.colGroup1;
-        } else if (n == 2) {
-            this.colGroup2 = !this.colGroup2;
-        } else {
-            this.colGroup3 = !this.colGroup3;
-        }
-    }
-
-    onTreeChange(event: any) {
-        setTimeout(() => {
-            if (this.eventsOverview) {
-                this.eventsOverview.render();
+            if (this.search && module.name.indexOf(search) === -1) {
+                continue;
             }
-        }, 10);
+            if (module.isDefault) {
+                this.modulesList.defaultModules.push(module);
+            } else {
+                this.modulesList.customModules.push(module);
+            }
+            module.favorite = this.options.getModuleFavorite(module.uuid);
+            if (module.favorite) {
+                this.modulesList.favorites.push(module);
+            }
+        }
     }
 
-    onShowEvent(type: string) {
-        this.eventVisible = type;
+    public setFavorite(event: any, item: any) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.options.setFavorite(item.type, !item.favorite);
+        this.options.save();
+        this.updateComponents();
     }
 
-    onView(type: string) {
+    public onSearch(event: any) {
+        clearTimeout(this._searchTimeout);
+        this._searchTimeout = setTimeout(() => {
+            this.updateComponents();
+        }, 200);
+    }
+
+    public setModuleFavorite(event: any, item: any) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.options.setModuleFavorite(item.uuid, !item.favorite);
+        this.options.save();
+        this.updateModules();
+    }
+
+    public onModuleSearch(event: any) {
+        clearTimeout(this._searchTimeout);
+        this._searchTimeout = setTimeout(() => {
+            this.updateModules();
+        }, 200);
+    }
+
+    public onView(type: string) {
         this.loading = true;
         setTimeout(() => {
             this.chanceView(type);
             this.loading = false;
         }, 0);
+    }
+
+    public onShowEvent(type: string) {
+        this.eventVisible = type;
+    }
+
+    public onSelect(block: any) {
+        this.currentBlock = this.openModule.getBlock(block);
+        this.selectType = this.currentBlock?.isModule ? 'Module' : 'Block';
+        this.openModule.checkChange();
+        this.changeDetector.detectChanges();
+        return false;
+    }
+
+    public onAdd(btn: any) {
+        this.currentBlock = this.openModule.getBlock(this.currentBlock);
+        if (this.currentBlock) {
+            const newBlock = this.registeredService.getBlockConfig(btn.type);
+            this.currentBlock.createChild(newBlock);
+        }
+    }
+
+    public onDelete(block: any) {
+        this.openModule.removeBlock(block);
+        this.onSelect(this.openModule.root);
+        return false;
+    }
+
+    public onReorder(event: any) {
+        if (event.type === 'reorder') {
+            this.changeDetector.detectChanges();
+        } else if (event.type === 'add' && event.data) {
+            if (event.data.operation === 'new') {
+                const config = this.registeredService.getBlockConfig(event.data.name);
+                event.data.parent?.createChild(config, event.data.index);
+            }
+            if (event.data.operation === 'module') {
+                const config = this.templateModules.find(e => e.uuid === event.data.name);
+                const module = this.policyModel.newModule(config);
+                event.data.parent?.addChild(module, event.data.index);
+            }
+        } else {
+            this.changeDetector.detectChanges();
+        }
+    }
+
+    public onCreateModule() {
+        this.currentBlock = this.policyModel.getBlock(this.currentBlock);
+        if (this.currentBlock) {
+            const module = this.policyModel.newModule();
+            this.currentBlock.addChild(module);
+        }
+    }
+
+    public onConvertToModule() {
+        this.currentBlock = this.policyModel.getBlock(this.currentBlock);
+        if (this.currentBlock) {
+            this.policyModel.convertModule(this.currentBlock);
+        }
+    }
+
+    public onOpenModule(module: any) {
+        const item = this.policyModel.getModule(module);
+        if (item) {
+            this.openType = 'Sub';
+            this.openModule = item;
+            this.changeDetector.detectChanges();
+        }
+    }
+
+    public onSaveModule() {
+        const item = this.policyModel.getModule(this.currentBlock);
+        if (item) {
+            const json = item.getJSON();
+            json.tag = 'Module';
+            const module = {
+                name: item.localTag,
+                description: item.localTag,
+                config: json
+            }
+            const dialogRef = this.dialog.open(NewModuleDialog, {
+                width: '650px',
+                panelClass: 'g-dialog',
+                disableClose: true,
+                autoFocus: false,
+                data: module
+            });
+            dialogRef.afterClosed().subscribe(async (result) => {
+                if (!result) {
+                    return;
+                }
+                module.name = result.name;
+                module.description = result.description;
+                this.loading = true;
+                this.modulesService.create(module).subscribe((result) => {
+                    this.templateModules.push(result);
+                    this.updateModules();
+                    this.changeDetector.detectChanges()
+                    setTimeout(() => { this.loading = false; }, 500);
+                }, (e) => {
+                    this.loading = false;
+                });
+            });
+        }
+    }
+
+    // public onDeleteModule(item: any) {
+    //     this.templateModules = this.templateModules.filter(e => e.uuid !== item.uuid);
+    //     localStorage.setItem('template-modules', JSON.stringify(this.templateModules));
+    //     this.updateModules();
+    //     this.changeDetector.detectChanges();
+    // }
+
+    public onAddModule(item: any) {
+        this.currentBlock = this.openModule.getBlock(this.currentBlock);
+        if (this.currentBlock) {
+            const module = this.policyModel.newModule(item);
+            this.currentBlock.addChild(module);
+        }
+    }
+
+    public onOpenRoot(root: PolicyModel | TemplateModel) {
+        this.rootModule = root;
+        this.openModule = root?.getRootModule();
+        this.openType = 'Root';
+        this.changeDetector.detectChanges();
+    }
+
+    public noReturnPredicate() {
+        return false;
+    }
+
+    public drop(event: any) {
+        this.changeDetector.detectChanges();
+    }
+
+    private setErrors(results: any) {
+        const blocks = results.blocks || [];
+        const modules = results.modules || [];
+        const commonErrors = results.errors || [];
+        this.errors = [];
+        for (const block of blocks) {
+            if (!block.isValid) {
+                this.errors.push(block);
+            }
+        }
+        for (const module of modules) {
+            if (!module.isValid) {
+                this.errors.push(module);
+            }
+            for (const block of module.blocks) {
+                if (!block.isValid) {
+                    this.errors.push(block);
+                }
+            }
+        }
+        this.errorsCount = this.errors.length;
+        this.errorsMap = {};
+        for (const element of this.errors) {
+            this.errorsMap[element.id] = element.errors;
+        }
+        this.errorMessage(commonErrors);
     }
 
     private chanceView(type: string) {
@@ -402,159 +775,54 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.objectToYaml(root);
     }
 
+    public undoPolicy() {
+        const item = this.storage.undo();
+        this.loadState(item);
+    }
+
+    public redoPolicy() {
+        const item = this.storage.redo();
+        this.loadState(item);
+    }
+
+    private onPasteBlock(block?: any) {
+        if (this.currentBlock && block) {
+            this.currentBlock.pasteChild(block);
+        }
+    }
+
+    @HostListener('document:copy', ['$event'])
+    public copy(event: ClipboardEvent) {
+        if (this.currentBlock
+            && this.copyBlocksMode
+            && this.currentView === 'blocks'
+            && !this.readonly) {
+            event.preventDefault();
+            const blockData = this.currentBlock?.getJSON() || null;
+            navigator.clipboard.writeText(JSON.stringify(blockData));
+        }
+    }
+
+    @HostListener('document:paste', ['$event'])
+    public paste(evt: ClipboardEvent) {
+        if (this.currentBlock
+            && this.copyBlocksMode
+            && this.currentView === 'blocks'
+            && !this.readonly) {
+            evt.preventDefault();
+            try {
+                const parsedBlockData = JSON.parse(evt.clipboardData?.getData('text') || "null");
+                this.onPasteBlock(parsedBlockData);
+            }
+            catch {
+                console.warn("Block data is incorrect");
+                return;
+            }
+        }
+    }
+
     public savePolicy() {
-        this.doSavePolicy().subscribe();
-    }
-
-    public tryPublishPolicy() {
-        if (this.hasChanges) {
-            const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
-                width: '500px',
-                autoFocus: false,
-            });
-            dialogRef.afterClosed().subscribe((result) => {
-                if (result) {
-                    this.doSavePolicy().subscribe(() => {
-                        this.setVersion();
-                    });
-                }
-            });
-        } else {
-            this.setVersion();
-        }
-    }
-
-    public tryRunPolicy() {
-        if (this.hasChanges) {
-            const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
-                width: '500px',
-                autoFocus: false,
-            });
-            dialogRef.afterClosed().subscribe((result) => {
-                if (result) {
-                    this.doSavePolicy().subscribe(() => {
-                        this.dryRunPolicy();
-                    });
-                }
-            });
-        } else {
-            this.dryRunPolicy();
-        }
-    }
-
-    private doSavePolicy(): Observable<void> {
-        return new Observable<void>(subscriber => {
-            this.chanceView('blocks');
-            const root = this.policyModel.getJSON();
-            if (root) {
-                this.loading = true;
-                this.policyEngineService.update(this.policyId, root).subscribe((policy) => {
-                    this.setPolicy(policy);
-                    this.clearState();
-                    this.loading = false;
-                    subscriber.next();
-                }, (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                });
-            }
-        });
-    }
-
-    public setVersion() {
-        const dialogRef = this.dialog.open(SetVersionDialog, {
-            width: '350px',
-            disableClose: true,
-            data: {}
-        });
-        dialogRef.afterClosed().subscribe((version) => {
-            if (version) {
-                this.publishPolicy(version);
-            }
-        });
-    }
-
-    private publishPolicy(version: string) {
-        this.loading = true;
-        this.policyEngineService.pushPublish(this.policyId, version).subscribe((result) => {
-            const { taskId, expectation } = result;
-            this.taskId = taskId;
-            this.expectedTaskMessages = expectation;
-            this.operationMode = OperationMode.publish;
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
-    }
-
-    private dryRunPolicy() {
-        this.loading = true;
-        this.policyEngineService.dryRun(this.policyId).subscribe((data: any) => {
-            const { policies, isValid, errors } = data;
-            if (isValid) {
-                this.clearState();
-                this.loadPolicy();
-            } else {
-                const blocks = errors.blocks;
-                const invalidBlocks = blocks.filter((block: any) => !block.isValid);
-                this.errors = invalidBlocks;
-                this.errorsCount = invalidBlocks.length;
-                this.errorsMap = {};
-                for (let i = 0; i < invalidBlocks.length; i++) {
-                    const element = invalidBlocks[i];
-                    this.errorsMap[element.id] = element.errors;
-                }
-                this.errorMessage(errors.errors);
-                this.loading = false;
-            }
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
-    }
-
-    public draftPolicy() {
-        this.loading = true;
-        this.policyEngineService.draft(this.policyId).subscribe((data: any) => {
-            const { policies, isValid, errors } = data;
-            this.clearState();
-            this.loadPolicy();
-        }, (e) => {
-            this.loading = false;
-        });
-    }
-
-    public validationPolicy() {
-        this.loading = true;
-        const json = this.policyModel.getJSON();
-        const object = {
-            topicId: this.policyModel.topicId,
-            policyRoles: json?.policyRoles,
-            policyGroups: json?.policyGroups,
-            policyTopics: json?.policyTopics,
-            policyTokens: json?.policyTokens,
-            config: json?.config
-        }
-        this.policyEngineService.validate(object).subscribe((data: any) => {
-            const { policy, results } = data;
-
-            const config = policy.config;
-            this.policyModel.rebuild(config);
-
-            const errors = results.blocks.filter((block: any) => !block.isValid);
-            this.errors = errors;
-            this.errorsCount = errors.length;
-            this.errorsMap = {};
-            for (let i = 0; i < errors.length; i++) {
-                const element = errors[i];
-                this.errorsMap[element.id] = element.errors;
-            }
-            this.errorMessage(results.errors);
-            this.onSelect(this.policyModel.root);
-            this.loading = false;
-        }, (e) => {
-            this.loading = false;
-        });
+        this.asyncUpdatePolicy().subscribe();
     }
 
     public saveAsPolicy() {
@@ -612,14 +880,156 @@ export class PolicyConfigurationComponent implements OnInit {
         });
     }
 
-    onAsyncError(error: any) {
+    private asyncUpdatePolicy(): Observable<void> {
+        return new Observable<void>(subscriber => {
+            this.chanceView('blocks');
+            const root = this.policyModel.getJSON();
+            if (root) {
+                this.loading = true;
+                this.policyEngineService.update(this.policyId, root).subscribe((policy: any) => {
+                    if (policy) {
+                        this.updatePolicyModel(policy);
+                    } else {
+                        this.policyModel = new PolicyModel();
+                    }
+                    setTimeout(() => { this.loading = false; }, 500);
+                    subscriber.next();
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+            }
+        });
+    }
+
+    public validationPolicy() {
+        this.loading = true;
+        const json = this.policyModel.getJSON();
+        const object = {
+            topicId: this.policyModel.topicId,
+            policyRoles: json?.policyRoles,
+            policyGroups: json?.policyGroups,
+            policyTopics: json?.policyTopics,
+            policyTokens: json?.policyTokens,
+            config: json?.config
+        }
+        this.policyEngineService.validate(object).subscribe((data: any) => {
+            const { policy, results } = data;
+            const config = policy.config;
+            this.policyModel.rebuild(config);
+            this.setErrors(results);
+            this.onSelect(this.openModule.root);
+            this.loading = false;
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    public setVersion() {
+        const dialogRef = this.dialog.open(SetVersionDialog, {
+            width: '350px',
+            disableClose: true,
+            data: {}
+        });
+        dialogRef.afterClosed().subscribe((version) => {
+            if (version) {
+                this.publishPolicy(version);
+            }
+        });
+    }
+
+    private publishPolicy(version: string) {
+        this.loading = true;
+        this.policyEngineService.pushPublish(this.policyId, version).subscribe((result) => {
+            const { taskId, expectation } = result;
+            this.taskId = taskId;
+            this.expectedTaskMessages = expectation;
+            this.operationMode = OperationMode.publish;
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    private dryRunPolicy() {
+        this.loading = true;
+        this.policyEngineService.dryRun(this.policyId).subscribe((data: any) => {
+            const { policies, isValid, errors } = data;
+            if (isValid) {
+                this.clearState();
+                this.loadData();
+            } else {
+                this.setErrors(errors);
+                this.loading = false;
+            }
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    public draftPolicy() {
+        this.loading = true;
+        this.policyEngineService.draft(this.policyId).subscribe((data: any) => {
+            const { policies, isValid, errors } = data;
+            this.clearState();
+            this.loadData();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    public tryPublishPolicy() {
+        if (this.hasChanges) {
+            const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
+                width: '500px',
+                autoFocus: false,
+            });
+            dialogRef.afterClosed().subscribe((result) => {
+                if (result) {
+                    this.asyncUpdatePolicy().subscribe(() => {
+                        this.setVersion();
+                    });
+                }
+            });
+        } else {
+            this.setVersion();
+        }
+    }
+
+    public tryRunPolicy() {
+        if (this.hasChanges) {
+            const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
+                width: '500px',
+                autoFocus: false,
+            });
+            dialogRef.afterClosed().subscribe((result) => {
+                if (result) {
+                    this.asyncUpdatePolicy().subscribe(() => {
+                        this.dryRunPolicy();
+                    });
+                }
+            });
+        } else {
+            this.dryRunPolicy();
+        }
+    }
+
+    private errorMessage(errors: string[]) {
+        if (errors && errors.length) {
+            const text = errors.map((text) => `<div>${text}</div>`).join('');
+            this.informService.errorShortMessage(text, 'The policy is invalid');
+        }
+    }
+
+    public onAsyncError(error: any) {
         this.informService.processAsyncError(error);
         console.error(error.error);
         this.loading = false;
         this.taskId = undefined;
     }
 
-    onAsyncCompleted() {
+    public onAsyncCompleted() {
         if (this.taskId) {
             const taskId: string = this.taskId;
             const operationMode = this.operationMode;
@@ -634,18 +1044,9 @@ export class PolicyConfigurationComponent implements OnInit {
                         const { result } = task;
                         const { isValid, errors } = result;
                         if (isValid) {
-                            this.loadPolicy();
+                            this.loadData();
                         } else {
-                            const blocks = errors.blocks;
-                            const invalidBlocks = blocks.filter((block: any) => !block.isValid);
-                            this.errors = invalidBlocks;
-                            this.errorsCount = invalidBlocks.length;
-                            this.errorsMap = {};
-                            for (let i = 0; i < invalidBlocks.length; i++) {
-                                const element = invalidBlocks[i];
-                                this.errorsMap[element.id] = element.errors;
-                            }
-                            this.errorMessage(errors.errors);
+                            this.setErrors(errors);
                             this.loading = false;
                         }
                         break;
@@ -657,144 +1058,66 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    private checkState() {
-        if (!this.readonly &&
-            !this.compareState(
-                this.policyModel.getJSON(),
-                this.policyStorage.current
-            )
-        ) {
-            const applyChangesDialog = this.dialog.open(ConfirmationDialogComponent, {
-                data: {
-                    dialogTitle: "Apply latest changes",
-                    dialogText: "Do you want to apply latest changes?"
-                },
-                disableClose: true
-            })
-            applyChangesDialog.afterClosed().subscribe((result) => {
-                if (result) {
-                    this.loadState(this.policyStorage.current);
-                } else {
-                    this.rewriteState();
-                }
-            })
-        } else {
-            this.rewriteState();
-        }
+    public tryPublishModule() {
+        this.loading = true;
+        this.modulesService.publish(this.moduleId).subscribe((result) => {
+            this.loadData();
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
     }
 
-    private compareState(policy: any, storageItem: any): boolean {
-        const JSONconfig = this.objectToJson(policy);
-        if (!storageItem) {
-            return true;
-        }
-        if (storageItem.view === 'json' || storageItem.view === 'blocks') {
-            return storageItem.value === JSONconfig;
-        }
-        if (storageItem.view === 'yaml') {
-            return this.yamlToJson(storageItem.value) === JSONconfig;
-        }
-        return true;
+    public updateModule() {
+        const module = this.templateModel.getJSON();
+        this.loading = true;
+        this.modulesService.update(this.moduleId, module).subscribe((result) => {
+            this.clearState();
+            this.loadData();
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
     }
 
-    private clearState() {
-        const json = this.policyModel.getJSON();
-        const value = this.objectToJson(json);
-        this.policyStorage.set('blocks', null);
-    }
-
-    private rewriteState() {
-        const json = this.policyModel.getJSON();
-        const value = this.objectToJson(json);
-        this.policyStorage.set('blocks', value);
-    }
-
-    private loadState(root: any) {
-        if (!root) {
-            return;
-        }
-        if (this.currentView !== root.view) {
-            this.currentView = root.view;
-            this.chanceView(root.view);
-        }
-        if (root.view === 'yaml' || root.view === 'json') {
-            this.code = root.value;
-        }
-        if (root.view === 'blocks') {
-            const policy = this.jsonToObject(root.value);
-            this.policyModel.rebuild(policy);
-            this.errors = [];
-            this.errorsCount = -1;
-            this.errorsMap = {};
-            this.currentBlock = this.policyModel.getBlock(this.currentBlock);
-        }
-        return true;
-    }
-
-    public saveState() {
-        if (this.readonly) {
-            return;
-        }
-        if (this.currentView == 'blocks') {
-            const json = this.objectToJson(this.policyModel.getJSON());
-            this.policyStorage.push(this.currentView, json);
-        } else if (this.currentView == 'yaml') {
-            this.policyStorage.push(this.currentView, this.code);
-        } else if (this.currentView == 'json') {
-            this.policyStorage.push(this.currentView, this.code);
-        }
-    }
-
-    public undoPolicy() {
-        const item = this.policyStorage.undo();
-        this.loadState(item);
-    }
-
-    public redoPolicy() {
-        const item = this.policyStorage.redo();
-        this.loadState(item);
-    }
-
-    onCopyBlock(block?: any) {
-        if (this.currentBlock && block) {
-            this.currentBlock.copyChild(block);
-        }
-    }
-
-    @HostListener('document:copy', ['$event'])
-    copy(event: ClipboardEvent) {
-        if (this.currentBlock
-            && this.copyBlocksMode
-            && this.currentView === 'blocks'
-            && !this.readonly) {
-            event.preventDefault();
-            const blockData = this.currentBlock?.getJSON() || null;
-            navigator.clipboard.writeText(JSON.stringify(blockData));
-        }
-    }
-
-    @HostListener('document:paste', ['$event'])
-    paste(evt: ClipboardEvent) {
-        if (this.currentBlock
-            && this.copyBlocksMode
-            && this.currentView === 'blocks'
-            && !this.readonly) {
-            evt.preventDefault();
-            try {
-                const parsedBlockData = JSON.parse(evt.clipboardData?.getData('text') || "null");
-                this.onCopyBlock(parsedBlockData);
-            }
-            catch {
-                console.warn("Block data is incorrect");
+    public saveAsModule() {
+        const module = this.templateModel.getJSON();
+        delete module.id;
+        delete module.uuid;
+        const dialogRef = this.dialog.open(NewModuleDialog, {
+            width: '650px',
+            panelClass: 'g-dialog',
+            disableClose: true,
+            autoFocus: false,
+            data: module
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (!result) {
                 return;
             }
-        }
+            module.name = result.name;
+            module.description = result.description;
+            this.loading = true;
+            this.modulesService.create(module).subscribe((result) => {
+                this.router.navigate(['/policy-configuration'], { queryParams: { moduleId: result.uuid } });
+            }, (e) => {
+                this.loading = false;
+            });
+        });
     }
 
-    errorMessage(errors: string[]) {
-        if(errors && errors.length) {
-            const text = errors.map((text) => `<div>${text}</div>`).join('');
-            this.informService.errorShortMessage(text, 'The policy is invalid');
-        }
+    public validationModule() {
+        this.loading = true;
+        const module = this.templateModel.getJSON();
+        this.modulesService.validate(module).subscribe((data: any) => {
+            const { module, results } = data;
+            this.templateModel.rebuild(module);
+            this.setErrors(results);
+            this.onOpenRoot(this.templateModel);
+            this.onSelect(this.openModule.root);
+            this.loading = false;
+        }, (e) => {
+            this.loading = false;
+        });
     }
 }

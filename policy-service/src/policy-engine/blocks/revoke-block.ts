@@ -1,6 +1,5 @@
 import { ActionCallback, BasicBlock, EventBlock } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { AnyBlockType, IPolicyEventState, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
 import { Message, MessageServer } from '@hedera-modules';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -36,6 +35,7 @@ export const RevokedStatus = 'Revoked';
 @EventBlock({
     blockType: 'revokeBlock',
     commonBlock: false,
+    variables: []
 })
 export class RevokeBlock {
     /**
@@ -203,25 +203,5 @@ export class RevokeBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
             documents: ExternalDocuments(documents),
         }));
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (!ref.options.uiMetaData || (typeof ref.options.uiMetaData !== 'object')) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData" does not set');
-                return;
-            }
-
-            if (ref.options.uiMetaData.updatePrevDoc && !ref.options.uiMetaData.prevDocStatus) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "Status Value" does not set');
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

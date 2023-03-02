@@ -1,0 +1,86 @@
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+    <tr class="propHeader">
+        <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+            <mat-icon>arrow_drop_down</mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Variables</td>
+        <td class="propHeaderCell"></td>
+    </tr>
+    <ng-container *ngFor="let item of variables; let i=index">
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol" (click)="onHide(variablesHidden, i)" [attr.collapse]="variablesHidden[i]">
+                <mat-icon>arrow_drop_down</mat-icon>
+            </td>
+            <td class="propRowCell cellName">
+                {{item.name}}
+            </td>
+            <td *ngIf="item.type ==='Schema'" class="propRowCell">
+                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">
+                    <mat-option *ngFor="let schema of schemas" [value]="schema.value">
+                        {{schema.name}}
+                        <span *ngIf="schema.version"> ({{schema.version}})</span>
+                        <span *ngIf="schema.status"> ({{schema.status}})</span>
+                    </mat-option>
+                </mat-select>
+            </td>
+            <td *ngIf="item.type ==='Token'" class="propRowCell">
+                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">
+                    <mat-option *ngFor="let token of tokens" [value]="token.value">
+                        {{token.name}}
+                    </mat-option>
+                </mat-select>
+            </td>
+            <td *ngIf="item.type ==='Role'" class="propRowCell">
+                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">
+                    <mat-option *ngFor="let item of roles" [value]="item.value">{{item.name}}</mat-option>
+                </mat-select>
+            </td>
+            <td *ngIf="item.type ==='Group'" class="propRowCell">
+                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">
+                    <mat-option *ngFor="let item of groups" [value]="item.value">{{item.name}}</mat-option>
+                </mat-select>
+            </td>
+            <td *ngIf="item.type ==='TokenTemplate'" class="propRowCell">
+                <mat-select [(value)]="properties[item.key]" [disabled]="readonly" (change)="onSave()">
+                    <mat-option *ngFor="let token of tokenTemplate" [value]="token.value">
+                        {{token.name}}
+                    </mat-option>
+                </mat-select>
+            </td>
+            <td *ngIf="item.type ==='Topic'" class="propRowCell">
+                <mat-select [(value)]="properties[item.key]" [disabled]="readonly"
+                    (selectionChange)="selectTopic($event, item)">
+                    <mat-option *ngFor="let topic of topics" [value]="topic.name" [matTooltip]="topic.description"
+                        matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                        {{topic.name}}
+                    </mat-option>
+                    <mat-option value="root">Policy Instance</mat-option>
+                    <mat-option class="link" value="new">
+                        <span class="mat-option-link">
+                            <mat-icon>add</mat-icon>
+                            <span>Create new topic</span>
+                        </span>
+                    </mat-option>
+                </mat-select>
+            </td>
+            <td *ngIf="item.type ==='String'" class="propRowCell">
+                <input class="prop-input" [(ngModel)]="properties[item.key]" [readonly]="readonly" (blur)="onSave()">
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.main || variablesHidden[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Description</td>
+            <td class="propRowCell">
+                <span class="readonly-prop">{{item.description}}</span>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.main || variablesHidden[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Type</td>
+            <td class="propRowCell">
+                <span class="readonly-prop">{{item.type}}</span>
+            </td>
+        </tr>
+    </ng-container>
+
+</table>

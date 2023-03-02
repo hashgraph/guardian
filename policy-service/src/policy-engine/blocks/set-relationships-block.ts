@@ -44,7 +44,8 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
             type: PropertyType.Checkbox,
             default: false
         }]
-    }
+    },
+    variables: []
 })
 export class SetRelationshipsBlock {
     /**

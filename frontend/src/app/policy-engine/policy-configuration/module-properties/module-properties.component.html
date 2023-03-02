@@ -1,0 +1,211 @@
+<div class="grid-setting policy-properties" [attr.readonly]="readonly">
+    <div *ngIf="errors" class="errors-properties">
+        <div *ngFor="let item of errors" class="errors-property">
+            <span>{{item}}</span>
+        </div>
+    </div>
+    <div class="table">
+        <div class="table-body" #body>
+            <table class="properties">
+
+                <ng-container *ngIf="type == 'Main'">
+                    <tr class="propHeader">
+                        <td class="propRowCol" (click)="onHide(propHidden, 'main')"
+                            [attr.collapse]="propHidden.main">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </td>
+                        <td class="propHeaderCell cellName">Module</td>
+                        <td class="propHeaderCell"></td>
+                    </tr>
+                    <!-- Meta Data  -->
+                    <tr class="propRow" [attr.collapse]="propHidden.main">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">ID</td>
+                        <td class="propRowCell">
+                            <span class="readonly-prop">{{module.id}}</span>
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.main">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Name</td>
+                        <td class="propRowCell">
+                            <input class="prop-input" [(ngModel)]="module.name" [readonly]="readonly">
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.main">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Description</td>
+                        <td class="propRowCell">
+                            <textarea [(ngModel)]="module.description" [readonly]="readonly"></textarea>
+                        </td>
+                    </tr>
+                </ng-container>
+
+                <ng-container *ngIf="type == 'Variables'">
+                    <!-- Variables  -->
+                    <ng-container *ngFor="let item of variables; let i=index">
+                        <tr class="propHeader">
+                            <td class="propRowCol" (click)="onHide(propHidden.variables, i)"
+                                [attr.collapse]="propHidden.variables[i]">
+                                <mat-icon>arrow_drop_down</mat-icon>
+                            </td>
+                            <td class="propHeaderCell cellName">Variable</td>
+                            <td class="propHeaderCell">
+                                <div>{{item.name}}</div>
+                                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveVariable(item)">
+                                    <mat-icon>delete</mat-icon>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.variables[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">
+                                <span class="required-fields">*</span>
+                                Name
+                            </td>
+                            <td class="propRowCell">
+                                <input class="prop-input" [(ngModel)]="item.name" [readonly]="readonly" (input)="onEditVariable(item)">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.variables[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Description</td>
+                            <td class="propRowCell">
+                                <input class="prop-input" [(ngModel)]="item.description" [readonly]="readonly" (input)="onEditVariable(item)">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.variables[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">
+                                <span class="required-fields">*</span>
+                                Variable Type
+                            </td>
+                            <td class="propRowCell">
+                                <mat-select [(ngModel)]="item.type" [disabled]="readonly" (valueChange)="onEditVariable(item, true)">
+                                    <mat-option value="Schema">Schema</mat-option>
+                                    <mat-option value="Token">Token</mat-option>
+                                    <mat-option value="TokenTemplate">Token Template</mat-option>
+                                    <mat-option value="Role">Role</mat-option>
+                                    <mat-option value="Group">Group</mat-option>
+                                    <mat-option value="Topic">Topic</mat-option>
+                                    <mat-option value="String">String</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <tr class="propRow propRowBottom">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName"></td>
+                        <td class="propRowCell"></td>
+                    </tr>
+                    <div class="propBottom">
+                        <div class="propAdd" (click)="addVariable()">
+                            <mat-icon>add</mat-icon>
+                            <span>Add Variables</span>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <ng-container *ngIf="type == 'Inputs'">
+                    <!-- Inputs  -->
+                    <ng-container *ngFor="let item of inputs; let i=index">
+                        <tr class="propHeader">
+                            <td class="propRowCol" (click)="onHide(propHidden.inputs, i)"
+                                [attr.collapse]="propHidden.inputs[i]">
+                                <mat-icon>arrow_drop_down</mat-icon>
+                            </td>
+                            <td class="propHeaderCell cellName">
+                                Input Events
+                            </td>
+                            <td class="propHeaderCell">
+                                <div>{{item.name}}</div>
+                                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveInput(item)">
+                                    <mat-icon>delete</mat-icon>
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.inputs[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">
+                                <span class="required-fields">*</span>
+                                Name
+                            </td>
+                            <td class="propRowCell">
+                                <input class="prop-input" [(ngModel)]="item.name" [readonly]="readonly" (input)="onEditInput(item)">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.inputs[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Description</td>
+                            <td class="propRowCell">
+                                <input class="prop-input" [(ngModel)]="item.description" [readonly]="readonly" (input)="onEditInput(item)">
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <tr class="propRow propRowBottom">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName"></td>
+                        <td class="propRowCell"></td>
+                    </tr>
+                    <div class="propBottom">
+                        <div class="propAdd" (click)="addInput()">
+                            <mat-icon>add</mat-icon>
+                            <span>Add Input Event</span>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <ng-container *ngIf="type == 'Outputs'">
+                    <!-- Outputs  -->
+                    <ng-container *ngFor="let item of outputs; let i=index">
+                        <tr class="propHeader">
+                            <td class="propRowCol" (click)="onHide(propHidden.outputs, i)"
+                                [attr.collapse]="propHidden.outputs[i]">
+                                <mat-icon>arrow_drop_down</mat-icon>
+                            </td>
+                            <td class="propHeaderCell cellName">
+                                Output Events
+                            </td>
+                            <td class="propHeaderCell">
+                                <div>{{item.name}}</div>
+                                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveOutput(item)">
+                                    <mat-icon>delete</mat-icon>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.outputs[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">
+                                <span class="required-fields">*</span>
+                                Name
+                            </td>
+                            <td class="propRowCell">
+                                <input class="prop-input" [(ngModel)]="item.name" [readonly]="readonly" (input)="onEditOutput(item)">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.outputs[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Description</td>
+                            <td class="propRowCell">
+                                <input class="prop-input" [(ngModel)]="item.description" [readonly]="readonly" (input)="onEditOutput(item)">
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <tr class="propRow propRowBottom">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName"></td>
+                        <td class="propRowCell"></td>
+                    </tr>
+                    <div class="propBottom">
+                        <div class="propAdd" (click)="addOutput()">
+                            <mat-icon>add</mat-icon>
+                            <span>Add Output Event</span>
+                        </div>
+                    </div>
+                </ng-container>
+
+            </table>
+        </div>
+    </div>
+</div>

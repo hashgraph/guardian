@@ -1,8 +1,8 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'properties')" [attr.collapse]="propHidden.properties">
-            <mat-icon>expand_more</mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Properties</td>
         <td class="propHeaderCell"></td>
@@ -12,9 +12,9 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token Template</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.template" [disabled]="readonly">
-                <mat-option *ngFor="let token of policy.policyTokens" [value]="token.templateTokenTag">
-                    {{token.templateTokenTag}}
+            <mat-select [(value)]="properties.template" [disabled]="readonly" (change)="onSave()">
+                <mat-option *ngFor="let token of tokenTemplate" [value]="token.value">
+                    {{token.name}}
                 </mat-option>
             </mat-select>
         </td>
@@ -22,7 +22,7 @@
 
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>expand_more</mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">UI</td>
         <td class="propHeaderCell"></td>
@@ -32,19 +32,20 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.uiMetaData.type" [disabled]="readonly">
+            <mat-select [(value)]="properties.uiMetaData.type" [disabled]="readonly" (change)="onSave()">
                 <mat-option value="page">PAGE</mat-option>
                 <mat-option value="dialog">DIALOG</mat-option>
             </mat-select>
         </td>
     </tr>
 
-    <ng-container *ngIf="block.uiMetaData.type == 'page'">
+    <ng-container *ngIf="properties.uiMetaData.type == 'page'">
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Title</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
 
@@ -52,38 +53,43 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Description</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.description" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.description" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
     </ng-container>
 
-    <ng-container *ngIf="block.uiMetaData.type == 'dialog'">
+    <ng-container *ngIf="properties.uiMetaData.type == 'dialog'">
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Title</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Button Content</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.content" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.content" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Button Class</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.buttonClass" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.buttonClass" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Dialog Description</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.description" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.description" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
     </ng-container>

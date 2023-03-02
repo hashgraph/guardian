@@ -21,6 +21,7 @@ import { Binary } from 'bson';
 import { SplitDocuments } from '@entity/split-documents';
 import { MultiPolicy } from '@entity/multi-policy';
 import { MultiPolicyTransaction } from '@entity/multi-policy-transaction';
+import { PolicyModule } from '@entity/module';
 
 /**
  * Database server
@@ -2062,5 +2063,66 @@ export class DatabaseServer {
      */
     public static async countMultiPolicyTransactions(policyId: string) {
         return await new DataBaseHelper(MultiPolicyTransaction).count({ policyId, status: 'Waiting' });
+    }
+
+    /**
+     * Create createModules
+     * @param module
+     */
+    public static async createModules(module: any): Promise<PolicyModule> {
+        const item = new DataBaseHelper(PolicyModule).create(module);
+        return await new DataBaseHelper(PolicyModule).save(item);
+    }
+
+    /**
+     * Get Modules
+     * @param filters
+     * @param options
+     */
+    public static async getModulesAndCount(filters?: any, options?: any): Promise<[PolicyModule[], number]> {
+        return await new DataBaseHelper(PolicyModule).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Module By UUID
+     * @param uuid
+     */
+    public static async getModuleById(uuid: string): Promise<PolicyModule> {
+        return await new DataBaseHelper(PolicyModule).findOne({ uuid });
+    }
+
+    /**
+     * Get Module
+     * @param filters
+     */
+    public static async getModule(filters: any): Promise<PolicyModule> {
+        return await new DataBaseHelper(PolicyModule).findOne(filters);
+    }
+
+    /**
+     * Delete user
+     * @param module
+     *
+     * @virtual
+     */
+    public static async removeModule(module: PolicyModule): Promise<void> {
+        return await new DataBaseHelper(PolicyModule).remove(module);
+    }
+
+    /**
+     * Get Modules
+     * @param filters
+     * @param options
+     */
+    public static async getModules(filters?: any, options?: any): Promise<PolicyModule[]> {
+        return await new DataBaseHelper(PolicyModule).find(filters, options);
+    }
+
+    /**
+     * Update Module
+     * @param row
+     */
+    public static async updateModule(row: PolicyModule): Promise<PolicyModule> {
+        return await new DataBaseHelper(PolicyModule).update(row);
     }
 }

@@ -1,8 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { Schema, Token, UserType } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
-import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
+import { Schema, Token } from '@guardian/interfaces';
+import { IModuleVariables, PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'interfaceAction' type.
@@ -14,21 +12,21 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ButtonConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         buttonsGroup: false,
         buttons: {}
     };
 
-    block!: any;
+    properties!: any;
 
-    constructor(public registeredBlocks: RegisteredBlocks) {
+    constructor() {
     }
 
     ngOnInit(): void {
@@ -41,10 +39,12 @@ export class ButtonConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.uiMetaData.buttons = this.block.uiMetaData.buttons || [];
-        for (const i in this.block.uiMetaData.buttons) {
+        this.moduleVariables = block.moduleVariables;
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {};
+        this.properties.uiMetaData.buttons = this.properties.uiMetaData.buttons || [];
+        for (const i in this.properties.uiMetaData.buttons) {
             this.propHidden.buttons[i] = {};
         }
     }
@@ -54,17 +54,13 @@ export class ButtonConfigComponent implements OnInit {
     }
 
     addButton() {
-        this.block.uiMetaData.buttons.push({
-            tag: `Button_${this.block.uiMetaData.buttons.length}`,
+        this.properties.uiMetaData.buttons.push({
+            tag: `Button_${this.properties.uiMetaData.buttons.length}`,
             name: '',
             type: 'selector',
             filters: []
         })
-        this.propHidden.buttons[this.block.uiMetaData.buttons.length - 1] = {};
-    }
-
-    getIcon(block: any) {
-        return this.registeredBlocks.getIcon(block.blockType);
+        this.propHidden.buttons[this.properties.uiMetaData.buttons.length - 1] = {};
     }
 
     addFilter(button: any) {
@@ -76,10 +72,14 @@ export class ButtonConfigComponent implements OnInit {
     }
 
     onRemoveButton(i: number) {
-        this.block.uiMetaData.buttons.splice(i, 1);
+        this.properties.uiMetaData.buttons.splice(i, 1);
     }
 
     onRemoveFilter(button: any, i: number) {
         button.filters.splice(i, 1);
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

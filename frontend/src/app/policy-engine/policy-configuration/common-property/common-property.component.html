@@ -1,9 +1,7 @@
 <ng-container *ngIf="property.type === 'Group'">
     <tr class="propHeader" [attr.collapse]="collapse">
         <td class="propRowCol" (click)="onHide()" [attr.collapse]="groupCollapse">
-            <mat-icon>
-                expand_more
-            </mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName" [title]="property.title">
             <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
@@ -11,17 +9,19 @@
         <td class="propHeaderCell"></td>
     </tr>
 
-    <div *ngFor="let p of property.properties" common-property class="custom-properties" [data]="group" [property]="p"
-        [readonly]="readonly" [collapse]="collapse || groupCollapse" [schemas]="schemas" [policy]="policy"
+    <div *ngFor="let p of property.properties" common-property class="custom-properties" 
+        [data]="group" 
+        [property]="p"
+        [readonly]="readonly" 
+        [collapse]="collapse || groupCollapse" 
+        [block]="currentBlock" 
         (update)="onSave()"></div>
 </ng-container>
 
 <ng-container *ngIf="property.type === 'Array'">
     <tr class="propHeader" [attr.collapse]="collapse">
         <td class="propRowCol" (click)="onHide()" [attr.collapse]="groupCollapse">
-            <mat-icon>
-                expand_more
-            </mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName" [title]="property.title">
             <span *ngIf="property.required" class="required-fields">*</span> {{property.label}}
@@ -36,9 +36,7 @@
     <ng-container *ngFor="let item of value; let i=index">
         <tr class="propRow" [attr.collapse]="collapse || groupCollapse">
             <td class="propRowCol" (click)="onHideItem(i)" [attr.collapse]="groupCollapse || itemCollapse[i]">
-                <mat-icon>
-                    expand_more
-                </mat-icon>
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">
                 {{property.items.label}} {{i}}
@@ -52,9 +50,14 @@
                 </span>
             </td>
         </tr>
-        <div *ngFor="let p of property.items.properties" common-property class="custom-properties" [data]="item"
-            [property]="p" [readonly]="readonly" [collapse]="collapse || groupCollapse || itemCollapse[i]" [offset]="1"
-            [schemas]="schemas" [policy]="policy" (update)="onSave()"></div>
+        <div *ngFor="let p of property.items.properties" common-property class="custom-properties" 
+            [data]="item"
+            [property]="p" 
+            [readonly]="readonly" 
+            [collapse]="collapse || groupCollapse || itemCollapse[i]" 
+            [offset]="1"
+            [block]="currentBlock" 
+            (update)="onSave()"></div>
     </ng-container>
 </ng-container>
 
@@ -104,7 +107,7 @@
         </td>
         <td *ngIf="loaded" [ngSwitch]="property.items" class="propRowCell ns">
             <mat-select *ngSwitchCase="'Schemas'" multiple [(value)]="value" [disabled]="readonly" (change)="onSave()">
-                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
                     <span *ngIf="schema.status"> ({{schema.status}})</span>
@@ -153,7 +156,7 @@
         </td>
         <td class="propRowCell ns">
             <mat-select [(value)]="value" [disabled]="readonly" (change)="onSave()">
-                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
                     <span *ngIf="schema.status"> ({{schema.status}})</span>

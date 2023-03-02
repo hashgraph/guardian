@@ -4,7 +4,6 @@ import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@polic
 import { PolicyRole, PolicyType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface';
 import { PolicyComponentsUtils } from '../../policy-components-utils';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
 import { Logger } from '@guardian/common';
@@ -128,6 +127,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             public actions: any[];
             /**
+             * Block events
+             */
+            public events: EventConfig[]
+            /**
              * Dry-run
              */
             private _dryRun: string;
@@ -135,6 +138,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Block class name
              */
             public readonly blockClassName = 'BasicBlock';
+            /**
+             * Block variables
+             */
+            public readonly variables: any[];
 
             constructor(
                 _uuid: string,
@@ -150,8 +157,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 const active = _defaultActive || defaultOptions.defaultActive || !parent;
 
                 super(
-                    defaultOptions.blockType, defaultOptions.commonBlock,
-                    tag, active, permissions, _uuid, parent, _options
+                    defaultOptions.blockType,
+                    defaultOptions.commonBlock,
+                    tag,
+                    active,
+                    permissions,
+                    _uuid,
+                    parent,
+                    _options
                 );
                 this._dryRun = null;
                 this.logger = new Logger();
@@ -169,6 +182,20 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 }
                 this.actions.push([PolicyInputEventType.RunEvent, this.runAction]);
                 this.actions.push([PolicyInputEventType.RefreshEvent, this.refreshAction]);
+
+                this.events = [];
+                if (Array.isArray(this.options?.events)) {
+                    for (const e of this.options.events) {
+                        this.events.push(e);
+                    }
+                }
+                if (Array.isArray(this.options?.innerEvents)) {
+                    for (const e of this.options.innerEvents) {
+                        this.events.push(e);
+                    }
+                }
+
+                this.variables = defaultOptions.variables || [];
             }
 
             /**
@@ -186,13 +213,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     return this.parent.getNextChild(this.uuid);
                 }
                 return undefined;
-            }
-
-            /**
-             * Block events getter
-             */
-            public get events(): EventConfig[] {
-                return this.options.events || [];
             }
 
             /**
@@ -462,27 +482,23 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
-             * Validate block options
-             * @param resultsContainer
+             * Register Variables
              */
-            public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-                resultsContainer.registerBlock(this as any as IPolicyBlock);
-                if (resultsContainer.countTags(this.tag) > 1) {
-                    resultsContainer.addBlockError(this.uuid, `Tag ${this.tag} already exist`);
+            public registerVariables(): void {
+                const modules = PolicyComponentsUtils.GetModule<any>(this);
+                if(!modules) {
+                    return;
                 }
-                const permission = resultsContainer.permissionsNotExist(this.permissions);
-                if (permission) {
-                    resultsContainer.addBlockError(this.uuid, `Permission ${permission} not exist`);
+
+                for (let index = 0; index < this.permissions.length; index++) {
+                    this.permissions[index] = modules.getModuleVariable(this.permissions[index], 'Role');
                 }
-                if (typeof super.validate === 'function') {
-                    await super.validate(resultsContainer)
+
+                for (const variable of this.variables) {
+                    PolicyComponentsUtils.ReplaceObjectValue(this, variable.path, (value: any) => {
+                        return modules.getModuleVariable(value, variable.type);
+                    });
                 }
-                if (Array.isArray(this.children)) {
-                    for (const child of this.children) {
-                        await child.validate(resultsContainer);
-                    }
-                }
-                return;
             }
 
             /**

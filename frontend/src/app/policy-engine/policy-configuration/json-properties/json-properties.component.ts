@@ -1,8 +1,15 @@
-import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { Schema, Token } from '@guardian/interfaces';
-import { RegisteredBlocks } from '../../registered-blocks';
-import { BlockNode } from '../../helpers/tree-data-source/tree-data-source';
-import { PolicyBlockModel } from '../../structures/policy-model';
+import {
+    Component,
+    ComponentFactoryResolver,
+    EventEmitter,
+    Input,
+    OnInit,
+    Output,
+    SimpleChanges,
+    ViewChild,
+    ViewContainerRef
+} from '@angular/core';
+import { PolicyBlockModel } from "../../structures/";
 
 /**
  * Settings for all blocks.
@@ -50,7 +57,6 @@ export class JsonPropertiesComponent implements OnInit {
     loading: boolean = false;
 
     constructor(
-        public registeredBlocks: RegisteredBlocks,
         private componentFactoryResolver: ComponentFactoryResolver
     ) {
         this.codeMirrorOptions.mode = 'application/ld+json';
@@ -74,7 +80,13 @@ export class JsonPropertiesComponent implements OnInit {
         this.errors = [];
         this.block = block;
         if (this.block) {
-            this.code = JSON.stringify(block.getJSON(), null, 2);
+            const json = block.getJSON();
+            delete json.children;
+            delete json.artifacts;
+            delete json.events;
+            delete json.innerEvents;
+
+            this.code = JSON.stringify(json, null, 2);
         } else {
             this.code = '';
         }

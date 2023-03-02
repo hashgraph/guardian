@@ -51,6 +51,7 @@ import { RetireRequest } from '@entity/retire-request';
 import { analyticsAPI } from '@api/analytics.service';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyEngine } from '@policy-engine/policy-engine';
+import { modulesAPI } from '@api/module.service';
 
 export const obj = {};
 
@@ -112,6 +113,7 @@ Promise.all([
         await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
         await artifactAPI(channel);
         await contractAPI(channel, contractRepository, retireRequestRepository);
+        await modulesAPI(channel);
         await analyticsAPI(channel);
     } catch (error) {
         console.error(error.message);

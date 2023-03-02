@@ -1,9 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 import { MatDialog } from '@angular/material/dialog';
 import { CodeEditorDialogComponent } from '../../../../helpers/code-editor-dialog/code-editor-dialog.component';
 import { Schema, Token, SchemaField } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
+import { IModuleVariables, PolicyBlockModel, PolicyModel, SchemaVariables } from 'src/app/policy-engine/structures';
 
 @Component({
     selector: 'app-custom-logic-config',
@@ -12,34 +11,38 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/
     encapsulation: ViewEncapsulation.Emulated
 })
 export class CustomLogicConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
-    block!: any;
-
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
+    
+    properties!: any;
     propHidden: any = {
         outputSchemaGroup: false
     };
+    schemas!: SchemaVariables[];
 
     constructor(
         private dialog: MatDialog
     ) { }
 
     ngOnInit(): void {
+        this.schemas = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }
 
     load(block: PolicyBlockModel) {
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {}
-        this.block.expression = this.block.expression || ''
-        this.block.documentSigner = this.block.documentSigner || '';
-        this.block.idType = this.block.idType || '';
+        this.moduleVariables = block.moduleVariables;
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {}
+        this.properties.expression = this.properties.expression || ''
+        this.properties.documentSigner = this.properties.documentSigner || '';
+        this.properties.idType = this.properties.idType || '';
+        this.schemas = this.moduleVariables?.schemas || [];
     }
 
     editExpression($event: MouseEvent) {
@@ -47,14 +50,18 @@ export class CustomLogicConfigComponent implements OnInit {
             width: '80%',
             panelClass: 'g-dialog',
             data: {
-                expression: this.block.expression,
+                expression: this.properties.expression,
                 readonly: this.readonly
             },
             autoFocus: true,
             disableClose: true
         })
         dialogRef.afterClosed().subscribe(result => {
-            this.block.expression = result.expression;
+            this.properties.expression = result.expression;
         })
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

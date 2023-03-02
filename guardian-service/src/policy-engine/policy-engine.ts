@@ -5,11 +5,11 @@ import {
     ModelHelper,
     SchemaHelper,
     Schema,
-    IUser,
     PolicyType,
     IRootConfig,
-    GenerateUUIDv4, PolicyEvents, WorkerTaskType,
-    UserRole
+    GenerateUUIDv4,
+    PolicyEvents,
+    WorkerTaskType,
 } from '@guardian/interfaces';
 import { DataBaseHelper, IAuthUser, Logger, ServiceRequestsBase, Singleton } from '@guardian/common';
 import {
@@ -23,7 +23,6 @@ import {
     TopicHelper
 } from '@hedera-modules'
 import { findAllEntities, getArtifactType, replaceAllEntities, replaceArtifactProperties, SchemaFields } from '@helpers/utils';
-import { IPolicyInstance } from './policy-engine.interface';
 import { incrementSchemaVersion, findAndPublishSchema, findAndDryRunSchema, deleteSchema, publishSystemSchemas } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { VcHelper } from '@helpers/vc-helper';
@@ -33,7 +32,6 @@ import { Policy } from '@entity/policy';
 import { Topic } from '@entity/topic';
 import { PolicyConverterUtils } from './policy-converter-utils';
 import { DatabaseServer } from '@database-modules';
-import { IPolicyUser, PolicyUser } from './policy-user';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from './policy-validation-results-container';
 import { Artifact } from '@entity/artifact';
@@ -42,6 +40,7 @@ import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Workers } from '@helpers/workers';
 import { Token } from '@entity/token';
+import { PolicyValidator } from '@policy-engine/block-validators';
 
 /**
  * Result of publishing
@@ -65,7 +64,7 @@ interface IPublishResult {
  * Policy engine service
  */
 @Singleton
-export class PolicyEngine extends ServiceRequestsBase{
+export class PolicyEngine extends ServiceRequestsBase {
 
     /**
      * Run ready event
@@ -122,36 +121,6 @@ export class PolicyEngine extends ServiceRequestsBase{
         if (this.policyReadyCallbacks.has(policyId)) {
             this.policyReadyCallbacks.get(policyId)(data);
         }
-    }
-
-    /**
-     * Get user
-     * @param policy
-     * @param user
-     */
-    public async getUser(policy: IPolicyInstance, user: IUser): Promise<IPolicyUser> {
-        const regUser = await this.users.getUser(user.username);
-        if (!regUser || !regUser.did) {
-            throw new Error(`Forbidden`);
-        }
-        const userFull = new PolicyUser(regUser.did);
-        if (policy.dryRun) {
-            if (user.role === UserRole.STANDARD_REGISTRY) {
-                const virtualUser = await DatabaseServer.getVirtualUser(policy.policyId);
-                userFull.setVirtualUser(virtualUser);
-            } else {
-                throw new Error(`Forbidden`);
-            }
-        } else {
-            userFull.setUsername(regUser.username);
-        }
-        const groups = await new DatabaseServer().getGroupsByUser(policy.policyId, userFull.did);
-        for (const group of groups) {
-            if (group.active !== false) {
-                return userFull.setGroup(group);
-            }
-        }
-        return userFull;
     }
 
     /**
@@ -484,7 +453,7 @@ export class PolicyEngine extends ServiceRequestsBase{
 
             notifier.completedAndStart('Token');
             const tokenIds = findAllEntities(model.config, ['tokenId']);
-            const tokens = await DatabaseServer.getTokens({tokenId: {$in: tokenIds}, owner: model.owner});
+            const tokens = await DatabaseServer.getTokens({ tokenId: { $in: tokenIds }, owner: model.owner });
             for (const token of tokens) {
                 if (token.draftToken) {
                     const workers = new Workers();
@@ -596,7 +565,7 @@ export class PolicyEngine extends ServiceRequestsBase{
                     owner,
                     policyId: model.id.toString(),
                     policyUUID: model.uuid
-                }, {admin: true, submit: false});
+                }, { admin: true, submit: false });
                 await synchronizationTopic.saveKeys();
                 await DatabaseServer.saveTopic(synchronizationTopic.toObject());
                 model.synchronizationTopicId = synchronizationTopic.topicId;
@@ -924,7 +893,7 @@ export class PolicyEngine extends ServiceRequestsBase{
     public async destroyModel(policyId: string): Promise<void> {
         const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
         if (serviceChannelEntity) {
-            const {name} = serviceChannelEntity;
+            const { name } = serviceChannelEntity;
             PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
             this.channel.publish(PolicyEvents.DELETE_POLICY, {
                 policyId,
@@ -965,7 +934,6 @@ export class PolicyEngine extends ServiceRequestsBase{
      */
     public async validateModel(policy: Policy | string): Promise<ISerializedErrors> {
         let policyId: string;
-
         if (typeof policy === 'string') {
             policyId = policy
             policy = await DatabaseServer.getPolicyById(policyId);
@@ -975,32 +943,21 @@ export class PolicyEngine extends ServiceRequestsBase{
             }
             policyId = policy.id.toString();
         }
-
-        const { name } = PolicyServiceChannelsContainer.createIfNotExistServiceChannel(policyId);
-
-        this.channel.publish(PolicyEvents.GENERATE_POLICY, {
-            policy,
-            policyId,
-            policyServiceName: name,
-            skipRegistration: false
-        });
-
-        return new Promise((resolve) => {
-            this.policyReadyCallbacks.set(policyId, (data) => {
-                this.destroyModel(policyId);
-                resolve(data);
-            })
-        });
+        const policyValidator = new PolicyValidator(policy);
+        policyValidator.registerBlock(policy.config);
+        policyValidator.addPermissions(policy.policyRoles);
+        await policyValidator.validate();
+        return policyValidator.getSerializedErrors();
     }
 
     /**
      * Create Multi Policy
-     * @param policyInstance
+     * @param policy
      * @param userAccount
      * @param data
      */
     public async createMultiPolicy(
-        policyInstance: IPolicyInstance,
+        policy: Policy,
         userAccount: IRootConfig,
         root: IRootConfig,
         data: any,
@@ -1008,13 +965,13 @@ export class PolicyEngine extends ServiceRequestsBase{
 
         const multipleConfig = DatabaseServer.createMultiPolicy({
             uuid: GenerateUUIDv4(),
-            instanceTopicId: policyInstance.instanceTopicId,
+            instanceTopicId: policy.instanceTopicId,
             mainPolicyTopicId: data.mainPolicyTopicId,
             synchronizationTopicId: data.synchronizationTopicId,
             owner: userAccount.did,
             user: userAccount.hederaAccountId,
             policyOwner: root.hederaAccountId,
-            type: data.mainPolicyTopicId === policyInstance.instanceTopicId ? 'Main' : 'Sub',
+            type: data.mainPolicyTopicId === policy.instanceTopicId ? 'Main' : 'Sub',
         });
 
         const message = new SynchronizationMessage(MessageAction.CreateMultiPolicy);

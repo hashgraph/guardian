@@ -1,6 +1,5 @@
 import { ActionCallback, ExternalData } from '@policy-engine/helpers/decorators';
 import { DocumentSignature, Schema } from '@guardian/interfaces';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
@@ -34,7 +33,10 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: [
+        { path: 'options.schema', alias: 'schema', type: 'Schema' }
+    ]
 })
 export class ExternalDataBlock {
 
@@ -188,29 +190,5 @@ export class ExternalDataBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, {
             documents: ExternalDocuments(doc)
         }));
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (ref.options.schema) {
-                if (typeof ref.options.schema !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-                    return;
-                }
-
-                const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
-                if (!schema) {
-                    resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
-                    return;
-                }
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

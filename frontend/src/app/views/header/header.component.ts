@@ -20,17 +20,12 @@ import { AuthService } from '../../services/auth.service';
     styleUrls: ['./header.component.css']
 })
 export class HeaderComponent implements OnInit {
-    links: any = null;
     activeLink: string = "";
     activeLinkRoot: string = "";
     role: any = null;
     isLogin: boolean = false;
     username: string | null = null;
-    linksConfig: any = {
-        default: null
-    };
     commonLinksDisabled: boolean = false;
-
     menuIcon: 'expand_more' | 'account_circle' = 'expand_more';
     testUsers$: Observable<any[]>;
     balance: string;
@@ -52,79 +47,6 @@ export class HeaderComponent implements OnInit {
         this.balance = 'N\\A';
         this.balanceType = '';
         this.testUsers$ = this.otherService.getAllUsers();
-
-        this.linksConfig[UserRole.USER] = [{
-            name: "Profile",
-            disabled: false,
-            link: '/user-profile'
-        }, {
-            name: "Policies",
-            disabled: false,
-            link: '/policy-viewer'
-        }];
-        this.linksConfig[UserRole.STANDARD_REGISTRY] = [{
-            name: "Profile",
-            disabled: false,
-            link: '/config'
-        }, {
-            name: "Schemas",
-            disabled: false,
-            link: '/schemas'
-        }, {
-            name: "Tokens",
-            disabled: false,
-            link: '/tokens'
-        },
-        {
-            name: "Contracts",
-            disabled: false,
-            link: '/contracts',
-            links: [
-                '/contracts/pairs'
-            ]
-        },
-        {
-            name: "Artifacts",
-            disabled: false,
-            link: '/artifacts'
-        },
-        {
-            name: "Policies",
-            disabled: false,
-            link: '/policy-viewer',
-            pattern: new RegExp('^\/policy-viewer\/\\w+')
-        }, {
-            name: "Policies configuration",
-            disabled: false,
-            link: '/policy-configuration',
-            hidden: true,
-        }, {
-            name: "Compare",
-            disabled: false,
-            link: '/compare',
-            hidden: true,
-        },
-        {
-            name: "Admin",
-            disabled: false,
-            link: '/admin/settings',
-            links: [
-                '/admin/settings',
-                '/admin/logs',
-                '/admin/status'
-            ]
-        }];
-        this.linksConfig[UserRole.AUDITOR] = [{
-            name: "Audit",
-            disabled: false,
-            link: '/audit'
-        }, {
-            name: "Trust Chain",
-            disabled: false,
-            link: '/trust-chain'
-        }];
-
-        this.links = this.linksConfig.default;
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 this.update();
@@ -219,14 +141,7 @@ export class HeaderComponent implements OnInit {
             this.isLogin = isLogin;
             this.role = role;
             this.username = username;
-
             this.menuIcon = this.isLogin ? 'account_circle' : 'expand_more';
-
-            if (this.isLogin) {
-                this.links = this.linksConfig[this.role];
-            } else {
-                this.links = this.linksConfig.default;
-            }
         }
     }
 
@@ -250,23 +165,6 @@ export class HeaderComponent implements OnInit {
         this.router.navigate([link.link]);
     }
 
-    isActive(link: any) {
-        if (this.activeLink == link.link || this.activeLinkRoot == link.link) {
-            return true;
-        }
-        if (link.links) {
-            return link.links.indexOf(this.activeLink) !== -1 || link.links.indexOf(this.activeLinkRoot) !== -1;
-        }
-        if (link.pattern) {
-            return link.pattern.test(this.activeLink);
-        }
-        return this.activeLink == link.link || this.activeLinkRoot == link.link;
-    }
-
-    isHidden(link: any) {
-        return link.hidden && !this.isActive(link);
-    }
-
     onHome() {
         this.router.navigate(['/']);
     }
@@ -279,5 +177,156 @@ export class HeaderComponent implements OnInit {
         return policyRoles.map((item: any) => {
             return `${item.name} (${item.version}): ${item.role}`
         }).join('\r\n');
+    }
+
+    public isActiveLink(type: string): boolean {
+        switch (type) {
+            case 'SR_UP':
+                return this.activeLinkRoot === '/config';
+            case 'SR_TOKENS':
+                return (
+                    this.activeLinkRoot === '/tokens' ||
+                    this.activeLinkRoot === '/contracts' ||
+                    this.activeLinkRoot === '/contracts/pairs'
+                );
+            case 'SR_POLICIES':
+                return (
+                    this.activeLinkRoot === '/schemas' ||
+                    this.activeLinkRoot === '/artifacts' ||
+                    this.activeLinkRoot === '/modules' ||
+                    this.activeLinkRoot === '/policy-viewer' ||
+                    this.activeLinkRoot === '/policy-configuration' ||
+                    this.activeLinkRoot === '/compare' ||
+                    /^\/policy-configuration\/\w+/.test(this.activeLinkRoot) ||
+                    this.activeLinkRoot === 'policy-configuration'
+                );
+            case 'SR_ADMIN':
+                return (
+                    this.activeLinkRoot === '/admin/settings' ||
+                    this.activeLinkRoot === '/admin/logs' ||
+                    this.activeLinkRoot === '/admin/status'
+                );
+            case 'SR_TOKENS_LIST':
+                return this.activeLinkRoot === '/tokens';
+            case 'SR_CONTRACTS':
+                return this.activeLinkRoot === '/contracts';
+            case 'SR_CONTRACTS_PAIRS':
+                return this.activeLinkRoot === '/contracts/pairs';
+            case 'SR_SCHEMAS':
+                return this.activeLinkRoot === '/schemas';
+            case 'SR_ARTIFACTS':
+                return this.activeLinkRoot === '/artifacts';
+            case 'SR_MODULES':
+                return this.activeLinkRoot === '/modules';
+            case 'SR_POLICIES_LIST':
+                return this.activeLinkRoot === '/policy-viewer';
+            case 'SR_VIEWER':
+                return /^\/policy-viewer\/\w+/.test(this.activeLinkRoot);
+            case 'SR_EDITOR':
+                return this.activeLinkRoot === '/policy-configuration';
+            case 'SR_COMPARE':
+                return this.activeLinkRoot === '/compare';
+            case 'SR_SETTINGS':
+                return this.activeLinkRoot === '/admin/settings';
+            case 'SR_LOGS':
+                return this.activeLinkRoot === '/admin/logs';
+            case 'SR_STATUS':
+                return this.activeLinkRoot === '/admin/status';
+
+            case 'USER_TOKENS':
+                return this.activeLink === '/user-profile?tab=tokens';
+            case 'USER_RETIRE':
+                return this.activeLink === '/user-profile?tab=retire';
+            case 'USER_UP':
+                return (this.activeLinkRoot === '/user-profile' && (
+                    this.activeLink !== '/user-profile?tab=tokens' &&
+                    this.activeLink !== '/user-profile?tab=retire'
+                ));
+            case 'USER_POLICIES':
+                return this.activeLinkRoot === '/policy-viewer';
+
+            case 'AUDITOR_UP':
+                return this.activeLinkRoot === '/audit';
+            case 'AUDITOR_TRUST_CHAIN':
+                return this.activeLinkRoot === '/trust-chain';
+
+
+
+        }
+        return false;
+    }
+
+    public routActive(type: string): boolean {
+        switch (type) {
+            case 'SR_UP':
+                this.router.navigate(['/config']);
+                return true;
+            case 'SR_TOKENS':
+                return false;
+            case 'SR_POLICIES':
+                return false;
+            case 'SR_ADMIN':
+                return false;
+            case 'SR_TOKENS_LIST':
+                this.router.navigate(['/tokens']);
+                return true;
+            case 'SR_CONTRACTS':
+                this.router.navigate(['/contracts']);
+                return true;
+            case 'SR_CONTRACTS_PAIRS':
+                return false;
+            case 'SR_SCHEMAS':
+                this.router.navigate(['/schemas']);
+                return true;
+            case 'SR_ARTIFACTS':
+                this.router.navigate(['/artifacts']);
+                return true;
+            case 'SR_MODULES':
+                this.router.navigate(['/modules']);
+                return true;
+            case 'SR_POLICIES_LIST':
+                this.router.navigate(['/policy-viewer']);
+                return true;
+            case 'SR_VIEWER':
+                return false;
+            case 'SR_EDITOR':
+                return false;
+            case 'SR_COMPARE':
+                return false;
+            case 'SR_SETTINGS':
+                this.router.navigate(['/admin/settings']);
+                return true;
+            case 'SR_LOGS':
+                this.router.navigate(['/admin/logs']);
+                return true;
+            case 'SR_STATUS':
+                this.router.navigate(['/admin/status']);
+                return true;
+
+            case 'USER_TOKENS':
+                this.router.navigate(['/user-profile'], {
+                    queryParams: { tab: 'tokens' }
+                });
+                return true;
+            case 'USER_RETIRE':
+                this.router.navigate(['/user-profile'], {
+                    queryParams: { tab: 'retire' }
+                });
+                return true;
+            case 'USER_UP':
+                this.router.navigate(['/user-profile']);
+                return true;
+            case 'USER_POLICIES':
+                this.router.navigate(['/policy-viewer']);
+                return true;
+
+            case 'AUDITOR_UP':
+                this.router.navigate(['/audit']);
+                return true;
+            case 'AUDITOR_TRUST_CHAIN':
+                this.router.navigate(['/trust-chain']);
+                return true;
+        }
+        return false;
     }
 }

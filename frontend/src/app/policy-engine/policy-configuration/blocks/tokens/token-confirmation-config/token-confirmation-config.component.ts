@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
+import { IModuleVariables, PolicyBlockModel, PolicyModel, TokenTemplateVariables, TokenVariables } from 'src/app/policy-engine/structures';
+
 /**
  * Settings for block of 'mintDocument' and 'wipeDocument' types.
  */
@@ -11,23 +12,27 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/
     encapsulation: ViewEncapsulation.Emulated
 })
 export class TokenConfirmationConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
+
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
 
     propHidden: any = {
         main: false,
     };
 
-    block!: any;
+    properties!: any;
+    tokens!: TokenVariables[];
+    tokenTemplate!: TokenTemplateVariables[];
 
     constructor() {
     }
 
     ngOnInit(): void {
+        this.tokens = [];
+        this.tokenTemplate = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }
@@ -37,7 +42,11 @@ export class TokenConfirmationConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        this.block = block.properties;
+        this.moduleVariables = block.moduleVariables;
+        this.item = block;
+        this.properties = block.properties;
+        this.tokens = this.moduleVariables?.tokens || [];
+        this.tokenTemplate = this.moduleVariables?.tokenTemplates || [];
     }
 
     onHide(item: any, prop: any) {
@@ -45,7 +54,11 @@ export class TokenConfirmationConfigComponent implements OnInit {
     }
 
     onUseTemplateChange() {
-        delete this.block.tokenId;
-        delete this.block.template;
+        delete this.properties.tokenId;
+        delete this.properties.template;
+    }
+
+    onSave() {
+        this.item.changed = true;
     }
 }

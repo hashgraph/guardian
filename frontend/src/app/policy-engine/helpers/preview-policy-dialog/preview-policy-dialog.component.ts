@@ -12,22 +12,21 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 })
 export class PreviewPolicyDialog {
     loading = true;
-    policyId!: any;
     policy!: any;
     schemas!: string;
     tokens!: string;
     policyGroups!: string;
     newVersions: any[] = [];
-
     versionOfTopicId: any;
-    policies: any[];
+    policies!: any[];
+
+    module!: any;
 
     constructor(
         public dialogRef: MatDialogRef<PreviewPolicyDialog>,
         private policyEngineService: PolicyEngineService,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
-        this.policyId = data.policyId;
-
+        @Inject(MAT_DIALOG_DATA) public data: any
+    ) {
         if (data.policy) {
             this.newVersions = data.policy.newVersions || [];
             this.policy = data.policy.policy;
@@ -36,12 +35,6 @@ export class PreviewPolicyDialog {
             if (this.policy.policyRoles) {
                 this.policyGroups += this.policy.policyRoles.join(', ');
             }
-            // if (this.policy.policyGroups) {
-            //     if (this.policyGroups) {
-            //         this.policyGroups += ', ';
-            //     }
-            //     this.policyGroups += this.policy.policyGroups.join(', ');
-            // }
 
             const schemas = data.policy.schemas || [];
             const tokens = data.policy.tokens || [];
@@ -53,9 +46,13 @@ export class PreviewPolicyDialog {
                 return s.name;
             }).join(', ');
             this.tokens = tokens.map((s: any) => s.tokenName).join(', ');
+
+            this.policies = this.data.policies || [];
         }
 
-        this.policies = this.data.policies || [];
+        if (data.module) {
+            this.module = data.module.module;
+        }
     }
 
     ngOnInit() {

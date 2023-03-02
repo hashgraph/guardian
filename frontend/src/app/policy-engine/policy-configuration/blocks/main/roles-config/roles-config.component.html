@@ -1,11 +1,11 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Available Roles</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.roles" [disabled]="readonly" multiple>
-                <mat-option *ngFor="let item of policy.policyRoles" [value]="item.name">{{item.name}}</mat-option>
+            <mat-select [(value)]="properties.roles" [disabled]="readonly" multiple (change)="onSave()">
+                <mat-option *ngFor="let item of roles" [value]="item.value">{{item.name}}</mat-option>
             </mat-select>
         </td>
     </tr>
@@ -13,14 +13,14 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Available Groups</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.groups" [disabled]="readonly" multiple>
-                <mat-option *ngFor="let item of policy.policyGroups" [value]="item.name">{{item.name}}</mat-option>
+            <mat-select [(value)]="properties.groups" [disabled]="readonly" multiple (change)="onSave()">
+                <mat-option *ngFor="let item of groups" [value]="item.value">{{item.name}}</mat-option>
             </mat-select>
         </td>
     </tr>
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>expand_more</mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">UI</td>
         <td class="propHeaderCell"></td>
@@ -29,14 +29,15 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Description</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.uiMetaData.description" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.uiMetaData.description" [readonly]="readonly"
+                (blur)="onSave()">
         </td>
     </tr>
 </table>

@@ -1,10 +1,10 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.type" [disabled]="readonly">
+            <mat-select [(value)]="properties.type" [disabled]="readonly" (change)="onSave()">
                 <mat-option value="dropdown">Dropdown</mat-option>
             </mat-select>
         </td>
@@ -13,22 +13,24 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Can Be Empty</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.canBeEmpty" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.canBeEmpty" [readonly]="readonly"
+                (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Field</td>
         <td class="propRowCell">
-            <document-path [(value)]="block.field" [readonly]="readonly" [displayTooltip]="true"></document-path>
+            <document-path [(value)]="properties.field" [readonly]="readonly" [displayTooltip]="true"
+                (change)="onSave()"></document-path>
         </td>
     </tr>
 
-    <ng-container *ngIf="block.type == 'dropdown'">
+    <ng-container *ngIf="properties.type == 'dropdown'">
         <tr class="propRow">
             <td class="propRowCol" (click)="onHide(propHidden, 'dropdownGroup')"
                 [attr.collapse]="propHidden.dropdownGroup">
-                <mat-icon>expand_more</mat-icon>
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Dropdown Options</td>
             <td class="propRowCell">
@@ -38,21 +40,23 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Name</td>
             <td class="propRowCell">
-                <document-path [(value)]="block.optionName" [readonly]="readonly" [displayTooltip]="true"></document-path>
+                <document-path [(value)]="properties.optionName" [readonly]="readonly" [displayTooltip]="true"
+                    (change)="onSave()"></document-path>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.dropdownGroup">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Option Value</td>
             <td class="propRowCell">
-                <document-path [(value)]="block.optionValue" [readonly]="readonly" [displayTooltip]="true"></document-path>
+                <document-path [(value)]="properties.optionValue" [readonly]="readonly" [displayTooltip]="true"
+                    (change)="onSave()"></document-path>
             </td>
         </tr>
     </ng-container>
 
     <tr class="propHeader">
         <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>expand_more</mat-icon>
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">UI</td>
         <td class="propHeaderCell"></td>
@@ -61,14 +65,15 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Button Content</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.uiMetaData.content" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.uiMetaData.content" [readonly]="readonly"
+                (blur)="onSave()">
         </td>
     </tr>
 </table>

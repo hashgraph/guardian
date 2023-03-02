@@ -10,7 +10,7 @@
 
     <ng-container *ngIf="isConfirmed; else elseTemplate">
         <div *ngIf="profile" class="user-profile">
-            <mat-tab-group>
+            <mat-tab-group (selectedIndexChange)="onChange($event)" [selectedIndex]="selectedIndex">
                 <mat-tab label="ACCOUNT">
                     <div class="profile-item">
                         <div class="profile-item-name">HEDERA ID:</div>

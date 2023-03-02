@@ -1,11 +1,9 @@
 import { DataSourceBlock } from '@policy-engine/helpers/decorators/data-source-block';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyAddonBlock, IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { StateField } from '@policy-engine/helpers/decorators';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 import ObjGet from 'lodash.get';
@@ -29,7 +27,8 @@ import ObjGet from 'lodash.get';
         ],
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class InterfaceDocumentsSource {
     /**
@@ -282,36 +281,6 @@ export class InterfaceDocumentsSource {
                 return await ref.databaseServer.getApprovalDocumentsByAggregation(aggregation);
             default:
                 return [];
-        }
-    }
-
-    /**
-     * Validate block data
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
-        try {
-            if (ref.options.uiMetaData) {
-                if (Array.isArray(ref.options.uiMetaData.fields)) {
-                    for (const tag of ref.options.uiMetaData.fields.map(i => i.bindBlock).filter(item => !!item)) {
-                        if (!resultsContainer.isTagExist(tag)) {
-                            resultsContainer.addBlockError(ref.uuid, `Tag "${tag}" does not exist`);
-                        }
-                    }
-                }
-                if (ref.options.uiMetaData.enableSorting) {
-                    const sourceAddons = ref.getCommonAddons().filter(addon => {
-                        return addon.blockType === 'documentsSourceAddon';
-                    });
-                    const sourceAddonType = sourceAddons[0].options.dataType;
-                    if (sourceAddons.find(item => item.options.dataType !== sourceAddonType)) {
-                        resultsContainer.addBlockError(ref.uuid, `There are different types in documentSourceAddon's`);
-                    }
-                }
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

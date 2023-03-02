@@ -38,7 +38,10 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: [
+        { path: 'options.outputSchema', alias: 'schema', type: 'Schema' }
+    ]
 })
 export class CustomLogicBlock {
     /**

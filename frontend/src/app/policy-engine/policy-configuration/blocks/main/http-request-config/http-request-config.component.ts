@@ -1,10 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
-import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 import { CodeEditorDialogComponent } from '../../../../helpers/code-editor-dialog/code-editor-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { IModuleVariables, PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'switch' and 'interfaceStepBlock' types.
@@ -16,13 +14,13 @@ import { MatDialog } from '@angular/material/dialog';
     encapsulation: ViewEncapsulation.Emulated
 })
 export class HttpRequestConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         options: false,
@@ -30,12 +28,11 @@ export class HttpRequestConfigComponent implements OnInit {
         conditions: {},
     };
 
-    block!: any;
+    properties!: any;
 
     constructor(
-        public registeredBlocks: RegisteredBlocks,
         private dialog: MatDialog
-        ) {
+    ) {
     }
 
     ngOnInit(): void {
@@ -48,8 +45,10 @@ export class HttpRequestConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        this.block = block.properties;
-        this.block.headers = this.block.headers || [];
+        this.moduleVariables = block.moduleVariables;
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.headers = this.properties.headers || [];
     }
 
     onHide(item: any, prop: any) {
@@ -57,8 +56,8 @@ export class HttpRequestConfigComponent implements OnInit {
     }
 
     addHeader() {
-        this.block.headers.push({
-            tag: `Condition_${this.block.headers.length}`,
+        this.properties.headers.push({
+            tag: `Condition_${this.properties.headers.length}`,
             type: 'equal',
             value: '',
             actor: '',
@@ -66,11 +65,7 @@ export class HttpRequestConfigComponent implements OnInit {
     }
 
     onRemoveHeader(i: number) {
-        this.block.headers.splice(i, 1);
-    }
-
-    getIcon(block: any) {
-        return this.registeredBlocks.getIcon(block.blockType);
+        this.properties.headers.splice(i, 1);
     }
 
     editBody($event: MouseEvent) {
@@ -79,14 +74,18 @@ export class HttpRequestConfigComponent implements OnInit {
             panelClass: 'g-dialog',
             data: {
                 mode: 'json',
-                expression: this.block.messageBody,
+                expression: this.properties.messageBody,
                 readonly: this.readonly
             },
             autoFocus: true,
             disableClose: true
         })
         dialogRef.afterClosed().subscribe(result => {
-            this.block.messageBody = result.expression;
+            this.properties.messageBody = result.expression;
         })
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

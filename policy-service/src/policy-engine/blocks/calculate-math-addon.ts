@@ -1,9 +1,7 @@
 import { CalculateAddon } from '@policy-engine/helpers/decorators';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateAddon } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
@@ -23,7 +21,8 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
         input: null,
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class CalculateMathAddon {
     /**
@@ -55,25 +54,5 @@ export class CalculateMathAddon {
             }
         }
         return variables;
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
-        try {
-            if (ref.options.equations) {
-                for (const equation of ref.options.equations) {
-                    if (!ref.parse(equation.formula)) {
-                        resultsContainer.addBlockError(ref.uuid, `Incorrect formula: ${equation.formula}`);
-                        return;
-                    }
-                }
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

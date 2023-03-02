@@ -2,9 +2,9 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEnca
 import { MatDialog } from '@angular/material/dialog';
 import { Schema, Token } from '@guardian/interfaces';
 import { IconPreviewDialog } from 'src/app/components/icon-preview-dialog/icon-preview-dialog.component';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
 import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { IModuleVariables, PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'reportItemBlock' type.
@@ -16,13 +16,13 @@ import { IPFSService } from 'src/app/services/ipfs.service';
     encapsulation: ViewEncapsulation.Emulated
 })
 export class ReportItemConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
+    
     fileLoading = false;
 
     propHidden: any = {
@@ -37,7 +37,7 @@ export class ReportItemConfigComponent implements OnInit {
         dynamicFilters: {}
     };
 
-    block!: any;
+    properties!: any;
 
     constructor(
         private ipfs: IPFSService,
@@ -54,12 +54,14 @@ export class ReportItemConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        this.block = block.properties;
-        this.block.filters = this.block.filters || [];
-        this.block.dynamicFilters = this.block.dynamicFilters || [];
-        this.block.variables = this.block.variables || [];
-        this.block.visible = this.block.visible !== false;
-        this.block.iconType = this.block.iconType;
+        this.moduleVariables = block.moduleVariables;
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.filters = this.properties.filters || [];
+        this.properties.dynamicFilters = this.properties.dynamicFilters || [];
+        this.properties.variables = this.properties.variables || [];
+        this.properties.visible = this.properties.visible !== false;
+        this.properties.iconType = this.properties.iconType;
     }
 
     onHide(item: any, prop: any) {
@@ -67,27 +69,27 @@ export class ReportItemConfigComponent implements OnInit {
     }
 
     addVariable() {
-        this.block.variables.push({});
+        this.properties.variables.push({});
     }
 
     onRemoveVariable(i: number) {
-        this.block.variables.splice(i, 1);
+        this.properties.variables.splice(i, 1);
     }
 
     addFilter() {
-        this.block.filters.push({});
+        this.properties.filters.push({});
     }
 
     onRemoveFilter(i: number) {
-        this.block.filters.splice(i, 1);
+        this.properties.filters.splice(i, 1);
     }
 
     addDynamicFilter() {
-        this.block.dynamicFilters.push({});
+        this.properties.dynamicFilters.push({});
     }
 
     onRemoveDynamicFilter(i: number) {
-        this.block.dynamicFilters.splice(i, 1);
+        this.properties.dynamicFilters.splice(i, 1);
     }
 
     onFileSelected(event: any, block: any) {
@@ -109,13 +111,17 @@ export class ReportItemConfigComponent implements OnInit {
     iconPreview() {
         this.dialog.open(IconPreviewDialog, {
             data: {
-                iconType: this.block.iconType,
-                icon: this.block.icon
+                iconType: this.properties.iconType,
+                icon: this.properties.icon
             }
         });
     }
 
     onMultipleChange() {
-        this.block.dynamicFilters = [];
+        this.properties.dynamicFilters = [];
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

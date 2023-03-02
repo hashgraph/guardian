@@ -32,6 +32,7 @@ import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfac
                 }]
             }
         }]
-    }
+    },
+    variables: []
 })
 export class SelectiveAttributes { }
