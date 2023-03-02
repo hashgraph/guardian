@@ -22,6 +22,9 @@ export class PolicyBlockModel {
     protected _root: boolean;
     protected _changed: boolean;
     protected _defaultEvent: PolicyEventModel | null | undefined;
+    protected _tag: string;
+    protected _localTag: string;
+    protected _lastPrefix: string;
 
     constructor(config: IBlockConfig, parent: PolicyBlockModel | null) {
         this._changed = false;
@@ -29,18 +32,19 @@ export class PolicyBlockModel {
 
         this.id = config.id || GenerateUUIDv4();
         this.blockType = config.blockType;
-
-        config.tag = config.tag || "";
         if (!Array.isArray(config.permissions)) {
             config.permissions = [];
         }
-
         this._parent = parent;
+        this._tag = config.tag || '';
+        this._localTag = this._tag;
+        this._lastPrefix = '';
 
         const clone: any = { ...config };
         delete clone.children;
         delete clone.events;
         delete clone.artifacts;
+        delete clone.tag;
 
         this.properties = clone;
 
@@ -57,6 +61,12 @@ export class PolicyBlockModel {
 
     public setModule(module: PolicyModel | PolicyModuleModel | TemplateModel | undefined): void {
         this._module = module;
+        if (this._module) {
+            this._lastPrefix = this._module.tagPrefix;
+            if (this._lastPrefix && this._localTag.startsWith(this._lastPrefix)) {
+                this._localTag = this._localTag.replace(this._lastPrefix, '');
+            }
+        }
     }
 
     public get isModule(): boolean {
@@ -72,11 +82,25 @@ export class PolicyBlockModel {
     }
 
     public get tag(): string {
-        return this.properties.tag;
+        if (this._module && this._lastPrefix !== this._module.tagPrefix) {
+            this._lastPrefix = this._module.tagPrefix;
+            this._tag = this._lastPrefix + this._localTag;
+        }
+        return this._tag;
     }
 
-    public set tag(value: string) {
-        this.properties.tag = value;
+    public get localTag(): string {
+        return this._localTag;
+    }
+
+    public set localTag(value: string) {
+        this._localTag = value;
+        if (this._module) {
+            this._lastPrefix = this._module.tagPrefix;
+            this._tag = this._lastPrefix + this._localTag;
+        } else {
+            this._tag = this._localTag;
+        }
         this.changed = true;
     }
 
@@ -180,6 +204,9 @@ export class PolicyBlockModel {
     }
 
     public createChild(block: IBlockConfig, index?: number) {
+        if (this._module) {
+            block.tag = this._module.getNewTag('Block');
+        }
         this._createChild(block, this._module, index);
         this.refresh();
     }
@@ -210,11 +237,15 @@ export class PolicyBlockModel {
         delete block.children;
         delete block.events;
 
+        if (module) {
+            block.tag = module.getNewTag('Block');
+        }
         const newBlock = new PolicyBlockModel(block, this);
         newBlock.setModule(module);
         if (module) {
-            newBlock.tag = module.getNewTag('Block', newBlock);
+            module._tagMap[newBlock.tag] = newBlock;
         }
+
         this._addChild(newBlock);
 
         if (Array.isArray(children)) {

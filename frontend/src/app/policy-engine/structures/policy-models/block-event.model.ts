@@ -157,7 +157,7 @@ export class PolicyEventModel {
     }
 
     public isTarget(block: PolicyBlockModel): boolean {
-        return block.id == this.target?.id;
+        return block.id == this.target?.id && block.id != this.source?.id;
     }
 
     public isSource(block: PolicyBlockModel): boolean {

@@ -43,7 +43,7 @@ export class TemplateModel {
         this.status = template.status;
         this.messageId = template.messageId;
         this.topicId = template.topicId;
-        
+
         this.buildBlock(template.config);
         this._config.name = template.name;
         this._config.description = template.description;
@@ -81,6 +81,10 @@ export class TemplateModel {
 
     public set changed(value: boolean) {
         this._changed = value;
+    }
+
+    public get tagPrefix(): string {
+        return '';
     }
 
     private buildBlock(config: IBlockConfig) {
@@ -175,8 +179,8 @@ export class TemplateModel {
         return [];
     }
 
-    public getNewTag(type: string, block?: PolicyBlockModel): string {
-        return this._config.getNewTag(type, block);
+    public getNewTag(type: string): string {
+        return this._config.getNewTag(type);
     }
 
     public getRootModule(): PolicyModel | PolicyModuleModel {

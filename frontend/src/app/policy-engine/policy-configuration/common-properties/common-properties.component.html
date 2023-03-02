@@ -79,7 +79,7 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Tag</td>
                     <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="block.tag" [readonly]="readonly" (blur)="onSave()">
+                        <input class="prop-input" [(ngModel)]="block.localTag" [readonly]="readonly" (blur)="onSave()">
                     </td>
                 </tr>
                 <tr class="propRow" [attr.collapse]="propHidden.metaData">
@@ -200,8 +200,8 @@
                                 <span class="prop-icon prop-icon-event">
                                     <mat-icon>flash_on</mat-icon>
                                 </span>
-                                <span class="prop-icon" style="color: #c53227;">
-                                    <mat-icon>arrow_upward</mat-icon>
+                                <span class="prop-output-icon">
+                                    <mat-icon>arrow_forward</mat-icon>
                                 </span>
                                 <span class="prop-icon-text">Default Event</span>
                             </div>
@@ -217,14 +217,14 @@
                     </tr>
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Source</td>
+                        <td class="propRowCell cellName source-elm">Source</td>
                         <td class="propRowCell">
-                            <span class="readonly-prop">Current Block</span>
+                            <span class="readonly-prop current-elm">Current Block</span>
                         </td>
                     </tr>
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">
+                        <td class="propRowCell cellName source-elm">
                             Output Event
                         </td>
                         <td class="propRowCell">
@@ -233,14 +233,14 @@
                     </tr>
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Target</td>
+                        <td class="propRowCell cellName target-elm">Target</td>
                         <td class="propRowCell">
                             <span class="readonly-prop">Next Block</span>
                         </td>
                     </tr>
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">
+                        <td class="propRowCell cellName target-elm">
                             Input Event
                         </td>
                         <td class="propRowCell">
@@ -279,10 +279,10 @@
                                         <mat-icon>flash_on</mat-icon>
                                     </span>
                                     <span *ngIf="isInputEvent(item)" class="prop-input-event">
-                                        <mat-icon>arrow_forward</mat-icon>
+                                        <mat-icon>arrow_back</mat-icon>
                                     </span>
                                     <span *ngIf="isOutputEvent(item)" class="prop-output-icon">
-                                        <mat-icon>arrow_back</mat-icon>
+                                        <mat-icon>arrow_forward</mat-icon>
                                     </span>
                                     <span *ngIf="isInputEvent(item)" class="prop-icon-text">Input Event</span>
                                     <span *ngIf="isOutputEvent(item)" class="prop-icon-text">Output Event</span>
@@ -310,15 +310,15 @@
                         <tr *ngIf="isOutputEvent(item)" class="propRow subRow"
                             [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
-                            <td class="propRowCell cellName" style="color:#2d8508;font-weight:500">Source</td>
+                            <td class="propRowCell cellName source-elm">Source</td>
                             <td class="propRowCell">
-                                <span class="readonly-prop">Current Block</span>
+                                <span class="readonly-prop current-elm">Current Block</span>
                             </td>
                         </tr>
                         <tr *ngIf="isInputEvent(item)" class="propRow subRow"
                             [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
-                            <td class="propRowCell cellName" style="color:#2d8508;font-weight:500">Source</td>
+                            <td class="propRowCell cellName source-elm">Source</td>
                             <td class="propRowCell">
                                 <select-block
                                     [root]="module"
@@ -332,7 +332,7 @@
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
-                            <td class="propRowCell cellName" style="color:#2d8508;font-weight:500">Output Event</td>
+                            <td class="propRowCell cellName source-elm">Output Event</td>
                             <td class="propRowCell">
                                 <mat-select [(value)]="item.output" [disabled]="readonly" (selectionChange)="onSave()">
                                     <mat-option value=""></mat-option>
@@ -346,7 +346,7 @@
                         <tr *ngIf="isOutputEvent(item)" class="propRow subRow"
                             [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
-                            <td class="propRowCell cellName" style="color:#bd2a1f;font-weight:500">Target</td>
+                            <td class="propRowCell cellName target-elm">Target</td>
                             <td class="propRowCell">
                                 <select-block
                                     [root]="module"
@@ -361,14 +361,14 @@
                         <tr *ngIf="isInputEvent(item)" class="propRow subRow"
                             [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
-                            <td class="propRowCell cellName" style="color:#bd2a1f;font-weight:500">Target</td>
+                            <td class="propRowCell cellName target-elm">Target</td>
                             <td class="propRowCell">
-                                <span class="readonly-prop">Current Block</span>
+                                <span class="readonly-prop current-elm">Current Block</span>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
                             <td class="propRowCol"></td>
-                            <td class="propRowCell cellName" style="color:#bd2a1f;font-weight:500">Input Event</td>
+                            <td class="propRowCell cellName target-elm">Input Event</td>
                             <td class="propRowCell">
                                 <mat-select [(value)]="item.input" [disabled]="readonly" (selectionChange)="onSave()">
                                     <mat-option value=""></mat-option>

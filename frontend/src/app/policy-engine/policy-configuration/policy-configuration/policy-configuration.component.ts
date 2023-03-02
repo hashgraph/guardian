@@ -556,7 +556,6 @@ export class PolicyConfigurationComponent implements OnInit {
         this.currentBlock = this.openModule.getBlock(this.currentBlock);
         if (this.currentBlock) {
             const newBlock = this.registeredService.getBlockConfig(btn.type);
-            newBlock.tag = this.openModule.getNewTag('Block');
             this.currentBlock.createChild(newBlock);
         }
     }
@@ -573,7 +572,6 @@ export class PolicyConfigurationComponent implements OnInit {
         } else if (event.type === 'add' && event.data) {
             if (event.data.operation === 'new') {
                 const config = this.registeredService.getBlockConfig(event.data.name);
-                config.tag = this.openModule.getNewTag('Block');
                 event.data.parent?.createChild(config, event.data.index);
             }
             if (event.data.operation === 'module') {
@@ -614,9 +612,10 @@ export class PolicyConfigurationComponent implements OnInit {
         const item = this.policyModel.getModule(this.currentBlock);
         if (item) {
             const json = item.getJSON();
+            json.tag = 'Module';
             const module = {
-                name: item.tag,
-                description: item.tag,
+                name: item.localTag,
+                description: item.localTag,
                 config: json
             }
             const dialogRef = this.dialog.open(NewModuleDialog, {

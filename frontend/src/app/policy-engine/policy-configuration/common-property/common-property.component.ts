@@ -76,7 +76,7 @@ export class CommonPropertyComponent implements OnInit {
                 if (moduleVariables?.module?.allBlocks) {
                     this.allBlocks = moduleVariables.module.allBlocks.map(item => {
                         return {
-                            name: item.tag,
+                            name: item.localTag,
                             icon: this.registeredService.getIcon(item.blockType),
                             value: item.tag,
                             parent: item?.parent?.id

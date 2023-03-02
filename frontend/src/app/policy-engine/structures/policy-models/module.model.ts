@@ -157,6 +157,10 @@ export class PolicyModuleModel extends PolicyBlockModel {
         return this._variables;
     }
 
+    public get tagPrefix(): string {
+        return this.tag + ':';
+    }
+
     public removeEvent(event: any) {
         this._allEvents = this._allEvents.filter(e => e.id !== event?.id);
         this._innerEvents = this._innerEvents.filter(e => e.id !== event?.id);
@@ -175,18 +179,15 @@ export class PolicyModuleModel extends PolicyBlockModel {
         return this._idMap[block?.id];
     }
 
-    public getNewTag(type: string, block?: PolicyBlockModel): string {
+    public getNewTag(type: string): string {
         let name = type;
         for (let i = 1; i < 1000; i++) {
-            name = `${this.tag}:${type}_${i}`;
+            name = `${type}_${i}`;
             if (!this._tagMap[name]) {
-                if (block) {
-                    this._tagMap[name] = block;
-                }
                 return name;
             }
         }
-        return `${this.tag}:${type}`;
+        return `${type}`;
     }
 
     public createInputEvent() {
@@ -394,6 +395,7 @@ export class PolicyModuleModel extends PolicyBlockModel {
     }
 
     public override createChild(block: IBlockConfig, index?: number) {
+        block.tag = this.getNewTag('Block');
         this._createChild(block, this, index);
         this.refresh();
     }
@@ -414,8 +416,12 @@ export class PolicyModuleModel extends PolicyBlockModel {
             this._idMap[block.id] = block;
         }
         for (const event of this._allEvents) {
-            event.source = this._tagMap[event.sourceTag];
-            event.target = this._tagMap[event.targetTag];
+            if(event.sourceTag) {
+                event.source = this._tagMap[event.sourceTag];
+            }
+            if(event.targetTag) {
+                event.target = this._tagMap[event.targetTag];
+            }
         }
         this._dataSource = [this];
         this.updateVariables();

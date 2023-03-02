@@ -177,6 +177,10 @@ export class PolicyModel {
         this._changed = value;
     }
 
+    public get tagPrefix(): string {
+        return '';
+    }
+
     public getBlock(block: any): PolicyBlockModel | undefined {
         return this._idMap[block?.id];
     }
@@ -397,8 +401,12 @@ export class PolicyModel {
         }
 
         for (const event of this._allEvents) {
-            event.source = this._tagMap[event.sourceTag];
-            event.target = this._tagMap[event.targetTag];
+            if(event.sourceTag) {
+                event.source = this._tagMap[event.sourceTag];
+            }
+            if(event.targetTag) {
+                event.target = this._tagMap[event.targetTag];
+            }
         }
 
         this._dataSource = [this._config];

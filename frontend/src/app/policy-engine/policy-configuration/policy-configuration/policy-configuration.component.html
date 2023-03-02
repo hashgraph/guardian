@@ -495,7 +495,7 @@
                             <div class="tab-header tab-header-icon" *ngFor="let item of allSubModule"
                                 [attr.selected]="openModule===item" (click)="onOpenModule(item)">
                                 <mat-icon class="module-root-icon edit-color" svgIcon="policy-module"></mat-icon>
-                                {{item.tag}}
+                                {{item.localTag}}
                             </div>
                         </ng-container>
                     </div>

@@ -30,7 +30,7 @@ export class SelectBlock {
 
     onChange() {
         if (this.value && typeof this.value === 'object') {
-            this.text = this.value === this.root ? 'Module' : this.value.tag;
+            this.text = this.value === this.root ? 'Module' : this.value.localTag;
         } else {
             this.text = this.value;
         }
@@ -40,7 +40,7 @@ export class SelectBlock {
 
     ngOnChanges(changes: SimpleChanges) {
         if (this.value && typeof this.value === 'object') {
-            this.text = this.value === this.root ? 'Module' : this.value.tag;
+            this.text = this.value === this.root ? 'Module' : this.value.localTag;
         } else {
             this.text = this.value;
         }
@@ -51,7 +51,7 @@ export class SelectBlock {
                     const search = (block.tag || '').toLocaleLowerCase();
                     const root = block === this.root;
                     this.data.push({
-                        name: root ? 'Module' : block.tag,
+                        name: root ? 'Module' : block.localTag,
                         value: this.type === 'object' ? block : block.tag,
                         icon: this.registeredService.getIcon(block.blockType),
                         root,

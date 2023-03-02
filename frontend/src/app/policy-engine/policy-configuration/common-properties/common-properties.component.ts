@@ -92,7 +92,7 @@ export class CommonPropertiesComponent implements OnInit {
     }
 
     isInputEvent(event: PolicyEventModel) {
-        return event.isTarget(this.block) && !this.isOutputEvent(event);
+        return event.isTarget(this.block);
     }
 
     chanceType(event: any, item: PolicyEventModel) {

@@ -71,3 +71,18 @@
     width: 20px;
     top: -3px;
 }
+
+.source-elm {
+    color:#bd2a1f;
+    font-weight:500
+}
+
+.target-elm {
+    color:#2d8508;
+    font-weight:500
+}
+
+.current-elm {
+    color: #5161e1 !important;
+    font-weight: 500;
+}

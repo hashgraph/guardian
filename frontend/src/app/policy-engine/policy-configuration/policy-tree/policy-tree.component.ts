@@ -334,7 +334,7 @@ export class PolicyTreeComponent implements OnInit {
                     const end = blockMap[event.targetTag];
                     if (start && end) {
                         const line = new BlocLine(start, end, event.default);
-                        line.dash = event.input == 'RefreshEvent';
+                        line.dash = event.input == 'RefreshEvent' || event.output == 'RefreshEvent';
                         line.startTag = event.sourceTag;
                         line.endTag = event.targetTag;
                         line.actor = event.actor;
@@ -353,10 +353,10 @@ export class PolicyTreeComponent implements OnInit {
             return true;
         }
         if (this.active === 'Action') {
-            return item.input !== 'RefreshEvent';
+            return item.input !== 'RefreshEvent' && item.output !== 'RefreshEvent';
         }
         if (this.active === 'Refresh') {
-            return item.input === 'RefreshEvent';
+            return item.input === 'RefreshEvent' || item.output !== 'RefreshEvent';
         }
         return false;
     }
@@ -498,7 +498,7 @@ export class PolicyTreeComponent implements OnInit {
             const prev = this.data[event.currentIndex - 1];
             const next = this.data[event.currentIndex];
             if (
-                prev.node.isRoot || 
+                prev.node.isRoot ||
                 prev.node === this.root ||
                 (next && next.level > prev.level)
             ) {
