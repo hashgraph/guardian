@@ -47,6 +47,9 @@ export class RequestDocumentBlockComponent implements OnInit {
     user!: IUser;
     restoreData: any;
 
+    public innerWidth: any;
+    public innerHeight: any;
+
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
@@ -60,6 +63,8 @@ export class RequestDocumentBlockComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
         if (!this.static) {
             this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
@@ -256,11 +261,29 @@ export class RequestDocumentBlockComponent implements OnInit {
         } else {
             this.presetDocument = null;
         }
-        this.dialogRef = this.dialog.open(this.dialogTemplate, {
-            width: '850px',
-            disableClose: true,
-            data: this
-        });
+
+        if (this.innerWidth <= 810) {
+            this.dialogRef = this.dialog.open(this.dialogTemplate, {
+                width: `${this.innerWidth.toString()}px`,
+                maxWidth: '100vw',
+                height: `${this.innerHeight - 125}px`, // CHANGE THE 125 TO THE HEADER HEIGHT VARIABLE
+                position: {
+                    'bottom': '0'
+                },
+                panelClass: 'g-dialog',
+                hasBackdrop: true, // Shadows beyond the dialog
+                closeOnNavigation: true,
+                autoFocus: false,
+                id: 'g-cenas',
+                data: this
+            });
+        } else {
+            this.dialogRef = this.dialog.open(this.dialogTemplate, {
+                width: '850px',
+                disableClose: true,
+                data: this
+            });
+        }
     }
 
     onRestoreClick() {
@@ -271,5 +294,15 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.preset(presetDocument);
         }
         this.restoreData = null;
+    }
+
+    handleCancelBtnEvent(value: boolean, data: any) {
+        data.onCancel()
+    }
+
+    handleSubmitBtnEvent(value: boolean, data: any) {
+        if (data.dataForm.valid || !this.loading || !this.dialogLoading) {
+            data.onSubmit();
+        }
     }
 }

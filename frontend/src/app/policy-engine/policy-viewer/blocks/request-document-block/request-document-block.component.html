@@ -17,7 +17,8 @@
                     [preset]="presetDocument" [readonly-fields]="presetReadonlyFields">
                 </app-schema-form>
             </div>
-            <div class="page-btns">
+            <button *ngIf="innerWidth <= 810" class="registrant-application-create-btn" mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Create</button>
+            <div *ngIf="innerWidth > 810" class="page-btns">
                 <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>
             </div>
         </form>
@@ -30,7 +31,7 @@
 
 <ng-template #dialogTemplate let-data>
     <div>
-        <h1 mat-dialog-title>{{data.dialogContent}}</h1>
+        <h1 mat-dialog-title class="title">{{data.dialogContent}}</h1>
         <div class="description">
             {{description}}
         </div>
@@ -47,13 +48,16 @@
             <form [formGroup]="dataForm" (ngSubmit)="data.onSubmit()">
                 <div class="form-{{data.type}}">
                     <app-schema-form [formGroup]="data.dataForm" [schema]="data.schema" [readonly-fields]="presetReadonlyFields"
-                        [private-fields]="data.hideFields" [preset]="presetDocument">
+                        [private-fields]="data.hideFields" [preset]="presetDocument" [comesFromDialog]="true"
+                        (cancelBtnEvent)="handleCancelBtnEvent($event, data)" (submitBtnEvent)="handleSubmitBtnEvent($event, data)">
                     </app-schema-form>
                 </div>
-                <div mat-dialog-actions>
-                    <button mat-raised-button color="primary" type="submit"
-                        [disabled]="!data.dataForm.valid || loading || dialogLoading">Ok</button>
-                    <button mat-button type="button" (click)="data.onCancel()">Cancel</button>
+                <div *ngIf="innerWidth > 810" class="dialog-actions-container" style="z-index: 400">
+                    <div mat-dialog-actions>
+                        <button mat-raised-button id="ok-btn" color="primary" type="submit"
+                            [disabled]="!data.dataForm.valid || loading || dialogLoading">Ok</button>
+                        <button mat-button type="button" id="cancel-btn" (click)="data.onCancel()">Cancel</button>
+                    </div>
                 </div>
             </form>
         </div>
