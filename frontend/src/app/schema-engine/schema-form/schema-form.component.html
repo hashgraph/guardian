@@ -1,7 +1,7 @@
 <form *ngIf="options" [formGroup]="options">
-    <ng-container *ngFor="let item of fields">
+    <ng-container *ngFor="let item of fields; let i = index">
 
-        <div *ngIf="!item.hide" class="form-field-container">
+        <div *ngIf="!item.hide && (innerWidth <= 810 ? (isShown[i] || showChildSchemaForm) : true)" class="form-field-container" [id]="buttonOnceRaised ? '' : i">
             <div *ngIf="!item.isArray && !item.isRef" class="form-field">
                 <div class="invalid-field-label"
                     *ngIf="options.controls[item.name] && !options.controls[item.name].valid && !options.controls[item.name].disabled">
@@ -80,10 +80,18 @@
                     </mat-form-field>
 
                     <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
+                    
+                    <div *ngIf="fields && innerWidth <= 810 && showButtons" class="page-btns" [style.z-index]="i === fields.length - 1 ? 100 : 206">
+                        <button *ngIf="currentIndex === 0 && !buttonOnceRaised" mat-raised-button color="primary" id="cancel-btn" (click)="onCancelBtnClick()">Cancel</button>
+                        <button *ngIf="currentIndex !== 0" mat-raised-button color="primary" id="previous-btn" [style.z-index]="i === 1 ? 200 : 100" (click)="getPrevShownFields(fields)">Previous</button>
+                        <button *ngIf="i !== fields.length - 1 && isShown[fields.length - 1] === false" mat-raised-button color="primary" id="next-btn" [style.z-index]="i !== 0 ? 306 : 100" (click)="getNextShownFields(fields)">Next</button>
+                        <button *ngIf="isShown[fields.length - 1]" mat-raised-button [disabled]="!this.options.valid" color="primary" id="submit-btn" [style.z-index]="i !== 0 ? 306 : 100" (click)="onSubmitBtnClick(fields)">Submit</button>
+                    </div>
+
                 </div>
             </div>
 
-            <div *ngIf="!item.isArray && item.isRef" class="form-field-group">
+            <div *ngIf="!item.isArray && item.isRef" class="form-field-group" [ngStyle]="{'margin-bottom': (comesFromDialog && innerWidth <= 810) ? 0 : ''}">
                 <div class="invalid-field-label" *ngIf="item.control && !item.control.valid && !item.control.disabled">
                     <mat-icon class="invalid-arrow-circle">arrow_circle_right</mat-icon>
                     <span>
@@ -91,12 +99,17 @@
                     </span>
                 </div>
                 <div *ngIf="item.required && item.displayRequired" class="required-field">* Required</div>
-                <div class="label-field">{{item.description}}</div>
+                <div class="label-field" id="detail-section">
+                    <div *ngIf="fields && innerWidth <= 810" class="page-number">{{i + 1}}/{{fields.length}}</div>
+                    {{item.description}}
+                    <div *ngIf="fields && i !== fields.length - 1 && innerWidth <= 810" class="delimiter-to-next-page"></div>
+                    <div *ngIf="fields && i !== fields.length - 1 && innerWidth <= 810" class="next-page-number">{{i + 2}}</div>
+                </div>
                 <div *ngIf="item.control" class="form-field-array-item">
                     <div class="form-field-group" [ngClass]="{'schema-form-field-group' : !item.required}">
                         <app-schema-form [formGroup]="item.control" [fields]="item.fields" [context]="item.context"
                             [private-fields]="hide" [delimiter-hide]="true" [conditions]="item.conditions"
-                            [preset]="item.preset">
+                            [preset]="item.preset" [showChildSchemaForm]="!showChildSchemaForm" [buttonOnceRaised]="true">
                         </app-schema-form>
                     </div>
                 </div>
@@ -110,6 +123,12 @@
                         <mat-icon>remove</mat-icon> Remove Entity
                     </span>
                 </div>
+                <div *ngIf="fields" class="page-btns" [style.z-index]="i === fields.length - 1 ? 300 : 400"> <!-- [ngClass]="{'page-btns-last-page' : i === 3}"-->
+                    <button *ngIf="currentIndex === 0 && !buttonOnceRaised && innerWidth <= 810" mat-raised-button color="primary" id="cancel-btn" (click)="onCancelBtnClick()">Cancel</button>
+                    <button *ngIf="currentIndex !== 0 && !buttonOnceRaised && innerWidth <= 810" mat-raised-button color="primary" id="previous-btn" (click)="getPrevShownFields(fields)">Previous</button>
+                    <button *ngIf="i !== fields.length - 1 && !buttonOnceRaised && innerWidth <= 810" mat-raised-button color="primary" id="next-btn" (click)="getNextShownFields(fields)">Next</button>
+                    <button *ngIf="isShown[fields.length - 1]" mat-raised-button [disabled]="!this.options.valid" color="primary" id="submit-btn" (click)="onSubmitBtnClick(fields)">Submit</button>
+                </div>
             </div>
 
             <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
@@ -121,6 +140,12 @@
                 </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field">{{item.description}}</div>
+                <div class="label-field" id="detail-section">
+                    <div *ngIf="fields && innerWidth <= 810" class="page-number">{{i}}/{{fields.length - 1}}</div>
+                    {{item.description}}
+                    <div *ngIf="fields && i !== fields.length - 1 && innerWidth <= 810" class="delimiter-to-next-page"></div>
+                    <div *ngIf="fields && i !== fields.length - 1 && innerWidth <= 810" class="next-page-number">{{i + 1}}</div>
+                </div>
                 <div *ngFor="let listItem of item.list" class="form-field-array-item" [attr.index]="listItem.index"
                     [attr.required]="item.required" [formGroup]="item.control">
                     <div class="form-field">
@@ -214,7 +239,12 @@
                     </span>
                 </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
-                <div class="label-field">{{item.description}}</div>
+                <div class="label-field" id="detail-section">
+                    <div *ngIf="fields && innerWidth <= 810" class="page-number">{{i}}/{{fields.length - 1}}</div>
+                    {{item.description}}
+                    <div *ngIf="fields && i !== fields.length - 1 && innerWidth <= 810" class="delimiter-to-next-page"></div>
+                    <div *ngIf="fields && i !== fields.length - 1 && innerWidth <= 810" class="next-page-number">{{i + 1}}</div>
+                </div>
                 <div *ngFor="let listItem of item.list" class="form-field-array-item" [attr.index]="listItem.index"
                     [attr.required]="item.required">
                     <div class="form-field-group">
@@ -236,6 +266,11 @@
                     <span>
                         <mat-icon>add</mat-icon> Add Entity
                     </span>
+                </div>
+                <div *ngIf="fields" class="page-btns" [style.z-index]="i === fields.length - 1 ? 100 : 200"> <!-- [ngClass]="{'page-btns-last-page' : i === 3}"-->
+                    <button *ngIf="i === 1 && innerWidth <= 810" mat-raised-button color="primary" id="cancel-btn" (click)="navigatePolicyViewer()">Cancel</button>
+                    <button *ngIf="i !== 1 && innerWidth <= 810" mat-raised-button color="primary" id="previous-btn" (click)="getPrevShownFields(fields)">Previous</button>
+                    <button *ngIf="i !== fields.length - 1 && innerWidth <= 810" mat-raised-button color="primary" id="next-btn" (click)="getNextShownFields(fields)">Next</button>
                 </div>
             </div>
 

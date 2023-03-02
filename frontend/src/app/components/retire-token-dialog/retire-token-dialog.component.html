@@ -15,7 +15,7 @@
         </div>
     </div>
     <div class="g-dialog-body">
-        <div style="padding: 0px 35px 30px 35px">
+        <div *ngIf="innerWidth > 810" style='padding: 0px 35px 30px 35px'>
             <mat-stepper [linear]="true">
                 <mat-step [stepControl]="baseTokenId" errorMessage="Base token is required">
                     <ng-template matStepLabel>Base Token</ng-template>
@@ -130,6 +130,118 @@
                     </div>
                 </mat-step>
             </mat-stepper>
+        </div>
+
+        <div *ngIf="innerWidth <= 810" class="mobile-view">
+            <div class="choose-token-pair">
+                <div class="label-field" id="detail-section">
+                    <div class="page-number">1</div>
+                    Choose token pair
+                </div>
+                <ng-template>Base Token</ng-template>
+                <mat-form-field appearance="outline" class="contract-form-base-token">
+                    <mat-select [formControl]="baseTokenId" placeholder="Choose Base Token"
+                        [disabled]="contractsLoading">
+                        <mat-option></mat-option>
+                        <mat-option *ngFor="let token of baseTokens"
+                            [value]="token.tokenId">{{token.tokenName}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <ng-template>Opposite Token (optional)</ng-template>
+                <mat-form-field appearance="outline" class="contract-form-opposite-token">
+                    <mat-select [formControl]="oppositeTokenId" placeholder="Choose Opposite Token"
+                        [disabled]="contractsLoading">
+                        <mat-option></mat-option>
+                        <mat-option *ngFor="let token of oppositeTokens"
+                            [value]="token.tokenId">{{token.tokenName}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+            <div class="choose-contract">
+                <div class="label-field" id="detail-section">
+                    <div class="page-number">2</div>
+                    Choose Contract
+                </div>
+                <ng-template>Contract</ng-template>
+                    <mat-form-field appearance="outline" class="contract-form-base-token"
+                        *ngIf="!contractsLoading; else spinner">
+                        <mat-label>Contract</mat-label>
+                        <mat-select [formControl]="contractForm" placeholder="Choose Contract">
+                            <mat-option></mat-option>
+                            <mat-option [matTooltip]="contract.description" matTooltipPosition="below"
+                                matTooltipClass="guardian-tooltip" *ngFor="let contract of contractAndRates"
+                                [value]="contract.contractId">{{contract.contractId}}{{contract.baseTokenRate &&
+                                contract.oppositeTokenRate ? ' - ' + contract.baseTokenRate + ':' +
+                                contract.oppositeTokenRate : ''}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <ng-template #spinner><mat-spinner class="contracts-spinner"
+                            [diameter]="64"></mat-spinner></ng-template>
+            </div>
+
+            <div class="set-count">
+                <div class="label-field" id="detail-section">
+                    <div class="page-number">3</div>
+                    Set Count
+                </div>
+                <div class="contract-info">
+                    <div *ngIf="!contractAndRates.length">Choose tokens to find available pairs</div>
+                    <div class="pair-rate" *ngIf="baseTokenRate && oppositeTokenRate"><b>Ratio {{baseTokenRate}} :
+                            {{oppositeTokenRate}}</b></div>
+                </div>
+                <ng-template>Count</ng-template>
+                <form autocomplete="off" [formGroup]="tokenCountForm">
+                    <mat-form-field appearance="outline" class="contract-form-opposite-token-count"
+                        *ngIf="baseTokenType === 'non-fungible'">
+                        <mat-label>Base Token Serials</mat-label>
+                        <mat-select formControlName="baseTokenSerials" multiple
+                            (selectionChange)="countValueForOppositeToken($event.value?.length || 0)">
+                            <mat-select-trigger>
+                                {{tokenCountForm.value?.baseTokenSerials ? tokenCountForm.value?.baseTokenSerials[0]
+                                : ''}}
+                                <span *ngIf="tokenCountForm.value?.baseTokenSerials?.length > 1">
+                                    (+{{tokenCountForm.value?.baseTokenSerials.length - 1}}
+                                    {{tokenCountForm.value?.baseTokenSerials.length === 2 ? 'other' : 'others'}})
+                                </span>
+                            </mat-select-trigger>
+                            <mat-option *ngFor="let serial of baseTokenSerials"
+                                [value]="serial">{{serial}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="contract-form-opposite-token-count"
+                        *ngIf="baseTokenType === 'fungible'">
+                        <mat-icon matPrefix>account_balance_wallet</mat-icon>
+                        <input matInput type="number" placeholder="Count" formControlName="baseTokenCount">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="contract-form-opposite-token-count"
+                        *ngIf="oppositeTokenType === 'non-fungible'">
+                        <mat-label>Opposite Token Serials</mat-label>
+                        <mat-select formControlName="oppositeTokenSerials" multiple>
+                            <mat-select-trigger>
+                                {{tokenCountForm.value?.oppositeTokenSerials ?
+                                tokenCountForm.value?.oppositeTokenSerials[0] : ''}}
+                                <span *ngIf="tokenCountForm.value?.oppositeTokenSerials?.length > 1">
+                                    (+{{tokenCountForm.value?.oppositeTokenSerials.length - 1}}
+                                    {{tokenCountForm.value?.oppositeTokenSerials.length === 2 ? 'other' :
+                                    'others'}})
+                                </span>
+                            </mat-select-trigger>
+                            <mat-option *ngFor="let serial of oppositeTokenSerials"
+                                [value]="serial">{{serial}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="contract-form-opposite-token-count"
+                        *ngIf="oppositeTokenType === 'fungible'">
+                        <mat-icon matPrefix>account_balance_wallet</mat-icon>
+                        <input matInput type="number" placeholder="Count" formControlName="oppositeTokenCount">
+                    </mat-form-field>
+                </form>
+
+            <div class="page-btns">
+                <button mat-raised-button color="primary" id="cancel-btn" (click)="onNoClick()">Cancel</button>
+                <button mat-raised-button color="primary" id="create-btn" (click)="onCreate()" [disabled]="!validateCountValues()">Create</button>
+            </div>
         </div>
     </div>
 </div>

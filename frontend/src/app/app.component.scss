@@ -185,3 +185,14 @@ body {
 ::ng-deep body .mat-radio-button:not(.mat-radio-disabled).cdk-program-focused .mat-radio-persistent-ripple {
     opacity: .0;
 }
+
+@media (max-width: 810px) {
+    ::ng-deep body .mat-form-field-wrapper {
+        padding-bottom: 0;
+        font-size: 1.75vh;
+    }
+
+    ::ng-deep .toast-container .ngx-toastr {
+        width: auto;
+    }
+}

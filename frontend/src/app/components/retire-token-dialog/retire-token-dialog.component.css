@@ -117,3 +117,113 @@
 .step-action-prev-btn {
     border: 1px solid rgba(0, 0, 0, .12);
 }
+
+@media (max-width: 810px) {
+
+    .g-dialog-header {
+        width: 90%;
+        padding: 22px 0;
+
+        box-shadow: none;
+        margin: 0 auto;
+    }
+
+    .g-dialog-title {
+        font-family: 'Roboto';
+        font-style: normal;
+        font-weight: 600 !important;
+        font-size: 24px !important;
+        line-height: 28px;
+        color: #222222 !important;
+        order: 2;
+    }
+
+    .g-dialog-cancel {
+        order: 3;
+    }
+
+    .g-dialog-actions {
+        display: none !important;
+    }
+
+    .g-dialog-body {
+        width: 90%;
+        margin: 0 auto !important;
+        padding: 0;
+    }
+    
+    .label-field .page-number {
+        font-size: 18px;
+        padding: 4px 10px;
+        margin-right: 8px;
+        display: inline-block;
+
+        background: #2C78F6;
+        color: white;
+        border-radius: 100px;
+    }
+
+    #detail-section {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        margin: 20px 0 20px 0;
+
+        font-family: 'Roboto';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 18px;
+        line-height: 21px;
+        color: #222222;
+    }
+
+    mat-form-field {
+        margin-bottom: 10px;
+    }
+
+    .contract-form-base-token-count, .contract-form-opposite-token-count {
+        padding-top: 0 !important;
+    }
+
+    .page-btns {
+        width: 90%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 10px;
+        margin-top: 20px;
+        
+        background-color: white;
+        padding: 20px 0;
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    #cancel-btn {
+        border: 1px solid #2C78F6;
+        background: none !important;
+        color: #2C78F6;
+        grid-column: 1;
+    }
+
+    #create-btn {
+        grid-column: 2;
+    }
+
+    #create-btn[disabled] {
+        opacity: 0.5;
+        background: #2C78F6;
+        color: white;
+    }
+
+    .page-btns-last-page {
+        width: 50%;
+        display: inline-block;
+        margin-top: 20px;
+    }
+
+    .page-btns-last-page #cancel-btn {
+        width: calc(100% - 5px);
+    }
+}

@@ -47,6 +47,9 @@ export class RetireTokenDialogComponent {
     contractAndRates: any = [];
     contractsLoading = false;
 
+    public innerWidth: any;
+    public innerHeight: any;
+
     destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
@@ -173,7 +176,10 @@ export class RetireTokenDialogComponent {
         }
     }
 
-    ngOnInit() {}
+    ngOnInit() {
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
+    }
 
     onNoClick(): void {
         this.dialogRef.close(null);

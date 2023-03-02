@@ -2,6 +2,7 @@ import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-compo
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Schema, SchemaCondition, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import * as moment from 'moment';
@@ -88,6 +89,20 @@ export class SchemaFormComponent implements OnInit {
     fields: any[] | undefined = [];
     conditionFields: SchemaField[] = [];
 
+    @Input() cancelHidden: boolean = true;
+    @Output() cancelBtnEvent = new EventEmitter<boolean>();
+    @Output() submitBtnEvent = new EventEmitter<boolean>();
+
+    @Input() showChildSchemaForm: boolean = false;
+    @Input() buttonOnceRaised: boolean = false;
+    @Input() showButtons: boolean = true;
+    @Input() comesFromDialog: boolean = false;
+
+    public innerWidth: any;
+    public innerHeight: any;
+    public isShown: boolean[] = [true, true];
+    public currentIndex: number = 0;
+
     private _patternByNumberType: any = {
         number: /^-?\d*(\.\d+)?$/,
         integer: /^-?\d*$/
@@ -95,11 +110,24 @@ export class SchemaFormComponent implements OnInit {
 
     constructor(
         private ipfs: IPFSService,
-        protected changeDetectorRef: ChangeDetectorRef
+        protected changeDetectorRef: ChangeDetectorRef,
+        private router: Router
     ) { }
 
 
     ngOnInit(): void {
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
+
+        if (this.fields) {
+            for (let i = 0; i < this.fields.length; i++) {
+                if (this.fields[i].isRef) {
+                    this.isShown[i] = true;
+                    break;
+                }
+                this.isShown[i] = true;
+            }
+        }
     }
 
     ngOnChanges() {
@@ -628,5 +656,119 @@ export class SchemaFormComponent implements OnInit {
 
     isPostfix(item: SchemaField): boolean {
         return item.unitSystem === UnitSystem.Postfix;
+    }
+
+
+
+    getNextShownFields(fields: SchemaField[]): boolean[] {
+        this.isShown = new Array(fields.length).fill(false);
+        let nextRefIndex = -1;
+        let initialDivision = 0;
+        for (let i = this.currentIndex + 1; i < fields.length; i++) {
+            console.log(i + "" + fields[i].isRef)
+            console.log("next")
+            nextRefIndex = i;
+            if (fields[i].isRef) {
+                console.log("letsaf ")
+                if (this.currentIndex == 0 && initialDivision == 0) { // O PROBLEMA É QUE É QUE QUANDO VOLTO A PAGINA INICIAL PRECISO DE CLICAR DUAS VEZES VISTO QUE PASSA PRIMEIRO PARA O INDICE 3 E SO DEPOIS PARA O 4
+                    console.log("Devia passar")
+                    initialDivision = 1;
+                    this.currentIndex = i;
+                    this.isShown = new Array(fields.length).fill(false);
+                    continue;
+                }
+                console.log("Mas não")
+                console.log("this.currentIndex " + this.currentIndex + "; nextRefIndex " + nextRefIndex)
+                break;
+            }
+            this.isShown[i] = true;
+        }
+        if (nextRefIndex !== -1) {
+            if (this.currentIndex === 0) {
+                this.currentIndex = -1;
+            }
+            for (let i = this.currentIndex + 1; i <= nextRefIndex; i++) {
+                console.log(i)
+                this.isShown[i] = true;
+                console.log('i do ultimo for ' + i)
+                console.log(fields[i])
+            }
+            this.currentIndex = nextRefIndex;
+        }
+        console.log(this.isShown)
+        console.log("next " + this.currentIndex)
+        return this.isShown;
+    }
+
+    getPrevShownFields(fields: SchemaField[]): boolean[] {
+        this.isShown = new Array(fields.length).fill(false);
+        let prevRefIndex = -1;
+        console.log("Current Index (início): " + this.currentIndex)
+        if (this.currentIndex === 0) {
+            // If the current index is already at the beginning of the array,
+            // show all fields with isRef set to false
+            for (let i = 0; i < fields.length; i++) {
+                console.log(i + " " + fields[i].isRef)
+                console.log("previous")
+                if (!fields[i].isRef) {
+                    this.isShown[i] = true;
+                }
+            }
+        } else {
+            for (let i = this.currentIndex - 1; i >= 0; i--) {
+            if (fields[i].isRef) {
+                console.log(i + " " + fields[i].isRef)
+                console.log("previous")
+                prevRefIndex = i;
+                for (let j = prevRefIndex - 1; j >= 0; j--) {
+                    console.log("Isto é J: " + j)
+                    if (fields[j].isRef) {
+                        break
+                    } else if (j == 0) {
+                        prevRefIndex = 0;
+                    }
+                }
+                console.log(i)
+                break;
+            }
+            this.isShown[i] = true;
+            console.log(i)
+            this.currentIndex = i;
+            console.log("Pls dont break" + this.currentIndex)
+            }
+            if (prevRefIndex !== -1) {
+            for (let i = this.currentIndex - 1; i >= prevRefIndex; i--) {
+                console.log("começou")
+                console.log(i)
+                this.isShown[i] = true;
+            }
+            this.currentIndex = prevRefIndex;
+            console.log("Current Index: " + this.currentIndex)
+            }
+        }
+        console.log(this.isShown)
+        return this.isShown;
+    }
+      
+
+
+
+
+
+    navigatePolicyViewer() {
+        this.router.navigate(['/policy-viewer']);
+    }
+
+    closeWindow() {
+        window.close();
+    }
+
+    onCancelBtnClick() {
+        this.cancelBtnEvent.emit(false); // PENSO QUE ISTO FOI O QUE O FILIPE ME AJUDOU A FAZER
+        this.navigatePolicyViewer();
+    }
+
+    onSubmitBtnClick(fields: any) {
+        this.submitBtnEvent.emit(fields);
     }
 }

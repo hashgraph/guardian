@@ -200,3 +200,48 @@ a {
     justify-content: space-between;
     align-items: center;
 }
+
+@media (max-width: 810px) {
+
+    .list {
+        width: 89%;
+        margin-bottom: 0 !important;
+        border: 1px solid #c7c7c7;
+        border-radius: 6px;
+        position: relative;
+    }
+
+    .list-button {
+        width: 90%;
+        margin: 0 5% 20px!important;
+    }
+
+    .list .list-button {
+        width: 100% !important;
+        position: static;
+        margin: 0 !important;
+    }
+
+    #generate-btn-mobile {
+        border: 1px solid #2C78F6;
+        background: none !important;
+        color: #2C78F6;
+    }
+
+    .white-space {
+        background-color: white;
+        width: 100%;
+        height: 70px;
+    }
+
+    #connect-btn {
+        background-color: white;
+        margin: 0 !important;
+        padding: 20px 0 0 !important;
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+    }
+}

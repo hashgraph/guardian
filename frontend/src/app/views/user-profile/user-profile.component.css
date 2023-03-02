@@ -312,3 +312,27 @@ a[disabled="true"]{
 .approved-request {
     background-color: #d1f1c8;
 }
+
+@media (max-width: 810px) {
+    form {
+        display: flex;
+        flex-direction: column;
+        width: 80vw;
+        margin: 0 auto;
+    }
+
+    .list {
+        width: 80vw;
+        padding: 20px 20px 20px 20px;
+        margin: 20px;
+        border: 1px solid #c7c7c7;
+        border-radius: 6px;
+        position: relative;
+    }
+
+    .generate-btn {
+        border: 1px solid #2C78F6;
+        background: none !important;
+        color: #2C78F6;
+    }
+}

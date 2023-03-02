@@ -188,9 +188,14 @@
                     </mat-form-field>
                 </div>
 
-                <button mat-raised-button type="button" color="primary" class="generate-btn"
+                <div *ngIf="innerWidth > 810">
+                    <button mat-raised-button type="button" color="primary" class="generate-btn"
+                        (click)="randomKey()">Generate</button>
+                    <button mat-raised-button type="submit" [disabled]="!hederaForm.valid">Submit</button>
+                </div>
+                <button *ngIf="innerWidth <= 810" mat-raised-button type="button" class="generate-btn"
                     (click)="randomKey()">Generate</button>
-                <button mat-raised-button type="submit" [disabled]="!hederaForm.valid">Submit</button>
+                <button *ngIf="innerWidth <= 810" mat-raised-button type="submit" color="primary" [disabled]="!hederaForm.valid">Submit</button>
             </form>
         </div>
         <div *ngIf="!isNewAccount && !isFailed" class="clock-list">
