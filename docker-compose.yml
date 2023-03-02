@@ -27,6 +27,9 @@ services:
       - "4002:4002"
       - "8080:8080"
       - "8081:8081"
+    volumes:
+      - ./runtime-data/ipfs/staging:/export:rw
+      - ./runtime-data/ipfs/data:/data/ipfs:rw
 
   api-docs:
     build:
