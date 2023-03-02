@@ -30,7 +30,6 @@ export class PolicyTreeComponent implements OnInit {
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
     @ViewChild('tooltip') tooltipRef!: ElementRef<HTMLDivElement>;
 
-
     @ViewChild('treeList')
     public set treeList(value: CdkDropList<any> | undefined) {
         if (this.dropListConnector) {
@@ -53,7 +52,7 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     public data!: FlatBlockNode[];
-
+    private errorsTree!: any;
     private root!: PolicyBlockModel;
     private currentBlock!: PolicyBlockModel;
     private collapsedMap: Map<string, boolean> = new Map<string, boolean>();
@@ -77,6 +76,16 @@ export class PolicyTreeComponent implements OnInit {
         this.actorMap[''] = 'Event Initiator';
         this.actorMap['owner'] = 'Document Owner';
         this.actorMap['issuer'] = 'Document Issuer';
+        this.errorsTree = {};
+        try {
+            this.collapsedMap.clear();
+            this._allCollapse = '2';
+            this._visibleMoveActions = '0';
+            this._allCollapse = localStorage.getItem('POLICY_TREE_COLLAPSE') || '2';
+            this._visibleMoveActions = localStorage.getItem('POLICY_TREE_MENU') || '1';
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     public get allCollapse() {
@@ -110,15 +119,6 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.collapsedMap.clear();
-        try {
-            this._allCollapse = '2';
-            this._visibleMoveActions = '0';
-            this._allCollapse = localStorage.getItem('POLICY_TREE_COLLAPSE') || '2';
-            this._visibleMoveActions = localStorage.getItem('POLICY_TREE_MENU') || '1';
-        } catch (error) {
-            console.error(error)
-        }
         this.init.emit(this);
     }
 
@@ -133,20 +133,38 @@ export class PolicyTreeComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.rebuildTree(this.blocks);
+        this.errorsTree = {};
         if (changes.errors && this.errors) {
-            this.setErrors(this.errors);
+            this.searchErrors(this.blocks);
+        }
+        this.rebuildTree(this.blocks);
+        this.scroll();
+        this.errorsTree = {};
+    }
+
+    private scroll() {
+        if (this.data) {
+            for (let i = 0; i < this.data.length; i++) {
+                const node = this.data[i];
+                if (node.error) {
+                    const top = 54 * (i - 5);
+                    if (
+                        this.element &&
+                        this.element.nativeElement &&
+                        this.element.nativeElement.parentElement
+                    ) {
+                        this.element.nativeElement.parentElement.scrollTop = top;
+                    }
+                    return;
+                }
+            }
         }
     }
 
-    rebuildTree(data: PolicyBlockModel[]) {
+    private rebuildTree(data: PolicyBlockModel[]) {
         this.root = data[0];
         this.data = this.convertToArray([], data, 0, null);
         this.render(true);
-    }
-
-    setErrors(errors: any) {
-
     }
 
     private getCollapsed(node: FlatBlockNode): boolean {
@@ -162,11 +180,29 @@ export class PolicyTreeComponent implements OnInit {
         return false;
     }
 
-    convertToArray(
+    private searchErrors(blocks: PolicyBlockModel[]): boolean {
+        if (!blocks) {
+            return false;
+        }
+        let errors = false;
+        for (const block of blocks) {
+            const error = this.searchErrors(block.children);
+            if (error) {
+                this.errorsTree[block.id] = true;
+                errors = true;
+            }
+            if (this.errors[block.id]) {
+                errors = true;
+            }
+        }
+        return errors;
+    }
+
+    private convertToArray(
         result: FlatBlockNode[],
         blocks: PolicyBlockModel[],
         level: number,
-        parent: any
+        parent: FlatBlockNode | null
     ): FlatBlockNode[] {
         if (!blocks) {
             return result;
@@ -185,20 +221,24 @@ export class PolicyTreeComponent implements OnInit {
             node.icon = this.registeredService.getIcon(block.blockType);
             node.type = this.registeredService.getHeader(block.blockType);
             node.collapsed = this.getCollapsed(node);
-            node.parent = parent;
+            node.error = this.isError(node);
+            if (parent) {
+                node.parent = parent.node;
+                node.parentNode = parent;
+            }
             node.offset = `${this.paddingLeft * level}px`;
             block.setAbout(node.about);
 
             result.push(node);
             this.collapsedMap.set(node.id, node.collapsed);
 
+            if (this.errorsTree[block.id]) {
+                node.collapsed = false;
+                this.collapsedMap.set(node.id, node.collapsed);
+            }
+
             if (!node.collapsed && (!block.isModule || node.root)) {
-                result = this.convertToArray(
-                    result,
-                    block.children,
-                    level + 1,
-                    block
-                );
+                result = this.convertToArray(result, block.children, level + 1, node);
             }
         }
         return result;
