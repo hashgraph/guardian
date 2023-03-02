@@ -1,16 +1,21 @@
 <div class="content header">
     <mat-toolbar color="primary">
-        <span class="btn-home" (click)="onHome()">Guardian</span>
-
-        <div *ngIf="isLogin && role==='STANDARD_REGISTRY'" class="nav-list" [attr.disabled]="commonLinksDisabled">
-            <div class="nav-list-item" [attr.active]="isActiveLink('SR_UP')" (click)="routActive('SR_UP')">
-                User Profile
+        <span *ngIf="innerWidth > 810" class="btn-home" #btnHome (click)="onHome()">
+            <div class="btn-home-name">
+                Guardian
             </div>
-            <div class="nav-list-item" [matMenuTriggerFor]="subMenu1" [attr.active]="isActiveLink('SR_TOKENS')">
-                <span class="nav-menu-item">
-                    Tokens
-                    <mat-icon>arrow_drop_down</mat-icon>
-                </span>
+        </span>
+
+        <div *ngIf="innerWidth > 810" class="desktop-header">
+            <div *ngIf="isLogin && role==='STANDARD_REGISTRY'" class="nav-list" [attr.disabled]="commonLinksDisabled">
+                <div class="nav-list-item" [attr.active]="isActiveLink('SR_UP')" (click)="routActive('SR_UP')">
+                    User Profile
+                </div>
+                <div class="nav-list-item" [matMenuTriggerFor]="subMenu1" [attr.active]="isActiveLink('SR_TOKENS')">
+                    <span class="nav-menu-item">
+                        Tokens
+                        <mat-icon>arrow_drop_down</mat-icon>
+                    </span>
             </div>
             <div class="nav-list-item" [matMenuTriggerFor]="subMenu2" [attr.active]="isActiveLink('SR_POLICIES')">
                 <span class="nav-menu-item">
@@ -24,104 +29,294 @@
                     <mat-icon>arrow_drop_down</mat-icon>
                 </span>
             </div>
-        </div>
-        <mat-menu #subMenu1="matMenu" class="sub-nav-menu" backdropClass="sub-nav-backdrop">
-            <div class="sub-nav-list">
-                <div class="nav-list-item" [attr.active]="isActiveLink('SR_TOKENS_LIST')"
-                    (click)="routActive('SR_TOKENS_LIST')">
+            </div>
+            <mat-menu #subMenu1="matMenu" class="sub-nav-menu" backdropClass="sub-nav-backdrop">
+                <div class="sub-nav-list">
+                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_TOKENS_LIST')"
+                        (click)="routActive('SR_TOKENS_LIST')">
+                        Tokens
+                    </div>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_CONTRACTS')"
+                        (click)="routActive('SR_CONTRACTS')">
+                        Contracts
+                    </div>
+                    <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_CONTRACTS_PAIRS')"
+                        (click)="routActive('SR_CONTRACTS_PAIRS')">
+                        Token Pairs
+                    </div>
+                </div>
+            </mat-menu>
+            <mat-menu #subMenu2="matMenu" class="sub-nav-menu" backdropClass="sub-nav-backdrop">
+                <div class="sub-nav-list">
+                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_SCHEMAS')"
+                        (click)="routActive('SR_SCHEMAS')">
+                        Schemas
+                    </div>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_ARTIFACTS')"
+                        (click)="routActive('SR_ARTIFACTS')">
+                        Artifacts
+                    </div>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_MODULES')"
+                        (click)="routActive('SR_MODULES')">
+                        Modules
+                    </div>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_POLICIES_LIST')"
+                        (click)="routActive('SR_POLICIES_LIST')">
+                        Policies
+                    </div>
+                    <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_EDITOR')"
+                        (click)="routActive('SR_EDITOR')">
+                        Policy Editor
+                    </div>
+                    <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_VIEWER')"
+                        (click)="routActive('SR_VIEWER')">
+                        Policy Viewer
+                    </div>
+                    <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_COMPARE')"
+                        (click)="routActive('SR_COMPARE')">
+                        Compare
+                    </div>
+                </div>
+            </mat-menu>
+            <mat-menu #subMenu3="matMenu" class="sub-nav-menu" backdropClass="sub-nav-backdrop">
+                <div class="sub-nav-list">
+                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_SETTINGS')"
+                        (click)="routActive('SR_SETTINGS')">
+                        Settings
+                    </div>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_LOGS')" (click)="routActive('SR_LOGS')">
+                        Logs
+                    </div>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_STATUS')" (click)="routActive('SR_STATUS')">
+                        Status
+                    </div>
+                </div>
+            </mat-menu>
+
+
+            <div *ngIf="isLogin && role==='USER'" class="nav-list" [attr.disabled]="commonLinksDisabled">
+                <div class="nav-list-item" [attr.active]="isActiveLink('USER_UP')" (click)="routActive('USER_UP')">
+                    User Profile
+                </div>
+                <div class="nav-list-item" [attr.active]="isActiveLink('USER_TOKENS')" (click)="routActive('USER_TOKENS')">
                     Tokens
                 </div>
-                <div class="nav-list-item" [attr.active]="isActiveLink('SR_CONTRACTS')"
-                    (click)="routActive('SR_CONTRACTS')">
-                    Contracts
+                <div class="nav-list-item" [attr.active]="isActiveLink('USER_RETIRE')" (click)="routActive('USER_RETIRE')">
+                    Token Retire
                 </div>
-                <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_CONTRACTS_PAIRS')"
-                    (click)="routActive('SR_CONTRACTS_PAIRS')">
-                    Token Pairs
-                </div>
-            </div>
-        </mat-menu>
-        <mat-menu #subMenu2="matMenu" class="sub-nav-menu" backdropClass="sub-nav-backdrop">
-            <div class="sub-nav-list">
-                <div class="nav-list-item" [attr.active]="isActiveLink('SR_SCHEMAS')"
-                    (click)="routActive('SR_SCHEMAS')">
-                    Schemas
-                </div>
-                <div class="nav-list-item" [attr.active]="isActiveLink('SR_ARTIFACTS')"
-                    (click)="routActive('SR_ARTIFACTS')">
-                    Artifacts
-                </div>
-                <div class="nav-list-item" [attr.active]="isActiveLink('SR_MODULES')"
-                    (click)="routActive('SR_MODULES')">
-                    Modules
-                </div>
-                <div class="nav-list-item" [attr.active]="isActiveLink('SR_POLICIES_LIST')"
-                    (click)="routActive('SR_POLICIES_LIST')">
+                <div class="nav-list-item" [attr.active]="isActiveLink('USER_POLICIES')"
+                    (click)="routActive('USER_POLICIES')">
                     Policies
                 </div>
-                <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_EDITOR')"
-                    (click)="routActive('SR_EDITOR')">
-                    Policy Editor
-                </div>
-                <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_VIEWER')"
-                    (click)="routActive('SR_VIEWER')">
-                    Policy Viewer
-                </div>
-                <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_COMPARE')"
-                    (click)="routActive('SR_COMPARE')">
-                    Compare
-                </div>
             </div>
-        </mat-menu>
-        <mat-menu #subMenu3="matMenu" class="sub-nav-menu" backdropClass="sub-nav-backdrop">
-            <div class="sub-nav-list">
-                <div class="nav-list-item" [attr.active]="isActiveLink('SR_SETTINGS')"
-                    (click)="routActive('SR_SETTINGS')">
-                    Settings
-                </div>
-                <div class="nav-list-item" [attr.active]="isActiveLink('SR_LOGS')" (click)="routActive('SR_LOGS')">
-                    Logs
-                </div>
-                <div class="nav-list-item" [attr.active]="isActiveLink('SR_STATUS')" (click)="routActive('SR_STATUS')">
-                    Status
-                </div>
-            </div>
-        </mat-menu>
 
-
-        <div *ngIf="isLogin && role==='USER'" class="nav-list" [attr.disabled]="commonLinksDisabled">
-            <div class="nav-list-item" [attr.active]="isActiveLink('USER_UP')" (click)="routActive('USER_UP')">
-                User Profile
-            </div>
-            <div class="nav-list-item" [attr.active]="isActiveLink('USER_TOKENS')" (click)="routActive('USER_TOKENS')">
-                Tokens
-            </div>
-            <div class="nav-list-item" [attr.active]="isActiveLink('USER_RETIRE')" (click)="routActive('USER_RETIRE')">
-                Token Retire
-            </div>
-            <div class="nav-list-item" [attr.active]="isActiveLink('USER_POLICIES')"
-                (click)="routActive('USER_POLICIES')">
-                Policies
+            <div *ngIf="isLogin && role==='AUDITOR'" class="nav-list" [attr.disabled]="commonLinksDisabled">
+                <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_UP')" (click)="routActive('AUDITOR_UP')">
+                    Audit
+                </div>
+                <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_TRUST_CHAIN')"
+                    (click)="routActive('AUDITOR_TRUST_CHAIN')">
+                    Trust Chain
+                </div>
             </div>
         </div>
 
-        <div *ngIf="isLogin && role==='AUDITOR'" class="nav-list" [attr.disabled]="commonLinksDisabled">
-            <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_UP')" (click)="routActive('AUDITOR_UP')">
-                Audit
+
+
+
+
+
+        <!--
+        <span *ngIf="innerWidth <= 810 && !isLogin" class="btn-home" #btnHome (click)="onHome()">
+            <div class="btn-home-name">
+                Guardian
             </div>
-            <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_TRUST_CHAIN')"
-                (click)="routActive('AUDITOR_TRUST_CHAIN')">
-                Trust Chain
+        </span>
+        -->
+
+        <div *ngIf="innerWidth <= 810" class="mobile-header">
+            <a *ngIf="isLogin" class="mobile-menu-button" (click)="openNav()">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </a>
+
+            <span class="btn-home" #btnHome (click)="onHome()"
+                [ngStyle]="{
+                    'display': isLogin ? 'block' : 'flex',
+                    'width': isLogin ? 'auto' : '100%',
+                    'justify-content': isLogin ? 'auto' : 'center',
+                    'margin':  isLogin ? '22px 0 22px 22px' : '0',
+                    'font-size': isLogin ? '20px' : '26px'
+                }">
+                <div class="btn-home-name">
+                    Guardian
+                </div>
+            </span>
+
+            <div class="user-content-info" *ngIf="isLogin || displayDemoAccounts"
+                [ngStyle]="{
+                    'margin': isLogin ? '0 22px' : 0
+                }">
+                <div *ngIf="username" class="user-balance" [attr.balance-type]="balanceType">
+                    {{balance}}
+                </div>
+                <div class="user-content-button" [matMenuTriggerFor]="menu">
+                    <button *ngIf="isLogin" mat-icon-button class="user-info-icon">
+                        <mat-icon>{{menuIcon}}</mat-icon>
+                    </button>
+                </div>
             </div>
+        </div>
+
+        <div *ngIf="innerWidth <= 810 && isLogin" class="menu-open">
+            <!--STANDARD REGISTRY MENU-->
+            <div *ngIf="role === 'STANDARD_REGISTRY'" class="nav-list" [attr.disabled]="commonLinksDisabled">
+                <div id="menu-backdrop" (click)="closeNav()"></div>
+                <div id="nav-items" class="nav-items">
+                    <span class='material-icons' (click)="closeNav()">close</span>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_UP')" (click)="routActive('SR_UP')">
+                        User Profile
+                    </div>
+                    <div id="tokens-nav" class="nav-list-item" (click)="openSubMenu('1')" [attr.active]="isActiveLink('SR_TOKENS')">
+                        Tokens
+                    </div>
+                    <div id="subMenu1" class="subnav-list">
+                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_TOKENS_LIST')"
+                            (click)="routActive('SR_TOKENS_LIST')">
+                            Tokens
+                        </div>
+                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_CONTRACTS')"
+                            (click)="routActive('SR_CONTRACTS')">
+                            Contracts
+                        </div>
+                        <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_CONTRACTS_PAIRS')"
+                            (click)="routActive('SR_CONTRACTS_PAIRS')">
+                            Token Pairs
+                        </div>
+                    </div>
+                    <div id="policies-nav" class="nav-list-item" (click)="openSubMenu('2')" [attr.active]="isActiveLink('SR_POLICIES')">
+                        Policies
+                    </div>
+                    <div id="subMenu2" class="subnav-list">
+                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_SCHEMAS')"
+                            (click)="routActive('SR_SCHEMAS')">
+                            Schemas
+                        </div>
+                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_ARTIFACTS')"
+                            (click)="routActive('SR_ARTIFACTS')">
+                            Artifacts
+                        </div>
+                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_MODULES')"
+                            (click)="routActive('SR_MODULES')">
+                            Modules
+                        </div>
+                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_POLICIES_LIST')"
+                            (click)="routActive('SR_POLICIES_LIST')">
+                            Policies
+                        </div>
+                        <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_EDITOR')"
+                            (click)="routActive('SR_EDITOR')">
+                            Policy Editor
+                        </div>
+                        <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_VIEWER')"
+                            (click)="routActive('SR_VIEWER')">
+                            Policy Viewer
+                        </div>
+                        <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_COMPARE')"
+                            (click)="routActive('SR_COMPARE')">
+                            Compare
+                        </div>
+                    </div>
+                    <div id="admin-nav" class="nav-list-item" (click)="openSubMenu('3')" [attr.active]="isActiveLink('SR_ADMIN')">
+                        Admin Panel
+                    </div>
+                    <div id="subMenu3" class="subnav-list">
+                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_SETTINGS')"
+                            (click)="routActive('SR_SETTINGS')">
+                            Settings
+                        </div>
+                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_LOGS')" (click)="routActive('SR_LOGS')">
+                            Logs
+                        </div>
+                        <div class="nav-list-item" [attr.active]="isActiveLink('SR_STATUS')" (click)="routActive('SR_STATUS')">
+                            Status
+                        </div>
+                    </div>                    
+                </div>
+            </div>
+
+            <!--USER MENU-->
+            <div *ngIf="role==='USER'" class="nav-list" [attr.disabled]="commonLinksDisabled">
+                <div id="menu-backdrop" (click)="closeNav()"></div>
+                <div id="nav-items" class="nav-items">
+                    <span class='material-icons' (click)="closeNav()">close</span>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('USER_UP')" (click)="routActive('USER_UP')">
+                        User Profile
+                    </div>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('USER_TOKENS')" (click)="routActive('USER_TOKENS')">
+                        Tokens
+                    </div>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('USER_RETIRE')" (click)="routActive('USER_RETIRE')">
+                        Token Retire
+                    </div>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('USER_POLICIES')"
+                        (click)="routActive('USER_POLICIES')">
+                        Policies
+                    </div>
+                </div>
+            </div>
+
+            <!--AUDITOR MENU-->
+            <div *ngIf="role==='AUDITOR'" class="nav-list" [attr.disabled]="commonLinksDisabled">
+                <div id="menu-backdrop" (click)="closeNav()"></div>
+                <div id="nav-items" class="nav-items">
+                    <span class='material-icons' (click)="closeNav()">close</span>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_UP')" (click)="routActive('AUDITOR_UP')">
+                        Audit
+                    </div>
+                    <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_TRUST_CHAIN')"
+                        (click)="routActive('AUDITOR_TRUST_CHAIN')">
+                        Trust Chain
+                    </div>
+                </div>
+            </div>
+
+
+            <!--FOOTER-->
+            <div id="footer" class="footer">
+                <div class="logout" (click)="logOut()">
+                    Logout
+                    <span class="material-icons">logout</span>
+                </div>
+                <div *ngIf="balanceType" id="user-info" class="user-info">
+                    <div class="name">
+                        <p class="user-name">
+                            {{username}}
+                        </p>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-item-name">HEDERA ID:</div>
+                        <div class="profile-item-value">{{hederaAccountID}}</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-item-name"> BALANCE:</div>
+                        <div class="profile-item-value"> {{balance}}</div>
+                    </div>
+                </div>
+            </div>
+            
         </div>
 
         <div class="user-content-info" *ngIf="isLogin || displayDemoAccounts">
-            <div *ngIf="username" class="user-balance" [attr.balance-type]="balanceType">
+            <div *ngIf="username && innerWidth > 810" class="user-balance" [attr.balance-type]="balanceType">
                 {{balance}}
             </div>
             <div class="user-content-button" [matMenuTriggerFor]="menu">
                 <ng-container *ngIf="username; else notLogged">
-                    <span>{{username}}</span>
+                    <div *ngIf="innerWidth > 810">
+                        <span>{{username}}</span>
+                    </div>
                 </ng-container>
                 <ng-template #notLogged>
                     <div class="example-icon admin-panel">
@@ -135,6 +330,7 @@
         </div>
 
         <mat-menu #menu="matMenu" xPosition="before">
+            <!--<button *ngIf="isLogin && role === 'STANDARD_REGISTRY'" mat-menu-item (click)="doBranding()">Branding</button>-->
             <button *ngIf="isLogin" mat-menu-item (click)="logOut()">Log out</button>
 
             <div *ngIf="!isLogin" mat-menu-item style="

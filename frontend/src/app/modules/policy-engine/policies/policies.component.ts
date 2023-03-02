@@ -94,6 +94,9 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         }
     ];
 
+    public innerWidth: any;
+    public innerHeight: any;
+
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
@@ -137,6 +140,8 @@ export class PoliciesComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.loading = true;
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
         this.loadPolicy();
     }
 
@@ -361,14 +366,36 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     importPolicyDetails(result: any) {
         const { type, data, policy } = result;
         const distinctPolicies = this.getDistinctPolicy();
-        const dialogRef = this.dialog.open(PreviewPolicyDialog, {
-            width: '950px',
-            panelClass: 'g-dialog',
-            data: {
-                policy: policy,
-                policies: distinctPolicies
-            }
-        });
+        let dialogRef;
+        if (this.innerWidth <= 810) {
+            const bodyStyles = window.getComputedStyle(document.body);
+            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
+            dialogRef = this.dialog.open(PreviewPolicyDialog, {
+                width: `${this.innerWidth.toString()}px`,
+                maxWidth: '100vw',
+                height: `${this.innerHeight - headerHeight}px`,
+                position: {
+                    'bottom': '0'
+                },
+                panelClass: 'g-dialog',
+                hasBackdrop: true, // Shadows beyond the dialog
+                closeOnNavigation: true,
+                autoFocus: false,
+                data: {
+                    policy: policy,
+                    policies: distinctPolicies
+                }
+            });
+        } else {
+            dialogRef = this.dialog.open(PreviewPolicyDialog, {
+                width: '950px',
+                panelClass: 'g-dialog',
+                data: {
+                    policy: policy,
+                    policies: distinctPolicies
+                }
+            });
+        }
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 if (result.messageId) {
@@ -479,15 +506,36 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     }
 
     createMultiPolicy(element: any) {
-        const dialogRef = this.dialog.open(MultiPolicyDialogComponent, {
-            width: '650px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
-            data: {
-                policyId: element.id
-            }
-        });
+        let dialogRef;
+        const bodyStyles = window.getComputedStyle(document.body);
+        const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
+        if (this.innerWidth <= 810) {
+            dialogRef = this.dialog.open(MultiPolicyDialogComponent, {
+                width: `${this.innerWidth.toString()}px`,
+                maxWidth: '100vw',
+                height: `${this.innerHeight - headerHeight}px`,
+                position: {
+                    'bottom': '0'
+                },
+                panelClass: 'g-dialog',
+                hasBackdrop: true, // Shadows beyond the dialog
+                closeOnNavigation: true,
+                autoFocus: false,
+                data: {
+                    policyId: element.id
+                }
+            });
+        } else {
+            dialogRef = this.dialog.open(MultiPolicyDialogComponent, {
+                width: '650px',
+                panelClass: 'g-dialog',
+                disableClose: true,
+                autoFocus: false,
+                data: {
+                    policyId: element.id
+                }
+            });
+        }
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.importPolicyDetails(result);

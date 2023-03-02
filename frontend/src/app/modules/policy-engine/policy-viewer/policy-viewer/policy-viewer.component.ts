@@ -61,6 +61,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     private subscription = new Subscription();
 
+    public innerWidth: any;
+    public innerHeight: any;
+
     constructor(
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
@@ -78,6 +81,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
         this.loading = true;
         this.subscription.add(
             this.route.queryParams.subscribe(queryParams => {
@@ -242,14 +247,34 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     openDocument(element: any) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
-            width: '900px',
-            data: {
-                document: element,
-                title: 'Document',
-                type: 'JSON',
-            }
-        });
+        let dialogRef;
+        
+        if (this.innerWidth <= 810) {
+            const bodyStyles = window.getComputedStyle(document.body);
+            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
+            dialogRef = this.dialog.open(VCViewerDialog, {
+                width: `${this.innerWidth.toString()}px`,
+                maxWidth: '100vw',
+                height: `${this.innerHeight - headerHeight}px`,
+                position: {
+                    'bottom': '0'
+                },
+                panelClass: 'g-dialog',
+                hasBackdrop: true, // Shadows beyond the dialog
+                closeOnNavigation: true,
+                autoFocus: false,
+                data: this
+            });
+        } else {
+            dialogRef = this.dialog.open(VCViewerDialog, {
+                width: '900px',
+                data: {
+                    document: element,
+                    title: 'Document',
+                    type: 'JSON',
+                }
+            });
+        }
         dialogRef.afterClosed().subscribe(async (result) => { });
     }
 

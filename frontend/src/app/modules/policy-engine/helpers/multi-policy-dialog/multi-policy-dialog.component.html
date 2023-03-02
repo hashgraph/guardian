@@ -5,7 +5,7 @@
                 <mat-icon>close</mat-icon>
             </div>
         </div>
-        <div class="g-dialog-title">
+        <div class="g-dialog-title" id="title">
             Multi Policy
         </div>
         <div class="g-dialog-actions">
@@ -33,15 +33,15 @@
                                 </mat-radio-button>
                             </div>
                             <div class="group-value" [attr.disabled]="policyType!=='Main'">
-                                <div style="margin-bottom: 15px;color: #707070">
+                                <div class="table-container" style="margin-bottom: 15px;color: #707070">
                                     <span>Type: </span>
                                     <span>Main Policy</span>
                                 </div>
-                                <div style="margin-bottom: 15px;color: #707070">
+                                <div class="table-container" style="margin-bottom: 15px;color: #707070">
                                     <span>Main Policy: </span>
                                     <span>{{mainPolicyTopicId1}}</span>
                                 </div>
-                                <div style="margin-bottom: 15px;color: #707070">
+                                <div class="table-container" style="margin-bottom: 15px;color: #707070">
                                     <span>Topic for synchronization: </span>
                                     <span>{{synchronizationTopicId1}}</span>
                                 </div>
@@ -58,15 +58,15 @@
                                 </mat-radio-button>
                             </div>
                             <div class="group-value" [attr.disabled]="policyType!=='Sub'">
-                                <div style="margin-bottom: 15px;color: #707070">
+                                <div class="table-container" style="margin-bottom: 15px;color: #707070">
                                     <span>Type: </span>
                                     <span>Sub Policy</span>
                                 </div>
-                                <div style="margin-bottom: 15px;color: #707070">
+                                <div class="table-container" style="margin-bottom: 15px;color: #707070">
                                     <span>Main Policy: </span>
                                     <span>{{mainPolicyTopicId2}}</span>
                                 </div>
-                                <div style="margin-bottom: 15px;color: #707070">
+                                <div class="table-container" style="margin-bottom: 15px;color: #707070">
                                     <span>Topic for synchronization: </span>
                                     <span>{{synchronizationTopicId2}}</span>
                                 </div>

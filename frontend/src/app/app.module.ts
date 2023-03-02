@@ -56,6 +56,7 @@ import { ServiceStatusComponent } from './views/admin/service-status/service-sta
 import { ContractConfigComponent } from './views/contract-config/contract-config.component';
 import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
+import { BrandingComponent } from './views/branding/branding.component';
 //Components
 import { InfoComponent } from './components/info/info/info.component';
 import { AddPairDialogComponent } from './components/add-pair-dialog/add-pair-dialog.component';
@@ -92,6 +93,7 @@ import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module
         AddPairDialogComponent,
         RetireTokenDialogComponent,
         DataInputDialogComponent,
+        BrandingComponent,
         SchemaConfigComponent
     ],
     imports: [
@@ -138,14 +140,14 @@ import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,
-            multi: true
+            multi: true,
         },
         {
             provide: HTTP_INTERCEPTORS,
             useClass: AuthInterceptor,
-            multi: true
-        }
+            multi: true,
+        },
     ],
-    bootstrap: [AppComponent]
+    bootstrap: [AppComponent],
 })
 export class AppModule { }

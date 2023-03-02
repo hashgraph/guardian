@@ -65,11 +65,11 @@
             <a routerLink="/policy-viewer" class="go-back-link">
                 <mat-icon>chevron_left</mat-icon>
                 <span *ngIf="policyInfo && policyInfo.name">{{policyInfo.name}}</span>
-                <span *ngIf="policyInfo && policyInfo.description">: {{policyInfo.description}}</span>
-                <span *ngIf="policyInfo && policyInfo.version">({{policyInfo.version}})</span>
+                <span *ngIf="policyInfo && policyInfo.description && innerWidth > 810">: {{policyInfo.description}}</span>
+                <span *ngIf="policyInfo && policyInfo.version && innerWidth > 810">({{policyInfo.version}})</span>
             </a>
             <ng-container *ngIf="policyInfo">
-                <span *ngIf="!groups.length" class="current-user-role">
+                <span *ngIf="!groups.length && innerWidth > 810" class="current-user-role">
                     Role: {{policyInfo.userRoles.join(', ')}}
                 </span>
                 <span *ngIf="isMultipleGroups" class="current-user-group" [matMenuTriggerFor]="group">

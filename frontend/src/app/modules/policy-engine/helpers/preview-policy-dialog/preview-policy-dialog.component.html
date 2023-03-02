@@ -109,6 +109,9 @@
                     <div class="field-value" [title]="module.owner">{{module.owner}}</div>
                 </div>
             </div>
+            <div class="page-btns">
+                <button *ngIf="innerWidth <= 810" mat-raised-button color="primary" id="create-btn" (click)="onImport()">Import</button>
+            </div>
         </div>
     </div>
 </div>

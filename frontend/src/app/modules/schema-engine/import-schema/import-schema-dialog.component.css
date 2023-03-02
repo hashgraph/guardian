@@ -120,3 +120,53 @@ form {
     width: 80%;
     height: 80%;
 }
+
+@media (max-width: 810px) {
+
+    .header {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 15px;
+    }
+
+    form {
+        width: 100%;
+    }
+
+    .mat-dialog-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 10px;
+    }
+
+    #cancel-btn {
+        border: 1px solid #2C78F6;
+        margin-left: 0;
+        background: none !important;
+        color: #2C78F6;
+        order: 1;
+        grid-column: 1;
+    }
+
+    #ok-btn {
+        order: 2;
+        grid-column: 2;
+        background: #2C78F6;
+    }
+
+    #ok-btn[disabled] {
+        opacity: 0.5;
+        background: #2C78F6;
+        color: white;
+    }
+
+    .action-select-step button {
+        border: 1px solid #2C78F6;
+        background: none !important;
+        color: #2C78F6;
+    }
+
+    .action-name {
+        color: #2C78F6;
+    }
+}

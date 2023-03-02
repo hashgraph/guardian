@@ -27,6 +27,9 @@ export class ImportPolicyDialog {
 
     public isImportTypeSelected: boolean = false;
 
+  public innerWidth: any;
+  public innerHeight: any;
+
     constructor(
         public dialogRef: MatDialogRef<ImportPolicyDialog>,
         private fb: FormBuilder,
@@ -46,6 +49,11 @@ export class ImportPolicyDialog {
             this.importFromMessage();
         }
     }
+
+  ngOnInit() {
+    this.innerWidth = window.innerWidth;
+    this.innerHeight = window.innerHeight;
+  }
 
     setImportType(importType: ImportType) {
         this.importType = importType;

@@ -11,6 +11,7 @@ import {
     externalAPI,
     ipfsAPI,
     analyticsAPI,
+    brandingAPI,
     moduleAPI,
     tagsAPI
 } from '@api/service';
@@ -87,6 +88,7 @@ Promise.all([
         app.use('/tasks', taskAPI);
         app.use('/analytics', authorizationHelper, analyticsAPI);
         app.use('/contracts', authorizationHelper, contractAPI);
+        app.use('/branding', authorizationHelper, brandingAPI);
         app.use('/modules', authorizationHelper, moduleAPI);
         app.use('/tags', authorizationHelper, tagsAPI);
         app.use('/map', authorizationHelper, mapAPI);

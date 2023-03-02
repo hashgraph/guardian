@@ -5,9 +5,14 @@
                 dropZoneLabel="Import Schema .schema file"></app-file-drag-n-drop>
         </ng-template>
         <ng-template [ngSwitchCase]="1">
-            <h1 mat-dialog-title>
-                Enter hedera message timestamp
-            </h1>
+            <div class="header">
+                <h1 mat-dialog-title>
+                    Enter hedera message timestamp
+                </h1>
+                <div *ngIf="innerWidth <= 810" class="g-dialog-cancel-btn" (click)="onNoClick()">
+                    <mat-icon>close</mat-icon>
+                </div>
+            </div>
             <div mat-dialog-content>
                 <form [formGroup]="dataForm" (ngSubmit)="importFromMessage()">
                     <mat-form-field class="example-full-width" appearance="outline">
@@ -15,8 +20,8 @@
                         <input matInput type="text" placeholder="Message timestamp" formControlName="timestamp">
                     </mat-form-field>
                     <div mat-dialog-actions>
-                        <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>
-                        <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+                        <button mat-raised-button color="primary" type="submit" id="ok-btn" [disabled]="!dataForm.valid">Ok</button>
+                        <button mat-button type="button" id="cancel-btn" (click)="onNoClick()">Cancel</button>
                     </div>
                 </form>
             </div>

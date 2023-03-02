@@ -1,0 +1,222 @@
+<div class="header">
+    <h1>Application Branding</h1>
+    <button *ngIf="!isPreviewOn" mat-raised-button color="primary" class="preview-btn" (click)="onPreview()">
+        <mat-icon>remove_red_eye</mat-icon>
+        <span class="aligned-with-icon">Preview</span>
+    </button>
+    <button *ngIf="isPreviewOn" mat-raised-button color="primary" class="preview-btn" (click)="onPreview()">
+        <span class="material-icons">visibility_off</span>
+        <span class="aligned-with-icon">Close Preview</span>
+    </button>
+</div>
+
+<div class="content">
+    <div class="name-colors">
+        <h2>Name and colors</h2>
+        <h3 class="form-header">Header color</h3>
+        <form class="color-form">
+            <mat-form-field appearance="outline">
+                <input matInput [formControl]="headerHexColorControl" placeholder="#000000" (input)="updateColorFromHex(headerHexColorControl, headerColorControl)">
+            </mat-form-field>
+            <input class="color-picker" matInput type="color" [formControl]="headerColorControl" (input)="updateHexFromColor(headerHexColorControl, headerColorControl)">
+        </form>
+        <p class="description">Choose a color for the header background</p>
+
+        <h3 class="form-header">Primary color</h3>
+        <form class="color-form">
+            <mat-form-field appearance="outline">
+                <input matInput [formControl]="primaryHexColorControl" placeholder="#0c77ff" (input)="updateColorFromHex(primaryHexColorControl, primaryColorControl)">
+            </mat-form-field>
+            <input class="color-picker" matInput type="color" value="#0c77ff" [formControl]="primaryColorControl" (input)="updateHexFromColor(primaryHexColorControl, primaryColorControl)">
+        </form>
+        <p class="description">Choose a color for the CTA buttons</p>
+
+        <h3 class="form-header">Company name</h3>
+        <form class="company-name-form">
+            <mat-form-field appearance="outline">
+                <input matInput [formControl]="companyNameControl" placeholder="Enter text" (input)="updateCompanyName(companyNameControl)">
+            </mat-form-field>
+        </form>
+        <p class="description">This name will be displayed on the header accross the application. On a mobile screen this will be ommited if in presence of a company logo</p>
+        <!--
+        <h3 class="form-header">Fonts</h3>
+        <form>
+            <mat-form-field appearance="outline">
+                <mat-select [formControl]="fontControl">
+                    <mat-option *ngFor="let font of fonts" [value]="font.value">
+                        {{ font.label }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </form>
+        <p class="description">This font will be applied to all texts</p>
+        
+        <h3 class="form-header">Font preview:</h3>
+        <div class="font-preview" style="font-family: '{{ selectedFont?.value }}';">
+            <p class="text-preview-regular">{{ selectedFont?.label }} regular</p>
+            <p class="text-preview-light" style="font-weight: 300;">{{ selectedFont?.value }} light</p>
+        </div>
+        -->
+    </div>
+
+    <div class="logo-picture-favicon">
+        <h2>Logo, picture and favicon</h2>
+
+        <div class="image-upload-container">
+            <div class="image-placeholder">
+                <div *ngIf="!companyLogoUrl" class="company-logo-preview">
+                    <div class="image-icon">
+                        <mat-icon>insert_photo</mat-icon>
+                    </div>
+                    <div class="image-label">
+                        {{ imageLabel.companyLogo }} Preview
+                    </div>
+                </div>
+                <img *ngIf="companyLogoUrl" [src]="companyLogoUrl" alt="{{ imageLabel.companyLogo }} Preview" />
+            </div>
+            <div class="image-details">
+                <p class="image-title"> Company logo</p>
+                <p class="image-description">The logo will be displayed on the side of the name of the application (Guardian by default) and throughout the application. It is recommended to choose a a small squared image that is 6MB or less.</p>
+                <button mat-raised-button color="primary" class="upload-btn" (click)="fileInputCompanyLogo.click()">
+                    <span class='material-icons-outlined'>file_upload</span>
+                    <span class="aligned-with-icon">Upload logo</span>
+                </button>
+                <input type="file" id="companyLogoInput" #fileInputCompanyLogo (change)="handleCompanyLogoInput($any($event.target).files)" accept="image/*" style="display:none;"> 
+                <button *ngIf="companyLogoUrl" mat-icon-button color="warn" aria-label="Clear" style="margin-left: 10px;" (click)="clearCompanyLogo()">
+                    <mat-icon>clear</mat-icon>
+                    <span class="aligned-with-icon">Clear image</span>
+                </button>                 
+            </div>
+        </div>
+
+        <div class="image-upload-container">
+            <div class="image-placeholder">
+                <div *ngIf="!loginBannerUrl" class="login-banner-preview">
+                    <div class="image-icon">
+                        <mat-icon>insert_photo</mat-icon>
+                    </div>
+                    <div class="image-label">
+                        {{ imageLabel.loginBanner }} Preview
+                    </div>
+                </div>
+                <img *ngIf="loginBannerUrl" [src]="loginBannerUrl" alt="{{ imageLabel.loginBanner }} Preview" />
+            </div>
+            <div class="image-details">
+                <p class="image-title"> Login Banner</p>
+                <p class="image-description">On the login page, the image will be displayed as a background. Vertical orientation is preferred, with a file size of 6MB or less.</p>
+                <button mat-raised-button color="primary" class="upload-btn" (click)="fileInputLoginBanner.click()">
+                    <span class='material-icons-outlined'>file_upload</span>
+                    <span class="aligned-with-icon">Upload banner</span>
+                </button>
+                <input type="file" id="loginBannerInput" #fileInputLoginBanner (change)="handleLoginBannerInput($any($event.target).files)" accept="image/*" style="display:none;"> 
+                <button *ngIf="loginBannerUrl" mat-icon-button color="warn" aria-label="Clear" style="margin-left: 10px;" (click)="clearLoginBanner()">
+                    <mat-icon>clear</mat-icon>
+                    <span class="aligned-with-icon">Clear image</span>
+                </button>                 
+            </div>
+        </div>
+
+        <div class="image-upload-container">
+            <div class="image-placeholder">
+                <div *ngIf="!faviconUrl" class="company-logo-preview">
+                    <div class="image-icon">
+                        <mat-icon>insert_photo</mat-icon>
+                    </div>
+                    <div class="image-label">
+                        {{ imageLabel.favicon }} Preview
+                    </div>
+                </div>
+                <img *ngIf="faviconUrl" [src]="faviconUrl" alt="{{ imageLabel.favicon }} Preview" />
+            </div>
+            <div class="image-details">
+                <p class="image-title">Website favicon</p>
+                <p class="image-description">A favicon is a small website icon. It appears in the browser next to the page title, in the background bar, and in the tabs bar at 32x32 pixels.</p>
+                <button mat-raised-button color="primary" class="upload-btn" (click)="fileInputFavicon.click()">
+                    <span class='material-icons-outlined'>file_upload</span>
+                    <span class="aligned-with-icon">Upload favicon</span>
+                </button>
+                <input type="file" id="faviconInput" #fileInputFavicon (change)="handleFaviconInput($any($event.target).files)" accept="image/*" style="display:none;"> 
+                <button *ngIf="faviconUrl" mat-icon-button color="warn" aria-label="Clear" style="margin-left: 10px;" (click)="clearFavicon()">
+                    <mat-icon>clear</mat-icon>
+                    <span class="aligned-with-icon">Clear image</span>
+                </button>                 
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-btns">
+    <button mat-raised-button color="primary" id="save-btn" (click)="onSave()">Save Branding</button>
+    <button mat-raised-button color="primary" id="cancel-btn" (click)="onCancel()">Cancel</button>
+</div>
+
+<div *ngIf="loading" class="loading">
+    <mat-spinner></mat-spinner>
+</div>
+
+
+        <!--
+
+        <div class="image-upload-container">
+            <div class="image-upload-preview">
+
+                <div class="image-placeholder">
+                    <div *ngIf="!companyLogoUrl" class="company-logo-preview">
+                        <div class="image-icon">
+                            <mat-icon>insert_photo</mat-icon>
+                        </div>
+                        <div class="image-label">
+                            {{ imageLabel.companyLogo }} Preview
+                        </div>
+                    </div>
+                    <img *ngIf="companyLogoUrl" [src]="companyLogoUrl" alt="{{ imageLabel.companyLogo }} Preview" />
+                </div>
+
+                <div class="image-placeholder">
+                    <div class="image-icon">
+                        <mat-icon>insert_photo</mat-icon>
+                    </div>
+                    <div class="image-label">
+                        {{ imageLabel.loginBanner }} Preview
+                    </div>
+                    <img *ngIf="loginBannerUrl" [src]="loginBannerUrl" alt="{{ imageLabel.loginBanner }} Preview" />
+                </div>
+
+                <div class="image-placeholder">
+                    <div class="image-icon">
+                        <mat-icon>insert_photo</mat-icon>
+                    </div>
+                    <div class="image-label">
+                        {{ imageLabel.favicon }} Preview
+                    </div>
+                    <img *ngIf="faviconUrl" [src]="faviconUrl" alt="{{ imageLabel.favicon }} Preview" />
+                </div>
+
+            </div>
+            <div class="image-upload-actions">
+                <div class="image-upload-input">
+                    <label for="companyLogoInput" class="image-upload-label">Upload Company Logo</label>
+                    <input type="file" id="companyLogoInput" (change)="handleCompanyLogoInput($any($event.target).files)" accept="image/*">
+                    <button *ngIf="companyLogoUrl" mat-icon-button color="warn" aria-label="Clear" (click)="clearCompanyLogo()">
+                        <mat-icon>clear</mat-icon>
+                    </button>
+                </div>
+                <div class="image-upload-input">
+                    <label for="loginBannerInput" class="image-upload-label">Upload Login Banner</label>
+                    <input type="file" id="loginBannerInput" (change)="handleLoginBannerInput($any($event.target).files)" accept="image/*">
+                    <button *ngIf="loginBannerUrl" mat-icon-button color="warn" aria-label="Clear" (click)="clearLoginBanner()">
+                        <mat-icon>clear</mat-icon>
+                    </button>
+                </div>
+                <div class="image-upload-input">
+                    <label for="faviconInput" class="image-upload-label">Upload Favicon</label>
+                    <input type="file" id="faviconInput" (change)="handleFaviconInput($any($event.target).files)" accept="image/*">
+                    <button *ngIf="faviconUrl" mat-icon-button color="warn" aria-label="Clear" (click)="clearFavicon()">
+                        <mat-icon>clear</mat-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+      
+    </div>
+    -->

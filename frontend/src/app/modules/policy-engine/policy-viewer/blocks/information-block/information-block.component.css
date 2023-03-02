@@ -41,3 +41,16 @@
     padding-bottom: 30px;
     color: #404040;
 }
+
+@media (max-width: 810px) {
+
+    .content {
+        margin: auto;
+        width: 90%;
+    }
+    
+    .title, .description {
+        line-height: normal;
+        margin-left: 0;
+    }
+}

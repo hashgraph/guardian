@@ -27,6 +27,7 @@ import { PolicyConfigurationComponent } from './modules/policy-engine/policy-con
 import { PolicyViewerComponent } from './modules/policy-engine/policy-viewer/policy-viewer/policy-viewer.component';
 import { ArtifactConfigComponent } from './modules/artifact-engine/artifact-config/artifact-config.component';
 import { CompareComponent } from './modules/analytics/compare/compare.component';
+import { BrandingComponent } from './views/branding/branding.component';
 import { ModulesListComponent } from './modules/policy-engine/modules-list/modules-list.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
@@ -175,6 +176,8 @@ const routes: Routes = [
     { path: 'modules', component: ModulesListComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
     { path: 'compare', component: CompareComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+
+    { path: 'branding', component: BrandingComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

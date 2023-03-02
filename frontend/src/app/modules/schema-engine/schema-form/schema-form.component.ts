@@ -2,6 +2,7 @@ import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-compo
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { GoogleMap } from '@angular/google-maps';
 import { Schema, SchemaCondition, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
@@ -93,6 +94,21 @@ export class SchemaFormComponent implements OnInit {
     fields: any[] | undefined = [];
     conditionFields: SchemaField[] = [];
 
+    @Input() cancelHidden: boolean = true;
+    @Input('disableSubmitBtn') disableSubmitBtn: boolean = false;
+    @Output() cancelBtnEvent = new EventEmitter<boolean>();
+    @Output() submitBtnEvent = new EventEmitter<boolean>();
+
+    @Input() showChildSchemaForm: boolean = false;
+    @Input() buttonOnceRaised: boolean = false;
+    @Input() showButtons: boolean = true;
+    @Input() comesFromDialog: boolean = false;
+
+    public innerWidth: any;
+    public innerHeight: any;
+    public isShown: boolean[] = [true, true];
+    public currentIndex: number = 0;
+
     private _patternByNumberType: any = {
         number: /^-?\d*(\.\d+)?$/,
         integer: /^-?\d*$/
@@ -100,11 +116,24 @@ export class SchemaFormComponent implements OnInit {
 
     constructor(
         private ipfs: IPFSService,
-        protected changeDetectorRef: ChangeDetectorRef
+        protected changeDetectorRef: ChangeDetectorRef,
+        private router: Router
     ) { }
 
 
     ngOnInit(): void {
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
+
+        if (this.fields) {
+            for (let i = 0; i < this.fields.length; i++) {
+                if (this.fields[i].isRef) {
+                    this.isShown[i] = true;
+                    break;
+                }
+                this.isShown[i] = true;
+            }
+        }
     }
 
     ngOnChanges() {
@@ -657,5 +686,134 @@ export class SchemaFormComponent implements OnInit {
 
     isPostfix(item: SchemaField): boolean {
         return item.unitSystem === UnitSystem.Postfix;
+    }
+
+
+
+    getNextShownFields(fields: SchemaField[]): boolean[] {
+        this.isShown = new Array(fields.length).fill(false);
+        let nextRefIndex = -1;
+        let initialDivision = 0;
+        for (let i = this.currentIndex + 1; i < fields.length; i++) {
+            nextRefIndex = i;
+            if (fields[i].isRef) {
+                if (this.currentIndex == 0 && initialDivision == 0) {
+                    initialDivision = 1;
+                    this.currentIndex = i;
+                    this.isShown = new Array(fields.length).fill(false);
+                    continue;
+                }
+                break;
+            }
+            this.isShown[i] = true;
+        }
+        if (nextRefIndex !== -1) {
+            if (this.currentIndex === 0) {
+                this.currentIndex = -1;
+            }
+            for (let i = this.currentIndex + 1; i <= nextRefIndex; i++) {
+                this.isShown[i] = true;
+            }
+            this.currentIndex = nextRefIndex;
+        }
+        const contentElement = document.querySelector('#main-content');
+        const formElement = document.querySelector('.form-dialog');
+        setTimeout(() => {
+            contentElement!.scrollTo({
+                top: -1,
+                behavior: 'smooth'
+            });
+            if (formElement) {
+                formElement.scrollTo({
+                    top: -1,
+                    behavior: 'smooth'
+                });
+            }
+            window.scrollTo({
+                top: -1,
+                behavior: 'smooth'
+            });
+        }, 100)
+
+        return this.isShown;
+    }
+
+    getPrevShownFields(fields: SchemaField[]): boolean[] {
+        this.isShown = new Array(fields.length).fill(false);
+        let prevRefIndex = -1;
+        if (this.currentIndex === 0) {
+            // If the current index is already at the beginning of the array,
+            // show all fields with isRef set to false
+            for (let i = 0; i < fields.length; i++) {
+                if (!fields[i].isRef) {
+                    this.isShown[i] = true;
+                }
+            }
+        } else {
+            for (let i = this.currentIndex - 1; i >= 0; i--) {
+                if (fields[i].isRef) {
+                    prevRefIndex = i;
+                    for (let j = prevRefIndex - 1; j >= 0; j--) {
+                        if (fields[j].isRef) {
+                            break
+                        } else if (j == 0) {
+                            prevRefIndex = 0;
+                        }
+                    }
+                    break;
+                }
+                //this.isShown[i] = true;
+                this.currentIndex = i;
+            }
+            if (prevRefIndex !== -1) {
+                for (let i = this.currentIndex - 1; i >= prevRefIndex; i--) {
+                    this.isShown[i] = true;
+                }
+                this.currentIndex = prevRefIndex;
+            }
+        }
+        const contentElement = document.querySelector('#main-content');
+        const formElement = document.querySelector('.form-dialog');
+        setTimeout(() => {
+            contentElement!.scrollTo({
+                top: -1,
+                behavior: 'smooth'
+            });
+            if (formElement) {
+                formElement.scrollTo({
+                    top: -1,
+                    behavior: 'smooth'
+                });
+            }
+            window.scrollTo({
+                top: -1,
+                behavior: 'smooth'
+            });
+        }, 100)
+        
+
+        return this.isShown;
+    }
+      
+
+
+
+
+
+    navigatePolicyViewer() {
+        this.router.navigate(['/policy-viewer']);
+    }
+
+    closeWindow() {
+        window.close();
+    }
+
+    onCancelBtnClick() {
+        this.cancelBtnEvent.emit(false); // PENSO QUE ISTO FOI O QUE O FILIPE ME AJUDOU A FAZER
+        this.navigatePolicyViewer();
+    }
+
+    onSubmitBtnClick(fields: any) {
+        this.submitBtnEvent.emit(fields);
     }
 }

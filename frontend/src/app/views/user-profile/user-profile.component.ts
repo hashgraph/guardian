@@ -55,6 +55,9 @@ export class UserProfileComponent implements OnInit {
     tagEntity = TagType.Token;
     owner: any;
 
+    public innerWidth: any;
+    public innerHeight: any;
+
     hederaForm = this.fb.group({
         standardRegistry: ['', Validators.required],
         id: ['', Validators.required],
@@ -121,6 +124,8 @@ export class UserProfileComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
         this.loading = true;
         this.loadDate();
         this.update();
@@ -412,15 +417,36 @@ export class UserProfileComponent implements OnInit {
     }
 
     openRetireDialog(tokens: any) {
-        const dialogRef = this.dialog.open(RetireTokenDialogComponent, {
-            width: '800px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
-            data: {
-                tokens,
-            },
-        });
+        let dialogRef;
+        if (this.innerWidth <= 810) {
+            const bodyStyles = window.getComputedStyle(document.body);
+            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
+            dialogRef = this.dialog.open(RetireTokenDialogComponent, {
+                width: `${this.innerWidth.toString()}px`,
+                maxWidth: '100vw',
+                height: `${this.innerHeight - headerHeight}px`,
+                position: {
+                    'bottom': '0'
+                },
+                panelClass: 'g-dialog',
+                hasBackdrop: true, // Shadows beyond the dialog
+                closeOnNavigation: true,
+                autoFocus: false,
+                data: {
+                    tokens,
+                },
+            });
+        } else {
+            dialogRef = this.dialog.open(RetireTokenDialogComponent, {
+                width: '800px',
+                panelClass: 'g-dialog',
+                disableClose: true,
+                autoFocus: false,
+                data: {
+                    tokens,
+                },
+            });
+        }
         dialogRef.afterOpened().subscribe(() => (this.loading = false));
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {

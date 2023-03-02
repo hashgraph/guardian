@@ -216,3 +216,40 @@ button.mat-button {
     padding: 0px 2px !important;
     text-decoration: underline !important;
 }
+
+@media (max-width: 810px) {
+
+    body { 
+        overflow-x: hidden;
+        overscroll-behavior: none;
+        width: 100vw;
+        height: calc(var(--vh, 1vh) * 100);
+    }
+
+    html {
+        height: 100%
+    }
+
+    .cdk-overlay-pane {
+        .mat-dialog-container {
+            border-radius: 5px;
+    
+            .mat-dialog-content {
+                max-height: unset;
+            }
+        }
+    
+        .mat-menu-panel {
+            max-width: unset;
+            max-height: unset;
+        }
+    }
+
+    button {
+        box-shadow: none !important;
+    }
+
+    .loading {
+        overflow-y: auto;
+    }
+}
