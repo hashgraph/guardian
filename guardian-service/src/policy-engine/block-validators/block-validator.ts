@@ -301,7 +301,7 @@ export class BlockValidator {
     public validateFormula(formula: string): boolean {
         return (function (_formula: string) {
             try {
-                this.validateFormula(_formula);
+                this.parse(_formula);
                 return true;
             } catch (error) {
                 return false;
