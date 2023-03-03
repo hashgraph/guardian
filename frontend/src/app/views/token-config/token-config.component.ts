@@ -55,6 +55,9 @@ export class TokenConfigComponent implements OnInit {
     currentPolicy: any = '';
     policies: any[] | null = null;
 
+    public innerWidth: any;
+    public innerHeight: any;
+
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
@@ -69,6 +72,8 @@ export class TokenConfigComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
         this.tokenId = "";
         this.loading = true;
         this.currentPolicy = this.route.snapshot.queryParams['policy'];
@@ -145,11 +150,29 @@ export class TokenConfigComponent implements OnInit {
     }
 
     newToken() {
-        const dialogRef = this.dialog.open(TokenDialog, {
-            width: '750px',
-            panelClass: 'g-dialog',
-            disableClose: true
-        });
+
+        let dialogRef;
+        if (this.innerWidth <= 810) {
+            dialogRef = this.dialog.open(TokenDialog, {
+                width: `${this.innerWidth.toString()}px`,
+                maxWidth: '100vw',
+                height: `${this.innerHeight - 125}px`, // CHANGE THE 125 TO THE HEADER HEIGHT VARIABLE
+                position: {
+                    'bottom': '0'
+                },
+                panelClass: 'g-dialog',
+                hasBackdrop: true, // Shadows beyond the dialog
+                closeOnNavigation: true,
+                autoFocus: false,
+                data: this
+            });
+        } else {
+            dialogRef = this.dialog.open(TokenDialog, {
+                width: '750px',
+                panelClass: 'g-dialog',
+                disableClose: true
+            });
+        }
 
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {

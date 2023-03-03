@@ -26,6 +26,7 @@ import { ArtifactConfigComponent } from './artifact-engine/artifact-config/artif
 import { ContractConfigComponent } from './views/contract-config/contract-config.component';
 import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
 import { CompareComponent } from './analytics/compare/compare.component';
+import { BrandingComponent } from './views/branding/branding.component';
 import { ModulesListComponent } from './policy-engine/modules-list/modules-list.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
@@ -174,6 +175,8 @@ const routes: Routes = [
     { path: 'modules', component: ModulesListComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
     { path: 'compare', component: CompareComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+
+    { path: 'branding', component: BrandingComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

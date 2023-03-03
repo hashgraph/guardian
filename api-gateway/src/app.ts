@@ -8,6 +8,7 @@ import {
     externalAPI,
     ipfsAPI,
     analyticsAPI,
+    brandingAPI,
     moduleAPI
 } from '@api/service';
 import { Guardians } from '@helpers/guardians';
@@ -82,6 +83,7 @@ Promise.all([
         app.use('/tasks/', taskAPI);
         app.use('/analytics/', authorizationHelper, analyticsAPI);
         app.use('/contracts', authorizationHelper, contractAPI);
+        app.use('/branding', authorizationHelper, brandingAPI);
         app.use('/modules', authorizationHelper, moduleAPI);
         /////////////////////////////////////////
 

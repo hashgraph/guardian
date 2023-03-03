@@ -34,6 +34,9 @@ export class HeaderComponent implements OnInit {
     authSubscription!: any;
     displayDemoAccounts: boolean = environment.displayDemoAccounts;
 
+    public innerWidth: any;
+    public innerHeight: any;
+
     constructor(
         public authState: AuthStateService,
         public auth: AuthService,
@@ -56,6 +59,8 @@ export class HeaderComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
         this.activeLink = "";
         this.update();
         this.ws = this.webSocketService.profileSubscribe((event) => {
@@ -177,6 +182,10 @@ export class HeaderComponent implements OnInit {
         return policyRoles.map((item: any) => {
             return `${item.name} (${item.version}): ${item.role}`
         }).join('\r\n');
+    }
+
+    doBranding() {
+        this.router.navigate(['/branding']);
     }
 
     public isActiveLink(type: string): boolean {

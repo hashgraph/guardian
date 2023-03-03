@@ -9,4 +9,5 @@ export {ipfsAPI} from '@api/service/ipfs'
 export {loggerAPI} from '@api/service/logger';
 export {settingsAPI} from '@api/service/settings';
 export {analyticsAPI} from '@api/service/analytics';
+export {brandingAPI} from '@api/service/branding';
 export {moduleAPI} from '@api/service/module';
