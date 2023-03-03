@@ -4,6 +4,7 @@ import {
     getArtifactType,
     regenerateIds,
     replaceAllEntities,
+    replaceAllVariables,
     replaceArtifactProperties,
     SchemaFields
 } from '@helpers/utils';
@@ -279,6 +280,7 @@ export class PolicyImportExportHelper {
                 await tokenRepository.save(tokenObject);
                 console.log(tokenObject);
                 replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenObject.tokenId);
+                replaceAllVariables(policy.config, 'Token', token.tokenId, tokenObject.tokenId);
             }
             notifier.completed();
         }
@@ -336,6 +338,7 @@ export class PolicyImportExportHelper {
 
         for (const item of schemasMap) {
             replaceAllEntities(policy.config, SchemaFields, item.oldIRI, item.newIRI);
+            replaceAllVariables(policy.config, 'Schema', item.oldIRI, item.newIRI);
         }
 
         // compatibility with older versions
