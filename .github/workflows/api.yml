@@ -1,5 +1,5 @@
 name: Guardian CI API Tests
-on: [push]
+on: [push, pull_request]
 jobs:
   buildAndTest:
     runs-on: ubuntu-latest
