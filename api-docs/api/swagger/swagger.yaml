@@ -673,6 +673,11 @@ components:
           type: string
         type:
           type: string
+    PreviewModule:
+      type: object
+      properties:
+        module:
+          $ref: "#/components/schemas/Module"
     ExportModule:
       type: object
       properties:
@@ -690,9 +695,7 @@ components:
       type: object
       properties:
         errors:
-          type: array
-          items:
-            type: object
+          type: object
         isValid:
           type: boolean
         module:
@@ -704,23 +707,6 @@ components:
           $ref: "#/components/schemas/Module"
         results:
           type: object
-    PreviewModule:
-      type: object
-      required:
-        - policy
-        - schemas
-        - tokens
-      properties:
-        policy:
-          type: object
-        schemas:
-          type: array
-          items:
-            type: object
-        tokens:
-          type: array
-          items:
-            type: object
 tags:
   - name: "accounts"
     description: "Operations related to Guardian users"
@@ -5298,6 +5284,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /modules/menu:
+    get:
+      tags:
+        - modules
+      description: Returns modules menu. Only users with the Standard Registry and Installer role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Return a list of modules.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Module'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /modules/{uuid}:
     get:
       tags:
@@ -5358,6 +5372,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Module'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - modules
+      description: Deletes the module with the provided module ID. Only users with the Standard Registry role are allowed to make the request.
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+          required: true
+          description: Module ID.
+      security:
+      - bearerAuth: []
+      summary: Deletes the module.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
         401:
           description: Unauthorized.
         403:
@@ -5469,16 +5514,6 @@ paths:
       tags:
         - modules
       description: Imports new module and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
-      parameters:
-        - in: query
-          name: versionOfTopicId
-          schema:
-            type: string
-          description: The topic ID of module version.
-          examples:
-            pageIndex:
-              summary: Example of a topic ID of module version.
-              value: '0.0.00000001'
       security:
       - bearerAuth: []
       summary: Imports new module from IPFS.
@@ -5498,9 +5533,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Module'
+                $ref: '#/components/schemas/Module'
         401:
           description: Unauthorized.
         403:
@@ -5534,9 +5567,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Module'
+                $ref: '#/components/schemas/Module'
         401:
           description: Unauthorized.
         403:
