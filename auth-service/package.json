@@ -21,7 +21,7 @@
     "@types/jsonwebtoken": "^8.5.4",
     "@types/node": "^18.11.9",
     "@types/node-vault": "^0",
-    "chai": "^4.3.4",
+    "chai": "^4.3.7",
     "cross-env": "^7.0.3",
     "mocha": "^9.2.0",
     "mocha-junit-reporter": "^2.0.2",

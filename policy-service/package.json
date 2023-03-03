@@ -51,7 +51,7 @@
         "@types/fs-extra": "^9.0.12",
         "@types/jszip": "^3.4.1",
         "@types/node": "^18.11.9",
-        "chai": "4.3.4",
+        "chai": "4.3.7",
         "mocha": "^9.2.0",
         "mocha-junit-reporter": "^2.0.2",
         "nodemon": "^2.0.12",
