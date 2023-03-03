@@ -42,13 +42,13 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
             return;
         }
 
-        if (this.enableIndividualFilters) {
+        if (!this.enableIndividualFilters) {
             let visible = true;
-            for (let i = 0; i < this.buttons.length; i++) {
-                visible = visible && this.checkVisible(this.buttons[i]);
+            for (const button of this.buttons) {
+                visible = visible && this.checkVisible(button);
             }
-            for (let i = 0; i < this.buttons.length; i++) {
-                this.buttons[i].visible = visible;
+            for (const button of this.buttons) {
+                button.visible = visible;
             }
         } else {
             for (const button of this.buttons) {
