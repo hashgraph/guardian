@@ -58,7 +58,7 @@
         </td>
     </tr>
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'conditionsGroup')"
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'conditionsGroup')"
             [attr.collapse]="propHidden.conditionsGroup">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
@@ -72,7 +72,7 @@
     </tr>
     <ng-container *ngFor="let condition of properties.conditions; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.conditionsGroup">
-            <td class="propRowCol" (click)="onHide(propHidden.conditions, i)"
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.conditions, i)"
                 [attr.collapse]="propHidden.conditions[i]">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>

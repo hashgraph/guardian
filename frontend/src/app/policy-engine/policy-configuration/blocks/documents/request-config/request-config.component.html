@@ -37,7 +37,7 @@
     </tr>
 
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">UI</td>
@@ -127,7 +127,7 @@
     </ng-container>
 
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'preset')" [attr.collapse]="propHidden.preset">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'preset')" [attr.collapse]="propHidden.preset">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Preset</td>
@@ -149,7 +149,7 @@
     </tr>
     <ng-container *ngFor="let field of properties.presetFields; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.preset">
-            <td class="propRowCol" (click)="onHide(propHidden.presetFields, i)"
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.presetFields, i)"
                 [attr.collapse]="propHidden.presetFields[i]">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>

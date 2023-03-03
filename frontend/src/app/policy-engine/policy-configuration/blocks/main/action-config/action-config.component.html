@@ -13,7 +13,7 @@
     </tr>
 
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">UI</td>
@@ -36,7 +36,7 @@
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
-            <td class="propRowCol" (click)="onHide(propHidden, 'optionsGroup')"
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'optionsGroup')"
                 [attr.collapse]="propHidden.optionsGroup">
                 <mat-icon *ngIf="properties.uiMetaData.options.length">arrow_drop_down</mat-icon>
             </td>
@@ -50,7 +50,7 @@
         </tr>
         <ng-container *ngFor="let option of properties.uiMetaData.options; let i=index">
             <tr class="propRow subRow" [attr.collapse]="propHidden.main || propHidden.optionsGroup">
-                <td class="propRowCol" (click)="onHide(propHidden.options, i)" [attr.collapse]="propHidden.options[i]">
+                <td class="propRowCol cellCollapse" (click)="onHide(propHidden.options, i)" [attr.collapse]="propHidden.options[i]">
                     <mat-icon>arrow_drop_down</mat-icon>
                 </td>
                 <td class="propRowCell cellName">Options {{i}}</td>
@@ -113,7 +113,7 @@
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
-            <td class="propRowCol" (click)="onHide(propHidden, 'dropdownGroup')"
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'dropdownGroup')"
                 [attr.collapse]="propHidden.dropdownGroup">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>
@@ -154,7 +154,7 @@
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
-            <td class="propRowCol" (click)="onHide(propHidden, 'fileGroup')" [attr.collapse]="propHidden.fileGroup">
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fileGroup')" [attr.collapse]="propHidden.fileGroup">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">File Options</td>

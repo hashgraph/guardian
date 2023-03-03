@@ -1,7 +1,7 @@
 <!-- Config Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'properties')" [attr.collapse]="propHidden.properties">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'properties')" [attr.collapse]="propHidden.properties">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Properties</td>
@@ -81,7 +81,7 @@
 
     <ng-template [ngIf]="properties.multiple">
         <tr class="propHeader">
-            <td class="propRowCol" (click)="onHide(propHidden, 'dynamicFilterGroup')"
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'dynamicFilterGroup')"
                 [attr.collapse]="propHidden.dynamicFilterGroup">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>
@@ -95,7 +95,7 @@
         </tr>
         <ng-container *ngFor="let item of properties.dynamicFilters; let i=index">
             <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup">
-                <td class="propRowCol" (click)="onHide(propHidden.dynamicFilters, i)"
+                <td class="propRowCol cellCollapse" (click)="onHide(propHidden.dynamicFilters, i)"
                     [attr.collapse]="propHidden.dynamicFilters[i]">
                     <mat-icon>arrow_drop_down</mat-icon>
                 </td>
@@ -146,7 +146,7 @@
     </ng-template>
 
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'commonVariableGroup')"
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'commonVariableGroup')"
             [attr.collapse]="propHidden.commonVariableGroup">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
@@ -195,7 +195,7 @@
     </tr>
 
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'variableGroup')" [attr.collapse]="propHidden.variableGroup">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'variableGroup')" [attr.collapse]="propHidden.variableGroup">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Variables</td>
@@ -208,7 +208,7 @@
     </tr>
     <ng-container *ngFor="let item of properties.variables; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.variableGroup">
-            <td class="propRowCol" (click)="onHide(propHidden.variables, i)" [attr.collapse]="propHidden.variables[i]">
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.variables, i)" [attr.collapse]="propHidden.variables[i]">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Variable {{i}}</td>
@@ -239,7 +239,7 @@
     </ng-container>
 
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'filterGroup')" [attr.collapse]="propHidden.filterGroup">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'filterGroup')" [attr.collapse]="propHidden.filterGroup">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Filters</td>
@@ -252,7 +252,7 @@
     </tr>
     <ng-container *ngFor="let item of properties.filters; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.filterGroup">
-            <td class="propRowCol" (click)="onHide(propHidden.filters, i)" [attr.collapse]="propHidden.filters[i]">
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.filters, i)" [attr.collapse]="propHidden.filters[i]">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Filter {{i}}</td>

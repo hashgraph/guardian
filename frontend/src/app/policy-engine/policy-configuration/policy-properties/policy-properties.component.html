@@ -4,7 +4,7 @@
             <table class="properties">
                 <ng-container *ngIf="type == 'Main'">
                     <tr class="propHeader">
-                        <td class="propRowCol" (click)="onHide(propHidden, 'metaData')"
+                        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'metaData')"
                             [attr.collapse]="propHidden.metaData">
                             <mat-icon>arrow_drop_down</mat-icon>
                         </td>
@@ -73,7 +73,7 @@
                 <ng-container *ngIf="type == 'Role'">
                     <!-- Roles  -->
                     <tr class="propHeader">
-                        <td class="propRowCol" (click)="onHide(propHidden, 'rolesGroup')"
+                        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'rolesGroup')"
                             [attr.collapse]="propHidden.rolesGroup">
                             <mat-icon *ngIf="policy.policyRoles && policy.policyRoles.length">arrow_drop_down</mat-icon>
                         </td>
@@ -102,7 +102,7 @@
                     <!-- Groups  -->
                     <ng-container *ngFor="let item of policyGroups; let i=index">
                         <tr class="propHeader">
-                            <td class="propRowCol" (click)="onHide(propHidden.groupsGroup, i)"
+                            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.groupsGroup, i)"
                                 [attr.collapse]="propHidden.groupsGroup[i]">
                                 <mat-icon>arrow_drop_down</mat-icon>
                             </td>
@@ -178,7 +178,7 @@
                     <!-- Topics  -->
                     <ng-container *ngFor="let item of topics; let i=index">
                         <tr class="propHeader">
-                            <td class="propRowCol" (click)="onHide(propHidden.topicsGroup, i)"
+                            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.topicsGroup, i)"
                                 [attr.collapse]="propHidden.topicsGroup[i]">
                                 <mat-icon>arrow_drop_down</mat-icon>
                             </td>
@@ -256,7 +256,7 @@
                     <!-- Tokens  -->
                     <ng-container *ngFor="let item of tokens; let i=index">
                         <tr class="propHeader">
-                            <td class="propRowCol" (click)="onHide(propHidden.tokensGroup, i)"
+                            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.tokensGroup, i)"
                                 [attr.collapse]="propHidden.tokensGroup[i]">
                                 <mat-icon>arrow_drop_down</mat-icon>
                             </td>

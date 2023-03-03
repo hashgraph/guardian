@@ -238,14 +238,17 @@
     position: absolute;
     content: "";
     width: 40px;
-    height: 6px;
+    height: 8px;
     border: 2px solid #838383;
     top: -8px;
-    left: -2px;
+    left: 0px;
     border-bottom-width: 0;
     background: white;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
+    z-index: 2;
+    box-sizing: border-box;
+    transform: translate(-2px, 0px);
 }
 
 .module-body .block-item {

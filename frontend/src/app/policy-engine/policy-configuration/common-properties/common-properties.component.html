@@ -6,7 +6,7 @@
         <div class="table-body">
             <table *ngIf="block" class="properties">
                 <tr class="propHeader">
-                    <td class="propRowCol" (click)="onHide(propHidden, 'about')" [attr.collapse]="propHidden.about">
+                    <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'about')" [attr.collapse]="propHidden.about">
                         <mat-icon>arrow_drop_down</mat-icon>
                     </td>
                     <td class="propHeaderCell cellName">About</td>
@@ -66,7 +66,7 @@
                 </ng-container>
 
                 <tr class="propHeader">
-                    <td class="propRowCol" (click)="onHide(propHidden, 'metaData')"
+                    <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'metaData')"
                         [attr.collapse]="propHidden.metaData">
                         <mat-icon>arrow_drop_down</mat-icon>
                     </td>
@@ -161,7 +161,7 @@
                 </tr>
                 <ng-container *ngIf="customProperties">
                     <tr class="propHeader">
-                        <td class="propRowCol" (click)="onHide(propHidden, 'customProperties')"
+                        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'customProperties')"
                             [attr.collapse]="propHidden.customProperties">
                             <mat-icon>arrow_drop_down</mat-icon>
                         </td>
@@ -191,7 +191,7 @@
 
                 <ng-container *ngIf="defaultEvent">
                     <tr class="propHeader">
-                        <td class="propRowCol" (click)="onHide(propHidden, 'defaultEvent')"
+                        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'defaultEvent')"
                             [attr.collapse]="propHidden.defaultEvent">
                             <mat-icon>arrow_drop_down</mat-icon>
                         </td>
@@ -269,7 +269,7 @@
                 <ng-container *ngFor="let item of module.allEvents">
                     <ng-container *ngIf="isOutputEvent(item) || isInputEvent(item)">
                         <tr class="propHeader">
-                            <td class="propRowCol" (click)="onHide(propHidden.eventsGroup, item.id)" [attr.collapse]="propHidden.eventsGroup[item.id]">
+                            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.eventsGroup, item.id)" [attr.collapse]="propHidden.eventsGroup[item.id]">
                                 <mat-icon>arrow_drop_down</mat-icon>
                             </td>
                             <td class="propHeaderCell cellName">

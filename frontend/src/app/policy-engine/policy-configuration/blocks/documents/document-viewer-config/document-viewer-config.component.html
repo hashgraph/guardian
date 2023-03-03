@@ -1,7 +1,7 @@
 <!-- UI Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">UI</td>
@@ -23,7 +23,7 @@
         </td>
     </tr>
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'fieldsGroup')" [attr.collapse]="propHidden.fieldsGroup">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fieldsGroup')" [attr.collapse]="propHidden.fieldsGroup">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Fields</td>
@@ -36,7 +36,7 @@
     </tr>
     <ng-container *ngFor="let field of properties.uiMetaData.fields; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.fieldsGroup">
-            <td class="propRowCol" (click)="onHide(propHidden.fields, i)" [attr.collapse]="propHidden.fields[i]">
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.fields, i)" [attr.collapse]="propHidden.fields[i]">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">{{getFieldName(field, i)}}</td>

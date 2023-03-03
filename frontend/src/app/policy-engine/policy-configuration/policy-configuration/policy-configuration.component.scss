@@ -468,6 +468,7 @@
             left: 0px;
             top: 6px;
             display: block;
+            pointer-events: all;
         }
 
         .components-group-open {
@@ -475,6 +476,7 @@
             left: 0px;
             top: 6px;
             display: none;
+            pointer-events: all;
         }
 
         .components-group-item {
@@ -813,6 +815,10 @@
                 transform: rotate(-90deg);
                 top: 5px;
             }
+        }
+
+        .cellCollapse {
+            pointer-events: all;
         }
 
         .propHeader {

@@ -10,7 +10,7 @@
     </tr>
 
     <tr class="propHeader" [attr.collapse]="propHidden.metaData">
-        <td class="propRowCol" (click)="onHide(propHidden, 'buttonsGroup')">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'buttonsGroup')">
             <mat-icon *ngIf="properties.uiMetaData.buttons.length">arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Buttons</td>
@@ -23,7 +23,7 @@
     </tr>
     <ng-container *ngFor="let button of properties.uiMetaData.buttons; let i=index">
         <tr class="propRow subRow" [attr.collapse]="propHidden.buttonsGroup">
-            <td class="propRowCol" (click)="onHide(propHidden.buttons[i], 'collapse')"
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], 'collapse')"
                 [attr.collapse]="propHidden.buttons[i].collapse">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>
@@ -108,7 +108,7 @@
         </tr>
 
         <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
-            <td class="propRowCol" (click)="onHide(propHidden.buttons[i], 'filtersGroup')"
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], 'filtersGroup')"
                 [attr.collapse]="propHidden.buttons[i].filtersGroup">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>
@@ -124,7 +124,7 @@
         <ng-container *ngFor="let filter of button.filters; let j=index">
             <tr class="propRow subRow-3"
                 [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup">
-                <td class="propRowCol" (click)="onHide(propHidden.buttons[i], j)"
+                <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], j)"
                     [attr.collapse]="propHidden.buttons[i][j]">
                     <mat-icon>arrow_drop_down</mat-icon>
                 </td>

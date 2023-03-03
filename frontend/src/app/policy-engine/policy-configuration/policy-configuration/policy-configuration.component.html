@@ -224,13 +224,13 @@
                         [cdkDropListConnectedTo]="[dropListConnector.body]" cdkDropListSortingDisabled
                         [cdkDropListEnterPredicate]="noReturnPredicate" (cdkDropListDropped)="drop($event)">
 
-                        <div class="components-container readonly-status" [attr.readonly]="disableComponentMenu"
+                        <div class="components-container" [attr.readonly]="disableComponentMenu"
                             [hidden]="!options.components">
-                            <div class="components-search">
+                            <div class="components-search readonly-status">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
-                            <div *ngIf="componentsList.favorites.length" class="components-group"
+                            <div *ngIf="componentsList.favorites.length" class="components-group readonly-status"
                                 [attr.collapsed]="options.favoritesGroup">
                                 <div class="components-group-name" (click)="collapse('favoritesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
@@ -257,7 +257,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.uiGroup">
+                            <div class="components-group readonly-status" [attr.collapsed]="options.uiGroup">
                                 <div class="components-group-name" (click)="collapse('uiGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -281,7 +281,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.serverGroup">
+                            <div class="components-group readonly-status" [attr.collapsed]="options.serverGroup">
                                 <div class="components-group-name" (click)="collapse('serverGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -305,7 +305,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.addonsGroup">
+                            <div class="components-group readonly-status" [attr.collapsed]="options.addonsGroup">
                                 <div class="components-group-name" (click)="collapse('addonsGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -329,7 +329,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div *ngIf="componentsList.unGrouped.length" class="components-group"
+                            <div *ngIf="componentsList.unGrouped.length" class="components-group readonly-status"
                                 [attr.collapsed]="options.unGroup">
                                 <div class="components-group-name" (click)="collapse('unGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
@@ -359,11 +359,11 @@
 
                         <div class="components-container" [attr.readonly]="disableModuleMenu"
                             [hidden]="!options.library">
-                            <div class="components-search">
+                            <div class="components-search readonly-status">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onModuleSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
-                            <div *ngIf="modulesList.favorites.length" class="components-group"
+                            <div *ngIf="modulesList.favorites.length" class="components-group readonly-status"
                                 [attr.collapsed]="options.favoritesModulesGroup">
                                 <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
@@ -399,7 +399,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.defaultModulesGroup">
+                            <div class="components-group readonly-status" [attr.collapsed]="options.defaultModulesGroup">
                                 <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -429,7 +429,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group" [attr.collapsed]="options.customModulesGroup">
+                            <div class="components-group readonly-status" [attr.collapsed]="options.customModulesGroup">
                                 <div class="components-group-name" (click)="collapse('customModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
@@ -631,25 +631,25 @@
                             </div>
                         </div>
                         <div class="pc-tabs-content" [attr.readonly]="!isTree">
-                            <div class="prop-container readonly-status" [hidden]="!options.properties">
+                            <div class="prop-container" [hidden]="!options.properties">
                                 <div *ngIf="errorsMap[currentBlock.id]" class="errors-properties">
                                     <div *ngFor="let item of errorsMap[currentBlock.id]" class="errors-property">
                                         <span>{{item}}</span>
                                     </div>
                                 </div>
-                                <common-properties [module]="openModule" [block]="currentBlock" [readonly]="readonly"
+                                <common-properties class="readonly-status" [module]="openModule" [block]="currentBlock" [readonly]="readonly"
                                     type="Common"></common-properties>
                             </div>
-                            <div class="prop-container readonly-status" [hidden]="!options.events">
-                                <common-properties [module]="openModule" [block]="currentBlock" [readonly]="readonly"
+                            <div class="prop-container" [hidden]="!options.events">
+                                <common-properties class="readonly-status" [module]="openModule" [block]="currentBlock" [readonly]="readonly"
                                     type="Events"></common-properties>
                             </div>
-                            <div class="prop-container readonly-status" [hidden]="!options.artifacts">
-                                <artifact-properties [readonly]="readonly" [policyId]="policyId"
+                            <div class="prop-container" [hidden]="!options.artifacts">
+                                <artifact-properties class="readonly-status" [readonly]="readonly" [policyId]="policyId"
                                     [block]="currentBlock"></artifact-properties>
                             </div>
-                            <div class="prop-container readonly-status" [hidden]="!options.json">
-                                <json-properties *ngIf="options.json" [block]="currentBlock"
+                            <div class="prop-container" [hidden]="!options.json">
+                                <json-properties class="readonly-status" *ngIf="options.json" [block]="currentBlock"
                                     [readonly]="readonly"></json-properties>
                             </div>
                         </div>

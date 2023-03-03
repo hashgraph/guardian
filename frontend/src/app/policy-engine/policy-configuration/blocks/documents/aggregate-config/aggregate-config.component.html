@@ -1,7 +1,7 @@
 <!-- UI Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'options')" [attr.collapse]="propHidden.options">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'options')" [attr.collapse]="propHidden.options">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Options</td>
@@ -30,7 +30,7 @@
 
     <ng-container *ngIf="properties.aggregateType == 'cumulative'">
         <tr class="propHeader">
-            <td class="propRowCol" (click)="onHide(propHidden, 'expressionsGroup')"
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'expressionsGroup')"
                 [attr.collapse]="propHidden.options || propHidden.expressionsGroup">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>
@@ -44,7 +44,7 @@
         </tr>
         <ng-container *ngFor="let expression of properties.expressions; let i=index">
             <tr class="propRow" [attr.collapse]="propHidden.options || propHidden.expressionsGroup">
-                <td class="propRowCol" (click)="onHide(propHidden.expressions, i)"
+                <td class="propRowCol cellCollapse" (click)="onHide(propHidden.expressions, i)"
                     [attr.collapse]="propHidden.expressions[i]">
                     <mat-icon>arrow_drop_down</mat-icon>
                 </td>
