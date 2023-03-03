@@ -226,11 +226,11 @@
 
                         <div class="components-container" [attr.readonly]="disableComponentMenu"
                             [hidden]="!options.components">
-                            <div class="components-search readonly-status">
+                            <div class="components-search">
                                 <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
-                            <div *ngIf="componentsList.favorites.length" class="components-group readonly-status"
+                            <div *ngIf="componentsList.favorites.length" class="components-group"
                                 [attr.collapsed]="options.favoritesGroup">
                                 <div class="components-group-name" (click)="collapse('favoritesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
@@ -239,7 +239,7 @@
                                     <span style="padding-left: 22px">Favorites
                                         ({{componentsList.favorites.length}})</span>
                                 </div>
-                                <div class="components-group-body">
+                                <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of componentsList.favorites">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
                                             [attr.block-type]="item.header" (click)="onAdd(item)">
@@ -257,13 +257,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group readonly-status" [attr.collapsed]="options.uiGroup">
+                            <div class="components-group" [attr.collapsed]="options.uiGroup">
                                 <div class="components-group-name" (click)="collapse('uiGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>UI Components ({{componentsList.uiComponents.length}})</span>
                                 </div>
-                                <div class="components-group-body">
+                                <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of componentsList.uiComponents">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
                                             [attr.block-type]="item.header" (click)="onAdd(item)">
@@ -281,13 +281,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group readonly-status" [attr.collapsed]="options.serverGroup">
+                            <div class="components-group" [attr.collapsed]="options.serverGroup">
                                 <div class="components-group-name" (click)="collapse('serverGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>Server Components ({{componentsList.serverBlocks.length}})</span>
                                 </div>
-                                <div class="components-group-body">
+                                <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of componentsList.serverBlocks">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
                                             [attr.block-type]="item.header" (click)="onAdd(item)">
@@ -305,13 +305,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group readonly-status" [attr.collapsed]="options.addonsGroup">
+                            <div class="components-group" [attr.collapsed]="options.addonsGroup">
                                 <div class="components-group-name" (click)="collapse('addonsGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>Addons ({{componentsList.addons.length}})</span>
                                 </div>
-                                <div class="components-group-body">
+                                <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of componentsList.addons">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
                                             [attr.block-type]="item.header" (click)="onAdd(item)">
@@ -329,14 +329,14 @@
                                     </div>
                                 </div>
                             </div>
-                            <div *ngIf="componentsList.unGrouped.length" class="components-group readonly-status"
+                            <div *ngIf="componentsList.unGrouped.length" class="components-group"
                                 [attr.collapsed]="options.unGroup">
                                 <div class="components-group-name" (click)="collapse('unGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>unGrouped</span>
                                 </div>
-                                <div class="components-group-body">
+                                <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of componentsList.unGrouped">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
                                             [attr.block-type]="item.header" (click)="onAdd(item)">
@@ -359,11 +359,11 @@
 
                         <div class="components-container" [attr.readonly]="disableModuleMenu"
                             [hidden]="!options.library">
-                            <div class="components-search readonly-status">
-                                <input placeholder="Search" [(ngModel)]="search" (input)="onModuleSearch($event)">
+                            <div class="components-search">
+                                <input placeholder="Search" [(ngModel)]="searchModule" (input)="onModuleSearch($event)">
                                 <mat-icon class="components-search-icon">search</mat-icon>
                             </div>
-                            <div *ngIf="modulesList.favorites.length" class="components-group readonly-status"
+                            <div *ngIf="modulesList.favorites.length" class="components-group"
                                 [attr.collapsed]="options.favoritesModulesGroup">
                                 <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
@@ -372,7 +372,7 @@
                                     <span style="padding-left: 22px">Favorites
                                         ({{modulesList.favorites.length}})</span>
                                 </div>
-                                <div class="components-group-body">
+                                <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of modulesList.favorites">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
                                             [attr.block-type]="item.header" (click)="onAddModule(item)">
@@ -399,13 +399,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group readonly-status" [attr.collapsed]="options.defaultModulesGroup">
+                            <div class="components-group" [attr.collapsed]="options.defaultModulesGroup">
                                 <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>Default Modules ({{modulesList.defaultModules.length}})</span>
                                 </div>
-                                <div class="components-group-body">
+                                <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of modulesList.defaultModules">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
                                             [attr.block-type]="item.header" (click)="onAddModule(item)">
@@ -429,13 +429,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="components-group readonly-status" [attr.collapsed]="options.customModulesGroup">
+                            <div class="components-group" [attr.collapsed]="options.customModulesGroup">
                                 <div class="components-group-name" (click)="collapse('customModulesGroup')">
                                     <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>
                                     <mat-icon class="components-group-open">arrow_right</mat-icon>
                                     <span>Custom models ({{modulesList.customModules.length}})</span>
                                 </div>
-                                <div class="components-group-body">
+                                <div class="components-group-body readonly-status">
                                     <div class="components-group-item" *ngFor="let item of modulesList.customModules">
                                         <div cdkDrag [cdkDragData]="item.data" class="drag-btn"
                                             [attr.block-type]="item.header" (click)="onAddModule(item)">

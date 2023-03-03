@@ -458,7 +458,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.componentsList.unGrouped = [];
         const search = this.search ? this.search.toLowerCase() : null;
         for (const block of all) {
-            if (this.search && block.search.indexOf(search) === -1) {
+            if (search && block.search.indexOf(search) === -1) {
                 continue;
             }
             if (block.header === 'UI Components') {
@@ -486,8 +486,9 @@ export class PolicyConfigurationComponent implements OnInit {
         for (const module of this.templateModules) {
             module.isDefault = module.type === 'DEFAULT';
             module.data = `module:${module.uuid}`;
+            module.search = (module.name || '').toLowerCase();
 
-            if (this.search && module.name.indexOf(search) === -1) {
+            if (search && module.search.indexOf(search) === -1) {
                 continue;
             }
             if (module.isDefault) {
