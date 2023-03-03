@@ -1815,7 +1815,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ajv@npm:^8.0.0, ajv@npm:^8.0.1, ajv@npm:^8.10.0, ajv@npm:^8.6.1":
+"ajv@npm:^8.0.0, ajv@npm:^8.0.1, ajv@npm:^8.6.1":
   version: 8.11.0
   resolution: "ajv@npm:8.11.0"
   dependencies:
@@ -1824,6 +1824,18 @@ __metadata:
     require-from-string: ^2.0.2
     uri-js: ^4.2.2
   checksum: 5e0ff226806763be73e93dd7805b634f6f5921e3e90ca04acdf8db81eed9d8d3f0d4c5f1213047f45ebbf8047ffe0c840fa1ef2ec42c3a644899f69aa72b5bef
+  languageName: node
+  linkType: hard
+
+"ajv@npm:^8.12.0":
+  version: 8.12.0
+  resolution: "ajv@npm:8.12.0"
+  dependencies:
+    fast-deep-equal: ^3.1.1
+    json-schema-traverse: ^1.0.0
+    require-from-string: ^2.0.2
+    uri-js: ^4.2.2
+  checksum: 4dc13714e316e67537c8b31bc063f99a1d9d9a497eb4bbd55191ac0dcd5e4985bbb71570352ad6f1e76684fb6d790928f96ba3b2d4fd6e10024be9612fe3f001
   languageName: node
   linkType: hard
 
@@ -4700,7 +4712,7 @@ __metadata:
     "@types/fs-extra": ^9.0.12
     "@types/jszip": ^3.4.1
     "@types/node": ^18.11.9
-    ajv: ^8.10.0
+    ajv: ^8.12.0
     ajv-formats: ^2.1.1
     axios: ^0.25.0
     bs58: ^4.0.1
@@ -8328,7 +8340,7 @@ __metadata:
     "@types/fs-extra": ^9.0.12
     "@types/jszip": ^3.4.1
     "@types/node": ^18.11.9
-    ajv: ^8.10.0
+    ajv: ^8.12.0
     ajv-formats: ^2.1.1
     axios: ^0.25.0
     bs58: ^4.0.1
