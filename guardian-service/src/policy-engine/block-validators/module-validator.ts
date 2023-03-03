@@ -113,6 +113,7 @@ export class ModuleValidator {
                         this.topics.push(variable.name);
                         break;
                     default:
+                        this.errors.push(`Type '${variable.type}' does not exist`);
                         break;
                 }
             }
@@ -175,6 +176,17 @@ export class ModuleValidator {
             }
         }
         return validator;
+    }
+
+    /**
+     * Get permission
+     * @param permission
+     */
+    public getPermission(permission: string): string {
+        if (this.permissions.indexOf(permission) !== -1) {
+            return permission;
+        }
+        return null
     }
 
     /**
@@ -253,6 +265,18 @@ export class ModuleValidator {
      */
     public getTopicTemplate(topicName: string): any {
         if (this.topics.indexOf(topicName) === -1) {
+            return null;
+        } else {
+            return {};
+        }
+    }
+
+    /**
+     * Get Group
+     * @param iri
+     */
+    public getGroup(group: string): any {
+        if (this.groups.indexOf(group) === -1) {
             return null;
         } else {
             return {};

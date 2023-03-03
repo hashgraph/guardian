@@ -59,6 +59,11 @@ export class PolicyValidator {
      * @private
      */
     private readonly policyTopics: any[];
+    /**
+     * Policy Groups
+     * @private
+     */
+    private readonly policyGroups: any[];
 
     constructor(policy: Policy) {
         this.blocks = new Map();
@@ -75,6 +80,7 @@ export class PolicyValidator {
         this.databaseServer = new DatabaseServer(this.dryRun);
         this.policyTokens = policy.policyTokens || [];
         this.policyTopics = policy.policyTopics || [];
+        this.policyGroups = policy.policyGroups;
     }
 
     /**
@@ -220,6 +226,25 @@ export class PolicyValidator {
             blocks: blocksErrors,
             modules: modulesErrors,
         }
+    }
+
+    /**
+     * Get permission
+     * @param permission
+     */
+    public getPermission(permission: string): string {
+        if (this.permissions.indexOf(permission) !== -1) {
+            return permission;
+        }
+        return null
+    }
+
+    /**
+     * Get Group
+     * @param iri
+     */
+    public getGroup(group: string): any {
+        return this.policyGroups.find(e => e.name === group);
     }
 
     /**

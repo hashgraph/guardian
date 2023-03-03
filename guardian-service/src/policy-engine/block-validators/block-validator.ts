@@ -247,6 +247,14 @@ export class BlockValidator {
     }
 
     /**
+     * Permission not exist
+     * @param permission
+     */
+    public permissionNotExist(permission: string): boolean {
+        return !this.validator.getPermission(permission);
+    }
+
+    /**
      * Schema not exist
      * @param iri
      */
@@ -276,6 +284,14 @@ export class BlockValidator {
      */
     public topicTemplateNotExist(topicName: string) {
         return !this.validator.getTopicTemplate(topicName);
+    }
+
+    /**
+     * Group not exist
+     * @param group
+     */
+    public groupNotExist(group: string) {
+        return !this.validator.getGroup(group);
     }
 
     /**

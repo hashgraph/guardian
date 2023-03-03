@@ -207,6 +207,9 @@ export class EventCanvas {
     }
 
     public selectLine(index: number): BlocLine | undefined {
+        if (!this.valid || !this.lastImage) {
+            return;
+        }
         if (this.lastImage.index != index) {
             this.lastImage.index = index;
             this.render();
