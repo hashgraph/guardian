@@ -208,8 +208,8 @@ export class MintService {
      */
     private static async getTokenConfig(ref: AnyBlockType, token: Token): Promise<TokenConfig> {
         const tokenConfig: TokenConfig = {
-            treasuryId: token.adminId,
-            tokenId: token.tokenId,
+            treasuryId: token.draftToken ? '0.0.0' : token.adminId,
+            tokenId: token.draftToken ? '0.0.0' : token.tokenId,
             supplyKey: null,
             treasuryKey: null
         }
