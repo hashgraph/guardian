@@ -1307,9 +1307,9 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 otherOptions.limit = _pageSize;
                 otherOptions.offset = _pageIndex * _pageSize;
             }
-            const [schemas, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
+            const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
             return new MessageResponse({
-                schemas,
+                items,
                 count
             });
         } catch (error) {
