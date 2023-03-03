@@ -106,9 +106,7 @@ moduleAPI.put('/:uuid', permissionHelper(UserRole.STANDARD_REGISTRY), async (req
 moduleAPI.get('/:uuid/export/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     const guardian = new Guardians();
     try {
-        console.log('111');
         const file: any = await guardian.exportModuleFile(req.params.uuid, req.user.did);
-        console.log('222', file);
         res.setHeader('Content-disposition', `attachment; filename=module_${Date.now()}`);
         res.setHeader('Content-type', 'application/zip');
         res.send(file);
