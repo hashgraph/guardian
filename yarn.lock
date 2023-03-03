@@ -1624,7 +1624,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@web-std/blob@npm:^3.0.0, @web-std/blob@npm:^3.0.1, @web-std/blob@npm:^3.0.3, @web-std/blob@npm:^3.0.4":
+"@web-std/blob@npm:^3.0.1, @web-std/blob@npm:^3.0.3, @web-std/blob@npm:^3.0.4":
   version: 3.0.4
   resolution: "@web-std/blob@npm:3.0.4"
   dependencies:
@@ -1634,15 +1634,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@web-std/fetch@npm:3.0.0":
-  version: 3.0.0
-  resolution: "@web-std/fetch@npm:3.0.0"
+"@web-std/fetch@npm:4.1.0":
+  version: 4.1.0
+  resolution: "@web-std/fetch@npm:4.1.0"
   dependencies:
-    "@web-std/blob": ^3.0.0
-    "@web-std/form-data": ^3.0.0
+    "@web-std/blob": ^3.0.3
+    "@web-std/form-data": ^3.0.2
+    "@web-std/stream": ^1.0.1
     "@web3-storage/multipart-parser": ^1.0.0
     data-uri-to-buffer: ^3.0.1
-  checksum: 3a056a0075a3a56719b9969df412e2253b8242558983017eb9fd31e4913d105a9e7c06b1b8bd0471b76b7b0a8ced3c859743e4c7669c8c3c6c8b8ff0ae6964a8
+    mrmime: ^1.0.0
+  checksum: 1890f798ac208dcafc8e77d7ee7e13ae0e359de3d9b41e8a56fbe644956b012cb75e017302a6d18671f6b43a7541dc7756c2d685707d898b1ce1e5e73721dce4
   languageName: node
   linkType: hard
 
@@ -1667,7 +1669,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@web-std/form-data@npm:^3.0.0, @web-std/form-data@npm:^3.0.2":
+"@web-std/form-data@npm:^3.0.2":
   version: 3.0.2
   resolution: "@web-std/form-data@npm:3.0.2"
   dependencies:
@@ -1682,6 +1684,15 @@ __metadata:
   dependencies:
     web-streams-polyfill: ^3.1.1
   checksum: 247cc704b5dc18c3e7dac70c02efbbca83357fc237a0b8b2011814a246e6710a0dd403770b756d763ef545c7a118524e405b76cb7c7ac00afea0250171fdd68c
+  languageName: node
+  linkType: hard
+
+"@web-std/stream@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@web-std/stream@npm:1.0.1"
+  dependencies:
+    web-streams-polyfill: ^3.1.1
+  checksum: 046df90d143c3308ee8f8b542c0bae6c84a8e5aeaf14c1ca3ff6625ddae4d59581e0f61dc840fbc29a803ca03dc6564c0004f24f1f3e2f33511799b0fbb21b28
   languageName: node
   linkType: hard
 
@@ -6722,7 +6733,7 @@ __metadata:
     "@mikro-orm/mongodb": ~5.3.0
     "@types/fs-extra": ^9.0.12
     "@types/node": ^18.11.9
-    "@web-std/fetch": 3.0.0
+    "@web-std/fetch": 4.1.0
     chai: 4.3.6
     cors: ^2.8.5
     dotenv: ^16.0.0
@@ -7338,6 +7349,13 @@ __metadata:
   dependencies:
     path-exists: ^4.0.0
   checksum: 2b92bbe047a302b593fcb2c0bf1131bb090ec80b3264569fc80d782c8ff829eecc13573943fa4d804c9747dec612ef2d1e84a5cfcf29cbc64a69ffcbb7ea09b3
+  languageName: node
+  linkType: hard
+
+"mrmime@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "mrmime@npm:1.0.1"
+  checksum: cc979da44bbbffebaa8eaf7a45117e851f2d4cb46a3ada6ceb78130466a04c15a0de9a9ce1c8b8ba6f6e1b8618866b1352992bf1757d241c0ddca558b9f28a77
   languageName: node
   linkType: hard
 
