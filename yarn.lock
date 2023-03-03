@@ -1658,6 +1658,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@web-std/fetch@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "@web-std/fetch@npm:4.1.0"
+  dependencies:
+    "@web-std/blob": ^3.0.3
+    "@web-std/form-data": ^3.0.2
+    "@web-std/stream": ^1.0.1
+    "@web3-storage/multipart-parser": ^1.0.0
+    data-uri-to-buffer: ^3.0.1
+    mrmime: ^1.0.0
+  checksum: 1890f798ac208dcafc8e77d7ee7e13ae0e359de3d9b41e8a56fbe644956b012cb75e017302a6d18671f6b43a7541dc7756c2d685707d898b1ce1e5e73721dce4
+  languageName: node
+  linkType: hard
+
 "@web-std/file@npm:^3.0.2":
   version: 3.0.2
   resolution: "@web-std/file@npm:3.0.2"
@@ -1682,6 +1696,15 @@ __metadata:
   dependencies:
     web-streams-polyfill: ^3.1.1
   checksum: 247cc704b5dc18c3e7dac70c02efbbca83357fc237a0b8b2011814a246e6710a0dd403770b756d763ef545c7a118524e405b76cb7c7ac00afea0250171fdd68c
+  languageName: node
+  linkType: hard
+
+"@web-std/stream@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@web-std/stream@npm:1.0.1"
+  dependencies:
+    web-streams-polyfill: ^3.1.1
+  checksum: 046df90d143c3308ee8f8b542c0bae6c84a8e5aeaf14c1ca3ff6625ddae4d59581e0f61dc840fbc29a803ca03dc6564c0004f24f1f3e2f33511799b0fbb21b28
   languageName: node
   linkType: hard
 
@@ -2657,6 +2680,15 @@ __metadata:
   bin:
     cborg: cli.js
   checksum: e95c8d827d33cf113371341ecf582500d255f21aaf6f36874bf1b394b98b43f8522da1e33d2df6de5665ec63545ad64023d80e632532686062a0a2c143167d2b
+  languageName: node
+  linkType: hard
+
+"cborg@npm:^1.9.4":
+  version: 1.10.0
+  resolution: "cborg@npm:1.10.0"
+  bin:
+    cborg: cli.js
+  checksum: e93ce1135e1bf2cf6a4fa33bc7577b699ce306c6bbf53cfc1c34fca652b95a6f440f6ef0fe123097e3ef6e424a798abbb79a543cf2bd0ca0aeadc384f492a81a
   languageName: node
   linkType: hard
 
@@ -6539,7 +6571,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libp2p-crypto@npm:^0.21.0":
+"libp2p-crypto@npm:^0.21.0, libp2p-crypto@npm:^0.21.2":
   version: 0.21.2
   resolution: "libp2p-crypto@npm:0.21.2"
   dependencies:
@@ -7338,6 +7370,13 @@ __metadata:
   dependencies:
     path-exists: ^4.0.0
   checksum: 2b92bbe047a302b593fcb2c0bf1131bb090ec80b3264569fc80d782c8ff829eecc13573943fa4d804c9747dec612ef2d1e84a5cfcf29cbc64a69ffcbb7ea09b3
+  languageName: node
+  linkType: hard
+
+"mrmime@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "mrmime@npm:1.0.1"
+  checksum: cc979da44bbbffebaa8eaf7a45117e851f2d4cb46a3ada6ceb78130466a04c15a0de9a9ce1c8b8ba6f6e1b8618866b1352992bf1757d241c0ddca558b9f28a77
   languageName: node
   linkType: hard
 
@@ -9835,7 +9874,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"throttled-queue@npm:^2.1.2":
+"throttled-queue@npm:^2.1.2, throttled-queue@npm:^2.1.4":
   version: 2.1.4
   resolution: "throttled-queue@npm:2.1.4"
   checksum: 99571cb816e1c2d3df678d6fdb0a73eca9ba1f8aa9026daf89855d4c9444491d70e3aecaaad6c77b1202ab773f78e03b9a91b1e89c4983f17835b783137266c7
@@ -10507,6 +10546,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"w3name@npm:^1.0.6":
+  version: 1.0.8
+  resolution: "w3name@npm:1.0.8"
+  dependencies:
+    "@web-std/fetch": ^4.1.0
+    cborg: ^1.9.4
+    ipns: ^0.16.0
+    libp2p-crypto: ^0.21.2
+    throttled-queue: ^2.1.4
+    uint8arrays: ^3.0.0
+  checksum: 02dc258667a31955d323589d9ff147b1688c9f09cb0197e86adeae7dbe31ff3664e004810eeb7551df7abbbb7cd6e75db88ec1ced84cdfadd1a63d494749da5e
+  languageName: node
+  linkType: hard
+
 "web-encoding@npm:1.1.5":
   version: 1.1.5
   resolution: "web-encoding@npm:1.1.5"
@@ -10527,9 +10580,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"web3.storage@npm:^4.3.0":
-  version: 4.3.0
-  resolution: "web3.storage@npm:4.3.0"
+"web3.storage@npm:^4.5.4":
+  version: 4.5.4
+  resolution: "web3.storage@npm:4.5.4"
   dependencies:
     "@ipld/car": ^3.1.4
     "@web-std/blob": ^3.0.4
@@ -10541,13 +10594,13 @@ __metadata:
     cborg: ^1.8.0
     files-from-path: ^0.2.4
     ipfs-car: ^0.7.0
-    ipns: ^0.16.0
     libp2p-crypto: ^0.21.0
     p-retry: ^4.5.0
     streaming-iterables: ^6.2.0
     throttled-queue: ^2.1.2
     uint8arrays: ^3.0.0
-  checksum: e295dbd806c47684f8fe425e06566d59ae6e25b7463299ac8d05de9d7fea266ef5d3bb2ba8c8b63aa07317904959579067cb4645744493000f8a484cbdbf9f05
+    w3name: ^1.0.6
+  checksum: 2cb4827271c542592e1a86f2e3482a706e70ceb8c9e9a2e70da0b89abd1e9806f195ab177de830bc4c0baaf64c15b993b07cfb92a08f7e8d99f69b57a5fcec1a
   languageName: node
   linkType: hard
 
@@ -10758,7 +10811,7 @@ __metadata:
     rewire: ^6.0.0
     tslint: ^6.1.3
     typescript: ^4.5.5
-    web3.storage: ^4.3.0
+    web3.storage: ^4.5.4
   languageName: unknown
   linkType: soft
 
