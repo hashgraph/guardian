@@ -232,7 +232,7 @@ __metadata:
     "@transmute/jsonld-schema": ^0.7.0-unstable.80
     "@types/node": ^18.11.9
     "@types/winston": ^2.4.4
-    express: ^4.17.1
+    express: ^4.18.2
     mocha-junit-reporter: ^2.0.2
     nats: ^2.6.1
     reflect-metadata: ^0.1.13
@@ -1361,7 +1361,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:*, @types/express@npm:^4.17.13":
+"@types/express-serve-static-core@npm:^4.17.33":
+  version: 4.17.33
+  resolution: "@types/express-serve-static-core@npm:4.17.33"
+  dependencies:
+    "@types/node": "*"
+    "@types/qs": "*"
+    "@types/range-parser": "*"
+  checksum: dce580d16b85f207445af9d4053d66942b27d0c72e86153089fa00feee3e96ae336b7bedb31ed4eea9e553c99d6dd356ed6e0928f135375d9f862a1a8015adf2
+  languageName: node
+  linkType: hard
+
+"@types/express@npm:*":
   version: 4.17.13
   resolution: "@types/express@npm:4.17.13"
   dependencies:
@@ -1370,6 +1381,18 @@ __metadata:
     "@types/qs": "*"
     "@types/serve-static": "*"
   checksum: 12a2a0e6c4b993fc0854bec665906788aea0d8ee4392389d7a98a5de1eefdd33c9e1e40a91f3afd274011119c506f7b4126acb97fae62ae20b654974d44cba12
+  languageName: node
+  linkType: hard
+
+"@types/express@npm:^4.17.17":
+  version: 4.17.17
+  resolution: "@types/express@npm:4.17.17"
+  dependencies:
+    "@types/body-parser": "*"
+    "@types/express-serve-static-core": ^4.17.33
+    "@types/qs": "*"
+    "@types/serve-static": "*"
+  checksum: 0196dacc275ac3ce89d7364885cb08e7fb61f53ca101f65886dbf1daf9b7eb05c0943e2e4bbd01b0cc5e50f37e0eea7e4cbe97d0304094411ac73e1b7998f4da
   languageName: node
   linkType: hard
 
@@ -1915,12 +1938,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api-docs@workspace:api-docs"
   dependencies:
-    "@types/express": ^4.17.13
+    "@types/express": ^4.17.17
     "@types/js-yaml": ^4.0.5
     "@types/node": ^18.11.9
     "@types/swagger-ui-express": ^4.1.3
     dotenv: ^16.0.0
-    express: ^4.17.3
+    express: ^4.18.2
     js-yaml: ^4.1.0
     swagger-ui-express: ^4.3.0
     tslint: ^6.1.3
@@ -1934,7 +1957,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.10.0
     "@guardian/interfaces": ^2.10.0
-    "@types/express": ^4.17.13
+    "@types/express": ^4.17.17
     "@types/express-fileupload": ^1.4.1
     "@types/jszip": ^3.4.1
     "@types/node": ^18.11.9
@@ -1942,7 +1965,7 @@ __metadata:
     chai: ^4.3.4
     cross-env: ^7.0.3
     dotenv: ^16.0.0
-    express: ^4.17.1
+    express: ^4.18.2
     express-fileupload: ^1.4.0
     jszip: ^3.7.1
     mocha: ^9.2.0
@@ -2320,9 +2343,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"body-parser@npm:1.20.0":
-  version: 1.20.0
-  resolution: "body-parser@npm:1.20.0"
+"body-parser@npm:1.20.1":
+  version: 1.20.1
+  resolution: "body-parser@npm:1.20.1"
   dependencies:
     bytes: 3.1.2
     content-type: ~1.0.4
@@ -2332,11 +2355,11 @@ __metadata:
     http-errors: 2.0.0
     iconv-lite: 0.4.24
     on-finished: 2.4.1
-    qs: 6.10.3
+    qs: 6.11.0
     raw-body: 2.5.1
     type-is: ~1.6.18
     unpipe: 1.0.0
-  checksum: 12fffdeac82fe20dddcab7074215d5156e7d02a69ae90cbe9fee1ca3efa2f28ef52097cbea76685ee0a1509c71d85abd0056a08e612c09077cad6277a644cf88
+  checksum: f1050dbac3bede6a78f0b87947a8d548ce43f91ccc718a50dd774f3c81f2d8b04693e52acf62659fad23101827dd318da1fb1363444ff9a8482b886a3e4a5266
   languageName: node
   linkType: hard
 
@@ -3949,13 +3972,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express@npm:^4.17.1, express@npm:^4.17.3":
-  version: 4.18.1
-  resolution: "express@npm:4.18.1"
+"express@npm:^4.18.2":
+  version: 4.18.2
+  resolution: "express@npm:4.18.2"
   dependencies:
     accepts: ~1.3.8
     array-flatten: 1.1.1
-    body-parser: 1.20.0
+    body-parser: 1.20.1
     content-disposition: 0.5.4
     content-type: ~1.0.4
     cookie: 0.5.0
@@ -3974,7 +3997,7 @@ __metadata:
     parseurl: ~1.3.3
     path-to-regexp: 0.1.7
     proxy-addr: ~2.0.7
-    qs: 6.10.3
+    qs: 6.11.0
     range-parser: ~1.2.1
     safe-buffer: 5.2.1
     send: 0.18.0
@@ -3984,7 +4007,7 @@ __metadata:
     type-is: ~1.6.18
     utils-merge: 1.0.1
     vary: ~1.1.2
-  checksum: c3d44c92e48226ef32ec978becfedb0ecf0ca21316bfd33674b3c5d20459840584f2325726a4f17f33d9c99f769636f728982d1c5433a5b6fe6eb95b8cf0c854
+  checksum: 3c4b9b076879442f6b968fe53d85d9f1eeacbb4f4c41e5f16cc36d77ce39a2b0d81b3f250514982110d815b2f7173f5561367f9110fcc541f9371948e8c8b037
   languageName: node
   linkType: hard
 
@@ -4696,7 +4719,7 @@ __metadata:
     "@transmute/security-context": ^0.7.0-unstable.80
     "@transmute/vc.js": ^0.7.0-unstable.80
     "@types/deep-equal": ^1.0.1
-    "@types/express": ^4.17.13
+    "@types/express": ^4.17.17
     "@types/fs-extra": ^9.0.12
     "@types/jszip": ^3.4.1
     "@types/node": ^18.11.9
@@ -4709,7 +4732,7 @@ __metadata:
     cron: ^2.0.0
     deep-equal: ^2.0.5
     dotenv: ^16.0.0
-    express: ^4.17.1
+    express: ^4.18.2
     fs-extra: ^10.0.0
     imurmurhash: ^0.1.4
     jszip: ^3.7.1
@@ -7353,9 +7376,9 @@ __metadata:
     "@transmute/jsonld-schema": 0.7.0-unstable.80
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
-    "@types/express": ^4.17.13
+    "@types/express": ^4.17.17
     axios: ^0.26.1
-    express: ^4.17.3
+    express: ^4.18.2
     jose: 4.3.8
     nodemon: ^2.0.12
     typescript: ^4.6.3
@@ -8324,7 +8347,7 @@ __metadata:
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
     "@types/deep-equal": ^1.0.1
-    "@types/express": ^4.17.13
+    "@types/express": ^4.17.17
     "@types/fs-extra": ^9.0.12
     "@types/jszip": ^3.4.1
     "@types/node": ^18.11.9
@@ -8337,7 +8360,7 @@ __metadata:
     cron: ^2.0.0
     deep-equal: ^2.0.5
     dotenv: ^16.0.0
-    express: ^4.17.1
+    express: ^4.18.2
     fs-extra: ^10.0.0
     imurmurhash: ^0.1.4
     jszip: ^3.7.1
@@ -8589,12 +8612,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:6.10.3":
-  version: 6.10.3
-  resolution: "qs@npm:6.10.3"
+"qs@npm:6.11.0":
+  version: 6.11.0
+  resolution: "qs@npm:6.11.0"
   dependencies:
     side-channel: ^1.0.4
-  checksum: 0fac5e6c7191d0295a96d0e83c851aeb015df7e990e4d3b093897d3ac6c94e555dbd0a599739c84d7fa46d7fee282d94ba76943983935cf33bba6769539b8019
+  checksum: 6e1f29dd5385f7488ec74ac7b6c92f4d09a90408882d0c208414a34dd33badc1a621019d4c799a3df15ab9b1d0292f97c1dd71dc7c045e69f81a8064e5af7297
   languageName: node
   linkType: hard
 
@@ -9932,8 +9955,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "topic-viewer@workspace:topic-viewer"
   dependencies:
-    "@types/express": ^4.17.13
-    express: ^4.17.3
+    "@types/express": ^4.17.17
+    express: ^4.18.2
     nodemon: ^2.0.12
     typescript: ^4.6.3
   languageName: unknown
@@ -9990,8 +10013,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "tree-viewer@workspace:tree-viewer"
   dependencies:
-    "@types/express": ^4.17.13
-    express: ^4.17.3
+    "@types/express": ^4.17.17
+    express: ^4.18.2
     nodemon: ^2.0.12
     typescript: ^4.6.3
   languageName: unknown

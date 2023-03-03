@@ -1,11 +1,11 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "express": "^4.17.3"
+    "express": "^4.18.2"
   },
   "description": "",
   "devDependencies": {
-    "@types/express": "^4.17.13",
+    "@types/express": "^4.17.17",
     "nodemon": "^2.0.12",
     "typescript": "^4.6.3"
   },
