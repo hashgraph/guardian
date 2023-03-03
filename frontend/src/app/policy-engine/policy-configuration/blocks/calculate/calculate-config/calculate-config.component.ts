@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { Schema, SchemaField, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
+import { Schema, Token } from '@guardian/interfaces';
+import { IModuleVariables, PolicyBlockModel, SchemaVariables } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -12,26 +12,26 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/
     encapsulation: ViewEncapsulation.Emulated
 })
 export class CalculateConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
-
-
     @Output() onInit = new EventEmitter();
 
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         inputSchemaGroup: false,
         outputSchemaGroup: false
     };
 
-    block!: any;
+    properties!: any;
+    schemas!: SchemaVariables[];
 
     constructor() {
     }
 
     ngOnInit(): void {
+        this.schemas = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }
@@ -41,15 +41,19 @@ export class CalculateConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        this.block = block.properties;
-        this.block.inputFields = this.block.inputFields || [];
-        this.block.outputFields = this.block.outputFields || [];
-        if (!this.block.inputSchema) {
-            this.block.inputFields = [];
+        this.moduleVariables = block.moduleVariables;
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.inputFields = this.properties.inputFields || [];
+        this.properties.outputFields = this.properties.outputFields || [];
+        if (!this.properties.inputSchema) {
+            this.properties.inputFields = [];
         }
-        if (!this.block.outputSchema) {
-            this.block.outputFields = [];
+        if (!this.properties.outputSchema) {
+            this.properties.outputFields = [];
         }
+
+        this.schemas = this.moduleVariables?.schemas || [];
     }
 
     onHide(item: any, prop: any) {
@@ -57,12 +61,11 @@ export class CalculateConfigComponent implements OnInit {
     }
 
     onSelectInput() {
-        this.block.inputFields = [];
-        const schema = this.schemas.find(e => e.iri == this.block.inputSchema)
-        if (schema) {
-            for (let i = 0; i < schema.fields.length; i++) {
-                const field = schema.fields[i];
-                this.block.inputFields.push({
+        this.properties.inputFields = [];
+        const schema = this.schemas.find(e => e.value == this.properties.inputSchema);
+        if (schema && schema.data) {
+            for (const field of schema.data.fields) {
+                this.properties.inputFields.push({
                     name: field.name,
                     title: field.description,
                     value: field.name
@@ -72,17 +75,20 @@ export class CalculateConfigComponent implements OnInit {
     }
 
     onSelectOutput() {
-        this.block.outputFields = [];
-        const schema = this.schemas.find(e => e.iri == this.block.outputSchema)
-        if (schema) {
-            for (let i = 0; i < schema.fields.length; i++) {
-                const field = schema.fields[i];
-                this.block.outputFields.push({
+        this.properties.outputFields = [];
+        const schema = this.schemas.find(e => e.value == this.properties.outputSchema);
+        if (schema && schema.data) {
+            for (const field of schema.data.fields) {
+                this.properties.outputFields.push({
                     name: field.name,
                     title: field.description,
                     value: ''
                 })
             }
         }
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

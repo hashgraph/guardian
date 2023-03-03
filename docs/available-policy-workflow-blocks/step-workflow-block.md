@@ -38,28 +38,53 @@ To know more information about events, please look at [events.md](events.md "men
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="blockType: " summary="" %}
+{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="id" type="String" required="true" %}
-BlockID
+{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
+Policy ID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="path" name="blockType" type="String" required="true" %}
-Block Type
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Block UUID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="path" name="blocks" type="array" required="true" %}
-Contained blocks array
-{% endswagger-parameter %}
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+  "uiMetaData": {
+    "type": "blank"
+  },
+  "index": 8,
+  "id": "92fdc241-da15-46cb-9153-d223aeb61c5a",
+  "blockType": "interfaceStepBlock",
+  "blocks": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    {
+      "uiMetaData": {
+        "type": "tabs"
+      },
+      "content": "interfaceContainerBlock",
+      "blockType": "interfaceContainerBlock",
+      "id": "768d5fae-a907-4566-aa87-62f6929a03c7"
+    },
+    null,
+    null,
+    null,
+    null,
+    null
+  ]
+}
 
-{% swagger-parameter in="path" name="uiMetaData" required="true" %}
-{}
-{% endswagger-parameter %}
-
-{% swagger-parameter in="path" name="index" type="number" required="true" %}
-Current Step
-{% endswagger-parameter %}
+```
+{% endswagger-response %}
 {% endswagger %}

@@ -37,7 +37,9 @@ export class IPFSService {
                 (res) => {
                     resolve(
                         `data:image/jpg;base64,${btoa(
-                            String.fromCharCode(...new Uint8Array(res))
+                            Array.from(new Uint8Array(res))
+                                .map((b) => String.fromCharCode(b))
+                                .join('')
                         )}`
                     );
                 },

@@ -62,6 +62,20 @@ export class SettingsContainer extends ServiceRequestsBase {
     }
 
     /**
+     * Request settings from valut
+     */
+    public async requestSettings(): Promise<void> {
+        for (const setting of Object.keys(this._settings)) {
+            this._settings[setting] = await this.getGlobalApplicationKey(setting);
+
+            if (!this._settings[setting] && process.env[setting]) {
+                await this.setGlobalApplicationKey(setting,  process.env[setting]);
+                await new Logger().info(`${setting} was set from environment`, ['GUARDIAN_SERVICE']);
+            }
+        }
+    }
+
+    /**
      * Update key
      * @param name
      * @param value

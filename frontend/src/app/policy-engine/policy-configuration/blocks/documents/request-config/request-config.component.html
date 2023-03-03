@@ -1,11 +1,11 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Schema</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.schema" [disabled]="readonly">
-                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
+            <mat-select [(value)]="properties.schema" [disabled]="readonly" (change)="onSave()">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
                     <span *ngIf="schema.status"> ({{schema.status}})</span>
@@ -18,7 +18,7 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Id Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.idType" [disabled]="readonly">
+            <mat-select [(value)]="properties.idType" [disabled]="readonly" (change)="onSave()">
                 <mat-option value=""></mat-option>
                 <mat-option value="DID">DID (New DID)</mat-option>
                 <mat-option value="UUID">UUID (New UUID)</mat-option>
@@ -31,13 +31,14 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Preset</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.preset" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.preset" [readonly]="readonly"
+                (blur)="onSave()">
         </td>
     </tr>
 
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>expand_more</mat-icon>
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">UI</td>
         <td class="propHeaderCell"></td>
@@ -47,19 +48,20 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.uiMetaData.type" [disabled]="readonly">
+            <mat-select [(value)]="properties.uiMetaData.type" [disabled]="readonly" (change)="onSave()">
                 <mat-option value="page">PAGE</mat-option>
                 <mat-option value="dialog">DIALOG</mat-option>
             </mat-select>
         </td>
     </tr>
 
-    <ng-container *ngIf="block.uiMetaData.type == 'page'">
+    <ng-container *ngIf="properties.uiMetaData.type == 'page'">
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Title</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
 
@@ -67,59 +69,66 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Description</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.description" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.description" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
     </ng-container>
 
-    <ng-container *ngIf="block.uiMetaData.type == 'dialog'">
+    <ng-container *ngIf="properties.uiMetaData.type == 'dialog'">
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Title</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.title" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Button Content</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.content" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.content" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Button Class</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.buttonClass" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.buttonClass" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Dialog Title</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.dialogContent" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.dialogContent" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Dialog Description</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.description" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.description" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow" [attr.collapse]="propHidden.main">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Dialog Class</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="block.uiMetaData.dialogClass" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.dialogClass" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
     </ng-container>
 
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'preset')" [attr.collapse]="propHidden.preset">
-            <mat-icon>expand_more</mat-icon>
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'preset')" [attr.collapse]="propHidden.preset">
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Preset</td>
         <td class="propHeaderCell"></td>
@@ -129,8 +138,8 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Preset Schema</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.presetSchema" [disabled]="readonly" (selectionChange)="onSelectInput()">
-                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
+            <mat-select [(value)]="properties.presetSchema" [disabled]="readonly" (selectionChange)="onSelectInput()">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
                     <span *ngIf="schema.status"> ({{schema.status}})</span>
@@ -138,13 +147,11 @@
             </mat-select>
         </td>
     </tr>
-    <ng-container *ngFor="let field of block.presetFields; let i=index">
+    <ng-container *ngFor="let field of properties.presetFields; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.preset">
-            <td class="propRowCol" (click)="onHide(propHidden.presetFields, i)"
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.presetFields, i)"
                 [attr.collapse]="propHidden.presetFields[i]">
-                <mat-icon>
-                    expand_more
-                </mat-icon>
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Field {{i}}</td>
             <td class="propRowCell">
@@ -166,20 +173,22 @@
                 Preset Field
             </td>
             <td class="propRowCell">
-                <mat-select [(value)]="field.value" [disabled]="readonly">
+                <mat-select [(value)]="field.value" [disabled]="readonly" (change)="onSave()">
                     <mat-option *ngFor="let f of presetMap" [value]="f.name" [title]="f.title">
                         {{f.title}}
                     </mat-option>
                 </mat-select>
             </td>
         </tr>
-        <tr *ngIf="field.value" class="propRow subRow" [attr.collapse]="propHidden.preset || propHidden.presetFields[i]">
+        <tr *ngIf="field.value" class="propRow subRow"
+            [attr.collapse]="propHidden.preset || propHidden.presetFields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">
                 Readonly
             </td>
             <td class="propRowCell">
-                <input class="prop-input" type="checkbox" [(ngModel)]="field.readonly" [readonly]="readonly">
+                <input class="prop-input" type="checkbox" [(ngModel)]="field.readonly" [readonly]="readonly"
+                    (blur)="onSave()">
             </td>
         </tr>
     </ng-container>

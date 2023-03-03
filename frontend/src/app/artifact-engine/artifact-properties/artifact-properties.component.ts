@@ -1,7 +1,7 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Component, Input, OnInit } from '@angular/core';
 import { IArtifact } from '@guardian/interfaces';
-import { PolicyBlockModel } from 'src/app/policy-engine/structures/policy-model';
+import { PolicyBlockModel } from 'src/app/policy-engine/structures';
 import { ArtifactService } from 'src/app/services/artifact.service';
 
 /**

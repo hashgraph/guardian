@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
@@ -15,6 +15,7 @@ import { TasksService } from 'src/app/services/tasks.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dialog/retire-token-dialog.component';
 import { ContractService } from 'src/app/services/contract.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 enum OperationMode {
     None, Generate, SetProfile, Associate
@@ -47,6 +48,7 @@ export class UserProfileComponent implements OnInit {
     didDocument?: any;
     vcDocument?: any;
     standardRegistries?: IUser[];
+    selectedIndex: number = 0;
 
     hederaForm = this.fb.group({
         standardRegistry: ['', Validators.required],
@@ -84,6 +86,9 @@ export class UserProfileComponent implements OnInit {
     taskId: string | undefined = undefined;
     expectedTaskMessages: number = 0;
 
+    private subscription = new Subscription();
+    private tabs = ['account', 'tokens', 'retire'];
+
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
@@ -94,9 +99,12 @@ export class UserProfileComponent implements OnInit {
         private taskService: TasksService,
         private webSocketService: WebSocketService,
         private contractService: ContractService,
+        private route: ActivatedRoute,
+        private router: Router,
         private fb: FormBuilder,
         public dialog: MatDialog,
-        private headerProps: HeaderPropsService) {
+        private headerProps: HeaderPropsService
+    ) {
         this.standardRegistries = [];
         this.hideVC = {
             id: true
@@ -108,9 +116,21 @@ export class UserProfileComponent implements OnInit {
         this.loading = true;
         this.loadDate();
         this.update();
+        this.subscription.add(
+            this.route.queryParams.subscribe(params => {
+                const tab = this.route.snapshot.queryParams['tab'] || '';
+                this.selectedIndex = 0;
+                for (let index = 0; index < this.tabs.length; index++) {
+                    if (tab === this.tabs[index]) {
+                        this.selectedIndex = index;
+                    }
+                }
+            })
+        );
     }
 
     ngOnDestroy(): void {
+        this.subscription.unsubscribe();
         clearInterval(this.interval)
     }
 
@@ -390,5 +410,12 @@ export class UserProfileComponent implements OnInit {
                     break;
             }
         }
+    }
+
+    onChange(event: any) {
+        this.selectedIndex = event;
+        this.router.navigate(['/user-profile'], {
+            queryParams: { tab: this.tabs[this.selectedIndex] }
+        });
     }
 }

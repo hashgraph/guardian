@@ -1,10 +1,10 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Data Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.dataType" [disabled]="readonly">
+            <mat-select [(value)]="properties.dataType" [disabled]="readonly" (change)="onSave()">
                 <mat-option value="vc-documents">Collection (VC)</mat-option>
                 <mat-option value="did-documents">Collection (DID)</mat-option>
                 <mat-option value="approve">Collection (Approve)</mat-option>
@@ -16,8 +16,8 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Schema</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.schema" [disabled]="readonly">
-                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
+            <mat-select [(value)]="properties.schema" [disabled]="readonly" (change)="onSave()">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
                     <span *ngIf="schema.status"> ({{schema.status}})</span>
@@ -30,50 +30,55 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Owned by User</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.onlyOwnDocuments" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.onlyOwnDocuments" [readonly]="readonly"
+                (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Owned by Group</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.onlyOwnByGroupDocuments" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.onlyOwnByGroupDocuments"
+                [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Assigned to User</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.onlyAssignDocuments" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.onlyAssignDocuments" [readonly]="readonly"
+                (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Assigned to Group</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.onlyAssignByGroupDocuments" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.onlyAssignByGroupDocuments"
+                [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
 
     <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">View History</td>
+        <td class="propRowCell cellName">View History (Deprecated)</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="block.viewHistory" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.viewHistory" [readonly]="readonly"
+                (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Order Field</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.orderField" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.orderField" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Order Direction</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.orderDirection" [disabled]="readonly">
+            <mat-select [(value)]="properties.orderDirection" [disabled]="readonly" (change)="onSave()">
                 <mat-option value=""></mat-option>
                 <mat-option value="ASC">ASC</mat-option>
                 <mat-option value="DESC">DESC</mat-option>
@@ -82,10 +87,8 @@
     </tr>
 
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'filtersGroup')" [attr.collapse]="propHidden.filtersGroup">
-            <mat-icon>
-                expand_more
-            </mat-icon>
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'filtersGroup')" [attr.collapse]="propHidden.filtersGroup">
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Filters</td>
         <td class="propHeaderCell">
@@ -95,12 +98,10 @@
             </div>
         </td>
     </tr>
-    <ng-container *ngFor="let field of block.filters; let i=index">
+    <ng-container *ngFor="let field of properties.filters; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.filtersGroup">
-            <td class="propRowCol" (click)="onHide(propHidden.filters, i)" [attr.collapse]="propHidden.filters[i]">
-                <mat-icon>
-                    expand_more
-                </mat-icon>
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.filters, i)" [attr.collapse]="propHidden.filters[i]">
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Field {{i}}</td>
             <td class="propRowCell">
@@ -113,7 +114,7 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
-                <mat-select [(value)]="field.type" [disabled]="readonly">
+                <mat-select [(value)]="field.type" [disabled]="readonly" (change)="onSave()">
                     <mat-option value="equal">Equal</mat-option>
                     <mat-option value="not_equal">Not Equal</mat-option>
                     <mat-option value="in">In</mat-option>
@@ -125,14 +126,14 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Field</td>
             <td class="propRowCell">
-                <document-path [(value)]="field.field" [readonly]="readonly"></document-path>
+                <document-path [(value)]="field.field" [readonly]="readonly" (change)="onSave()"></document-path>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Value</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="field.value" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="field.value" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
     </ng-container>

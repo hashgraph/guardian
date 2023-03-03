@@ -1,50 +1,8 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: "/api-docs"
+    directory: "/"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
-    target-branch: "develop"
-  - package-ecosystem: npm
-    directory: "/api-gateway"
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-    target-branch: "develop"
-  - package-ecosystem: npm
-    directory: "/frontend"
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-    target-branch: "develop"
-  - package-ecosystem: npm
-    directory: "/guardian-services"
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-    target-branch: "develop"
-  - package-ecosystem: npm
-    directory: "/interfaces"
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-    target-branch: "develop"
-  - package-ecosystem: npm
-    directory: "/common"
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-    target-branch: "develop"
-  - package-ecosystem: npm
-    directory: "/logger-service"
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-    target-branch: "develop"
-  - package-ecosystem: npm
-    directory: "/mrv-sender"
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 15
     target-branch: "develop"

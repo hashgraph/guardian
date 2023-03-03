@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel } from 'src/app/policy-engine/structures/policy-model';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
+import { IModuleVariables, PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'interfaceAction' type.
@@ -13,15 +12,13 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
     encapsulation: ViewEncapsulation.Emulated
 })
 export class RevokeConfigComponent implements OnInit {
-    @Input('all') all!: BlockNode[];
-    @Input('schemes') schemes!: Schema[];
-    @Input('tokens') tokens!: Token[];
-    @Input('readonly') readonly!: boolean;
-    @Input('roles') roles!: string[];
-    @Input('topics') topics!: any[];
     @Input('block') currentBlock!: PolicyBlockModel;
+    @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         optionsGroup: false,
@@ -30,7 +27,7 @@ export class RevokeConfigComponent implements OnInit {
         dropdownGroup: false
     };
 
-    block!: any;
+    properties!: any;
 
     constructor() {
     }
@@ -45,12 +42,18 @@ export class RevokeConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.uiMetaData.options = this.block.uiMetaData.options || [];
+        this.moduleVariables = block.moduleVariables;
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {};
+        this.properties.uiMetaData.options = this.properties.uiMetaData.options || [];
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

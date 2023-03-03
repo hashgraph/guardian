@@ -51,7 +51,8 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
                 type: PropertyType.Input
             }]
         }]
-    }
+    },
+    variables: []
 })
 export class InterfaceStepBlock {
     /**

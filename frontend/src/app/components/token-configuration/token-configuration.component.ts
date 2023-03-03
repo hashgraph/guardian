@@ -10,10 +10,19 @@ export class TokenConfigurationComponent implements OnInit {
     @Input('preset') preset?: any;
     @Input('dataForm') dataForm!: FormGroup;
     @Input('readonly') readonly?: any;
-    
+    @Input('hide-type') hideType: boolean = false;
+
     ft: any;
 
     constructor() { }
+
+    get notDraftToken(): boolean {
+        return !this.dataForm?.get('draftToken')?.value;
+    }
+
+    set notDraftToken(value: any) {
+        this.dataForm?.patchValue({ draftToken: !value });
+    }
 
     get enableAdmin(): any {
         return this.dataForm?.get('enableAdmin')?.value;
@@ -48,6 +57,7 @@ export class TokenConfigurationComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        console.log(this);
         if (this.preset) {
             this.dataForm.patchValue(this.preset);
             for (let presetEntry of Object.entries(this.preset)) {

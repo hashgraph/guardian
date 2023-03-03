@@ -138,4 +138,16 @@ export class AggregateVC extends BaseEntity {
      */
     @Property({ nullable: true })
     group?: any;
+
+    /**
+     * Hedera Hash
+     */
+    @Property({ nullable: true })
+    messageHash?: string;
+
+    /**
+     * Message History
+     */
+    @Property({ nullable: true })
+    messageIds?: string[];
 }

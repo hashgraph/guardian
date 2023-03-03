@@ -1,9 +1,15 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
 import { BlockErrorActions, GenerateUUIDv4, Schema, Token } from '@guardian/interfaces';
-import { ReplaySubject } from 'rxjs';
-import { RegisteredBlocks } from '../../registered-blocks';
-import { IBlockAbout } from "../../structures/interfaces/block-about.interface";
-import { PolicyBlockModel, PolicyEventModel, PolicyModel } from '../../structures/policy-model';
+import { RegisteredService } from '../../registered-service/registered.service';
+import {
+    IBlockAbout,
+    PolicyModel,
+    PolicyBlockModel,
+    PolicyEventModel,
+    PolicyModuleModel,
+    IModuleVariables,
+    RoleVariables
+} from "../../structures";
 
 /**
  * Settings for all blocks.
@@ -16,11 +22,8 @@ import { PolicyBlockModel, PolicyEventModel, PolicyModel } from '../../structure
 export class CommonPropertiesComponent implements OnInit {
     @ViewChild("configContainer", { read: ViewContainerRef }) configContainer!: ViewContainerRef;
 
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
+    @Input('module') module!: PolicyModel | PolicyModuleModel;
     @Input('readonly') readonly!: boolean;
     @Input('type') type!: string;
 
@@ -55,18 +58,19 @@ export class CommonPropertiesComponent implements OnInit {
         }
     ];
     events: PolicyEventModel[] = [];
-    inputEvents: any[] = [];
-    outputEvents: any[] = [];
     defaultEvent: boolean = false;
     customProperties!: any[] | undefined;
+    roles!: RoleVariables[];
+    private moduleVariables!: IModuleVariables | null;
     
     constructor(
-        public registeredBlocks: RegisteredBlocks,
+        private registeredService: RegisteredService,
         private componentFactoryResolver: ComponentFactoryResolver
     ) {
     }
 
     ngOnInit(): void {
+        this.roles = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }
@@ -88,7 +92,7 @@ export class CommonPropertiesComponent implements OnInit {
     }
 
     isInputEvent(event: PolicyEventModel) {
-        return event.isTarget(this.block) && !this.isOutputEvent(event);
+        return event.isTarget(this.block);
     }
 
     chanceType(event: any, item: PolicyEventModel) {
@@ -119,13 +123,14 @@ export class CommonPropertiesComponent implements OnInit {
             target: null,
             output: "",
             input: "",
-            disabled: false
+            disabled: false,
+            actor: ""
         }
         this.block.createEvent(event);
     }
 
     onRemoveEvent(event: PolicyEventModel) {
-        this.policy.removeEvent(event);
+        this.module.removeEvent(event);
     }
 
     load(block: PolicyBlockModel) {
@@ -141,36 +146,35 @@ export class CommonPropertiesComponent implements OnInit {
 
     loadEvents(block: PolicyBlockModel) {
         this.events = block.events;
-        const about = this.registeredBlocks.getAbout(block.blockType, block);
-        this.inputEvents = about.input;
-        this.outputEvents = about.output;
+        const about = this.registeredService.getAbout(block, this.module);
         this.defaultEvent = about.defaultEvent;
     }
 
-    getIcon(block: PolicyBlockModel) {
-        return this.registeredBlocks.getIcon(block.blockType);
+    private getAbout(block: PolicyModuleModel | PolicyBlockModel | null): any {
+        try {
+            if (block && block.blockType) {
+                return this.registeredService.getAbout(block, this.module);
+            }
+            return null;
+        } catch (error) {
+            return null;
+        }
     }
 
-    getOutputEvents(event: PolicyEventModel) {
-        try {
-            if (event.source && event.source.blockType) {
-                const about = this.registeredBlocks.getAbout(event.source.blockType, event.source);
-                return about.output || [];
-            }
-            return [];
-        } catch (error) {
+    getOutputEvents(event: PolicyEventModel): string[] {
+        const about = this.getAbout(event.source);
+        if (about && about.output) {
+            return about.output;
+        } else {
             return [];
         }
     }
 
-    getInputEvents(event: PolicyEventModel) {
-        try {
-            if (event.target && event.target.blockType) {
-                const about = this.registeredBlocks.getAbout(event.target.blockType, event.target);
-                return about.input || [];
-            }
-            return [];
-        } catch (error) {
+    getInputEvents(event: PolicyEventModel): string[] {
+        const about = this.getAbout(event.target);
+        if (about && about.input) {
+            return about.input;
+        } else {
             return [];
         }
     }
@@ -180,6 +184,9 @@ export class CommonPropertiesComponent implements OnInit {
             return;
         }
 
+        this.moduleVariables = block.moduleVariables;
+        this.roles = this.moduleVariables?.roles || [];
+
         this.about = undefined;
         this.customProperties = undefined;
         setTimeout(() => {
@@ -188,9 +195,9 @@ export class CommonPropertiesComponent implements OnInit {
                 this.block.properties.onErrorAction = BlockErrorActions.NO_ACTION;
             }
             this.configContainer.clear();
-            const factory: any = this.registeredBlocks.getProperties(block.blockType);
-            const customProperties = this.registeredBlocks.getCustomProperties(block.blockType);
-            this.about = this.registeredBlocks.bindAbout(block.blockType, block);
+            const factory: any = this.registeredService.getProperties(block.blockType);
+            const customProperties = this.registeredService.getCustomProperties(block.blockType);
+            this.about = this.registeredService.bindAbout(block, this.module);
             this.loadFactory(factory, customProperties);
         }, 10);
     }
@@ -204,10 +211,7 @@ export class CommonPropertiesComponent implements OnInit {
                 }
                 let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
                 let componentRef: any = this.configContainer.createComponent(componentFactory);
-                componentRef.instance.policy = this.policy;
                 componentRef.instance.currentBlock = this.currentBlock;
-                componentRef.instance.schemas = this.schemas;
-                componentRef.instance.tokens = this.tokens;
                 componentRef.instance.readonly = this.readonly;
                 setTimeout(() => {
                     this.loading = false;
@@ -221,6 +225,10 @@ export class CommonPropertiesComponent implements OnInit {
                     this.loading = false;
                 }, 200);
             }, 20);
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+            }, 200);
         }
     }
 
@@ -241,7 +249,8 @@ export class CommonPropertiesComponent implements OnInit {
             block.silentlySetPermissions(currentBlock.permissions.slice());
         }
         if (block === currentBlock) {
-            this.policy.emitUpdate();
+            this.module.emitUpdate();
         }
     }
 }
+

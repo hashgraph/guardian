@@ -79,6 +79,40 @@ export function replaceAllEntities(
 }
 
 /**
+ * Replace all variables in module
+ * @param obj
+ * @param variableType
+ * @param oldValue
+ * @param newValue
+ */
+export function replaceAllVariables(
+    obj: { [key: string]: any },
+    variableType: string,
+    oldValue: string,
+    newValue: string
+) {
+    const finder = (blockConfig: any, type: string): void => {
+        if (
+            blockConfig.blockType === 'module' &&
+            blockConfig.hasOwnProperty('variables') &&
+            Array.isArray(blockConfig.variables)
+        ) {
+            for (const variable of blockConfig.variables) {
+                if (variable.type === type && blockConfig[variable.name] === oldValue) {
+                    blockConfig[variable.name] = newValue;
+                }
+            }
+        }
+        if (blockConfig.hasOwnProperty('children')) {
+            for (const child of blockConfig.children) {
+                finder(child, type);
+            }
+        }
+    }
+    finder(obj, variableType);
+}
+
+/**
  * Regenerate IDs
  * @param block
  */

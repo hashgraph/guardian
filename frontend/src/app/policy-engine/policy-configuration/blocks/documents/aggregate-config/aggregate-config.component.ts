@@ -1,9 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
 import { MatDialog } from '@angular/material/dialog';
-import { CronConfigDialog } from '../../../../helpers/cron-config-dialog/cron-config-dialog.component';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
+import { IModuleVariables, PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'aggregateDocument' type.
@@ -15,13 +13,13 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/
     encapsulation: ViewEncapsulation.Emulated
 })
 export class AggregateConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         options: false,
@@ -29,8 +27,8 @@ export class AggregateConfigComponent implements OnInit {
         expressions: {},
     };
 
-    block!: any;
-    allTimer!: BlockNode[];
+    properties!: any;
+    allTimer!: PolicyBlockModel[];
 
     constructor(private dialog: MatDialog) {
     }
@@ -45,9 +43,11 @@ export class AggregateConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        this.block = block.properties;
-        this.block.expressions = this.block.expressions || [];
-        this.block.uiMetaData = this.block.uiMetaData || {}
+        this.moduleVariables = block.moduleVariables;
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.expressions = this.properties.expressions || [];
+        this.properties.uiMetaData = this.properties.uiMetaData || {}
     }
 
     onHide(item: any, prop: any) {
@@ -55,13 +55,17 @@ export class AggregateConfigComponent implements OnInit {
     }
 
     addExpression() {
-        this.block.expressions.push({
+        this.properties.expressions.push({
             name: '',
             value: '',
         })
     }
 
     onRemoveExpression(i: number) {
-        this.block.expressions.splice(i, 1);
+        this.properties.expressions.splice(i, 1);
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

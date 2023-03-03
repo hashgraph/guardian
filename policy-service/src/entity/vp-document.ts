@@ -1,4 +1,4 @@
-import { DocumentSignature, DocumentStatus, IVP, IVPDocument, SchemaEntity } from '@guardian/interfaces';
+import { DocumentSignature, DocumentStatus, IVP, IVPDocument } from '@guardian/interfaces';
 import { Entity, Property, Enum, BeforeCreate, Unique } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
@@ -62,7 +62,7 @@ export class VpDocument extends BaseEntity implements IVPDocument {
      * Document type
      */
     @Enum({ nullable: true })
-    type?: SchemaEntity;
+    type?: string;
 
     /**
      * Policy id
@@ -108,6 +108,18 @@ export class VpDocument extends BaseEntity implements IVPDocument {
      */
     @Property({ nullable: true })
     comment?: string;
+
+    /**
+     * Hedera Hash
+     */
+    @Property({ nullable: true })
+    messageHash?: string;
+
+    /**
+     * Message History
+     */
+    @Property({ nullable: true })
+    messageIds?: string[];
 
     /**
      * Document defaults

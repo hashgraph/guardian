@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
+import { IModuleVariables, PolicyBlockModel, PolicyModel, SchemaVariables } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'requestVcDocument' type.
@@ -13,13 +12,13 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
     encapsulation: ViewEncapsulation.Emulated
 })
 export class RequestConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         privateFieldsGroup: false,
@@ -27,7 +26,8 @@ export class RequestConfigComponent implements OnInit {
         presetFields: {}
     };
 
-    block!: any;
+    properties!: any;
+    schemas!: SchemaVariables[];
 
     presetMap: any;
 
@@ -36,6 +36,7 @@ export class RequestConfigComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.schemas = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }
@@ -45,19 +46,23 @@ export class RequestConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.uiMetaData.type = this.block.uiMetaData.type || 'page';
-        this.block.presetFields = this.block.presetFields || [];
-        const schema = this.schemas.find(e => e.iri == this.block.schema);
-        const presetSchema = this.schemas.find(e => e.iri == this.block.presetSchema);
+        this.moduleVariables = block.moduleVariables;
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {};
+        this.properties.uiMetaData.type = this.properties.uiMetaData.type || 'page';
+        this.properties.presetFields = this.properties.presetFields || [];
+
+        this.schemas = this.moduleVariables?.schemas || [];
+
+        const schema = this.schemas.find(e => e.value == this.properties.schema);
+        const presetSchema = this.schemas.find(e => e.value == this.properties.presetSchema);
         if (!schema || !presetSchema) {
-            this.block.presetFields = [];
+            this.properties.presetFields = [];
         }
         this.presetMap = [];
-        if (presetSchema && presetSchema.fields) {
-            for (let i = 0; i < presetSchema.fields.length; i++) {
-                const field = presetSchema.fields[i];
+        if (presetSchema?.data?.fields) {
+            for (const field of presetSchema.data.fields) {
                 this.presetMap.push({
                     name: field.name,
                     title: field.description
@@ -71,33 +76,34 @@ export class RequestConfigComponent implements OnInit {
     }
 
     onSelectInput() {
-        this.block.presetFields = [];
+        this.properties.presetFields = [];
         this.presetMap = [];
 
-        const schema = this.schemas.find(e => e.iri == this.block.schema);
-        const presetSchema = this.schemas.find(e => e.iri == this.block.presetSchema);
-        if (schema && presetSchema && schema.fields) {
-            for (let i = 0; i < schema.fields.length; i++) {
-                const field = schema.fields[i];
-                this.block.presetFields.push({
-                    name: field.name,
-                    title: field.description,
-                    value: null,
-                    readonly: false
-                })
+        const schema = this.schemas.find(e => e.value == this.properties.schema);
+        const presetSchema = this.schemas.find(e => e.value == this.properties.presetSchema);
+
+        if (schema && presetSchema) {
+            if (schema.data?.fields) {
+                for (const field of schema.data.fields) {
+                    this.properties.presetFields.push({
+                        name: field.name,
+                        title: field.description,
+                        value: null,
+                        readonly: false
+                    })
+                }
             }
-        }
-        if (presetSchema && presetSchema.fields) {
-            this.presetMap.push({
-                name: null,
-                title: ''
-            });
-            for (let i = 0; i < presetSchema.fields.length; i++) {
-                const field = presetSchema.fields[i];
+            if (presetSchema.data?.fields) {
                 this.presetMap.push({
-                    name: field.name,
-                    title: field.description
+                    name: null,
+                    title: ''
                 });
+                for (const field of presetSchema.data.fields) {
+                    this.presetMap.push({
+                        name: field.name,
+                        title: field.description
+                    });
+                }
             }
         }
 
@@ -106,9 +112,13 @@ export class RequestConfigComponent implements OnInit {
             const f = this.presetMap[i];
             dMap[f.title] = f.name;
         }
-        for (let i = 0; i < this.block.presetFields.length; i++) {
-            const f = this.block.presetFields[i];
+        for (let i = 0; i < this.properties.presetFields.length; i++) {
+            const f = this.properties.presetFields[i];
             f.value = dMap[f.title];
         }
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

@@ -182,8 +182,10 @@ export class WebSocketService {
                     this.updateStatus(event.data);
                     const allStatesReady = !this.serviesStates.find((item: any) => item.state !== ApplicationStates.READY)
                     if (!allStatesReady) {
-                        const last = location.pathname === '/status' ? null : btoa(location.href);
-                        this.router.navigate(['/status'], { queryParams: { last } });
+                        if (!['/status', '/admin/settings', '/admin/logs'].includes(location.pathname)) {
+                            const last = location.pathname === '/status' ? null : btoa(location.href);
+                            this.router.navigate(['/status'], { queryParams: { last } });
+                        }
                     }
                     this.servicesReady.next(allStatesReady);
                     break;

@@ -6,7 +6,7 @@ import {
     MessageResponse,
     MessageError,
     Logger,
-    DataBaseHelper, SettingsContainer
+    DataBaseHelper, SettingsContainer, ValidateConfiguration
 } from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
 import { Environment } from '@hedera-modules';
@@ -50,6 +50,8 @@ export async function configAPI(
             }
             await settingsContainer.updateSetting('OPERATOR_ID', settings.operatorId);
             await settingsContainer.updateSetting('OPERATOR_KEY', settings.operatorKey);
+            const validator = new ValidateConfiguration();
+            await validator.validate();
             await new Workers().updateSettings({
                 ipfsStorageApiKey: settings.ipfsStorageApiKey
             });

@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: "Guardian"
   description: "The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation."
-  version: "2.9.3"
+  version: "2.10.0"
   contact:
     name: "API developer"
     url: "https://envisionblockchain.com"
@@ -644,6 +644,69 @@ components:
           type: number
         oppositeTokenCount:
           type: number
+    Module:
+      type: object
+      properties:
+        id:
+          type: string
+        uuid:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        config:
+          type: object
+        status:
+          type: string
+        creator:
+          type: string
+        owner:
+          type: string
+        topicId:
+          type: string
+        messageId:
+          type: string
+        codeVersion:
+          type: string
+        createDate:
+          type: string
+        type:
+          type: string
+    PreviewModule:
+      type: object
+      properties:
+        module:
+          $ref: "#/components/schemas/Module"
+    ExportModule:
+      type: object
+      properties:
+        uuid:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        messageId:
+          type: string
+        owner:
+          type: string
+    PublishModule:
+      type: object
+      properties:
+        errors:
+          type: object
+        isValid:
+          type: boolean
+        module:
+          $ref: "#/components/schemas/Module"
+    ValidateModule:
+      type: object
+      properties:
+        module:
+          $ref: "#/components/schemas/Module"
+        results:
+          type: object
 tags:
   - name: "accounts"
     description: "Operations related to Guardian users"
@@ -675,6 +738,8 @@ tags:
     description: "Policy Artifacts"
   - name: "contracts"
     description: "Contracts"
+  - name: "modules"
+    description: "Policy Modules"
 paths:
   /accounts:
     get:
@@ -4882,9 +4947,9 @@ paths:
         200:
           description: Successful operation.
           content:
-          application/json:
-            schema:
-              type: boolean
+            application/json:
+              schema:
+                type: boolean
         401:
           description: Unauthorized.
         403:
@@ -5001,9 +5066,9 @@ paths:
         200:
           description: Successful operation.
           content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RetireRequest"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RetireRequest"
         401:
           description: Unauthorized.
         403:
@@ -5128,9 +5193,484 @@ paths:
         200:
           description: Successful operation.
           content:
+            application/json:
+              schema:
+                type: boolean
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /modules:
+    get:
+      tags:
+        - modules
+      description: Returns all modules. Only users with the Standard Registry and Installer role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Return a list of all modules.
+      parameters:
+        - in: query
+          name: pageIndex
+          schema:
+            type: integer
+          description: The number of pages to skip before starting to collect the result set
+          examples:
+            pageIndex:
+              summary: Example of a pageIndex
+              value: 0
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          description: The numbers of items to return
+          examples:
+            pageSize:
+              summary: Example of a pageSize
+              value: 100
+      responses:
+        200:
+          description: Successful operation.
+          headers:
+            x-total-count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - modules
+      description: Creates a new module. Only users with the Standard Registry role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Creates a new module.
+      requestBody:
+        description: Object that contains module configuration.
+        required: true
+        content:
           application/json:
             schema:
-              type: boolean
+              $ref: '#/components/schemas/Module'
+      responses:
+        201:
+          description: Successful operation.
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /modules/menu:
+    get:
+      tags:
+        - modules
+      description: Returns modules menu. Only users with the Standard Registry and Installer role are allowed to make the request.
+      security:
+        - bearerAuth: []
+      summary: Return a list of modules.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Module'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /modules/{uuid}:
+    get:
+      tags:
+        - modules
+      description: Retrieves module configuration for the specified module ID. Only users with the Standard Registry role are allowed to make the request.
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+          required: true
+          description: Selected module ID.
+      summary: Retrieves module configuration.
+      security:
+      - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - modules
+      description: Updates module configuration for the specified module ID. Only users with the Standard Registry role are allowed to make the request.
+      summary: Updates module configuration.
+      parameters:
+        - in: path
+          name: uuid
+          description: Selected module ID.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Object that contains module configuration.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Module"
+      security:
+      - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - modules
+      description: Deletes the module with the provided module ID. Only users with the Standard Registry role are allowed to make the request.
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+          required: true
+          description: Module ID.
+      security:
+      - bearerAuth: []
+      summary: Deletes the module.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /modules/{uuid}/publish:
+    put:
+      tags:
+        - modules
+      description: Publishes the module with the specified (internal) module ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+          required: true
+          description: Selected module ID.
+      summary: Publishes the module onto IPFS.
+      security:
+      - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishModule'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /modules/{uuid}/export/message:
+    get:
+      tags:
+        - modules
+      description: Returns the Hedera message ID for the specified module published onto IPFS. Only users with the Standard Registry role are allowed to make the request.
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+          required: true
+          description: Selected module ID.
+      security:
+      - bearerAuth: []
+      summary: Return Heder message ID for the specified published module.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportModule'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /modules/{uuid}/export/file:
+    get:
+      tags:
+        - modules
+      description: Returns a zip file containing the published module and all associated artifacts, i.e. schemas and VCs. Only users with the Standard Registry role are allowed to make the request.
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+          required: true
+          description: Selected module ID.
+      security:
+      - bearerAuth: []
+      summary: Return module and its artifacts in a zip file format for the specified module.
+      responses:
+        200:
+          description: Successful operation. Response zip file
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /modules/import/message:
+    post:
+      tags:
+        - modules
+      description: Imports new module and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Imports new module from IPFS.
+      requestBody:
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the module.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageId:
+                  type: string
+      responses:
+        201:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /modules/import/file:
+    post:
+      tags:
+        - modules
+      description: Imports new module and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Imports new module from a zip file.
+      requestBody:
+        description: A zip file that contains the module and associated schemas and VCs to be imported.
+        required: true
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        201:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /modules/import/message/preview:
+    post:
+      tags:
+        - modules
+      description: Previews the module from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
+      summary: Module preview from IPFS.
+      security:
+      - bearerAuth: []
+      requestBody:
+        description: Object that contains the identifier of the Hedera message which contains the IPFS CID of the module.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageId:
+                  type: string
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreviewModule'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /modules/import/file/preview:
+    post:
+      tags:
+        - modules
+      description: Previews the module from a zip file without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
+      summary: Module preview from a zip file.
+      security:
+      - bearerAuth: []
+      requestBody:
+        description: A zip file that contains the module and associated schemas and VCs to be viewed.
+        required: true
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreviewModule'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /modules/validate:
+    post:
+      tags:
+        - modules
+      description: Validates selected module. Only users with the Standard Registry role are allowed to make the request.
+      security:
+      - bearerAuth: []
+      summary: Validates module.
+      requestBody:
+        description: Object that contains module configuration.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Module"
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidateModule'
         401:
           description: Unauthorized.
         403:

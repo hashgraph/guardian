@@ -79,8 +79,7 @@ export class SchemaConfigurationComponent implements OnInit {
         private fb: FormBuilder,
         private ipfs: IPFSService
     ) {
-        this.defaultFieldsMap = {};
-        this.defaultFieldsMap[SchemaEntity.VC] = [{
+        const vcDefaultFields = [{
             name: 'policyId',
             title: 'Policy Id',
             description: 'Policy Id',
@@ -103,7 +102,9 @@ export class SchemaConfigurationComponent implements OnInit {
             pattern: undefined,
             readOnly: true
         }];
-
+        this.defaultFieldsMap = {};
+        this.defaultFieldsMap[SchemaEntity.VC] = vcDefaultFields;
+        this.defaultFieldsMap[SchemaEntity.EVC] = vcDefaultFields;
         this.types = [];
         this.measureTypes = [];
         this.schemaTypeMap = {};
@@ -392,7 +393,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 }
                 else {
                     continue;
-                }    
+                }
             }
 
             if (option.type === field.type) {
@@ -499,7 +500,11 @@ export class SchemaConfigurationComponent implements OnInit {
             isArray,
             unit,
             remoteLink,
-            enumArray
+            enumArray,
+            textColor,
+            textSize,
+            textBold,
+            isPrivate,
         } = fieldConfig.getValue(data);
         const type = this.schemaTypeMap[typeIndex];
         return {
@@ -515,14 +520,20 @@ export class SchemaConfigurationComponent implements OnInit {
             unit: type.unitSystem ? unit : undefined,
             unitSystem: type.unitSystem,
             customType: type.customType,
+            textColor,
+            textSize,
+            textBold,
             readOnly: false,
-            remoteLink: type.customType === 'enum'
-                ? remoteLink
-                : undefined,
-            enum: type.customType === 'enum' && !remoteLink
-                ? enumArray
-                : undefined
-        }
+            remoteLink: type.customType === 'enum' ? remoteLink : undefined,
+            enum:
+                type.customType === 'enum' && !remoteLink
+                    ? enumArray
+                    : undefined,
+            isPrivate:
+                this.dataForm.value?.entity === SchemaEntity.EVC
+                    ? isPrivate
+                    : undefined,
+        };
     }
 
     buildSchema(value: any) {
@@ -560,6 +571,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 unitSystem: fieldConfig.unitSystem,
                 customType: fieldConfig.customType,
                 readOnly: true,
+                isPrivate: fieldConfig.isPrivate,
             }
             fields.push(schemaField);
         }

@@ -7,7 +7,8 @@ import {
     tokenAPI,
     externalAPI,
     ipfsAPI,
-    analyticsAPI
+    analyticsAPI,
+    moduleAPI
 } from '@api/service';
 import { Guardians } from '@helpers/guardians';
 import express from 'express';
@@ -31,13 +32,16 @@ import { contractAPI } from '@api/service/contract';
 
 const PORT = process.env.PORT || 3002;
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
+const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 
 Promise.all([
     MessageBrokerChannel.connect('API_GATEWAY'),
 ]).then(async ([cn]) => {
     try {
         const app = express();
-        app.use(express.json());
+        app.use(express.json({
+            limit: JSON_REQUEST_LIMIT
+        }));
         app.use(express.raw({
             inflate: true,
             limit: RAW_REQUEST_LIMIT,
@@ -78,6 +82,7 @@ Promise.all([
         app.use('/tasks/', taskAPI);
         app.use('/analytics/', authorizationHelper, analyticsAPI);
         app.use('/contracts', authorizationHelper, contractAPI);
+        app.use('/modules', authorizationHelper, moduleAPI);
         /////////////////////////////////////////
 
         server.listen(PORT, () => {

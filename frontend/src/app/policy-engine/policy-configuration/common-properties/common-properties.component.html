@@ -3,20 +3,11 @@
         <mat-spinner></mat-spinner>
     </div>
     <div class="table">
-        <table class="header">
-            <tr class="propHeader">
-                <td class="propRowCol"></td>
-                <th class="propHeaderCell cellName">Property</th>
-                <th class="propHeaderCell">Value</th>
-            </tr>
-        </table>
         <div class="table-body">
             <table *ngIf="block" class="properties">
                 <tr class="propHeader">
-                    <td class="propRowCol" (click)="onHide(propHidden, 'about')" [attr.collapse]="propHidden.about">
-                        <mat-icon>
-                            expand_more
-                        </mat-icon>
+                    <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'about')" [attr.collapse]="propHidden.about">
+                        <mat-icon>arrow_drop_down</mat-icon>
                     </td>
                     <td class="propHeaderCell cellName">About</td>
                     <td class="propHeaderCell"></td>
@@ -75,11 +66,9 @@
                 </ng-container>
 
                 <tr class="propHeader">
-                    <td class="propRowCol" (click)="onHide(propHidden, 'metaData')"
+                    <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'metaData')"
                         [attr.collapse]="propHidden.metaData">
-                        <mat-icon>
-                            expand_more
-                        </mat-icon>
+                        <mat-icon>arrow_drop_down</mat-icon>
                     </td>
                     <td class="propHeaderCell cellName">Meta Data</td>
                     <td class="propHeaderCell"></td>
@@ -90,19 +79,16 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Tag</td>
                     <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="block.tag" [readonly]="readonly" (blur)="onSave()">
+                        <input class="prop-input" [(ngModel)]="block.localTag" [readonly]="readonly" (blur)="onSave()">
                     </td>
                 </tr>
                 <tr class="propRow" [attr.collapse]="propHidden.metaData">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Permissions</td>
                     <td class="propRowCell">
-                        <mat-select [(ngModel)]="block.permissions" multiple [disabled]="readonly"
-                            (selectionChange)="onSave()">
-                            <mat-option value="OWNER">Owner</mat-option>
-                            <mat-option value="NO_ROLE">No Role</mat-option>
-                            <mat-option value="ANY_ROLE">Any Role</mat-option>
-                            <mat-option *ngFor="let item of policy.policyRoles" [value]="item.name">{{item.name}}
+                        <mat-select [(ngModel)]="block.permissions" multiple [disabled]="readonly" (selectionChange)="onSave()">
+                            <mat-option *ngFor="let item of roles" [value]="item.value">
+                                {{item.name}}
                             </mat-option>
                         </mat-select>
                     </td>
@@ -140,7 +126,8 @@
                     <td class="propRowCell">
                         <mat-select [(value)]="block.properties.onErrorAction" [disabled]="readonly"
                             (selectionChange)="onSave()">
-                            <mat-option *ngFor="let item of errorActions" [value]="item.value">{{item.label}}
+                            <mat-option *ngFor="let item of errorActions" [value]="item.value">
+                                {{item.label}}
                             </mat-option>
                         </mat-select>
                     </td>
@@ -174,18 +161,19 @@
                 </tr>
                 <ng-container *ngIf="customProperties">
                     <tr class="propHeader">
-                        <td class="propRowCol" (click)="onHide(propHidden, 'customProperties')"
+                        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'customProperties')"
                             [attr.collapse]="propHidden.customProperties">
-                            <mat-icon>
-                                expand_more
-                            </mat-icon>
+                            <mat-icon>arrow_drop_down</mat-icon>
                         </td>
                         <td class="propHeaderCell cellName">Properties</td>
                         <td class="propHeaderCell"></td>
                     </tr>
                     <div *ngFor="let property of customProperties" common-property class="custom-properties"
-                        [data]="block.properties" [property]="property" [readonly]="readonly"
-                        [collapse]="propHidden.customProperties" [schemas]="schemas" [policy]="policy"
+                        [block]="currentBlock" 
+                        [data]="block.properties" 
+                        [property]="property" 
+                        [readonly]="readonly"
+                        [collapse]="propHidden.customProperties" 
                         (update)="onSave()">
                     </div>
                 </ng-container>
@@ -198,29 +186,22 @@
 
 <div *ngIf="type == 'Events'" class="grid-setting" [attr.readonly]="readonly">
     <div class="table">
-        <table class="header">
-            <tr class="propHeader">
-                <td class="propRowCol"></td>
-                <th class="propHeaderCell cellName">Property</th>
-                <th class="propHeaderCell">Value</th>
-            </tr>
-        </table>
         <div class="table-body">
             <table *ngIf="block" class="properties">
 
                 <ng-container *ngIf="defaultEvent">
                     <tr class="propHeader">
-                        <td class="propRowCol" (click)="onHide(propHidden, 'defaultEvent')"
+                        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'defaultEvent')"
                             [attr.collapse]="propHidden.defaultEvent">
-                            <mat-icon>expand_more</mat-icon>
+                            <mat-icon>arrow_drop_down</mat-icon>
                         </td>
                         <td class="propHeaderCell cellName">
                             <div style="height: 20px;" [attr.disabled]="block.properties.stopPropagation">
                                 <span class="prop-icon prop-icon-event">
                                     <mat-icon>flash_on</mat-icon>
                                 </span>
-                                <span class="prop-icon" style="color: #c53227;">
-                                    <mat-icon>arrow_upward</mat-icon>
+                                <span class="prop-output-icon">
+                                    <mat-icon>arrow_forward</mat-icon>
                                 </span>
                                 <span class="prop-icon-text">Default Event</span>
                             </div>
@@ -230,39 +211,39 @@
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Event Type</td>
-                        <td class="propRowCell remove-cell">
+                        <td class="propRowCell">
                             <span class="readonly-prop">Output Event</span>
                         </td>
                     </tr>
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Source</td>
-                        <td class="propRowCell remove-cell">
-                            <span class="readonly-prop">Current Block</span>
+                        <td class="propRowCell cellName source-elm">Source</td>
+                        <td class="propRowCell">
+                            <span class="readonly-prop current-elm">Current Block</span>
                         </td>
                     </tr>
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">
+                        <td class="propRowCell cellName source-elm">
                             Output Event
                         </td>
-                        <td class="propRowCell remove-cell">
+                        <td class="propRowCell">
                             <span class="readonly-prop">RunEvent</span>
                         </td>
                     </tr>
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Target</td>
-                        <td class="propRowCell remove-cell">
+                        <td class="propRowCell cellName target-elm">Target</td>
+                        <td class="propRowCell">
                             <span class="readonly-prop">Next Block</span>
                         </td>
                     </tr>
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">
+                        <td class="propRowCell cellName target-elm">
                             Input Event
                         </td>
-                        <td class="propRowCell remove-cell">
+                        <td class="propRowCell">
                             <span class="readonly-prop">RunEvent</span>
                         </td>
                     </tr>
@@ -271,37 +252,36 @@
                         <td class="propRowCell cellName">
                             Event Actor
                         </td>
-                        <td class="propRowCell remove-cell">
+                        <td class="propRowCell">
                             <span class="readonly-prop">Event Initiator</span>
                         </td>
                     </tr>
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Disabled</td>
-                        <td class="propRowCell remove-cell">
+                        <td class="propRowCell">
                             <input class="prop-input" type="checkbox" [(ngModel)]="block.properties.stopPropagation"
                                 [readonly]="readonly" (change)="onSave()">
                         </td>
                     </tr>
                 </ng-container>
 
-                <ng-container *ngFor="let item of policy.allEvents; let i=index">
+                <ng-container *ngFor="let item of module.allEvents">
                     <ng-container *ngIf="isOutputEvent(item) || isInputEvent(item)">
                         <tr class="propHeader">
-                            <td class="propRowCol" (click)="onHide(propHidden.eventsGroup, i)"
-                                [attr.collapse]="propHidden.eventsGroup[i]">
-                                <mat-icon>expand_more</mat-icon>
+                            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.eventsGroup, item.id)" [attr.collapse]="propHidden.eventsGroup[item.id]">
+                                <mat-icon>arrow_drop_down</mat-icon>
                             </td>
                             <td class="propHeaderCell cellName">
                                 <div style="height: 20px;" [attr.disabled]="item.disabled">
                                     <span class="prop-icon prop-icon-event" [attr.invalid]="isInvalid(item)">
                                         <mat-icon>flash_on</mat-icon>
                                     </span>
-                                    <span *ngIf="isInputEvent(item)" class="prop-icon" style="color: #35a307;">
-                                        <mat-icon>arrow_downward</mat-icon>
+                                    <span *ngIf="isInputEvent(item)" class="prop-input-event">
+                                        <mat-icon>arrow_back</mat-icon>
                                     </span>
-                                    <span *ngIf="isOutputEvent(item)" class="prop-icon" style="color: #c53227;">
-                                        <mat-icon>arrow_upward</mat-icon>
+                                    <span *ngIf="isOutputEvent(item)" class="prop-output-icon">
+                                        <mat-icon>arrow_forward</mat-icon>
                                     </span>
                                     <span *ngIf="isInputEvent(item)" class="prop-icon-text">Input Event</span>
                                     <span *ngIf="isOutputEvent(item)" class="prop-icon-text">Output Event</span>
@@ -314,10 +294,10 @@
                             </td>
                         </tr>
 
-                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[item.id]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Event Type</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell">
                                 <mat-select [value]="isInputEvent(item)" (selectionChange)="chanceType($event, item)"
                                     [disabled]="readonly">
                                     <mat-option [value]="true">Input Event</mat-option>
@@ -327,39 +307,32 @@
                         </tr>
 
                         <tr *ngIf="isOutputEvent(item)" class="propRow subRow"
-                            [attr.collapse]="propHidden.eventsGroup[i]">
+                            [attr.collapse]="propHidden.eventsGroup[item.id]">
                             <td class="propRowCol"></td>
-                            <td class="propRowCell cellName">Source</td>
-                            <td class="propRowCell remove-cell">
-                                <span class="readonly-prop">Current Block</span>
+                            <td class="propRowCell cellName source-elm">Source</td>
+                            <td class="propRowCell">
+                                <span class="readonly-prop current-elm">Current Block</span>
                             </td>
                         </tr>
                         <tr *ngIf="isInputEvent(item)" class="propRow subRow"
-                            [attr.collapse]="propHidden.eventsGroup[i]">
+                            [attr.collapse]="propHidden.eventsGroup[item.id]">
                             <td class="propRowCol"></td>
-                            <td class="propRowCell cellName">Source</td>
-                            <td class="propRowCell remove-cell">
-                                <mat-select [(value)]="item.source" [disabled]="readonly" (selectionChange)="onSave()">
-                                    <mat-select-trigger>
-                                        <span class="custom">
-                                            {{item.sourceTag}}
-                                        </span>
-                                    </mat-select-trigger>
-                                    <mat-option *ngFor="let block of policy.allBlocks" [value]="block">
-                                        <div class="block-name">
-                                            <div class="block-icon">
-                                                <mat-icon>{{getIcon(block)}}</mat-icon>
-                                            </div>
-                                            {{block.tag}}
-                                        </div>
-                                    </mat-option>
-                                </mat-select>
+                            <td class="propRowCell cellName source-elm">Source</td>
+                            <td class="propRowCell">
+                                <select-block
+                                    [root]="module"
+                                    [blocks]="module.allBlocks"
+                                    [(value)]="item.source"
+                                    [readonly]="readonly"
+                                    type="object"
+                                    (change)="onSave()"
+                                ></select-block>
                             </td>
                         </tr>
-                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[item.id]">
                             <td class="propRowCol"></td>
-                            <td class="propRowCell cellName">Output Event</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell cellName source-elm">Output Event</td>
+                            <td class="propRowCell">
                                 <mat-select [(value)]="item.output" [disabled]="readonly" (selectionChange)="onSave()">
                                     <mat-option value=""></mat-option>
                                     <mat-option *ngFor="let e of getOutputEvents(item)" [value]="e">
@@ -370,39 +343,32 @@
                         </tr>
 
                         <tr *ngIf="isOutputEvent(item)" class="propRow subRow"
-                            [attr.collapse]="propHidden.eventsGroup[i]">
+                            [attr.collapse]="propHidden.eventsGroup[item.id]">
                             <td class="propRowCol"></td>
-                            <td class="propRowCell cellName">Target</td>
-                            <td class="propRowCell remove-cell">
-                                <mat-select [(value)]="item.target" [disabled]="readonly" (selectionChange)="onSave()">
-                                    <mat-select-trigger>
-                                        <span class="custom">
-                                            {{item.targetTag}}
-                                        </span>
-                                    </mat-select-trigger>
-                                    <mat-option *ngFor="let block of policy.allBlocks" [value]="block">
-                                        <div class="block-name">
-                                            <div class="block-icon">
-                                                <mat-icon>{{getIcon(block)}}</mat-icon>
-                                            </div>
-                                            {{block.tag}}
-                                        </div>
-                                    </mat-option>
-                                </mat-select>
+                            <td class="propRowCell cellName target-elm">Target</td>
+                            <td class="propRowCell">
+                                <select-block
+                                    [root]="module"
+                                    [blocks]="module.allBlocks"
+                                    [(value)]="item.target"
+                                    [readonly]="readonly"
+                                    type="object"
+                                    (change)="onSave()"
+                                ></select-block>
                             </td>
                         </tr>
                         <tr *ngIf="isInputEvent(item)" class="propRow subRow"
-                            [attr.collapse]="propHidden.eventsGroup[i]">
+                            [attr.collapse]="propHidden.eventsGroup[item.id]">
                             <td class="propRowCol"></td>
-                            <td class="propRowCell cellName">Target</td>
-                            <td class="propRowCell remove-cell">
-                                <span class="readonly-prop">Current Block</span>
+                            <td class="propRowCell cellName target-elm">Target</td>
+                            <td class="propRowCell">
+                                <span class="readonly-prop current-elm">Current Block</span>
                             </td>
                         </tr>
-                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[item.id]">
                             <td class="propRowCol"></td>
-                            <td class="propRowCell cellName">Input Event</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell cellName target-elm">Input Event</td>
+                            <td class="propRowCell">
                                 <mat-select [(value)]="item.input" [disabled]="readonly" (selectionChange)="onSave()">
                                     <mat-option value=""></mat-option>
                                     <mat-option *ngFor="let e of getInputEvents(item)" [value]="e">
@@ -412,10 +378,10 @@
                             </td>
                         </tr>
 
-                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[item.id]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Event Actor</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell">
                                 <mat-select [(ngModel)]="item.actor" (selectionChange)="onSave()" [disabled]="readonly">
                                     <mat-option value="">Event Initiator</mat-option>
                                     <mat-option value="owner">Document Owner</mat-option>
@@ -424,17 +390,20 @@
                             </td>
                         </tr>
 
-                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[i]">
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[item.id]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Disabled</td>
-                            <td class="propRowCell remove-cell">
+                            <td class="propRowCell">
                                 <input class="prop-input" type="checkbox" [(ngModel)]="item.disabled"
                                     [readonly]="readonly" (change)="onSave()">
                             </td>
                         </tr>
                     </ng-container>
                 </ng-container>
-                <tr class="propRow" style="height: 26px;">
+
+
+
+                <tr class="propRow propRowBottom">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName"></td>
                     <td class="propRowCell"></td>

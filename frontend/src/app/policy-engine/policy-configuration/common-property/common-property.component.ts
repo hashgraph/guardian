@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema } from '@guardian/interfaces';
-import { RegisteredBlocks } from '../../registered-blocks';
-import { PolicyModel } from '../../structures/policy-model';
+import { RegisteredService } from '../../registered-service/registered.service';
+import { PolicyBlockModel, SchemaVariables } from '../../structures';
 
 /**
  * common property
@@ -13,14 +13,12 @@ import { PolicyModel } from '../../structures/policy-model';
     encapsulation: ViewEncapsulation.None
 })
 export class CommonPropertyComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
+    @Input('block') currentBlock!: PolicyBlockModel;
     @Input('property') property!: any;
     @Input('collapse') collapse!: any;
     @Input('readonly') readonly!: boolean;
     @Input('data') data!: any;
     @Input('offset') offset!: number;
-    @Input('schemas') schemas!: Schema[];
-
     @Output('update') update = new EventEmitter();
 
     get value(): any {
@@ -46,20 +44,24 @@ export class CommonPropertyComponent implements OnInit {
     allBlocks: any[] = [];
     childrenBlocks: any[] = [];
     loaded: boolean = false;
+    schemas!: SchemaVariables[];
 
-    constructor(public registeredBlocks: RegisteredBlocks) {
-
+    constructor(private registeredService: RegisteredService) {
     }
 
     ngOnInit(): void {
         this.needUpdate = true;
     }
 
-    getIcon(block: any) {
-        return this.registeredBlocks.getIcon(block.blockType);
+    ngOnChanges(changes: SimpleChanges) {
+        this.load(this.currentBlock);
+        setTimeout(() => {
+            this.loaded = true;
+        }, 0);
     }
 
-    ngOnChanges(changes: SimpleChanges) {
+    load(block: PolicyBlockModel) {
+        const moduleVariables = block.moduleVariables;
         if (this.property) {
             if (this.property.type === 'Group') {
                 if (typeof this.data[this.property.name] !== 'object') {
@@ -70,30 +72,26 @@ export class CommonPropertyComponent implements OnInit {
                     this.data[this.property.name] = [];
                 }
             } else if (this.property.type === 'Select' || this.property.type === 'MultipleSelect') {
-                if (this.policy?.allBlocks) {
-                    this.allBlocks = this.policy.allBlocks.map(item => {
+                this.allBlocks = [];
+                if (moduleVariables?.module?.allBlocks) {
+                    this.allBlocks = moduleVariables.module.allBlocks.map(item => {
                         return {
-                            name: item.tag,
-                            icon: this.getIcon(item),
+                            name: item.localTag,
+                            icon: this.registeredService.getIcon(item.blockType),
                             value: item.tag,
                             parent: item?.parent?.id
                         }
                     });
-                } else {
-                    this.allBlocks = [];
                 }
                 this.childrenBlocks = this.allBlocks.filter(item => item.parent === this.data?.id);
+                this.schemas = moduleVariables?.schemas || [];
             }
-
             if (this.property.type !== 'Group' && this.property.type !== 'Array') {
                 if (this.property.default && !this.data.hasOwnProperty(this.property.name)) {
                     this.data[this.property.name] = this.property.default;
                 }
             }
         }
-        setTimeout(() => {
-            this.loaded = true;
-        }, 0);
     }
 
     customPropCollapse(property: any) {

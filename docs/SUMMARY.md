@@ -106,6 +106,8 @@
       * [Create Token Block](available-policy-workflow-blocks/create-token-block.md)
       * [impactAddon](guardian/standard-registry/policies/introduction/impactaddon.md)
       * [Http Request Block](guardian/standard-registry/policies/introduction/http-request-block.md)
+      * [historyAddon](guardian/standard-registry/policies/introduction/historyaddon.md)
+      * [selectiveAttributes Block](guardian/standard-registry/policies/introduction/selectiveattributes-block.md)
     * [💻 Creating Policy using UI](policy-flow/policy-demo.md)
     * [💻 Creating a Policy through Policy Configurator](guardian/standard-registry/policies/creating-a-policy-through-policy-configurator/README.md)
       * [Getting Started with the Policy Workflows](policy-workflow-creation-using-the-guardian-user-interface/getting-started-with-the-policy-workflows.md)
