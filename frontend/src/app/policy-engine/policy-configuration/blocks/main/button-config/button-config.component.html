@@ -1,171 +1,172 @@
 <!-- UI Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
-    <ng-container>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Enable Individual Filters</td>
+        <td class="propRowCell">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.uiMetaData.enableIndividualFilters"
+                [readonly]="readonly" (blur)="onSave()">
+        </td>
+    </tr>
 
-        <tr class="propHeader" [attr.collapse]="propHidden.metaData">
-            <td class="propRowCol" (click)="onHide(propHidden, 'buttonsGroup')">
-                <mat-icon *ngIf="properties.uiMetaData.buttons.length">arrow_drop_down</mat-icon>
+    <tr class="propHeader" [attr.collapse]="propHidden.metaData">
+        <td class="propRowCol" (click)="onHide(propHidden, 'buttonsGroup')">
+            <mat-icon *ngIf="properties.uiMetaData.buttons.length">arrow_drop_down</mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Buttons</td>
+        <td class="propHeaderCell">
+            <div class="propAdd" (click)="addButton()">
+                <mat-icon>add</mat-icon>
+                <span>Add Button</span>
+            </div>
+        </td>
+    </tr>
+    <ng-container *ngFor="let button of properties.uiMetaData.buttons; let i=index">
+        <tr class="propRow subRow" [attr.collapse]="propHidden.buttonsGroup">
+            <td class="propRowCol" (click)="onHide(propHidden.buttons[i], 'collapse')"
+                [attr.collapse]="propHidden.buttons[i].collapse">
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
-            <td class="propHeaderCell cellName">Buttons</td>
-            <td class="propHeaderCell">
-                <div class="propAdd" (click)="addButton()">
+            <td class="propRowCell cellName">Button {{i}}</td>
+            <td class="propRowCell not-editable-text">
+                <span>{{button.name}}</span>
+                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveButton(i)">
+                    <mat-icon>delete</mat-icon>
+                </span>
+            </td>
+        </tr>
+
+        <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Type</td>
+            <td class="propRowCell">
+                <mat-select [(value)]="button.type" [disabled]="readonly" (change)="onSave()">
+                    <mat-option value="selector">Selector</mat-option>
+                    <mat-option value="selector-dialog">Selector Dialog</mat-option>
+                </mat-select>
+            </td>
+        </tr>
+
+        <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Button Tag</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="button.tag" [readonly]="readonly" (blur)="onSave()">
+            </td>
+        </tr>
+        <ng-template [ngIf]="button.type === 'selector-dialog'">
+            <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">Dialog Title</td>
+                <td class="propRowCell">
+                    <input class="prop-input" [(ngModel)]="button.title" [readonly]="readonly" (blur)="onSave()">
+                </td>
+            </tr>
+            <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">Dialog Description</td>
+                <td class="propRowCell">
+                    <input class="prop-input" [(ngModel)]="button.description" [readonly]="readonly" (blur)="onSave()">
+                </td>
+            </tr>
+            <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">Dialog Result Field Path</td>
+                <td class="propRowCell">
+                    <input class="prop-input" placeholder="comment" [(ngModel)]="button.dialogResultFieldPath" [readonly]="readonly">
+                </td>
+            </tr>
+        </ng-template>
+        <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Button Name</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="button.name" [readonly]="readonly" (blur)="onSave()">
+            </td>
+        </tr>
+        <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Field</td>
+            <td class="propRowCell">
+                <document-path [(value)]="button.field" [readonly]="readonly" [displayTooltip]="true"
+                    (change)="onSave()"></document-path>
+            </td>
+        </tr>
+        <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Value</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="button.value" [readonly]="readonly" (blur)="onSave()">
+            </td>
+        </tr>
+        <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">UI Class</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="button.uiClass" [readonly]="readonly" (blur)="onSave()">
+            </td>
+        </tr>
+
+        <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+            <td class="propRowCol" (click)="onHide(propHidden.buttons[i], 'filtersGroup')"
+                [attr.collapse]="propHidden.buttons[i].filtersGroup">
+                <mat-icon>arrow_drop_down</mat-icon>
+            </td>
+            <td class="propRowCell cellName">Filters Option {{i}}</td>
+            <td class="propRowCell">
+                <div class="propAdd" (click)="addFilter(button)">
                     <mat-icon>add</mat-icon>
-                    <span>Add Button</span>
+                    <span>Add Filter</span>
                 </div>
             </td>
         </tr>
-        <ng-container *ngFor="let button of properties.uiMetaData.buttons; let i=index">
-            <tr class="propRow subRow" [attr.collapse]="propHidden.buttonsGroup">
-                <td class="propRowCol" (click)="onHide(propHidden.buttons[i], 'collapse')"
-                    [attr.collapse]="propHidden.buttons[i].collapse">
+
+        <ng-container *ngFor="let filter of button.filters; let j=index">
+            <tr class="propRow subRow-3"
+                [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup">
+                <td class="propRowCol" (click)="onHide(propHidden.buttons[i], j)"
+                    [attr.collapse]="propHidden.buttons[i][j]">
                     <mat-icon>arrow_drop_down</mat-icon>
                 </td>
-                <td class="propRowCell cellName">Button {{i}}</td>
-                <td class="propRowCell not-editable-text">
-                    <span>{{button.name}}</span>
-                    <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveButton(i)">
+                <td class="propRowCell cellName">Filter {{j}}</td>
+                <td class="propRowCell">
+                    <span *ngIf="filter.field&&filter.type&&filter.value" class="not-editable-text">
+                        {{filter.field}} {{filter.type}} {{filter.value}}
+                    </span>
+                    <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveFilter(button, j)">
                         <mat-icon>delete</mat-icon>
                     </span>
                 </td>
             </tr>
-
-            <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+            <tr class="propRow subRow-4"
+                [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup || propHidden.buttons[i][j]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Type</td>
                 <td class="propRowCell">
-                    <mat-select [(value)]="button.type" [disabled]="readonly" (change)="onSave()">
-                        <mat-option value="selector">Selector</mat-option>
-                        <mat-option value="selector-dialog">Selector Dialog</mat-option>
+                    <mat-select [(value)]="filter.type" [disabled]="readonly" (change)="onSave()">
+                        <mat-option value="equal">Equal</mat-option>
+                        <mat-option value="not_equal">Not Equal</mat-option>
+                        <mat-option value="in">In</mat-option>
+                        <mat-option value="not_in">Not In</mat-option>
                     </mat-select>
                 </td>
             </tr>
-
-            <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">Button Tag</td>
-                <td class="propRowCell">
-                    <input class="prop-input" [(ngModel)]="button.tag" [readonly]="readonly" (blur)="onSave()">
-                </td>
-            </tr>
-            <ng-template [ngIf]="button.type === 'selector-dialog'">
-                <tr class="propRow subRow-2"
-                    [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Dialog Title</td>
-                    <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="button.title" [readonly]="readonly" (blur)="onSave()">
-                    </td>
-                </tr>
-                <tr class="propRow subRow-2"
-                    [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Dialog Description</td>
-                    <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="button.description" [readonly]="readonly"
-                            (blur)="onSave()">
-                    </td>
-                </tr>
-                <tr class="propRow subRow-2"
-                    [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Dialog Result Field Path</td>
-                    <td class="propRowCell">
-                        <input class="prop-input" placeholder="comment" [(ngModel)]="button.dialogResultFieldPath" [readonly]="readonly">
-                    </td>
-                </tr>
-            </ng-template>
-            <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">Button Name</td>
-                <td class="propRowCell">
-                    <input class="prop-input" [(ngModel)]="button.name" [readonly]="readonly" (blur)="onSave()">
-                </td>
-            </tr>
-            <tr class="propRow subRow-2" [attr.collapse]="propHidden.metaData">
+            <tr class="propRow subRow-4"
+                [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup || propHidden.buttons[i][j]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Field</td>
                 <td class="propRowCell">
-                    <document-path [(value)]="button.field" [readonly]="readonly" [displayTooltip]="true"
-                        (change)="onSave()"></document-path>
+                    <document-path [(value)]="filter.field" [readonly]="readonly" (change)="onSave()"></document-path>
                 </td>
             </tr>
-            <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
+            <tr class="propRow subRow-4"
+                [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup || propHidden.buttons[i][j]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Value</td>
                 <td class="propRowCell">
-                    <input class="prop-input" [(ngModel)]="button.value" [readonly]="readonly" (blur)="onSave()">
+                    <input class="prop-input" [(ngModel)]="filter.value" [readonly]="readonly" (blur)="onSave()">
                 </td>
             </tr>
-            <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">UI Class</td>
-                <td class="propRowCell">
-                    <input class="prop-input" [(ngModel)]="button.uiClass" [readonly]="readonly" (blur)="onSave()">
-                </td>
-            </tr>
-
-            <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
-                <td class="propRowCol" (click)="onHide(propHidden.buttons[i], 'filtersGroup')"
-                    [attr.collapse]="propHidden.buttons[i].filtersGroup">
-                    <mat-icon>arrow_drop_down</mat-icon>
-                </td>
-                <td class="propRowCell cellName">Filters Option {{i}}</td>
-                <td class="propRowCell">
-                    <div class="propAdd" (click)="addFilter(button)">
-                        <mat-icon>add</mat-icon>
-                        <span>Add Filter</span>
-                    </div>
-                </td>
-            </tr>
-
-            <ng-container *ngFor="let filter of button.filters; let j=index">
-                <tr class="propRow subRow-3"
-                    [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup">
-                    <td class="propRowCol" (click)="onHide(propHidden.buttons[i], j)"
-                        [attr.collapse]="propHidden.buttons[i][j]">
-                        <mat-icon>arrow_drop_down</mat-icon>
-                    </td>
-                    <td class="propRowCell cellName">Filter {{j}}</td>
-                    <td class="propRowCell">
-                        <span *ngIf="filter.field&&filter.type&&filter.value" class="not-editable-text">
-                            {{filter.field}} {{filter.type}} {{filter.value}}
-                        </span>
-                        <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveFilter(button, j)">
-                            <mat-icon>delete</mat-icon>
-                        </span>
-                    </td>
-                </tr>
-                <tr class="propRow subRow-4"
-                    [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup || propHidden.buttons[i][j]">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Type</td>
-                    <td class="propRowCell">
-                        <mat-select [(value)]="filter.type" [disabled]="readonly" (change)="onSave()">
-                            <mat-option value="equal">Equal</mat-option>
-                            <mat-option value="not_equal">Not Equal</mat-option>
-                            <mat-option value="in">In</mat-option>
-                            <mat-option value="not_in">Not In</mat-option>
-                        </mat-select>
-                    </td>
-                </tr>
-                <tr class="propRow subRow-4"
-                    [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup || propHidden.buttons[i][j]">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Field</td>
-                    <td class="propRowCell">
-                        <document-path [(value)]="filter.field" [readonly]="readonly"
-                            (change)="onSave()"></document-path>
-                    </td>
-                </tr>
-                <tr class="propRow subRow-4"
-                    [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup || propHidden.buttons[i][j]">
-                    <td class="propRowCol"></td>
-                    <td class="propRowCell cellName">Value</td>
-                    <td class="propRowCell">
-                        <input class="prop-input" [(ngModel)]="filter.value" [readonly]="readonly" (blur)="onSave()">
-                    </td>
-                </tr>
-            </ng-container>
         </ng-container>
     </ng-container>
 </table>
