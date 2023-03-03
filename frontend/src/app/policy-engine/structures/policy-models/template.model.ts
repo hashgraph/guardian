@@ -47,6 +47,7 @@ export class TemplateModel {
         this.buildBlock(template.config);
         this._config.name = template.name;
         this._config.description = template.description;
+        this._config.localTag = this._config.localTag || 'Module';
 
         this.isDraft = this.status === PolicyType.DRAFT;
         this.isPublished = this.status === PolicyType.PUBLISH;

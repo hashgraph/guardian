@@ -9,6 +9,14 @@
     top: 0px;
 }
 
+.block-icon svg {
+    width: 22px;
+    height: 22px;
+    position: absolute;
+    top: 6px;
+    left: 1px;
+}
+
 .custom {
     height: 14px;
     line-height: 14px;
@@ -49,9 +57,4 @@
 .block-name[root="true"] {
     font-weight: 500;
     font-size: 14px;
-    padding-left: 2px;
-}
-
-.block-name[root="true"] .block-icon {
-    display: none;
 }
