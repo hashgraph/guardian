@@ -95,6 +95,6 @@ export class Token extends BaseEntity implements IToken {
     /**
      * Is token draft
      */
-    @Property()
+    @Property({ nullable: true })
     draftToken?: boolean;
 }
