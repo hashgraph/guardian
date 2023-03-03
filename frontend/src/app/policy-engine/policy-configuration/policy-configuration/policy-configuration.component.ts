@@ -596,7 +596,14 @@ export class PolicyConfigurationComponent implements OnInit {
     public onConvertToModule() {
         this.currentBlock = this.policyModel.getBlock(this.currentBlock);
         if (this.currentBlock) {
-            this.policyModel.convertModule(this.currentBlock);
+            if(this.currentBlock.search('module')) {
+                this.informService.errorShortMessage(
+                    `Block cannot be converted to module as we have a module in it.`,
+                    'Invalid operation.'
+                );
+            } else {
+                this.policyModel.convertModule(this.currentBlock);
+            }
         }
     }
 

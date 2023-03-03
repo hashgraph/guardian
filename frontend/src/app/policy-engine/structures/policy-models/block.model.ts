@@ -492,4 +492,19 @@ export class PolicyBlockModel {
         }
         return events;
     }
+
+    public search(blockType: string): PolicyBlockModel | null {
+        if (this.blockType === blockType) {
+            return this;
+        }
+        if (this._children) {
+            for (const child of this._children) {
+                const result = child.search(blockType);
+                if (result) {
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
 }
