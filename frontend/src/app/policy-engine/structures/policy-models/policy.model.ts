@@ -516,12 +516,17 @@ export class PolicyModel {
     }
 
     public convertModule(block: PolicyBlockModel): PolicyModuleModel {
+        const permission = block.permissions?.slice();
         const module = this.newModule();
         const parent = block.parent;
         if (parent) {
             parent._replace(block, module);
         }
         module.addChild(block);
+        for (const block of module.allBlocks) {
+            block.setModule(module);
+        }
+        module.permissions = permission;
         this.refresh();
         return module;
     }
