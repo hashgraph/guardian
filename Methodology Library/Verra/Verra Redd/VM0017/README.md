@@ -19,7 +19,7 @@ Roles in the below Workflow Diagram are represented as follows : Project Propone
 ![image](https://user-images.githubusercontent.com/79293833/186554269-b68a5631-b4bd-4e40-9daf-e0afc443ff39.png)
 
 **Note** :
-For Demo purpose, we have uploaded two versions of Verra Policies into IPFS and created Timestamps, which are mentioned in the below table.
+For Demo purpose, we have uploaded Verra Policies into IPFS and created Timestamps, which are mentioned in the below table.
 
 
 **Verra REDD Versions and their IPFS timestamps:**
