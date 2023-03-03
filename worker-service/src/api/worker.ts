@@ -126,9 +126,13 @@ export class Worker {
 
         this.channel.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
             await new SettingsContainer().updateSetting('IPFS_STORAGE_API_KEY', msg.ipfsStorageApiKey);
-            this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
-            const validator = new ValidateConfiguration();
-            await validator.validate();
+            try {
+                this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
+                const validator = new ValidateConfiguration();
+                await validator.validate();
+            } catch (error) {
+                this.logger.error(`Update settings error, ${error.message}`, [this.channelName]);
+            }
         });
 
         HederaSDKHelper.setTransactionResponseCallback(async (client: any) => {
