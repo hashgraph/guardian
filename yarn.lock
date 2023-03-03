@@ -1922,7 +1922,7 @@ __metadata:
     dotenv: ^16.0.0
     express: ^4.17.3
     js-yaml: ^4.1.0
-    swagger-ui-express: ^4.3.0
+    swagger-ui-express: ^4.6.2
     tslint: ^6.1.3
     typescript: ^4.6.3
   languageName: unknown
@@ -9756,14 +9756,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"swagger-ui-express@npm:^4.3.0":
-  version: 4.4.0
-  resolution: "swagger-ui-express@npm:4.4.0"
+"swagger-ui-express@npm:^4.6.2":
+  version: 4.6.2
+  resolution: "swagger-ui-express@npm:4.6.2"
   dependencies:
     swagger-ui-dist: ">=4.11.0"
   peerDependencies:
     express: ">=4.0.0"
-  checksum: bdd707bd6db5bd82afede351af7a04adad7de3becb9e4408c770d34d719861d00d79d1ded96b7ae1192dbd1ddd7dc6bea26dffc1d297bf52bbf21b9ec4809d5f
+  checksum: 3883dc9243ef3fd050ea99edfa14c686dd3477b1ca81655d9c49347b71a540e266fc658b5b6f936c3f9192f224e4cff41bc3d17ab325e9e110a19f0abec551b6
   languageName: node
   linkType: hard
 
