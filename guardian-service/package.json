@@ -37,7 +37,7 @@
     "express": "^4.17.1",
     "fs-extra": "^10.0.0",
     "imurmurhash": "^0.1.4",
-    "jszip": "^3.7.1",
+    "jszip": "^3.10.1",
     "lodash.get": "^4.4.2",
     "mathjs": "^10.1.0",
     "module-alias": "^2.2.2",
