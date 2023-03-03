@@ -31,6 +31,21 @@ There are different types of Schema Types:
 
 {% endhint %}
 
+There are different types of Schema Types:
+
+* None
+* Verifiable Credential
+* Encrypted Verifiable Credential
+
+{% hint style="info" %}
+**Note: Important points to be noted when "Encrypted Verifiable Credential" type is selected:**
+
+1. Fields in schema can be marked as private (only when schema has Encrypted Verifiable Credential type) as shown below.
+2. Encrypted Verifiable Credential will be published in IPFS with AES GCM encryption.
+3. If VP contains Encrypted Verifiable Credential, fields marked as private will be automatically removed.\
+
+{% endhint %}
+
 There are different types of Field Types:
 
 * Number
