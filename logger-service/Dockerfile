@@ -1,40 +1,46 @@
 FROM node:16 AS interfacesModuleBuilder
 WORKDIR /usr/local/interfaces
-COPY ./interfaces/package*.json ./
+COPY ./interfaces/package.json ./
 COPY ./interfaces/tsconfig*.json ./
 ADD ./interfaces/src ./src/.
-RUN npm install
-RUN npm pack
+RUN yarn install
+RUN yarn pack
 
 FROM node:16 AS commonModuleBuilder
 WORKDIR /usr/local/common
-COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
-COPY ./common/package*.json ./
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
+COPY ./common/package.json ./
 COPY ./common/tsconfig*.json ./
-RUN npm install guardian-interfaces-*.tgz
+RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
+RUN yarn install
 ADD ./common/src ./src/.
-RUN npm pack
+RUN yarn pack
 
 FROM node:16 AS loggerServiceBuilder
 WORKDIR /usr/local/logger-service
-COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
-COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz ./
-COPY ./logger-service/package*.json ./
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
+COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
+COPY ./logger-service/package.json ./
 COPY ./logger-service/tsconfig*.json ./
-RUN npm install guardian-interfaces-*.tgz guardian-common-*.tgz
+RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
+RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
+RUN yarn install
 ADD ./logger-service/src ./src/.
-RUN npm run build:prod
+RUN yarn run build:prod
 
 FROM node:16
 ENV PLATFORM="docker"
 ENV NODE_ENV="production"
 WORKDIR /usr/local/logger-service
-COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz ./
-COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz ./
-COPY ./logger-service/package*.json ./
+COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.tgz /tmp/interfaces.tgz
+COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
+COPY --from=loggerServiceBuilder  /usr/local/logger-service/yarn.lock ./
+COPY ./logger-service/package.json ./
 COPY ./logger-service/.env.docker ./.env
-RUN npm install --production guardian-interfaces-*.tgz guardian-common-*.tgz
+RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
+RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
+RUN yarn install --frozen-lockfile
 COPY --from=loggerServiceBuilder /usr/local/logger-service/dist ./dist
-RUN rm guardian-*.tgz
+RUN rm /tmp/interfaces.tgz /tmp/common.tgz
 
-CMD npm start
+CMD yarn start

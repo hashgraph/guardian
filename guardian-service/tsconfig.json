@@ -16,21 +16,42 @@
         "skipLibCheck": true,
         "baseUrl": "./src",
         "paths": {
-            "@entity/*": ["entity/*"],
-            "@api/*": ["api/*"],
-            "@subscribers/*": ["subscribers/*"],
-            "@helpers/*": ["helpers/*"],
-            "@policy-engine/*": ["policy-engine/*"],
-            "@auth/*": ["auth/*"],
-            "@hedera-modules": ["hedera-modules/index"],
-            "@database-modules": ["database-modules/index"],
-            "@document-loader/*": ["document-loader/*"],
-            "@analytics": ["analytics/index"]
+            "@entity/*": [
+                "entity/*"
+            ],
+            "@api/*": [
+                "api/*"
+            ],
+            "@subscribers/*": [
+                "subscribers/*"
+            ],
+            "@helpers/*": [
+                "helpers/*"
+            ],
+            "@policy-engine/*": [
+                "policy-engine/*"
+            ],
+            "@auth/*": [
+                "auth/*"
+            ],
+            "@hedera-modules": [
+                "hedera-modules/index"
+            ],
+            "@database-modules": [
+                "database-modules/index"
+            ],
+            "@document-loader/*": [
+                "document-loader/*"
+            ],
+            "@analytics": [
+                "analytics/index"
+            ]
         }
     },
     "include": [
-        "src/**/*"
-, "../interfaces/src/type/TopicType.ts"    ],
+        "src/**/*",
+        "../interfaces/src/type/TopicType.ts"
+    ],
     "exclude": [
         "node_modules"
     ],

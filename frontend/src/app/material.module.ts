@@ -63,7 +63,7 @@ import { MatSliderModule } from '@angular/material/slider';
         MatPaginatorModule,
         MatButtonToggleModule,
         DragDropModule,
-	MatSliderModule,
+        MatSliderModule,
         CdkTableModule
     ],
     exports: [
@@ -97,7 +97,7 @@ import { MatSliderModule } from '@angular/material/slider';
         MatAutocompleteModule,
         MatButtonToggleModule,
         DragDropModule,
-	MatSliderModule,
+        MatSliderModule,
         CdkTableModule
     ]
 })

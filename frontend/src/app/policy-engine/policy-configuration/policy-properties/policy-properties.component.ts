@@ -1,5 +1,11 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { PolicyModel, PolicyGroupModel, PolicyRoleModel, PolicyTopicModel, PolicyTokenModel } from '../../structures/policy-model';
+import {
+    PolicyModel,
+    PolicyTokenModel,
+    PolicyGroupModel,
+    PolicyRoleModel,
+    PolicyTopicModel
+} from '../../structures';
 
 /**
  * Settings for policy.
@@ -7,10 +13,7 @@ import { PolicyModel, PolicyGroupModel, PolicyRoleModel, PolicyTopicModel, Polic
 @Component({
     selector: 'policy-properties',
     templateUrl: './policy-properties.component.html',
-    styleUrls: [
-        './../common-properties/common-properties.component.css',
-        './policy-properties.component.css'
-    ]
+    styleUrls: ['./policy-properties.component.css']
 })
 export class PolicyPropertiesComponent implements OnInit {
     @Input('policy') policy!: PolicyModel;

@@ -8,3 +8,11 @@
     left: -4px;
     position: relative;
 }
+
+.required-fields {
+    position: relative !important;
+    width: 8px !important;
+    max-width: 8px !important;
+    display: inline !important;
+    color: #f00 !important;
+}

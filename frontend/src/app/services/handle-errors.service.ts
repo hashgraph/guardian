@@ -30,27 +30,28 @@ export class HandleErrorsService implements HttpInterceptor {
         let text = 'Unknown error';
         let warning = false;
 
-        if (!error.error) {
+        const errorObject = error.error;
+        if (!errorObject) {
             return { warning, text, header };
         }
 
-        if (typeof error.error === 'string') {
+        if (typeof errorObject === 'string') {
             const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
             header = `${error.status} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : error.statusText}`;
             if (error.message) {
-                text = `<div>${translatedMessage.text}</div><div>${this.messageToText(error.error)}</div>`;
+                text = `<div>${translatedMessage.text}</div><div>${this.messageToText(errorObject)}</div>`;
             } else {
-                text = `${error.error}`;
+                text = `${errorObject}`;
             }
             return { warning, text, header };
         }
 
-        warning = error.error.code === 0;
+        warning = errorObject.code === 0;
 
-        if (typeof error.error === 'object') {
-            if (typeof error.error.text == 'function') {
+        if (typeof errorObject === 'object') {
+            if (typeof errorObject.text == 'function') {
                 try {
-                    const e = await error.error.text();
+                    const e = await errorObject.text();
                     const _error = JSON.parse(e);
                     const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(_error.message));
                     const header = `${_error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
@@ -64,24 +65,24 @@ export class HandleErrorsService implements HttpInterceptor {
                 } catch (a) {
                     return { warning, text, header };
                 }
-            } else {
-                const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.error.message));
-                if (error.error.uuid) {
-                    text = `<div>${this.messageToText(translatedMessage.text)}</div><div>${error.error.uuid}</div>`;
+            } else if (typeof errorObject.message === 'string') {
+                const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(errorObject.message));
+                if (errorObject.uuid) {
+                    text = `<div>${this.messageToText(translatedMessage.text)}</div><div>${errorObject.uuid}</div>`;
                 } else {
                     text = `${this.messageToText(translatedMessage.text)}`;
                 }
-                if (error.error.type) {
-                    header = `${error.error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : error.error.type}`;
+                if (errorObject.type) {
+                    header = `${errorObject.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : errorObject.type}`;
                 } else {
-                    header = `${error.error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
+                    header = `${errorObject.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
                 }
                 return { warning, text, header };
             }
         }
 
         const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
-        header = `${error.code} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
+        header = `${error.code || 500} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
         text = `${translatedMessage.text}`;
 
         return { warning, text, header };

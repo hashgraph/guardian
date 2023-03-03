@@ -3,6 +3,7 @@
  */
 export enum MessageType {
     VCDocument = 'VC-Document',
+    EVCDocument = 'EVC-Document',
     VPDocument = 'VP-Document',
     DIDDocument = 'DID-Document',
     Policy = 'Policy',
@@ -11,5 +12,6 @@ export enum MessageType {
     Topic = 'Topic',
     StandardRegistry = 'Standard Registry',
     Token = 'Token',
-    Synchronization = 'Synchronization Event'
+    Synchronization = 'Synchronization Event',
+    Module = 'Module'
 }

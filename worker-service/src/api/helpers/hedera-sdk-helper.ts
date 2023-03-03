@@ -88,6 +88,16 @@ export class NetworkOptions {
      * Local node protocol
      */
     public localNodeProtocol: string = '';
+
+    /**
+     * Hedera nodes
+     */
+    public nodes: any = {};
+
+    /**
+     * Hedera mirror nodes
+     */
+    public mirrorNodes: string[] = [];
 }
 
 /**
@@ -138,6 +148,8 @@ export class HederaSDKHelper {
         Environment.setNetwork(networkOptions.network);
         Environment.setLocalNodeAddress(networkOptions.localNodeAddress);
         Environment.setLocalNodeProtocol(networkOptions.localNodeProtocol);
+        Environment.setNodes(networkOptions.nodes);
+        Environment.setMirrorNodes(networkOptions.mirrorNodes);
         this.dryRun = dryRun || null;
         this.client = Environment.createClient();
         if (operatorId && operatorKey) {
@@ -1145,7 +1157,6 @@ export class HederaSDKHelper {
             .setContractId(contractId)
             .setGas(100000)
             .setFunction(functionName, parameters)
-            .setQueryPayment(new Hbar(0.05));
         const contractQueryResult = await contractQueryTx.execute(client);
         return contractQueryResult;
     }

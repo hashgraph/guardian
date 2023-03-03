@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
+import { IModuleVariables, PolicyBlockModel, PolicyModel, TopicVariables } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'sendToGuardian' type.
@@ -13,25 +12,27 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
     encapsulation: ViewEncapsulation.Emulated
 })
 export class SendConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         main: false,
         optionGroup: false,
         options: {}
     };
 
-    block!: any;
+    properties!: any;
+    topics!: TopicVariables[];
 
     constructor() {
     }
 
     ngOnInit(): void {
+        this.topics = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }
@@ -41,9 +42,15 @@ export class SendConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.options = this.block.options || [];
+        this.moduleVariables = block.moduleVariables;
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {};
+        this.properties.options = this.properties.options || [];
+        if (!this.properties.dataType && !this.properties.dataSource) {
+            this.properties.dataSource = 'auto';
+        }
+        this.topics = this.moduleVariables?.topics || [];
     }
 
     onHide(item: any, prop: any) {
@@ -51,26 +58,31 @@ export class SendConfigComponent implements OnInit {
     }
 
     addOption() {
-        this.block.options.push({
+        this.properties.options.push({
             name: '',
             value: ''
         })
     }
 
     removeOption(i: number) {
-        this.block.options.splice(i, 1);
+        this.properties.options.splice(i, 1);
     }
 
     selectTopic(event: any) {
         if (event.value === 'new') {
-            const name = `New Topic ${this.policy.policyTopics.length}`;
-            this.policy.createTopic({
-                name: name,
-                description: "",
-                type: "any",
+            const name = this.moduleVariables?.module?.createTopic({
+                description: '',
+                type: 'any',
                 static: false
             });
-            this.block.topic = name;
+            this.properties.topic = name;
         }
+    }
+
+    onDataSource(event: any) {
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

@@ -1,11 +1,12 @@
 import { SourceAddon, StateField } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyAddonBlock, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
+import ObjGet from 'lodash.get';
+import ObjSet from 'lodash.set';
 
 /**
  * Documents source addon
@@ -22,7 +23,10 @@ import { PolicyUtils } from '@policy-engine/helpers/utils';
         input: null,
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: [
+        { path: 'options.schema', alias: 'schema', type: 'Schema' }
+    ]
 })
 export class DocumentsSourceAddon {
     /**
@@ -32,11 +36,11 @@ export class DocumentsSourceAddon {
      @StateField()
      private state;
 
-     constructor() {
-         if (!this.state) {
-             this.state = {};
-         }
-     }
+    constructor() {
+        if (!this.state) {
+            this.state = {};
+        }
+    }
 
     /**
      * Set block data
@@ -173,20 +177,19 @@ export class DocumentsSourceAddon {
         }
 
         if(!countResult) {
+            const selectiveAttributeBlock = ref.getSelectiveAttributes()[0];
             for (const dataItem of data as IPolicyDocument[]) {
-                if (ref.options.viewHistory) {
-
-                    dataItem.history = (await ref.databaseServer.getDocumentStates({
-                        documentId: dataItem.id
-                    }, {
-                        orderBy: {'created': 'DESC'}
-                    })).map(item => {
-                        return {
-                            status: item.status,
-                            created: new Date(item.created).toLocaleString(),
-                            reason: item.reason
-                        }
-                    });
+                if (selectiveAttributeBlock) {
+                    const newOptions: any = {};
+                    for (const attribute of selectiveAttributeBlock.options
+                        .attributes) {
+                        ObjSet(
+                            newOptions,
+                            attribute.attributePath,
+                            ObjGet(dataItem.option, attribute.attributePath)
+                        );
+                    }
+                    dataItem.option = newOptions;
                 }
                 dataItem.__sourceTag__ = ref.tag;
             }
@@ -260,6 +263,9 @@ export class DocumentsSourceAddon {
         this.prepareFilters(filters);
         const blockFilter: any = {
             $set: {
+                id: {
+                    $toString: '$_id'
+                },
                 __sourceTag__: {
                     $cond: {
                         if: {
@@ -280,24 +286,30 @@ export class DocumentsSourceAddon {
             }
         };
 
-        if (ref.options.viewHistory) {
-            blockFilter.$set.historyDocumentId = {
+        const selectiveAttibuteBlock = ref.getSelectiveAttributes()[0];
+        if (selectiveAttibuteBlock) {
+            blockFilter.$set.newOption = {
                 $cond: {
                     if: {
-                        '$and': [
+                        $and: [
                             ...filters,
                             {
                                 $or: [
-                                    { $eq: [null, '$historyDocumentId'] },
-                                    { $not: '$historyDocumentId' }
-                                ]
-                            }
-                        ]
+                                    { $eq: [null, '$newOption'] },
+                                    { $not: '$newOption' },
+                                ],
+                            },
+                        ],
                     },
-                    then: { $toString: '$_id' },
-                    else: '$historyDocumentId'
-                }
+                    then: {},
+                    else: '$newOption',
+                },
             };
+            for (const attribute of selectiveAttibuteBlock.options.attributes) {
+                blockFilter.$set.newOption.$cond.then[
+                    attribute.attributePath
+                ] = `$option.${attribute.attributePath}`;
+            }
         }
 
         return blockFilter;
@@ -338,42 +350,6 @@ export class DocumentsSourceAddon {
                 }
                 filterValue[1] = newFilter;
             }
-        }
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            const types = [
-                'vc-documents',
-                'did-documents',
-                'vp-documents',
-                'root-authorities',
-                'standard-registries',
-                'approve',
-                'source'
-            ];
-            if (types.indexOf(ref.options.dataType) === -1) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "dataType" must be one of ' + types.join(','));
-            }
-
-            if (ref.options.schema) {
-                if (typeof ref.options.schema !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-                    return;
-                }
-                const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
-                if (!schema) {
-                    resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
-                    return;
-                }
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

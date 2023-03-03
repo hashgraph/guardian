@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
+import { IModuleVariables, PolicyBlockModel } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -12,19 +12,19 @@ import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/
     encapsulation: ViewEncapsulation.Emulated
 })
 export class CalculateMathConfigComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
+    
     propHidden: any = {
         equationsGroup: false,
         equations: {},
     };
 
-    block!: any;
+    properties!: any;
 
     constructor() {
     }
@@ -39,8 +39,10 @@ export class CalculateMathConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        this.block = block.properties;
-        this.block.equations = this.block.equations || [];
+        this.moduleVariables = block.moduleVariables;
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.equations = this.properties.equations || [];
     }
 
     onHide(item: any, prop: any) {
@@ -48,13 +50,17 @@ export class CalculateMathConfigComponent implements OnInit {
     }
 
     addEquation() {
-        this.block.equations.push({
+        this.properties.equations.push({
             variable: '',
             formula: ''
         })
     }
 
     onRemoveEquation(i: number) {
-        this.block.equations.splice(i, 1);
+        this.properties.equations.splice(i, 1);
+    }
+    
+    onSave() {
+        this.item.changed = true;
     }
 }

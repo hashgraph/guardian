@@ -117,7 +117,11 @@ interface IGroupConfig {
             PolicyOutputEventType.JoinGroup
         ],
         defaultEvent: false
-    }
+    },
+    variables: [
+        { path: 'options.roles', alias: 'roles', type: 'Role' },
+        { path: 'options.groups', alias: 'groups', type: 'Group' }
+    ]
 })
 export class PolicyRolesBlock {
     /**

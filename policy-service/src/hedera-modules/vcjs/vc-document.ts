@@ -19,6 +19,10 @@ export class VcDocument {
      */
     public static readonly FIRST_CONTEXT_ENTRY = 'https://www.w3.org/2018/credentials/v1';
     /**
+     * BBS Signature context
+     */
+    public static readonly BBS_SIGNATURE_CONTEXT = 'https://w3id.org/security/suites/bls12381-2020/v1';
+    /**
      * ID
      */
     public static readonly ID = 'id';
@@ -95,9 +99,11 @@ export class VcDocument {
      */
     protected evidences: any[];
 
-    constructor() {
+    constructor(hasBBSSignature?: boolean) {
         this.subject = [];
-        this.context = [VcDocument.FIRST_CONTEXT_ENTRY];
+        this.context = hasBBSSignature
+            ? [VcDocument.FIRST_CONTEXT_ENTRY, VcDocument.BBS_SIGNATURE_CONTEXT]
+            : [VcDocument.FIRST_CONTEXT_ENTRY];
         this.type = [VcDocument.VERIFIABLE_CREDENTIAL_TYPE];
         this.evidences = [];
     }
@@ -346,8 +352,13 @@ export class VcDocument {
             throw new Error('JSON Object is empty');
         }
 
-        const result = new VcDocument();
+        const result = new VcDocument(
+            json['@context'].includes(VcDocument.BBS_SIGNATURE_CONTEXT)
+        );
 
+        if (json[VcDocument.CONTEXT]) {
+            result.context = json[VcDocument.CONTEXT];
+        }
         if (json[VcDocument.ID]) {
             result.id = VcDocument.convertUUID(json[VcDocument.ID]);
         }

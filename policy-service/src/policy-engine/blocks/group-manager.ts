@@ -29,7 +29,8 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
         ],
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class GroupManagerBlock {
     /**

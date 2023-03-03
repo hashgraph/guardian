@@ -579,6 +579,10 @@ export class SchemaFormComponent implements OnInit {
         this.destroy$.unsubscribe();
     }
 
+    isHelpText(item: SchemaField): boolean {
+        return item.type === 'null';
+    }
+
     isTime(item: SchemaField): boolean {
         return item.type === 'string' && item.format === 'time';
     }

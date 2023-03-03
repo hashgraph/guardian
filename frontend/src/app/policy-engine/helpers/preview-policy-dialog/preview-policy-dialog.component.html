@@ -6,7 +6,7 @@
             </div>
         </div>
         <div class="g-dialog-title">
-            Policy Import Preview
+            Preview
         </div>
         <div class="g-dialog-actions">
             <div class="g-dialog-actions-btn" (click)="onImport()">
@@ -32,7 +32,8 @@
                             <mat-label>Policy</mat-label>
                             <mat-select [(value)]="versionOfTopicId">
                                 <mat-option>None</mat-option>
-                                <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>
+                                <mat-option *ngFor="let policy of policies"
+                                    [value]="policy.topicId">{{policy.name}}</mat-option>
                             </mat-select>
                         </mat-form-field>
                     </div>
@@ -46,9 +47,12 @@
                         <div class="field-value">{{policy.version}}</div>
                     </div>
                     <div class="new-versions-container" *ngIf="newVersions && newVersions.length > 0">
-                        <div class="info-container field-name"><mat-icon class="info-label">info</mat-icon> <b>New versions of policy exist</b></div>
+                        <div class="info-container field-name"><mat-icon class="info-label">info</mat-icon> <b>New
+                                versions of policy exist</b></div>
                         <div class="new-versions-links">
-                            <a class="field-version-value" *ngFor="let newVersion of newVersions" [title]="newVersion.messageId" (click)="onNewVersionClick(newVersion.messageId)">{{newVersion.version}}</a>
+                            <a class="field-version-value" *ngFor="let newVersion of newVersions"
+                                [title]="newVersion.messageId"
+                                (click)="onNewVersionClick(newVersion.messageId)">{{newVersion.version}}</a>
                         </div>
                     </div>
                 </div>
@@ -87,6 +91,22 @@
                 <div *ngIf="tokens" class="field-last">
                     <div class="field-name">Tokens</div>
                     <div class="field-value">{{tokens}}</div>
+                </div>
+            </div>
+
+            <div *ngIf="module" class="policy">
+                <div class="policy-header">{{module.name}}</div>
+
+                <div class="delimiter"></div>
+
+                <div class="field">
+                    <div class="field-name">Description</div>
+                    <div class="field-value">{{module.description}}</div>
+                </div>
+
+                <div class="field">
+                    <div class="field-name">Creator</div>
+                    <div class="field-value" [title]="module.owner">{{module.owner}}</div>
                 </div>
             </div>
         </div>

@@ -69,6 +69,115 @@ docker-compose up -d --build
 
 5\. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup.
 
+### Docker compose configuration for apple M1 using images:
+
+```
+version: "3.8"
+services:
+  mongo:
+    image: mongo
+    command: "--setParameter allowDiskUseByDefault=true"
+    restart: always
+    expose:
+      - 27017
+ 
+  message-broker:
+    image: nats:2.9.8
+    expose:
+      - 4222
+    ports:
+      - '8222:8222'
+    command: '--http_port 8222'
+ 
+  logger-service:
+    image: gcr.io/hedera-registry/logger-service:2.9.3
+    platform: linux/amd64
+    depends_on:
+      - message-broker
+ 
+  worker-service-1:
+    image: gcr.io/hedera-registry/worker-service:2.9.3
+    platform: linux/amd64
+    depends_on:
+      - auth-service
+    environment:
+      SERVICE_CHANNEL: 'worker.1'
+      IPFS_STORAGE_API_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDZhY0FFMmM3QjA5ODdCMjU1ZGZFMjMxZTA0YzI5NDZBZWI0YzE5NkQiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NjAwNzIyNzg4MDgsIm5hbWUiOiJ0ZXN0In0.vzt0-vBlbKiUSeyBZ6i3qTBKVMR3RL7CnkEXVNqvSH4'
+ 
+  worker-service-2:
+    image: gcr.io/hedera-registry/worker-service:2.9.3
+    platform: linux/amd64
+    depends_on:
+      - auth-service
+    environment:
+      SERVICE_CHANNEL: 'worker.2'
+      IPFS_STORAGE_API_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDZhY0FFMmM3QjA5ODdCMjU1ZGZFMjMxZTA0YzI5NDZBZWI0YzE5NkQiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NjAwNzIyNzg4MDgsIm5hbWUiOiJ0ZXN0In0.vzt0-vBlbKiUSeyBZ6i3qTBKVMR3RL7CnkEXVNqvSH4'
+ 
+  auth-service:
+    image: gcr.io/hedera-registry/auth-service:2.9.3
+    platform: linux/amd64
+    depends_on:
+      - mongo
+      - message-broker
+      - logger-service
+ 
+  api-gateway:
+    image: gcr.io/hedera-registry/api-gateway:2.9.3
+    platform: linux/amd64
+    expose:
+      - 3002
+    depends_on:
+      - mongo
+      - message-broker
+      - guardian-service
+      - auth-service
+      - logger-service
+ 
+  policy-service:
+    image: gcr.io/hedera-registry/policy-service:2.9.3
+    platform: linux/amd64
+    depends_on:
+      - mongo
+      - message-broker
+      - auth-service
+      - logger-service
+ 
+  guardian-service:
+    image: gcr.io/hedera-registry/guardian-service:2.9.3
+    platform: linux/amd64
+    depends_on:
+      - mongo
+      - message-broker
+      - auth-service
+      - logger-service
+      - worker-service-1
+      - worker-service-2
+      - policy-service
+    environment:
+      OPERATOR_ID: '0.0.10295'
+      OPERATOR_KEY: '302e020100300506032b65700422042022c85d6c64bda64aa458cf715314c5469b3b84c58690470f5289cbada3af8dfb'
+ 
+  web-proxy:
+    image: gcr.io/hedera-registry/frontend:2.9.3
+    platform: linux/amd64
+    environment:
+      GATEWAY_HOST: 'api-gateway'
+      GATEWAY_PORT: '3002'
+      GATEWAY_CLIENT_MAX_BODY_SIZE: '1024m'
+    ports:
+      - "3000:80"
+    depends_on:
+      - guardian-service
+      - auth-service
+      - api-gateway
+volumes:
+  mongo:
+  # volume-guardian-service:
+  # volume-ui-service:
+  # volume-mrv-sender:
+  #  volume-message-broker:
+```
+
 ### Manual Installation
 
 If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
@@ -404,26 +513,39 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 
 ### .env / .env.docker Parameters in `guardian-service`
 
-| Parameter                              | Purpose                                                                            | Example                     |
-| -------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------- |
-| MQ\_ADDRESS                            | Web Socket Address                                                                 | localhost                   |
-| SERVICE\_CHANNEL                       | Version of the Guardian                                                            | guardian.1                  |
-| DB\_HOST                               | Hostname of the Database                                                           | localhost                   |
-| DB\_DATABASE                           | Database Name                                                                      | guardian\_db                |
-| INITIAL\_BALANCE                       | Initial Balance Value                                                              | 500                         |
-| INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                         |
-| OPERATOR\_ID                           | The ID of the operation                                                            | -                           |
-| OPERATOR\_KEY                          | Private key of the operator                                                        | -                           |
-| LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                     |
-| LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                  |
-| HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet |
-| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialization topic.                                                | 0.0.2030                    |
-| MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                       |
-| LOG\_LEVEL                             | Level of the Logs                                                                  | 2                           |
-| SEND\_KEYS\_TO\_VAULT                  | Checked if keys to be sent to vault                                                | True/False                  |
-| MULTI\_POLICY\_SCHEDULER               | to set custom cron mask (timer mask) for sync job                                  | 0 0 \* \* \*                |
-| CONTRACT\_FILE\_ID                     | Defines the file identifier in hedera to create smart-contract.                    | 0.0.6276                    |
-| MQ\_MESSAGE\_CHUNK                     | To set up the message chunk size                                                   | 500000                      |
+| Parameter                              | Purpose                                                                            | Example                            |
+| -------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------- |
+| MQ\_ADDRESS                            | Web Socket Address                                                                 | localhost                          |
+| SERVICE\_CHANNEL                       | Version of the Guardian                                                            | guardian.1                         |
+| DB\_HOST                               | Hostname of the Database                                                           | localhost                          |
+| DB\_DATABASE                           | Database Name                                                                      | guardian\_db                       |
+| INITIAL\_BALANCE                       | Initial Balance Value                                                              | 500                                |
+| INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                                |
+| OPERATOR\_ID                           | The ID of the operation                                                            | -                                  |
+| OPERATOR\_KEY                          | Private key of the operator                                                        | -                                  |
+| LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                            |
+| LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                         |
+| HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet        |
+| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialization topic.                                                | 0.0.2030                           |
+| MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                              |
+| LOG\_LEVEL                             | Level of the Logs                                                                  | 2                                  |
+| SEND\_KEYS\_TO\_VAULT                  | Checked if keys to be sent to vault                                                | True/False                         |
+| MULTI\_POLICY\_SCHEDULER               | to set custom cron mask (timer mask) for sync job                                  | 0 0 \* \* \*                       |
+| CONTRACT\_FILE\_ID                     | Defines the file identifier in hedera to create smart-contract.                    | 0.0.6276                           |
+| MQ\_MESSAGE\_CHUNK                     | To set up the message chunk size                                                   | 500000                             |
+| HEDERA\_CUSTOM\_NODES                  | Define hedera nodes to execute and pay transaction fee                             | 0.testnet.hedera.com:50211":"0.0.3 |
+| HEDERA\_CUSTOM\_MIRROR\_NODES          | Define hedera mirror nodes                                                         | testnet.mirrornode.hedera.com:443" |
+
+### .env / .env.docker Parameters in api-gateway
+
+| Parameter            | Purpose                              | Example                   |
+| -------------------- | ------------------------------------ | ------------------------- |
+| MQ\_ADDRESS          | Web Socket Address                   | message-broker            |
+| SERVICE\_CHANNEL     | Channel of the service               | api-gateway               |
+| MRV\_ADDRESS         | MRV Address location                 | http://message-broker/mrv |
+| MQ\_MESSAGE\_CHUNK   | To set up the message chunk size     | 500000                    |
+| RAW\_REQUEST\_LIMIT  | Define request limit                 | 1 gb                      |
+| JSON\_REQUEST\_LIMIT | Define limit for body in Json format | 1 gb                      |
 
 ### Restoring account from Database/Hashicorp vault during Setup.
 

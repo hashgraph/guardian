@@ -43,6 +43,13 @@
     min-width: 93px;
 }
 
+.btn-failed::ng-deep > * {
+    background: #572424 !important;
+    color: #fff !important;
+    min-width: 93px;
+    white-space: nowrap;
+}
+
 .btn-publish::ng-deep > * {
     background: #4caf50 !important;
     color: #fff !important;
@@ -63,6 +70,11 @@
 .status-invalid {
     font-weight: 500;
     color: #ff0000;
+}
+
+.mat-column-status {
+    text-align: center;
+    max-width: max-content !important;
 }
 
 .btn-settings {
@@ -296,7 +308,7 @@
 }
 
 .btn-icon-go.go-dry-run {
-    background: #3f51b5; 
+    background: #3f51b5;
 }
 
 .btn-icon-go mat-icon  {

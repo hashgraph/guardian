@@ -1,4 +1,4 @@
-import { ApproveStatus, IApprovalDocument, IVC, SchemaEntity } from '@guardian/interfaces';
+import { ApproveStatus, IApprovalDocument, IVC } from '@guardian/interfaces';
 import { Entity, Property, BeforeCreate, Enum } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
@@ -41,7 +41,7 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
      * Document type
      */
     @Enum({ nullable: true })
-    type?: SchemaEntity;
+    type?: string;
 
     /**
      * Created at
@@ -80,6 +80,18 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
      */
     @Property({ nullable: true })
     group?: any;
+
+    /**
+     * Hedera Hash
+     */
+    @Property({ nullable: true })
+    messageHash?: string;
+
+    /**
+     * Message History
+     */
+    @Property({ nullable: true })
+    messageIds?: string[];
 
     /**
      * Default document values

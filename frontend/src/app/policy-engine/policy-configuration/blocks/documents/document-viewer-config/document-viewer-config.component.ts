@@ -1,8 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema, Token } from '@guardian/interfaces';
-import { PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures/policy-model';
-import { RegisteredBlocks } from 'src/app/policy-engine/registered-blocks';
-import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source';
+import { IModuleVariables, PolicyBlockModel, PolicyModel } from 'src/app/policy-engine/structures';
 
 /**
  * Settings for block of 'interfaceDocumentsSource' type.
@@ -14,12 +12,13 @@ import { BlockNode } from '../../../../helpers/tree-data-source/tree-data-source
     encapsulation: ViewEncapsulation.Emulated
 })
 export class DocumentSourceComponent implements OnInit {
-    @Input('policy') policy!: PolicyModel;
     @Input('block') currentBlock!: PolicyBlockModel;
-    @Input('schemas') schemas!: Schema[];
-    @Input('tokens') tokens!: Token[];
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
+
+    public module: any;
+    private moduleVariables!: IModuleVariables | null;
+    private item!: PolicyBlockModel;
 
     propHidden: any = {
         fieldsGroup: false,
@@ -27,10 +26,10 @@ export class DocumentSourceComponent implements OnInit {
         insertGroup: false
     };
 
-    block!: any;
+    properties!: any;
     allBlocks!: any[];
 
-    constructor(public registeredBlocks: RegisteredBlocks) {
+    constructor() {
     }
 
     ngOnInit(): void {
@@ -59,7 +58,7 @@ export class DocumentSourceComponent implements OnInit {
     }
 
     addField() {
-        this.block.uiMetaData.fields.push({
+        this.properties.uiMetaData.fields.push({
             title: '',
             name: '',
             tooltip: '',
@@ -68,20 +67,17 @@ export class DocumentSourceComponent implements OnInit {
     }
 
     load(block: PolicyBlockModel) {
-        if (this.policy?.allBlocks) {
-            this.allBlocks = this.policy.allBlocks.map(item => {
-                return {
-                    name: item.tag,
-                    icon: this.getIcon(item),
-                    value: item.tag
-                }
-            });
+        this.moduleVariables = block.moduleVariables;
+        this.module = this.moduleVariables?.module;
+        if (this.module?.allBlocks) {
+            this.allBlocks = this.module?.allBlocks;
         } else {
             this.allBlocks = [];
         }
-        this.block = block.properties;
-        this.block.uiMetaData = this.block.uiMetaData || {};
-        this.block.uiMetaData.fields = this.block.uiMetaData.fields || [];
+        this.item = block;
+        this.properties = block.properties;
+        this.properties.uiMetaData = this.properties.uiMetaData || {};
+        this.properties.uiMetaData.fields = this.properties.uiMetaData.fields || [];
     }
 
     onHide(item: any, prop: any) {
@@ -97,7 +93,15 @@ export class DocumentSourceComponent implements OnInit {
         field.bindBlock = "";
     }
 
-    getIcon(block: any) {
-        return this.registeredBlocks.getIcon(block.blockType);
+    getFieldName(field: any, i: number): string {
+        if (field && field.title) {
+            return field.title;
+        } else {
+            return 'Field ' + i;
+        }
+    }
+
+    onSave() {
+        this.item.changed = true;
     }
 }

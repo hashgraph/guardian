@@ -1,4 +1,4 @@
-import { Logger, MessageBrokerChannel, SettingsContainer } from '@guardian/common';
+import { Logger, MessageBrokerChannel, SettingsContainer, ValidateConfiguration } from '@guardian/common';
 import {
     ExternalMessageEvents,
     ITask,
@@ -124,9 +124,15 @@ export class Worker {
             }
         });
 
-        this.channel.subscribe(WorkerEvents.UPDATE_SETTINGS, (msg: any) => {
-            new SettingsContainer().updateSetting('IPFS_STORAGE_API_KEY', msg.ipfsStorageApiKey);
-            this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
+        this.channel.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
+            await new SettingsContainer().updateSetting('IPFS_STORAGE_API_KEY', msg.ipfsStorageApiKey);
+            try {
+                this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
+                const validator = new ValidateConfiguration();
+                await validator.validate();
+            } catch (error) {
+                this.logger.error(`Update settings error, ${error.message}`, [this.channelName]);
+            }
         });
 
         HederaSDKHelper.setTransactionResponseCallback(async (client: any) => {
@@ -186,7 +192,9 @@ export class Worker {
         const networkOptions: NetworkOptions = {
             network: task.data.network,
             localNodeAddress: task.data.localNodeAddress,
-            localNodeProtocol: task.data.localNodeProtocol
+            localNodeProtocol: task.data.localNodeProtocol,
+            nodes: task.data.nodes,
+            mirrorNodes: task.data.mirrorNodes
         }
         try {
             switch (task.type) {

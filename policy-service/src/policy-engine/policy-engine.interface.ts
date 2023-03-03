@@ -1,5 +1,4 @@
-import { PolicyRole } from '@guardian/interfaces';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { DocumentStatus, PolicyRole } from '@guardian/interfaces';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { EventConfig, IPolicyEvent } from './interfaces';
 import { DatabaseServer } from '@database-modules';
@@ -161,6 +160,11 @@ export interface IPolicyBlock {
     setPolicyInstance(policyId: string, policy: any): void;
 
     /**
+     * Register Variables
+     */
+    registerVariables(): void;
+
+    /**
      * Set topic id
      * @param id
      */
@@ -226,12 +230,6 @@ export interface IPolicyBlock {
      * Block destructor
      */
     destroy(): void;
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    validate(resultsContainer: PolicyValidationResultsContainer): Promise<void>;
 
     /**
      * Is child active
@@ -537,6 +535,11 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * @param user
      */
     getState(user: IPolicyUser): any;
+
+    /**
+     * Get selective attributes addons
+     */
+    getSelectiveAttributes(): IPolicyAddonBlock[];
 }
 
 /**
@@ -598,7 +601,10 @@ export interface IPolicyReportItemBlock extends IPolicyBlock {
      * @param fieldsResult
      * @param mapVariables
      */
-    run(fieldsResult: any[], mapVariables: any): Promise<any>;
+    run(
+        fieldsResult: any[],
+        mapVariables: any
+    ): Promise<[documentsNotFound: boolean, resultFields: any]>;
 
     /**
      * Get items
@@ -714,11 +720,35 @@ export interface IPolicyDocument {
     /**
      * Message Id
      */
-    messageId?: string,
+    messageId?: string;
     /**
      * Topic Id
      */
-    topicId?: string,
+    topicId?: string;
+    /**
+     * Message History
+     */
+    messageIds?: string[];
+    /**
+     * Hedera Status
+     */
+    hederaStatus?: DocumentStatus;
+    /**
+     * Hash
+     */
+    hash?: string;
+    /**
+     * Hedera Hash
+     */
+    messageHash?: string;
+    /**
+     * Relationships
+     */
+    relationships?: string[];
+    /**
+     * Type
+     */
+    type?: string;
     /**
      * Other fields
      */

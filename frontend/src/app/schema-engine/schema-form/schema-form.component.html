@@ -11,7 +11,11 @@
                     </span>
                 </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
-                <div class="label-field">{{item.description}}</div>
+                <div class="label-field" *ngIf="!isHelpText(item)">{{item.description}}</div>
+                <div *ngIf="isHelpText(item)" class="label-field help-text" [ngStyle]="{ 'color': item.textColor, 'font-size': item.textSize}">
+                    <b *ngIf="item.textBold; else plainDescription">{{item.description}}</b>
+                    <ng-template #plainDescription>{{item.description}}</ng-template>
+                </div>
                 <div class="form-field-value">
                     <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
 

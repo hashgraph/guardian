@@ -18,7 +18,7 @@
                     History
                 </th>
                 <td mat-cell *matCellDef="let element">
-                    <div *ngIf="element.history">
+                    <div *ngIf="element.history && element.history.length">
                         <mat-icon>{{statusDetailed === element? 'keyboard_arrow_down' : 'keyboard_arrow_right'}}</mat-icon>
                     </div>
                 </td>
@@ -33,7 +33,7 @@
                         <help-icon *ngIf="field.tooltip" [text]="field.tooltip"></help-icon>
                     </th>
                 </ng-template>
-                
+
                 <ng-template #notSortingColumn>
                     <th mat-header-cell *matHeaderCellDef>
                         {{field.title}}
@@ -64,17 +64,17 @@
             </ng-container>
 
             <ng-container [matColumnDef]="'statusDetails'">
-                <td mat-cell *matCellDef="let element" let class="expanded-detail" [attr.colspan]="fields.length + 1">
-                    <div [@statusExpand]="element == statusDetailed ? 'expanded' : 'collapsed'"
-                        *ngIf="element.history">
-                        <div class="timeline-container">
-                            <div *ngFor="let historyElem of element.history" class="timeline-item" [attr.date-is]='historyElem.created'>
-                                <h1>{{historyElem.status}}</h1>
-                                <p>{{historyElem.reason}}</p>
+                    <td mat-cell *matCellDef="let element" let class="expanded-detail" [attr.colspan]="fields.length + 1">
+                        <div [@statusExpand]="element == statusDetailed ? 'expanded' : 'collapsed'"
+                            *ngIf="element.history">
+                            <div class="timeline-container">
+                                <div *ngFor="let historyElem of element.history" class="timeline-item" [attr.date-is]='historyElem.created'>
+                                    <h1>{{historyElem.labelValue}}</h1>
+                                    <p>{{parseArrayValue(historyElem.comment)}}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </td>
+                    </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="columns"></tr>

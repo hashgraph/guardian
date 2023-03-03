@@ -28,54 +28,58 @@ Note: This block is used for dropdown. You can add multiple blocks to 1 grid to 
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="blockType: 'filtersAddon'" summary="" %}
+{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="id" type="String" required="true" %}
-Block ID
+{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
+Policy ID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="path" name="blockType" type="String" required="true" %}
-Block Type
+{% swagger-parameter in="path" name="uuid" type="String" %}
+Block UUID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="path" name="type" type="String" required="true" %}
-Block filter (dropdown)
-{% endswagger-parameter %}
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+{
+  "id": "a4b87158-7428-48ac-b69b-762f96777edc",
+  "blockType": "filtersAddon",
+  "type": "dropdown",
+  "uiMetaData": {
+    "options": [],
+    "content": "Device"
+  },
+  "data": [
+    {
+      "name": "device1",
+      "value": "did:hedera:testnet:EHXwuE486eSD4yGXr6qTNLstmb8H1B2Jn4kx3PeWZzjv_0.0.1675232535045"
+    }
+  ],
+  "optionName": "document.credentialSubject.0.field4.field0",
+  "optionValue": "document.credentialSubject.0.id",
+  "filterValue": "did:hedera:testnet:EHXwuE486eSD4yGXr6qTNLstmb8H1B2Jn4kx3PeWZzjv_0.0.1675232535045"
+}
 
-{% swagger-parameter in="path" name="uiMetaData" required="true" %}
-{}
-{% endswagger-parameter %}
-
-{% swagger-parameter in="path" name="canBeEmpty" type="Boolean" required="true" %}
-True, if the filter can be empty, false if otherwise
-{% endswagger-parameter %}
-
-{% swagger-parameter in="path" name="data" type="Object" required="true" %}
-Data for the filter (array)
-{% endswagger-parameter %}
-
-{% swagger-parameter in="path" name="optionName" type="String" required="true" %}
-Data used as a label
-{% endswagger-parameter %}
-
-{% swagger-parameter in="path" name="optionvalue" type="String" required="true" %}
-Data used as a value
-{% endswagger-parameter %}
-
-{% swagger-parameter in="path" name="filterValue" type="String" required="true" %}
-Current filter value
-{% endswagger-parameter %}
+```
+{% endswagger-response %}
 {% endswagger %}
 
-{% swagger method="post" path="" baseUrl="blockType: 'filtersAddon'" summary="" %}
+{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="filterValue" type="String" required="true" %}
+{% swagger-parameter in="body" name="filterValue" type="String" required="true" %}
 New filter value
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
+Policy ID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Block UUID
 {% endswagger-parameter %}
 {% endswagger %}

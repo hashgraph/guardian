@@ -7,7 +7,8 @@
             <h1 *ngIf="title" mat-dialog-title>{{title}}</h1>
             <div *ngIf="description" class="description">{{description}}</div>
             <div class="schema-form">
-                <app-token-configuration [dataForm]="dataForm" [preset]="templatePreset"></app-token-configuration>
+                <app-token-configuration [dataForm]="dataForm" [preset]="templatePreset"
+                    [hide-type]="true"></app-token-configuration>
             </div>
             <div class="page-btns">
                 <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>

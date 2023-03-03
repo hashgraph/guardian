@@ -64,6 +64,10 @@ export interface DidMessageBody extends MessageBody {
      * URI
      */
     uri: string;
+    /**
+     * Relationships
+     */
+    relationships?: string[];
 }
 
 /**

@@ -1,18 +1,18 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Entity Type</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.entityType" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.entityType" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.filtersGroup">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Schema</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.schema" [disabled]="readonly">
-                <mat-option *ngFor="let schema of schemas" [value]="schema.iri">
+            <mat-select [(value)]="properties.schema" [disabled]="readonly" (change)="onSave()">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.value">
                     {{schema.name}}
                     <span *ngIf="schema.version"> ({{schema.version}})</span>
                     <span *ngIf="schema.status"> ({{schema.status}})</span>

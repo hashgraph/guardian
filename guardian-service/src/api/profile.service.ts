@@ -153,7 +153,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     // ------------------------
     notifier.completedAndStart('Publish DID Document');
     logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
-    const didObject = DIDDocument.create(hederaAccountKey, topicConfig.topicId);
+    const didObject = await DIDDocument.create(hederaAccountKey, topicConfig.topicId);
     const userDID = didObject.getDid();
     const didMessage = new DIDMessage(MessageAction.CreateDID);
     didMessage.setDocument(didObject);

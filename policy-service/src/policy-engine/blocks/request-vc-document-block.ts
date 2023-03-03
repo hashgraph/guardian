@@ -2,7 +2,6 @@ import { KeyType } from '@helpers/wallet';
 import { GenerateUUIDv4, Schema } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -39,7 +38,10 @@ import deepEqual from 'deep-equal';
             PolicyOutputEventType.RefreshEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: [
+        { path: 'options.schema', alias: 'schema', type: 'Schema' }
+    ]
 })
 export class RequestVcDocumentBlock {
     /**
@@ -335,10 +337,9 @@ export class RequestVcDocumentBlock {
             if (idType === 'DID') {
                 const topic = await PolicyUtils.getOrCreateTopic(ref, 'root', null, null);
 
-                const didObject = DIDDocument.create(null, topic.topicId);
+                const didObject = await DIDDocument.create(null, topic.topicId);
                 const did = didObject.getDid();
                 const key = didObject.getPrivateKeyString();
-                const document = didObject.getDocument();
 
                 const message = new DIDMessage(MessageAction.CreateDID);
                 message.setDocument(didObject);
@@ -348,7 +349,7 @@ export class RequestVcDocumentBlock {
                     .setTopicObject(topic)
                     .sendMessage(message);
 
-                const item = PolicyUtils.createDID(ref, user, did, document);
+                const item = PolicyUtils.createDID(ref, user, didObject);
                 item.messageId = messageResult.getId();
                 item.topicId = messageResult.getTopicId();
 
@@ -387,39 +388,6 @@ export class RequestVcDocumentBlock {
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * Validate block data
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            // Test schema options
-            if (!ref.options.schema) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
-                return;
-            }
-            if (typeof ref.options.schema !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-                return;
-            }
-            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
-            if (!schema) {
-                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
-                return;
-            }
-            if (ref.options.presetSchema) {
-                const presetSchema = await ref.databaseServer.getSchemaByIRI(ref.options.presetSchema, ref.topicId);
-                if (!presetSchema) {
-                    resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.presetSchema}" does not exist`);
-                    return;
-                }
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }
