@@ -233,7 +233,7 @@ __metadata:
     "@types/node": ^18.11.9
     "@types/winston": ^2.4.4
     express: ^4.17.1
-    mocha-junit-reporter: ^2.0.2
+    mocha-junit-reporter: ^2.2.0
     nats: ^2.6.1
     reflect-metadata: ^0.1.13
     tslint: ^6.1.3
@@ -249,7 +249,7 @@ __metadata:
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
     "@types/node": ^18.11.9
-    mocha-junit-reporter: ^2.0.2
+    mocha-junit-reporter: ^2.2.0
     reflect-metadata: ^0.1.13
     tslint: ^6.1.3
     typescript: ^4.5.5
@@ -1946,7 +1946,7 @@ __metadata:
     express-fileupload: ^1.4.0
     jszip: ^3.7.1
     mocha: ^9.2.0
-    mocha-junit-reporter: ^2.0.2
+    mocha-junit-reporter: ^2.2.0
     module-alias: ^2.2.2
     nodemon: ^2.0.12
     reflect-metadata: ^0.1.13
@@ -2124,7 +2124,7 @@ __metadata:
     dotenv: ^16.0.0
     jsonwebtoken: ^8.5.1
     mocha: ^9.2.0
-    mocha-junit-reporter: ^2.0.2
+    mocha-junit-reporter: ^2.2.0
     module-alias: ^2.2.2
     node-vault: ^0.9.22
     nodemon: ^2.0.12
@@ -3188,7 +3188,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:2.6.9, debug@npm:^2.2.0":
+"debug@npm:2.6.9":
   version: 2.6.9
   resolution: "debug@npm:2.6.9"
   dependencies:
@@ -3206,7 +3206,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.0.1, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.2.0, debug@npm:^4.3.1, debug@npm:^4.3.3":
+"debug@npm:4, debug@npm:^4.0.1, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.2.0, debug@npm:^4.3.1, debug@npm:^4.3.3, debug@npm:^4.3.4":
   version: 4.3.4
   resolution: "debug@npm:4.3.4"
   dependencies:
@@ -4716,7 +4716,7 @@ __metadata:
     lodash.get: ^4.4.2
     mathjs: ^10.1.0
     mocha: ^9.2.0
-    mocha-junit-reporter: ^2.0.2
+    mocha-junit-reporter: ^2.2.0
     module-alias: ^2.2.2
     moment: ^2.29.2
     nodemon: ^2.0.12
@@ -6728,7 +6728,7 @@ __metadata:
     dotenv: ^16.0.0
     fs-extra: ^10.0.0
     mocha: ^9.2.0
-    mocha-junit-reporter: ^2.0.2
+    mocha-junit-reporter: ^2.2.0
     module-alias: ^2.2.2
     nodemon: ^2.0.12
     reflect-metadata: ^0.1.13
@@ -6922,7 +6922,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"md5@npm:^2.1.0":
+"md5@npm:^2.3.0":
   version: 2.3.0
   resolution: "md5@npm:2.3.0"
   dependencies:
@@ -7215,7 +7215,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdirp@npm:^0.5.3, mkdirp@npm:^0.5.5, mkdirp@npm:~0.5.1":
+"mkdirp@npm:^0.5.3, mkdirp@npm:^0.5.5":
   version: 0.5.6
   resolution: "mkdirp@npm:0.5.6"
   dependencies:
@@ -7226,7 +7226,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdirp@npm:^1.0.3, mkdirp@npm:^1.0.4":
+"mkdirp@npm:^1.0.3, mkdirp@npm:^1.0.4, mkdirp@npm:~1.0.4":
   version: 1.0.4
   resolution: "mkdirp@npm:1.0.4"
   bin:
@@ -7235,18 +7235,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mocha-junit-reporter@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "mocha-junit-reporter@npm:2.0.2"
+"mocha-junit-reporter@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "mocha-junit-reporter@npm:2.2.0"
   dependencies:
-    debug: ^2.2.0
-    md5: ^2.1.0
-    mkdirp: ~0.5.1
+    debug: ^4.3.4
+    md5: ^2.3.0
+    mkdirp: ~1.0.4
     strip-ansi: ^6.0.1
-    xml: ^1.0.0
+    xml: ^1.0.1
   peerDependencies:
     mocha: ">=2.2.5"
-  checksum: 78505ab4c471a176ac27195d7a95034ff90e2a123ec79f762b588e845a40a5423821e6bbf444033931e60bcab9b4fdd57d08026cecef7c7e766fbd2334c43df4
+  checksum: 476dc12b676b8313ddac8ed27c5b43c86d6d54770efa0081a35a58f3a6717a504cc871058850da0611e7fc42e17201332390dc516096d51a189f12ff2141d420
   languageName: node
   linkType: hard
 
@@ -8345,7 +8345,7 @@ __metadata:
     lodash.set: ^4.3.2
     mathjs: ^10.1.0
     mocha: ^9.2.0
-    mocha-junit-reporter: ^2.0.2
+    mocha-junit-reporter: ^2.2.0
     module-alias: ^2.2.2
     moment: ^2.29.2
     nodemon: ^2.0.12
@@ -10751,7 +10751,7 @@ __metadata:
     ipfs-client: 0.5.0
     jsonwebtoken: ^8.5.1
     mocha: ^9.2.0
-    mocha-junit-reporter: ^2.0.2
+    mocha-junit-reporter: ^2.2.0
     module-alias: ^2.2.2
     nodemon: ^2.0.12
     reflect-metadata: ^0.1.13
@@ -10836,7 +10836,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml@npm:^1.0.0":
+"xml@npm:^1.0.1":
   version: 1.0.1
   resolution: "xml@npm:1.0.1"
   checksum: 11b5545ef3f8fec3fa29ce251f50ad7b6c97c103ed4d851306ec23366f5fa4699dd6a942262df52313a0cd1840ab26256da253c023bad3309d8ce46fe6020ca0
