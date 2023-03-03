@@ -22,7 +22,7 @@ import {
     TopicConfig,
     TopicHelper
 } from '@hedera-modules'
-import { findAllEntities, getArtifactType, replaceAllEntities, replaceArtifactProperties, SchemaFields } from '@helpers/utils';
+import { findAllEntities, getArtifactType, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, SchemaFields } from '@helpers/utils';
 import { incrementSchemaVersion, findAndPublishSchema, findAndDryRunSchema, deleteSchema, publishSystemSchemas } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { VcHelper } from '@helpers/vc-helper';
@@ -381,6 +381,7 @@ export class PolicyEngine extends ServiceRequestsBase {
                 emptyNotifier()
             );
             replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
+            replaceAllVariables(model.config, 'Schema', schemaIRI, newSchema.iri);
 
             const name = newSchema.name;
             num++;
@@ -515,6 +516,8 @@ export class PolicyEngine extends ServiceRequestsBase {
                     ]);
 
                     replaceAllEntities(model.config, ['tokenId'], token.tokenId, tokenData.tokenId);
+                    replaceAllVariables(model.config, 'Token', token.tokenId, tokenData.tokenId);
+
                     token.tokenId = tokenData.tokenId;
                     token.draftToken = false;
                     token.adminId = tokenData.treasuryId;
