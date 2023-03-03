@@ -46,10 +46,9 @@ export class HandleErrorsService implements HttpInterceptor {
             return { warning, text, header };
         }
 
-
+        warning = errorObject.code === 0;
 
         if (typeof errorObject === 'object') {
-            warning = errorObject.code === 0;
             if (typeof errorObject.text == 'function') {
                 try {
                     const e = await errorObject.text();
