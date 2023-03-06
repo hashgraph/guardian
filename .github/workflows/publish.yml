@@ -1,7 +1,5 @@
 name: Publish Images
 on:
-  workflow_dispatch:
-    description: 'Manual run'
   release:
     types: [published]
 
