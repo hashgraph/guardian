@@ -29,7 +29,7 @@
 .user-content-info {
     flex: 1 1 auto;
     justify-content: flex-end;
-    
+
 }
 
 .user-content-button {
@@ -193,7 +193,7 @@ a[hidden="true"] {
 .user-balance[balance-type='warn'] {
     color: #c8b100;
     border: 2px solid #c8bc00;
-    box-shadow: inset 0px 0px 6px 0px #c8bc00;  
+    box-shadow: inset 0px 0px 6px 0px #c8bc00;
 }
 
 .user-balance[balance-type='normal'] {
@@ -248,7 +248,7 @@ a[hidden="true"] {
 .only-active {
     display: none !important;
 }
-.only-active[active="true"] { 
+.only-active[active="true"] {
     display: inline-flex !important;
 }
 
@@ -264,6 +264,7 @@ a[hidden="true"] {
     min-width: 0px !important;
     box-shadow: none;
     opacity: 1 !important;
+    overflow: visible !important;
 }
 
 ::ng-deep .sub-nav-backdrop {
