@@ -1,7 +1,5 @@
 name: Guardian CI
 on:
-  workflow_dispatch:
-    description: 'Manual run'
   push:
     branches-ignore:
       - 'dependabot/**'
