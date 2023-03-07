@@ -264,6 +264,7 @@ a[hidden="true"] {
 .only-active {
     display: none !important;
 }
+
 .only-active[active="true"] {
     display: inline-flex !important;
 }
@@ -289,7 +290,8 @@ a[hidden="true"] {
     min-width: 0px !important;
     box-shadow: none;
     opacity: 1 !important;
-    overflow: visible !important;
+    overflow: hidden !important;
+    background: transparent !important;
 }
 
 ::ng-deep .sub-nav-backdrop {
