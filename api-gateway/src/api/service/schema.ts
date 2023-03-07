@@ -315,13 +315,19 @@ schemaAPI.put('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Aut
             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
             return;
         }
-        if (schema.creator !== user.did) {
-            res.status(500).json({ code: 500, message: 'Invalid creator.' });
-            return;
-        }
         if (schema.system) {
-            res.status(500).json({ code: 500, message: 'Schema is system.' });
-            return;
+            if (schema.creator !== user.username) {
+                res.status(500).json({ code: 500, message: 'Invalid creator.' });
+                return;
+            } else {
+                res.status(500).json({ code: 500, message: 'Schema is system.' });
+                return;
+            }
+        } else {
+            if (schema.creator !== user.did) {
+                res.status(500).json({ code: 500, message: 'Invalid creator.' });
+                return;
+            }
         }
         fromOld(newSchema);
         const schemas = await updateSchema(newSchema, user.did)
@@ -342,13 +348,19 @@ schemaAPI.delete('/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), asy
             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
             return;
         }
-        if (schema.creator !== user.did) {
-            res.status(500).json({ code: 500, message: 'Invalid creator.' });
-            return;
-        }
         if (schema.system) {
-            res.status(500).json({ code: 500, message: 'Schema is system.' });
-            return;
+            if (schema.creator !== user.username) {
+                res.status(500).json({ code: 500, message: 'Invalid creator.' });
+                return;
+            } else {
+                res.status(500).json({ code: 500, message: 'Schema is system.' });
+                return;
+            }
+        } else {
+            if (schema.creator !== user.did) {
+                res.status(500).json({ code: 500, message: 'Invalid creator.' });
+                return;
+            }
         }
         const schemas = (await guardians.deleteSchema(schemaId));
         SchemaHelper.updatePermission(schemas, user.did);
@@ -369,15 +381,20 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGISTRY)
             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
             return;
         }
-        if (schema.creator !== user.did) {
-            res.status(500).json({ code: 500, message: 'Invalid creator.' });
-            return;
-        }
         if (schema.system) {
-            res.status(500).json({ code: 500, message: 'Schema is system.' });
-            return;
+            if (schema.creator !== user.username) {
+                res.status(500).json({ code: 500, message: 'Invalid creator.' });
+                return;
+            } else {
+                res.status(500).json({ code: 500, message: 'Schema is system.' });
+                return;
+            }
+        } else {
+            if (schema.creator !== user.did) {
+                res.status(500).json({ code: 500, message: 'Invalid creator.' });
+                return;
+            }
         }
-
         const allVersion = await guardians.getSchemasByUUID(schema.uuid);
         const { version } = req.body;
         if (allVersion.findIndex(s => s.version === version) !== -1) {
@@ -410,15 +427,20 @@ schemaAPI.put('/push/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGI
             taskManager.addError(taskId, { code: 500, message: 'Schema does not exist.' });
             return;
         }
-        if (schema.creator !== user.did) {
-            taskManager.addError(taskId, { code: 500, message: 'Invalid creator.' });
-            return;
-        }
         if (schema.system) {
-            taskManager.addError(taskId, { code: 500, message: 'Schema is system.' });
-            return;
+            if (schema.creator !== user.username) {
+                taskManager.addError(taskId, { code: 500, message: 'Invalid creator.' });
+                return;
+            } else {
+                taskManager.addError(taskId, { code: 500, message: 'Schema is system.' });
+                return;
+            }
+        } else {
+            if (schema.creator !== user.did) {
+                taskManager.addError(taskId, { code: 500, message: 'Invalid creator.' });
+                return;
+            }
         }
-
         const allVersion = await guardians.getSchemasByUUID(schema.uuid);
         if (allVersion.findIndex(s => s.version === version) !== -1) {
             taskManager.addError(taskId, { code: 500, message: 'Version already exists.' });
