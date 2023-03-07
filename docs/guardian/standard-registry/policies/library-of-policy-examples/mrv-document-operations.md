@@ -24,7 +24,7 @@ There are two roles: ‘**User**_**’**_ and _**‘**_**Approver**_**’**_. _U
 
 In order to mint tokens into another account (not into the account of the minting user) setup the required field
 
-![Setting up new account](../../../../.gitbook/assets/1.png)
+![Setting up new account](<../../../../.gitbook/assets/1 (1).png>)
 
 2.4 Schema for ’**Report**’ containing the following fields: **Start Date, End Date, Amount**
 
@@ -34,7 +34,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 **Note:** it is important that DID of the user is used for ID of the documents as this value will be used further in the document for filtration
 
-![Adding DID as ID Type](../../../../.gitbook/assets/2.png)
+![Adding DID as ID Type](<../../../../.gitbook/assets/2 (2).png>)
 
 4. Add simplified grids for displaying Projects, Reports and Tokens
 
@@ -50,21 +50,21 @@ In order to mint tokens into another account (not into the account of the mintin
 
 #### 1.1 Create a project
 
-![Creating project](../../../../.gitbook/assets/5.png)
+![Creating project](<../../../../.gitbook/assets/5 (3).png>)
 
 ### 1.2 Save the project
 
-![Saving Project](<../../../../.gitbook/assets/6 (1).png>)
+![Saving Project](<../../../../.gitbook/assets/6 (1) (1).png>)
 
 ### 1.3 Link to the token
 
 1.3.1 Since another (not current user) account is used for minted tokens ’**tokenActionBlock**’ cannot be used, instead we will use ‘**tokenConfirmationBlock**_**’**_
 
-![Adding tokenConfirmationBlock](<../../../../.gitbook/assets/7 (2).png>)
+![Adding tokenConfirmationBlock](<../../../../.gitbook/assets/7 (2) (1).png>)
 
 1.3.2 To configure the target account for mixed tokens select ‘_Custom_’ value for ‘_Type_’ and the filed in the document from which to take the value for the Account ID (this field must have type: ‘**Account**’)
 
-![Selecting Account Type and Id](../../../../.gitbook/assets/8.png)
+![Selecting Account Type and Id](<../../../../.gitbook/assets/8 (1).png>)
 
 1.3.3 By default ’**tokenConfirmationBlock**’ does not have a link to the next block, thus it needs to be manually added
 
@@ -78,17 +78,17 @@ In order to mint tokens into another account (not into the account of the mintin
 
 1.4.2 Select **Dropdown **_**** value **** for ****_** Type**
 
-![Selecting Dropdown value](../../../../.gitbook/assets/11.png)
+![Selecting Dropdown value](<../../../../.gitbook/assets/11 (2).png>)
 
 1.4.3 Use system field **assignedTo** to filter documents based on users they are assigned to.
 
 Record value from **assignedTo **_**** into_ **Field** (This field will be changing our block)
 
-![Using system Field assignedTo](../../../../.gitbook/assets/12.png)
+![Using system Field assignedTo](<../../../../.gitbook/assets/12 (2).png>)
 
 1.4.4 Configure values from which fields from the document would be labels, and which ones would be values
 
-![Configuring labels and values](../../../../.gitbook/assets/13.png)
+![Configuring labels and values](<../../../../.gitbook/assets/13 (2).png>)
 
 1.4.5 Use ‘**documentsSourceAddon**’ for data for **Dropdown**_**.**_
 
