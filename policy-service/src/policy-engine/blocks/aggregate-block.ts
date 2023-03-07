@@ -100,7 +100,7 @@ export class AggregateBlock {
     })
     public async tickCron(event: IPolicyEvent<string[]>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        const { aggregateType, groupByFields, disableUserGrouping} = ref.options;
+        const { aggregateType, groupByFields, disableUserGrouping } = ref.options;
         if (aggregateType !== 'period') {
             return;
         }
@@ -118,8 +118,9 @@ export class AggregateBlock {
             const id = PolicyUtils.getScopeId(element);
             if (groupByUser && !ids.includes(id)) {
                 removeMsp.push(element);
+                continue;
             }
-            if (groupByFields?.length > 0) {
+            if (!groupByUser || groupByFields?.length > 0) {
                 const documentKey = groupByFields
                     .map((item) =>
                         JSON.stringify(ObjGet(element, item.fieldPath))
