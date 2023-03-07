@@ -3,22 +3,27 @@
         width: 100% !important;
         padding: 0px !important;
     }
+
     .user-content-info {
         align-self: center;
     }
+
     ::ng-deep .nav-bar div.mat-tab-links {
         justify-content: center;
     }
+
     ::ng-deep .mat-toolbar-single-row {
         flex-direction: column !important;
         padding: 0px !important;
     }
+
     .btn-home {
         font-size: 35px !important;
         line-height: 27px !important;
         transform: translate(0, 5px);
     }
 }
+
 .user-content-info,
 .user-content-button {
     align-items: center;
@@ -81,11 +86,12 @@
     font-size: 20px;
     color: #fff;
 }
-.admin-panel + .user-info-icon mat-icon {
+
+.admin-panel+.user-info-icon mat-icon {
     color: #fff;
 }
 
-mat-icon {
+.user-content-info mat-icon {
     color: rgba(255, 255, 255, 0.54);
     width: 48px;
     height: 48px;
@@ -156,7 +162,7 @@ a[hidden="true"] {
     color: var(--button-primary-color);
 }
 
-::ng-deep .policy-roles-tooltip  {
+::ng-deep .policy-roles-tooltip {
     white-space: pre-line !important;
     max-width: 350px !important;
     font-size: 15px;
@@ -203,11 +209,12 @@ a[hidden="true"] {
 }
 
 
-.nav-list  {
+.nav-list {
     display: flex;
     flex-direction: row;
     padding: 0px 42px;
 }
+
 .nav-list[disabled='true'] .nav-list-item {
     pointer-events: none;
 }
@@ -236,6 +243,7 @@ a[hidden="true"] {
     min-width: 150px;
     position: relative;
 }
+
 .nav-list-item[active="true"]::after {
     content: '';
     position: absolute;
@@ -245,17 +253,28 @@ a[hidden="true"] {
     height: 2px;
     background: #fff;
 }
+
 .only-active {
     display: none !important;
 }
+
 .only-active[active="true"] {
     display: inline-flex !important;
 }
 
+.nav-menu-item {
+    position: relative;
+    padding: 0px 30px 0px 20px;
+}
+
+.nav-menu-item  mat-icon {
+    position: absolute;
+    right: 0px;
+    top: 0;
+}
 
 ::ng-deep .sub-nav-menu {
-    width: 1px !important;
-    height: 1px !important;
+    height: 65px !important;
     position: fixed !important;
     left: 0 !important;
     top: 125px !important;
@@ -264,7 +283,8 @@ a[hidden="true"] {
     min-width: 0px !important;
     box-shadow: none;
     opacity: 1 !important;
-    overflow: visible !important;
+    overflow: hidden !important;
+    background: transparent !important;
 }
 
 ::ng-deep .sub-nav-backdrop {

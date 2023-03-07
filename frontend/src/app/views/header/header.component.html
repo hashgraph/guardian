@@ -7,13 +7,22 @@
                 User Profile
             </div>
             <div class="nav-list-item" [matMenuTriggerFor]="subMenu1" [attr.active]="isActiveLink('SR_TOKENS')">
-                Tokens
+                <span class="nav-menu-item">
+                    Tokens
+                    <mat-icon>arrow_drop_down</mat-icon>
+                </span>
             </div>
             <div class="nav-list-item" [matMenuTriggerFor]="subMenu2" [attr.active]="isActiveLink('SR_POLICIES')">
-                Policies
+                <span class="nav-menu-item">
+                    Policies
+                    <mat-icon>arrow_drop_down</mat-icon>
+                </span>
             </div>
             <div class="nav-list-item" [matMenuTriggerFor]="subMenu3" [attr.active]="isActiveLink('SR_ADMIN')">
-                Admin Panel
+                <span class="nav-menu-item">
+                    Admin Panel
+                    <mat-icon>arrow_drop_down</mat-icon>
+                </span>
             </div>
         </div>
         <mat-menu #subMenu1="matMenu" class="sub-nav-menu" backdropClass="sub-nav-backdrop">
