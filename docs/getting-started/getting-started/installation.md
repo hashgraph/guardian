@@ -43,7 +43,7 @@ For example: [https://github.com/yeasy/docker-ipfs](https://github.com/yeasy/doc
 
 ```
 IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5002"
-IPFS_PUBLIC_GATEWAY="..." # Default IPFS_PUBLIC_GATEWAY="https://localhost:8080/ipfs/${cid}"
+IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/${cid}'
 IPFS_PROVIDER="local"
 ```
 
