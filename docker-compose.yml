@@ -6,6 +6,8 @@ services:
     restart: always
     expose:
       - 27017
+    ports:
+      - "27017:27017"
 
   mongo-express:
     image: mongo-express:1.0.0-alpha.4
@@ -61,20 +63,25 @@ services:
       - ./file:/vault/file:rw
       - ./config:/vault/config:rw
 
+# https://docs.docker.com/compose/environment-variables/envvars-precedence/
+# Environment leverage the gerarchy defined in the docker compose between "env_file" and "environment" attributes
+# ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
+# specific service variables defined by "environment" can override what is defined in the ecosystem file
+
   logger-service:
     env_file:
-      - ./logger-service/.env.docker
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
       dockerfile: ./logger-service/Dockerfile
     depends_on:
       - message-broker
     environment:
-      - ENV=${GUARDIAN_ENV}
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
 
   worker-service-1:
     env_file:
-      - ./worker-service/.env.docker
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
       dockerfile: ./worker-service/Dockerfile
@@ -82,15 +89,14 @@ services:
       - ipfs-node
       - auth-service
     environment:
-      - SERVICE_CHANNEL=worker.1
-      - ENV=${GUARDIAN_ENV}
-      - DIRECT_MESSAGE_PORT=6555
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL:"worker.1"
     expose:
       - 6555
 
   worker-service-2:
     env_file:
-      - ./worker-service/.env.docker
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
       dockerfile: ./worker-service/Dockerfile
@@ -98,15 +104,14 @@ services:
       - ipfs-node
       - auth-service
     environment:
-      - SERVICE_CHANNEL=worker.2
-      - ENV=${GUARDIAN_ENV}
-      - DIRECT_MESSAGE_PORT=6555
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL="worker.2"
     expose:
       - 6555
 
   auth-service:
     env_file:
-      - ./auth-service/.env.docker
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
       dockerfile: ./auth-service/Dockerfile
@@ -116,14 +121,13 @@ services:
       - message-broker
       - logger-service
     environment:
-      - ENV=${GUARDIAN_ENV}
-      - DIRECT_MESSAGE_PORT=6555
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
       - 6555
 
   api-gateway:
     env_file:
-      - ./api-gateway/.env.docker
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
       dockerfile: ./api-gateway/Dockerfile
@@ -137,12 +141,11 @@ services:
       - auth-service
       - logger-service
     environment:
-      - ENV=${GUARDIAN_ENV}
-      - DIRECT_MESSAGE_PORT=6555
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
 
   policy-service:
     env_file:
-      - ./policy-service/.env.docker
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
       dockerfile: ./policy-service/Dockerfile
@@ -152,14 +155,14 @@ services:
       - auth-service
       - logger-service
     environment:
-      - ENV=${GUARDIAN_ENV}
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
       - 50000-60000
 
 
   guardian-service:
     env_file:
-      - ./guardian-service/.env.docker
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
@@ -172,8 +175,7 @@ services:
       - worker-service-2
       - policy-service
     environment:
-      - ENV=${GUARDIAN_ENV}
-      - DIRECT_MESSAGE_PORT=6555
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
       - 6555
 
@@ -192,6 +194,7 @@ services:
       - auth-service
       - logger-service
 
+      
   mrv-sender:
     build:
       context: .
