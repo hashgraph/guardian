@@ -37,7 +37,7 @@ When building the reference implementation, you can [manually build every compon
 
 * [Docker](https://www.docker.com)
 
-If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](https://nodejs.org) and [Nats 1.12.2](https://nats.io/) will be installed and configured automatically.
+If you build with docker [MongoDB V6](https://www.mongodb.com), [NodeJS V16](https://nodejs.org) and [Nats 1.12.2](https://nats.io/) will be installed and configured automatically. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
 
 ### Installation
 
