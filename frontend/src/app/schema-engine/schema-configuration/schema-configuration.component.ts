@@ -399,7 +399,7 @@ export class SchemaConfigurationComponent implements OnInit {
             if (option.type === field.type) {
                 if (
                     ((!option.format && !field.format) || (option.format === field.format)) &&
-                    ((!option.pattern) || (option.pattern === field.pattern)) &&
+                    ((!option.pattern && !field.pattern) || (option.pattern === field.pattern)) &&
                     ((!option.isRef && !field.isRef) || (option.isRef === field.isRef))
                 ) {
                     return key;
