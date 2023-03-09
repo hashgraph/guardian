@@ -61,6 +61,7 @@ services:
       - ./file:/vault/file:rw
       - ./config:/vault/config:rw
 
+
 # https://docs.docker.com/compose/environment-variables/envvars-precedence/
 # Environment leverage the gerarchy defined in the docker compose between "env_file" and "environment" attributes
 # ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
@@ -76,6 +77,8 @@ services:
       - message-broker
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL=${LOGGER_SERVICE_CHANNEL}
+      - DB_DATABASE=${LOGGER_DB_DATABASE}
 
   auth-service:
     env_file:
@@ -90,6 +93,8 @@ services:
       - logger-service
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL=${AUTH_SERVICE_CHANNEL}
+      - DB_DATABASE=${AUTH_DB_DATABASE} 
 
   worker-service-1:
     env_file:
@@ -102,7 +107,7 @@ services:
       - auth-service
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
-      - SERVICE_CHANNEL:"worker.1"
+      - SERVICE_CHANNEL=${WORKER_1_SERVICE_CHANNEL}      
 
   worker-service-2:
     env_file:
@@ -115,7 +120,7 @@ services:
       - auth-service
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
-      - SERVICE_CHANNEL="worker.2"
+      - SERVICE_CHANNEL=${WORKER_2_SERVICE_CHANNEL}          
 
   api-gateway:
     env_file:
@@ -132,7 +137,9 @@ services:
       - auth-service
       - logger-service
     environment:
-      - GUARDIAN_ENV=${GUARDIAN_ENV}     
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL=${API_SERVICE_CHANNEL}
+      
 
   policy-service:
     env_file:
@@ -147,6 +154,10 @@ services:
       - logger-service
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL=${POLICY_SERVICE_CHANNEL}
+      - DB_DATABASE=${POLICY_DB_DATABASE}
+      - LOG_LEVEL=${POLICY_LOG_LEVEL}
+      - MULTI_POLICY_SCHEDULER=${POLICY_MULTI_POLICY_SCHEDULER}
       
   guardian-service:
     env_file:
@@ -164,6 +175,10 @@ services:
       - policy-service
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - SERVICE_CHANNEL=${GUARDIAN_SERVICE_CHANNEL}
+      - DB_DATABASE=${GUARDIAN_DB_DATABASE}
+      - LOG_LEVEL=${GUARDIAN_LOG_LEVEL}
+      - MULTI_POLICY_SCHEDULER=${GUARDIAN_MULTI_POLICY_SCHEDULER}     
 
   mrv-sender:
     build:

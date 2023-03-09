@@ -9,6 +9,7 @@ www-data/
 .env
 tsconfig.tsbuildinfo
 .yarn/*
+.yarn.*
 !.yarn/patches
 !.yarn/releases
 !.yarn/plugins
@@ -16,7 +17,9 @@ tsconfig.tsbuildinfo
 !.yarn/versions
 .pnp.*
 node_modules
+.package-lock.json
 runtime-data/
+000_*
 
 # OSX related metadata removal and IDE nonsense
 .DS_store

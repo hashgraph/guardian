@@ -87,8 +87,7 @@ export class Workers extends NatsService {
         task.id = taskId;
         task.priority = priority;
         attempts = attempts > 0 && attempts < this.maxRepetitions ? attempts : this.maxRepetitions;
-        this.queue.add(task);
-
+        this.queue.push(task);
         const result = new Promise((resolve, reject) => {
             if (registerCallback) {
                 this.tasksCallbacks.set(taskId, {
