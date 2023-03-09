@@ -399,7 +399,7 @@ export class SchemaConfigurationComponent implements OnInit {
             if (option.type === field.type) {
                 if (
                     ((!option.format && !field.format) || (option.format === field.format)) &&
-                    ((!option.pattern && !field.pattern) || (option.pattern === field.pattern)) &&
+                    ((!option.pattern) || (option.pattern === field.pattern)) &&
                     ((!option.isRef && !field.isRef) || (option.isRef === field.isRef))
                 ) {
                     return key;
@@ -505,6 +505,7 @@ export class SchemaConfigurationComponent implements OnInit {
             textSize,
             textBold,
             isPrivate,
+            pattern,
         } = fieldConfig.getValue(data);
         const type = this.schemaTypeMap[typeIndex];
         return {
@@ -516,7 +517,7 @@ export class SchemaConfigurationComponent implements OnInit {
             isRef: type.isRef,
             type: type.type,
             format: type.format,
-            pattern: type.pattern,
+            pattern: type.pattern || pattern,
             unit: type.unitSystem ? unit : undefined,
             unitSystem: type.unitSystem,
             customType: type.customType,
