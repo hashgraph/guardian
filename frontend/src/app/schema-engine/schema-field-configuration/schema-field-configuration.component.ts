@@ -126,6 +126,7 @@ export class SchemaFieldConfigurationComponent implements OnInit {
         }
 
         this.unit = event == UnitSystem.Prefix || event == UnitSystem.Postfix;
+        this.isString = (item && item.name === 'String') || false;
 
         this.isString = (item && item.name === 'String') || false;
         if (!this.isString) {
