@@ -251,24 +251,24 @@ export async function documentsAPI(
                 });
                 if (policies && policies.length) {
                     const policyIds = policies.map(p => p.id.toString());
-                    const [vp, count] = await vpDocumentRepository.findAndCount({
+                    const [items, count] = await vpDocumentRepository.findAndCount({
                         where: {
                             policyId: { $in: policyIds }
                         }
                     }, otherOptions);
-                    return new MessageResponse({ vp, count });
+                    return new MessageResponse({ items, count });
                 } else {
-                    return new MessageResponse({ vp: [], count: 0 });
+                    return new MessageResponse({ items: [], count: 0 });
                 }
             } else {
-                const [vp, count] = await vpDocumentRepository.findAndCount(filters, otherOptions);
-                return new MessageResponse({ vp, count });
+                const [items, count] = await vpDocumentRepository.findAndCount(filters, otherOptions);
+                return new MessageResponse({ items, count });
             }
         } else {
-            const [vp, count] = await vpDocumentRepository.findAndCount(null, {
+            const [items, count] = await vpDocumentRepository.findAndCount(null, {
                 limit: 100
             });
-            return new MessageResponse({ vp, count });
+            return new MessageResponse({ items, count });
         }
     });
 }

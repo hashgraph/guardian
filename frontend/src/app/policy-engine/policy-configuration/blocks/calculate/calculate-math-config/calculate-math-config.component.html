@@ -1,9 +1,8 @@
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'equationsGroup')" [attr.collapse]="propHidden.equationsGroup">
-            <mat-icon>
-                expand_more
-            </mat-icon>
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'equationsGroup')"
+            [attr.collapse]="propHidden.equationsGroup">
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Equations</td>
         <td class="propHeaderCell">
@@ -13,12 +12,10 @@
             </div>
         </td>
     </tr>
-    <ng-container *ngFor="let equation of block.equations; let i=index">
+    <ng-container *ngFor="let equation of properties.equations; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.equationsGroup">
-            <td class="propRowCol" (click)="onHide(propHidden.equations, i)" [attr.collapse]="propHidden.equations[i]">
-                <mat-icon>
-                    expand_more
-                </mat-icon>
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.equations, i)" [attr.collapse]="propHidden.equations[i]">
+                <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Equation {{i}}</td>
             <td class="propRowCell">
@@ -33,14 +30,14 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Variable</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="equation.variable" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="equation.variable" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.equationsGroup || propHidden.equations[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Formula</td>
             <td class="propRowCell">
-                <input class="prop-input" [(ngModel)]="equation.formula" [readonly]="readonly">
+                <input class="prop-input" [(ngModel)]="equation.formula" [readonly]="readonly" (blur)="onSave()">
             </td>
         </tr>
     </ng-container>

@@ -5,5 +5,6 @@ export enum BlockGroup {
     Tokens = 'Tokens',
     Calculate = 'Calculate',
     Report = 'Report',
-    UnGrouped = 'UnGrouped'
+    UnGrouped = 'UnGrouped',
+    Module = 'Module'
 }

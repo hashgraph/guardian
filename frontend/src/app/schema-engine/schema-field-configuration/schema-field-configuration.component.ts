@@ -36,11 +36,13 @@ export class SchemaFieldConfigurationComponent implements OnInit {
     @Input('schemaTypes') schemaTypes!: any[];
     @Input('extended') extended!: boolean;
     @Input('value') value!: any;
+    @Input('private') canBePrivate!: boolean;
 
     @Output('remove') remove = new EventEmitter<any>();
 
     unit: boolean = true;
     enum: boolean = false;
+    helpText: boolean = false;
     loading: boolean = false;
     keywords: string[] = [];
 
@@ -123,6 +125,17 @@ export class SchemaFieldConfigurationComponent implements OnInit {
         }
         this.unit = event == UnitSystem.Prefix || event == UnitSystem.Postfix;
 
+        this.helpText = (item && item.name === 'Help Text') || false;
+        if (!this.helpText) {
+            this.field.controlColor.disable();
+            this.field.controlSize.disable();
+            this.field.controlBold.disable();
+        } else {
+            this.field.controlColor.enable();
+            this.field.controlSize.enable();
+            this.field.controlBold.enable();
+        }
+
         this.enum = (item && item.name || event) === 'Enum';
         if (this.enum) {
             this.field.controlEnum.setValidators([Validators.required]);
@@ -176,6 +189,12 @@ export class SchemaFieldConfigurationComponent implements OnInit {
                 this.updateControlEnum(uniqueTrimmedEnumValues);
             }
         });
+    }
+
+    onHepTextReset() {
+        this.field.controlColor.patchValue('#000000');
+        this.field.controlSize.patchValue(18);
+        this.field.controlBold.patchValue(false);
     }
 
     private errorHandler(errorMessage: string, errorHeader: string): void {

@@ -1,5 +1,4 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -29,7 +28,8 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
             PolicyOutputEventType.RefreshEvent
         ],
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class SwitchBlock {
     /**
@@ -175,53 +175,5 @@ export class SwitchBlock {
             conditions: tags,
             documents: ExternalDocuments(docs),
         }));
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (!['firstTrue', 'allTrue'].find(item => item === ref.options.executionFlow)) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "executionFlow" must be one of firstTrue, allTrue');
-            }
-
-            if (!ref.options.conditions) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "conditions" does not set');
-            }
-
-            const tagMap = {};
-            if (Array.isArray(ref.options.conditions)) {
-                for (const condition of ref.options.conditions) {
-                    if (!['equal', 'not_equal', 'unconditional'].find(item => item === condition.type)) {
-                        resultsContainer.addBlockError(ref.uuid, 'Option "condition.type" must be one of equal, not_equal, unconditional');
-                    }
-                    if (condition.type === 'equal' || condition.type === 'not_equal') {
-                        if (!condition.value) {
-                            resultsContainer.addBlockError(ref.uuid, 'Option "condition.value" does not set');
-                        } else {
-                            PolicyUtils.variables(condition.value);
-                        }
-                    }
-
-                    if (!condition.tag) {
-                        resultsContainer.addBlockError(ref.uuid, `Option "tag" does not set`);
-                    }
-
-                    if (tagMap[condition.tag]) {
-                        resultsContainer.addBlockError(ref.uuid, `Condition Tag ${condition.tag} already exist`);
-                    }
-
-                    tagMap[condition.tag] = true;
-                }
-            } else {
-                resultsContainer.addBlockError(ref.uuid, 'Option "conditions" must be an array');
-            }
-
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

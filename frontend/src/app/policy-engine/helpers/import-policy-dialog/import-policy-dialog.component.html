@@ -1,8 +1,10 @@
 <div class="content">
     <ng-container *ngIf="isImportTypeSelected" [ngSwitch]="this.importType">
         <ng-template [ngSwitchCase]="0">
-            <app-file-drag-n-drop fileExtension="policy" (onFileLoaded)="importFromFile($event)"
+            <app-file-drag-n-drop *ngIf="type==='policy'" fileExtension="policy" (onFileLoaded)="importFromFile($event)"
                 dropZoneLabel="Import Policy .policy file"></app-file-drag-n-drop>
+            <app-file-drag-n-drop *ngIf="type==='module'" fileExtension="module" (onFileLoaded)="importFromFile($event)"
+                dropZoneLabel="Import Module .module file"></app-file-drag-n-drop>
         </ng-template>
         <ng-template [ngSwitchCase]="1">
             <h1 mat-dialog-title>

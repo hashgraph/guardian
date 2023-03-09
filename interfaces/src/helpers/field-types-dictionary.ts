@@ -90,6 +90,13 @@ export class FieldTypesDictionary {
             pattern: undefined,
             isRef: false,
             customType: 'enum'
+        },
+        {
+            name: 'Help Text',
+            type: 'null',
+            format: undefined,
+            pattern: undefined,
+            isRef: false
         }
     ];
 

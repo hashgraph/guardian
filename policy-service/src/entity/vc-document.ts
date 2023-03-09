@@ -161,6 +161,18 @@ export class VcDocument extends BaseEntity implements IVCDocument {
     group?: any
 
     /**
+     * Hedera Hash
+     */
+    @Property({ nullable: true })
+    messageHash?: string;
+
+    /**
+     * Message History
+     */
+    @Property({ nullable: true })
+    messageIds?: string[];
+
+    /**
      * Document defaults
      */
     @BeforeCreate()

@@ -4,6 +4,7 @@ import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { MessageBody } from './message-body.interface';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { Hashing } from '../hashing';
 
 /**
  * Message status
@@ -47,7 +48,7 @@ export abstract class Message {
     /**
      * Message type
      */
-    public readonly type: MessageType;
+    public type: MessageType;
 
     /**
      * Response type
@@ -115,13 +116,13 @@ export abstract class Message {
     /**
      * To document
      */
-    public abstract toDocuments(): Promise<ArrayBuffer[]>;
+public abstract toDocuments(key?: string): Promise<ArrayBuffer[]>;
 
-    /**
-     * Load documents
-     * @param documents
-     */
-    public abstract loadDocuments(documents: any[]): Message;
+/**
+ * Load documents
+ * @param documents
+ */
+public abstract loadDocuments(documents: any[], key?: string): Message | Promise<Message>;
 
     /**
      * Set URLs
@@ -337,5 +338,15 @@ export abstract class Message {
             message._statusReason = json.reason;
             return message;
         }
+    }
+
+    /**
+     * To hash
+     */
+    public toHash(): string {
+        const map = this.toMessageObject();
+        const json: string = JSON.stringify(map);
+        const hash: Uint8Array = Hashing.sha256.digest(json);
+        return Hashing.base58.encode(hash);
     }
 }

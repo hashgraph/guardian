@@ -52,26 +52,70 @@ To know more information about events, please look at [events.md](events.md "men
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="blockType: 'PolicyRolesBlock'" summary="" %}
+{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="roles" type="array" required="true" %}
-List of available roles
+{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
+PolicyID
 {% endswagger-parameter %}
 
-{% swagger-parameter in="path" name="uiMetaData" required="true" %}
-{}
+{% swagger-parameter in="path" name="uuid" required="true" type="String" %}
+Block UUID
 {% endswagger-parameter %}
+
+{% swagger-response status="200: OK" description="Successful Operation" %}
+```javascript
+ {
+  "roles": [],
+  "groups": [
+    "VVBs",
+    "Project_Proponent"
+  ],
+  "groupMap": {
+    "VVBs": {
+      "groupAccessType": "Private",
+      "groupRelationshipType": "Multiple"
+    },
+    "Project_Proponent": {
+      "groupAccessType": "Private",
+      "groupRelationshipType": "Single"
+    }
+  },
+  "isMultipleGroups": true,
+  "uiMetaData": {
+    "title": "Roles",
+    "description": "Choose Roles"
+  }
+}
+
+```
+{% endswagger-response %}
 {% endswagger %}
 
-{% swagger method="post" path="" baseUrl="blockType: 'PolicyRolesBlock" summary="" %}
+{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
 
-{% swagger-parameter in="path" name="role" type="String" required="true" %}
+{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
+Policy ID
+{% endswagger-parameter %}
 
+{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
+Block UUID
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="role" type="String" required="true" %}
+
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="invitation" type="String" %}
+Invite Code
+{% endswagger-parameter %}
+
+{% swagger-parameter in="body" name="Group" type="String" %}
+Group Name
 {% endswagger-parameter %}
 {% endswagger %}

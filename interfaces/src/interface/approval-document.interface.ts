@@ -1,5 +1,3 @@
-import {SchemaEntity} from '../type/schema-entity.type';
-
 /**
  * Approval document interface
  */
@@ -27,7 +25,7 @@ export interface IApprovalDocument {
     /**
      * Document type
      */
-    type?: SchemaEntity;
+    type?: string;
     /**
      * Date of creation
      */

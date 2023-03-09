@@ -1,36 +1,38 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="block">
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
-        <td class="propRowCol" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>expand_more</mat-icon>
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+            <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Properties</td>
         <td class="propHeaderCell"></td>
     </tr>
-    <tr class="propRow"
-        [attr.collapse]="propHidden.main">
+    <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Use Template</td>
         <td class="propRowCell">
-            <input class="prop-input" type="checkbox" (change)="onUseTemplateChange()" [(ngModel)]="block.useTemplate" [readonly]="readonly">
+            <input class="prop-input" type="checkbox" (change)="onUseTemplateChange()"
+                [(ngModel)]="properties.useTemplate" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
-    <tr *ngIf="!block.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
+    <tr *ngIf="!properties.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.tokenId" [disabled]="readonly">
-                <mat-option *ngFor="let token of tokens" [value]="token.tokenId">{{token.tokenName}}</mat-option>
+            <mat-select [(value)]="properties.tokenId" [disabled]="readonly" (change)="onSave()">
+                <mat-option *ngFor="let token of tokens" [value]="token.value">
+                    {{token.name}}
+                </mat-option>
             </mat-select>
         </td>
     </tr>
-    <tr *ngIf="block.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
+    <tr *ngIf="properties.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token Template</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.template" [disabled]="readonly">
-                <mat-option *ngFor="let token of policy.policyTokens" [value]="token.templateTokenTag">
-                    {{token.templateTokenTag}}
+            <mat-select [(value)]="properties.template" [disabled]="readonly" (change)="onSave()">
+                <mat-option *ngFor="let token of tokenTemplate" [value]="token.value">
+                    {{token.name}}
                 </mat-option>
             </mat-select>
         </td>
@@ -39,32 +41,33 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Rule</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.rule" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.rule" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Account Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="block.accountType" [disabled]="readonly" (selectionChange)="changeAccountType()">
+            <mat-select [(value)]="properties.accountType" [disabled]="readonly"
+                (selectionChange)="changeAccountType()">
                 <mat-option value="default">Default</mat-option>
                 <mat-option value="custom">Custom Account Field</mat-option>
                 <mat-option value="custom-value">Custom Account Value</mat-option>
             </mat-select>
         </td>
     </tr>
-    <tr *ngIf="block.accountType==='custom'" class="propRow" [attr.collapse]="propHidden.main">
+    <tr *ngIf="properties.accountType==='custom'" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Account Id (Field)</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.accountId" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.accountId" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
-    <tr *ngIf="block.accountType==='custom-value'" class="propRow" [attr.collapse]="propHidden.main">
+    <tr *ngIf="properties.accountType==='custom-value'" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Account Id (Value)</td>
         <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="block.accountIdValue" [readonly]="readonly">
+            <input class="prop-input" [(ngModel)]="properties.accountIdValue" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -72,7 +75,8 @@
         <td class="propRowCell cellName">Memo</td>
         <td class="propRowCell">
             <span class="mint-memo-prefix" matTooltip="VP message identifier">**********.*********</span>
-            <input class="prop-input" class="mint-memo-input" [(ngModel)]="block.memo" [readonly]="readonly">
+            <input class="prop-input" class="mint-memo-input" [(ngModel)]="properties.memo" [readonly]="readonly"
+                (blur)="onSave()">
         </td>
     </tr>
 </table>

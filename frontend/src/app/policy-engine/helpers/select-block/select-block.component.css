@@ -9,9 +9,52 @@
     top: 0px;
 }
 
+.block-icon svg {
+    width: 22px;
+    height: 22px;
+    position: absolute;
+    top: 6px;
+    left: 1px;
+}
+
 .custom {
     height: 14px;
     line-height: 14px;
     display: inline-block;
     min-width: 1px;
+}
+
+.components-search {
+    height: 32px;
+    box-sizing: border-box;
+    font-weight: 500;
+    color: var(--pc-header-color);
+    padding: 6px 8px 0px 8px;
+    position: relative;
+}
+
+.components-search input {
+    position: absolute;
+    left: 8px;
+    top: 6px;
+    right: 8px;
+    height: 24px;
+    box-sizing: border-box;
+    border: 1px solid var(--pc-border-color);
+    border-radius: 4px;
+    padding: 2px 24px 2px 7px;
+    outline: none;
+}
+
+.components-search .components-search-icon {
+    position: absolute;
+    top: 9px;
+    right: 5px;
+    color: var(--pc-border-color);
+    font-size: 18px;
+}
+
+.block-name[root="true"] {
+    font-weight: 500;
+    font-size: 14px;
 }

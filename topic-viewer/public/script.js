@@ -100,9 +100,9 @@ async function getTopicMessage(topicId, index) {
     }
 }
 
-async function getIPFS(url) {
+async function getIPFS(cid) {
     try {
-        const result = await fetch(url);
+        const result = await fetch(`https://ipfs.io/ipfs/${cid}`);
         if (result.status === 200) {
             return await result.json();
         } else {
@@ -256,8 +256,8 @@ function renderMessage(container, id, message, topicId) {
             messageIPFSDiv.className === "message-ipfs" ? "message-ipfs max" : "message-ipfs";
     });
 
-    if (message.url) {
-        getIPFS(message.url).then((data) => {
+    if (message.cid) {
+        getIPFS(message.cid).then((data) => {
             messageIPFSDiv.innerHTML = JSON.stringify(data, null, 4);
             topicMessageDiv.append(messageIPFSDiv);
         });

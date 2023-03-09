@@ -1,6 +1,7 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
+    "skipLibCheck": true,
     "baseUrl": "./src",
     "declaration": true,
     "emitDecoratorMetadata": true,

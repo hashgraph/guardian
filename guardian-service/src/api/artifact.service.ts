@@ -14,16 +14,16 @@ export async function artifactAPI(
 ): Promise<void> {
 
     /**
-     * Create new token
+     * Upload artifact
      *
-     * @param {IToken} payload - token
+     * @param {any} msg - Artifact parameters
      *
-     * @returns {IToken[]} - all tokens
+     * @returns {Artifact} - Uploaded artifact
      */
     ApiResponse(channel, MessageAPI.UPLOAD_ARTIFACT, async (msg) => {
         try {
             if (!msg || !msg.artifact || !msg.policyId || !msg.owner) {
-                throw new Error('Invalid Artifact Parameters');
+                throw new Error('Invalid upload artifact parameters');
             }
             const extention = getArtifactExtention(msg.artifact.name);
             const type = getArtifactType(extention);
@@ -42,10 +42,17 @@ export async function artifactAPI(
         }
     });
 
+    /**
+     * Get artifacts
+     *
+     * @param {any} msg - Get artifact parameters
+     *
+     * @returns {any} Artifacts and count
+     */
     ApiResponse(channel, MessageAPI.GET_ARTIFACTS, async (msg) => {
         try {
             if (!msg) {
-                return new MessageError('Invalid load artifact parameter');
+                return new MessageError('Invalid get artifact parameters');
             }
 
             const { policyId, pageIndex, pageSize, owner } = msg;
@@ -81,10 +88,17 @@ export async function artifactAPI(
         }
     });
 
+    /**
+     * Delete artifact
+     *
+     * @param {any} msg - Delete artifact parameters
+     *
+     * @returns {boolean} - Operation success
+     */
     ApiResponse(channel, MessageAPI.DELETE_ARTIFACT, async (msg) => {
         try {
-            if (!msg.artifactId || !msg.owner) {
-                return new MessageError('Invalid load schema parameter');
+            if (!msg || !msg.artifactId || !msg.owner) {
+                return new MessageError('Invalid delete artifact parameters');
             }
             const artifactToDelete = await DatabaseServer.getArtifact({
                 id: msg.artifactId,

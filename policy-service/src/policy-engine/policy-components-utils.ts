@@ -34,7 +34,7 @@ export function blockUpdate(type: string, args: any[]) {
     const commonVars = new CommonVariables();
     const channel = commonVars.getVariable('channel');
 
-    channel.publish(PolicyEvents.BLOCK_UPDATE_BROADCAST, {type, args});
+    channel.publish(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, args });
 }
 
 /**
@@ -44,19 +44,19 @@ export class PolicyComponentsUtils {
     /**
      * Block update function
      */
-    public static BlockUpdateFn: (uuid: string, state: any, user: IPolicyUser, tag?: string) => Promise<void> = async (...args) => {blockUpdate('update', args);};
+    public static BlockUpdateFn: (uuid: string, state: any, user: IPolicyUser, tag?: string) => Promise<void> = async (...args) => { blockUpdate('update', args); };
     /**
      * Block error function
      */
-    public static BlockErrorFn: (blockType: string, message: any, user: IPolicyUser) => Promise<void> = async (...args) => {blockUpdate('error', args);};
+    public static BlockErrorFn: (blockType: string, message: any, user: IPolicyUser) => Promise<void> = async (...args) => { blockUpdate('error', args); };
     /**
      * Update user info function
      */
-    public static UpdateUserInfoFn: (user: IPolicyUser, policy: Policy) => Promise<void> = async (...args) => {blockUpdate('update-user', args);};
+    public static UpdateUserInfoFn: (user: IPolicyUser, policy: Policy) => Promise<void> = async (...args) => { blockUpdate('update-user', args); };
     /**
      * External Event function
      */
-    public static ExternalEventFn: (event: ExternalEvent<any>) => Promise<void> = async (...args) => {blockUpdate('external', args);};
+    public static ExternalEventFn: (event: ExternalEvent<any>) => Promise<void> = async (...args) => { blockUpdate('external', args); };
 
     /**
      * Block ID list
@@ -146,30 +146,38 @@ export class PolicyComponentsUtils {
 
     /**
      * Create link
-     * @param source
-     * @param output
-     * @param target
-     * @param input
+     * @param sourceBlock
+     * @param outputName
+     * @param targetBlock
+     * @param inputName
      * @param actor
      * @constructor
      */
     public static CreateLink<T>(
-        source: IPolicyBlock,
-        output: PolicyOutputEventType,
-        target: IPolicyBlock,
-        input: PolicyInputEventType,
+        sourceBlock: IPolicyBlock,
+        outputName: PolicyOutputEventType,
+        targetBlock: IPolicyBlock,
+        inputName: PolicyInputEventType,
         actor: EventActor
     ): PolicyLink<T> {
-        if (!source || !target) {
+        if (!sourceBlock || !targetBlock) {
             return null;
         }
-        if (PolicyComponentsUtils.ActionMapByPolicyId.has(source.policyId)) {
-            const policyMap = PolicyComponentsUtils.ActionMapByPolicyId.get(source.policyId);
-            if (policyMap.has(target.uuid)) {
-                const blockMap = policyMap.get(target.uuid);
-                if (blockMap.has(input)) {
-                    const fn = blockMap.get(input);
-                    return new PolicyLink(input, output, source, target, actor, fn);
+        if (PolicyComponentsUtils.ActionMapByPolicyId.has(targetBlock.policyId)) {
+            const policyMap = PolicyComponentsUtils.ActionMapByPolicyId.get(targetBlock.policyId);
+            if (policyMap.has(targetBlock.uuid)) {
+                const blockMap = policyMap.get(targetBlock.uuid);
+
+                if (targetBlock.blockType === 'module') {
+                    if (blockMap.has(PolicyInputEventType.ModuleEvent)) {
+                        const fn = blockMap.get(PolicyInputEventType.ModuleEvent);
+                        return new PolicyLink(inputName, outputName, sourceBlock, targetBlock, actor, fn);
+                    }
+                } else {
+                    if (blockMap.has(inputName)) {
+                        const fn = blockMap.get(inputName);
+                        return new PolicyLink(inputName, outputName, sourceBlock, targetBlock, actor, fn);
+                    }
                 }
             }
         }
@@ -291,6 +299,7 @@ export class PolicyComponentsUtils {
         blockInstance.setPolicyInstance(policyId, policy);
         blockInstance.setPolicyOwner(policy.owner);
         blockInstance.setTopicId(policy.topicId);
+        blockInstance.registerVariables();
 
         allInstances.push(blockInstance);
 
@@ -653,6 +662,47 @@ export class PolicyComponentsUtils {
                     await callback(data);
                 }
             }
+        }
+    }
+
+    /**
+     * Get Parent Module
+     * @param block
+     */
+    public static GetModule<T>(block: any): T {
+        if (!block || !block._parent) {
+            return null;
+        }
+        if (block._parent.blockType === 'module') {
+            return block._parent;
+        }
+        return PolicyComponentsUtils.GetModule(block._parent);
+    }
+
+    /**
+     * Replace Value by path
+     * @param block
+     * @param path
+     * @param newValue
+     */
+    public static ReplaceObjectValue(data: any, path: string, newValue: Function): void {
+        try {
+            const keys = path.split('.');
+            let value = data;
+            for (let i = 0; i < keys.length - 1; i++) {
+                const key = keys[i];
+                if (value) {
+                    value = value[key];
+                } else {
+                    return;
+                }
+            }
+            if (value) {
+                const lastKey = keys[keys.length - 1];
+                value[lastKey] = newValue(value[lastKey]);
+            }
+        } catch (error) {
+            return;
         }
     }
 }

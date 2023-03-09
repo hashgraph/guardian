@@ -78,4 +78,4 @@ We have several Display settings in Policy Blocks section:
 
 Block comparison displays can be unfolded to display a detailed view of the block Properties.
 
-<figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (9) (1).png" alt=""><figcaption></figcaption></figure>

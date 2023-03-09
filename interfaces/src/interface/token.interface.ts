@@ -64,6 +64,11 @@ export interface IToken {
      * Owner
      */
     policyId?: string;
+
+    /**
+     * Is token draft
+     */
+    draftToken?: boolean;
 }
 
 /**

@@ -25,7 +25,8 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
     uiMetaData: any;
     buttons: any;
     commonVisible: boolean = true;
-    private readonly _commentField: string = 'comment';
+    enableIndividualFilters = false;
+    private readonly _commentField: string = 'option.comment';
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -35,17 +36,24 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         private cdref: ChangeDetectorRef
     ) {
     }
+
     ngAfterContentChecked(): void {
         if (!this.buttons) {
             return;
         }
 
-        let visible = true;
-        for (let i = 0; i < this.buttons.length; i++) {
-            visible = visible && this.checkVisible(this.buttons[i]);
-        }
-        for (let i = 0; i < this.buttons.length; i++) {
-            this.buttons[i].visible = visible;
+        if (!this.enableIndividualFilters) {
+            let visible = true;
+            for (const button of this.buttons) {
+                visible = visible && this.checkVisible(button);
+            }
+            for (const button of this.buttons) {
+                button.visible = visible;
+            }
+        } else {
+            for (const button of this.buttons) {
+                button.visible = this.checkVisible(button);
+            }
         }
         this.cdref.detectChanges();
     }
@@ -70,6 +78,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
     }
 
     loadData() {
+        this.commonVisible = true;
         this.loading = true;
         if (this.static) {
             this.setData(this.static);
@@ -92,7 +101,8 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
     setData(data: any) {
         if (data) {
             this.data = data.data;
-            this.uiMetaData = data.uiMetaData;
+            this.uiMetaData = data.uiMetaData || {};
+            this.enableIndividualFilters = this.uiMetaData.enableIndividualFilters;
             this.buttons = this.uiMetaData.buttons || [];
         } else {
             this.data = null;
@@ -189,7 +199,22 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
-                this.setObjectValue(this.data, this._commentField, result);
+                let comments = this.getObjectValue(
+                    this.data,
+                    button.dialogResultFieldPath || this._commentField
+                );
+                if (Array.isArray(comments)) {
+                    comments.push(result);
+                } else {
+                    comments = typeof comments === 'string'
+                        ? [comments, result]
+                        : [result];
+                }
+                this.setObjectValue(
+                    this.data,
+                    button.dialogResultFieldPath || this._commentField,
+                    comments
+                );
                 this.onSelect(button);
             }
         });
