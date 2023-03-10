@@ -10,7 +10,7 @@ context("Policies", { tags: '@policies' },() => {
         cy.request({
             method: "POST",
             url: `${API.ApiServer}policies/import/message`,
-            body: { messageId: "1650282926.728623821" },
+            body: { messageId: "1678448090.308458565" }, //Verra REDD 3
             headers: {
                 authorization,
             },

@@ -9,7 +9,7 @@ context("External",  { tags: '@external' }, () => {
         cy.request({
             method: "POST",
             url: `${API.ApiServer}policies/import/message`,
-            body: { messageId: "1650282926.728623821" },
+            body: { messageId: "1675253928.926888003" }, //iRec3
             headers: {
                 authorization,
             },

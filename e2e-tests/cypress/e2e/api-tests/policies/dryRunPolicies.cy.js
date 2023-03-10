@@ -9,7 +9,7 @@ context("Dry Run Policies",  { tags: '@dry-run' }, () => {
         cy.request({
             method: "POST",
             url: API.ApiServer + API.PolicisImportMsg,
-            body: { messageId: "1650282926.728623821" },
+            body: { messageId: "1678461209.892140745" }, //iRec2
             headers: {
                 authorization,
             },

@@ -35,8 +35,8 @@ context('Settings', { tags: '@settings' },() => {
                   authorization: accessToken
                 },
                 body: {
-                  hederaAccountId: '0.0.46804835',
-                  hederaAccountKey: '302e020100300506032b657004220420aaf0eac4a188e5d7eb3897866d2b33e51ab5d7e7bfc251d736f2037a4b2075e8',
+                  hederaAccountId: '0.0.6263',
+                  hederaAccountKey: 'ece9aa76a655744f8657a8c376537b46b799d23247a1f2330f6b4b61a6e66f8d',
                   vcDocument: {
                     geography: 'testGeography',
                     law: 'testLaw',
@@ -96,8 +96,8 @@ context('Settings', { tags: '@settings' },() => {
             },
             body: {
               nftApiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEMxZGY5YTQyMjhjMEZENEMwQmIzN0Q4QTlCNGRhNzIxNmFBYzQyMEMiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY1ODMxMjA3NTEyMywibmFtZSI6IlRlc3QifQ.0nnjEpX0U7O0j954WdNE4J48XV6zdJqOKLR8zv7xbYI',
-              operatorId: '0.0.47678894',
-              operatorKey: '302e020100300506032b65700422042095a62d07bc2900afb861713a53fcb8b3a9a9be4515ece4b4c26147cbba912125'
+              operatorId: '0.0.19310',
+              operatorKey: '2509bda584e8c8c0f57f3abb49e3789bce04377a56222177fee725fb8007fcb0'
             }
           })
             .then((response) => {

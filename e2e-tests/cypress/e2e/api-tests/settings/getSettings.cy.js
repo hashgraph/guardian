@@ -35,8 +35,8 @@ context('Settings',{ tags: '@settings' },  () => {
                   authorization: accessToken
                 },
                 body: {
-                  hederaAccountId: '0.0.46804835',
-                  hederaAccountKey: '302e020100300506032b657004220420aaf0eac4a188e5d7eb3897866d2b33e51ab5d7e7bfc251d736f2037a4b2075e8',
+                  hederaAccountId: '0.0.6263',
+                  hederaAccountKey: 'ece9aa76a655744f8657a8c376537b46b799d23247a1f2330f6b4b61a6e66f8d',
                   vcDocument: {
                     geography: 'testGeography',
                     law: 'testLaw',
@@ -85,7 +85,7 @@ context('Settings',{ tags: '@settings' },  () => {
         .then((response) => {
           expect(response.status).to.eq(200)
           
-          expect(response.body).to.have.property('nftApiKey')
+          expect(response.body).to.have.property('ipfsStorageApiKey')
           expect(response.body).to.have.property('operatorId')
           expect(response.body).to.have.property('operatorKey')
           

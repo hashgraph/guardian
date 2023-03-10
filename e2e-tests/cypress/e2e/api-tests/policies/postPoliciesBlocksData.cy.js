@@ -11,7 +11,7 @@ context("Policies", { tags: '@policies' },() => {
         cy.request({
             method: "POST",
             url: `${API.ApiServer}policies/import/message`,
-            body: { "messageId":"1650282926.728623821"},
+            body: { "messageId":"1678448809.058329933"}, //iRec4
             headers: {
                 authorization,
             },
