@@ -322,7 +322,7 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (item.pattern) {
-            validators.push(Validators.pattern(item.pattern));
+            validators.push(Validators.pattern(new RegExp(item.pattern)));
             return validators;
         }
 
