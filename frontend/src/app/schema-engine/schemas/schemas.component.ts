@@ -18,6 +18,7 @@ import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
 import { CompareSchemaDialog } from '../compare-schema-dialog/compare-schema-dialog.component';
+import { TagsService } from 'src/app/services/tag.service';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
@@ -39,6 +40,7 @@ export class SchemaConfigComponent implements OnInit {
         'topic',
         'version',
         'entity',
+        'tags',
         'status',
         'operation',
         'export',
@@ -68,13 +70,13 @@ export class SchemaConfigComponent implements OnInit {
 
     taskId: string | undefined = undefined;
     expectedTaskMessages: number = 0;
+    owner: any;
 
     constructor(
-        private auth: AuthService,
         private profileService: ProfileService,
         private schemaService: SchemaService,
         private policyEngineService: PolicyEngineService,
-        private taskService: TasksService,
+        private tagsService: TagsService,
         private informService: InformService,
         private route: ActivatedRoute,
         private router: Router,
@@ -107,9 +109,11 @@ export class SchemaConfigComponent implements OnInit {
             const schemas: any[] = value[2] || [];
 
             this.isConfirmed = !!(profile && profile.confirmed);
+            this.owner = profile?.did;
             if (!this.isConfirmed) {
                 this.system = true;
             }
+
             this.policyNameByTopic = {};
             this.policies = [];
             for (let i = 0; i < policies.length; i++) {
@@ -126,7 +130,7 @@ export class SchemaConfigComponent implements OnInit {
 
             for (const schema of schemas) {
                 schema.policy = this.policyNameByTopic[schema.topicId];
-                if(schema.policy) {
+                if (schema.policy) {
                     schema.fullName = `${schema.name} (${schema.policy})`;
                 } else {
                     schema.fullName = schema.name;
@@ -146,21 +150,47 @@ export class SchemaConfigComponent implements OnInit {
 
     loadSchemas() {
         this.loading = true;
-        const request = this.system ?
-            this.schemaService.getSystemSchemas(this.pageIndex, this.pageSize) :
-            this.schemaService.getSchemasByPage(this.currentTopicPolicy, this.pageIndex, this.pageSize);
-        this.columns = this.system ? this.systemSchemaColumns : this.policySchemaColumns;
-        request.subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
-            this.schemas = SchemaHelper.map(schemasResponse.body || []);
-            this.schemasCount = schemasResponse.headers.get('X-Total-Count') || this.schemas.length;
-            this.schemaMapping(this.schemas);
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        if (this.system) {
+            this.columns = this.systemSchemaColumns;
+            this.schemaService.getSystemSchemas(this.pageIndex, this.pageSize)
+                .subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
+                    this.schemas = SchemaHelper.map(schemasResponse.body || []);
+                    this.schemasCount = schemasResponse.headers.get('X-Total-Count') || this.schemas.length;
+                    this.schemaMapping(this.schemas);
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+
+        } else {
+            this.columns = this.policySchemaColumns;
+            this.schemaService.getSchemasByPage(this.currentTopicPolicy, this.pageIndex, this.pageSize)
+                .subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
+                    this.schemas = SchemaHelper.map(schemasResponse.body || []);
+                    this.schemasCount = schemasResponse.headers.get('X-Total-Count') || this.schemas.length;
+                    this.schemaMapping(this.schemas);
+
+                    const ids = this.schemas.map(e => e.id);
+                    this.tagsService.search('Schema', ids).subscribe((data) => {
+                        for (const schema of this.schemas) {
+                            (schema as any)._tags = data[schema.id];
+                        }
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    }, (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    });
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
+
+        }
     }
 
     onFilter() {

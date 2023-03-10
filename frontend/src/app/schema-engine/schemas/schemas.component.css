@@ -288,3 +288,11 @@ a {
     left: 10px;
     top: 7px;
 }
+
+.schemas-table .mat-column-tags {
+    max-width: 220px;
+    min-width: 120px;
+    width: 120px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}

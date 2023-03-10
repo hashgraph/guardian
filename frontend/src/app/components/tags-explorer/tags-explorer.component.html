@@ -1,0 +1,22 @@
+<div class="container" [attr.readonly]="loading">
+    <div *ngIf="main" class="main-tags" [attr.count]="tags.length" (click)="onOpen()">
+        <div class="main-tag" 
+            [attr.count]="main.count"
+            [attr.owner]="main.owner">
+            <mat-icon class="tag-icon">sell</mat-icon>
+            <div class="tag-name">
+                {{main.name}}
+            </div>
+            <div class="tag-count">
+                {{main.count}}
+            </div>
+        </div>
+        <mat-icon class="edit-tags">more_horiz</mat-icon>
+    </div>
+    <div *ngIf="!main" class="main-tag add-tags" (click)="onAdd()">
+        <mat-icon class="tag-icon">add</mat-icon>
+        <div class="tag-name">
+            Create Tag
+        </div>
+    </div>
+</div>

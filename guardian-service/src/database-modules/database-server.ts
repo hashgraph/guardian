@@ -22,6 +22,7 @@ import { SplitDocuments } from '@entity/split-documents';
 import { MultiPolicy } from '@entity/multi-policy';
 import { MultiPolicyTransaction } from '@entity/multi-policy-transaction';
 import { PolicyModule } from '@entity/module';
+import { Tags } from '@entity/tags';
 
 /**
  * Database server
@@ -2100,10 +2101,8 @@ export class DatabaseServer {
     }
 
     /**
-     * Delete user
+     * Delete Module
      * @param module
-     *
-     * @virtual
      */
     public static async removeModule(module: PolicyModule): Promise<void> {
         return await new DataBaseHelper(PolicyModule).remove(module);
@@ -2124,5 +2123,41 @@ export class DatabaseServer {
      */
     public static async updateModule(row: PolicyModule): Promise<PolicyModule> {
         return await new DataBaseHelper(PolicyModule).update(row);
+    }
+
+
+
+    /**
+     * Create tag
+     * @param tag
+     */
+    public static async createTag(tag: any): Promise<Tags> {
+        const item = new DataBaseHelper(Tags).create(tag);
+        return await new DataBaseHelper(Tags).save(item);
+    }
+
+    /**
+     * Delete tag
+     * @param tag
+     */
+    public static async removeTag(tag: Tags): Promise<void> {
+        return await new DataBaseHelper(Tags).remove(tag);
+    }
+
+    /**
+     * Get tag By UUID
+     * @param uuid
+     */
+    public static async getTagById(uuid: string): Promise<Tags> {
+        return await new DataBaseHelper(Tags).findOne({ uuid });
+    }
+
+    /**
+     * Get tags
+     * @param filters
+     * @param options
+     */
+    public static async getTags(filters?: any, options?: any): Promise<Tags[]> {
+        return await new DataBaseHelper(Tags).find(filters, options);
     }
 }

@@ -54,6 +54,7 @@ import { DataInputDialogComponent } from './components/data-input-dialog/data-in
 import { CompareModule } from './analytics/analytics.module';
 import { AnalyticsService } from './services/analytics.service';
 import { ModulesService } from './services/modules.service';
+import { TagsService } from './services/tag.service';
 
 @NgModule({
     declarations: [
@@ -119,6 +120,7 @@ import { ModulesService } from './services/modules.service';
         TasksService,
         ContractService,
         ModulesService,
+        TagsService,
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,

@@ -1,0 +1,148 @@
+.main-tags {
+    position: relative;
+    height: 32px;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 1px 28px 1px 1px;
+    cursor: pointer;
+    border-radius: 4px;
+    width: min-content;
+    user-select: none;
+    max-width: 215px;
+}
+
+.main-tags:hover {
+    background: #f1f1f1;
+}
+
+.main-tag {
+    position: relative;
+    height: 30px;
+    box-sizing: border-box;
+    overflow: hidden;
+    border-radius: 20px;
+    padding: 5px 8px 5px 26px;
+    display: flex;
+    flex-direction: row;
+    border: 1px solid #1274fb;
+    color: #1274fb;
+}
+
+.tag-icon {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #1274fb;
+}
+
+.main-tag[owner="true"] {
+    background: #e3eefe;
+    border: 1px solid #1274fb;
+}
+.main-tag[owner="true"] .tag-icon,
+.main-tag[owner="true"] .tag-name {
+    color: #005edf;
+}
+
+.main-tag[owner="false"] {
+    background: #dbf5f8;
+    border: 1px solid #00afc3;
+}
+.main-tag[owner="false"] .tag-icon,
+.main-tag[owner="false"] .tag-name {
+    color: #007985;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.edit-tags {
+    position: absolute;
+    right: 1px;
+    top: 5px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #1274fb;
+}
+
+.tag-name {
+    font-size: 16px;
+    display: block;
+    line-height: 18px;
+    height: 18px;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 130px;
+    text-overflow: ellipsis;
+}
+
+.tag-count {
+    font-size: 12px;
+    display: block;
+    line-height: 16px;
+    height: 16px;
+    border-radius: 50%;
+    min-width: 16px;
+    background: #818181;
+    color: #fff;
+    text-align: center;
+    padding: 0px 3px;
+    box-sizing: border-box;
+    margin: 1px 0px 1px 4px;
+}
+
+.main-tags[count="1"] {
+    padding: 1px 1px 1px 1px;
+}
+
+.main-tags[count="1"] .edit-tags{
+    display: none;
+}
+
+.main-tag[count="1"] .tag-count {
+    display: none;
+}
+
+.add-tags {
+    border-radius: 6px;
+    border: 1px solid #5a9af9;
+    cursor: pointer;
+    user-select: none;
+}
+
+.add-tags:hover {
+    background: #f1f1f1;
+}
+
+
+
+
+
+
+
+
+
+
+
+.tag-item[owner="true"]:hover {
+    background: #ccd6e5;
+}
+.tag-item[owner="false"]:hover {
+    background: #c6dee1;
+}

@@ -1308,4 +1308,36 @@ export class Guardians extends ServiceRequestsBase {
     public async validateModule(owner: string, module: any) {
         return await this.request(MessageAPI.VALIDATE_MODULES, { owner, module });
     }
+
+
+    /**
+     * Create tag
+     * @param tag
+     * @param owner
+     * @returns tag
+     */
+    public async createTag(tag: any, owner: string): Promise<any> {
+        return await this.request<any>(MessageAPI.CREATE_TAG, { tag, owner });
+    }
+
+    /**
+     * Return tags
+     *
+     * @param {IFilter} [params]
+     *
+     * @returns {any[]}
+     */
+    public async getTags(params?: IFilter): Promise<any[]> {
+        return await this.request<any>(MessageAPI.GET_TAGS, params);
+    }
+
+    /**
+     * Delete tag
+     * @param uuid
+     * @param owner
+     * @returns Operation Success
+     */
+    public async deleteTag(uuid: string, owner: string): Promise<boolean> {
+        return await this.request<any>(MessageAPI.DELETE_TAG, { uuid, owner });
+    }
 }
