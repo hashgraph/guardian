@@ -2274,10 +2274,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"blob-polyfill@npm:^5.0.20210201":
-  version: 5.0.20210201
-  resolution: "blob-polyfill@npm:5.0.20210201"
-  checksum: 4e03bdd01912c18395baabb4add49e0971a9f8f652c5047cf1f0e1c327c6e77c2788f90237b305044e792a1af599d421a9bcbeacc1b608769f1cacadf7a21f44
+"blob-polyfill@npm:^7.0.20220408":
+  version: 7.0.20220408
+  resolution: "blob-polyfill@npm:7.0.20220408"
+  checksum: bbd062e904d851b0e0a733265150d0c189a575f80a98256515d265e265ada6f92a787d43fedaa791c00910c174131f9d7168e8c158e3334c965d045358c177da
   languageName: node
   linkType: hard
 
@@ -3102,13 +3102,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-blob@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "cross-blob@npm:2.0.1"
+"cross-blob@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "cross-blob@npm:3.0.2"
   dependencies:
-    blob-polyfill: ^5.0.20210201
-    fetch-blob: ^2.1.2
-  checksum: 7472e00163ddbb1b3ffe5fed1c6d7610417ae752fc04b1d6bff95a7650bc0b0a4f2bb1e59d44ee3ea5744988a7857dc0c89b0a4969e559a94575800482cda583
+    blob-polyfill: ^7.0.20220408
+    fetch-blob: ^3.2.0
+  checksum: 897f834f6828359c3e00290709c810eb43b11726c6514fe35b06a6036a2ad3a09b2dc0c139888c6db02b3fc369f4b841af79caa2d46f1780a119cd4594472287
   languageName: node
   linkType: hard
 
@@ -4080,13 +4080,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fetch-blob@npm:^2.1.1, fetch-blob@npm:^2.1.2":
+"fetch-blob@npm:^2.1.1":
   version: 2.1.2
   resolution: "fetch-blob@npm:2.1.2"
   peerDependenciesMeta:
     domexception:
       optional: true
   checksum: 22d4487ce78ea4e52b432b0057d8d42922d5d93c0374b0bc2692cebdcb11bf8fac4f6d141b31f1633db1e9212effd38385adbd765a2c7412a621307058499214
+  languageName: node
+  linkType: hard
+
+"fetch-blob@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "fetch-blob@npm:3.2.0"
+  dependencies:
+    node-domexception: ^1.0.0
+    web-streams-polyfill: ^3.0.3
+  checksum: f19bc28a2a0b9626e69fd7cf3a05798706db7f6c7548da657cbf5026a570945f5eeaedff52007ea35c8bcd3d237c58a20bf1543bc568ab2422411d762dd3d5bf
   languageName: node
   linkType: hard
 
@@ -7612,6 +7622,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-domexception@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "node-domexception@npm:1.0.0"
+  checksum: ee1d37dd2a4eb26a8a92cd6b64dfc29caec72bff5e1ed9aba80c294f57a31ba4895a60fd48347cf17dd6e766da0ae87d75657dfd1f384ebfa60462c2283f5c7f
+  languageName: node
+  linkType: hard
+
 "node-fetch@https://registry.npmjs.org/@achingbrain/node-fetch/-/node-fetch-2.6.7.tgz, node-fetch@npm:^2.6.1":
   version: 2.6.7
   resolution: "node-fetch@npm:2.6.7"
@@ -10746,7 +10763,7 @@ __metadata:
     axios: ^0.25.0
     axios-retry: ^3.2.4
     chai: 4.3.4
-    cross-blob: ^2.0.1
+    cross-blob: ^3.0.2
     dotenv: ^16.0.0
     ipfs-client: 0.5.0
     jsonwebtoken: ^8.5.1
