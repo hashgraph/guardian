@@ -337,10 +337,12 @@ export class UserProfileComponent implements OnInit {
 
         let dialogRef;
         if (this.innerWidth <= 810) {
+            const bodyStyles = window.getComputedStyle(document.body);
+            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
             dialogRef = this.dialog.open(RetireTokenDialogComponent, {
                 width: `${this.innerWidth.toString()}px`,
                 maxWidth: '100vw',
-                height: `${this.innerHeight - 125}px`, // CHANGE THE 125 TO THE HEADER HEIGHT VARIABLE
+                height: `${this.innerHeight - headerHeight}px`,
                 position: {
                     'bottom': '0'
                 },
