@@ -126,8 +126,6 @@
         flex: none;
         order: 1;
         flex-grow: 0;
-
-        font-size: 4vw;
     }
 
     .g-dialog-actions {
