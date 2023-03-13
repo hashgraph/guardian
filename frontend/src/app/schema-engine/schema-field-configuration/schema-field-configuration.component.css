@@ -151,6 +151,9 @@
     position: relative;
 }
 
+.f5 {
+    display: none;
+}
 
 *[extended='true'] .f1 {
     grid-column-start: 1;
@@ -187,6 +190,15 @@
     top: 10px;
     right: 5px;
     position: relative;
+}
+
+*[extended='true'] .f5 {
+    grid-column-start: 1;
+    grid-column-end: 4;
+    grid-row-start: 3;
+    grid-row-end: 4;
+    margin: 0px 0px 10px 0px;
+    display: flex;
 }
 
 .error-message {

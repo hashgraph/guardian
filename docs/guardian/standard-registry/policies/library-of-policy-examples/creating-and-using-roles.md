@@ -31,9 +31,9 @@ For a demo example of following steps, here is the policy timestamp: **167516453
 * role\_1: Example role 1
 * role\_2: Example role 2
 
-![No Role](../../../../.gitbook/assets/4.png) ![Owner](<../../../../.gitbook/assets/5 (1) (2).png>)
+![No Role](<../../../../.gitbook/assets/4 (1).png>) ![Owner](<../../../../.gitbook/assets/5 (1) (2).png>)
 
-![Example role 1](<../../../../.gitbook/assets/6 (1) (1).png>) ![Example role 2](<../../../../.gitbook/assets/7 (1).png>)
+![Example role 1](<../../../../.gitbook/assets/6 (1) (1) (1).png>) ![Example role 2](<../../../../.gitbook/assets/7 (1).png>)
 
 This would result in the following visibility of containers:
 
@@ -44,7 +44,7 @@ This would result in the following visibility of containers:
 
 5. Add a ‘**policyRolesBlock**_’_ to the ‘_no\_role’_ container and name it ‘_choose\_role’_
 
-![Adding policyRolesBlock](<../../../../.gitbook/assets/8 (1).png>)
+![Adding policyRolesBlock](<../../../../.gitbook/assets/8 (1) (1).png>)
 
 Since this block is located inside the container ‘_no\_role_’ which has ‘_No role_’ permission setting it would only be visible to new users without an assigned role.
 
@@ -52,11 +52,11 @@ Since this block is located inside the container ‘_no\_role_’ which has ‘_
 
 Select ‘**Example role 1**_’ and_ ‘**Example role 2**_’_
 
-![Available Roles property](<../../../../.gitbook/assets/9 (1).png>)
+![Available Roles property](<../../../../.gitbook/assets/9 (1) (1).png>)
 
 7. Add ‘**informationBlock**’ to other containers just to display results
 
-![InformationBlock to other containers](../../../../.gitbook/assets/10.png)
+![InformationBlock to other containers](<../../../../.gitbook/assets/10 (1).png>)
 
 ### **Results**:
 
@@ -66,7 +66,7 @@ Select ‘**Example role 1**_’ and_ ‘**Example role 2**_’_
 
 2. After the selection of the role users would see only 1 container corresponding to their roles
 
-![Showing only 1 container](<../../../../.gitbook/assets/12 (2).png>)
+![Showing only 1 container](<../../../../.gitbook/assets/12 (2) (2).png>)
 
 3. The owner of the Policy (the Standard Registry user) upon executing the policy would skip the role selection form and would immediately end-up in the corresponding container
 

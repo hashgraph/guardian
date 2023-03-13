@@ -183,6 +183,7 @@
     * [⚙ Policy Differentiation APIs](guardian/standard-registry/policies/policy-differentiation-apis/README.md)
       * [Returns result of Policy comparison](guardian/standard-registry/policies/policy-differentiation-apis/returns-result-of-policy-comparison.md)
       * [Exports Comparison results](guardian/standard-registry/policies/policy-differentiation-apis/exports-comparison-results.md)
+    * [💻 Modules using UI](guardian/standard-registry/policies/modules-using-ui.md)
     * [⚙ Modules APIs](guardian/standard-registry/policies/modules-apis/README.md)
       * [Returns all Modules](guardian/standard-registry/policies/modules-apis/returns-all-modules.md)
       * [Creating new Module](guardian/standard-registry/policies/modules-apis/creating-new-module.md)
