@@ -6150,10 +6150,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:4.3.8":
-  version: 4.3.8
-  resolution: "jose@npm:4.3.8"
-  checksum: deba6643f3584c22cf62de4a2d338633f61073ceb9af4d19a706019eb0e75ad2107077ed38563ebf4d599866bd754342d8613d2b563afc4aa26774e74bd6621a
+"jose@npm:4.13.1":
+  version: 4.13.1
+  resolution: "jose@npm:4.13.1"
+  checksum: 89be959573beee69bd443493887d78799fd42340b45afa2c6681beda30314bcdfa5575f6977203c199e4c3e0ec2fc18d3c94745e7f0d59db51dedfae0efee63d
   languageName: node
   linkType: hard
 
@@ -7356,7 +7356,7 @@ __metadata:
     "@types/express": ^4.17.13
     axios: ^0.26.1
     express: ^4.17.3
-    jose: 4.3.8
+    jose: 4.13.1
     nodemon: ^2.0.12
     typescript: ^4.6.3
   languageName: unknown
