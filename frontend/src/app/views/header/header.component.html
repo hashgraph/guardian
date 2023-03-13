@@ -17,16 +17,16 @@
                         <mat-icon>arrow_drop_down</mat-icon>
                     </span>
             </div>
-            <div class="nav-list-item" [matMenuTriggerFor]="subMenu2" [attr.active]="isActiveLink('SR_POLICIES')">
-                <span class="nav-menu-item">
+                <div class="nav-list-item" [matMenuTriggerFor]="subMenu2" [attr.active]="isActiveLink('SR_POLICIES')">
+                    <span class="nav-menu-item">
                     Policies
-                    <mat-icon>arrow_drop_down</mat-icon>
+                        <mat-icon>arrow_drop_down</mat-icon>
                 </span>
             </div>
-            <div class="nav-list-item" [matMenuTriggerFor]="subMenu3" [attr.active]="isActiveLink('SR_ADMIN')">
-                <span class="nav-menu-item">
+                <div class="nav-list-item" [matMenuTriggerFor]="subMenu3" [attr.active]="isActiveLink('SR_ADMIN')">
+                    <span class="nav-menu-item">
                     Admin Panel
-                    <mat-icon>arrow_drop_down</mat-icon>
+                        <mat-icon>arrow_drop_down</mat-icon>
                 </span>
             </div>
             </div>
@@ -298,7 +298,7 @@
                         <span>Demo Admin Panel</span>
                     </div>
                 </ng-template>
-                <button mat-icon-button class="user-info-icon">
+                <button *ngIf="innerWidth > 810" mat-icon-button class="user-info-icon">
                     <mat-icon>{{menuIcon}}</mat-icon>
                 </button>
             </div>
