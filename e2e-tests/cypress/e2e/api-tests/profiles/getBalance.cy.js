@@ -9,6 +9,9 @@ context('Profiles', { tags: '@profiles' },() => {
         const options = {
             method: 'GET',
             url: API.ApiServer + 'profiles/' + Cypress.env('root_user') + '/balance',
+            headers: {
+                authorization
+            }
            };
         cy.request(options)
           .should((response) => {
