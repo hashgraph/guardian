@@ -92,6 +92,7 @@ Any string for now.
 #### Targeted Benefit Type:
 
 Default to: **Carbon: Removal + Natural** for soil-based carbon projects
+
 #### Developer(s)
 
 These can be any kind of strings, for now point to account IDs, But by default they will be empty.
