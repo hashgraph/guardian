@@ -4,6 +4,9 @@ import { FormBuilder } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { TagCreateDialog } from '../tags-create-dialog/tags-create-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
+import { TagsHistory } from "../models/tags-history";
+import { TagMapItem } from "../models/tag-map-item";
+import { TagItem } from "../models/tag-item";
 
 /**
  * Dialog for creating tokens.
@@ -14,15 +17,14 @@ import { TagsService } from 'src/app/services/tag.service';
     styleUrls: ['./tags-explorer-dialog.component.css']
 })
 export class TagsExplorerDialog {
-    loading = false;
-    started = false;
-    title: string = "Tags";
-    description: string = "";
-    tags: any[];
-    select: any;
-    owner: any;
-    entity: any;
-    target: any;
+    public loading = false;
+    public started = false;
+    public title: string = "Tags";
+    public description: string = "";
+    public select: TagMapItem | undefined;
+    public open: TagItem | undefined;
+    public history: TagsHistory;
+    public owner: string;
 
     constructor(
         public dialogRef: MatDialogRef<TagsExplorerDialog>,
@@ -30,15 +32,9 @@ export class TagsExplorerDialog {
         private fb: FormBuilder,
         private tagsService: TagsService,
         @Inject(MAT_DIALOG_DATA) public data: any) {
-        if (data) {
-            this.tags = data.tags || [];
-            this.owner = data.owner;
-            this.entity = data.entity;
-            this.target = data.target;
-        } else {
-            this.tags = [];
-        }
-        this.select = this.tags[0];
+        this.history = data.history;
+        this.owner = this.history.owner;
+        this.select = this.history.get();
     }
 
     ngOnInit() {
@@ -49,8 +45,16 @@ export class TagsExplorerDialog {
         this.dialogRef.close(null);
     }
 
-    public onSelect(item: any) {
+    public onSelect(item: TagMapItem) {
         this.select = item;
+    }
+
+    public onOpen(item: TagItem) {
+        if( this.open == item) {
+            this.open = undefined;
+        } else {
+            this.open = item;
+        }
     }
 
     public onAdd() {
@@ -67,22 +71,25 @@ export class TagsExplorerDialog {
     }
 
     private create(tag: any) {
-        console.log(tag);
-        tag.entity = this.entity;
-        tag.target = this.target;
+        tag = this.history.create(tag);
         this.loading = true;
         this.tagsService.create(tag).subscribe((data) => {
-            const tag = this.tags.find(t => t.name === data.name);
-            if (tag) {
-                tag.items.push(data);
-                tag.count = tag.items.length;
-            } else {
-                this.tags.push({
-                    name: data.name,
-                    count: 1,
-                    items: [data]
-                })
-            }
+            this.history.add(data);
+            this.select = this.history.get(this.select);
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    public onDelete(item: TagItem) {
+        this.loading = true;
+        this.tagsService.delete(item.uuid).subscribe((data) => {
+            this.history.delete(item);
+            this.select = this.history.get(this.select);
             setTimeout(() => {
                 this.loading = false;
             }, 500);

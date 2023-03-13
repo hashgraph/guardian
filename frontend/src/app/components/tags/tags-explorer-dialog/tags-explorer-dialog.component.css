@@ -95,17 +95,29 @@
 .details {
     margin: 10px 4px 4px 4px;
     width: 710px;
-    height: 90px;
+    height: 200px;
     overflow: auto;
 }
 
-.detail-item {
+.tag-details {
     position: relative;
     width: 100%;
     margin: 6px 0px;
-    height: 26px;
-    padding: 4px 40px 4px 0px;
+    padding: 4px 40px 4px 36px;
     box-sizing: border-box;
+}
+
+.tag-collapse {
+    position: absolute;
+    left: 4px;
+    top: -1px;
+    width: 24px;
+    height: 24px;
+    overflow: hidden;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    user-select: none;
 }
 
 .tag-owner {
@@ -136,9 +148,35 @@
     background: #f1f1f1;
 }
 
+.tag-details[owner="false"] .delete-tag {
+    display: none !important;
+}
 
+.tag-details[open="false"] .tag-collapse {
+    transform: rotate(270deg);
+}
 
+.tag-details[open="false"] .tag-full-details {
+    display: none !important;
+}
 
+.tag-details-name {
+    color: #1274fb;
+    font-weight: 500;
+    margin: 0px 2px;
+    padding: 6px 6px;
+    border-left: 1px solid #999;
+}
+
+.tag-details-description {
+    margin: 0px 2px;
+    padding: 6px 6px;
+    border-left: 1px solid #999;
+}
+
+.tag-full-details {
+    margin-top: 10px;
+}
 
 
 .tag-item {

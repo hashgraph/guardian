@@ -1,0 +1,20 @@
+<div *ngIf="history" class="container" [attr.readonly]="loading">
+    <div *ngIf="history.top" class="main-tags" [attr.count]="history.count" (click)="onOpen()">
+        <div class="main-tag" [attr.count]="history.top.count" [attr.owner]="history.top.owner">
+            <mat-icon class="tag-icon">sell</mat-icon>
+            <div class="tag-name">
+                {{history.top.name}}
+            </div>
+            <div class="tag-count">
+                {{history.top.count}}
+            </div>
+        </div>
+        <mat-icon class="edit-tags">more_horiz</mat-icon>
+    </div>
+    <div *ngIf="!history.top" class="main-tag add-tags" (click)="onAdd()">
+        <mat-icon class="tag-icon">add</mat-icon>
+        <div class="tag-name">
+            Create Tag
+        </div>
+    </div>
+</div>

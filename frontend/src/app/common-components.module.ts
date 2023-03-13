@@ -8,9 +8,9 @@ import { SelectMenuButton } from './components/select-menu/select-menu.component
 import { AsyncProgressComponent } from './components/async-progress/async-progress.component';
 import { SwitchButton } from './components/switch-button/switch-button.component';
 import { FormsModule } from '@angular/forms';
-import { TagsExplorer } from './components/tags-explorer/tags-explorer.component';
-import { TagsExplorerDialog } from './components/tags-explorer-dialog/tags-explorer-dialog.component';
-import { TagCreateDialog } from './components/tags-create-dialog/tags-create-dialog.component';
+import { TagsExplorer } from './components/tags/tags-explorer/tags-explorer.component';
+import { TagsExplorerDialog } from './components/tags/tags-explorer-dialog/tags-explorer-dialog.component';
+import { TagCreateDialog } from './components/tags/tags-create-dialog/tags-create-dialog.component';
 
 @NgModule({
     declarations: [

@@ -15,7 +15,7 @@
                 <mat-spinner></mat-spinner>
             </div>
             <div class="tags">
-                <div *ngFor="let item of tags" class="tag-item" 
+                <div *ngFor="let item of history.items" class="tag-item" 
                     [attr.count]="item.count"
                     [attr.selected]="item === select" 
                     [attr.owner]="item.owner"
@@ -37,10 +37,20 @@
             </div>
 
             <div *ngIf="select" class="details">
-                <div *ngFor="let item of select.items" class="detail-item">
-                    <div class="tag-owner">{{item.owner}}</div>
-                    <div *ngIf="item.owner === owner" class="delete-tag">
+                <div *ngFor="let item of select.items" 
+                    class="tag-details" 
+                    [attr.owner]="item.owner === owner"
+                    [attr.open]="item === open">
+                    <mat-icon class="tag-collapse" (click)="onOpen(item)">arrow_drop_down</mat-icon>
+                    <div class="tag-owner">
+                        <span>{{item.owner}}</span>
+                    </div>
+                    <div class="delete-tag" (click)="onDelete(item)">
                         <mat-icon>delete</mat-icon>
+                    </div>
+                    <div class="tag-full-details">
+                        <div class="tag-details-name">{{item.name}}</div>
+                        <div class="tag-details-description">{{item.description}}</div>
                     </div>
                 </div>
             </div>
