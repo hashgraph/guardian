@@ -25,7 +25,7 @@
     background: #fff;
     position: fixed;
     z-index: 99;
-    top: 125px;
+    top: var(--header-height);
     left: 0;
     bottom: 0;
     right: 0;
@@ -223,9 +223,9 @@ a {
     }
 
     #generate-btn-mobile {
-        border: 1px solid #2C78F6;
+        border: 1px solid var(--button-primary-color);
         background: none !important;
-        color: #2C78F6;
+        color: var(--button-primary-color);
     }
 
     .white-space {
@@ -243,5 +243,9 @@ a {
         left: 50%;
         right: auto;
         transform: translateX(-50%);
+    }
+
+    .error-schema {
+        top: var(--header-height);
     }
 }

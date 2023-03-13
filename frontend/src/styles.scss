@@ -218,6 +218,11 @@ button.mat-button {
 }
 
 @media (max-width: 810px) {
+
+    body, html { 
+        overflow-x: hidden; 
+    }
+
     .cdk-overlay-pane {
         .mat-dialog-container {
             border-radius: 5px;

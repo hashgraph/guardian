@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { IUser, UserRole } from '@guardian/interfaces';
 import { Observable, Subscription } from 'rxjs';
+import { delay } from 'rxjs/operators';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { DemoService } from 'src/app/services/demo.service';
 import { HeaderPropsService } from 'src/app/services/header-props.service';
@@ -61,6 +62,9 @@ export class HeaderComponent implements OnInit {
     ngOnInit() {
         this.innerWidth = window.innerWidth;
         this.innerHeight = window.innerHeight;
+        if (this.innerWidth <= 810) {
+            document.documentElement.style.setProperty('--header-height', '75px');
+        }
         this.activeLink = "";
         this.update();
         this.ws = this.webSocketService.profileSubscribe((event) => {
@@ -266,6 +270,9 @@ export class HeaderComponent implements OnInit {
     }
 
     public routActive(type: string): boolean {
+        if (this.innerWidth <= 810) {
+            this.closeNav()
+        }
         switch (type) {
             case 'SR_UP':
                 this.router.navigate(['/config']);
@@ -337,5 +344,44 @@ export class HeaderComponent implements OnInit {
                 return true;
         }
         return false;
+    }
+
+    openNav() {
+        document.getElementById("menu-backdrop")!.style.display = "flex";
+        document.getElementById("nav-items")!.style.width = "250px";
+    }
+
+    closeNav() {
+        document.getElementById("menu-backdrop")!.style.display = "none";
+        document.getElementById("nav-items")!.style.width = "0";
+    }
+
+    openSubMenu(subMenuID: string) {
+        let content = document.getElementById('subMenu' + subMenuID)!;
+        for (let i = 1; i < 4; i++) {
+            if (i == parseInt(subMenuID)) {
+                continue
+            } else {
+                let dialog = document.getElementById('subMenu' + i)!;
+                dialog.style.maxHeight = '';
+                setTimeout(function () {
+                    dialog.style.margin = "0";
+                }, 200);
+                dialog.style.overflow = "hidden";
+            }
+        }
+        if (content.style.maxHeight) {
+            // Submenu is open
+            content.style.maxHeight = '';
+            setTimeout(function () {
+                content.style.margin = "0";
+            }, 200);
+            content.style.overflow = "hidden";
+        } else {
+            // Submenu is closed
+            content.style.maxHeight = content.scrollHeight + "px";
+            content.style.margin = "0 auto 20px 35px";
+            content.style.overflow = "visible";
+        } 
     }
 }

@@ -434,7 +434,12 @@ a.go-back-link mat-icon {
 
 @media (max-width: 810px) {
     .policy-header {
+        top: var(--header-height);
         box-shadow: none;
         border: none;
+    }
+
+    .dry-run-content {
+        top: var(--header-height);
     }
 }

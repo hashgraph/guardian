@@ -109,7 +109,7 @@ form {
 
     form {
         width: 90%;
-        height: calc(1vh - 125px);
+        height: calc(1vh - var(--header-height));
         margin: 20px auto;
         border: none;
         position: relative;

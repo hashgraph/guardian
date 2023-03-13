@@ -457,11 +457,13 @@ export class PoliciesComponent implements OnInit, OnDestroy {
 
     createMultiPolicy(element: any) {
         let dialogRef;
+        const bodyStyles = window.getComputedStyle(document.body);
+        const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
         if (this.innerWidth <= 810) {
             dialogRef = this.dialog.open(MultiPolicyDialogComponent, {
                 width: `${this.innerWidth.toString()}px`,
                 maxWidth: '100vw',
-                height: `${this.innerHeight - 125}px`, // CHANGE THE 125 TO THE HEADER HEIGHT VARIABLE
+                height: `${this.innerHeight - headerHeight}px`,
                 position: {
                     'bottom': '0'
                 },
@@ -469,7 +471,6 @@ export class PoliciesComponent implements OnInit, OnDestroy {
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
                 autoFocus: false,
-                id: 'g-cenas',
                 data: {
                     policyId: element.id
                 }

@@ -250,10 +250,12 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         let dialogRef;
         
         if (this.innerWidth <= 810) {
+            const bodyStyles = window.getComputedStyle(document.body);
+            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
             dialogRef = this.dialog.open(VCViewerDialog, {
                 width: `${this.innerWidth.toString()}px`,
                 maxWidth: '100vw',
-                height: `${this.innerHeight - 125}px`, // CHANGE THE 125 TO THE HEADER HEIGHT VARIABLE
+                height: `${this.innerHeight - headerHeight}px`,
                 position: {
                     'bottom': '0'
                 },
@@ -261,7 +263,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 hasBackdrop: true, // Shadows beyond the dialog
                 closeOnNavigation: true,
                 autoFocus: false,
-                id: 'g-cenas',
                 data: this
             });
         } else {
