@@ -10,7 +10,7 @@
     "nats": "^2.6.1",
     "reflect-metadata": "^0.1.13",
     "winston": "^3.8.1",
-    "ws": "^8.2.1",
+    "ws": "^8.13.0",
     "zlib": "^1.0.5"
   },
   "description": "Common package share cross all services",
