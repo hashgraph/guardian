@@ -3,7 +3,8 @@ import API from "../support/ApiUrls";
 
 context("IREC e2e test", { tags: "@e2e" }, () => {
     var accessToken;
-    const name = Math.floor(Math.random() * 99999) + "test001";
+    var rootUserDid;
+    const name = Math.floor(Math.random() * 99999) + "test001SR";
 
     it("register a new root user and login with it", () => {
         cy.request("POST", API.ApiServer + "accounts/register", {
@@ -41,8 +42,8 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
                     }).then((resp) => {
                         expect(resp.status).eql(STATUS_CODE.OK);
 
-                        const hederaAccountId = resp.body.id;
-                        const hederaAccountKey = resp.body.key;
+                        const rootHederaAccountId = resp.body.id;
+                        const rootHederaAccountKey = resp.body.key;
 
                         cy.request({
                             method: "PUT",
@@ -51,8 +52,8 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
                                 authorization: accessToken,
                             },
                             body: {
-                                hederaAccountId: hederaAccountId,
-                                hederaAccountKey: hederaAccountKey,
+                                hederaAccountId: rootHederaAccountId,
+                                hederaAccountKey: rootHederaAccountKey,
                                 vcDocument: {
                                     geography: "testGeography",
                                     law: "testLaw",
@@ -77,6 +78,9 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
                                     "confirmed"
                                 );
                                 expect(response.body).to.have.property(
+                                    "did"
+                                );
+                                expect(response.body).to.have.property(
                                     "username",
                                     name
                                 );
@@ -84,6 +88,8 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
                                     "role",
                                     "STANDARD_REGISTRY"
                                 );
+
+                                rootUserDid = response.body.did;
                             });
                         });
                     });
@@ -95,7 +101,7 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
         cy.request({
             method: "POST",
             url: API.ApiServer + "policies/import/message",
-            body: { messageId: "1651598638.021817000" },
+            body: { messageId: "1678461680.254393969" }, //iRec
             headers: {
                 authorization: accessToken,
             },
@@ -124,12 +130,12 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
     });
 
     it("Tokens", () => {
-        const installer = Math.floor(Math.random() * 99999) + "test001";
+        const installer = Math.floor(Math.random() * 99999) + "test001User";
 
         cy.request("POST", API.ApiServer + "accounts/register", {
             username: installer,
             password: "test",
-            role: "Installer",
+            role: "USER",
         }) .then(() => {
         cy.request({
             method: "POST",
@@ -142,7 +148,55 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
             .as("requestToken")
             .then((response) => {
                 const accessTokenInstaller = "bearer " + response.body.accessToken;
-               
+
+                    cy.request({
+                        method: METHOD.GET,
+                        url: API.ApiServer + "demo/randomKey",
+                        headers: {},
+                    }).then((resp) => {
+                        expect(resp.status).eql(STATUS_CODE.OK);
+
+                        const userHederaAccountId = resp.body.id;
+                        const userHederaAccountKey = resp.body.key;
+
+                        cy.request({
+                            method: "PUT",
+                            url: API.ApiServer + "profiles/" + installer,
+                            headers: {
+                                authorization: accessTokenInstaller,
+                            },
+                            body: {
+                                hederaAccountId: userHederaAccountId,
+                                hederaAccountKey: userHederaAccountKey,
+                                parent: rootUserDid
+                            },
+                            timeout: 200000,
+                        }).then((resp) => {
+                            expect(resp.status).eql(STATUS_CODE.OK);
+
+                            cy.request({
+                                method: "GET",
+                                url: API.ApiServer + "profiles/" + installer,
+                                headers: {
+                                    authorization: accessTokenInstaller,
+                                },
+                            }).should((response) => {
+                                expect(response.status).to.eq(200);
+                                expect(response.body).to.have.property(
+                                    "confirmed"
+                                );
+                                expect(response.body).to.have.property(
+                                    "username",
+                                    installer
+                                );
+                                expect(response.body).to.have.property(
+                                    "role",
+                                    "USER"
+                                );
+                            });
+                        });
+                    });
+
                     cy.request({
                         method: METHOD.GET,
                         url: API.ApiServer + API.ListOfTokens,
@@ -154,7 +208,7 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
                         expect(resp.body[0]).to.have.property("tokenId");
                         expect(resp.body[0]).to.have.property("tokenName");
 
-                        const tokenId = resp.body.tokenId;
+                        const tokenId = resp.body[0].tokenId;
 
                         cy.request({
                             method: "PUT",
