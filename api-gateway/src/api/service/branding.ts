@@ -1,9 +1,9 @@
 import { permissionHelper } from '@auth/authorization-helper';
 import { Guardians } from '@helpers/guardians';
 import { Request, Response, Router } from 'express';
-import { CommonSettings, UserRole } from '@guardian/interfaces';
+import { UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-const fs = require('fs');
+import * as fs from 'fs';
 
 /**
  * Branding route
