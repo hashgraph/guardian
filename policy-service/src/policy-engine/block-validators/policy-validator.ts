@@ -99,7 +99,7 @@ export class PolicyValidator {
             }
         } else {
             validator = new BlockValidator(block, this);
-            this.errors.push(`UUID not set`);
+            this.errors.push(`UUID is not set`);
         }
         if (block.tag) {
             if (this.tags.has(block.tag)) {

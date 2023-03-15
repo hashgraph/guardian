@@ -24,7 +24,7 @@ export class AggregateBlock {
                     }
                 }
                 if (!ref.options.condition) {
-                    validator.addError('Option "condition" does not set');
+                    validator.addError('Option "condition" is not set');
                 } else if (typeof ref.options.condition !== 'string') {
                     validator.addError('Option "condition" must be a string');
                 } else {

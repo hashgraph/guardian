@@ -21,7 +21,7 @@ export class SwitchBlock {
             }
 
             if (!ref.options.conditions) {
-                validator.addError('Option "conditions" does not set');
+                validator.addError('Option "conditions" is not set');
             }
 
             const tagMap = {};
@@ -32,14 +32,14 @@ export class SwitchBlock {
                     }
                     if (condition.type === 'equal' || condition.type === 'not_equal') {
                         if (!condition.value) {
-                            validator.addError('Option "condition.value" does not set');
+                            validator.addError('Option "condition.value" is not set');
                         } else {
                             validator.parsFormulaVariables(condition.value);
                         }
                     }
 
                     if (!condition.tag) {
-                        validator.addError(`Option "tag" does not set`);
+                        validator.addError(`Option "tag" is not set`);
                     }
 
                     if (tagMap[condition.tag]) {

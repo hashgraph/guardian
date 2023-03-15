@@ -399,7 +399,7 @@ export async function publishSchema(
     for (const name of names) {
         const field = SchemaHelper.parseProperty(name, itemDocument.properties[name]);
         if (!field.type) {
-            throw new Error(`Field type not set. Field: ${name}`);
+            throw new Error(`Field type is not set. Field: ${name}`);
         }
         if (field.isRef && (!itemDocument.$defs || !itemDocument.$defs[field.type])) {
             throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);
@@ -681,7 +681,7 @@ export async function findAndDryRunSchema(item: SchemaCollection, version: strin
     for (const name of names) {
         const field = SchemaHelper.parseProperty(name, itemDocument.properties[name]);
         if (!field.type) {
-            throw new Error(`Field type not set. Field: ${name}`);
+            throw new Error(`Field type is not set. Field: ${name}`);
         }
         if (field.isRef && (!itemDocument.$defs || !itemDocument.$defs[field.type])) {
             throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);

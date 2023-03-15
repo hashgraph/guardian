@@ -11,7 +11,7 @@ import { Token as TokenCollection } from '@entity/token';
 import { Topic as TopicCollection } from '@entity/topic';
 import { DryRun } from '@entity/dry-run';
 import { PolicyRoles as PolicyRolesCollection } from '@entity/policy-roles';
-import { IVC, SchemaEntity, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IVC, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { BaseEntity, DataBaseHelper } from '@guardian/common';
 import { PolicyInvitations } from '@entity/policy-invitations';
 import { MultiDocuments } from '@entity/multi-documents';
@@ -1574,6 +1574,7 @@ export class DatabaseServer {
     public static createPolicy(data: Partial<Policy>): Policy {
         if (!data.config) {
             data.config = {
+                'id': GenerateUUIDv4(),
                 'blockType': 'interfaceContainerBlock',
                 'permissions': [
                     'ANY_ROLE'

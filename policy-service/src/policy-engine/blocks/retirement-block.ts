@@ -217,7 +217,7 @@ export class RetirementBlock {
             targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner);
         }
         if (!targetAccountId) {
-            throw new BlockActionError('Token recipient not set', ref.blockType, ref.uuid);
+            throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
         }
 
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
