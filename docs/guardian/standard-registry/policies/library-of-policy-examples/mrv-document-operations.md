@@ -60,7 +60,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 1.3.1 Since another (not current user) account is used for minted tokens ’**tokenActionBlock**’ cannot be used, instead we will use ‘**tokenConfirmationBlock**_**’**_
 
-![Adding tokenConfirmationBlock](<../../../../.gitbook/assets/7 (2) (1).png>)
+![Adding tokenConfirmationBlock](<../../../../.gitbook/assets/7 (2).png>)
 
 1.3.2 To configure the target account for mixed tokens select ‘_Custom_’ value for ‘_Type_’ and the filed in the document from which to take the value for the Account ID (this field must have type: ‘**Account**’)
 
