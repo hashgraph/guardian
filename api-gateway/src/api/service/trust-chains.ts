@@ -32,12 +32,12 @@ trustChainsAPI.get('/', permissionHelper(UserRole.AUDITOR),
                 }
             }
         }
-        const { vp, count } = await guardians.getVpDocuments({
+        const { items, count } = await guardians.getVpDocuments({
             filters,
             pageIndex,
             pageSize
         });
-        return res.setHeader('X-Total-Count', count).json(vp);
+        return res.setHeader('X-Total-Count', count).json(items);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         return next(error);
