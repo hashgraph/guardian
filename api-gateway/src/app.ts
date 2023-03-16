@@ -76,7 +76,7 @@ Promise.all([
         app.use('/schema', authorizationHelper, singleSchemaRoute);
         app.use('/schemas', authorizationHelper, schemaAPI);
         app.use('/tokens', authorizationHelper, tokenAPI);
-        app.use('/artifact', authorizationHelper, artifactAPI);
+        app.use('/artifacts', authorizationHelper, artifactAPI);
         app.use('/trust-chains/', authorizationHelper, trustChainsAPI);
         app.use('/external/', externalAPI);
         app.use('/demo/', demoAPI);
@@ -88,9 +88,10 @@ Promise.all([
         app.use('/modules', authorizationHelper, moduleAPI);
 
         /**
-         * @deprecatedtokens.ts:470:1
+         * @deprecated 2023-03-01
          */
         app.use('/trustchains/', authorizationHelper, trustchainsAPI);
+        app.use('/artifact', authorizationHelper, artifactAPI);
         /////////////////////////////////////////
 
         // middleware error handler
