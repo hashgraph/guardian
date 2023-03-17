@@ -7,6 +7,7 @@ import { TagsService } from 'src/app/services/tag.service';
 import { TagsHistory } from "../models/tags-history";
 import { TagMapItem } from "../models/tag-map-item";
 import { TagItem } from "../models/tag-item";
+import * as moment from 'moment';
 
 /**
  * Dialog for creating tokens.
@@ -25,6 +26,8 @@ export class TagsExplorerDialog {
     public open: TagItem | undefined;
     public history: TagsHistory;
     public owner: string;
+    public time: string | undefined;
+    public tab: number = 1;
 
     constructor(
         public dialogRef: MatDialogRef<TagsExplorerDialog>,
@@ -34,7 +37,9 @@ export class TagsExplorerDialog {
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this.history = data.history;
         this.owner = this.history.owner;
-        this.select = this.history.get();
+        this.select = this.history.getItem();
+        this.setTime(this.history.time);
+        this.tab = 1;
     }
 
     ngOnInit() {
@@ -75,7 +80,11 @@ export class TagsExplorerDialog {
         this.loading = true;
         this.tagsService.create(tag).subscribe((data) => {
             this.history.add(data);
-            this.select = this.history.get(this.select);
+            if(this.tab === 1) {
+                this.select = this.history.getItem(this.select);
+            } else {
+                this.select = this.history.getHistory(this.select);
+            }
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -89,7 +98,11 @@ export class TagsExplorerDialog {
         this.loading = true;
         this.tagsService.delete(item.uuid).subscribe((data) => {
             this.history.delete(item);
-            this.select = this.history.get(this.select);
+            if(this.tab === 1) {
+                this.select = this.history.getItem(this.select);
+            } else {
+                this.select = this.history.getHistory(this.select);
+            }
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -97,5 +110,47 @@ export class TagsExplorerDialog {
             console.error(e.error);
             this.loading = false;
         });
+    }
+
+    public onUpdate() {
+        this.loading = true;
+        this.tagsService.synchronization(this.history.entity, this.history.target).subscribe((data) => {
+            this.history.setData(data.tags);
+            this.history.setDate(data.refreshDate);
+            if(this.tab === 1) {
+                this.select = this.history.getItem(this.select);
+            } else {
+                this.select = this.history.getHistory(this.select);
+            }
+            this.setTime(this.history.time);
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    public openTab(tab:number) {
+        this.tab = tab;
+        if(this.tab === 1) {
+            this.select = this.history.getItem();
+        } else {
+            this.select = this.history.getHistory();
+        }
+    }
+
+    private setTime(time:string| undefined) {
+        if(time) {
+            const m = moment(time);
+            if(m.isValid()) {
+                this.time = m.fromNow();
+            } else {
+                this.time = undefined;
+            }
+        } else {
+            this.time = undefined;
+        }
     }
 }

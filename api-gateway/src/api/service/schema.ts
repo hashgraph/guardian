@@ -13,14 +13,22 @@ import { ServiceError } from '@helpers/service-requests-base';
  * @param {any} zipFile
  * @returns {Promise<any[]>}
  */
-export async function parseZipFile(zipFile: any): Promise<any[]> {
+export async function parseZipFile(zipFile: any): Promise<any> {
     const zip = new JSZip();
     const content = await zip.loadAsync(zipFile);
     const schemaStringArray = await Promise.all(Object.entries(content.files)
         .filter(file => !file[1].dir)
+        .filter(file => !/^tags\/.+/.test(file[0]))
         .map(file => file[1].async('string')));
     const schemas = schemaStringArray.map(item => JSON.parse(item));
-    return schemas;
+
+    const tagsStringArray = await Promise.all(Object.entries(content.files)
+        .filter(file => !file[1].dir)
+        .filter(file => /^tags\/.+/.test(file[0]))
+        .map(file => file[1].async('string')));
+    const tags = tagsStringArray.map(item => JSON.parse(item));
+
+    return { schemas, tags };
 }
 
 /**
@@ -28,10 +36,17 @@ export async function parseZipFile(zipFile: any): Promise<any[]> {
  * @param {ISchema[]} schemas
  * @returns {@Promise<JSZip>>}
  */
-export async function generateZipFile(schemas: ISchema[]): Promise<JSZip> {
+export async function generateZipFile(schemas: ISchema[], tags?: any[]): Promise<JSZip> {
     const zip = new JSZip();
     for (const schema of schemas) {
         zip.file(`${schema.iri}.json`, JSON.stringify(schema));
+    }
+    if (Array.isArray(tags)) {
+        zip.folder('tags')
+        for (let index = 0; index < tags.length; index++) {
+            const tag = tags[index];
+            zip.file(`tags/${index}.json`, JSON.stringify(tag));
+        }
     }
     return zip;
 }
@@ -496,8 +511,8 @@ schemaAPI.post('/import/file/preview', permissionHelper(UserRole.STANDARD_REGIST
             throw new Error('file in body is empty');
         }
         const guardians = new Guardians();
-        const files = await parseZipFile(zip);
-        const schemaToPreview = await guardians.previewSchemasByFile(files);
+        const { schemas } = await parseZipFile(zip);
+        const schemaToPreview = await guardians.previewSchemasByFile(schemas);
         res.status(200).json(schemaToPreview);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
@@ -617,8 +632,13 @@ schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.STANDARD_REGIS
         const guardians = new Guardians();
         const id = req.params.schemaId as string;
         const schemas = await guardians.exportSchemas([id]);
+        if (!schemas || !schemas.length) {
+            throw new Error(`Cannot export policy ${req.params.schemaId}`);
+        }
+        const ids = schemas.map(s => s.id);
+        const tags = await guardians.exportTags('Schema', ids);
         const name = `${Date.now()}`;
-        const zip = await generateZipFile(schemas);
+        const zip = await generateZipFile(schemas, tags);
         const arcStream = zip.generateNodeStream({
             type: 'nodebuffer',
             compression: 'DEFLATE',

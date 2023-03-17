@@ -21,6 +21,10 @@ export class TagsService {
         return this.http.post<any>(`${this.url}/search`, { entity, targets });
     }
 
+    public synchronization(entity: string, target: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/synchronization`, { entity, target });
+    }
+
     public delete(uuid: string): Observable<boolean> {
         return this.http.delete<boolean>(`${this.url}/${uuid}`);
     }

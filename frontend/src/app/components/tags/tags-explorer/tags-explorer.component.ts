@@ -36,6 +36,7 @@ export class TagsExplorer {
                 this.owner
             );
             this.history.setData(this.data.tags);
+            this.history.setDate(this.data.refreshDate);
         } else {
             this.history = new TagsHistory(
                 this.entity,

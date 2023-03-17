@@ -1,4 +1,4 @@
-import { BeforeCreate, Entity, Property, Unique } from '@mikro-orm/core';
+import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
@@ -6,8 +6,7 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
  * Tags collection
  */
 @Entity()
-@Unique({ properties: ['uuid'], options: { partialFilterExpression: { uuid: { $type: 'string' } } } })
-export class Tags extends BaseEntity {
+export class Tag extends BaseEntity {
     /**
      * Tag id
      */
@@ -45,10 +44,42 @@ export class Tags extends BaseEntity {
     target?: string;
 
     /**
+    * Target ID (Local)
+    */
+    @Property({ nullable: true })
+    localTarget?: string;
+    
+    /**
+    * Target ID
+    */
+    @Property({ nullable: true })
+    status?: 'Draft' | 'Published' | 'History';
+
+    /**
+    * Target ID
+    */
+    @Property({ nullable: true })
+    operation?: 'Create' | 'Delete';
+
+    /**
+     * Topic id
+     */
+    @Property({ nullable: true })
+    topicId?: string;
+
+    /**
+     * Message id
+     */
+    @Property({ nullable: true })
+    messageId?: string;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()
     setDefaults() {
         this.uuid = this.uuid || GenerateUUIDv4();
+        this.status = this.status || 'Draft';
+        this.operation = this.operation || 'Create';
     }
 }

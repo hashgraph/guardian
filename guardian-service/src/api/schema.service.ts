@@ -13,14 +13,66 @@ import {
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
-import { MessageAction, MessageServer, MessageType, SchemaMessage, TopicConfig, TopicHelper, UrlType } from '@hedera-modules';
+import {
+    MessageAction,
+    MessageServer,
+    MessageType,
+    SchemaMessage,
+    TopicConfig,
+    TopicHelper,
+    UrlType
+} from '@hedera-modules';
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger, RunFunctionAsync, schemasToContext } from '@guardian/common';
+import {
+    MessageBrokerChannel,
+    MessageResponse,
+    MessageError,
+    Logger,
+    RunFunctionAsync,
+    schemasToContext
+} from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
+import { importTag, publishSchemaTags } from './tag.service';
+
+interface ImportResult {
+    /**
+     * New schema uuid
+     */
+    schemasMap: {
+        /**
+         * Old schema id
+         */
+        oldID: string,
+        /**
+         * New schema id
+         */
+        newID: string,
+        /**
+         * Old schema uuid
+         */
+        oldUUID: string,
+        /**
+         * New schema uuid
+         */
+        newUUID: string,
+        /**
+         * Old schema iri
+         */
+        oldIRI: string,
+        /**
+         * New schema iri
+         */
+        newIRI: string,
+    }[];
+    /**
+     * Errors
+     */
+    errors: any[];
+}
 
 export const schemaCache = {};
 
@@ -303,23 +355,25 @@ export async function importSchemaByFiles(
     files: ISchema[],
     topicId: string,
     notifier: INotifier
-): Promise<{
-    /**
-     * New schema uuid
-     */
-    schemasMap: any[];
-    /**
-     * Errors
-     */
-    errors: any[];
-}> {
+): Promise<ImportResult> {
     notifier.start('Import schemas');
+
+    const schemasMap: any[] = [];
     const uuidMap: Map<string, string> = new Map();
+
     for (const file of files) {
+        const oldUUID = file.iri ? file.iri.substring(1) : null;
         const newUUID = GenerateUUIDv4();
-        const uuid = file.iri ? file.iri.substring(1) : null;
-        if (uuid) {
-            uuidMap.set(uuid, newUUID);
+        schemasMap.push({
+            oldID: file.id,
+            newID: null,
+            oldUUID: oldUUID,
+            newUUID: newUUID,
+            oldIRI: `#${oldUUID}`,
+            newIRI: `#${newUUID}`
+        })
+        if (oldUUID) {
+            uuidMap.set(oldUUID, newUUID);
         }
         file.uuid = newUUID;
         file.iri = '#' + newUUID;
@@ -353,28 +407,45 @@ export async function importSchemaByFiles(
         }
     }
 
-    let num: number = 0;
-    for (let file of files) {
-        const parsedSchema = updatedSchemasMap[file.iri];
-        file.document = parsedSchema.document;
-        file = SchemaConverterUtils.SchemaConverter(file);
-        await createSchema(file, owner, emptyNotifier());
-        num++;
-        notifier.info(`Schema ${num} (${file.name || '-'}) created`);
+    for (let index = 0; index < files.length; index++) {
+        const schema = files[index];
+        const parsedSchema = updatedSchemasMap[schema.iri];
+        schema.document = parsedSchema.document;
+        const file = SchemaConverterUtils.SchemaConverter(schema);
+        const item = await createSchema(file, owner, emptyNotifier());
+        schemasMap[index].newID = item.id.toString();
+        notifier.info(`Schema ${index + 1} (${file.name || '-'}) created`);
     }
-
-    const schemasMap: any[] = [];
-    uuidMap.forEach((v, k) => {
-        schemasMap.push({
-            oldUUID: k,
-            newUUID: v,
-            oldIRI: `#${k}`,
-            newIRI: `#${v}`
-        })
-    });
 
     notifier.completed();
     return { schemasMap, errors };
+}
+
+/**
+ * Import tags by files
+ * @param result
+ * @param files
+ * @param topicId
+ */
+export async function importTagsByFiles(
+    result: ImportResult,
+    files: any[],
+    notifier: INotifier
+): Promise<ImportResult> {
+    const { schemasMap } = result;
+    const idMap: Map<string, string> = new Map();
+    for (const item of schemasMap) {
+        idMap.set(item.oldID, item.newID);
+    }
+    const tags = [];
+    for (const tag of files) {
+        if (idMap.has(tag.target)) {
+            tag.target = idMap.get(tag.target);
+            tags.push(tag);
+        }
+    }
+    await importTag(tags, notifier);
+    return result;
 }
 
 /**
@@ -648,6 +719,9 @@ export async function findAndPublishSchema(
     SchemaHelper.updateVersion(item, version);
     item = await publishSchema(item, messageServer, MessageAction.PublishSchema);
 
+    notifier.completedAndStart('Publish tags');
+    await publishSchemaTags(item, messageServer);
+
     notifier.completedAndStart('Update in DB');
     await updateSchemaDocument(item);
     await updateSchemaDefs(item.document?.$id, oldSchemaId);
@@ -718,13 +792,21 @@ async function importSchemasByMessages(
     errors: any[];
 }> {
     notifier.start('Load schema files');
-    const files: ISchema[] = [];
+    const schemas: ISchema[] = [];
     for (const messageId of messageIds) {
         const newSchema = await loadSchema(messageId, null);
-        files.push(newSchema);
+        schemas.push(newSchema);
     }
+
+    notifier.start('Load tags');
+    const tags: any[] = [];
+
     notifier.completed();
-    return await importSchemaByFiles(owner, files, topicId, notifier);
+
+    let result = await importSchemaByFiles(owner, schemas, topicId, notifier);
+    result = await importTagsByFiles(result, tags, notifier);
+
+    return result;
 }
 
 /**
@@ -1098,8 +1180,12 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
             if (!owner || !files) {
                 return new MessageError('Invalid import schema parameter');
             }
+            const { schemas, tags } = files;
+            const notifier = emptyNotifier();
 
-            const result = await importSchemaByFiles(owner, files, topicId, emptyNotifier());
+            let result = await importSchemaByFiles(owner, schemas, topicId, notifier);
+            result = await importTagsByFiles(result, tags, notifier);
+
             return new MessageResponse(result);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -1110,6 +1196,8 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
 
     ApiResponse(channel, MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, async (msg) => {
         const { owner, files, topicId, taskId } = msg;
+        const { schemas, tags } = files;
+
         const notifier = initNotifier(apiGatewayChannel, taskId);
         RunFunctionAsync(async () => {
             if (!msg) {
@@ -1119,7 +1207,9 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
                 notifier.error('Invalid import schema parameter');
             }
 
-            const result = await importSchemaByFiles(owner, files, topicId, notifier);
+            let result = await importSchemaByFiles(owner, schemas, topicId, notifier);
+            result = await importTagsByFiles(result, tags, notifier);
+
             notifier.result(result);
         }, async (error) => {
             new Logger().error(error, ['GUARDIAN_SERVICE']);

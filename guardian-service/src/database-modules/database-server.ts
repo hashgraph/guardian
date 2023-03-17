@@ -22,7 +22,8 @@ import { SplitDocuments } from '@entity/split-documents';
 import { MultiPolicy } from '@entity/multi-policy';
 import { MultiPolicyTransaction } from '@entity/multi-policy-transaction';
 import { PolicyModule } from '@entity/module';
-import { Tags } from '@entity/tags';
+import { Tag } from '@entity/tag';
+import { TagCache } from '@entity/tag-cache';
 
 /**
  * Database server
@@ -1623,7 +1624,7 @@ export class DatabaseServer {
      * @param row
      */
     public static async updateTopic(row: TopicCollection): Promise<void> {
-        await new DataBaseHelper(TopicCollection).update(row);
+        await new DataBaseHelper(TopicCollection).update(row, { id: row.id });
     }
 
     /**
@@ -2053,10 +2054,10 @@ export class DatabaseServer {
 
     /**
      * Update MultiPolicyTransaction
-     * @param item
+     * @param row
      */
-    public static async updateMultiPolicyTransactions(item: MultiPolicyTransaction): Promise<void> {
-        await new DataBaseHelper(MultiPolicyTransaction).update(item);
+    public static async updateMultiPolicyTransactions(row: MultiPolicyTransaction): Promise<void> {
+        await new DataBaseHelper(MultiPolicyTransaction).update(row);
     }
 
     /**
@@ -2132,25 +2133,25 @@ export class DatabaseServer {
      * Create tag
      * @param tag
      */
-    public static async createTag(tag: any): Promise<Tags> {
-        const item = new DataBaseHelper(Tags).create(tag);
-        return await new DataBaseHelper(Tags).save(item);
+    public static async createTag(tag: any): Promise<Tag> {
+        const item = new DataBaseHelper(Tag).create(tag);
+        return await new DataBaseHelper(Tag).save(item);
     }
 
     /**
      * Delete tag
      * @param tag
      */
-    public static async removeTag(tag: Tags): Promise<void> {
-        return await new DataBaseHelper(Tags).remove(tag);
+    public static async removeTag(tag: Tag): Promise<void> {
+        return await new DataBaseHelper(Tag).remove(tag);
     }
 
     /**
      * Get tag By UUID
      * @param uuid
      */
-    public static async getTagById(uuid: string): Promise<Tags> {
-        return await new DataBaseHelper(Tags).findOne({ uuid });
+    public static async getTagById(uuid: string): Promise<Tag> {
+        return await new DataBaseHelper(Tag).findOne({ uuid });
     }
 
     /**
@@ -2158,7 +2159,42 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getTags(filters?: any, options?: any): Promise<Tags[]> {
-        return await new DataBaseHelper(Tags).find(filters, options);
+    public static async getTags(filters?: any, options?: any): Promise<Tag[]> {
+        return await new DataBaseHelper(Tag).find(filters, options);
+    }
+
+    /**
+     * Update tags
+     * @param row
+     */
+    public static async updateTag(row: Tag): Promise<Tag> {
+        console.log('--', row);
+        return await new DataBaseHelper(Tag).update(row);
+    }
+
+    /**
+     * Create tag cache
+     * @param tag
+     */
+    public static async createTagCache(tag: any): Promise<Tag> {
+        const item = new DataBaseHelper(TagCache).create(tag);
+        return await new DataBaseHelper(TagCache).save(item);
+    }
+
+    /**
+     * Get tags
+     * @param filters
+     * @param options
+     */
+    public static async getTagCache(filters?: any, options?: any): Promise<TagCache[]> {
+        return await new DataBaseHelper(TagCache).find(filters, options);
+    }
+
+    /**
+     * Update tag cache
+     * @param row
+     */
+    public static async updateTagCache(row: TagCache): Promise<Tag> {
+        return await new DataBaseHelper(TagCache).update(row);
     }
 }

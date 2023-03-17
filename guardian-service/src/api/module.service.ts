@@ -464,7 +464,6 @@ export async function modulesAPI(
     ApiResponse(channel, MessageAPI.VALIDATE_MODULES, async (msg) => {
         try {
             const { module } = msg;
-            console.log('---- module', module)
             const results = await validateModel(module);
             return new MessageResponse({
                 results,

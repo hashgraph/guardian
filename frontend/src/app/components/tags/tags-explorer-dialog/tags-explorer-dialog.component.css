@@ -1,3 +1,8 @@
+.container {
+    position: relative;
+    padding: 0px 15px 5px 15px
+}
+
 .loading {
     background: #fff;
     position: absolute;
@@ -39,7 +44,7 @@
     box-sizing: border-box;
     overflow: hidden;
     border-radius: 20px;
-    padding: 6px 12px 6px 30px;
+    padding: 6px 12px 6px 40px;
     display: flex;
     flex-direction: row;
     user-select: none;
@@ -49,7 +54,7 @@
 
 .tag-icon {
     position: absolute;
-    left: 7px;
+    left: 12px;
     top: 6px;
     font-size: 20px;
     width: 20px;
@@ -90,12 +95,14 @@
     flex-direction: row;
     width: 700px;
     flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding-top: 5px;
 }
 
 .details {
     margin: 10px 4px 4px 4px;
     width: 710px;
-    height: 200px;
+    height: 300px;
     overflow: auto;
 }
 
@@ -103,13 +110,26 @@
     position: relative;
     width: 100%;
     margin: 6px 0px;
-    padding: 4px 40px 4px 36px;
+    padding: 4px 40px 4px 30px;
     box-sizing: border-box;
 }
 
+.tag-details[owner="true"] {
+    color: #005edf;
+}
+
+.tag-details[owner="false"] {
+    color: #007985;
+}
+
+.tag-details[status="History"] {
+    color: #5f5f5f !important;
+}
+
+
 .tag-collapse {
     position: absolute;
-    left: 4px;
+    left: -1px;
     top: -1px;
     width: 24px;
     height: 24px;
@@ -151,6 +171,9 @@
 .tag-details[owner="false"] .delete-tag {
     display: none !important;
 }
+.tag-details[status="History"] .delete-tag {
+    display: none !important;
+}
 
 .tag-details[open="false"] .tag-collapse {
     transform: rotate(270deg);
@@ -160,92 +183,41 @@
     display: none !important;
 }
 
-.tag-details-name {
-    color: #1274fb;
-    font-weight: 500;
+.tag-details-field {
     margin: 0px 2px;
-    padding: 6px 6px;
+    padding: 6px 12px;
     border-left: 1px solid #999;
+    display: grid;
+    grid-template-columns: 100px auto;
 }
 
-.tag-details-description {
-    margin: 0px 2px;
-    padding: 6px 6px;
-    border-left: 1px solid #999;
+.tag-details-field .tag-details-field-name {
+    color: #676767;
+    font-weight: 500;
+}
+
+.tag-details-name .tag-details-field-value {
+    color: #1274fb;
+    font-weight: 500;
+}
+
+.tag-details[status="Draft"] .tag-details-field-value {
+    color: #2196f3 !important;
+    font-weight: 500;
+}
+
+.tag-details[status="Published"] .tag-details-field-value {
+    color: #4caf50 !important;
+    font-weight: 500;
+}
+
+.tag-details[status="History"] .tag-details-field-value {
+    color: #5f5f5f !important;
+    font-weight: 500;
 }
 
 .tag-full-details {
     margin-top: 10px;
-}
-
-
-.tag-item {
-    background: #fff;
-    border: 1px solid #1274fb;
-}
-
-.tag-item:hover {
-    background: #f1f1f1;
-}
-
-.tag-item .tag-icon,
-.tag-item .tag-name {
-    color: #1274fb;
-}
-
-.tag-item[selected="true"] {
-    background: #1274fb !important;
-}
-
-.tag-item[selected="true"] .tag-icon,
-.tag-item[selected="true"] .tag-name {
-    color: #fff !important;
-}
-
-.tag-item[owner="true"] {
-    background: #e3eefe;
-    border: 1px solid #1274fb;
-}
-
-.tag-item[owner="true"]:hover {
-    background: #ccd6e5;
-}
-
-.tag-item[owner="true"] .tag-icon,
-.tag-item[owner="true"] .tag-name {
-    color: #005edf;
-}
-
-.tag-item[selected="true"][owner="true"] {
-    background: #1274fb !important;
-}
-
-.tag-item[selected="true"][owner="true"] .tag-icon,
-.tag-item[selected="true"][owner="true"] .tag-name {
-    color: #fff !important;
-}
-
-.tag-item[owner="false"] {
-    background: #dbf5f8;
-    border: 1px solid #00afc3;
-}
-
-.tag-item[owner="false"]:hover {
-    background: #c6dee1;
-}
-
-.tag-item[owner="false"] .tag-icon,
-.tag-item[owner="false"] .tag-name {
-    color: #007985;
-}
-
-.tag-item[selected="true"][owner="false"] {
-    background: #00afc3 !important;
-}
-
-.tag-item[selected="true"][owner="false"] .tag-icon,
-.tag-item[selected="true"][owner="false"] .tag-name {
-    color: #fff !important;
 }
 
 .tag-item.new-tag {
@@ -253,4 +225,172 @@
     min-width: 80px;
     margin-left: 10px;
     border: 1px solid #5a9af9;
+}
+
+
+
+
+
+.tag-item {
+    background: #fff;
+    border: 1px solid #c7daf5;
+}
+.tag-item:hover {
+    background: #f1f1f1;
+}
+.tag-item .tag-icon,
+.tag-item .tag-name {
+    color: #1274fb;
+}
+.tag-item[selected="true"] {
+    border: 1px solid #1274fb !important;
+}
+
+
+
+.tag-item[owner="owner"] {
+    background: #e3eefe;
+    border: 1px solid #c7daf5;
+}
+.tag-item[owner="owner"]:hover {
+    background: #ccd6e5;
+}
+.tag-item[owner="owner"] .tag-icon,
+.tag-item[owner="owner"] .tag-name {
+    color: #005edf;
+}
+.tag-item[selected="true"][owner="owner"] {
+    border: 1px solid #1274fb !important;
+    box-shadow: 0px 0px 4px 1px #1274fb !important;
+}
+
+
+.tag-item[owner="other"] {
+    background: #dbf5f8;
+    border: 1px solid #bfe3e7;
+}
+.tag-item[owner="other"]:hover {
+    background: #c6dee1;
+}
+.tag-item[owner="other"] .tag-icon,
+.tag-item[owner="other"] .tag-name {
+    color: #007985;
+}
+.tag-item[selected="true"][owner="other"] {
+    border: 1px solid #00afc3 !important;
+    box-shadow: 0px 0px 4px 1px #00afc3 !important;
+}
+
+
+
+.tag-item[owner="history"] {
+    background: #f0f0f0;
+    border: 1px solid #d9d9d9;
+}
+.tag-item[owner="history"]:hover {
+    background: #d9d9d9;
+}
+.tag-item[owner="history"] .tag-icon,
+.tag-item[owner="history"] .tag-name {
+    color: #5f5f5f;
+}
+.tag-item[selected="true"][owner="history"] {
+    border: 1px solid #5f5f5f !important;
+    box-shadow: 0px 0px 4px 1px #5f5f5f !important;
+}
+
+
+
+
+
+
+
+.synchronization-time {
+    padding: 20px 0px 0px 0px;
+    height: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+}
+
+.synchronization-time .synchronization-time-label {
+    display: block;
+    font-weight: 500;
+    color: #005edf;
+    height: 24px;
+    line-height: 24px;
+    padding: 1px 8px 1px 0px;
+    box-sizing: border-box;
+}
+
+.synchronization-time .synchronization-time-time {
+    display: block;
+    font-weight: normal;
+    height: 24px;
+    line-height: 24px;
+    padding: 1px 8px 1px 0px;
+    box-sizing: border-box;
+}
+
+.synchronization-time .synchronization-time-update {
+    display: block;
+    position: relative;
+    color: #005edf;
+    cursor: pointer;
+    height: 24px;
+    width: 24px;
+    line-height: 24px;
+    border-radius: 4px;
+}
+
+.synchronization-time .synchronization-time-update mat-icon {
+    position: absolute;
+    pointer-events: none;
+    font-size: 22px;
+    height: 22px;
+    width: 22px;
+    left: 1px;
+    top: 1px;
+}
+
+.synchronization-time .synchronization-time-update:hover {
+    background: #f1f1f1;
+}
+
+.details-header {
+    font-weight: 500;
+    font-size: 16px;
+    color: #5f5f5f;
+    padding: 10px 0px 4px 0px;
+}
+
+
+.line {
+    width: 100%;
+    height: 3px;
+    border-top: 1px solid #b1b1b1;
+}
+
+.tabs {
+    border-bottom: 1px solid #b1b1b1;
+    width: 100%;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: row;
+}
+
+.tab-item {
+    padding: 10px 10px 10px 10px;
+    font-weight: 500;
+    color: #818181;
+    cursor: pointer;
+}
+
+.tab-item:hover {
+    background: #f1f1f1;
+}
+
+.tab-item[selected="true"] {
+    font-weight: bold;
+    color: #3e3e3e;
 }

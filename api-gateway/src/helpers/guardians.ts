@@ -566,7 +566,7 @@ export class Guardians extends ServiceRequestsBase {
      * @returns {{ schemasMap: any[], errors: any[] }}
      */
     public async importSchemasByFile(
-        files: ISchema[],
+        files: any,
         owner: string,
         topicId: string
     ): Promise<{
@@ -590,7 +590,7 @@ export class Guardians extends ServiceRequestsBase {
      * @param {string} taskId
      */
     public async importSchemasByFileAsync(
-        files: ISchema[],
+        files: any,
         owner: string,
         topicId: string,
         taskId: string
@@ -1322,13 +1322,12 @@ export class Guardians extends ServiceRequestsBase {
 
     /**
      * Return tags
-     *
-     * @param {IFilter} [params]
-     *
+     * @param entity
+     * @param targets
      * @returns {any[]}
      */
-    public async getTags(params?: IFilter): Promise<any[]> {
-        return await this.request<any>(MessageAPI.GET_TAGS, params);
+    public async getTags(entity: string, targets: string[]): Promise<any[]> {
+        return await this.request<any>(MessageAPI.GET_TAGS, { entity, targets });
     }
 
     /**
@@ -1339,5 +1338,35 @@ export class Guardians extends ServiceRequestsBase {
      */
     public async deleteTag(uuid: string, owner: string): Promise<boolean> {
         return await this.request<any>(MessageAPI.DELETE_TAG, { uuid, owner });
+    }
+
+    /**
+     * Export Tags
+     * @param entity
+     * @param targets
+     * @returns {any[]}
+     */
+    public async exportTags(entity: string, targets: string[]): Promise<any[]> {
+        return await this.request<any>(MessageAPI.EXPORT_TAGS, { entity, targets });
+    }
+
+    /**
+     * Return tags
+     * @param entity
+     * @param targets
+     * @returns {any[]}
+     */
+    public async getTagCache(entity: string, targets: string[]): Promise<any[]> {
+        return await this.request<any>(MessageAPI.GET_TAG_CACHE, { entity, targets });
+    }
+
+    /**
+     * Return tags
+     * @param entity
+     * @param targets
+     * @returns {any[]}
+     */
+    public async synchronizationTags(entity: string, target: string): Promise<any[]> {
+        return await this.request<any>(MessageAPI.GET_SYNCHRONIZATION_TAGS, { entity, target });
     }
 }

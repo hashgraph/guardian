@@ -38,38 +38,32 @@
     color: #1274fb;
 }
 
-.main-tag[owner="true"] {
+.main-tag[owner="owner"] {
     background: #e3eefe;
     border: 1px solid #1274fb;
 }
-.main-tag[owner="true"] .tag-icon,
-.main-tag[owner="true"] .tag-name {
+.main-tag[owner="owner"] .tag-icon,
+.main-tag[owner="owner"] .tag-name {
     color: #005edf;
 }
 
-.main-tag[owner="false"] {
+.main-tag[owner="other"] {
     background: #dbf5f8;
     border: 1px solid #00afc3;
 }
-.main-tag[owner="false"] .tag-icon,
-.main-tag[owner="false"] .tag-name {
+.main-tag[owner="other"] .tag-icon,
+.main-tag[owner="other"] .tag-name {
     color: #007985;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+.main-tag[owner="history"] {
+    background: #f0f0f0;
+    border: 1px solid #5f5f5f;
+}
+.main-tag[owner="history"] .tag-icon,
+.main-tag[owner="history"] .tag-name {
+    color: #5f5f5f;
+}
 
 .edit-tags {
     position: absolute;
@@ -128,21 +122,4 @@
 
 .add-tags:hover {
     background: #f1f1f1;
-}
-
-
-
-
-
-
-
-
-
-
-
-.tag-item[owner="true"]:hover {
-    background: #ccd6e5;
-}
-.tag-item[owner="false"]:hover {
-    background: #c6dee1;
 }

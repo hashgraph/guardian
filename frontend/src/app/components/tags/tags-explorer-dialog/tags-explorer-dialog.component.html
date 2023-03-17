@@ -10,16 +10,19 @@
         </div>
     </div>
     <div class="g-dialog-body">
-        <div style="padding: 10px 15px 30px 15px">
+        <div class="container">
             <div *ngIf="loading" class="loading">
                 <mat-spinner></mat-spinner>
             </div>
-            <div class="tags">
-                <div *ngFor="let item of history.items" class="tag-item" 
-                    [attr.count]="item.count"
-                    [attr.selected]="item === select" 
-                    [attr.owner]="item.owner"
-                    (click)="onSelect(item)">
+
+            <div *ngIf="history.history?.length" class="tabs">
+                <div class="tab-item" (click)="openTab(1)" [attr.selected]="tab===1">Current Tags</div>
+                <div class="tab-item" (click)="openTab(2)" [attr.selected]="tab===2">Imported Tags</div>
+            </div>
+
+            <div *ngIf="tab===1" class="tags">
+                <div *ngFor="let item of history.items" class="tag-item" [attr.count]="item.count"
+                    [attr.selected]="item === select" [attr.owner]="item.owner" (click)="onSelect(item)">
                     <mat-icon class="tag-icon">sell</mat-icon>
                     <div class="tag-name">
                         {{item.name}}
@@ -36,11 +39,26 @@
                 </div>
             </div>
 
+            <div *ngIf="tab===2" class="tags">
+                <div *ngFor="let item of history.history" class="tag-item" [attr.count]="item.count"
+                    [attr.selected]="item === select" [attr.owner]="item.owner" (click)="onSelect(item)">
+                    <mat-icon class="tag-icon">sell</mat-icon>
+                    <div class="tag-name">
+                        {{item.name}}
+                    </div>
+                    <div class="tag-count">
+                        {{item.count}}
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="select" class="line"></div>
+
             <div *ngIf="select" class="details">
-                <div *ngFor="let item of select.items" 
-                    class="tag-details" 
-                    [attr.owner]="item.owner === owner"
-                    [attr.open]="item === open">
+
+                <div *ngFor="let item of select.items" class="tag-details" [attr.owner]="item.owner === owner"
+                    [attr.status]="item.status" [attr.open]="item === open">
+
                     <mat-icon class="tag-collapse" (click)="onOpen(item)">arrow_drop_down</mat-icon>
                     <div class="tag-owner">
                         <span>{{item.owner}}</span>
@@ -49,11 +67,49 @@
                         <mat-icon>delete</mat-icon>
                     </div>
                     <div class="tag-full-details">
-                        <div class="tag-details-name">{{item.name}}</div>
-                        <div class="tag-details-description">{{item.description}}</div>
+                        <div class="tag-details-name tag-details-field">
+                            <div class="tag-details-field-name">Label</div>
+                            <div class="tag-details-field-value">
+                                {{item.name}}
+                            </div>
+
+                        </div>
+                        <div class="tag-details-status tag-details-field">
+                            <div class="tag-details-field-name">Status</div>
+                            <div class="tag-details-field-value">
+                                {{item.status}}
+                            </div>
+                        </div>
+                        <div class="tag-details-description tag-details-field">
+                            <div class="tag-details-field-name">Description</div>
+                            <div class="tag-details-field-value">
+                                {{item.description}}
+                            </div>
+                        </div>
+                        <div *ngIf="item.messageId" class="tag-details-description tag-details-field">
+                            <div class="tag-details-field-name">Message Id</div>
+                            <div class="tag-details-field-value">
+                                {{item.messageId}}
+                            </div>
+                        </div>
                     </div>
+
                 </div>
             </div>
+
+            <div class="line"></div>
+
+            <div class="synchronization-time">
+                <div class="synchronization-time-label">Last Synchronization Time: </div>
+                <div *ngIf="time" class="synchronization-time-time">{{time}}</div>
+                <div *ngIf="!time" class="synchronization-time-time">
+                    -
+                </div>
+                <div class="synchronization-time-update" (click)="onUpdate()">
+                    <mat-icon>sync</mat-icon>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

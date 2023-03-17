@@ -21,5 +21,6 @@ export enum MessageAction {
     CreateToken = 'create-token',
     CreateMultiPolicy = 'create-multi-policy',
     Mint = 'mint',
-    PublishModule = 'publish-module'
+    PublishModule = 'publish-module',
+    PublishTag = 'publish-tag'
 }
