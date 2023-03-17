@@ -107,7 +107,7 @@ policyAPI.post('/push/:policyId', permissionHelper(UserRole.STANDARD_REGISTRY), 
         new Logger().error(error, ['API_GATEWAY']);
         taskManager.addError(taskId, { code: 500, message: error.message });
     });
-    res.status(201).send({ taskId, expectation });
+    res.status(202).send({ taskId, expectation });
 });
 
 policyAPI.delete('/push/:policyId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
