@@ -41,6 +41,23 @@ function useVersion(version: string) {
 }
 
 /**
+ * Lists all local guardian versions
+ * @returns {void}
+ * @throws {Error} if the listing fails
+ */
+function listLocalReleaseVersions() {
+  const list = spawnSync('git', ['tag']);
+
+  if (list.status !== 0) {
+    console.log('Error listing local release versions');
+    console.log(list.stderr.toString());
+    process.exit(1);
+  } else {
+    console.log(list.stdout.toString())
+  }
+}
+
+/**
  * Main function of the guardian-cli
  * Runs the commander program and parses the arguments passed to the cli
  * All the commands are defined here
@@ -77,8 +94,11 @@ function main() {
       useVersion(version);
     });
 
-  program.command('list')
+  program.command('ls')
     .description('list all local guardian versions')
+    .action(() => {
+      listLocalReleaseVersions();
+    });
 
   program.command('list-remote')
     .description('list all remote guardian versions')
