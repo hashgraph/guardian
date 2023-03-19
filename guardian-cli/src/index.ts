@@ -58,6 +58,24 @@ function listLocalReleaseVersions() {
 }
 
 /**
+ * Lists all guardian versions of Main repository
+ * @returns {void}
+ * @throws {Error} if the listing fails
+ */
+function listRemoteReleaseVersions() {
+  const lsRemote = spawnSync('git', ['ls-remote', '--tags', GUARDIAN_REPOSITORY]);
+
+  if (lsRemote.status !== 0) {
+    console.log('Error listing remote release versions');
+    process.exit(1);
+  } else {
+    const result = lsRemote.stdout.toString();
+    const tags = result.match(/v?\d+\.\d+\.\d+.*/g);
+    tags.forEach((tag: string) => console.log(tag));
+  }
+}
+
+/**
  * Main function of the guardian-cli
  * Runs the commander program and parses the arguments passed to the cli
  * All the commands are defined here
@@ -100,8 +118,11 @@ function main() {
       listLocalReleaseVersions();
     });
 
-  program.command('list-remote')
+  program.command('ls-remote')
     .description('list all remote guardian versions')
+    .action(() => {
+      listRemoteReleaseVersions();
+    });
 
   program.command('build')
     .description('build the current guardian project')
