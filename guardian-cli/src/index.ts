@@ -76,6 +76,23 @@ function listRemoteReleaseVersions() {
 }
 
 /**
+ * Builds Docker Images of the current guardian project
+ * @returns {void}
+ * @throws {Error} if the build fails
+ */
+function buildDocker() {
+  const build = spawnSync('docker-compose', ['build'], {
+    stdio: 'inherit'
+  });
+
+  if (build.status !== 0) {
+    console.log('Error building the project');
+    console.log(build.stderr.toString());
+    process.exit(1);
+  }
+}
+
+/**
  * Main function of the guardian-cli
  * Runs the commander program and parses the arguments passed to the cli
  * All the commands are defined here
@@ -129,6 +146,11 @@ function main() {
     .option('-d --docker', 'build the project in a docker container')
     .option('-n --npm', 'use npm to install dependencies')
     .option('-y --yarn', 'use yarn to install dependencies')
+    .action((options) => {
+      if (options.docker) {
+        buildDocker();
+      }
+    });
 
   program.command('clean')
     .description('clean the artifacts of the current guardian project')
