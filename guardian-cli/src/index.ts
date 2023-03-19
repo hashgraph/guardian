@@ -369,6 +369,35 @@ function stopPm2() {
 }
 
 /**
+ * Delete all guardian application running by pm2
+ * @returns {void}
+ * @throws {Error} if the destroy fails
+ */
+function destroyPm2() {
+  const services = [
+    'api-gateway',
+    'logger-service',
+    'mrv-sender',
+    'topic-viewer',
+    'tree-viewer',
+    'auth-service',
+    'worker-service',
+    'guardian-service',
+    'frontend',
+  ]
+
+  for (const service of services) {
+    const destroy = spawnSync('pm2', ['delete', service])
+
+    if (destroy.status !== 0) {
+      console.log('Error destroying service');
+      console.log(destroy.stderr.toString());
+      process.exit(1);
+    }
+  }
+}
+
+/**
  * Main function of the guardian-cli
  * Runs the commander program and parses the arguments passed to the cli
  * All the commands are defined here
@@ -483,6 +512,10 @@ function main() {
     .action((options) => {
       if (options.docker) {
         destroyDocker();
+      } else if (options.pm2) {
+        destroyPm2();
+      } else {
+        console.log('Please specify a destroy option');
       }
     });
 
