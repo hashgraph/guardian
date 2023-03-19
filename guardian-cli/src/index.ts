@@ -261,6 +261,21 @@ function cleanNode() {
 }
 
 /**
+ * Starts the guardian application using docker-compose
+ * @returns {void}
+ * @throws {Error} if the start fails
+ */
+async function startDocker() {
+  const start = spawnSync('docker-compose', ['up', '-d', '--no-build'])
+
+  if (start.status !== 0) {
+    console.log('Error starting docker containers');
+    console.log(start.stderr.toString());
+    process.exit(1);
+  }
+}
+
+/**
  * Main function of the guardian-cli
  * Runs the commander program and parses the arguments passed to the cli
  * All the commands are defined here
@@ -344,6 +359,11 @@ function main() {
     .description('start guardian application')
     .option('-d --docker', 'start guardian using docker')
     .option('-p --pm2', 'start guardian using pm2')
+    .action((options) => {
+      if (options.docker) {
+        startDocker();
+      }
+    });
 
   program.command('stop')
     .description('stop guardian application')
