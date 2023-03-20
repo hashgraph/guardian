@@ -20,7 +20,7 @@ const fieldsValidation = {
   entity: yup.mixed<SchemaEntity.STANDARD_REGISTRY | SchemaEntity.USER>()
     .oneOf([SchemaEntity.STANDARD_REGISTRY, SchemaEntity.USER]).required('The entity field is required'),
   password: yup.string().min(1, 'The password field can not be empty').required('The password field is required'),
-  messageId: yup.string().required('Schema ID in body is required'),
+  messageId: yup.string().required('message ID in body is required'),
   password_confirmation: yup.string().min(1, 'The password_confirmation field can not be empty')
     .required('The password_confirmation field is required')
     .oneOf([yup.ref('password'), null], 'Passwords must match'),

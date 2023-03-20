@@ -621,6 +621,11 @@ schemaAPI.get('/:schemaId/export/file', permissionHelper(UserRole.STANDARD_REGIS
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
+        const schema = await guardians.getSchemaById(req.params.schemaId);
+
+        if (!schema) {
+            return next(createError(404, 'Schema not found.'));
+        }
         const id = req.params.schemaId;
         const schemas = await guardians.exportSchemas([id]);
         const name = `${Date.now()}`;
@@ -746,9 +751,8 @@ schemaAPI.delete('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTR
         } else {
             if (schema.owner !== user.did) {
                 return next(createError(403, 'Invalid creator.'));
-            } else {
-                return res.status(422).json(prepareValidationResponse('Schema is not system.'));
             }
+            return res.status(422).json(prepareValidationResponse('Schema is not system.'));
         }
         await guardians.deleteSchema(schemaId);
         return res.json(null);
@@ -766,17 +770,18 @@ schemaAPI.put('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY),
         const guardians = new Guardians();
         const schema = await guardians.getSchemaById(newSchema.id);
 
-        if (!schema) {
-            return next(createError(404, 'Schema not found.'));
-        }
-        if (schema.owner !== user.username) {
-            return next(createError(403, 'Invalid creator.'));
-        }
-        if (!schema.system) {
+        if (schema.system) {
+            if (schema.owner !== user.username) {
+                return next(createError(403, 'Invalid creator.'));
+            }
+            if (schema.active) {
+                return res.status(422).json(prepareValidationResponse('Schema is active.'));
+            }
+        } else {
+            if (schema.owner !== user.did) {
+                return next(createError(403, 'Invalid creator.'));
+            }
             return res.status(422).json(prepareValidationResponse('Schema is not system.'));
-        }
-        if (schema.active) {
-            return res.status(422).json(prepareValidationResponse('Schema is active.'));
         }
         fromOld(newSchema);
         const schemas = await updateSchema(newSchema, user.username);
@@ -790,7 +795,6 @@ schemaAPI.put('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY),
 schemaAPI.put('/system/:schemaId/active', permissionHelper(UserRole.STANDARD_REGISTRY),
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-        const user = req.user;
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
         const schema = await guardians.getSchemaById(schemaId);
