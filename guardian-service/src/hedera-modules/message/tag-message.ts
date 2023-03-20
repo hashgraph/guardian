@@ -33,6 +33,10 @@ export class TagMessage extends Message {
      * Operation
      */
     public operation: 'Create' | 'Delete';
+    /**
+     * Entity
+     */
+    public entity: string;
 
     constructor(action: MessageAction) {
         super(action, MessageType.Tag);
@@ -52,6 +56,7 @@ export class TagMessage extends Message {
         this.owner = tag.owner;
         this.target = tag.target;
         this.operation = tag.operation;
+        this.entity = tag.entity;
     }
 
     /**
@@ -69,7 +74,8 @@ export class TagMessage extends Message {
             description: this.description,
             owner: this.owner,
             target: this.target,
-            operation: this.operation
+            operation: this.operation,
+            entity: this.entity
         }
     }
 
@@ -124,6 +130,7 @@ export class TagMessage extends Message {
         message.owner = json.owner;
         message.target = json.target;
         message.operation = json.operation;
+        message.entity = json.entity;
         return message;
     }
 

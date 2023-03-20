@@ -320,3 +320,12 @@ a {
     max-width: 40px;
     padding-left: 10px;
 }
+
+.table-container .mat-column-tags {
+    max-width: 220px;
+    min-width: 140px;
+    width: 140px;
+    border-left: 1px solid #dddddd;
+    border-right: 1px solid #dddddd;
+    padding-left: 10px;
+}

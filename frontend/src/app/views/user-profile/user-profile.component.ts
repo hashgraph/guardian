@@ -16,6 +16,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dialog/retire-token-dialog.component';
 import { ContractService } from 'src/app/services/contract.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TagsService } from 'src/app/services/tag.service';
 
 enum OperationMode {
     None, Generate, SetProfile, Associate
@@ -49,6 +50,8 @@ export class UserProfileComponent implements OnInit {
     vcDocument?: any;
     standardRegistries?: IUser[];
     selectedIndex: number = 0;
+    tagEntity = 'Token';
+    owner: any;
 
     hederaForm = this.fb.group({
         standardRegistry: ['', Validators.required],
@@ -63,7 +66,8 @@ export class UserProfileComponent implements OnInit {
         'tokenBalance',
         'frozen',
         'kyc',
-        'policies'
+        'policies',
+        'tags'
     ];
 
     displayedColumnsContractRequests: string[] = [
@@ -93,6 +97,7 @@ export class UserProfileComponent implements OnInit {
         private auth: AuthService,
         private profileService: ProfileService,
         private tokenService: TokenService,
+        private tagsService: TagsService,
         private otherService: DemoService,
         private schemaService: SchemaService,
         private informService: InformService,
@@ -142,21 +147,17 @@ export class UserProfileComponent implements OnInit {
         }, 15000);
     }
 
-    loadDate() {
-        this.balance = null;
-        this.tokens = null;
+    private loadAccountData() {
+        setTimeout(() => {
+            this.loading = false;
+            this.headerProps.setLoading(false);
+        }, 200);
+    }
+
+    private loadTokenData() {
         this.loading = true;
-        forkJoin([
-            this.profileService.getProfile(),
-            this.profileService.getBalance(),
-            this.tokenService.getTokens(),
-            this.auth.getStandardRegistries(),
-            this.schemaService.getSystemSchemasByEntity(SchemaEntity.USER),
-            this.contractService.getRetireRequestsAll()
-        ]).subscribe((value) => {
-            this.profile = value[0] as IUser;
-            this.balance = value[1] as string;
-            this.tokens = value[2].map((e: any) => {
+        this.tokenService.getTokens().subscribe((tokens) => {
+            this.tokens = tokens.map((e: any) => {
                 return {
                     ...new Token(e),
                     policies: e.policies,
@@ -164,21 +165,75 @@ export class UserProfileComponent implements OnInit {
                     decimals: e.decimals
                 }
             });
-            this.standardRegistries = value[3] || [];
-            this.standardRegistries = this.standardRegistries.filter(sr => !!sr.did);
+
+            const ids = this.tokens.map(e => e.id);
+            this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+                if (this.tokens) {
+                    for (const token of this.tokens) {
+                        (token as any)._tags = data[token.id];
+                    }
+                }
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
+
+
+            setTimeout(() => {
+                this.loading = false;
+                this.headerProps.setLoading(false);
+            }, 200)
+        }, (error) => {
+            this.loading = false;
+            this.headerProps.setLoading(false);
+            console.error(error);
+        });
+    }
+
+    private loadRetireData() {
+        this.loading = true;
+        this.contractService.getRetireRequestsAll().subscribe((contracts) => {
+            this.contractRequests = contracts;
+            setTimeout(() => {
+                this.loading = false;
+                this.headerProps.setLoading(false);
+            }, 200)
+        }, (error) => {
+            this.loading = false;
+            this.headerProps.setLoading(false);
+            console.error(error);
+        });
+    }
+
+    private loadDate() {
+        this.balance = null;
+        this.didDocument = null;
+        this.vcDocument = null;
+        this.loading = true;
+        forkJoin([
+            this.profileService.getProfile(),
+            this.profileService.getBalance(),
+            this.auth.getStandardRegistries(),
+            this.schemaService.getSystemSchemasByEntity(SchemaEntity.USER),
+        ]).subscribe((value) => {
+            this.profile = value[0] as IUser;
+            this.balance = value[1] as string;
+            this.standardRegistries = value[2] || [];
+            const schema = value[3];
 
             this.isConfirmed = !!this.profile.confirmed;
             this.isFailed = !!this.profile.failed;
             this.isNewAccount = !this.profile.didDocument;
-
-            this.didDocument = null;
-            this.vcDocument = null;
             if (this.isConfirmed) {
                 this.didDocument = this.profile?.didDocument;
                 this.vcDocument = this.profile?.vcDocument;
             }
+            this.owner = this.profile?.did;
 
-            const schema = value[4];
+            this.standardRegistries = this.standardRegistries.filter(sr => !!sr.did);
             if (schema) {
                 this.schema = new Schema(schema);
                 this.hederaForm.addControl('vc', this.vcForm);
@@ -186,11 +241,18 @@ export class UserProfileComponent implements OnInit {
                 this.schema = null;
             }
 
-            this.contractRequests = value[5] as any[];
-            setTimeout(() => {
-                this.loading = false;
-                this.headerProps.setLoading(false);
-            }, 200)
+            if (this.selectedIndex === 0) {
+                this.loadAccountData();
+            } else if (this.selectedIndex === 1) {
+                this.loadTokenData();
+            } else if (this.selectedIndex === 2) {
+                this.loadRetireData();
+            } else {
+                setTimeout(() => {
+                    this.loading = false;
+                    this.headerProps.setLoading(false);
+                }, 200);
+            }
         }, (error) => {
             this.loading = false;
             this.headerProps.setLoading(false);
@@ -417,5 +479,17 @@ export class UserProfileComponent implements OnInit {
         this.router.navigate(['/user-profile'], {
             queryParams: { tab: this.tabs[this.selectedIndex] }
         });
+        if (this.selectedIndex === 0) {
+            this.loadAccountData();
+        } else if (this.selectedIndex === 1) {
+            this.loadTokenData();
+        } else if (this.selectedIndex === 2) {
+            this.loadRetireData();
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+                this.headerProps.setLoading(false);
+            }, 200);
+        }
     }
 }

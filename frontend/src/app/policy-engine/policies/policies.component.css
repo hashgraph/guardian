@@ -31,26 +31,26 @@
     width: 100%;
 }
 
-.btn-draft::ng-deep > * {
+.btn-draft::ng-deep>* {
     background: #9c27b0 !important;
     color: #fff !important;
     min-width: 93px;
 }
 
-.btn-dry-run::ng-deep > * {
+.btn-dry-run::ng-deep>* {
     background: #3f51b5 !important;
     color: #fff !important;
     min-width: 93px;
 }
 
-.btn-failed::ng-deep > * {
+.btn-failed::ng-deep>* {
     background: #572424 !important;
     color: #fff !important;
     min-width: 93px;
     white-space: nowrap;
 }
 
-.btn-publish::ng-deep > * {
+.btn-publish::ng-deep>* {
     background: #4caf50 !important;
     color: #fff !important;
     min-width: 121px;
@@ -146,6 +146,7 @@
     width: 30px;
     max-width: 30px;
 }
+
 .table-container .mat-column-open {
     padding-left: 8px;
     width: 100px;
@@ -223,6 +224,14 @@
     max-width: 250px;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.table-container .mat-column-tags {
+    max-width: 220px;
+    min-width: 140px;
+    width: 140px;
+    border-right: 1px solid #dddddd;
+    padding-left: 10px;
 }
 
 .actions-container {
@@ -311,7 +320,7 @@
     background: #3f51b5;
 }
 
-.btn-icon-go mat-icon  {
+.btn-icon-go mat-icon {
     position: absolute;
     left: 50px;
     top: 6px;
@@ -323,7 +332,7 @@
     align-items: center;
 }
 
-.commands-line > *:not(:first-child) {
+.commands-line>*:not(:first-child) {
     margin-left: 18px;
 }
 

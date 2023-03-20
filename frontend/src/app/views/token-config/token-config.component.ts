@@ -11,6 +11,7 @@ import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
+import { TagsService } from 'src/app/services/tag.service';
 
 enum OperationMode {
     None, Create, Kyc, Freeze
@@ -31,6 +32,7 @@ export class TokenConfigComponent implements OnInit {
         'tokenName',
         'tokenSymbol',
         'policies',
+        'tags',
         'users',
         'edit',
         'delete'
@@ -45,7 +47,7 @@ export class TokenConfigComponent implements OnInit {
         'tokenBalance',
         'frozen',
         'kyc',
-        'refresh',
+        'refresh'
     ];
 
     taskId: string | undefined = undefined;
@@ -54,11 +56,14 @@ export class TokenConfigComponent implements OnInit {
     user: any;
     currentPolicy: any = '';
     policies: any[] | null = null;
+    tagEntity = 'Token';
+    owner: any;
 
     constructor(
         private auth: AuthService,
         private profileService: ProfileService,
         private tokenService: TokenService,
+        private tagsService: TagsService,
         private informService: InformService,
         private taskService: TasksService,
         private policyEngineService: PolicyEngineService,
@@ -93,7 +98,19 @@ export class TokenConfigComponent implements OnInit {
     loadTokens() {
         this.tokenService.getTokens(this.currentPolicy).subscribe((data: any) => {
             this.tokens = data.map((e: any) => new Token(e));
-            this.loading = false;
+
+            const ids = this.tokens.map(e => e.id);
+            this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+                for (const token of this.tokens) {
+                    (token as any)._tags = data[token.id];
+                }
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
         }, (e) => {
             console.error(e.error);
             this.loading = false;
@@ -132,6 +149,7 @@ export class TokenConfigComponent implements OnInit {
             const profile = value[0];
             const policies = value[1] || [];
             this.isConfirmed = !!(profile && profile.confirmed);
+            this.owner = profile?.did;
             this.policies = policies;
             if (this.isConfirmed) {
                 this.queryChange();

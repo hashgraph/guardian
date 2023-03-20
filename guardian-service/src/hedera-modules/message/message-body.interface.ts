@@ -421,4 +421,8 @@ export interface TagMessageBody extends MessageBody {
      * Operation
      */
     operation: 'Create' | 'Delete';
+    /**
+     * Entity
+     */
+    entity: string;
 }

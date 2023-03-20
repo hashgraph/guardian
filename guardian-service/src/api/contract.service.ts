@@ -308,10 +308,10 @@ export async function contractAPI(
                 did
             );
 
-            const baseToken = await new DatabaseServer().getTokenById(
+            const baseToken = await new DatabaseServer().getToken(
                 baseTokenId
             );
-            const oppositeToken = await new DatabaseServer().getTokenById(
+            const oppositeToken = await new DatabaseServer().getToken(
                 oppositeTokenId
             );
 
@@ -432,10 +432,10 @@ export async function contractAPI(
                 KeyType.KEY,
                 did
             );
-            const baseToken = await new DatabaseServer().getTokenById(
+            const baseToken = await new DatabaseServer().getToken(
                 baseTokenId
             );
-            const oppositeToken = await new DatabaseServer().getTokenById(
+            const oppositeToken = await new DatabaseServer().getToken(
                 oppositeTokenId
             );
             const contracts = await contractRepository.find({
@@ -504,10 +504,10 @@ export async function contractAPI(
                 did
             );
 
-            const baseToken = await new DatabaseServer().getTokenById(
+            const baseToken = await new DatabaseServer().getToken(
                 baseTokenId
             );
-            const oppositeToken = await new DatabaseServer().getTokenById(
+            const oppositeToken = await new DatabaseServer().getToken(
                 oppositeTokenId
             );
 

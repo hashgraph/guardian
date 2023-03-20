@@ -57,7 +57,7 @@ export class TokenConfirmationBlock {
     async getToken(): Promise<TokenCollection> {
         if (!this.token) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-            this.token = await ref.databaseServer.getTokenById(ref.options.tokenId);
+            this.token = await ref.databaseServer.getToken(ref.options.tokenId);
         }
         return this.token;
     }
@@ -129,7 +129,7 @@ export class TokenConfirmationBlock {
         let token:any;
         if (ref.options.useTemplate) {
             if (state.tokenId) {
-                token = await ref.databaseServer.getTokenById(state.tokenId, ref.dryRun);
+                token = await ref.databaseServer.getToken(state.tokenId, ref.dryRun);
             }
         } else {
             token = await this.getToken();

@@ -27,7 +27,8 @@
                     <ng-container matColumnDef="tokenId">
                         <th mat-header-cell *matHeaderCellDef> Token Id </th>
                         <td mat-cell *matCellDef="let element">
-                            <hedera-explorer *ngIf="!element.draftToken" type="tokens" [params]="element.tokenId">{{element.tokenId}}</hedera-explorer>
+                            <hedera-explorer *ngIf="!element.draftToken" type="tokens"
+                                [params]="element.tokenId">{{element.tokenId}}</hedera-explorer>
                             <span *ngIf="element.draftToken">Draft Token</span>
                         </td>
                     </ng-container>
@@ -48,9 +49,9 @@
                     <ng-container matColumnDef="users">
                         <th mat-header-cell *matHeaderCellDef></th>
                         <td mat-cell *matCellDef="let element">
-                            <div [ngClass]="{'btn-settings-des': element.draftToken}" class="btn-settings" [routerLink]="['/tokens']"
-                                [queryParams]="{ tokenId: element.url }" matTooltip="Users" matTooltipPosition="above"
-                                matTooltipClass="guardian-tooltip">
+                            <div [ngClass]="{'btn-settings-des': element.draftToken}" class="btn-settings"
+                                [routerLink]="['/tokens']" [queryParams]="{ tokenId: element.url }" matTooltip="Users"
+                                matTooltipPosition="above" matTooltipClass="guardian-tooltip">
                                 <mat-icon>group</mat-icon>
                             </div>
                         </td>
@@ -58,8 +59,9 @@
                     <ng-container matColumnDef="edit">
                         <th mat-header-cell *matHeaderCellDef> </th>
                         <td mat-cell *matCellDef="let element">
-                            <div [ngClass]="{'btn-settings-des': !element.enableAdmin}" class="btn-settings" (click)="editToken(element)"
-                                matTooltip="Edit" matTooltipPosition="above" matTooltipClass="guardian-tooltip">
+                            <div [ngClass]="{'btn-settings-des': !element.enableAdmin}" class="btn-settings"
+                                (click)="editToken(element)" matTooltip="Edit" matTooltipPosition="above"
+                                matTooltipClass="guardian-tooltip">
                                 <mat-icon>edit</mat-icon>
                             </div>
                         </td>
@@ -74,7 +76,13 @@
                             </div>
                         </td>
                     </ng-container>
-
+                    <ng-container matColumnDef="tags">
+                        <th mat-header-cell *matHeaderCellDef> Tags </th>
+                        <td mat-cell *matCellDef="let element">
+                            <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id"
+                                [entity]="tagEntity"></tags-explorer>
+                        </td>
+                    </ng-container>
                     <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
                     <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
                 </table>

@@ -6,6 +6,8 @@ import { INotifier } from '@helpers/notifier';
 import { Tag } from '@entity/tag';
 import { MessageAction, MessageServer, MessageType, TagMessage, TopicConfig } from '@hedera-modules';
 import { Schema as SchemaCollection } from '@entity/schema';
+import { Policy as PolicyCollection } from '@entity/policy';
+import { Token as TokenCollection } from '@entity/token';
 import { Users } from '@helpers/users';
 
 /**
@@ -14,24 +16,68 @@ import { Users } from '@helpers/users';
  * @param messageServer
  */
 export async function publishSchemaTags(
-    item: SchemaCollection,
+    schema: SchemaCollection,
     messageServer: MessageServer
 ): Promise<void> {
     const filter: any = {
-        localTarget: item.id,
+        localTarget: schema.id,
         entity: TagType.Schema,
         status: 'Draft'
     }
-    const items = await DatabaseServer.getTags(filter);
-    for (const tag of items) {
-        tag.target = item.messageId;
+    const tags = await DatabaseServer.getTags(filter);
+    for (const tag of tags) {
+        tag.target = schema.messageId;
         await publishTag(tag, messageServer);
         await DatabaseServer.updateTag(tag);
     }
 }
 
 /**
- * Publish schema
+ * Publish policy tags
+ * @param policy
+ * @param messageServer
+ */
+export async function publishPolicyTags(
+    policy: PolicyCollection,
+    messageServer: MessageServer
+): Promise<void> {
+    const filter: any = {
+        localTarget: policy.id,
+        entity: TagType.Policy,
+        status: 'Draft'
+    }
+    const tags = await DatabaseServer.getTags(filter);
+    for (const tag of tags) {
+        tag.target = policy.messageId;
+        await publishTag(tag, messageServer);
+        await DatabaseServer.updateTag(tag);
+    }
+}
+
+/**
+ * Publish token tags
+ * @param token
+ * @param messageServer
+ */
+export async function publishTokenTags(
+    token: TokenCollection,
+    messageServer: MessageServer
+): Promise<void> {
+    const filter: any = {
+        localTarget: token.id,
+        entity: TagType.Policy,
+        status: 'Draft'
+    }
+    const tags = await DatabaseServer.getTags(filter);
+    for (const tag of tags) {
+        tag.target = token.tokenId;
+        await publishTag(tag, messageServer);
+        await DatabaseServer.updateTag(tag);
+    }
+}
+
+/**
+ * Publish tag
  * @param item
  * @param messageServer
  */
@@ -78,27 +124,50 @@ export async function importTag(tags: any[], notifier: INotifier): Promise<any> 
  * Get target
  * @param tag
  */
-export async function getTarget(entity: string, target: string): Promise<{
+export async function getTarget(entity: TagType, id: string): Promise<{
     /**
      * Target id
      */
     id: string,
     /**
-     * Message id
+     * Target
      */
-    messageId?: string,
+    target?: string,
     /**
      * Topic id
      */
     topicId?: string
 }> {
     switch (entity) {
-        case TagType.Schema:
-            return await DatabaseServer.getSchemaById(target);
+        case TagType.Schema: {
+            const item = await DatabaseServer.getSchemaById(id);
+            if (item) {
+                return { id: item.id.toString(), target: item.messageId, topicId: item.topicId };
+            } else {
+                return null;
+            }
+        }
+        case TagType.Policy: {
+            const item = await DatabaseServer.getPolicyById(id);
+            if (item) {
+                return { id: item.id.toString(), target: item.messageId, topicId: item.topicId };
+            } else {
+                return null;
+            }
+        }
+        case TagType.Token: {
+            const item = await DatabaseServer.getTokenById(id);
+            if (item) {
+                return { id: item.id.toString(), target: item.tokenId, topicId: item.topicId };
+            } else {
+                return null;
+            }
+        }
         default:
             return null;
     }
 }
+
 
 /**
  * Connect to the message broker methods of working with tags.
@@ -126,8 +195,8 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
 
             const target = await getTarget(tag.entity, tag.localTarget || tag.target);
             if (target) {
-                if (target.messageId && target.topicId) {
-                    tag.target = target.messageId;
+                if (target.target && target.topicId) {
+                    tag.target = target.target;
                     tag.localTarget = target.id;
                     tag.status = 'Published';
 
@@ -211,7 +280,9 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
                 const items = await DatabaseServer.getTags({ localTarget, entity, status: 'Published' });
                 const map = new Map<string, any>();
                 for (const message of messages) {
-                    map.set(message.getId(), { message, local: null });
+                    if(message.target === targetObject.target) {
+                        map.set(message.getId(), { message, local: null });
+                    }
                 }
                 for (const tag of items) {
                     if (map.has(tag.messageId)) {

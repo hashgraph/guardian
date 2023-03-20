@@ -17,6 +17,7 @@ import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dia
 import { MultiPolicyDialogComponent } from '../helpers/multi-policy-dialog/multi-policy-dialog.component';
 import { ToastrService } from 'ngx-toastr';
 import { ComparePolicyDialog } from '../helpers/compare-policy-dialog/compare-policy-dialog.component';
+import { TagsService } from 'src/app/services/tag.service';
 
 enum OperationMode {
     None,
@@ -45,6 +46,8 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     pageIndex: number;
     pageSize: number;
     policyCount: any;
+    owner: any;
+    tagEntity = 'Policy';
 
     mode: OperationMode = OperationMode.None;
     taskId: string | undefined = undefined;
@@ -88,9 +91,11 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             color: '#4caf50'
         }
     ];
+
     constructor(
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
+        private tagsService: TagsService,
         private wsService: WebSocketService,
         private tokenService: TokenService,
         private route: ActivatedRoute,
@@ -111,6 +116,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             'roles',
             'topic',
             'version',
+            'tags',
             'tokens',
             'schemas',
             'status',
@@ -122,6 +128,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
             'description',
             'roles',
             'version',
+            'tags',
             'instance',
         ]
     }
@@ -142,6 +149,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         this.profileService.getProfile().subscribe((profile: IUser | null) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.role = profile ? profile.role : null;
+            this.owner = profile?.did;
             if (this.role == UserRole.STANDARD_REGISTRY) {
                 this.columns = this.columnsRole[UserRole.STANDARD_REGISTRY];
             } else {
@@ -164,9 +172,20 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         this.policyEngineService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
             this.policies = policiesResponse.body || [];
             this.policyCount = policiesResponse.headers.get('X-Total-Count') || this.policies.length;
-            setTimeout(() => {
+            const ids = this.policies.map(e => e.id);
+            this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+                if (this.policies) {
+                    for (const policy of this.policies) {
+                        (policy as any)._tags = data[policy.id];
+                    }
+                }
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                console.error(e.error);
                 this.loading = false;
-            }, 500);
+            });
         }, (e) => {
             this.loading = false;
         });
@@ -479,11 +498,13 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
-                this.router.navigate(['/compare'], { queryParams: {
-                    type: 'policy',
-                    policyId1: result.policyId1,
-                    policyId2: result.policyId2
-                } });
+                this.router.navigate(['/compare'], {
+                    queryParams: {
+                        type: 'policy',
+                        policyId1: result.policyId1,
+                        policyId2: result.policyId2
+                    }
+                });
             }
         });
     }

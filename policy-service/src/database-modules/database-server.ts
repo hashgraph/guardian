@@ -900,7 +900,7 @@ export class DatabaseServer {
      * Get Token
      * @param tokenId
      */
-    public async getTokenById(tokenId: string, dryRun: any = null): Promise<TokenCollection> {
+    public async getToken(tokenId: string, dryRun: any = null): Promise<TokenCollection> {
         if (dryRun) {
             return this.findOne(TokenCollection, { tokenId });
         } else {
@@ -2027,7 +2027,7 @@ export class DatabaseServer {
      * Get Token
      * @param tokenId
      */
-    public static async getTokenById(tokenId: string): Promise<TokenCollection> {
+    public static async getToken(tokenId: string): Promise<TokenCollection> {
         return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
     }
 

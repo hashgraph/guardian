@@ -69,7 +69,7 @@ export class TokenActionBlock {
 
         let token;
         if (!ref.options.useTemplate) {
-            token = await ref.databaseServer.getTokenById(ref.options.tokenId);
+            token = await ref.databaseServer.getToken(ref.options.tokenId);
         }
 
         let account: IHederaAccount = null;
@@ -87,7 +87,7 @@ export class TokenActionBlock {
             }
             if (ref.options.useTemplate) {
                 if (doc.tokens) {
-                    token = await ref.databaseServer.getTokenById(doc.tokens[ref.options.template], ref.dryRun);
+                    token = await ref.databaseServer.getToken(doc.tokens[ref.options.template], ref.dryRun);
                 }
             }
         }

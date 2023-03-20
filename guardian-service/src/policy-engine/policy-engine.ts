@@ -41,6 +41,7 @@ import { KeyType, Wallet } from '@helpers/wallet';
 import { Workers } from '@helpers/workers';
 import { Token } from '@entity/token';
 import { PolicyValidator } from '@policy-engine/block-validators';
+import { publishPolicyTags } from '@api/tag.service';
 
 /**
  * Result of publishing
@@ -623,13 +624,20 @@ export class PolicyEngine extends ServiceRequestsBase {
             });
 
             logger.info('Published Policy', ['GUARDIAN_SERVICE']);
-
         } catch (error) {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
             await DatabaseServer.updatePolicy(model);
             throw error
         }
+
+        notifier.completedAndStart('Publish tags');
+        try {
+            await publishPolicyTags(model, messageServer);
+        } catch (error) {
+            logger.error(error, ['GUARDIAN_SERVICE, TAGS']);
+        }
+
         notifier.completedAndStart('Saving in DB');
         model.status = PolicyType.PUBLISH;
         const retVal = await DatabaseServer.updatePolicy(model);

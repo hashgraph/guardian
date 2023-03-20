@@ -71,6 +71,7 @@ export class SchemaConfigComponent implements OnInit {
     taskId: string | undefined = undefined;
     expectedTaskMessages: number = 0;
     owner: any;
+    tagEntity = 'Schema';
 
     constructor(
         private profileService: ProfileService,
@@ -174,7 +175,7 @@ export class SchemaConfigComponent implements OnInit {
                     this.schemaMapping(this.schemas);
 
                     const ids = this.schemas.map(e => e.id);
-                    this.tagsService.search('Schema', ids).subscribe((data) => {
+                    this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                         for (const schema of this.schemas) {
                             (schema as any)._tags = data[schema.id];
                         }

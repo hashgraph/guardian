@@ -6,7 +6,7 @@ import { BaseEntity } from '@guardian/common';
  * Tokens collection
  */
 @Entity()
-@Unique({ properties: ['tokenId'], options: { partialFilterExpression: { tokenId: { $type: 'string' }}}})
+@Unique({ properties: ['tokenId'], options: { partialFilterExpression: { tokenId: { $type: 'string' } } } })
 export class Token extends BaseEntity implements IToken {
     /**
      * Token id
@@ -97,4 +97,10 @@ export class Token extends BaseEntity implements IToken {
      */
     @Property({ nullable: true })
     draftToken?: boolean;
+
+    /**
+     * Topic id
+     */
+    @Property({ nullable: true })
+    topicId?: string;
 }
