@@ -8,6 +8,7 @@ import {
     GenerateUUIDv4,
     Schema,
     IRootConfig,
+    GeoJsonContext,
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
@@ -327,7 +328,13 @@ export async function publishSchema(
         }
     }
 
-    item.context = schemasToContext([...defsArray, itemDocument]);
+    let additionalContexts: Map<string, any>;
+    if (itemDocument.$defs && itemDocument.$defs['#GeoJson']) {
+        additionalContexts = new Map<string, any>();
+        additionalContexts.set('#GeoJson', GeoJsonContext);
+    }
+
+    item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);
 
     const message = new SchemaMessage(type || MessageAction.PublishSchema);
     message.setDocument(item);
@@ -607,7 +614,13 @@ export async function findAndDryRunSchema(item: SchemaCollection, version: strin
             throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);
         }
     }
-    item.context = schemasToContext([...defsArray, itemDocument]);
+    let additionalContexts: Map<string, any>;
+    if (itemDocument.$defs && itemDocument.$defs['#GeoJson']) {
+        additionalContexts = new Map<string, any>();
+        additionalContexts.set('#GeoJson', GeoJsonContext);
+    }
+
+    item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);
     // item.status = SchemaStatus.PUBLISHED;
 
     SchemaHelper.updateIRI(item);

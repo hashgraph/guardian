@@ -1,6 +1,7 @@
 import { ISchema, ISchemaDocument, SchemaCondition, SchemaField } from '..';
 import { SchemaDataTypes } from '../interface/schema-document.interface';
 import { Schema } from '../models/schema';
+import geoJson from './geojson-schema/geo-json';
 import { ModelHelper } from './model-helper';
 
 /**
@@ -88,11 +89,11 @@ export class SchemaHelper {
         } else {
             field.unit = unit ? String(unit) : null;
             field.unitSystem = unitSystem ? String(unitSystem) : null;
-            field.customType = customType ? String(customType) : null;
             field.textColor = textColor;
             field.textSize = textSize;
             field.textBold = textBold;
         }
+        field.customType = customType ? String(customType) : null;
         field.isPrivate = isPrivate;
         field.required = required;
         return [field, orderPosition];
@@ -624,7 +625,9 @@ export class SchemaHelper {
      */
     public static findRefs(target: Schema, schemas: Schema[]) {
         const map = {};
-        const schemaMap = {};
+        const schemaMap = {
+            '#GeoJson': geoJson
+        };
         for (const element of schemas) {
             schemaMap[element.iri] = element.document;
         }

@@ -1,0 +1,55 @@
+<div class="switch-btn">
+    <switch-button [on-label]="'JSON'" [off-label]="'Form'" [(value)]="isJSON"
+        (valueChange)="onViewTypeChange(!disabled && this.group?.value)"></switch-button>
+</div>
+<ng-container *ngIf="isJSON; else form">
+    <mat-form-field class="type-selector" appearance="outline">
+        <mat-label>GeoJSON</mat-label>
+        <textarea matInput placeholder="{}" [disabled]="disabled" required [(ngModel)]="jsonInput"
+            (change)="jsonChanged()"></textarea>
+    </mat-form-field>
+</ng-container>
+<ng-template #form>
+    <mat-form-field class="type-selector" appearance="outline">
+        <mat-label>Type</mat-label>
+        <mat-select required (selectionChange)="onTypeChange()" [(ngModel)]="type" [disabled]="disabled">
+            <mat-option>None</mat-option>
+            <mat-option value="Point">Point</mat-option>
+            <mat-option value="Polygon">Polygon</mat-option>
+            <mat-option value="LineString">LineString</mat-option>
+            <mat-option value="MultiPoint">MultiPoint</mat-option>
+            <mat-option value="MultiPolygon">MultiPolygon</mat-option>
+            <mat-option value="MultiLineString">MultiLineString</mat-option>
+        </mat-select>
+    </mat-form-field>
+
+    <div class="google-map-container">
+        <google-map [center]="center" (mapDblclick)="mapDblclick()" (mapClick)="mapClick($event)"
+            (mapRightclick)="mapRightclick()" height="300px"
+            [options]="{ clickableIcons: false, disableDoubleClickZoom: true}" width="auto">
+            <ng-container *ngIf="markers">
+                <map-marker *ngFor="let marker of markers" [position]="marker.position" [options]="commonOptions">
+                </map-marker>
+            </ng-container>
+            <ng-container *ngIf="pointConstructor">
+                <map-marker *ngFor="let point of pointConstructor" [position]="{ lat: point.lat, lng: point.lng }"
+                    [options]="pointMarkerOptions">
+                </map-marker>
+            </ng-container>
+            <ng-container *ngIf="polygons">
+                <map-polygon *ngFor="let polygon of polygons" [paths]="polygon.paths" [options]="commonOptions">
+                </map-polygon>
+            </ng-container>
+            <ng-container *ngIf="lines">
+                <map-polyline *ngFor="let line of lines" [path]="line.path" [options]="commonOptions">
+                </map-polyline>
+            </ng-container>
+        </google-map>
+    </div>
+
+    <mat-form-field class="type-selector" appearance="outline">
+        <mat-label>Coordinates</mat-label>
+        <textarea matInput [placeholder]="coordinatesPlaceholder" required [(ngModel)]="coordinates"
+            (change)="coordinatesChanged()" [disabled]="disabled"></textarea>
+    </mat-form-field>
+</ng-template>

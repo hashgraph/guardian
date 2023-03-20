@@ -1,7 +1,8 @@
 import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { GoogleMap } from '@angular/google-maps';
 import { Schema, SchemaCondition, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import * as moment from 'moment';
@@ -222,7 +223,10 @@ export class SchemaFormComponent implements OnInit {
             item.fields = field.fields;
             item.displayRequired = item.fields.some((refField: any) => refField.required);
             if (field.required || item.preset) {
-                item.control = new FormGroup({});
+                item.control =
+                    item.customType === 'geo'
+                        ? new FormControl({})
+                        : new FormGroup({});
             }
         }
 
@@ -267,14 +271,14 @@ export class SchemaFormComponent implements OnInit {
             if (item.preset && item.preset.length) {
                 for (let index = 0; index < item.preset.length; index++) {
                     const preset = item.preset[index];
-                    const listItem = this.createListControl(item, preset);
+                    const listItem = this.createListControl(item, preset);//todo
                     item.list.push(listItem);
                     item.control.push(listItem.control);
                 }
                 this.options?.updateValueAndValidity();
                 this.change.emit();
             } else if (field.required) {
-                const listItem = this.createListControl(item);
+                const listItem = this.createListControl(item);//todo
                 item.list.push(listItem);
                 item.control.push(listItem.control);
 
@@ -303,7 +307,10 @@ export class SchemaFormComponent implements OnInit {
             index: String(item.list.length),
         }
         if (item.isRef) {
-            listItem.control = new FormGroup({});
+            listItem.control =
+                item.customType === 'geo'
+                    ? new FormControl({})
+                    : new FormGroup({});
         } else {
             listItem.fileUploading = false;
             const validators = this.getValidators(item);
@@ -353,6 +360,7 @@ export class SchemaFormComponent implements OnInit {
         const format = item.format;
         const type = item.type;
         const pattern = item.pattern;
+        const customType = item.customType;
 
         control.valueChanges
             .pipe(takeUntil(this.destroy$))
@@ -390,6 +398,12 @@ export class SchemaFormComponent implements OnInit {
                     if (!Number.isFinite(valueToSet)) {
                         valueToSet = val;
                     }
+                } else if (customType === 'geo') {
+                    try {
+                        valueToSet = JSON.parse(val);
+                    } catch {
+                        valueToSet = val;
+                    }
                 } else {
                     return;
                 }
@@ -411,7 +425,8 @@ export class SchemaFormComponent implements OnInit {
     }
 
     addGroup(item: any) {
-        item.control = new FormGroup({});
+        item.control =
+            item.customType === 'geo' ? new FormControl({}) : new FormGroup({});
         this.options?.addControl(item.name, item.control);
         this.change.emit();
         this.changeDetectorRef.detectChanges();
@@ -609,7 +624,8 @@ export class SchemaFormComponent implements OnInit {
             (
                 item.type === 'string' ||
                 item.type === 'number' ||
-                item.type === 'integer'
+                item.type === 'integer' ||
+                item.customType === 'geo'
             ) && (
                 item.format !== 'date' &&
                 item.format !== 'time' &&

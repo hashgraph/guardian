@@ -71,3 +71,6 @@ export { IArtifact } from './interface/artifact.interface';
 export { TokenType } from './type/token.type';
 export { ContractStatus } from './type/contract-status.type';
 export { SignatureType } from './type/signature.type';
+export { GeoJsonType } from './type/geojson.type';
+export { default as GeoJsonSchema } from './helpers/geojson-schema/geo-json';
+export { default as GeoJsonContext } from './helpers/geojson-schema/geo-json-context';

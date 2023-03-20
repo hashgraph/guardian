@@ -1,0 +1,20 @@
+.type-selector {
+    width: 100%;
+}
+
+.google-map-container {
+    margin-bottom: 20px;
+    margin-top: 5px;
+    box-shadow: 0px 0px 21px 0px rgba(34, 60, 80, 0.2);
+    border-radius: 5px;
+}
+
+:host .google-map-container ::ng-deep .map-container {
+    border-radius: 5px;
+}
+
+.switch-btn {
+    width: 180px;
+    height: 32px;
+    margin-bottom: 15px;
+}
