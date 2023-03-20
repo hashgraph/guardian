@@ -770,6 +770,10 @@ schemaAPI.put('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY),
         const guardians = new Guardians();
         const schema = await guardians.getSchemaById(newSchema.id);
 
+        if (!schema) {
+            return next(createError(404, 'Schema not found.'));
+        }
+
         if (schema.system) {
             if (schema.owner !== user.username) {
                 return next(createError(403, 'Invalid creator.'));
