@@ -268,6 +268,23 @@ function cleanNode() {
  * @returns {void}
  * @throws {Error} if the start fails
  */
+function restartDocker() {
+  const start = spawnSync('docker-compose', ['restart'], {
+    stdio: 'inherit'
+  })
+
+  if (start.status !== 0) {
+    console.log('Error starting docker containers');
+    console.log(start.stderr.toString());
+    process.exit(1);
+  }
+}
+
+/**
+ * Starts the guardian application using docker-compose
+ * @returns {void}
+ * @throws {Error} if the start fails
+ */
 function startDocker() {
   const start = spawnSync('docker-compose', ['up', '-d', '--no-build'], {
     stdio: 'inherit'
@@ -601,7 +618,7 @@ function main() {
     .option('-p --pm2', 'start guardian using pm2')
     .action((options) => {
       if (options.docker) {
-        // restartDocker();
+        restartDocker();
       } else if (options.pm2) {
         restartPm2();
       } else {
