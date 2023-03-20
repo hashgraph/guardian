@@ -12,8 +12,7 @@ const fieldsValidation = {
     .min(1, 'The baseTokenSerials field must contains at least 1 item')
     .required('The baseTokenSerials field is required'),
   oppositeTokenSerials: yup.array().of(yup.number())
-    .min(1, 'The oppositeTokenSerials field must contains at least 1 item')
-    .required('The baseTokenSerials field is required'),
+    .nullable(),
   requestId: yup.string().required('The requestId field is required'),
   name: yup.string().min(1, 'The name field can not be empty').required('The name field is required'),
   username: yup.string().min(1, 'The username field can not be empty').required('The username field is required'),
