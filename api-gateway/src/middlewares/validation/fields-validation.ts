@@ -5,10 +5,10 @@ const fieldsValidation = {
   contractId: yup.string().required('The contractId field is required'),
   description: yup.string().required('The description field is required'),
   baseTokenId: yup.string().required('The requestId field is required'),
-  oppositeTokenId: yup.string().required('The oppositeTokenId field is required'),
+  oppositeTokenId: yup.string().nullable().typeError('The oppositeTokenId field must be a string'),
   baseTokenCount: yup.number().required('The baseTokenCount field is required'),
   oppositeTokenCount: yup.number().required('The oppositeTokenCount field is required'),
-  baseTokenSerials: yup.array().of(yup.number())
+  baseTokenSerials: yup.array().typeError('The baseTokenSerials field must be an array').of(yup.number())
     .min(1, 'The baseTokenSerials field must contains at least 1 item')
     .required('The baseTokenSerials field is required'),
   oppositeTokenSerials: yup.array().of(yup.number())
