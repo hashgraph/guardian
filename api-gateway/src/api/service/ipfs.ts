@@ -11,7 +11,7 @@ export const ipfsAPI = Router();
 
 ipfsAPI.post('/file', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-        if (!req.body) {
+        if (!Object.values(req.body).length) {
             return res.status(422).json(prepareValidationResponse('Body content in request is empty'));
         }
 
