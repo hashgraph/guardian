@@ -437,14 +437,7 @@ export async function importTagsByFiles(
     for (const item of schemasMap) {
         idMap.set(item.oldID, item.newID);
     }
-    const tags = [];
-    for (const tag of files) {
-        if (idMap.has(tag.target)) {
-            tag.target = idMap.get(tag.target);
-            tags.push(tag);
-        }
-    }
-    await importTag(tags, notifier);
+    await importTag(files, idMap);
     return result;
 }
 

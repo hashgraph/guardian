@@ -296,9 +296,7 @@ export class PolicyEngine extends ServiceRequestsBase {
             artifact.data = await DatabaseServer.getArtifactFileByUUID(artifact.uuid);
         }
 
-        const dataToCreate = {
-            policy, schemas, tokens, artifacts
-        };
+        const dataToCreate = { policy, schemas, tokens, artifacts, tags: [] };
         return await PolicyImportExportHelper.importPolicy(dataToCreate, owner, null, notifier, data);
     }
 

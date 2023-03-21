@@ -145,12 +145,50 @@ export async function publishTag(
 }
 
 /**
+ * Export tags
+ * @param targets
+ * @param entity
+ */
+export async function exportTag(targets: string[], entity?: TagType): Promise<any[]> {
+    const filter: any = {
+        where: {
+            localTarget: { $in: targets }
+        }
+    }
+    if (entity) {
+        filter.where.entity = entity;
+    }
+    const items = await DatabaseServer.getTags(filter);
+    for (const item of items) {
+        delete item.id;
+        delete item._id;
+        item.status = 'History';
+    }
+    return items;
+}
+
+/**
  * Import tags
  * @param tags
- * @param notifier
+ * @param map - Map<OldLocalId, NewLocalId> | NewLocalId
  */
-export async function importTag(tags: any[], notifier: INotifier): Promise<any> {
+export async function importTag(
+    tags: any[],
+    newIds?: Map<string, string> | string
+): Promise<any> {
     const uuidMap: Map<string, string> = new Map();
+    if (newIds) {
+        if (typeof newIds === 'string') {
+            for (const tag of tags) {
+                tag.localTarget = newIds;
+            }
+        } else {
+            tags = tags.filter(tag => newIds.has(tag.localTarget));
+            for (const tag of tags) {
+                tag.localTarget = newIds.get(tag.target);
+            }
+        }
+    }
     for (const tag of tags) {
         if (tag.uuid) {
             if (uuidMap.has(tag.uuid)) {
@@ -437,5 +475,4 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
             return new MessageError(error);
         }
     });
-
 }
