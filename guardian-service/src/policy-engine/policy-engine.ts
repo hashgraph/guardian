@@ -578,7 +578,7 @@ export class PolicyEngine extends ServiceRequestsBase {
 
         notifier.completedAndStart('Publish tags');
         try {
-            await publishPolicyTags(model, messageServer);
+            await publishPolicyTags(model, root);
         } catch (error) {
             logger.error(error, ['GUARDIAN_SERVICE, TAGS']);
         }

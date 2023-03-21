@@ -10,4 +10,5 @@ export enum TopicType {
     SynchronizationTopic = 'SYNCHRONIZATION_TOPIC',
     RetireTopic = 'RETIRE_TOPIC',
     TokenTopic = 'TOKEN_TOPIC',
+    ModuleTopic = 'MODULE_TOPIC',
 }

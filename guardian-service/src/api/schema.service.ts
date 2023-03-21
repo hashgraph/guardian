@@ -720,7 +720,7 @@ export async function findAndPublishSchema(
     item = await publishSchema(item, messageServer, MessageAction.PublishSchema);
 
     notifier.completedAndStart('Publish tags');
-    await publishSchemaTags(item, messageServer);
+    await publishSchemaTags(item, root);
 
     notifier.completedAndStart('Update in DB');
     await updateSchemaDocument(item);

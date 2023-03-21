@@ -2098,8 +2098,16 @@ export class DatabaseServer {
      * Get Module By UUID
      * @param uuid
      */
-    public static async getModuleById(uuid: string): Promise<PolicyModule> {
+    public static async getModuleByUUID(uuid: string): Promise<PolicyModule> {
         return await new DataBaseHelper(PolicyModule).findOne({ uuid });
+    }
+
+    /**
+     * Get Module By ID
+     * @param uuid
+     */
+    public static async getModuleById(id: string): Promise<PolicyModule> {
+        return await new DataBaseHelper(PolicyModule).findOne(id);
     }
 
     /**
@@ -2176,7 +2184,6 @@ export class DatabaseServer {
      * @param row
      */
     public static async updateTag(row: Tag): Promise<Tag> {
-        console.log('--', row);
         return await new DataBaseHelper(Tag).update(row);
     }
 

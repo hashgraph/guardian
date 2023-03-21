@@ -1,6 +1,6 @@
 import { ApiResponse } from '@api/api-response';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
-import { GenerateUUIDv4, MessageAPI, TagType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IRootConfig, MessageAPI, TagType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
 import { INotifier } from '@helpers/notifier';
 import { Tag } from '@entity/tag';
@@ -8,16 +8,17 @@ import { MessageAction, MessageServer, MessageType, TagMessage, TopicConfig } fr
 import { Schema as SchemaCollection } from '@entity/schema';
 import { Policy as PolicyCollection } from '@entity/policy';
 import { Token as TokenCollection } from '@entity/token';
+import { PolicyModule as ModuleCollection } from '@entity/module';
 import { Users } from '@helpers/users';
 
 /**
  * Publish schema tags
  * @param item
- * @param messageServer
+ * @param user
  */
 export async function publishSchemaTags(
     schema: SchemaCollection,
-    messageServer: MessageServer
+    user: IRootConfig
 ): Promise<void> {
     const filter: any = {
         localTarget: schema.id,
@@ -25,6 +26,12 @@ export async function publishSchemaTags(
         status: 'Draft'
     }
     const tags = await DatabaseServer.getTags(filter);
+
+    const topic = await DatabaseServer.getTopicById(schema.topicId);
+    const topicConfig = await TopicConfig.fromObject(topic, true);
+    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey)
+        .setTopicObject(topicConfig);
+
     for (const tag of tags) {
         tag.target = schema.messageId;
         await publishTag(tag, messageServer);
@@ -39,7 +46,7 @@ export async function publishSchemaTags(
  */
 export async function publishPolicyTags(
     policy: PolicyCollection,
-    messageServer: MessageServer
+    user: IRootConfig
 ): Promise<void> {
     const filter: any = {
         localTarget: policy.id,
@@ -47,6 +54,12 @@ export async function publishPolicyTags(
         status: 'Draft'
     }
     const tags = await DatabaseServer.getTags(filter);
+
+    const topic = await DatabaseServer.getTopicById(policy.topicId);
+    const topicConfig = await TopicConfig.fromObject(topic, true);
+    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey)
+        .setTopicObject(topicConfig);
+
     for (const tag of tags) {
         tag.target = policy.messageId;
         await publishTag(tag, messageServer);
@@ -61,16 +74,50 @@ export async function publishPolicyTags(
  */
 export async function publishTokenTags(
     token: TokenCollection,
-    messageServer: MessageServer
+    user: IRootConfig
 ): Promise<void> {
     const filter: any = {
         localTarget: token.id,
-        entity: TagType.Policy,
+        entity: TagType.Token,
         status: 'Draft'
     }
     const tags = await DatabaseServer.getTags(filter);
+
+    const topic = await DatabaseServer.getTopicById(token.topicId);
+    const topicConfig = await TopicConfig.fromObject(topic, true);
+    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey)
+        .setTopicObject(topicConfig);
+
     for (const tag of tags) {
         tag.target = token.tokenId;
+        await publishTag(tag, messageServer);
+        await DatabaseServer.updateTag(tag);
+    }
+}
+
+/**
+ * Publish module tags
+ * @param module
+ * @param messageServer
+ */
+export async function publishModuleTags(
+    module: ModuleCollection,
+    user: IRootConfig
+): Promise<void> {
+    const filter: any = {
+        localTarget: module.id,
+        entity: TagType.Module,
+        status: 'Draft'
+    }
+    const tags = await DatabaseServer.getTags(filter);
+
+    const topic = await DatabaseServer.getTopicById(module.topicId);
+    const topicConfig = await TopicConfig.fromObject(topic, true);
+    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey)
+        .setTopicObject(topicConfig);
+
+    for (const tag of tags) {
+        tag.target = module.messageId;
         await publishTag(tag, messageServer);
         await DatabaseServer.updateTag(tag);
     }
@@ -159,6 +206,14 @@ export async function getTarget(entity: TagType, id: string): Promise<{
             const item = await DatabaseServer.getTokenById(id);
             if (item) {
                 return { id: item.id.toString(), target: item.tokenId, topicId: item.topicId };
+            } else {
+                return null;
+            }
+        }
+        case TagType.Module: {
+            const item = await DatabaseServer.getModuleById(id);
+            if (item) {
+                return { id: item.id.toString(), target: item.messageId, topicId: item.topicId };
             } else {
                 return null;
             }
@@ -280,7 +335,7 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
                 const items = await DatabaseServer.getTags({ localTarget, entity, status: 'Published' });
                 const map = new Map<string, any>();
                 for (const message of messages) {
-                    if(message.target === targetObject.target) {
+                    if (message.target === targetObject.target) {
                         map.set(message.getId(), { message, local: null });
                     }
                 }

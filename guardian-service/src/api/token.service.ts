@@ -22,6 +22,7 @@ import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { Workers } from '@helpers/workers';
 import { DatabaseServer } from '@database-modules';
 import { TopicHelper } from '@hedera-modules';
+import { publishTokenTags } from './tag.service';
 
 /**
  * Create token in Hedera network
@@ -228,6 +229,15 @@ async function updateToken(oldToken: Token, newToken: Token, tokenRepository: Da
         const tokenObject = Object.assign(oldToken, newTokenObject);
 
         const result = await tokenRepository.update(tokenObject);
+
+        notifier.completedAndStart('Publish tags');
+        try {
+            await publishTokenTags(result, root);
+        } catch (error) {
+            const log = new Logger();
+            log.error(error, ['GUARDIAN_SERVICE, TAGS']);
+        }
+
         notifier.completed();
         return result;
 

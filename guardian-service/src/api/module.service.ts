@@ -5,7 +5,7 @@ import { DatabaseServer } from '@database-modules';
 import { PolicyModule } from '@entity/module';
 import JSZip from 'jszip';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
-import { MessageAction, MessageServer, MessageType, ModuleMessage, TopicConfig } from '@hedera-modules';
+import { MessageAction, MessageServer, MessageType, ModuleMessage, TopicConfig, TopicHelper } from '@hedera-modules';
 import { Users } from '@helpers/users';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
 import { ModuleValidator } from '@policy-engine/block-validators/module-validator';
@@ -86,7 +86,7 @@ export async function preparePreviewMessage(messageId: string, owner: string, no
  */
 export async function validateAndPublish(uuid: string, owner: string, notifier: INotifier) {
     notifier.start('Find and validate module');
-    const item = await DatabaseServer.getModuleById(uuid);
+    const item = await DatabaseServer.getModuleByUUID(uuid);
     if (!item) {
         throw new Error('Unknown module');
     }
@@ -134,12 +134,25 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
     const root = await users.getHederaAccount(owner);
     notifier.completedAndStart('Find topic');
 
-    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicByType(owner, TopicType.UserTopic), true);
+    const userTopic = await TopicConfig.fromObject(await DatabaseServer.getTopicByType(owner, TopicType.UserTopic), true);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
-        .setTopicObject(topic);
+        .setTopicObject(userTopic);
 
-    notifier.completedAndStart('Publish schemas');
 
+    notifier.completedAndStart('Create module topic');
+    const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+    const rootTopic = await topicHelper.create({
+        type: TopicType.ModuleTopic,
+        name: model.name || TopicType.ModuleTopic,
+        description: TopicType.ModuleTopic,
+        owner,
+        policyId: null,
+        policyUUID: null
+    });
+    await rootTopic.saveKeys();
+    await DatabaseServer.saveTopic(rootTopic.toObject());
+
+    model.topicId = rootTopic.topicId;
     model.status = ModuleStatus.PUBLISHED;
 
     notifier.completedAndStart('Generate file');
@@ -159,6 +172,9 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
     const result = await messageServer
         .sendMessage(message);
     model.messageId = result.getId();
+
+    notifier.completedAndStart('Link topic and module');
+    await topicHelper.twoWayLink(rootTopic, userTopic, result.getId());
 
     logger.info('Published module', ['GUARDIAN_SERVICE']);
 
@@ -238,7 +254,7 @@ export async function modulesAPI(
             if (!msg.uuid || !msg.owner) {
                 return new MessageError('Invalid load modules parameter');
             }
-            const item = await DatabaseServer.getModuleById(msg.uuid);
+            const item = await DatabaseServer.getModuleByUUID(msg.uuid);
             if (!item || item.owner !== msg.owner) {
                 throw new Error('Invalid module');
             }
@@ -271,7 +287,7 @@ export async function modulesAPI(
                 return new MessageError('Invalid load modules parameter');
             }
             const { uuid, module, owner } = msg;
-            const item = await DatabaseServer.getModuleById(uuid);
+            const item = await DatabaseServer.getModuleByUUID(uuid);
             if (!item || item.owner !== owner) {
                 throw new Error('Invalid module');
             }
@@ -296,7 +312,7 @@ export async function modulesAPI(
             if (!msg.uuid || !msg.owner) {
                 return new MessageError('Invalid load modules parameter');
             }
-            const item = await DatabaseServer.getModuleById(msg.uuid);
+            const item = await DatabaseServer.getModuleByUUID(msg.uuid);
             if (!item || item.owner !== msg.owner) {
                 throw new Error('Invalid module');
             }
@@ -313,7 +329,7 @@ export async function modulesAPI(
                 return new MessageError('Invalid load modules parameter');
             }
 
-            const item = await DatabaseServer.getModuleById(msg.uuid);
+            const item = await DatabaseServer.getModuleByUUID(msg.uuid);
             if (!item || item.owner !== msg.owner) {
                 throw new Error('Invalid module');
             }
@@ -340,7 +356,7 @@ export async function modulesAPI(
                 return new MessageError('Invalid load modules parameter');
             }
 
-            const item = await DatabaseServer.getModuleById(msg.uuid);
+            const item = await DatabaseServer.getModuleByUUID(msg.uuid);
             if (!item || item.owner !== msg.owner) {
                 throw new Error('Invalid module');
             }
