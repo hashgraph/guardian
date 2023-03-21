@@ -535,6 +535,7 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | MQ\_MESSAGE\_CHUNK                     | To set up the message chunk size                                                   | 500000                             |
 | HEDERA\_CUSTOM\_NODES                  | Define hedera nodes to execute and pay transaction fee                             | 0.testnet.hedera.com:50211":"0.0.3 |
 | HEDERA\_CUSTOM\_MIRROR\_NODES          | Define hedera mirror nodes                                                         | testnet.mirrornode.hedera.com:443" |
+| MAP\_API\_KEY                          | Defines api to integrate Map schema type                                           | ALZ\_X.....                        |
 
 ### .env / .env.docker Parameters in api-gateway
 

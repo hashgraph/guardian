@@ -48,6 +48,8 @@ There are different types of Field Types:
   * Prefix
   * Postfix
 * Enum
+* Help Text
+* GeoJSON
 
 Each of the above field types can be marked as either Marked or optional by checking the Required Field checkbox.
 
@@ -67,6 +69,15 @@ Each of the above field types can be marked as either Marked or optional by chec
 Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm](https://ipfs.io/ipfs/bafkreihgbx6fsqup4psfbzjcf57zjdbfwisbjbsqzvwlg4hgx5s5xyqwzm)
 
 3\. If we put more than five options, it will be automatically loaded to IPFS.
+{% endhint %}
+
+{% hint style="info" %}
+**Note: Important points to be noted when "GeoJSON" type is selected:**
+
+1. Click on map and place the marker’s, polygons, lines.
+2. Polygons and lines can be placed by double clicking on map.
+3. Right Click on the map will remove temporary points for polygons and lines
+4. View type can also be changed by pasting the GeoJSON.
 {% endhint %}
 
 {% hint style="info" %}
