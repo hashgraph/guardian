@@ -58,7 +58,6 @@ export class GeojsonTypeComponent implements OnInit {
         );
         this.updateCoordinates.subscribe(this.onCoordinatesUpdate.bind(this));
         if (this.presetDocument) {
-            this.group?.patchValue(this.presetDocument);
             this.onViewTypeChange(this.presetDocument);
         }
     }
@@ -171,15 +170,13 @@ export class GeojsonTypeComponent implements OnInit {
         this.pointConstructor?.pop();
     }
 
-    onTypeChange(clearInputs: boolean = true) {
-        if (clearInputs) {
-            this.group?.patchValue({});
-            this.coordinates = '';
-            this.markers = [];
-            this.polygons = [];
-            this.lines = [];
-            this.pointConstructor = [];
-        }
+    onTypeChange() {
+        this.group?.patchValue({});
+        this.coordinates = '';
+        this.markers = [];
+        this.polygons = [];
+        this.lines = [];
+        this.pointConstructor = [];
 
         switch (this.type) {
             case GeoJsonType.POINT:
@@ -273,7 +270,7 @@ export class GeojsonTypeComponent implements OnInit {
         }
     }
 
-    onViewTypeChange(value: any, clearInputs: boolean = true) {
+    onViewTypeChange(value: any) {
         if (!value) {
             return;
         }
@@ -282,7 +279,7 @@ export class GeojsonTypeComponent implements OnInit {
         }
         if (!this.isJSON || this.disabled) {
             this.type = value?.type;
-            this.onTypeChange(clearInputs);
+            this.onTypeChange();
             this.coordinates = JSON.stringify(value?.coordinates, null, 4);
             this.coordinatesChanged();
         }

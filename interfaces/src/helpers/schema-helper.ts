@@ -626,7 +626,7 @@ export class SchemaHelper {
     public static findRefs(target: Schema, schemas: Schema[]) {
         const map = {};
         const schemaMap = {
-            '#GeoJson': geoJson
+            '#GeoJSON': geoJson
         };
         for (const element of schemas) {
             schemaMap[element.iri] = element.document;

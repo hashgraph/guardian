@@ -329,9 +329,9 @@ export async function publishSchema(
     }
 
     let additionalContexts: Map<string, any>;
-    if (itemDocument.$defs && itemDocument.$defs['#GeoJson']) {
+    if (itemDocument.$defs && itemDocument.$defs['#GeoJSON']) {
         additionalContexts = new Map<string, any>();
-        additionalContexts.set('#GeoJson', GeoJsonContext);
+        additionalContexts.set('#GeoJSON', GeoJsonContext);
     }
 
     item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);
@@ -615,9 +615,9 @@ export async function findAndDryRunSchema(item: SchemaCollection, version: strin
         }
     }
     let additionalContexts: Map<string, any>;
-    if (itemDocument.$defs && itemDocument.$defs['#GeoJson']) {
+    if (itemDocument.$defs && itemDocument.$defs['#GeoJSON']) {
         additionalContexts = new Map<string, any>();
-        additionalContexts.set('#GeoJson', GeoJsonContext);
+        additionalContexts.set('#GeoJSON', GeoJsonContext);
     }
 
     item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);

@@ -99,8 +99,8 @@ export class FieldTypesDictionary {
             isRef: false
         },
         {
-            name: 'GeoJson',
-            type: '#GeoJson',
+            name: 'GeoJSON',
+            type: '#GeoJSON',
             format: undefined,
             pattern: undefined,
             isRef: true,
