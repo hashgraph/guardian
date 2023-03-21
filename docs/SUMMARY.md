@@ -55,6 +55,7 @@
       * [Delete System Schema](system-schemas-apis/delete-system-schema.md)
       * [Publishes the Schema](system-schemas-apis/publishes-the-schema.md)
       * [Schema Type](system-schemas-apis/schema-type.md)
+      * [Returns Map API Key](guardian/standard-registry/schemas/system-schema-apis/returns-map-api-key.md)
     * [⚙ Schema APIs for Asynchronous Execution](guardian/standard-registry/schemas/schema-apis-for-asynchronous-execution/README.md)
       * [Creation of Schema](schema-related-apis-for-asynchronous-execution/creation-of-schema.md)
       * [Publishing Schema](schema-related-apis-for-asynchronous-execution/publishing-schema.md)
