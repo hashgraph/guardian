@@ -14,7 +14,7 @@
     "guardian",
     "guardian-cli"
   ],
-  "author": "",
+  "author": "IntellectEU <info@intellecteu.com>",
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/node": "^18.15.3",
