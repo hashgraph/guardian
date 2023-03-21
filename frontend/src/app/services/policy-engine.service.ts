@@ -1,9 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable, Subject, Subscription } from 'rxjs';
-import { webSocket, WebSocketSubjectConfig } from 'rxjs/webSocket';
-import { AuthService } from './auth.service';
-import { ToastrService } from 'ngx-toastr';
+import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 
 /**

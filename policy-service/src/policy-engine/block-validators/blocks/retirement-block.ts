@@ -17,7 +17,7 @@ export class RetirementBlock {
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
             if (!ref.options.tokenId) {
-                validator.addError('Option "tokenId" does not set');
+                validator.addError('Option "tokenId" is not set');
             } else if (typeof ref.options.tokenId !== 'string') {
                 validator.addError('Option "tokenId" must be a string');
             } else if (await validator.tokenNotExist(ref.options.tokenId)) {
@@ -25,7 +25,7 @@ export class RetirementBlock {
             }
 
             if (!ref.options.rule) {
-                validator.addError('Option "rule" does not set');
+                validator.addError('Option "rule" is not set');
             } else if (typeof ref.options.rule !== 'string') {
                 validator.addError('Option "rule" must be a string');
             }
@@ -35,7 +35,7 @@ export class RetirementBlock {
                 validator.addError('Option "accountType" must be one of ' + accountType.join(','));
             }
             if (ref.options.accountType === 'custom' && !ref.options.accountId) {
-                validator.addError('Option "accountId" does not set');
+                validator.addError('Option "accountId" is not set');
             }
         } catch (error) {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);
