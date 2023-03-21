@@ -42,6 +42,7 @@ import { Workers } from '@helpers/workers';
 import { Token } from '@entity/token';
 import { PolicyValidator } from '@policy-engine/block-validators';
 import { publishPolicyTags } from '@api/tag.service';
+import { createHederaToken } from '@api/token.service';
 
 /**
  * Result of publishing
@@ -449,76 +450,19 @@ export class PolicyEngine extends ServiceRequestsBase {
             const tokenIds = findAllEntities(model.config, ['tokenId']);
             const tokens = await DatabaseServer.getTokens({ tokenId: { $in: tokenIds }, owner: model.owner });
             for (const token of tokens) {
+                let _token = token;
                 if (token.draftToken) {
-                    const workers = new Workers();
-                    const tokenData = await workers.addRetryableTask({
-                        type: WorkerTaskType.CREATE_TOKEN,
-                        data: {
-                            operatorId: root.hederaAccountId,
-                            operatorKey: root.hederaAccountKey,
-                            tokenName: token.tokenName,
-                            tokenSymbol: token.tokenSymbol,
-                            tokenType: token.tokenType,
-                            initialSupply: token.initialSupply,
-                            decimals: token.decimals,
-                            changeSupply: true,
-                            enableAdmin: token.enableAdmin,
-                            enableFreeze: token.enableFreeze,
-                            enableKYC: token.enableKYC,
-                            enableWipe: token.enableWipe,
-                        }
-                    }, 1);
-                    const wallet = new Wallet();
-                    await Promise.all([
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_TREASURY_KEY,
-                            tokenData.tokenId,
-                            tokenData.treasuryKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_ADMIN_KEY,
-                            tokenData.tokenId,
-                            tokenData.adminKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_FREEZE_KEY,
-                            tokenData.tokenId,
-                            tokenData.freezeKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_KYC_KEY,
-                            tokenData.tokenId,
-                            tokenData.kycKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_SUPPLY_KEY,
-                            tokenData.tokenId,
-                            tokenData.supplyKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_WIPE_KEY,
-                            tokenData.tokenId,
-                            tokenData.wipeKey
-                        )
-                    ]);
+                    const oldId = token.tokenId;
+                    const newToken = await createHederaToken({ ...token, changeSupply: true }, root);
+                    _token = await new DataBaseHelper(Token).save(newToken);
 
-                    replaceAllEntities(model.config, ['tokenId'], token.tokenId, tokenData.tokenId);
-                    replaceAllVariables(model.config, 'Token', token.tokenId, tokenData.tokenId);
-
-                    token.tokenId = tokenData.tokenId;
-                    token.draftToken = false;
-                    token.adminId = tokenData.treasuryId;
-                    await new DataBaseHelper(Token).save(token);
+                    replaceAllEntities(model.config, ['tokenId'], oldId, newToken.tokenId);
+                    replaceAllVariables(model.config, 'Token', oldId, newToken.tokenId);
                     await DatabaseServer.updatePolicy(model);
                 }
+
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
-                tokenMessage.setDocument(token);
+                tokenMessage.setDocument(_token);
                 await messageServer
                     .sendMessage(tokenMessage);
             }

@@ -61,6 +61,7 @@ export class TopicMemo extends MemoMap {
         topicMemo[TopicType.InstancePolicyTopic] = 'Policy instance configuration topic';
         topicMemo[TopicType.DynamicTopic] = '${name} operation topic';
         topicMemo[TopicType.SchemaTopic] = 'Schema development topic';
+        topicMemo[TopicType.TokenTopic] = 'Token topic';
         return topicMemo;
     }
 

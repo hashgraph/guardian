@@ -293,6 +293,7 @@ export class Worker {
                     const {
                         operatorId,
                         operatorKey,
+                        memo,
                         decimals,
                         enableAdmin,
                         enableFreeze,
@@ -314,7 +315,7 @@ export class Worker {
                     const freezeKey = enableFreeze ? PrivateKey.generate() : null;
                     const kycKey = enableKYC ? PrivateKey.generate() : null;
                     const wipeKey = enableWipe ? PrivateKey.generate() : null;
-                    const tokenMemo = '';
+                    const tokenMemo = memo || '';
                     const tokenId = await client.newToken(
                         tokenName,
                         tokenSymbol,
@@ -653,15 +654,15 @@ export class Worker {
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addUint32(Math.floor(baseTokenCount || 0))
@@ -740,15 +741,15 @@ export class Worker {
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             ),
                         wipeKeys
@@ -777,15 +778,15 @@ export class Worker {
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                     );
@@ -813,15 +814,15 @@ export class Worker {
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                     );
@@ -858,15 +859,15 @@ export class Worker {
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addUint32(baseTokenCount)
@@ -911,15 +912,15 @@ export class Worker {
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                     );
