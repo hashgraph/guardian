@@ -1,6 +1,26 @@
 #!/usr/bin/env node
 
+import { spawnSync } from 'child_process';
 import { Command } from 'commander';
+
+const GUARDIAN_REPOSITORY = 'https://github.com/hashgraph/guardian';
+
+/**
+ * Clones the guardian repository
+ * @returns {void}
+ * @throws {Error} if the clone fails
+ */
+function cloneGuardian() {
+  const clone = spawnSync('git', ['clone', GUARDIAN_REPOSITORY], {
+    stdio: 'inherit'
+  });
+
+  if (clone.status !== 0) {
+    console.log('Error cloning the guardian repository');
+    console.log(clone.stderr.toString());
+    process.exit(1);
+  }
+}
 
 /**
  * Main function of the guardian-cli
@@ -16,7 +36,9 @@ import { Command } from 'commander';
  * start: starts guardian application
  * stop: stops guardian application
  * destroy: destroys the current guardian project
+ *
  * @returns {void}
+ *
  */
 function main() {
   const program = new Command();
@@ -27,6 +49,9 @@ function main() {
 
   program.command('create')
     .description('create a new guardian project')
+    .action(() => {
+      cloneGuardian();
+    });
 
   program.command('use <version>')
     .description('use a specific version of guardian')
