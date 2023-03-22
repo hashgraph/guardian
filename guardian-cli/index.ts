@@ -95,6 +95,99 @@ function buildDocker() {
 }
 
 /**
+ * Installs node packages for the given project using npm or yarn
+ * @param projectDir
+ * @param npm
+ * @returns {void}
+ * @throws {Error} if the installation fails
+ */
+function installNodePacakges(projectDir: string, npm = false) {
+  console.log(`Installing packages for ${projectDir}`);
+
+  let cmd: string;
+  let args: string[];
+
+  if (npm) {
+    cmd = 'npm';
+    args = ['install'];
+  } else {
+    cmd = 'yarn';
+    args = ['install'];
+  }
+
+  const install = spawnSync(cmd, args, { 
+    cwd: projectDir 
+  });
+
+  if (install.status !== 0) {
+    console.log('Error installing packages');
+    process.exit(1);
+  }
+}
+
+/**
+ * Builds the given project using npm or yarn
+ * @param projectDir 
+ * @param npm
+ * @returns {void}
+ * @throws {Error} if the build fails
+ */
+function buildPackage(projectDir: string, npm = false) {
+  console.log(`Building ${projectDir}`);
+  
+  let cmd: string;
+  let args: string[];
+
+  if (npm) {
+    cmd = 'npm';
+    args = ['run', 'build'];
+  } else {
+    cmd = 'yarn';
+    args = ['build'];
+  }
+
+  const build = spawnSync(cmd, args, { 
+    cwd: projectDir 
+  });
+
+  if(build.status !== 0) {
+    console.log('Error building the project');
+    process.exit(1);
+  }
+}
+
+/**
+ * Builds all services of the current guardian project
+ * @param npm
+ * @returns {void}
+ * @throws {Error} if the build fails
+ */
+function buildNode(npm = false) {
+  const services = [
+    'interfaces',
+    'common',
+    'api-gateway',
+    'logger-service',
+    'mrv-sender',
+    'topic-viewer',
+    'tree-viewer',
+    'auth-service',
+    'worker-service',
+    'guardian-service',
+    'frontend',
+  ]
+
+  const cwd = process.cwd();  
+  for (const service of services) {
+    const projectDir = `${cwd}/${service}`;
+
+    installNodePacakges(projectDir, npm);
+
+    buildPackage(projectDir, npm);
+  }
+}
+
+/**
  * Main function of the guardian-cli
  * Runs the commander program and parses the arguments passed to the cli
  * All the commands are defined here
@@ -151,6 +244,12 @@ function main() {
     .action((options) => {
       if (options.docker) {
         buildDocker();
+      } else if (options.npm) {
+        buildNode(true);
+      } else if (options.yarn) {
+        buildNode();
+      } else {
+        console.log('Please specify a build option');
       }
     });
 
