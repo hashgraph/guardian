@@ -70,10 +70,27 @@ function listRemoteReleaseVersions() {
     process.exit(1);
   } else {
     const result = lsRemote.stdout.toString();
-    let tags = result.match(/v?\d+\.\d+\.\d+.*/g);
+    const tags = result.match(/v?\d+\.\d+\.\d+.*/g);
     if (tags) {
       tags.forEach((tag: string) => console.log(tag));
     }
+  }
+}
+
+/**
+ * Builds Docker Images of the current guardian project
+ * @returns {void}
+ * @throws {Error} if the build fails
+ */
+function buildDocker() {
+  const build = spawnSync('docker-compose', ['build'], {
+    stdio: 'inherit'
+  });
+
+  if (build.status !== 0) {
+    console.log('Error building the project');
+    console.log(build.stderr.toString());
+    process.exit(1);
   }
 }
 
@@ -131,6 +148,11 @@ function main() {
     .option('-d --docker', 'build the project in a docker container')
     .option('-n --npm', 'use npm to install dependencies')
     .option('-y --yarn', 'use yarn to install dependencies')
+    .action((options) => {
+      if (options.docker) {
+        buildDocker();
+      }
+    });
 
   program.command('clean')
     .description('clean the artifacts of the current guardian project')
