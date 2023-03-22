@@ -70,6 +70,13 @@ export class FieldTypesDictionary {
             isRef: false
         },
         {
+            name: 'URI',
+            type: 'string',
+            format: 'uri',
+            pattern: undefined,
+            isRef: false
+        },
+        {
             name: 'Email',
             type: 'string',
             format: 'email',

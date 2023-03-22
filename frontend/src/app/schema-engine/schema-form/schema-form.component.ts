@@ -10,6 +10,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { uriValidator } from 'src/app/validators/uri.validator';
 
 export const DATETIME_FORMATS = {
     parse: {
@@ -27,6 +28,7 @@ enum PlaceholderByFieldType {
     Email = "example@email.com",
     Number = "123",
     URL = "https://example.com",
+    URI = "example:uri",
     String = "Please enter text here",
     IPFS = 'ipfs.io/ipfs/example-hash',
     HederaAccount = '0.0.1',
@@ -39,6 +41,7 @@ enum ErrorFieldMessageByFieldType {
     Duration = "Please make sure the field contain a valid duration value",
     Integer = "Please make sure the field contain a valid integer value",
     URL = "Please make sure the field contain a valid URL value",
+    URI = "Please make sure the field contain a valid URI value",
     DateTime = "Please make sure the field contain a valid datetime value",
     Date = "Please make sure the field contain a valid date value",
     Other = "Please make sure the field contain a valid value"
@@ -50,6 +53,7 @@ enum ErrorArrayMessageByFieldType {
     Duration = "Please make sure all fields contain a valid duration value",
     Integer = "Please make sure all fields contain a valid integer value",
     URL = "Please make sure all fields contain a valid URL value",
+    URI = "Please make sure all fields contain a valid URI value",
     DateTime = "Please make sure all fields contain a valid datetime value",
     Date = "Please make sure all fields contain a valid date value",
     Other = "Please make sure all fields contain a valid value"
@@ -353,6 +357,10 @@ export class SchemaFormComponent implements OnInit {
             validators.push(Validators.pattern(fullFormats.url as RegExp));
         }
 
+        if (item.format === 'uri') {
+            validators.push(uriValidator());
+        }
+
         return validators;
     }
 
@@ -489,6 +497,8 @@ export class SchemaFormComponent implements OnInit {
                 return messages.Integer;
             case 'url':
                 return messages.URL;
+            case 'uri':
+                return messages.URI;
             case 'date-time':
                 return messages.DateTime;
             case 'date':
@@ -524,6 +534,8 @@ export class SchemaFormComponent implements OnInit {
                     return PlaceholderByFieldType.IPFS;
                 }
                 return PlaceholderByFieldType.URL;
+            case 'uri':
+                return PlaceholderByFieldType.URI;
             case 'string':
                 return PlaceholderByFieldType.String;
             default:
