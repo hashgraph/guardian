@@ -23,6 +23,24 @@ function cloneGuardian() {
 }
 
 /**
+ * Checks out a specific version of guardian
+ * @param {string} version - the version to checkout
+ * @returns {void}
+ * @throws {Error} if the checkout fails
+ */
+function useVersion(version: string) {
+  const checkout = spawnSync('git', ['checkout', `v${version}`], {
+    stdio: 'inherit'
+  });
+
+  if (checkout.status !== 0) {
+    console.log('Error checking out the version');
+    console.log(checkout.stderr.toString());
+    process.exit(1);
+  }
+}
+
+/**
  * Main function of the guardian-cli
  * Runs the commander program and parses the arguments passed to the cli
  * All the commands are defined here
@@ -55,6 +73,9 @@ function main() {
 
   program.command('use <version>')
     .description('use a specific version of guardian')
+    .action((version) => {
+      useVersion(version);
+    });
 
   program.command('list')
     .description('list all local guardian versions')
