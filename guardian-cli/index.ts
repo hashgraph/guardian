@@ -192,7 +192,7 @@ function buildNode(npm = false) {
  * @returns {void}
  * @throws {Error} if the removal fails
  */
-async function cleanDocker() {
+function cleanDocker() {
   const getImages = spawnSync('docker', ['images', '--filter=reference=guardian_*', '--format', '{{.ID}}'], {
     stdio: 'pipe'
   });
@@ -213,6 +213,52 @@ async function cleanDocker() {
     console.log('Error remove docker images');
     console.log(rmi.stderr.toString());
     process.exit(1);
+  }
+}
+
+/**
+ * Removes node module and dist folder of a specific module
+ * @param projectDir
+ * @returns {void}
+ * @throws {Error} if the removal fails
+ */
+function cleanNodeService(projectDir: string) {
+  const clean = spawnSync('rm', ['-rf', 'node_modules', 'dist'], {
+    cwd: projectDir,
+  });
+
+  if (clean.status !== 0) {
+    console.log('Error cleaning node service');
+    console.log(clean.stderr.toString());
+    process.exit(1);
+  }
+}
+
+/**
+ * Removes node module and dist folder of all modules
+ * @returns {void}
+ * @throws {Error} if the removal fails
+ */
+function cleanNode() {
+  const services = [
+    'interfaces',
+    'common',
+    'api-gateway',
+    'logger-service',
+    'mrv-sender',
+    'topic-viewer',
+    'tree-viewer',
+    'auth-service',
+    'worker-service',
+    'guardian-service',
+    'frontend',
+  ]
+
+  const cwd = process.cwd();
+  for (const service of services) {
+    const projectDir = `${cwd}/${service}`;
+
+    cleanNodeService(projectDir);
   }
 }
 
@@ -289,6 +335,10 @@ function main() {
     .action((options) => {
       if (options.docker) {
         cleanDocker();
+      } else if (options.node) {
+        cleanNode();
+      } else {
+        console.log('Please specify a clean option');
       }
     });
 
