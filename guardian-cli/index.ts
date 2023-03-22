@@ -115,8 +115,8 @@ function installNodePacakges(projectDir: string, npm = false) {
     args = ['install'];
   }
 
-  const install = spawnSync(cmd, args, { 
-    cwd: projectDir 
+  const install = spawnSync(cmd, args, {
+    cwd: projectDir,
   });
 
   if (install.status !== 0) {
@@ -127,14 +127,14 @@ function installNodePacakges(projectDir: string, npm = false) {
 
 /**
  * Builds the given project using npm or yarn
- * @param projectDir 
+ * @param projectDir
  * @param npm
  * @returns {void}
  * @throws {Error} if the build fails
  */
 function buildPackage(projectDir: string, npm = false) {
   console.log(`Building ${projectDir}`);
-  
+
   let cmd: string;
   let args: string[];
 
@@ -146,8 +146,8 @@ function buildPackage(projectDir: string, npm = false) {
     args = ['build'];
   }
 
-  const build = spawnSync(cmd, args, { 
-    cwd: projectDir 
+  const build = spawnSync(cmd, args, {
+    cwd: projectDir,
   });
 
   if(build.status !== 0) {
@@ -177,13 +177,42 @@ function buildNode(npm = false) {
     'frontend',
   ]
 
-  const cwd = process.cwd();  
+  const cwd = process.cwd();
   for (const service of services) {
     const projectDir = `${cwd}/${service}`;
 
     installNodePacakges(projectDir, npm);
 
     buildPackage(projectDir, npm);
+  }
+}
+
+/**
+ * Removes all docker images of the current guardian project
+ * @returns {void}
+ * @throws {Error} if the removal fails
+ */
+async function cleanDocker() {
+  const getImages = spawnSync('docker', ['images', '--filter=reference=guardian_*', '--format', '{{.ID}}'], {
+    stdio: 'pipe'
+  });
+
+  if (getImages.status !== 0) {
+    console.log('Error listing docker images');
+    console.log(getImages.stderr.toString());
+    process.exit(1);
+  }
+
+  const images = getImages.stdout.toString().split('\n').filter((image: string) => image !== '');
+
+  const rmi = spawnSync('docker', ['rmi', ...images], {
+    stdio: 'inherit'
+  })
+
+  if (rmi.status !== 0) {
+    console.log('Error remove docker images');
+    console.log(rmi.stderr.toString());
+    process.exit(1);
   }
 }
 
@@ -257,6 +286,11 @@ function main() {
     .description('clean the artifacts of the current guardian project')
     .option('-d --docker', 'clean docker images')
     .option('-n --node', 'clean node modules and dists')
+    .action((options) => {
+      if (options.docker) {
+        cleanDocker();
+      }
+    });
 
   program.command('start')
     .description('start guardian application')
