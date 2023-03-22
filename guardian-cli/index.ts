@@ -267,7 +267,7 @@ function cleanNode() {
  * @returns {void}
  * @throws {Error} if the start fails
  */
-async function startDocker() {
+function startDocker() {
   const start = spawnSync('docker-compose', ['up', '-d', '--no-build'])
 
   if (start.status !== 0) {
@@ -282,7 +282,7 @@ async function startDocker() {
  * @returns {void}
  * @throws {Error} if the stop fails
  */
-async function stopDocker() {
+function stopDocker() {
   const stop = spawnSync('docker-compose', ['stop'])
 
   if (stop.status !== 0) {
@@ -297,13 +297,47 @@ async function stopDocker() {
  * @returns {void}
  * @throws {Error} if the destroy fails
  */
-async function destroyDocker() {
-  const stop = spawnSync('docker-compose', ['down', '-v'])
+function destroyDocker() {
+  const destroy = spawnSync('docker-compose', ['down', '-v'])
 
-  if (stop.status !== 0) {
-    console.log('Error stopping docker containers');
-    console.log(stop.stderr.toString());
+  if (destroy.status !== 0) {
+    console.log('Error destroying docker containers');
+    console.log(destroy.stderr.toString());
     process.exit(1);
+  }
+}
+
+/**
+ * Starts the guardian application using pm2
+ * @returns {void}
+ * @throws {Error} if the start fails
+ */
+function startPm2() {
+  const services = [
+    'api-gateway',
+    'logger-service',
+    'mrv-sender',
+    'topic-viewer',
+    'tree-viewer',
+    'auth-service',
+    'worker-service',
+    'guardian-service',
+    'frontend',
+  ]
+
+  const cwd = process.cwd();
+  for (const service of services) {
+    const projectDir = `${cwd}/${service}`;
+
+    const start = spawnSync('pm2', ['start', '"npm run start"', '-n', service], {
+      cwd: projectDir,
+    });
+
+    if (start.status !== 0) {
+      console.log('Error starting service');
+      console.log(start.stderr.toString());
+      process.exit(1);
+    }
   }
 }
 
@@ -394,6 +428,10 @@ function main() {
     .action((options) => {
       if (options.docker) {
         startDocker();
+      } else if (options.pm2) {
+        startPm2();
+      } else {
+        console.log('Please specify a start option');
       }
     });
 
