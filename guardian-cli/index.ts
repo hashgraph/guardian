@@ -404,6 +404,42 @@ function startPm2() {
 }
 
 /**
+ * Retarts the guardian application using pm2
+ * @returns {void}
+ * @throws {Error} if the start fails
+ */
+function restartPm2() {
+  const services = [
+    'api-gateway',
+    'logger-service',
+    'mrv-sender',
+    'topic-viewer',
+    'auth-service',
+    'worker-service',
+    'guardian-service',
+    'frontend',
+  ]
+
+  startExternalServices();
+
+  const cwd = process.cwd();
+  for (const service of services) {
+    const projectDir = `${cwd}/${service}`;
+
+    const start = spawnSync('pm2', ['restart', service], {
+      stdio: 'inherit',
+      cwd: projectDir,
+    });
+
+    if (start.status !== 0) {
+      console.log('Error starting service');
+      console.log(start.stderr.toString());
+      process.exit(1);
+    }
+  }
+}
+
+/**
  * Stops the guardian application using pm2
  * @returns {void}
  * @throws {Error} if the stop fails
@@ -446,7 +482,6 @@ function destroyPm2() {
     'logger-service',
     'mrv-sender',
     'topic-viewer',
-    'tree-viewer',
     'auth-service',
     'worker-service',
     'guardian-service',
@@ -557,6 +592,20 @@ function main() {
         startDocker();
       } else if (options.pm2) {
         startPm2();
+      } else {
+        console.log('Please specify a start option');
+      }
+    });
+
+    program.command('restart')
+    .description('restart guardian application')
+    .option('-d --docker', 'start guardian using docker')
+    .option('-p --pm2', 'start guardian using pm2')
+    .action((options) => {
+      if (options.docker) {
+        // restartDocker();
+      } else if (options.pm2) {
+        restartPm2();
       } else {
         console.log('Please specify a start option');
       }
