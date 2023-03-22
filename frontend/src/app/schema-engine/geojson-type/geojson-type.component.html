@@ -1,18 +1,18 @@
 <div class="switch-btn">
     <switch-button [on-label]="'JSON'" [off-label]="'Form'" [(value)]="isJSON"
-        (valueChange)="onViewTypeChange(!disabled && this.group?.value)"></switch-button>
+        (valueChange)="onViewTypeChange(!isDisabled && this.control?.value)"></switch-button>
 </div>
 <ng-container *ngIf="isJSON; else form">
     <mat-form-field class="type-selector" appearance="outline">
         <mat-label>GeoJSON</mat-label>
-        <textarea matInput placeholder="{}" [disabled]="disabled" required [(ngModel)]="jsonInput"
+        <textarea matInput placeholder="{}" [disabled]="isDisabled" required [(ngModel)]="jsonInput"
             (change)="jsonChanged()"></textarea>
     </mat-form-field>
 </ng-container>
 <ng-template #form>
     <mat-form-field class="type-selector" appearance="outline">
         <mat-label>Type</mat-label>
-        <mat-select required (selectionChange)="onTypeChange()" [(ngModel)]="type" [disabled]="disabled">
+        <mat-select required (selectionChange)="onTypeChange()" [(ngModel)]="type" [disabled]="isDisabled">
             <mat-option>None</mat-option>
             <mat-option value="Point">Point</mat-option>
             <mat-option value="Polygon">Polygon</mat-option>
@@ -25,8 +25,7 @@
 
     <div class="google-map-container">
         <google-map [center]="center" (mapDblclick)="mapDblclick()" (mapClick)="mapClick($event)"
-            (mapRightclick)="mapRightclick()" height="300px"
-            [options]="{ clickableIcons: false, disableDoubleClickZoom: true}" width="auto">
+            (mapRightclick)="mapRightclick()" height="300px" [options]="mapOptions" width="auto">
             <ng-container *ngIf="markers">
                 <map-marker *ngFor="let marker of markers" [position]="marker.position" [options]="commonOptions">
                 </map-marker>
@@ -50,6 +49,6 @@
     <mat-form-field class="type-selector" appearance="outline">
         <mat-label>Coordinates</mat-label>
         <textarea matInput [placeholder]="coordinatesPlaceholder" required [(ngModel)]="coordinates"
-            (change)="coordinatesChanged()" [disabled]="disabled"></textarea>
+            (change)="coordinatesChanged()" [disabled]="isDisabled"></textarea>
     </mat-form-field>
 </ng-template>
