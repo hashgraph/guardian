@@ -342,6 +342,35 @@ function startPm2() {
 }
 
 /**
+ * Stops the guardian application using pm2
+ * @returns {void}
+ * @throws {Error} if the stop fails
+ */
+function stopPm2() {
+  const services = [
+    'api-gateway',
+    'logger-service',
+    'mrv-sender',
+    'topic-viewer',
+    'tree-viewer',
+    'auth-service',
+    'worker-service',
+    'guardian-service',
+    'frontend',
+  ]
+
+  for (const service of services) {
+    const stop = spawnSync('pm2', ['stop', service])
+
+    if (stop.status !== 0) {
+      console.log('Error stopping service');
+      console.log(stop.stderr.toString());
+      process.exit(1);
+    }
+  }
+}
+
+/**
  * Main function of the guardian-cli
  * Runs the commander program and parses the arguments passed to the cli
  * All the commands are defined here
@@ -442,6 +471,10 @@ function main() {
     .action((options) => {
       if (options.docker) {
         stopDocker();
+      } else if (options.pm2) {
+        stopPm2();
+      } else {
+        console.log('Please specify a stop option');
       }
     });
 
