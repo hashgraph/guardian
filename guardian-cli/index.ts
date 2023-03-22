@@ -317,6 +317,57 @@ function destroyDocker() {
 }
 
 /**
+ * Starts the external services: vault, Nats, mongo, ipfs-node using docker-compose
+ * @returns {void}
+ * @throws {Error} if the start fails
+ */
+function startExternalServices() {
+  const start = spawnSync('docker-compose', ['-f', 'docker-compose-dev.yml', 'up', '-d', 'message-broker', 'mongo', 'ipfs-node'], {
+    stdio: 'inherit'
+  })
+
+  if (start.status !== 0) {
+    console.log('Error starting docker containers');
+    console.log(start.stderr.toString());
+    process.exit(1);
+  }
+}
+
+/**
+ * Stops the external services: vault, Nats, mongo, ipfs-node using docker-compose
+ * @returns {void}
+ * @throws {Error} if the start fails
+ */
+function stopExternalServices() {
+  const stop = spawnSync('docker-compose', ['-f', 'docker-compose-dev.yml', 'stop', 'message-broker', 'mongo', 'ipfs-node'], {
+    stdio: 'inherit'
+  })
+
+  if (stop.status !== 0) {
+    console.log('Error stopping docker containers');
+    console.log(stop.stderr.toString());
+    process.exit(1);
+  }
+}
+
+/**
+ * Stops the external services: vault, Nats, mongo, ipfs-node using docker-compose
+ * @returns {void}
+ * @throws {Error} if the start fails
+ */
+function destroyExternalServices() {
+  const stop = spawnSync('docker-compose', ['-f', 'docker-compose-dev.yml', 'down', '-v'], {
+    stdio: 'inherit'
+  })
+
+  if (stop.status !== 0) {
+    console.log('Error stopping docker containers');
+    console.log(stop.stderr.toString());
+    process.exit(1);
+  }
+}
+
+/**
  * Starts the guardian application using pm2
  * @returns {void}
  * @throws {Error} if the start fails
@@ -327,12 +378,13 @@ function startPm2() {
     'logger-service',
     'mrv-sender',
     'topic-viewer',
-    'tree-viewer',
     'auth-service',
     'worker-service',
     'guardian-service',
     'frontend',
   ]
+
+  startExternalServices();
 
   const cwd = process.cwd();
   for (const service of services) {
@@ -362,12 +414,13 @@ function stopPm2() {
     'logger-service',
     'mrv-sender',
     'topic-viewer',
-    'tree-viewer',
     'auth-service',
     'worker-service',
     'guardian-service',
     'frontend',
   ]
+
+  stopExternalServices();
 
   for (const service of services) {
     const stop = spawnSync('pm2', ['stop', service], {
@@ -399,6 +452,8 @@ function destroyPm2() {
     'guardian-service',
     'frontend',
   ]
+
+  destroyExternalServices();
 
   for (const service of services) {
     const destroy = spawnSync('pm2', ['delete', service], {
