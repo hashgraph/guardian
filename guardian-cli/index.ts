@@ -116,6 +116,7 @@ function installNodePacakges(projectDir: string, npm = false) {
   }
 
   const install = spawnSync(cmd, args, {
+    stdio: 'inherit',
     cwd: projectDir,
   });
 
@@ -147,6 +148,7 @@ function buildPackage(projectDir: string, npm = false) {
   }
 
   const build = spawnSync(cmd, args, {
+    stdio: 'inherit',
     cwd: projectDir,
   });
 
@@ -194,7 +196,7 @@ function buildNode(npm = false) {
  */
 function cleanDocker() {
   const getImages = spawnSync('docker', ['images', '--filter=reference=guardian_*', '--format', '{{.ID}}'], {
-    stdio: 'pipe'
+    stdio: 'inherit'
   });
 
   if (getImages.status !== 0) {
@@ -224,6 +226,7 @@ function cleanDocker() {
  */
 function cleanNodeService(projectDir: string) {
   const clean = spawnSync('rm', ['-rf', 'node_modules', 'dist'], {
+    stdio: 'inherit',
     cwd: projectDir,
   });
 
@@ -268,7 +271,9 @@ function cleanNode() {
  * @throws {Error} if the start fails
  */
 function startDocker() {
-  const start = spawnSync('docker-compose', ['up', '-d', '--no-build'])
+  const start = spawnSync('docker-compose', ['up', '-d', '--no-build'], {
+    stdio: 'inherit'
+  })
 
   if (start.status !== 0) {
     console.log('Error starting docker containers');
@@ -283,7 +288,9 @@ function startDocker() {
  * @throws {Error} if the stop fails
  */
 function stopDocker() {
-  const stop = spawnSync('docker-compose', ['stop'])
+  const stop = spawnSync('docker-compose', ['stop'], {
+    stdio: 'inherit'
+  })
 
   if (stop.status !== 0) {
     console.log('Error stopping docker containers');
@@ -298,7 +305,9 @@ function stopDocker() {
  * @throws {Error} if the destroy fails
  */
 function destroyDocker() {
-  const destroy = spawnSync('docker-compose', ['down', '-v'])
+  const destroy = spawnSync('docker-compose', ['down', '-v'], {
+    stdio: 'inherit'
+  })
 
   if (destroy.status !== 0) {
     console.log('Error destroying docker containers');
@@ -330,6 +339,7 @@ function startPm2() {
     const projectDir = `${cwd}/${service}`;
 
     const start = spawnSync('pm2', ['start', '"npm run start"', '-n', service], {
+      stdio: 'inherit',
       cwd: projectDir,
     });
 
@@ -360,7 +370,9 @@ function stopPm2() {
   ]
 
   for (const service of services) {
-    const stop = spawnSync('pm2', ['stop', service])
+    const stop = spawnSync('pm2', ['stop', service], {
+      stdio: 'inherit',
+    })
 
     if (stop.status !== 0) {
       console.log('Error stopping service');
@@ -389,7 +401,9 @@ function destroyPm2() {
   ]
 
   for (const service of services) {
-    const destroy = spawnSync('pm2', ['delete', service])
+    const destroy = spawnSync('pm2', ['delete', service], {
+      stdio: 'inherit',
+    })
 
     if (destroy.status !== 0) {
       console.log('Error destroying service');
