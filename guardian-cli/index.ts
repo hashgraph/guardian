@@ -278,6 +278,21 @@ async function startDocker() {
 }
 
 /**
+ * Stops the guardian application using docker-compose
+ * @returns {void}
+ * @throws {Error} if the stop fails
+ */
+async function stopDocker() {
+  const stop = spawnSync('docker-compose', ['stop'])
+
+  if (stop.status !== 0) {
+    console.log('Error stopping docker containers');
+    console.log(stop.stderr.toString());
+    process.exit(1);
+  }
+}
+
+/**
  * Main function of the guardian-cli
  * Runs the commander program and parses the arguments passed to the cli
  * All the commands are defined here
@@ -371,6 +386,11 @@ function main() {
     .description('stop guardian application')
     .option('-d --docker', 'stop guardian using docker')
     .option('-p --pm2', 'stop guardian using pm2')
+    .action((options) => {
+      if (options.docker) {
+        stopDocker();
+      }
+    });
 
   program.command('destroy')
     .description('destroy the current guardian project')
