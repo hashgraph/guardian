@@ -1,5 +1,5 @@
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI, PolicyType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
 import { getArtifactExtention, getArtifactType } from '@helpers/utils';
@@ -10,7 +10,6 @@ import { getArtifactExtention, getArtifactType } from '@helpers/utils';
  * @param channel - channel
  */
 export async function artifactAPI(
-    channel: MessageBrokerChannel
 ): Promise<void> {
 
     /**
@@ -20,7 +19,7 @@ export async function artifactAPI(
      *
      * @returns {Artifact} - Uploaded artifact
      */
-    ApiResponse(channel, MessageAPI.UPLOAD_ARTIFACT, async (msg) => {
+    ApiResponse(MessageAPI.UPLOAD_ARTIFACT, async (msg) => {
         try {
             if (!msg || !msg.artifact || !msg.policyId || !msg.owner) {
                 throw new Error('Invalid upload artifact parameters');
@@ -49,7 +48,7 @@ export async function artifactAPI(
      *
      * @returns {any} Artifacts and count
      */
-    ApiResponse(channel, MessageAPI.GET_ARTIFACTS, async (msg) => {
+    ApiResponse(MessageAPI.GET_ARTIFACTS, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get artifact parameters');
@@ -95,7 +94,7 @@ export async function artifactAPI(
      *
      * @returns {boolean} - Operation success
      */
-    ApiResponse(channel, MessageAPI.DELETE_ARTIFACT, async (msg) => {
+    ApiResponse(MessageAPI.DELETE_ARTIFACT, async (msg) => {
         try {
             if (!msg || !msg.artifactId || !msg.owner) {
                 return new MessageError('Invalid delete artifact parameters');

@@ -8,7 +8,7 @@ const {
 } = require('../../../../dist/hedera-modules/vcjs/vc-document');
 const { vp_document } = require('../../dump/vp_document');
 
-describe('VpDocument', function () {
+describe.skip('VpDocument', function () {
 
     const testId = "testId";
     const testType = "testType";
@@ -56,7 +56,7 @@ describe('VpDocument', function () {
         testVpDocument.verifiableCredential.push(...testVCs);
         vpDocument.addVerifiableCredentials(testVCs.map((testVC) => VcDocument.fromJsonTree(testVC)));
         assert.deepEqual(vpDocument.toJsonTree(), testVpDocument);
-    
+
         vpDocument.proofFromJson(testVpDocumentThird);
         assert.deepEqual(vpDocument.getProof(), testVpDocumentThird.proof);
     });

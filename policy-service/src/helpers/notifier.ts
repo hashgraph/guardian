@@ -53,7 +53,7 @@ export function emptyNotifier(): INotifier {
     return empty;
 }
 
-const chanelEvent = ['api-gateway', MessageAPI.UPDATE_TASK_STATUS].join('.');
+const chanelEvent = MessageAPI.UPDATE_TASK_STATUS;
 
 /**
  * Init task notifier
