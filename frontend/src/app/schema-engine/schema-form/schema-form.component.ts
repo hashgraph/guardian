@@ -1,7 +1,8 @@
 import { NgxMatDateAdapter, NGX_MAT_DATE_FORMATS } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { GoogleMap } from '@angular/google-maps';
 import { Schema, SchemaCondition, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import * as moment from 'moment';
@@ -9,6 +10,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { uriValidator } from 'src/app/validators/uri.validator';
 
 export const DATETIME_FORMATS = {
     parse: {
@@ -26,6 +28,7 @@ enum PlaceholderByFieldType {
     Email = "example@email.com",
     Number = "123",
     URL = "https://example.com",
+    URI = "example:uri",
     String = "Please enter text here",
     IPFS = 'ipfs.io/ipfs/example-hash',
     HederaAccount = '0.0.1',
@@ -38,6 +41,7 @@ enum ErrorFieldMessageByFieldType {
     Duration = "Please make sure the field contain a valid duration value",
     Integer = "Please make sure the field contain a valid integer value",
     URL = "Please make sure the field contain a valid URL value",
+    URI = "Please make sure the field contain a valid URI value",
     DateTime = "Please make sure the field contain a valid datetime value",
     Date = "Please make sure the field contain a valid date value",
     Other = "Please make sure the field contain a valid value"
@@ -49,6 +53,7 @@ enum ErrorArrayMessageByFieldType {
     Duration = "Please make sure all fields contain a valid duration value",
     Integer = "Please make sure all fields contain a valid integer value",
     URL = "Please make sure all fields contain a valid URL value",
+    URI = "Please make sure all fields contain a valid URI value",
     DateTime = "Please make sure all fields contain a valid datetime value",
     Date = "Please make sure all fields contain a valid date value",
     Other = "Please make sure all fields contain a valid value"
@@ -222,7 +227,10 @@ export class SchemaFormComponent implements OnInit {
             item.fields = field.fields;
             item.displayRequired = item.fields.some((refField: any) => refField.required);
             if (field.required || item.preset) {
-                item.control = new FormGroup({});
+                item.control =
+                    item.customType === 'geo'
+                        ? new FormControl({})
+                        : new FormGroup({});
             }
         }
 
@@ -267,14 +275,14 @@ export class SchemaFormComponent implements OnInit {
             if (item.preset && item.preset.length) {
                 for (let index = 0; index < item.preset.length; index++) {
                     const preset = item.preset[index];
-                    const listItem = this.createListControl(item, preset);
+                    const listItem = this.createListControl(item, preset);//todo
                     item.list.push(listItem);
                     item.control.push(listItem.control);
                 }
                 this.options?.updateValueAndValidity();
                 this.change.emit();
             } else if (field.required) {
-                const listItem = this.createListControl(item);
+                const listItem = this.createListControl(item);//todo
                 item.list.push(listItem);
                 item.control.push(listItem.control);
 
@@ -303,7 +311,10 @@ export class SchemaFormComponent implements OnInit {
             index: String(item.list.length),
         }
         if (item.isRef) {
-            listItem.control = new FormGroup({});
+            listItem.control =
+                item.customType === 'geo'
+                    ? new FormControl({})
+                    : new FormGroup({});
         } else {
             listItem.fileUploading = false;
             const validators = this.getValidators(item);
@@ -346,6 +357,10 @@ export class SchemaFormComponent implements OnInit {
             validators.push(Validators.pattern(fullFormats.url as RegExp));
         }
 
+        if (item.format === 'uri') {
+            validators.push(uriValidator());
+        }
+
         return validators;
     }
 
@@ -353,6 +368,7 @@ export class SchemaFormComponent implements OnInit {
         const format = item.format;
         const type = item.type;
         const pattern = item.pattern;
+        const customType = item.customType;
 
         control.valueChanges
             .pipe(takeUntil(this.destroy$))
@@ -390,6 +406,12 @@ export class SchemaFormComponent implements OnInit {
                     if (!Number.isFinite(valueToSet)) {
                         valueToSet = val;
                     }
+                } else if (customType === 'geo') {
+                    try {
+                        valueToSet = JSON.parse(val);
+                    } catch {
+                        valueToSet = val;
+                    }
                 } else {
                     return;
                 }
@@ -411,7 +433,8 @@ export class SchemaFormComponent implements OnInit {
     }
 
     addGroup(item: any) {
-        item.control = new FormGroup({});
+        item.control =
+            item.customType === 'geo' ? new FormControl({}) : new FormGroup({});
         this.options?.addControl(item.name, item.control);
         this.change.emit();
         this.changeDetectorRef.detectChanges();
@@ -474,6 +497,8 @@ export class SchemaFormComponent implements OnInit {
                 return messages.Integer;
             case 'url':
                 return messages.URL;
+            case 'uri':
+                return messages.URI;
             case 'date-time':
                 return messages.DateTime;
             case 'date':
@@ -509,6 +534,8 @@ export class SchemaFormComponent implements OnInit {
                     return PlaceholderByFieldType.IPFS;
                 }
                 return PlaceholderByFieldType.URL;
+            case 'uri':
+                return PlaceholderByFieldType.URI;
             case 'string':
                 return PlaceholderByFieldType.String;
             default:
@@ -609,7 +636,8 @@ export class SchemaFormComponent implements OnInit {
             (
                 item.type === 'string' ||
                 item.type === 'number' ||
-                item.type === 'integer'
+                item.type === 'integer' ||
+                item.customType === 'geo'
             ) && (
                 item.format !== 'date' &&
                 item.format !== 'time' &&

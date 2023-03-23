@@ -2,16 +2,25 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import {
+    HTTP_INTERCEPTORS,
+    HttpClientModule,
+    HttpClientJsonpModule
+} from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ToastrModule } from 'ngx-toastr';
-import { AppRoutingModule, AuditorGuard, UserGuard, StandardRegistryGuard } from './app-routing.module';
+import {
+    AppRoutingModule,
+    AuditorGuard,
+    UserGuard,
+    StandardRegistryGuard
+} from './app-routing.module';
 import { AppComponent } from './app.component';
-import { AuthInterceptor, AuthService } from "./services/auth.service";
-import { ProfileService } from "./services/profile.service";
+import { AuthInterceptor, AuthService } from './services/auth.service';
+import { ProfileService } from './services/profile.service';
 import { TokenService } from './services/token.service';
 import { SchemaService } from './services/schema.service';
-import { HandleErrorsService } from "./services/handle-errors.service";
+import { HandleErrorsService } from './services/handle-errors.service';
 import { AuditService } from './services/audit.service';
 import { PolicyEngineService } from './services/policy-engine.service';
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
@@ -55,6 +64,7 @@ import { CompareModule } from './analytics/analytics.module';
 import { AnalyticsService } from './services/analytics.service';
 import { ModulesService } from './services/modules.service';
 import { TagsService } from './services/tag.service';
+import { MapService } from './services/map.service';
 
 @NgModule({
     declarations: [
@@ -95,7 +105,8 @@ import { TagsService } from './services/tag.service';
         FormsModule,
         ToastrModule.forRoot(),
         PolicyEngineModule,
-        CompareModule
+        CompareModule,
+        HttpClientJsonpModule,
     ],
     exports: [],
     providers: [
@@ -120,6 +131,7 @@ import { TagsService } from './services/tag.service';
         TasksService,
         ContractService,
         ModulesService,
+        MapService,
         TagsService,
         {
             provide: HTTP_INTERCEPTORS,
@@ -134,6 +146,4 @@ import { TagsService } from './services/tag.service';
     ],
     bootstrap: [AppComponent]
 })
-export class AppModule {
-
-}
+export class AppModule {}
