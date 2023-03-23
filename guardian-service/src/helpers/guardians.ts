@@ -28,15 +28,24 @@ export class GuardiansService extends NatsService {
         this.getMessages(event, cb);
     }
 
+    /**
+     * sendPolicyMessage
+     * @param subject
+     * @param policyId
+     * @param data
+     */
     public sendPolicyMessage<T>(subject: string, policyId: string, data?: unknown): Promise<T>{
 
-        function timeoutPromise(): Promise<void> {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    resolve(null);
-                }, 100 * 1000)
-            })
-        }
+        /**
+         * Timeout promise
+         */
+        // function timeoutPromise(): Promise<void> {
+        //     return new Promise((resolve, reject) => {
+        //         setTimeout(() => {
+        //             resolve(null);
+        //         }, 100 * 1000)
+        //     })
+        // }
 
         const messageId = GenerateUUIDv4();
         const head = headers();
@@ -69,7 +78,7 @@ export class GuardiansService extends NatsService {
                 resolve(d);
             })
 
-            this.connection.publish(subject, this.jsonCodec.encode(data) , {
+            this.connection.publish([policyId, subject].join('-'), this.jsonCodec.encode(data) , {
                 reply: this.replySubject,
                 headers: head
             })

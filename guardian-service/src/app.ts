@@ -78,8 +78,6 @@ Promise.all([
     new PolicyServiceChannelsContainer().setConnection(cn);
     new GuardiansService().setConnection(cn).init();
     const channel = new MessageBrokerChannel(cn, 'guardians');
-    const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
-    const policyServiceChannel = new MessageBrokerChannel(cn, 'policy-service');
 
     await new Logger().setConnection(cn);
     const state = new ApplicationState('GUARDIAN_SERVICE');

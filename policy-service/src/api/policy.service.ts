@@ -47,12 +47,12 @@ export const POLICY_PROCESS_PATH = path.join(__dirname, 'policy-process');
  * @param policyId
  * @param policyServiceName
  */
-function stopPolicyProcess(policyId: string, policyServiceName: string): void {
+function stopPolicyProcess(policyId: string): void {
     const logger = new Logger();
 
-    if (models.has(policyServiceName)) {
-        models.get(policyServiceName).kill(9);
-        models.delete(policyServiceName);
+    if (models.has(policyId)) {
+        models.get(policyId).kill(9);
+        models.delete(policyId);
 
         logger.info(`Policy process killed`, ['POLICY-SERVICE', policyId]);
     }
@@ -67,7 +67,7 @@ function stopPolicyProcess(policyId: string, policyServiceName: string): void {
  * @param resultsContainer
  */
 function runPolicyProcess(policy: unknown, policyId: string, policyServiceName: string, skipRegistration: boolean, resultsContainer: unknown): void {
-    stopPolicyProcess(policyId, policyServiceName);
+    stopPolicyProcess(policyId);
 
     const logger = new Logger();
 
@@ -94,7 +94,7 @@ function runPolicyProcess(policy: unknown, policyId: string, policyServiceName: 
     childProcess.on('exit', (code) => {
         logger.info(`Policy process exit with code ${code}`, ['POLICY-SERVICE', policyId]);
     });
-    models.set(policyServiceName, childProcess);
+    models.set(policyId, childProcess);
 }
 
 /**

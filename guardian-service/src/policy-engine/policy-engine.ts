@@ -933,9 +933,9 @@ export class PolicyEngine extends NatsService {
             throw new Error('Policy was not exist');
         }
 
-        // const exist = await new GuardiansService().sendPolicyMessage(PolicyEvents.CHECK_IF_ALIVE, policyId, {});
+        const exist = await new GuardiansService().sendPolicyMessage(PolicyEvents.CHECK_IF_ALIVE, policyId, {});
 
-        // if (!exist) {
+        if (!exist) {
             this.sendMessage(PolicyEvents.GENERATE_POLICY, {
                 policy,
                 policyId,
@@ -947,9 +947,9 @@ export class PolicyEngine extends NatsService {
                     resolve(data);
                 })
             });
-        // } else {
-        //     return Promise.resolve();
-        // }
+        } else {
+            return Promise.resolve();
+        }
     }
 
     /**

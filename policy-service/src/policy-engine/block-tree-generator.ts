@@ -9,7 +9,6 @@ import { Singleton } from '@helpers/decorators/singleton';
 import { GenerateUUIDv4, IUser, PolicyEvents, UserRole } from '@guardian/interfaces';
 import { Logger, MessageResponse, NatsService } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
-import { ServiceRequestsBase } from '@helpers/service-requests-base';
 import { IPolicyUser, PolicyUser } from './policy-user';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
@@ -81,10 +80,11 @@ export class BlockTreeGenerator extends NatsService {
      * @param cb
      */
     public getPolicyMessages<T, A>(subject: string, policyId, cb: Function) {
-        this.connection.subscribe(subject, {
+        this.connection.subscribe([policyId, subject].join('-'), {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
                 const pId = msg.headers.get('policyId');
+                console.log(policyId, pId);
                 if (pId === policyId) {
                     const messageId = msg.headers.get('messageId');
                     const head = headers();
