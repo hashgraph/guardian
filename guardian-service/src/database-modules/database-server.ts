@@ -2143,8 +2143,6 @@ export class DatabaseServer {
         return await new DataBaseHelper(PolicyModule).update(row);
     }
 
-
-
     /**
      * Create tag
      * @param tag

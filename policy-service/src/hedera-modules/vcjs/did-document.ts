@@ -839,4 +839,3 @@ export class DIDDocument {
         return Hashing.base58.encode(hash);
     }
 }
-

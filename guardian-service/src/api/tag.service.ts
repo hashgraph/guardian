@@ -260,7 +260,6 @@ export async function getTarget(entity: TagType, id: string): Promise<{
     }
 }
 
-
 /**
  * Connect to the message broker methods of working with tags.
  *
@@ -334,7 +333,6 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
             return new MessageError(error);
         }
     });
-
 
     ApiResponse(channel, MessageAPI.GET_TAG_CACHE, async (msg) => {
         try {
@@ -412,7 +410,7 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
                 throw new Error('Invalid target');
             }
 
-            const date = (new Date).toISOString()
+            const date = (new Date()).toISOString()
             const cache = await DatabaseServer.getTagCache(filter);
             if (cache.length) {
                 for (const item of cache) {
@@ -423,14 +421,13 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
                 await DatabaseServer.createTagCache({ localTarget, entity, date });
             }
 
-            const items = await DatabaseServer.getTags(filter);
-            return new MessageResponse(items);
+            const tags = await DatabaseServer.getTags(filter);
+            return new MessageResponse(tags);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
-
 
     ApiResponse(channel, MessageAPI.DELETE_TAG, async (msg) => {
         try {
@@ -448,7 +445,6 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
             return new MessageError(error);
         }
     });
-
 
     ApiResponse(channel, MessageAPI.EXPORT_TAGS, async (msg) => {
         try {
@@ -475,4 +471,3 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
         }
     });
 }
-

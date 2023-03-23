@@ -38,26 +38,26 @@ export class Tag extends BaseEntity {
     entity?: string;
 
     /**
-    * Target ID
-    */
+     * Target ID
+     */
     @Property({ nullable: true })
     target?: string;
 
     /**
-    * Target ID (Local)
-    */
+     * Target ID (Local)
+     */
     @Property({ nullable: true })
     localTarget?: string;
 
     /**
-    * Target ID
-    */
+     * Target ID
+     */
     @Property({ nullable: true })
     status?: 'Draft' | 'Published' | 'History';
 
     /**
-    * Operation
-    */
+     * Operation
+     */
     @Property({ nullable: true })
     operation?: 'Create' | 'Delete';
 

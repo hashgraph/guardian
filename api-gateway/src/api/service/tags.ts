@@ -44,7 +44,7 @@ tagsAPI.post('/search', async (req: AuthenticatedRequest, res: Response) => {
 
         const items = await guardians.getTags(entity, _targets);
         const dates = await guardians.getTagCache(entity, _targets);
-        
+
         const dateMap = {};
         for (const date of dates) {
             dateMap[date.localTarget] = date.date;
@@ -84,7 +84,6 @@ tagsAPI.delete('/:uuid', async (req: AuthenticatedRequest, res: Response) => {
     }
 });
 
-
 tagsAPI.post('/synchronization', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
@@ -100,13 +99,12 @@ tagsAPI.post('/synchronization', async (req: AuthenticatedRequest, res: Response
 
         const tags = await guardians.synchronizationTags(entity, target);
 
-        let result = {
+        const result = {
             entity,
             target,
             tags,
             refreshDate: (new Date()).toISOString(),
         }
-
         res.status(200).json(result);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);

@@ -8,8 +8,7 @@ import {
     PolicyType,
     IRootConfig,
     GenerateUUIDv4,
-    PolicyEvents,
-    WorkerTaskType,
+    PolicyEvents
 } from '@guardian/interfaces';
 import { DataBaseHelper, IAuthUser, Logger, ServiceRequestsBase, Singleton } from '@guardian/common';
 import {
@@ -37,8 +36,6 @@ import { ISerializedErrors } from './policy-validation-results-container';
 import { Artifact } from '@entity/artifact';
 import { MultiPolicy } from '@entity/multi-policy';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Workers } from '@helpers/workers';
 import { Token } from '@entity/token';
 import { PolicyValidator } from '@policy-engine/block-validators';
 import { publishPolicyTags } from '@api/tag.service';

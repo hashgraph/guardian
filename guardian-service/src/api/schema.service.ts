@@ -39,6 +39,9 @@ import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
 import { importTag, publishSchemaTags } from './tag.service';
 
+/**
+ * Import Result
+ */
 interface ImportResult {
     /**
      * New schema uuid
@@ -368,8 +371,8 @@ export async function importSchemaByFiles(
         schemasMap.push({
             oldID: file.id,
             newID: null,
-            oldUUID: oldUUID,
-            newUUID: newUUID,
+            oldUUID,
+            newUUID,
             oldIRI: `#${oldUUID}`,
             newIRI: `#${newUUID}`
         })

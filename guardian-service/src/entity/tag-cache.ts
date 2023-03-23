@@ -29,6 +29,6 @@ export class TagCache extends BaseEntity {
      */
     @BeforeCreate()
     setDefaults() {
-        this.date = this.date || (new Date).toISOString();
+        this.date = this.date || (new Date()).toISOString();
     }
 }

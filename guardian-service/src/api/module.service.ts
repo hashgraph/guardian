@@ -138,7 +138,6 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
         .setTopicObject(userTopic);
 
-
     notifier.completedAndStart('Create module topic');
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
     const rootTopic = await topicHelper.create({
