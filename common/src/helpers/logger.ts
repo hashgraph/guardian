@@ -1,9 +1,27 @@
-import { ApplicationStates, ILog, IPageParameters, LogType, MessageAPI } from '@guardian/interfaces';
+import { ApplicationStates, GenerateUUIDv4, ILog, IPageParameters, LogType, MessageAPI } from '@guardian/interfaces';
 import { Singleton } from '../decorators/singleton';
 import { IMessageResponse } from '../models/message-response';
-import { MessageBrokerChannel } from '../mq';
+import { MessageBrokerChannel, NatsService } from '../mq';
 import { createLogger, Logger as WinstonLogger, format } from 'winston';
 import Transport from 'winston-transport';
+
+/**
+ * Logger connection
+ */
+@Singleton
+class LoggerConnection extends NatsService {
+
+    /**
+     * Message queue name
+     */
+    public messageQueueName = 'logger-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'logger-queue-reply-' + GenerateUUIDv4();
+}
 
 /**
  * Logger transport class
@@ -19,10 +37,11 @@ export class LoggerServiceTransport extends Transport {
      * Message broker channel
      * @private
      */
-    private channel: MessageBrokerChannel;
+    private channel: LoggerConnection;
 
     constructor(opts) {
         super(opts);
+        this.channel = new LoggerConnection();
     }
 
     /**
@@ -40,15 +59,8 @@ export class LoggerServiceTransport extends Transport {
      * Register channel
      * @param channel
      */
-    public setChannel(channel: MessageBrokerChannel): any {
-        this.channel = channel;
-    }
-
-    /**
-     * Get channel
-     */
-    public getChannel(): MessageBrokerChannel {
-        return this.channel;
+    public setConnection(cn): any {
+        this.channel.setConnection(cn).init();
     }
 
     /**
@@ -58,7 +70,7 @@ export class LoggerServiceTransport extends Transport {
      */
     public async request<T>(entity: string, params?: any): Promise<T> {
         try {
-            const response: IMessageResponse<T> = await this.channel.request([this.target, entity].join('.'), params);
+            const response: IMessageResponse<T> = await this.channel.sendMessage(entity, params);
             if (!response) {
                 throw Error('Server is not available');
             }
@@ -178,15 +190,8 @@ export class Logger {
      * Register channel
      * @param channel
      */
-    public setChannel(channel: MessageBrokerChannel): any {
-        this.messageTransport.setChannel(channel);
-    }
-
-    /**
-     * Get channel
-     */
-    public getChannel(): MessageBrokerChannel {
-        return this.messageTransport.getChannel();
+    public setConnection(cn): any {
+        this.messageTransport.setConnection(cn);
     }
 
     /**

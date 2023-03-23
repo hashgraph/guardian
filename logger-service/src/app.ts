@@ -24,14 +24,13 @@ Promise.all([
 ]).then(async values => {
     const [_, db, mqConnection] = values;
     DB_DI.orm = db;
-    const channel = new MessageBrokerChannel(mqConnection, 'logger-service');
     const state = new ApplicationState('LOGGER_SERVICE');
-    state.setChannel(channel);
+    state.setConnection(mqConnection);
     state.updateState(ApplicationStates.STARTED);
     const logRepository = new DataBaseHelper(Log);
 
     state.updateState(ApplicationStates.INITIALIZING);
-    await loggerAPI(channel, logRepository);
+    await loggerAPI(mqConnection, logRepository);
 
     state.updateState(ApplicationStates.READY);
     console.log('logger service started', await state.getState());

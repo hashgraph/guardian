@@ -83,9 +83,9 @@ export class PolicyServiceChannelsContainer {
         const entity = {name, channel};
         this.channelsMap.set(policyId, entity);
 
-        channel.subscribe(PolicyEvents.POLICY_READY, (msg: any) => {
-            PolicyEngine.runReadyEvent(msg.policyId, msg.data);
-        })
+        // channel.subscribe(PolicyEvents.POLICY_READY, (msg: any) => {
+        //     PolicyEngine.runReadyEvent(msg.policyId, msg.data);
+        // })
 
         return entity;
     }

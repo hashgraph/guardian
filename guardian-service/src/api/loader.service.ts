@@ -13,7 +13,6 @@ import { MessageAPI } from '@guardian/interfaces';
  * @param schemaDocumentLoader - Schema Documents Loader
  */
 export async function loaderAPI(
-    channel: MessageBrokerChannel,
     didDocumentRepository: DataBaseHelper<DidDocument>,
     schemaRepository: DataBaseHelper<Schema>
 ): Promise<void> {
@@ -25,7 +24,7 @@ export async function loaderAPI(
      *
      * @returns {any} - DID Document
      */
-    ApiResponse(channel, MessageAPI.LOAD_DID_DOCUMENT, async (msg) => {
+    ApiResponse(MessageAPI.LOAD_DID_DOCUMENT, async (msg) => {
         try {
             const iri = msg.did;
             const did = DidRootKey.create(iri).getController();
@@ -47,7 +46,7 @@ export async function loaderAPI(
      *
      * @returns Schema document
      */
-    ApiResponse(channel, MessageAPI.LOAD_SCHEMA_DOCUMENT, async (msg) => {
+    ApiResponse(MessageAPI.LOAD_SCHEMA_DOCUMENT, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Document not found');
@@ -77,7 +76,7 @@ export async function loaderAPI(
      *
      * @returns Schema context
      */
-    ApiResponse(channel, MessageAPI.LOAD_SCHEMA_CONTEXT, async (msg) => {
+    ApiResponse(MessageAPI.LOAD_SCHEMA_CONTEXT, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Document not found');

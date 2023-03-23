@@ -1,5 +1,6 @@
-import { MessageBrokerChannel } from '@guardian/common';
+import { MessageBrokerChannel, NatsService } from '@guardian/common';
 import { MessageAPI, StatusType, IStatus } from '@guardian/interfaces';
+import { GuardiansService } from '@helpers/guardians';
 
 /**
  * Interface of notifier
@@ -53,7 +54,7 @@ export function emptyNotifier(): INotifier {
     return empty;
 }
 
-const chanelEvent = ['api-gateway', MessageAPI.UPDATE_TASK_STATUS].join('.');
+const chanelEvent = MessageAPI.UPDATE_TASK_STATUS;
 
 /**
  * Init task notifier
@@ -61,11 +62,11 @@ const chanelEvent = ['api-gateway', MessageAPI.UPDATE_TASK_STATUS].join('.');
  * @param taskId
  * @returns {INotifier} - notifier for task or empty notifier
  */
-export function initNotifier(channel: MessageBrokerChannel, taskId: string): INotifier {
+export function initNotifier(taskId: string): INotifier {
     if (taskId) {
         let currentStep: string;
         const sendStatuses = async (...statuses: IStatus[]) => {
-            await channel.request(chanelEvent, { taskId, statuses });
+            await new GuardiansService().sendMessage(chanelEvent, { taskId, statuses });
         };
         const notifier = {
             start: async (step: string) => {
@@ -105,10 +106,10 @@ export function initNotifier(channel: MessageBrokerChannel, taskId: string): INo
                         result.message = 'Unknown error';
                     }
                 }
-                await channel.request(chanelEvent, { taskId, error: result });
+                await new GuardiansService().sendMessage(chanelEvent, { taskId, error: result });
             },
             result: async (result: any) => {
-                await channel.request(chanelEvent, { taskId, result });
+                await new GuardiansService().sendMessage(chanelEvent, { taskId, result });
             }
         }
         return notifier;

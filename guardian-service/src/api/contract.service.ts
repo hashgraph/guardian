@@ -40,11 +40,10 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
  * @param channel - channel
  */
 export async function contractAPI(
-    channel: MessageBrokerChannel,
     contractRepository: DataBaseHelper<Contract>,
     retireRequestRepository: DataBaseHelper<RetireRequest>
 ): Promise<void> {
-    ApiResponse(channel, MessageAPI.GET_CONTRACT, async (msg) => {
+    ApiResponse(MessageAPI.GET_CONTRACT, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -77,7 +76,7 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.GET_RETIRE_REQUEST, async (msg) => {
+    ApiResponse(MessageAPI.GET_RETIRE_REQUEST, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -140,7 +139,7 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.CREATE_CONTRACT, async (msg) => {
+    ApiResponse(MessageAPI.CREATE_CONTRACT, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -186,7 +185,7 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.CHECK_CONTRACT_STATUS, async (msg) => {
+    ApiResponse(MessageAPI.CHECK_CONTRACT_STATUS, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -238,7 +237,7 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.ADD_CONTRACT_USER, async (msg) => {
+    ApiResponse(MessageAPI.ADD_CONTRACT_USER, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
@@ -283,7 +282,7 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.ADD_CONTRACT_PAIR, async (msg) => {
+    ApiResponse(MessageAPI.ADD_CONTRACT_PAIR, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid add contract pair parameters');
@@ -362,7 +361,7 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.IMPORT_CONTRACT, async (msg) => {
+    ApiResponse(MessageAPI.IMPORT_CONTRACT, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid contract identifier');
@@ -415,7 +414,7 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.GET_CONTRACT_PAIR, async (msg) => {
+    ApiResponse(MessageAPI.GET_CONTRACT_PAIR, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid add contract pair parameters');
@@ -477,7 +476,7 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.ADD_RETIRE_REQUEST, async (msg) => {
+    ApiResponse(MessageAPI.ADD_RETIRE_REQUEST, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid add contract pair parameters');
@@ -592,7 +591,7 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.CANCEL_RETIRE_REQUEST, async (msg) => {
+    ApiResponse(MessageAPI.CANCEL_RETIRE_REQUEST, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid add contract pair parameters');
@@ -643,7 +642,7 @@ export async function contractAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.RETIRE_TOKENS, async (msg) => {
+    ApiResponse(MessageAPI.RETIRE_TOKENS, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid add contract pair parameters');

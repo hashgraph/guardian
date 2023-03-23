@@ -8,15 +8,54 @@ import {
     IUpdateBlockMessage,
     IErrorBlockMessage,
     IStatus,
-    ApplicationStates
+    ApplicationStates, GenerateUUIDv4
 } from '@guardian/interfaces';
 import { Guardians } from '@helpers/guardians';
-import { MessageBrokerChannel, MessageResponse, Logger } from '@guardian/common';
+import {
+    MessageBrokerChannel,
+    MessageResponse,
+    Logger,
+    ApplicationState,
+    NatsService,
+    Singleton
+} from '@guardian/common';
+import { NatsConnection } from 'nats';
+
+/**
+ * WebSocketsServiceChannel
+ */
+@Singleton
+export class WebSocketsServiceChannel extends NatsService {
+    /**
+     * Message queue name
+     */
+    public messageQueueName = 'wss-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'wss-queue-reply-' + GenerateUUIDv4();
+
+    /**
+     * Register listener
+     * @param event
+     * @param cb
+     */
+    registerListener(event: string, cb: Function): void {
+        this.getMessages(event, cb);
+    }
+}
 
 /**
  * WebSocket service class
  */
 export class WebSocketsService {
+    /**
+     * Channel
+     * @private
+     */
+    private readonly channel: WebSocketsServiceChannel;
     /**
      * WebSocket server
      * @private
@@ -31,18 +70,21 @@ export class WebSocketsService {
 
     constructor(
         private readonly server: Server,
-        private readonly channel: MessageBrokerChannel
+        private cn: NatsConnection
     ) {
         this.wss = new WebSocket.Server({ server: this.server });
         this.knownServices = {}
+        this.channel = new WebSocketsServiceChannel();
+        this.channel.setConnection(cn)
     }
 
     /**
      * Register all listeners
      */
-    public init(): void {
+    public async init(): Promise<void> {
         this.registerConnection();
         this.registerMessageHandler();
+        await this.channel.init();
     }
 
     /**
@@ -66,7 +108,7 @@ export class WebSocketsService {
      * @private
      */
     private registerMessageHandler(): void {
-        this.channel.response<IUpdateBlockMessage, any>('update-block', async (msg) => {
+        this.channel.registerListener('update-block', async (msg) => {
             this.wss.clients.forEach((client: any) => {
                 if (this.checkUserByDid(client, msg)) {
                     this.send(client, {
@@ -78,7 +120,7 @@ export class WebSocketsService {
             return new MessageResponse({})
         });
 
-        this.channel.response<IErrorBlockMessage, any>('block-error', async (msg) => {
+        this.channel.registerListener('block-error', async (msg) => {
             this.wss.clients.forEach((client: any) => {
                 if (this.checkUserByDid(client, msg)) {
                     this.send(client, {
@@ -93,7 +135,7 @@ export class WebSocketsService {
             return new MessageResponse({})
         });
 
-        this.channel.response<IUpdateUserInfoMessage, any>('update-user-info', async (msg) => {
+        this.channel.registerListener('update-user-info', async (msg) => {
             this.wss.clients.forEach((client: any) => {
                 if (this.checkUserByDid(client, msg)) {
                     this.send(client, {
@@ -105,7 +147,7 @@ export class WebSocketsService {
             return new MessageResponse({});
         });
 
-        this.channel.response<IUpdateUserBalanceMessage, any>('update-user-balance',  async (msg) => {
+        this.channel.registerListener('update-user-balance',  async (msg) => {
             this.wss.clients.forEach(client => {
                 new Users().getUserByAccount(msg.operatorAccountId).then(user => {{
                     Object.assign(msg, {
@@ -126,10 +168,10 @@ export class WebSocketsService {
             return new MessageResponse({});
         });
 
-        this.channel.response(MessageAPI.UPDATE_STATUS, async (msg) => {
+        this.channel.registerListener(MessageAPI.UPDATE_STATUS, async (msg) => {
             this.wss.clients.forEach((client: any) => {
                 for (const [key, value] of Object.entries(msg)) {
-                    this.knownServices[key] = value;
+                    this.knownServices[key] = value as any;
                 }
 
                 this.send(client, {
@@ -188,11 +230,16 @@ export class WebSocketsService {
                         LOGGER_SERVICE,
                         GUARDIAN_SERVICE,
                         AUTH_SERVICE
-                    ] = await Promise.all([
-                        logger.getStatus(),
-                        guardians.getStatus(),
-                        auth.getStatus()
-                    ]);
+                    // ] = await Promise.all([
+                    //     logger.getStatus(),
+                    //     guardians.getStatus(),
+                    //     auth.getStatus()
+                    // ]);
+                    ] = [
+                        'STARTED',
+                        'STARTED',
+                        'STARTED',
+                    ]
 
                     ws.send(JSON.stringify(
                         {

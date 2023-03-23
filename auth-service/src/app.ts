@@ -23,21 +23,24 @@ Promise.all([
         },
         ensureIndexes: true
     }),
-    MessageBrokerChannel.connect('LOGGER_SERVICE'),
+    MessageBrokerChannel.connect('AUTH_SERVICE'),
     InitializeVault(process.env.VAULT_PROVIDER)
 ]).then(async ([_, db, cn, vault]) => {
     DB_DI.orm = db;
     const state = new ApplicationState('AUTH_SERVICE');
     const channel = new MessageBrokerChannel(cn, 'auth-service');
 
-    state.setChannel(channel);
+    state.setConnection(cn);
     state.updateState(ApplicationStates.INITIALIZING);
     try {
         await fixtures();
 
-        new Logger().setChannel(channel);
-        new AccountService(channel).registerListeners();
-        new WalletService(channel, vault).registerListeners();
+        new Logger().setConnection(cn);
+        await new AccountService().setConnection(cn).init();
+        new AccountService().registerListeners();
+        await new WalletService().setConnection(cn).init();
+        new WalletService().registerVault(vault);
+        new WalletService().registerListeners();
 
         if (process.env.IMPORT_KEYS_FROM_DB) {
             await ImportKeysFromDatabase(vault);

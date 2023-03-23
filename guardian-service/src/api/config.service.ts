@@ -20,11 +20,13 @@ import { Workers } from '@helpers/workers';
  * @param approvalDocumentRepository - table with approve documents
  */
 export async function configAPI(
-    channel: MessageBrokerChannel,
     settingsRepository: DataBaseHelper<Settings>,
     topicRepository: DataBaseHelper<Topic>,
 ): Promise<void> {
-    ApiResponse(channel, MessageAPI.GET_TOPIC, async (msg) => {
+
+
+
+    ApiResponse(MessageAPI.GET_TOPIC, async (msg) => {
         const topic = await topicRepository.findOne(msg);
         return new MessageResponse(topic);
     });
@@ -33,7 +35,7 @@ export async function configAPI(
      * Update settings
      *
      */
-    ApiResponse(channel, MessageAPI.UPDATE_SETTINGS, async (settings: CommonSettings) => {
+    ApiResponse(MessageAPI.UPDATE_SETTINGS, async (settings: CommonSettings) => {
         try {
             const settingsContainer = new SettingsContainer();
             try {
@@ -66,7 +68,7 @@ export async function configAPI(
     /**
      * Get settings
      */
-    ApiResponse(channel, MessageAPI.GET_SETTINGS, async (msg) => {
+    ApiResponse(MessageAPI.GET_SETTINGS, async (msg) => {
         try {
             const settingsContainer = new SettingsContainer();
             const { OPERATOR_ID } = settingsContainer.settings;
@@ -84,7 +86,7 @@ export async function configAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.GET_ENVIRONMENT, async (msg) => {
+    ApiResponse(MessageAPI.GET_ENVIRONMENT, async (msg) => {
         return new MessageResponse(Environment.network);
     })
 }

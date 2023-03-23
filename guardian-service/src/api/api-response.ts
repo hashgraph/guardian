@@ -1,5 +1,6 @@
 import { ApplicationState, MessageBrokerChannel, MessageInitialization, MessageResponse } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
+import { GuardiansService } from '@helpers/guardians';
 
 /**
  * API response
@@ -8,9 +9,9 @@ import { ApplicationStates } from '@guardian/interfaces';
  * @param handleFunc
  * @constructor
  */
-export function ApiResponse<T>(channel: MessageBrokerChannel, event: any, handleFunc: (msg) => Promise<MessageResponse<T>>): void {
+export function ApiResponse<T>(event: any, handleFunc: (msg) => Promise<MessageResponse<T>>): void {
     const state = new ApplicationState();
-    channel.response(event, async (msg) => {
+    new GuardiansService().registerListener(event, async (msg) => {
         if (![ApplicationStates.READY, ApplicationStates.BAD_CONFIGURATION].includes(state.getState())) {
             console.warn(`${state.getState()} state, waiting for ${ApplicationStates.READY} state, event ${event}`);
             return new MessageInitialization()

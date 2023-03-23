@@ -1,37 +1,31 @@
-import { MessageBrokerChannel } from '@guardian/common';
-import { ApplicationStates, CommonSettings, MessageAPI, IGetFileMessage, IFileResponse, IAddFileMessage } from '@guardian/interfaces';
+import { MessageBrokerChannel, NatsService } from '@guardian/common';
+import {
+    ApplicationStates,
+    CommonSettings,
+    MessageAPI,
+    IGetFileMessage,
+    IFileResponse,
+    IAddFileMessage,
+    GenerateUUIDv4
+} from '@guardian/interfaces';
 import { Singleton } from './decorators/singleton';
 
 /**
  * IPFS service
  */
 @Singleton
-export class IPFS {
-    /**
-     * Message broker channel
-     * @private
-     */
-    private channel: MessageBrokerChannel;
-    /**
-     * Messages target
-     * @private
-     */
-    private readonly target: string = 'ipfs-client';
+export class IPFS extends NatsService{
 
     /**
-     * Register channel
-     * @param channel
+     * Message queue name
      */
-    public setChannel(channel: MessageBrokerChannel): any {
-        this.channel = channel;
-    }
+    public messageQueueName = 'ipfs-queue';
 
     /**
-     * Get channel
+     * Reply subject
+     * @private
      */
-    public getChannel(): MessageBrokerChannel {
-        return this.channel;
-    }
+    public replySubject = 'ipfs-reply-' + GenerateUUIDv4();
 
     /**
      * Return hash of added file
@@ -40,7 +34,7 @@ export class IPFS {
      * @returns {{ cid: string, url: string }} - hash
      */
     public async addFile(file: ArrayBuffer): Promise<IFileResponse> {
-        const res = (await this.channel.request<IAddFileMessage, IFileResponse>([this.target, MessageAPI.IPFS_ADD_FILE].join('.'), { content: Buffer.from(file).toString('base64') }));
+        const res = (await this.sendMessage(MessageAPI.IPFS_ADD_FILE, { content: Buffer.from(file).toString('base64') })) as any;
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -57,7 +51,7 @@ export class IPFS {
      * @returns File
      */
     public async getFile(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
-        const res = await this.channel.request<IGetFileMessage, any>([this.target, MessageAPI.IPFS_GET_FILE].join('.'), { cid, responseType });
+        const res = await this.sendMessage(MessageAPI.IPFS_GET_FILE, { cid, responseType }) as any;
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -76,7 +70,7 @@ export class IPFS {
      * @returns File
      */
     public async getFileAsync(cid: string, responseType: 'json' | 'raw' | 'str'): Promise<any> {
-        const res = await this.channel.request<IGetFileMessage, any>([this.target, MessageAPI.IPFS_GET_FILE_ASYNC].join('.'), { cid, responseType });
+        const res = await this.sendMessage(MessageAPI.IPFS_GET_FILE_ASYNC, { cid, responseType }) as any;
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -93,7 +87,7 @@ export class IPFS {
      * @param settings Settings to update
      */
     public async updateSettings(settings: CommonSettings): Promise<void> {
-        const res = await this.channel.request([this.target, MessageAPI.UPDATE_SETTINGS].join('.'), settings);
+        const res = await this.sendMessage(MessageAPI.UPDATE_SETTINGS, settings) as any;
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -107,7 +101,7 @@ export class IPFS {
      * @returns Settings
      */
     public async getSettings(): Promise<any> {
-        const res = (await this.channel.request([this.target, MessageAPI.GET_SETTINGS].join('.'), {}));
+        const res = (await this.sendMessage(MessageAPI.GET_SETTINGS, {})) as any;
         if (!res) {
             throw new Error('Invalid IPFS response');
         }
@@ -123,7 +117,7 @@ export class IPFS {
      * @returns {ApplicationStates} Service state
      */
     public async getStatus(): Promise<ApplicationStates> {
-        const res = await this.channel.request<any, ApplicationStates>([this.target, MessageAPI.GET_STATUS].join('.'), {});
+        const res = await this.sendMessage(MessageAPI.GET_STATUS, {}) as any;
         if (!res) {
             return ApplicationStates.STOPPED;
         }

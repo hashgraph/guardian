@@ -1,6 +1,6 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { ServiceRequestsBase } from '@helpers/service-requests-base';
-import { WalletEvents, IGetKeyResponse } from '@guardian/interfaces';
+import { WalletEvents, IGetKeyResponse, GenerateUUIDv4 } from '@guardian/interfaces';
+import { NatsService } from '@guardian/common';
 
 /**
  * Key type
@@ -22,11 +22,17 @@ export enum KeyType {
  * Wallet service
  */
 @Singleton
-export class Wallet extends ServiceRequestsBase {
+export class Wallet extends NatsService {
     /**
-     * Message broker target
+     * Message queue name
      */
-    public target: string = 'auth-service'
+    public messageQueueName = 'guardian-wallet-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'guardian-wallet-queue-reply-' + GenerateUUIDv4();
 
     /**
      * Return key
@@ -35,7 +41,7 @@ export class Wallet extends ServiceRequestsBase {
      * @param key
      */
     public async getKey(token: string, type: KeyType, key: string): Promise<string> {
-        const wallet = await this.request<IGetKeyResponse>(WalletEvents.GET_KEY, { token, type, key });
+        const wallet = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_KEY, { token, type, key });
         return wallet.key;
     }
 
@@ -47,7 +53,7 @@ export class Wallet extends ServiceRequestsBase {
      * @param value
      */
     public async setKey(token: string, type: string, key: string, value: string) {
-        await this.request<any>(WalletEvents.SET_KEY, { token, type, key, value });
+        await this.sendMessage<any>(WalletEvents.SET_KEY, { token, type, key, value });
     }
 
     /**
@@ -56,7 +62,7 @@ export class Wallet extends ServiceRequestsBase {
      * @param key
      */
      public async getUserKey(did: string, type: KeyType, key: string): Promise<any> {
-        const wallet = await this.request<any>(WalletEvents.GET_USER_KEY, { did, type, key });
+        const wallet = await this.sendMessage<any>(WalletEvents.GET_USER_KEY, { did, type, key });
         return wallet.key;
     }
 
@@ -68,6 +74,6 @@ export class Wallet extends ServiceRequestsBase {
      * @param value
      */
     public async setUserKey(did: string, type: KeyType, key: string, value: any) {
-        await this.request<any>(WalletEvents.SET_USER_KEY, { did, type, key, value });
+        await this.sendMessage<any>(WalletEvents.SET_USER_KEY, { did, type, key, value });
     }
 }

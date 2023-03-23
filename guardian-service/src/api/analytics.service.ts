@@ -10,8 +10,8 @@ import { PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaMo
  * @param channel
  * @constructor
  */
-export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void> {
-    ApiResponse(channel, MessageAPI.COMPARE_POLICIES, async (msg) => {
+export async function analyticsAPI(): Promise<void> {
+    ApiResponse(MessageAPI.COMPARE_POLICIES, async (msg) => {
         try {
             const {
                 type,
@@ -131,7 +131,7 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
         }
     });
 
-    ApiResponse(channel, MessageAPI.COMPARE_SCHEMAS, async (msg) => {
+    ApiResponse(MessageAPI.COMPARE_SCHEMAS, async (msg) => {
         try {
             const {
                 type,

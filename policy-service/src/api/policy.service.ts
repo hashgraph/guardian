@@ -1,8 +1,36 @@
-import { Logger, MessageBrokerChannel } from '@guardian/common';
-import { PolicyEvents } from '@guardian/interfaces';
+import { Logger, NatsService } from '@guardian/common';
+import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import path from 'path';
 import { fork, ChildProcess } from 'node:child_process';
 import * as process from 'process';
+import { Singleton } from 'api-gateway/dist/helpers/decorators/singleton';
+import { NatsConnection } from 'nats';
+
+/**
+ * PolicyEngineChannel
+ */
+@Singleton
+export class PolicyEngineChannel extends NatsService {
+    /**
+     * Message queue name
+     */
+    public messageQueueName = 'policy-service-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'policy-service-queue-reply-' + GenerateUUIDv4();
+
+    /**
+     * Register listener
+     * @param event
+     * @param cb
+     */
+    registerListener(event: string, cb: Function): void {
+        this.getMessages(event, cb, true);
+    }
+}
 
 /**
  * Policy processes
@@ -72,10 +100,13 @@ function runPolicyProcess(policy: unknown, policyId: string, policyServiceName: 
 /**
  * Connect to the message broker methods of working with schemas.
  *
- * @param channel - channel
+ * @param cn
  */
-export async function policyAPI(channel: MessageBrokerChannel): Promise<void> {
-    channel.subscribe(PolicyEvents.GENERATE_POLICY, async (data: any) => {
+export async function policyAPI(cn: NatsConnection): Promise<void> {
+    const channel = new PolicyEngineChannel();
+    await channel.setConnection(cn).init();
+
+    channel.registerListener(PolicyEvents.GENERATE_POLICY, async (data: any) => {
         const {
             policy,
             policyServiceName,
@@ -87,7 +118,7 @@ export async function policyAPI(channel: MessageBrokerChannel): Promise<void> {
         runPolicyProcess(policy, policyId, policyServiceName, skipRegistration, resultsContainer);
     });
 
-    channel.subscribe(PolicyEvents.DELETE_POLICY, async (data: any) => {
+    channel.registerListener(PolicyEvents.DELETE_POLICY, async (data: any) => {
         const { policyId, policyServiceName } = data;
 
         stopPolicyProcess(policyId, policyServiceName);
