@@ -12,7 +12,7 @@ import { MessageAPI } from '@guardian/interfaces';
  *
  * @param channel - channel
  */
-export async function mapAPI(channel: MessageBrokerChannel): Promise<void> {
+export async function mapAPI(): Promise<void> {
     /**
      * Get map api token
      *
@@ -20,7 +20,7 @@ export async function mapAPI(channel: MessageBrokerChannel): Promise<void> {
      *
      * @returns {any} Artifacts and count
      */
-    ApiResponse(channel, MessageAPI.GET_MAP_API_KEY, async (msg) => {
+    ApiResponse(MessageAPI.GET_MAP_API_KEY, async (msg) => {
         try {
             return new MessageResponse(process.env.MAP_API_KEY || '');
         } catch (error) {

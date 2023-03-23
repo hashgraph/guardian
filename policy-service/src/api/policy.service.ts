@@ -1,9 +1,8 @@
-import { Logger, NatsService } from '@guardian/common';
+import { Logger, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import path from 'path';
 import { fork, ChildProcess } from 'node:child_process';
 import * as process from 'process';
-import { Singleton } from 'api-gateway/dist/helpers/decorators/singleton';
 import { NatsConnection } from 'nats';
 
 /**

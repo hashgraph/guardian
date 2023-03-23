@@ -10,7 +10,7 @@ import {
     MessageError,
     BinaryMessageResponse,
     Logger,
-    RunFunctionAsync, NatsService
+    RunFunctionAsync, NatsService, Singleton
 } from '@guardian/common';
 import {
     DIDDocument, TopicConfig,
@@ -26,7 +26,6 @@ import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from './policy-engine';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { findAllEntities } from '@helpers/utils';
-import { Singleton } from 'api-gateway/dist/helpers/decorators/singleton';
 import { NatsConnection } from 'nats';
 import { GuardiansService } from '@helpers/guardians';
 
