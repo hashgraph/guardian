@@ -348,7 +348,9 @@ export class HeaderComponent implements OnInit {
 
     openNav() {
         document.getElementById("menu-backdrop")!.style.display = "flex";
+        document.getElementById("menu-backdrop")!.style.zIndex = "1000";
         document.getElementById("nav-items")!.style.width = "250px";
+        document.getElementById("nav-items")!.style.zIndex = "1001";
     }
 
     closeNav() {

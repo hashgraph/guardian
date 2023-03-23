@@ -142,6 +142,7 @@ form {
     #cancel-btn {
         border: 1px solid #2C78F6;
         margin-left: 0;
+        padding: 0;
         background: none !important;
         color: #2C78F6;
         order: 1;
@@ -150,6 +151,7 @@ form {
 
     #ok-btn {
         order: 2;
+        padding: 0;
         grid-column: 2;
         background: #2C78F6;
     }
@@ -161,6 +163,7 @@ form {
     }
 
     .action-select-step button {
+        padding: 0;
         border: 1px solid #2C78F6;
         background: none !important;
         color: #2C78F6;

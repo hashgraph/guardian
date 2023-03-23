@@ -149,7 +149,7 @@
                 </mat-form-field>
                 <ng-template>Opposite Token (optional)</ng-template>
                 <mat-form-field appearance="outline" class="contract-form-opposite-token">
-                    <mat-select [formControl]="oppositeTokenId" placeholder="Choose Opposite Token"
+                    <mat-select [formControl]="oppositeTokenId" placeholder="Choose Opposite Token (Optional)"
                         [disabled]="contractsLoading">
                         <mat-option></mat-option>
                         <mat-option *ngFor="let token of oppositeTokens"
@@ -237,6 +237,7 @@
                         <input matInput type="number" placeholder="Count" formControlName="oppositeTokenCount">
                     </mat-form-field>
                 </form>
+            </div>
 
             <div class="page-btns">
                 <button mat-raised-button color="primary" id="cancel-btn" (click)="onNoClick()">Cancel</button>

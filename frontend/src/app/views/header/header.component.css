@@ -14,7 +14,7 @@
         padding: 0px !important;
     }
     .btn-home {
-        font-size: 35px !important;
+        /*font-size: 35px !important;*/
         line-height: 27px !important;
         transform: translate(0, 5px);
     }
@@ -101,11 +101,18 @@ a[hidden="true"] {
 
 .btn-home {
     cursor: pointer;
+    display: inline-block;
     font-size: 40px;
     line-height: 45px;
     font-weight: bold;
     color: #fff;
     transition: color .3s linear;
+}
+
+.btn-home::before {
+    content: var(--btn-home-before-content);
+    width: var(--btn-home-before-size);
+    height: var(--btn-home-before-size);
 }
 
 .current-user-name {

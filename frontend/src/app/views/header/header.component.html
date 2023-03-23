@@ -1,6 +1,10 @@
 <div class="content header">
     <mat-toolbar color="primary">
-        <span *ngIf="innerWidth > 810" class="btn-home" (click)="onHome()">Guardian</span>
+        <span *ngIf="innerWidth > 810" class="btn-home" #btnHome (click)="onHome()">
+            <div class="btn-home-name">
+                Guardian
+            </div>
+        </span>
 
         <div *ngIf="innerWidth > 810" class="desktop-header">
             <div *ngIf="isLogin && role==='STANDARD_REGISTRY'" class="nav-list" [attr.disabled]="commonLinksDisabled">
@@ -113,37 +117,43 @@
 
 
 
+        <!--
+        <span *ngIf="innerWidth <= 810 && !isLogin" class="btn-home" #btnHome (click)="onHome()">
+            <div class="btn-home-name">
+                Guardian
+            </div>
+        </span>
+        -->
 
-        <span *ngIf="innerWidth <= 810 && !isLogin" class="btn-home" (click)="onHome()">Guardian</span>
-
-        <div *ngIf="innerWidth <= 810 && isLogin" class="mobile-header">
-            <a class="mobile-menu-button" (click)="openNav()">
+        <div *ngIf="innerWidth <= 810" class="mobile-header">
+            <a *ngIf="isLogin" class="mobile-menu-button" (click)="openNav()">
                 <span class="bar"></span>
                 <span class="bar"></span>
                 <span class="bar"></span>
             </a>
 
-            <span class="btn-home" (click)="onHome()"
-                style="margin: 22px; margin-right: 0; font-size: 26px !important;">
+            <span class="btn-home" #btnHome (click)="onHome()"
+                [ngStyle]="{
+                    'display': isLogin ? 'block' : 'flex',
+                    'width': isLogin ? 'auto' : '100%',
+                    'justify-content': isLogin ? 'auto' : 'center',
+                    'margin':  isLogin ? '22px 0 22px 22px' : '0',
+                    'font-size': isLogin ? '20px' : '26px'
+                }">
+                <div class="btn-home-name">
                     Guardian
+                </div>
             </span>
 
-            <div class="user-content-info" *ngIf="isLogin || displayDemoAccounts">
+            <div class="user-content-info" *ngIf="isLogin || displayDemoAccounts"
+                [ngStyle]="{
+                    'margin': isLogin ? '0 22px' : 0
+                }">
                 <div *ngIf="username" class="user-balance" [attr.balance-type]="balanceType">
                     {{balance}}
                 </div>
                 <div class="user-content-button" [matMenuTriggerFor]="menu">
-                    <ng-container *ngIf="username; else notLogged">
-                        <div *ngIf="innerWidth > 810">
-                            <span>{{username}}</span>
-                        </div>
-                    </ng-container>
-                    <ng-template #notLogged>
-                        <div class="example-icon admin-panel">
-                            <span>Demo Admin Panel</span>
-                        </div>
-                    </ng-template>
-                    <button mat-icon-button class="user-info-icon">
+                    <button *ngIf="isLogin" mat-icon-button class="user-info-icon">
                         <mat-icon>{{menuIcon}}</mat-icon>
                     </button>
                 </div>
@@ -279,7 +289,7 @@
                         <span>Demo Admin Panel</span>
                     </div>
                 </ng-template>
-                <button *ngIf="innerWidth > 810" mat-icon-button class="user-info-icon">
+                <button mat-icon-button class="user-info-icon">
                     <mat-icon>{{menuIcon}}</mat-icon>
                 </button>
             </div>

@@ -344,14 +344,36 @@ export class TokenConfigComponent implements OnInit {
     }
 
     editToken(element: any) {
-        const dialogRef = this.dialog.open(TokenDialog, {
-            width: '750px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            data: {
-                token: element
-            }
-        });
+
+        let dialogRef;
+        if (this.innerWidth <= 810) {
+            const bodyStyles = window.getComputedStyle(document.body);
+            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
+            dialogRef = this.dialog.open(TokenDialog, {
+                width: `${this.innerWidth.toString()}px`,
+                maxWidth: '100vw',
+                height: `${this.innerHeight - headerHeight}px`,
+                position: {
+                    'bottom': '0'
+                },
+                panelClass: 'g-dialog',
+                hasBackdrop: true, // Shadows beyond the dialog
+                closeOnNavigation: true,
+                autoFocus: false,
+                data: {
+                    token: element
+                }
+            });
+        } else {
+            dialogRef = this.dialog.open(TokenDialog, {
+                width: '750px',
+                panelClass: 'g-dialog',
+                disableClose: true,
+                data: {
+                    token: element
+                }
+            });
+        }
 
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {

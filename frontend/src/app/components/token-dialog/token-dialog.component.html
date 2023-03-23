@@ -11,11 +11,6 @@
         <div *ngIf="token" class="g-dialog-title">
 
         </div>
-        <div *ngIf="innerWidth <= 810" class="page-btns">
-            <button mat-raised-button color="primary" id="cancel-btn" (click)="onNoClick()">Cancel</button>
-            <button *ngIf="!token" mat-raised-button color="primary" id="create-btn" (click)="onCreate()" [disabled]="!(valid && started)">Create</button>
-            <button *ngIf="token" mat-raised-button color="primary" id="save-btn" (click)="onSave()" [disabled]="!(valid && started)">Save</button>
-        </div>
 
         <div *ngIf="innerWidth > 810" class="g-dialog-actions">
             <div *ngIf="!token" class="g-dialog-actions-btn" (click)="onCreate()"
@@ -34,5 +29,10 @@
         <div [style.padding]="innerWidth <= 810 ? '20 0' : '20px 35px 30px 35px'">
             <app-token-configuration [dataForm]="dataForm" [readonly]="readonly" [hide-type]="hideType"></app-token-configuration>
         </div>
+    </div>
+    <div *ngIf="innerWidth <= 810" class="page-btns">
+        <button mat-raised-button color="primary" id="cancel-btn" (click)="onNoClick()">Cancel</button>
+        <button *ngIf="!token" mat-raised-button color="primary" id="create-btn" (click)="onCreate()" [disabled]="!(valid && started)">Create</button>
+        <button *ngIf="token" mat-raised-button color="primary" id="save-btn" (click)="onSave()" [disabled]="!(valid && started)">Save</button>
     </div>
 </div>

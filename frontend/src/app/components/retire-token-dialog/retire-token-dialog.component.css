@@ -148,6 +148,7 @@
 
     .g-dialog-body {
         width: 90%;
+        max-height: 58vh;
         margin: 0 auto !important;
         padding: 0;
     }

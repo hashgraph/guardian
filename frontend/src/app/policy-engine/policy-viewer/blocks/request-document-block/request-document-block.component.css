@@ -160,6 +160,8 @@
         margin: 0 auto;
         padding: 0;
         border: none;
+        max-height: 55vh;
+        max-width: 90vh;
     }
 
     .schema-form {

@@ -220,7 +220,9 @@ button.mat-button {
 @media (max-width: 810px) {
 
     body, html { 
-        overflow-x: hidden; 
+        overflow-x: hidden;
+        width: 100vw;
+        height: 100vh;
     }
 
     .cdk-overlay-pane {

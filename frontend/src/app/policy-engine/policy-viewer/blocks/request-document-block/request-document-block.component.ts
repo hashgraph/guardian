@@ -266,7 +266,7 @@ export class RequestDocumentBlockComponent implements OnInit {
             const bodyStyles = window.getComputedStyle(document.body);
             const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
             this.dialogRef = this.dialog.open(this.dialogTemplate, {
-                width: `${this.innerWidth.toString()}px`,
+                width: `100vw`,
                 maxWidth: '100vw',
                 height: `${this.innerHeight - headerHeight}px`,
                 position: {
