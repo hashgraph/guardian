@@ -184,7 +184,7 @@ export class WebSocketService {
                     if (!allStatesReady) {
                         if (!['/status', '/admin/settings', '/admin/logs'].includes(location.pathname)) {
                             const last = location.pathname === '/status' ? null : btoa(location.href);
-                            this.router.navigate(['/status'], { queryParams: { last } });
+                            // this.router.navigate(['/status'], { queryParams: { last } });
                         }
                     }
                     this.servicesReady.next(allStatesReady);
@@ -313,7 +313,8 @@ export class WebSocketService {
 
     public IsServicesReady() {
         this.send(MessageAPI.GET_STATUS, null);
-        return this.servicesReady;
+        return true;
+        // return this.servicesReady;
     }
 
     public getServicesStatesArray(): any[] {
