@@ -216,9 +216,9 @@ export class WebSocketsService {
                     }
                     break;
                 case MessageAPI.GET_STATUS:
-                    // const logger = new Logger();
-                    // const guardians = new Guardians();
-                    // const auth = new Users();
+                    const logger = new Logger();
+                    const guardians = new Guardians();
+                    const auth = new Users();
 
                     // const [
                     //     LOGGER_SERVICE,
