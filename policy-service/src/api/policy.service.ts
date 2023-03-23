@@ -3,7 +3,12 @@ import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import path from 'path';
 import { fork, ChildProcess } from 'node:child_process';
 import * as process from 'process';
-import { NatsConnection } from 'nats';
+import { headers, NatsConnection } from 'nats';
+
+/**
+ * Max policy instances
+ */
+const MAX_POLICY_INSTANCES = (process.env.MAX_POLICY_INSTANCES) ? parseInt(process.env.MAX_POLICY_INSTANCES, 10) : 1000;
 
 /**
  * PolicyEngineChannel
@@ -27,7 +32,19 @@ export class PolicyEngineChannel extends NatsService {
      * @param cb
      */
     registerListener(event: string, cb: Function): void {
-        this.getMessages(event, cb, true);
+        this.connection.subscribe(event, {
+            queue: this.messageQueueName,
+            callback: async (error, msg) => {
+                const messageId = msg.headers.get('messageId');
+                const head = headers();
+                head.append('messageId', messageId);
+
+                const respond = await cb(this.jsonCodec.decode(msg.data), msg.headers);
+                if (respond) {
+                    msg.respond(this.jsonCodec.encode(null), {headers: head});
+                }
+            }
+        });
     }
 }
 
@@ -40,6 +57,8 @@ const models = new Map<string, ChildProcess>();
  * Policy module path
  */
 export const POLICY_PROCESS_PATH = path.join(__dirname, 'policy-process');
+
+let processCount = 0;
 
 /**
  * Stop policy process
@@ -92,8 +111,10 @@ function runPolicyProcess(policy: unknown, policyId: string, policyServiceName: 
     });
     childProcess.on('exit', (code) => {
         logger.info(`Policy process exit with code ${code}`, ['POLICY-SERVICE', policyId]);
+        --processCount;
     });
     models.set(policyId, childProcess);
+    processCount++;
 }
 
 /**
@@ -106,20 +127,25 @@ export async function policyAPI(cn: NatsConnection): Promise<void> {
     await channel.setConnection(cn).init();
 
     channel.registerListener(PolicyEvents.GENERATE_POLICY, async (data: any) => {
-        const {
-            policy,
-            policyServiceName,
-            policyId,
-            skipRegistration,
-            resultsContainer
-        } = data;
+        if (processCount <= MAX_POLICY_INSTANCES) {
+            const {
+                policy,
+                policyServiceName,
+                policyId,
+                skipRegistration,
+                resultsContainer
+            } = data;
+            runPolicyProcess(policy, policyId, policyServiceName, skipRegistration, resultsContainer);
+            return true;
+        }
 
-        runPolicyProcess(policy, policyId, policyServiceName, skipRegistration, resultsContainer);
+        return false;
     });
 
     channel.registerListener(PolicyEvents.DELETE_POLICY, async (data: any) => {
         const { policyId } = data;
 
         stopPolicyProcess(policyId);
+        return true;
     });
 }

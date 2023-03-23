@@ -228,7 +228,8 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      */
     public async exportFile(user, policyId) {
-        return await this.sendRawMessage(PolicyEngineEvents.POLICY_EXPORT_FILE, { policyId, user });
+        const file = await this.sendMessage(PolicyEngineEvents.POLICY_EXPORT_FILE, { policyId, user }) as any;
+        return Buffer.from(file, 'base64');
     }
 
     /**
@@ -244,6 +245,7 @@ export class PolicyEngine extends NatsService {
      * Load policy file for import
      * @param user
      * @param zip
+     * @param versionOfTopicId
      */
     public async importFile(user, zip, versionOfTopicId?) {
         return await this.sendMessage(PolicyEngineEvents.POLICY_IMPORT_FILE, { zip, user, versionOfTopicId });

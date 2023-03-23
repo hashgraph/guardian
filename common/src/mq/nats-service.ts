@@ -52,7 +52,7 @@ export abstract class NatsService {
             callback: (error, msg) => {;
                 if (!error) {
                     const messageId = msg.headers.get('messageId');
-                    const isRaw = msg.headers.get('isRaw') === 'true';
+                    const isRaw = msg.headers.get('rawMessage') === 'true';
                     const fn = this.responseCallbacksMap.get(messageId);
                     if (fn) {
                         if (isRaw) {
@@ -89,10 +89,11 @@ export abstract class NatsService {
      */
     public sendMessage<T>(subject: string, data?: unknown): Promise<T>{
         const messageId = GenerateUUIDv4();
-        const head = headers();
-        head.append('messageId', messageId);
-
         return new Promise((resolve, reject) => {
+            const head = headers();
+            head.append('messageId', messageId);
+            // head.append('rawMessage', 'false');
+
             this.responseCallbacksMap.set(messageId, (d: T, error?) => {
                 if (error) {
                     reject(error);
@@ -115,11 +116,11 @@ export abstract class NatsService {
      */
     public sendRawMessage<T>(subject: string, data?: unknown): Promise<T>{
         const messageId = GenerateUUIDv4();
-        const head = headers();
-        head.append('messageId', messageId);
-        head.append('isRaw', 'true');
-
         return new Promise((resolve, reject) => {
+            const head = headers();
+            head.append('messageId', messageId);
+            // head.append('rawMessage', 'true');
+
             this.responseCallbacksMap.set(messageId, (d: T, error?) => {
                 if (error) {
                     reject(error);
@@ -146,8 +147,10 @@ export abstract class NatsService {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
                 const messageId = msg.headers.get('messageId');
+                // const isRaw = msg.headers.get('rawMessage');
                 const head = headers();
                 head.append('messageId', messageId);
+                // head.append('rawMessage', isRaw);
                 if (!noRespond) {
                     msg.respond(this.jsonCodec.encode(await cb(this.jsonCodec.decode(msg.data), msg.headers)), {headers: head});
                 } else {

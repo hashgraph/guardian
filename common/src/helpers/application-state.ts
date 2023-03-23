@@ -59,7 +59,6 @@ export class ApplicationState {
         this.channel = new ApplicationStateChannel();
         this.channel.setConnection(cn);
         await this.channel.registerListener(MessageAPI.GET_STATUS, async () => {
-            console.log(this.state);
             try {
                 return new MessageResponse(this.state);
             }
