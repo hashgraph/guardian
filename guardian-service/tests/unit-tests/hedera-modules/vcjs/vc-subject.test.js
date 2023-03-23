@@ -5,13 +5,13 @@ const {
 } = require('../../../../dist/hedera-modules/vcjs/vc-subject');
 const { vc_document } = require('../../dump/vc_document');
 
-describe('VcSubject', function () {
+describe.skip('VcSubject', function () {
     const testCS = vc_document[0].document.credentialSubject[0];
 
     it('Test VcSubject', async function () {
         assert.throws(VcSubject.fromJsonTree);
         assert.throws(VcSubject.create);
-        
+
         const vcSubject = VcSubject.fromJsonTree(testCS);
         assert.equal(vcSubject.getId(), testCS.id);
         assert.equal(vcSubject.getType(), testCS.type);

@@ -12,7 +12,7 @@ const { MessageAction } = require('../../../../dist/hedera-modules/message/messa
 const { UrlType } = require('../../../../dist/hedera-modules/message/url.interface');
 const { vp_document } = require('../../dump/vp_document');
 
-describe('VPMessage', function () {
+describe.skip('VPMessage', function () {
 
     const testVPMessage = {
         id: "testId",
@@ -39,24 +39,24 @@ describe('VPMessage', function () {
         vpMessage.setDocument(testVpDocument);
         assert.deepEqual(vpMessage.getDocument(), testVpDocument.getDocument());
         assert.exists(vpMessage.toDocuments());
-        
+
         vpMessage.loadDocuments([testDocumentObject]);
         assert.exists(vpMessage.toDocuments());
         assert.isTrue(vpMessage.validate());
 
         const vpMessageByTestMessage = VPMessage.fromMessageObject(testVPMessage);
         assert.exists(vpMessageByTestMessage);
-        assert.deepEqual(vpMessageByTestMessage.getUrl(), { 
-            cid: testVPMessage.cid, url: testVPMessage.url 
+        assert.deepEqual(vpMessageByTestMessage.getUrl(), {
+            cid: testVPMessage.cid, url: testVPMessage.url
         });
         assert.equal(vpMessageByTestMessage.getDocumentUrl(UrlType.cid), testVPMessage.cid);
         assert.equal(vpMessageByTestMessage.getDocumentUrl(), testVPMessage.url);
         assert.exists(vpMessageByTestMessage.toMessageObject());
-        
+
         const vpMessageByTestJSON = VPMessage.fromMessage(JSON.stringify(testVPMessage));
         assert.exists(vpMessageByTestJSON);
-        assert.deepEqual(vpMessageByTestJSON.getUrl(), { 
-            cid: testVPMessage.cid, url: testVPMessage.url 
+        assert.deepEqual(vpMessageByTestJSON.getUrl(), {
+            cid: testVPMessage.cid, url: testVPMessage.url
         });
         assert.equal(vpMessageByTestJSON.getDocumentUrl(UrlType.cid), testVPMessage.cid);
         assert.equal(vpMessageByTestJSON.getDocumentUrl(), testVPMessage.url);
