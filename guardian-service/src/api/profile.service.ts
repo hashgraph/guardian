@@ -27,7 +27,6 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { ApiResponse } from '@api/api-response';
 import {
-    MessageBrokerChannel,
     MessageResponse,
     MessageError,
     Logger,

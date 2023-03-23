@@ -1,11 +1,9 @@
-import { MessageBrokerChannel, NatsService } from '@guardian/common';
+import { NatsService } from '@guardian/common';
 import {
     ApplicationStates,
     CommonSettings,
     MessageAPI,
-    IGetFileMessage,
     IFileResponse,
-    IAddFileMessage,
     GenerateUUIDv4
 } from '@guardian/interfaces';
 import { Singleton } from './decorators/singleton';

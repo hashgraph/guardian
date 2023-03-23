@@ -1,4 +1,4 @@
-import { Subscription, NatsConnection, StringCodec, connect, JSONCodec, headers } from 'nats';
+import { NatsConnection, StringCodec, JSONCodec, headers } from 'nats';
 import { Codec } from 'nats/lib/nats-base-client/codec';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 

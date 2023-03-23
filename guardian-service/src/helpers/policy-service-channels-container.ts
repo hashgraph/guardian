@@ -1,6 +1,5 @@
 import { MessageBrokerChannel, Singleton } from '@guardian/common';
-import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
-import { PolicyEngine } from '@policy-engine/policy-engine';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 /**
  * Container entity

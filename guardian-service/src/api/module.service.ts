@@ -1,5 +1,5 @@
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger, BinaryMessageResponse } from '@guardian/common';
+import { MessageResponse, MessageError, Logger, BinaryMessageResponse } from '@guardian/common';
 import { GenerateUUIDv4, MessageAPI, ModuleStatus, TopicType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
 import { PolicyModule } from '@entity/module';

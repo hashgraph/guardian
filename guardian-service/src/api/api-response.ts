@@ -1,4 +1,4 @@
-import { ApplicationState, MessageBrokerChannel, MessageInitialization, MessageResponse } from '@guardian/common';
+import { ApplicationState, MessageInitialization, MessageResponse } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { GuardiansService } from '@helpers/guardians';
 

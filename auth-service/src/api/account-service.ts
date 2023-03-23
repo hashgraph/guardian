@@ -4,7 +4,6 @@ import { User } from '@entity/user';
 import * as util from 'util';
 import crypto from 'crypto';
 import {
-    MessageBrokerChannel,
     MessageResponse,
     MessageError,
     Logger,

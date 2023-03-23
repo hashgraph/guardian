@@ -1,5 +1,4 @@
 import { Singleton } from '../decorators/singleton';
-import { ServiceRequestsBase } from './service-requests-base';
 import { Logger } from './logger';
 import { GenerateUUIDv4, IGetKeyResponse, WalletEvents } from '@guardian/interfaces';
 import { NatsService } from '../mq';

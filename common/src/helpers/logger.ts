@@ -1,7 +1,7 @@
 import { ApplicationStates, GenerateUUIDv4, ILog, IPageParameters, LogType, MessageAPI } from '@guardian/interfaces';
 import { Singleton } from '../decorators/singleton';
-import { IMessageResponse } from '../models/message-response';
-import { MessageBrokerChannel, NatsService } from '../mq';
+import { IMessageResponse } from '../models';
+import { NatsService } from '../mq';
 import { createLogger, Logger as WinstonLogger, format } from 'winston';
 import Transport from 'winston-transport';
 
@@ -28,16 +28,10 @@ class LoggerConnection extends NatsService {
  */
 export class LoggerServiceTransport extends Transport {
     /**
-     * Messages target name
-     * @private
-     */
-    private readonly target: string = 'logger-service';
-
-    /**
      * Message broker channel
      * @private
      */
-    private channel: LoggerConnection;
+    private readonly channel: LoggerConnection;
 
     constructor(opts) {
         super(opts);

@@ -2,20 +2,13 @@ import WebSocket from 'ws';
 import { IncomingMessage, Server } from 'http';
 import { Users } from '@helpers/users';
 import {
-    IUpdateUserInfoMessage,
-    IUpdateUserBalanceMessage,
     MessageAPI,
-    IUpdateBlockMessage,
-    IErrorBlockMessage,
     IStatus,
     ApplicationStates, GenerateUUIDv4
 } from '@guardian/interfaces';
-import { Guardians } from '@helpers/guardians';
 import {
-    MessageBrokerChannel,
     MessageResponse,
     Logger,
-    ApplicationState,
     NatsService,
     Singleton
 } from '@guardian/common';
@@ -70,7 +63,7 @@ export class WebSocketsService {
 
     constructor(
         private readonly server: Server,
-        private cn: NatsConnection
+        cn: NatsConnection
     ) {
         this.wss = new WebSocket.Server({ server: this.server });
         this.knownServices = {}
@@ -222,9 +215,9 @@ export class WebSocketsService {
                     }
                     break;
                 case MessageAPI.GET_STATUS:
-                    const logger = new Logger();
-                    const guardians = new Guardians();
-                    const auth = new Users();
+                    // const logger = new Logger();
+                    // const guardians = new Guardians();
+                    // const auth = new Users();
 
                     const [
                         LOGGER_SERVICE,

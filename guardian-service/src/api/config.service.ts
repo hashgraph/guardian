@@ -2,7 +2,6 @@ import { Settings } from '@entity/settings';
 import { Topic } from '@entity/topic';
 import { ApiResponse } from '@api/api-response';
 import {
-    MessageBrokerChannel,
     MessageResponse,
     MessageError,
     Logger,
@@ -23,8 +22,6 @@ export async function configAPI(
     settingsRepository: DataBaseHelper<Settings>,
     topicRepository: DataBaseHelper<Topic>,
 ): Promise<void> {
-
-
 
     ApiResponse(MessageAPI.GET_TOPIC, async (msg) => {
         const topic = await topicRepository.findOne(msg);

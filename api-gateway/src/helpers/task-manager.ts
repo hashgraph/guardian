@@ -1,5 +1,5 @@
 import { WebSocketsService } from '@api/service/websockets';
-import { MessageBrokerChannel, MessageResponse, NatsService } from '@guardian/common';
+import { MessageResponse, NatsService } from '@guardian/common';
 import { GenerateUUIDv4, IStatus, MessageAPI, StatusType } from '@guardian/interfaces';
 import { Singleton } from '@helpers/decorators/singleton';
 import { NatsConnection } from 'nats';

@@ -13,7 +13,6 @@ import {
     IVPDocument,
     MessageAPI
 } from '@guardian/interfaces';
-import { ServiceRequestsBase } from './service-requests-base';
 import { NatsService } from '@guardian/common';
 
 /**

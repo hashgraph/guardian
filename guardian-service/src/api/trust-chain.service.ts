@@ -10,7 +10,7 @@ import {
     VpDocument as HVpDocument
 } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger, DataBaseHelper } from '@guardian/common';
+import { MessageResponse, MessageError, Logger, DataBaseHelper } from '@guardian/common';
 
 /**
  * Get field

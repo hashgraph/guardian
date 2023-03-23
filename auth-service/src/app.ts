@@ -28,7 +28,6 @@ Promise.all([
 ]).then(async ([_, db, cn, vault]) => {
     DB_DI.orm = db;
     const state = new ApplicationState('AUTH_SERVICE');
-    const channel = new MessageBrokerChannel(cn, 'auth-service');
 
     state.setConnection(cn);
     state.updateState(ApplicationStates.INITIALIZING);

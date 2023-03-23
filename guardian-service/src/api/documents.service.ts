@@ -13,7 +13,6 @@ import {
 } from '@guardian/interfaces';
 import { ApiResponse } from '@api/api-response';
 import {
-    MessageBrokerChannel,
     MessageResponse,
     MessageError,
     DataBaseHelper

@@ -1,7 +1,7 @@
 import { Singleton } from '../decorators/singleton';
-import { MessageBrokerChannel, NatsService } from '../mq';
+import { NatsService } from '../mq';
 import { ApplicationStates, GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
-import { MessageResponse, MessageError } from '../models/message-response';
+import { MessageResponse, MessageError } from '../models';
 import { NatsConnection } from 'nats';
 
 /**

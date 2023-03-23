@@ -11,7 +11,7 @@ import {
     PolicyEvents,
     WorkerTaskType,
 } from '@guardian/interfaces';
-import { DataBaseHelper, IAuthUser, Logger, NatsService, ServiceRequestsBase, Singleton } from '@guardian/common';
+import { DataBaseHelper, IAuthUser, Logger, NatsService, Singleton } from '@guardian/common';
 import {
     MessageAction,
     MessageServer,

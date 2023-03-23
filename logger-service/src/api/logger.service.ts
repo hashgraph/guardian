@@ -13,8 +13,6 @@ import {
     IGetLogsMessage,
     IGetLogsResponse,
     IGetLogAttributesMessage,
-    LogType,
-    ExternalMessageEvents,
     GenerateUUIDv4
 } from '@guardian/interfaces';
 
