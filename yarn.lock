@@ -3093,12 +3093,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cron@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "cron@npm:2.0.0"
+"cron@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "cron@npm:2.3.0"
   dependencies:
-    luxon: ^1.23.x
-  checksum: 179ec137ada4ceb44cafe51c55491e84954308d7012d2a44539f0dadbbb1ffbbe3072c2f7aaa88595d60bd56e0d536aae2e4aaa4430c869317d6c2abd966988b
+    luxon: ^3.2.1
+  checksum: 70b220f3fc4b6bcd594f7f2c690bbf7a3a03b0e081eb0119f8e3ca21635f2da07d89e038d561d4c0742c8b0dd04977f25e307d0608455ef9f527a556b2da92fc
   languageName: node
   linkType: hard
 
@@ -4706,7 +4706,7 @@ __metadata:
     bs58: ^4.0.1
     chai: 4.3.4
     cors: ^2.8.5
-    cron: ^2.0.0
+    cron: ^2.3.0
     deep-equal: ^2.0.5
     dotenv: ^16.0.0
     express: ^4.17.1
@@ -6808,10 +6808,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:^1.23.x":
-  version: 1.28.0
-  resolution: "luxon@npm:1.28.0"
-  checksum: 5250cb9f138b6048eeb0b3a9044a4ac994d0058f680c72a0da4b6aeaec8612460385639cba2b1052ef6d5564879e9ed144d686f26d9d97b38ab920d82e18281c
+"luxon@npm:^3.2.1":
+  version: 3.3.0
+  resolution: "luxon@npm:3.3.0"
+  checksum: 50cf17a0dc155c3dcacbeae8c0b7e80db425e0ba97b9cbdf12a7fc142d841ff1ab1560919f033af46240ed44e2f70c49f76e3422524c7fc8bb8d81ca47c66187
   languageName: node
   linkType: hard
 
@@ -8334,7 +8334,7 @@ __metadata:
     bs58: ^4.0.1
     chai: 4.3.4
     cors: ^2.8.5
-    cron: ^2.0.0
+    cron: ^2.3.0
     deep-equal: ^2.0.5
     dotenv: ^16.0.0
     express: ^4.17.1
