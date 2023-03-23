@@ -1,6 +1,5 @@
 import { ApiResponse } from '@api/api-response';
 import {
-    MessageBrokerChannel,
     MessageResponse,
     MessageError,
     Logger,

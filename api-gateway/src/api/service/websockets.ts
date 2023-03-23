@@ -13,7 +13,7 @@ import {
     Singleton
 } from '@guardian/common';
 import { NatsConnection } from 'nats';
-import { Guardians } from '@helpers/guardians';
+// import { Guardians } from '@helpers/guardians';
 
 /**
  * WebSocketsServiceChannel
@@ -216,19 +216,19 @@ export class WebSocketsService {
                     }
                     break;
                 case MessageAPI.GET_STATUS:
-                    const logger = new Logger();
-                    const guardians = new Guardians();
-                    const auth = new Users();
+                    // const logger = new Logger();
+                    // const guardians = new Guardians();
+                    // const auth = new Users();
 
-                    const [
-                        LOGGER_SERVICE,
-                        GUARDIAN_SERVICE,
-                        AUTH_SERVICE
-                    ] = await Promise.all([
-                        logger.getStatus(),
-                        guardians.getStatus(),
-                        auth.getStatus()
-                    ]);
+                    // const [
+                    //     LOGGER_SERVICE,
+                    //     GUARDIAN_SERVICE,
+                    //     AUTH_SERVICE
+                    // ] = await Promise.all([
+                    //     logger.getStatus(),
+                    //     guardians.getStatus(),
+                    //     auth.getStatus()
+                    // ]);
 
                     ws.send(JSON.stringify(
                         {
