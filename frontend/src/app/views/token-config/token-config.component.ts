@@ -60,10 +60,10 @@ export class TokenConfigComponent implements OnInit {
     owner: any;
 
     constructor(
+        public tagsService: TagsService,
         private auth: AuthService,
         private profileService: ProfileService,
         private tokenService: TokenService,
-        private tagsService: TagsService,
         private informService: InformService,
         private taskService: TasksService,
         private policyEngineService: PolicyEngineService,

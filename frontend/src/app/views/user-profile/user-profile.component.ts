@@ -94,10 +94,10 @@ export class UserProfileComponent implements OnInit {
     private tabs = ['account', 'tokens', 'retire'];
 
     constructor(
+        public tagsService: TagsService,
         private auth: AuthService,
         private profileService: ProfileService,
         private tokenService: TokenService,
-        private tagsService: TagsService,
         private otherService: DemoService,
         private schemaService: SchemaService,
         private informService: InformService,

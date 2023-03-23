@@ -116,13 +116,13 @@ export abstract class Message {
     /**
      * To document
      */
-public abstract toDocuments(key?: string): Promise<ArrayBuffer[]>;
+    public abstract toDocuments(key?: string): Promise<ArrayBuffer[]>;
 
-/**
- * Load documents
- * @param documents
- */
-public abstract loadDocuments(documents: any[], key?: string): Message | Promise<Message>;
+    /**
+     * Load documents
+     * @param documents
+     */
+    public abstract loadDocuments(documents: any[], key?: string): Message | Promise<Message>;
 
     /**
      * Set URLs

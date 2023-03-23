@@ -11,6 +11,7 @@ export class EventCanvas {
     private lastImage: any;
     private top: any;
     private left: any;
+    private width: any;
 
     constructor(
         container: HTMLElement,
@@ -26,6 +27,7 @@ export class EventCanvas {
         const box = this.container.getBoundingClientRect();
         this.top = box.top;
         this.left = box.left;
+        this.width = box.width;
 
         try {
             this.parent = parent;
@@ -183,6 +185,13 @@ export class EventCanvas {
             x: event.clientX - this.left,
             y: event.clientY - this.top + this.container.scrollTop
         }
+    }
+
+    public clampPosition(position: any): any {
+        if(position.x > this.width - 175) {
+            position.x = this.width - 175;
+        }
+        return position;
     }
 
     public getIndexObject(position: any): number {

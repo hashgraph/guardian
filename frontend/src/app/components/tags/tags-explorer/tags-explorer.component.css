@@ -118,6 +118,7 @@
     border: 1px solid #5a9af9;
     cursor: pointer;
     user-select: none;
+    width: 130px;
 }
 
 .add-tags:hover {

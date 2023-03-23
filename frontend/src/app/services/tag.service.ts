@@ -9,6 +9,7 @@ import { API_BASE_URL } from './api';
 @Injectable()
 export class TagsService {
     private readonly url: string = `${API_BASE_URL}/tags`;
+
     constructor(
         private http: HttpClient
     ) { }

@@ -18,14 +18,12 @@ export class TagsExplorer {
     @Input('owner') owner!: any;
     @Input('entity') entity!: any;
     @Input('target') target!: any;
+    @Input('service') tagsService!: TagsService;
 
     public loading = false;
     public history!: TagsHistory;
 
-    constructor(
-        public dialog: MatDialog,
-        private tagsService: TagsService
-    ) {
+    constructor(public dialog: MatDialog) {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -52,6 +50,7 @@ export class TagsExplorer {
             panelClass: 'g-dialog',
             disableClose: true,
             data: {
+                service: this.tagsService,
                 history: this.history
             }
         });

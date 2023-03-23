@@ -37,5 +37,6 @@ export enum BlockType {
     HttpRequest = 'httpRequestBlock',
     HistoryAddon = 'historyAddon',
     SelectiveAttributes = 'selectiveAttributes',
-    Module = 'module'
+    Module = 'module',
+    TagsManager = 'tagsManager',
 }

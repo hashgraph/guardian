@@ -2,7 +2,6 @@ import { ApiResponse } from '@api/api-response';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { GenerateUUIDv4, IRootConfig, MessageAPI, TagType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
-import { INotifier } from '@helpers/notifier';
 import { Tag } from '@entity/tag';
 import { MessageAction, MessageServer, MessageType, TagMessage, TopicConfig } from '@hedera-modules';
 import { Schema as SchemaCollection } from '@entity/schema';
@@ -476,3 +475,4 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
         }
     });
 }
+

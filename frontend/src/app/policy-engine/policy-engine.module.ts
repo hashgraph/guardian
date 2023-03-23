@@ -80,6 +80,7 @@ import { RegisteredService } from './registered-service/registered.service';
 import { ModuleComponent } from './policy-configuration/blocks/module/module.component';
 import { ModulesListComponent } from './modules-list/modules-list.component';
 import { NewModuleDialog } from './helpers/new-module-dialog/new-module-dialog.component';
+import { TagsManagerBlockComponent } from './policy-viewer/blocks/tags-manager-block/tags-manager-block.component';
 
 @NgModule({
     declarations: [
@@ -154,7 +155,8 @@ import { NewModuleDialog } from './helpers/new-module-dialog/new-module-dialog.c
         ModulePropertiesComponent,
         ModuleComponent,
         ModulesListComponent,
-        NewModuleDialog
+        NewModuleDialog,
+        TagsManagerBlockComponent
     ],
     imports: [
         CommonModule,

@@ -294,6 +294,7 @@ export class PolicyTreeComponent implements OnInit {
                     <div class="s4"><span>Input (Event)</span>: ${line.input}</div>
                     <div class="s5"><span>Event Actor</span>: ${this.actorMap[line.actor]}</div>
                 `;
+                this.canvas.clampPosition(position);
                 this.tooltip.style.left = `${position.x}px`;
                 this.tooltip.style.top = `${position.y}px`;
                 if (position.y > 200) {
@@ -396,7 +397,7 @@ export class PolicyTreeComponent implements OnInit {
             return item.input !== 'RefreshEvent' && item.output !== 'RefreshEvent';
         }
         if (this.active === 'Refresh') {
-            return item.input === 'RefreshEvent' || item.output !== 'RefreshEvent';
+            return item.input === 'RefreshEvent' || item.output === 'RefreshEvent';
         }
         return false;
     }

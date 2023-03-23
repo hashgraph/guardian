@@ -74,10 +74,10 @@ export class SchemaConfigComponent implements OnInit {
     tagEntity = 'Schema';
 
     constructor(
+        public tagsService: TagsService,
         private profileService: ProfileService,
         private schemaService: SchemaService,
         private policyEngineService: PolicyEngineService,
-        private tagsService: TagsService,
         private informService: InformService,
         private route: ActivatedRoute,
         private router: Router,

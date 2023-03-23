@@ -93,9 +93,9 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     ];
 
     constructor(
+        public tagsService: TagsService,
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
-        private tagsService: TagsService,
         private wsService: WebSocketService,
         private tokenService: TokenService,
         private route: ActivatedRoute,

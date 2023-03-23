@@ -511,6 +511,30 @@ export class DryRun extends BaseEntity {
     messageIds?: string[];
 
     /**
+    * Target ID
+    */
+    @Property({ nullable: true })
+    target?: string;
+
+    /**
+    * Target ID (Local)
+    */
+    @Property({ nullable: true })
+    localTarget?: string;
+
+    /**
+    * Operation
+    */
+    @Property({ nullable: true })
+    operation?: string;
+
+    /**
+     * Date
+     */
+    @Property({ nullable: false })
+    date: string;
+
+    /**
      * Default document values
      */
     @BeforeCreate()

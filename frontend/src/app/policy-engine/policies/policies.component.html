@@ -75,7 +75,7 @@
                     <th mat-header-cell *matHeaderCellDef> Tags </th>
                     <td mat-cell *matCellDef="let element">
                         <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id"
-                            [entity]="tagEntity"></tags-explorer>
+                            [entity]="tagEntity" [service]="tagsService"></tags-explorer>
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="description">

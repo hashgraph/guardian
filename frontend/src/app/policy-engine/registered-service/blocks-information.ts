@@ -47,6 +47,7 @@ import {
     PolicyBlockModel,
     IBlockSetting
 } from "../structures";
+import { TagsManagerBlockComponent } from '../policy-viewer/blocks/tags-manager-block/tags-manager-block.component';
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -560,6 +561,15 @@ const ReportItem: IBlockSetting = {
     property: ReportItemConfigComponent
 }
 
+const TagManager: IBlockSetting = {
+    type: BlockType.TagsManager,
+    icon: 'sell',
+    group: BlockGroup.Documents,
+    header: BlockHeaders.Addons,
+    factory: TagsManagerBlockComponent,
+    property: null
+}
+
 export default [
     Container,
     Step,
@@ -598,5 +608,6 @@ export default [
     Report,
     ReportItem,
     HistoryAddon,
-    SelectiveAttributes
+    SelectiveAttributes,
+    TagManager
 ];

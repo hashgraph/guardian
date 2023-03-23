@@ -28,13 +28,15 @@ export class TagsExplorerDialog {
     public owner: string;
     public time: string | undefined;
     public tab: number = 1;
+    public tagsService: TagsService;
 
     constructor(
         public dialogRef: MatDialogRef<TagsExplorerDialog>,
         public dialog: MatDialog,
         private fb: FormBuilder,
-        private tagsService: TagsService,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
+        @Inject(MAT_DIALOG_DATA) public data: any
+    ) {
+        this.tagsService = data.service;
         this.history = data.history;
         this.owner = this.history.owner;
         this.select = this.history.getItem();
@@ -55,7 +57,7 @@ export class TagsExplorerDialog {
     }
 
     public onOpen(item: TagItem) {
-        if( this.open == item) {
+        if (this.open == item) {
             this.open = undefined;
         } else {
             this.open = item;
@@ -80,7 +82,7 @@ export class TagsExplorerDialog {
         this.loading = true;
         this.tagsService.create(tag).subscribe((data) => {
             this.history.add(data);
-            if(this.tab === 1) {
+            if (this.tab === 1) {
                 this.select = this.history.getItem(this.select);
             } else {
                 this.select = this.history.getHistory(this.select);
@@ -98,7 +100,7 @@ export class TagsExplorerDialog {
         this.loading = true;
         this.tagsService.delete(item.uuid).subscribe((data) => {
             this.history.delete(item);
-            if(this.tab === 1) {
+            if (this.tab === 1) {
                 this.select = this.history.getItem(this.select);
             } else {
                 this.select = this.history.getHistory(this.select);
@@ -117,7 +119,7 @@ export class TagsExplorerDialog {
         this.tagsService.synchronization(this.history.entity, this.history.target).subscribe((data) => {
             this.history.setData(data.tags);
             this.history.setDate(data.refreshDate);
-            if(this.tab === 1) {
+            if (this.tab === 1) {
                 this.select = this.history.getItem(this.select);
             } else {
                 this.select = this.history.getHistory(this.select);
@@ -132,19 +134,19 @@ export class TagsExplorerDialog {
         });
     }
 
-    public openTab(tab:number) {
+    public openTab(tab: number) {
         this.tab = tab;
-        if(this.tab === 1) {
+        if (this.tab === 1) {
             this.select = this.history.getItem();
         } else {
             this.select = this.history.getHistory();
         }
     }
 
-    private setTime(time:string| undefined) {
-        if(time) {
+    private setTime(time: string | undefined) {
+        if (time) {
             const m = moment(time);
-            if(m.isValid()) {
+            if (m.isValid()) {
                 this.time = m.fromNow();
             } else {
                 this.time = undefined;

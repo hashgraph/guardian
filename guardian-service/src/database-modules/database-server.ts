@@ -2191,7 +2191,7 @@ export class DatabaseServer {
      * Create tag cache
      * @param tag
      */
-    public static async createTagCache(tag: any): Promise<Tag> {
+    public static async createTagCache(tag: any): Promise<TagCache> {
         const item = new DataBaseHelper(TagCache).create(tag);
         return await new DataBaseHelper(TagCache).save(item);
     }
@@ -2209,7 +2209,7 @@ export class DatabaseServer {
      * Update tag cache
      * @param row
      */
-    public static async updateTagCache(row: TagCache): Promise<Tag> {
+    public static async updateTagCache(row: TagCache): Promise<TagCache> {
         return await new DataBaseHelper(TagCache).update(row);
     }
 }

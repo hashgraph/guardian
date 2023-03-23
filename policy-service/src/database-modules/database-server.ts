@@ -21,6 +21,8 @@ import { Binary } from 'bson';
 import { SplitDocuments } from '@entity/split-documents';
 import { MultiPolicy } from '@entity/multi-policy';
 import { MultiPolicyTransaction } from '@entity/multi-policy-transaction';
+import { Tag } from '@entity/tag';
+import { TagCache } from '@entity/tag-cache';
 
 /**
  * Database server
@@ -62,6 +64,8 @@ export class DatabaseServer {
         this.classMap.set(PolicyInvitations, 'PolicyInvitations');
         this.classMap.set(MultiDocuments, 'MultiDocuments');
         this.classMap.set(SplitDocuments, 'SplitDocuments');
+        this.classMap.set(Tag, 'Tag');
+        this.classMap.set(TagCache, 'TagCache');
     }
 
     /**
@@ -227,11 +231,11 @@ export class DatabaseServer {
      * @param criteria
      * @param row
      */
-    private async update<T extends BaseEntity>(entityClass: new () => T, criteria: any, row: T): Promise<void> {
+    private async update<T extends BaseEntity>(entityClass: new () => T, criteria: any, row: T): Promise<T> {
         if (this.dryRun) {
-            await new DataBaseHelper(DryRun).update(row, criteria);
+            return await new DataBaseHelper(DryRun).update(row, criteria) as any;
         } else {
-            await new DataBaseHelper(entityClass).update(row, criteria);
+            return await new DataBaseHelper(entityClass).update(row, criteria);
         }
     }
 
@@ -1322,6 +1326,73 @@ export class DatabaseServer {
         });
     }
 
+    /**
+     * Create tag
+     * @param tag
+     */
+    public async createTag(tag: any): Promise<Tag> {
+        const item = this.create(Tag, tag);
+        return await this.save(Tag, item);
+    }
+
+    /**
+     * Get tags
+     * @param filters
+     * @param options
+     */
+    public async getTags(filters?: any, options?: any): Promise<Tag[]> {
+        return await this.find(Tag, filters, options);
+    }
+
+    /**
+     * Get tags
+     * @param filters
+     * @param options
+     */
+    public async getTagCache(filters?: any, options?: any): Promise<TagCache[]> {
+        return await this.find(TagCache, filters, options);
+    }
+
+    /**
+     * Delete tag
+     * @param tag
+     */
+    public async removeTag(tag: Tag): Promise<void> {
+        return await this.remove(Tag, tag);
+    }
+
+    /**
+     * Update tags
+     * @param row
+     */
+    public async updateTag(row: Tag): Promise<Tag> {
+        return await this.update(Tag, row.id, row);
+    }
+
+    /**
+     * Get tag By UUID
+     * @param uuid
+     */
+    public async getTagById(uuid: string): Promise<Tag> {
+        return await this.findOne(Tag, { uuid });
+    }
+
+    /**
+     * Create tag cache
+     * @param tag
+     */
+    public async createTagCache(tag: any): Promise<TagCache> {
+        const item = this.create(TagCache, tag);
+        return await this.save(TagCache, item);
+    }
+
+    /**
+     * Update tag cache
+     * @param row
+     */
+    public async updateTagCache(row: TagCache): Promise<TagCache> {
+        return await this.update(TagCache, row.id, row);
+    }
     //Static
 
     /**
