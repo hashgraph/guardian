@@ -64,7 +64,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     constructor() {}
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes?.disabled?.currentValue) {
+        if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
             this.onViewTypeChange(this.control?.value);
         }
     }
