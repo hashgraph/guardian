@@ -935,7 +935,14 @@ export class PolicyEngine extends NatsService {
             throw new Error('Policy was not exist');
         }
 
-        const exist = await new GuardiansService().sendPolicyMessage(PolicyEvents.CHECK_IF_ALIVE, policyId, {});
+        const exist = await Promise.race([
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve(false);
+                }, 1 * 1000)
+            }),
+            new GuardiansService().sendPolicyMessage(PolicyEvents.CHECK_IF_ALIVE, policyId, {})
+        ]);
 
         if (!exist) {
             this.sendMessage(PolicyEvents.GENERATE_POLICY, {

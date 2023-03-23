@@ -229,19 +229,14 @@ export class WebSocketsService {
                         guardians.getStatus(),
                         auth.getStatus()
                     ]);
-                    ] = [
-                        'STARTED',
-                        'STARTED',
-                        'STARTED',
-                    ]
 
                     ws.send(JSON.stringify(
                         {
                             type: MessageAPI.GET_STATUS,
                             data: Object.assign(this.knownServices, {
-                                LOGGER_SERVICE,
-                                GUARDIAN_SERVICE,
-                                AUTH_SERVICE
+                                // LOGGER_SERVICE,
+                                // GUARDIAN_SERVICE,
+                                // AUTH_SERVICE
                             })
                         }
                     ));
