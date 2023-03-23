@@ -512,7 +512,7 @@ export class Guardians extends NatsService {
     public async getSchemasByUUID(uuid: string): Promise<ISchema[]> {
         const { items } = await this.sendMessage(
             MessageAPI.GET_SCHEMAS, { uuid }
-        );
+        ) as any;
         return items;
     }
 
