@@ -26,14 +26,14 @@ export class TokenConfirmationBlock {
             }
             if (ref.options.useTemplate) {
                 if (!ref.options.template) {
-                    validator.addError('Option "template" does not set');
+                    validator.addError('Option "template" is not set');
                 }
                 if (validator.tokenTemplateNotExist(ref.options.template)) {
                     validator.addError(`Token "${ref.options.template}" does not exist`);
                 }
             } else {
                 if (!ref.options.tokenId) {
-                    validator.addError('Option "tokenId" does not set');
+                    validator.addError('Option "tokenId" is not set');
                 } else if (typeof ref.options.tokenId !== 'string') {
                     validator.addError('Option "tokenId" must be a string');
                 } else if (await validator.tokenNotExist(ref.options.tokenId)) {
@@ -41,7 +41,7 @@ export class TokenConfirmationBlock {
                 }
             }
             if (ref.options.accountType === 'custom' && !ref.options.accountId) {
-                validator.addError('Option "accountId" does not set');
+                validator.addError('Option "accountId" is not set');
             }
         } catch (error) {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);

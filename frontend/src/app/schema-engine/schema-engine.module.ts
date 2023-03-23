@@ -6,7 +6,11 @@ import { SchemaDialog } from './schema-dialog/schema-dialog.component';
 import { SchemaFormComponent } from './schema-form/schema-form.component';
 import { SchemaConfigurationComponent } from './schema-configuration/schema-configuration.component';
 import { ImportSchemaDialog } from './import-schema/import-schema-dialog.component';
-import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule } from '@angular-material-components/datetime-picker';
+import {
+    NgxMatDatetimePickerModule,
+    NgxMatNativeDateModule,
+    NgxMatTimepickerModule,
+} from '@angular-material-components/datetime-picker';
 import { SchemaFormViewComponent } from './schema-form-view/schema-form-view.component';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { DocumentViewComponent } from './document-view/document-view.component';
@@ -24,6 +28,8 @@ import { ArtifactPropertiesComponent } from '../artifact-engine/artifact-propert
 import { SchemaConfigComponent } from './schemas/schemas.component';
 import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dialog.component';
 import { AppRoutingModule } from '../app-routing.module';
+import { GoogleMapsModule } from '@angular/google-maps';
+import { GeojsonTypeComponent } from './geojson-type/geojson-type.component';
 
 @NgModule({
     declarations: [
@@ -40,7 +46,8 @@ import { AppRoutingModule } from '../app-routing.module';
         SchemaFieldConfigurationComponent,
         EnumEditorDialog,
         SchemaConfigComponent,
-        CompareSchemaDialog
+        CompareSchemaDialog,
+        GeojsonTypeComponent,
     ],
     imports: [
         CommonModule,
@@ -53,7 +60,8 @@ import { AppRoutingModule } from '../app-routing.module';
         ClipboardModule,
         CodemirrorModule,
         AppRoutingModule,
-        ArtifactEngineModule
+        ArtifactEngineModule,
+        GoogleMapsModule,
     ],
     exports: [
         SchemaDialog,
@@ -68,7 +76,7 @@ import { AppRoutingModule } from '../app-routing.module';
         FileDragNDropComponent,
         SchemaFieldConfigurationComponent,
         ArtifactPropertiesComponent,
-        SchemaConfigComponent
-    ]
+        SchemaConfigComponent,
+    ],
 })
-export class SchemaEngineModule { }
+export class SchemaEngineModule {}

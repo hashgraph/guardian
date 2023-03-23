@@ -53,6 +53,7 @@ import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels
 import { PolicyEngine } from '@policy-engine/policy-engine';
 import { modulesAPI } from '@api/module.service';
 import { GuardiansService } from '@helpers/guardians';
+import { mapAPI } from '@api/map.service';
 
 export const obj = {};
 
@@ -114,6 +115,7 @@ Promise.all([
         await contractAPI(contractRepository, retireRequestRepository);
         await modulesAPI();
         await analyticsAPI();
+        await mapAPI();
     } catch (error) {
         console.error(error.message);
         process.exit(0);

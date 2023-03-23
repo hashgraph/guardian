@@ -18,7 +18,8 @@
                                     Copy CID
                                 </button>
                             </div>
-                            <img *ngIf="!item.loading; else loading" class="ipfs-image" [src]="item.imgSrc" [alt]="item.value">
+                            <img *ngIf="!item.loading; else loading" class="ipfs-image" [src]="item.imgSrc"
+                                [alt]="item.value">
                             <ng-template #loading>
                                 <mat-spinner class="loading"></mat-spinner>
                             </ng-template>
@@ -58,9 +59,14 @@
                 <div class="label-field">{{item.description}}</div>
                 <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
                     <div class="form-field-group">
-                        <app-schema-form-view [fields]="item.fields" [private-fields]="hide" [delimiter-hide]="true"
-                            [values]="this.values && this.values[item.name]">
-                        </app-schema-form-view>
+                        <ng-container [ngSwitch]="item.customType">
+                            <app-geojson-type *ngSwitchCase="'geo'"
+                                [preset]="this.values && this.values[item.name]" [disabled]="true">
+                            </app-geojson-type>
+                            <app-schema-form-view *ngSwitchDefault [fields]="item.fields" [private-fields]="hide"
+                                [delimiter-hide]="true" [values]="this.values && this.values[item.name]">
+                            </app-schema-form-view>
+                        </ng-container>
                     </div>
                 </div>
             </div>
@@ -79,7 +85,8 @@
                             <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
 
                             <mat-form-field *ngIf="isInput(item)" class="example-full-width" appearance="outline">
-                                <input readonly matInput [value]="listItem.value" [ngClass]="{'hidden-item':  isIPFS(item) }">
+                                <input readonly matInput [value]="listItem.value"
+                                    [ngClass]="{'hidden-item':  isIPFS(item) }">
                                 <div *ngIf=" isIPFS(item)">
                                     <div class="image-action-buttons">
                                         <button mat-button type="button" [cdkCopyToClipboard]="listItem.value">
@@ -89,7 +96,8 @@
                                             Copy CID
                                         </button>
                                     </div>
-                                    <img *ngIf="!listItem.loading; else loading" class="ipfs-image" [src]="listItem.imgSrc" [alt]="listItem.value">
+                                    <img *ngIf="!listItem.loading; else loading" class="ipfs-image"
+                                        [src]="listItem.imgSrc" [alt]="listItem.value">
                                     <ng-template #loading>
                                         <mat-spinner class="loading"></mat-spinner>
                                     </ng-template>
@@ -101,7 +109,8 @@
                             </mat-form-field>
 
                             <mat-form-field *ngIf="isDateTime(item)" class="example-full-width" appearance="outline">
-                                <input readonly matInput [ngxMatDatetimePicker]="dateTimePicker" [value]="listItem.value">
+                                <input readonly matInput [ngxMatDatetimePicker]="dateTimePicker"
+                                    [value]="listItem.value">
                                 <mat-datepicker-toggle matSuffix [for]="$any(dateTimePicker)"></mat-datepicker-toggle>
                                 <ngx-mat-datetime-picker [disabled]="true" #dateTimePicker [enableMeridian]="true">
                                 </ngx-mat-datetime-picker>
@@ -138,9 +147,13 @@
                 <div *ngFor="let listItem of getItemsPage(item, item.pageEvent)" class="form-field-array-item"
                     [attr.index]="item.list.indexOf(listItem)">
                     <div class="form-field-group">
-                        <app-schema-form-view [fields]="item.fields" [private-fields]="hide" [delimiter-hide]="true"
-                            [values]="listItem">
-                        </app-schema-form-view>
+                        <ng-container [ngSwitch]="item.customType">
+                            <app-geojson-type *ngSwitchCase="'geo'" [preset]="listItem" [disabled]="true">
+                            </app-geojson-type>
+                            <app-schema-form-view *ngSwitchDefault [fields]="item.fields" [private-fields]="hide"
+                                [delimiter-hide]="true" [values]="listItem">
+                            </app-schema-form-view>
+                        </ng-container>
                     </div>
                     <div class="short-delimiter-container">
                         <div class="delimiter"></div>
