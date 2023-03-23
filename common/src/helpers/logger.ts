@@ -64,14 +64,11 @@ export class LoggerServiceTransport extends Transport {
      */
     public async request<T>(entity: string, params?: any): Promise<T> {
         try {
-            const response: IMessageResponse<T> = await this.channel.sendMessage(entity, params);
+            const response: T = await this.channel.sendMessage(entity, params);
             if (!response) {
                 throw Error('Server is not available');
             }
-            if (response.error) {
-                throw response.error;
-            }
-            return response.body;
+            return response;
         } catch (error) {
             console.error(error);
         }
