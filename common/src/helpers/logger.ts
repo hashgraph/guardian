@@ -106,6 +106,7 @@ export class LoggerServiceTransport extends Transport {
     public async getStatus(): Promise<ApplicationStates> {
         try {
             const res = await this.request(MessageAPI.GET_STATUS);
+            console.log(res);
             if (!res) {
                 throw new Error('Response is null');
             }

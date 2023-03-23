@@ -118,8 +118,8 @@ export async function policyAPI(cn: NatsConnection): Promise<void> {
     });
 
     channel.registerListener(PolicyEvents.DELETE_POLICY, async (data: any) => {
-        const { policyId, policyServiceName } = data;
+        const { policyId } = data;
 
-        stopPolicyProcess(policyId, policyServiceName);
+        stopPolicyProcess(policyId);
     });
 }
