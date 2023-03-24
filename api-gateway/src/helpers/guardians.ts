@@ -1330,7 +1330,7 @@ export class Guardians extends NatsService {
      * @returns tag
      */
     public async createTag(tag: any, owner: string): Promise<any> {
-        return await this.request<any>(MessageAPI.CREATE_TAG, { tag, owner });
+        return await this.sendMessage<any>(MessageAPI.CREATE_TAG, { tag, owner });
     }
 
     /**
@@ -1340,7 +1340,7 @@ export class Guardians extends NatsService {
      * @returns {any[]}
      */
     public async getTags(entity: string, targets: string[]): Promise<any[]> {
-        return await this.request<any>(MessageAPI.GET_TAGS, { entity, targets });
+        return await this.sendMessage<any>(MessageAPI.GET_TAGS, { entity, targets });
     }
 
     /**
@@ -1350,7 +1350,7 @@ export class Guardians extends NatsService {
      * @returns Operation Success
      */
     public async deleteTag(uuid: string, owner: string): Promise<boolean> {
-        return await this.request<any>(MessageAPI.DELETE_TAG, { uuid, owner });
+        return await this.sendMessage<any>(MessageAPI.DELETE_TAG, { uuid, owner });
     }
 
     /**
@@ -1360,7 +1360,7 @@ export class Guardians extends NatsService {
      * @returns {any[]}
      */
     public async exportTags(entity: string, targets: string[]): Promise<any[]> {
-        return await this.request<any>(MessageAPI.EXPORT_TAGS, { entity, targets });
+        return await this.sendMessage<any>(MessageAPI.EXPORT_TAGS, { entity, targets });
     }
 
     /**
@@ -1370,7 +1370,7 @@ export class Guardians extends NatsService {
      * @returns {any[]}
      */
     public async getTagCache(entity: string, targets: string[]): Promise<any[]> {
-        return await this.request<any>(MessageAPI.GET_TAG_CACHE, { entity, targets });
+        return await this.sendMessage<any>(MessageAPI.GET_TAG_CACHE, { entity, targets });
     }
 
     /**
@@ -1380,6 +1380,6 @@ export class Guardians extends NatsService {
      * @returns {any[]}
      */
     public async synchronizationTags(entity: string, target: string): Promise<any[]> {
-        return await this.request<any>(MessageAPI.GET_SYNCHRONIZATION_TAGS, { entity, target });
+        return await this.sendMessage<any>(MessageAPI.GET_SYNCHRONIZATION_TAGS, { entity, target });
     }
 }
