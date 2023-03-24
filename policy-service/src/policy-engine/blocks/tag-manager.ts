@@ -312,8 +312,6 @@ export class TagsManagerBlock {
                 const message = item.message;
                 const tag = item.local ? item.local : {};
 
-                console.log('synchronization message', JSON.stringify(message, null, 4));
-
                 tag.uuid = message.uuid;
                 tag.name = message.name;
                 tag.description = message.description;
