@@ -49,7 +49,7 @@ accountAPI.post('/login', async (req: Request, res: Response) => {
         res.status(200).json(await users.generateNewToken(username, password));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(error.code).send({ code: error.code, message: error.message });
+        res.status(404).send({ code: 404, message: error });
     }
 });
 
