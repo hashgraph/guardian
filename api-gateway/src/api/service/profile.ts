@@ -18,7 +18,7 @@ import createError from 'http-errors';
  */
 export const profileAPI = Router();
 
-profileAPI.get('/', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+const getUserHandler = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
         const users = new Users();
@@ -82,9 +82,39 @@ profileAPI.get('/', async (req: AuthenticatedRequest, res: Response, next: NextF
         new Logger().error(error, ['API_GATEWAY']);
         return next(error);
     }
-});
+}
 
-profileAPI.put('/push', async (req: AuthenticatedRequest, res: Response) => {
+profileAPI.get('/', getUserHandler);
+
+/**
+ * @deprecated 2023-03-24
+ */
+profileAPI.get('/:username/', getUserHandler);
+
+const putUserHandler = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const guardians = new Guardians();
+
+        const profile: any = req.body;
+        const username: string = req.user.username;
+
+        await guardians.createUserProfileCommon(username, profile);
+
+        res.status(200).json(null);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        res.status(500).json({ code: error.code || 500, message: error.message });
+    }
+}
+
+profileAPI.put('/', putUserHandler);
+
+/**
+ * @deprecated 2023-03-24
+ */
+profileAPI.put('/:username/', putUserHandler);
+
+const pushUserHandler = async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Connect user');
 
@@ -99,9 +129,16 @@ profileAPI.put('/push', async (req: AuthenticatedRequest, res: Response) => {
     });
 
     return res.status(202).send({ taskId, expectation });
-});
+}
 
-profileAPI.put('/restore', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+profileAPI.put('/push', pushUserHandler);
+
+/**
+ * @deprecated 2023-03-24
+ */
+profileAPI.put('/push/:username', pushUserHandler);
+
+const restoreUserHandler = async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Restore user profile');
 
@@ -117,9 +154,16 @@ profileAPI.put('/restore', permissionHelper(UserRole.STANDARD_REGISTRY), async (
     })
 
     return res.status(202).send({ taskId, expectation });
-});
+};
 
-profileAPI.put('/restore/topics', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+profileAPI.put('/restore', permissionHelper(UserRole.STANDARD_REGISTRY), restoreUserHandler);
+
+/**
+ * @deprecated 2023-03-24
+ */
+profileAPI.put('/restore/:username', permissionHelper(UserRole.STANDARD_REGISTRY), restoreUserHandler);
+
+const restoreTopicHandler = async (req: AuthenticatedRequest, res: Response) => {
     const taskManager = new TaskManager();
     const { taskId, expectation } = taskManager.start('Get user topics');
 
@@ -135,7 +179,14 @@ profileAPI.put('/restore/topics', permissionHelper(UserRole.STANDARD_REGISTRY), 
     })
 
     return res.status(202).send({ taskId, expectation });
-});
+};
+
+profileAPI.put('/restore/topics', permissionHelper(UserRole.STANDARD_REGISTRY), restoreTopicHandler);
+
+/**
+ * @deprecated 2023-03-24
+ */
+profileAPI.put('/restore/topics/:username', permissionHelper(UserRole.STANDARD_REGISTRY), restoreTopicHandler);
 
 profileAPI.get('/:username/balance', async (req: Request, res: Response, next: NextFunction) => {
     try {
