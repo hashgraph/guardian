@@ -531,8 +531,8 @@ export class DryRun extends BaseEntity {
     /**
      * Date
      */
-    @Property({ nullable: false })
-    date: string;
+    @Property({ nullable: true })
+    date?: string;
 
     /**
      * Default document values

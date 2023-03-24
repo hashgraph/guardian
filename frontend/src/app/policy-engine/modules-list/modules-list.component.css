@@ -312,6 +312,14 @@
     color: #4caf50;
 }
 
+.mat-column-tags {
+    max-width: 220px;
+    min-width: 140px;
+    width: 140px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
 .mat-column-status {
     width: 125px;
     border-left: 1px solid #dddddd;

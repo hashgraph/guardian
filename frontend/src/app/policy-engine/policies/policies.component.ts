@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IToken, IUser, UserRole } from '@guardian/interfaces';
+import { IToken, IUser, TagType, UserRole } from '@guardian/interfaces';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -47,7 +47,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     pageSize: number;
     policyCount: any;
     owner: any;
-    tagEntity = 'Policy';
+    tagEntity = TagType.Policy;
 
     mode: OperationMode = OperationMode.None;
     taskId: string | undefined = undefined;

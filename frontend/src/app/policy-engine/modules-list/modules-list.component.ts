@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser } from '@guardian/interfaces';
+import { IUser, TagType } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
 import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-policy-dialog.component';
@@ -14,6 +14,7 @@ import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dia
 import { ToastrService } from 'ngx-toastr';
 import { ModulesService } from 'src/app/services/modules.service';
 import { NewModuleDialog } from '../helpers/new-module-dialog/new-module-dialog.component';
+import { TagsService } from 'src/app/services/tag.service';
 
 enum OperationMode {
     None,
@@ -42,6 +43,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     public columns: string[] = [
         'name',
         'description',
+        'tags',
         'status',
         'operation',
         'operations'
@@ -49,8 +51,11 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     public mode: OperationMode = OperationMode.None;
     public taskId: string | undefined = undefined;
     public expectedTaskMessages: number = 0;
+    public tagEntity = TagType.Module;
+    public owner: any;
 
     constructor(
+        public tagsService: TagsService,
         private profileService: ProfileService,
         private modulesService: ModulesService,
         private dialog: MatDialog,
@@ -77,6 +82,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.profileService.getProfile().subscribe((profile: IUser | null) => {
             this.isConfirmed = !!(profile && profile.confirmed);
+            this.owner = profile?.did;
             if (this.isConfirmed) {
                 this.loadAllModules();
             } else {
@@ -94,9 +100,21 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         this.modulesService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
             this.modules = policiesResponse.body || [];
             this.modulesCount = policiesResponse.headers.get('X-Total-Count') || this.modules.length;
-            setTimeout(() => {
+
+            const ids = this.modules.map(e => e.id);
+            this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+                if (this.modules) {
+                    for (const policy of this.modules) {
+                        (policy as any)._tags = data[policy.id];
+                    }
+                }
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                console.error(e.error);
                 this.loading = false;
-            }, 500);
+            });
         }, (e) => {
             this.loading = false;
         });

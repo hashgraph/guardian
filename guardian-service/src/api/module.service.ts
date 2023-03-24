@@ -1,6 +1,6 @@
 import { ApiResponse } from '@api/api-response';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger, BinaryMessageResponse } from '@guardian/common';
-import { GenerateUUIDv4, MessageAPI, ModuleStatus, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, MessageAPI, ModuleStatus, TagType, TopicType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
 import { PolicyModule } from '@entity/module';
 import JSZip from 'jszip';
@@ -9,6 +9,7 @@ import { MessageAction, MessageServer, MessageType, ModuleMessage, TopicConfig, 
 import { Users } from '@helpers/users';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
 import { ModuleValidator } from '@policy-engine/block-validators/module-validator';
+import { exportTag, importTag } from './tag.service';
 
 /**
  * Generate Zip File
@@ -17,6 +18,9 @@ import { ModuleValidator } from '@policy-engine/block-validators/module-validato
  * @returns Zip file
  */
 export async function generateZipFile(module: PolicyModule): Promise<JSZip> {
+    const tagTargets: string[] = [];
+    tagTargets.push(module.id.toString());
+
     const moduleObject = { ...module };
     delete moduleObject._id;
     delete moduleObject.id;
@@ -27,6 +31,14 @@ export async function generateZipFile(module: PolicyModule): Promise<JSZip> {
     delete moduleObject.createDate;
     const zip = new JSZip();
     zip.file('module.json', JSON.stringify(moduleObject));
+
+    zip.folder('tags');
+    const tags = await exportTag(tagTargets)
+    for (let index = 0; index < tags.length; index++) {
+        const tag = tags[index];
+        zip.file(`tags/${index}.json`, JSON.stringify(tag));
+    }
+
     return zip;
 }
 
@@ -42,8 +54,15 @@ export async function parseZipFile(zipFile: any): Promise<any> {
         throw new Error('Zip file is not a module');
     }
     const moduleString = await content.files['module.json'].async('string');
+    const tagsStringArray = await Promise.all(Object.entries(content.files)
+        .filter(file => !file[1].dir)
+        .filter(file => /^tags\/.+/.test(file[0]))
+        .map(file => file[1].async('string')));
+
     const module = JSON.parse(moduleString);
-    return { module };
+    const tags = tagsStringArray.map(item => JSON.parse(item));
+
+    return { module, tags };
 }
 
 /**
@@ -71,10 +90,10 @@ export async function preparePreviewMessage(messageId: string, owner: string, no
     }
 
     notifier.completedAndStart('Parse module files');
-    const json = await parseZipFile(message.document);
+    const result = await parseZipFile(message.document);
 
     notifier.completed();
-    return json;
+    return result;
 }
 
 /**
@@ -407,7 +426,7 @@ export async function modulesAPI(
 
             const preview = await parseZipFile(Buffer.from(zip.data));
 
-            const { module } = preview;
+            const { module, tags } = preview;
             delete module._id;
             delete module.id;
             delete module.messageId;
@@ -421,6 +440,11 @@ export async function modulesAPI(
                 module.name = module.name + '_' + Date.now();
             }
             const item = await DatabaseServer.createModules(module);
+
+            if (Array.isArray(tags)) {
+                const moduleTags = tags.filter((t: any) => t.entity === TagType.Module);
+                await importTag(moduleTags, item.id.toString());
+            }
 
             return new MessageResponse(item);
         } catch (error) {
@@ -439,7 +463,7 @@ export async function modulesAPI(
             const notifier = emptyNotifier();
             const preview = await preparePreviewMessage(messageId, owner, notifier);
 
-            const { module } = preview;
+            const { module, tags } = preview;
             delete module._id;
             delete module.id;
             delete module.messageId;
@@ -453,6 +477,11 @@ export async function modulesAPI(
                 module.name = module.name + '_' + Date.now();
             }
             const item = await DatabaseServer.createModules(module);
+
+            if (Array.isArray(tags)) {
+                const moduleTags = tags.filter((t: any) => t.entity === TagType.Module);
+                await importTag(moduleTags, item.id.toString());
+            }
 
             return new MessageResponse(item);
         } catch (error) {

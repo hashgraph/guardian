@@ -22,5 +22,6 @@ export enum MessageAction {
     CreateMultiPolicy = 'create-multi-policy',
     Mint = 'mint',
     PublishModule = 'publish-module',
-    PublishTag = 'publish-tag'
+    PublishTag = 'publish-tag',
+    DeleteTag = 'delete-tag'
 }

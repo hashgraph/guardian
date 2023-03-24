@@ -901,6 +901,14 @@ export class DatabaseServer {
     }
 
     /**
+     * Get topic by id
+     * @param topicId
+     */
+    public async getTopicById(topicId: string): Promise<TopicCollection> {
+        return await this.findOne(TopicCollection, { topicId });
+    }
+
+    /**
      * Get Token
      * @param tokenId
      */

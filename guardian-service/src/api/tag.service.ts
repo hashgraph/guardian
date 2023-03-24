@@ -131,13 +131,36 @@ export async function publishTag(
     item: Tag,
     messageServer: MessageServer
 ): Promise<any> {
+    item.operation = 'Create';
+    item.status = 'Published';
     const message = new TagMessage(MessageAction.PublishTag);
     message.setDocument(item);
     const result = await messageServer
         .sendMessage(message);
     const messageId = result.getId();
     const topicId = result.getTopicId();
+    item.messageId = messageId;
+    item.topicId = topicId;
+    return item;
+}
+
+/**
+ * Delete tag
+ * @param item
+ * @param messageServer
+ */
+export async function deleteTag(
+    item: Tag,
+    messageServer: MessageServer
+): Promise<any> {
+    item.operation = 'Delete';
     item.status = 'Published';
+    const message = new TagMessage(MessageAction.DeleteTag);
+    message.setDocument(item);
+    const result = await messageServer
+        .sendMessage(message);
+    const messageId = result.getId();
+    const topicId = result.getTopicId();
     item.messageId = messageId;
     item.topicId = topicId;
     return item;
@@ -226,7 +249,11 @@ export async function getTarget(entity: TagType, id: string): Promise<{
         case TagType.Schema: {
             const item = await DatabaseServer.getSchemaById(id);
             if (item) {
-                return { id: item.id.toString(), target: item.messageId, topicId: item.topicId };
+                return {
+                    id: item.id.toString(),
+                    target: item.messageId,
+                    topicId: item.topicId
+                };
             } else {
                 return null;
             }
@@ -234,7 +261,11 @@ export async function getTarget(entity: TagType, id: string): Promise<{
         case TagType.Policy: {
             const item = await DatabaseServer.getPolicyById(id);
             if (item) {
-                return { id: item.id.toString(), target: item.messageId, topicId: item.topicId };
+                return {
+                    id: item.id.toString(),
+                    target: item.messageId,
+                    topicId: item.topicId
+                };
             } else {
                 return null;
             }
@@ -242,7 +273,11 @@ export async function getTarget(entity: TagType, id: string): Promise<{
         case TagType.Token: {
             const item = await DatabaseServer.getTokenById(id);
             if (item) {
-                return { id: item.id.toString(), target: item.tokenId, topicId: item.topicId };
+                return {
+                    id: item.id.toString(),
+                    target: item.tokenId,
+                    topicId: item.topicId
+                };
             } else {
                 return null;
             }
@@ -250,7 +285,11 @@ export async function getTarget(entity: TagType, id: string): Promise<{
         case TagType.Module: {
             const item = await DatabaseServer.getModuleById(id);
             if (item) {
-                return { id: item.id.toString(), target: item.messageId, topicId: item.topicId };
+                return {
+                    id: item.id.toString(),
+                    target: item.messageId,
+                    topicId: item.topicId
+                };
             } else {
                 return null;
             }
@@ -365,47 +404,48 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
 
             const targetObject = await getTarget(entity, localTarget);
             if (targetObject) {
-                const messageServer = new MessageServer(null, null);
-                const messages = await messageServer.getMessages<TagMessage>(targetObject.topicId, MessageType.Tag);
-                const items = await DatabaseServer.getTags({ localTarget, entity, status: 'Published' });
-                const map = new Map<string, any>();
-                for (const message of messages) {
-                    if (message.target === targetObject.target) {
-                        map.set(message.getId(), { message, local: null });
+                if (targetObject.topicId) {
+                    const messageServer = new MessageServer(null, null);
+                    const messages = await messageServer.getMessages<TagMessage>(targetObject.topicId, MessageType.Tag);
+                    const items = await DatabaseServer.getTags({ localTarget, entity, status: 'Published' });
+                    const map = new Map<string, any>();
+                    for (const message of messages) {
+                        if (message.target === targetObject.target) {
+                            map.set(message.getId(), { message, local: null });
+                        }
                     }
-                }
-                for (const tag of items) {
-                    if (map.has(tag.messageId)) {
-                        map.get(tag.messageId).local = tag;
-                    } else {
-                        map.set(tag.messageId, { message: null, local: tag });
-                    }
-                }
-                for (const item of map.values()) {
-                    if (item.message) {
-                        const message: TagMessage = item.message;
-                        const tag: Tag = item.local ? item.local : {};
-
-                        tag.uuid = message.uuid;
-                        tag.name = message.name;
-                        tag.description = message.description;
-                        tag.owner = message.owner;
-                        tag.operation = message.operation;
-                        tag.target = message.target;
-                        tag.localTarget = localTarget;
-                        tag.entity = entity;
-                        tag.messageId = message.getId();
-                        tag.topicId = message.getTopicId();
-                        tag.status = 'Published';
-
-                        if (tag.id) {
-                            await DatabaseServer.updateTag(tag);
+                    for (const tag of items) {
+                        if (map.has(tag.messageId)) {
+                            map.get(tag.messageId).local = tag;
                         } else {
-                            await DatabaseServer.createTag(tag);
+                            map.set(tag.messageId, { message: null, local: tag });
+                        }
+                    }
+                    for (const item of map.values()) {
+                        if (item.message) {
+                            const message: TagMessage = item.message;
+                            const tag: Tag = item.local ? item.local : {};
+
+                            tag.uuid = message.uuid;
+                            tag.name = message.name;
+                            tag.description = message.description;
+                            tag.owner = message.owner;
+                            tag.operation = message.operation;
+                            tag.target = message.target;
+                            tag.localTarget = localTarget;
+                            tag.entity = entity;
+                            tag.messageId = message.getId();
+                            tag.topicId = message.getTopicId();
+                            tag.status = 'Published';
+
+                            if (tag.id) {
+                                await DatabaseServer.updateTag(tag);
+                            } else {
+                                await DatabaseServer.createTag(tag);
+                            }
                         }
                     }
                 }
-
             } else {
                 throw new Error('Invalid target');
             }
@@ -439,6 +479,17 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
                 throw new Error('Invalid tag');
             }
             await DatabaseServer.removeTag(item);
+
+            if (item.topicId && item.status === 'Published') {
+                const users = new Users();
+                const root = await users.getHederaAccount(item.owner);
+                const topic = await DatabaseServer.getTopicById(item.topicId);
+                const topicConfig = await TopicConfig.fromObject(topic, true);
+                const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
+                    .setTopicObject(topicConfig);
+                await deleteTag(item, messageServer);
+            }
+
             return new MessageResponse(true);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);

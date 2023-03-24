@@ -384,6 +384,7 @@
     font-weight: 500;
     color: #818181;
     cursor: pointer;
+    user-select: none;
 }
 
 .tab-item:hover {

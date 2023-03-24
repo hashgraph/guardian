@@ -5,7 +5,7 @@ import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
 import { TokenDialog } from '../../components/token-dialog/token-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Token } from '@guardian/interfaces';
+import { TagType, Token } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin } from 'rxjs';
@@ -56,7 +56,7 @@ export class TokenConfigComponent implements OnInit {
     user: any;
     currentPolicy: any = '';
     policies: any[] | null = null;
-    tagEntity = 'Token';
+    tagEntity = TagType.Token;
     owner: any;
 
     constructor(

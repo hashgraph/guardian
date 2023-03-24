@@ -353,6 +353,10 @@ export class MessageServer {
     private async getTopicMessages(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<Message[]> {
         const { operatorId, operatorKey, dryRun } = this.clientOptions;
 
+        if(!topicId) {
+            throw new Error(`Invalid Topic Id`);
+        }
+
         const topic = topicId.toString();
         const workers = new Workers();
         const messages = await workers.addRetryableTask({

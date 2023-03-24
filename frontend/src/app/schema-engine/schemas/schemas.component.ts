@@ -5,7 +5,7 @@ import { ProfileService } from '../../services/profile.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SchemaService } from '../../services/schema.service';
 import { SchemaDialog } from '../schema-dialog/schema-dialog.component';
-import { ISchema, IUser, Schema, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import { ISchema, IUser, Schema, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import { ImportSchemaDialog } from 'src/app/schema-engine/import-schema/import-schema-dialog.component';
 import { SetVersionDialog } from 'src/app/schema-engine/set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
@@ -71,7 +71,7 @@ export class SchemaConfigComponent implements OnInit {
     taskId: string | undefined = undefined;
     expectedTaskMessages: number = 0;
     owner: any;
-    tagEntity = 'Schema';
+    tagEntity = TagType.Schema;
 
     constructor(
         public tagsService: TagsService,
