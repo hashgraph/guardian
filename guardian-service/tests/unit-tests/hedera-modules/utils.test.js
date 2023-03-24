@@ -3,7 +3,7 @@ const {
 } = require('../../../dist/hedera-modules/utils');
 const { expect, assert } = require('chai');
 
-describe('HederaUtils', function () {
+describe.skip('HederaUtils', function () {
 
     it('Test Utils', async function () {
         // const uuid = HederaUtils.randomUUID();

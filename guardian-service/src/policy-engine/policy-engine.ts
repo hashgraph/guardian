@@ -11,7 +11,7 @@ import {
     PolicyEvents,
     WorkerTaskType,
 } from '@guardian/interfaces';
-import { DataBaseHelper, IAuthUser, Logger, ServiceRequestsBase, Singleton } from '@guardian/common';
+import { DataBaseHelper, IAuthUser, Logger, NatsService, Singleton } from '@guardian/common';
 import {
     MessageAction,
     MessageServer,
@@ -41,6 +41,7 @@ import { KeyType, Wallet } from '@helpers/wallet';
 import { Workers } from '@helpers/workers';
 import { Token } from '@entity/token';
 import { PolicyValidator } from '@policy-engine/block-validators';
+import { GuardiansService } from '@helpers/guardians';
 
 /**
  * Result of publishing
@@ -64,7 +65,7 @@ interface IPublishResult {
  * Policy engine service
  */
 @Singleton
-export class PolicyEngine extends ServiceRequestsBase {
+export class PolicyEngine extends NatsService {
 
     /**
      * Run ready event
@@ -76,9 +77,15 @@ export class PolicyEngine extends ServiceRequestsBase {
     }
 
     /**
-     * Target
+     * Message queue name
      */
-    public target: string = 'policy-service';
+    public messageQueueName = 'policy-service-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'policy-service-reply-' + GenerateUUIDv4();
 
     /**
      * Users helper
@@ -97,6 +104,13 @@ export class PolicyEngine extends ServiceRequestsBase {
      * Initialization
      */
     public async init(): Promise<void> {
+        await super.init();
+
+        this.getMessages(PolicyEvents.POLICY_READY, (msg: any) => {
+            console.log(msg);
+            PolicyEngine.runReadyEvent(msg.policyId, msg.data);
+        }, true);
+
         const policies = await DatabaseServer.getPolicies({
             where: {
                 status: { $in: [PolicyType.PUBLISH, PolicyType.DRY_RUN] }
@@ -104,7 +118,9 @@ export class PolicyEngine extends ServiceRequestsBase {
         });
         await Promise.all(policies.map(async (policy) => {
             try {
+                console.log('model generating', policy.id.toString());
                 await this.generateModel(policy.id.toString());
+                console.log('model generated', policy.id.toString());
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
             }
@@ -117,10 +133,11 @@ export class PolicyEngine extends ServiceRequestsBase {
      * @param data
      */
     private runReadyEvent(policyId: string, data?: any): void {
-        console.log('policy ready', policyId);
-        if (this.policyReadyCallbacks.has(policyId)) {
+        console.log('policy ready', policyId, this.policyReadyCallbacks.has(policyId));
+
+        // if (this.policyReadyCallbacks.has(policyId)) {
             this.policyReadyCallbacks.get(policyId)(data);
-        }
+        // }
     }
 
     /**
@@ -900,7 +917,7 @@ export class PolicyEngine extends ServiceRequestsBase {
         if (serviceChannelEntity) {
             const { name } = serviceChannelEntity;
             PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
-            this.channel.publish(PolicyEvents.DELETE_POLICY, {
+            this.sendMessage(PolicyEvents.DELETE_POLICY, {
                 policyId,
                 policyServiceName: name
 
@@ -917,20 +934,31 @@ export class PolicyEngine extends ServiceRequestsBase {
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
         }
-        const { name } = PolicyServiceChannelsContainer.createPolicyServiceChannel(policyId);
 
-        this.channel.publish(PolicyEvents.GENERATE_POLICY, {
-            policy,
-            policyId,
-            policyServiceName: name,
-            skipRegistration: false
-        });
+        const exist = await Promise.race([
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve(false);
+                }, 1 * 1000)
+            }),
+            new GuardiansService().sendPolicyMessage(PolicyEvents.CHECK_IF_ALIVE, policyId, {})
+        ]);
 
-        return new Promise((resolve) => {
-            this.policyReadyCallbacks.set(policyId, (data) => {
-                resolve(data);
-            })
-        });
+        if (!exist) {
+            this.sendMessage(PolicyEvents.GENERATE_POLICY, {
+                policy,
+                policyId,
+                skipRegistration: false
+            });
+
+            return new Promise((resolve) => {
+                this.policyReadyCallbacks.set(policyId, (data) => {
+                    resolve(data);
+                })
+            });
+        } else {
+            return Promise.resolve();
+        }
     }
 
     /**

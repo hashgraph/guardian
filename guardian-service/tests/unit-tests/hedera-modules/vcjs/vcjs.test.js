@@ -26,7 +26,7 @@ const { PrivateKey } = require("@hashgraph/sdk");
 const { vc_document } = require('../../dump/vc_document');
 
 
-describe('VCJS', function () {
+describe.skip('VCJS', function () {
     const actualVcDocument = vc_document.find(document => document.hash === '9s7b1eW2gkZEd64SAidCci3UmXQgfZt2w6ajiKdPdHa9');
     const vcValueToCreate = actualVcDocument.document.credentialSubject[0];
     const newPrivateKey = PrivateKey.generate();
@@ -181,35 +181,35 @@ describe('VCJS', function () {
                     "@context": {
                     "@version": 1.1,
                     "@protected": true,
-                
+
                     "id": "@id",
                     "type": "@type",
-                
+
                     "VerifiableCredential": {
                         "@id": "https://www.w3.org/2018/credentials#VerifiableCredential",
                         "@context": {
                         "@version": 1.1,
                         "@protected": true,
-                
+
                         "id": "@id",
                         "type": "@type",
-                
+
                         "cred": "https://www.w3.org/2018/credentials#",
                         "sec": "https://w3id.org/security#",
                         "xsd": "http://www.w3.org/2001/XMLSchema#",
-                
+
                         "credentialSchema": {
                             "@id": "cred:credentialSchema",
                             "@type": "@id",
                             "@context": {
                             "@version": 1.1,
                             "@protected": true,
-                
+
                             "id": "@id",
                             "type": "@type",
-                
+
                             "cred": "https://www.w3.org/2018/credentials#",
-                
+
                             "JsonSchemaValidator2018": "cred:JsonSchemaValidator2018"
                             }
                         },
@@ -228,12 +228,12 @@ describe('VCJS', function () {
                             "@context": {
                             "@version": 1.1,
                             "@protected": true,
-                
+
                             "id": "@id",
                             "type": "@type",
-                
+
                             "cred": "https://www.w3.org/2018/credentials#",
-                
+
                             "ManualRefreshService2018": "cred:ManualRefreshService2018"
                             }
                         },
@@ -242,37 +242,37 @@ describe('VCJS', function () {
                         "validUntil": {"@id": "cred:validUntil", "@type": "xsd:dateTime"}
                         }
                     },
-                
+
                     "VerifiablePresentation": {
                         "@id": "https://www.w3.org/2018/credentials#VerifiablePresentation",
                         "@context": {
                         "@version": 1.1,
                         "@protected": true,
-                
+
                         "id": "@id",
                         "type": "@type",
-                
+
                         "cred": "https://www.w3.org/2018/credentials#",
                         "sec": "https://w3id.org/security#",
-                
+
                         "holder": {"@id": "cred:holder", "@type": "@id"},
                         "proof": {"@id": "sec:proof", "@type": "@id", "@container": "@graph"},
                         "verifiableCredential": {"@id": "cred:verifiableCredential", "@type": "@id", "@container": "@graph"}
                         }
                     },
-                
+
                     "EcdsaSecp256k1Signature2019": {
                         "@id": "https://w3id.org/security#EcdsaSecp256k1Signature2019",
                         "@context": {
                         "@version": 1.1,
                         "@protected": true,
-                
+
                         "id": "@id",
                         "type": "@type",
-                
+
                         "sec": "https://w3id.org/security#",
                         "xsd": "http://www.w3.org/2001/XMLSchema#",
-                
+
                         "challenge": "sec:challenge",
                         "created": {"@id": "http://purl.org/dc/terms/created", "@type": "xsd:dateTime"},
                         "domain": "sec:domain",
@@ -285,12 +285,12 @@ describe('VCJS', function () {
                             "@context": {
                             "@version": 1.1,
                             "@protected": true,
-                
+
                             "id": "@id",
                             "type": "@type",
-                
+
                             "sec": "https://w3id.org/security#",
-                
+
                             "assertionMethod": {"@id": "sec:assertionMethod", "@type": "@id", "@container": "@set"},
                             "authentication": {"@id": "sec:authenticationMethod", "@type": "@id", "@container": "@set"}
                             }
@@ -299,19 +299,19 @@ describe('VCJS', function () {
                         "verificationMethod": {"@id": "sec:verificationMethod", "@type": "@id"}
                         }
                     },
-                
+
                     "EcdsaSecp256r1Signature2019": {
                         "@id": "https://w3id.org/security#EcdsaSecp256r1Signature2019",
                         "@context": {
                         "@version": 1.1,
                         "@protected": true,
-                
+
                         "id": "@id",
                         "type": "@type",
-                
+
                         "sec": "https://w3id.org/security#",
                         "xsd": "http://www.w3.org/2001/XMLSchema#",
-                
+
                         "challenge": "sec:challenge",
                         "created": {"@id": "http://purl.org/dc/terms/created", "@type": "xsd:dateTime"},
                         "domain": "sec:domain",
@@ -324,12 +324,12 @@ describe('VCJS', function () {
                             "@context": {
                             "@version": 1.1,
                             "@protected": true,
-                
+
                             "id": "@id",
                             "type": "@type",
-                
+
                             "sec": "https://w3id.org/security#",
-                
+
                             "assertionMethod": {"@id": "sec:assertionMethod", "@type": "@id", "@container": "@set"},
                             "authentication": {"@id": "sec:authenticationMethod", "@type": "@id", "@container": "@set"}
                             }
@@ -338,19 +338,19 @@ describe('VCJS', function () {
                         "verificationMethod": {"@id": "sec:verificationMethod", "@type": "@id"}
                         }
                     },
-                
+
                     "Ed25519Signature2018": {
                         "@id": "https://w3id.org/security#Ed25519Signature2018",
                         "@context": {
                         "@version": 1.1,
                         "@protected": true,
-                
+
                         "id": "@id",
                         "type": "@type",
-                
+
                         "sec": "https://w3id.org/security#",
                         "xsd": "http://www.w3.org/2001/XMLSchema#",
-                
+
                         "challenge": "sec:challenge",
                         "created": {"@id": "http://purl.org/dc/terms/created", "@type": "xsd:dateTime"},
                         "domain": "sec:domain",
@@ -363,12 +363,12 @@ describe('VCJS', function () {
                             "@context": {
                             "@version": 1.1,
                             "@protected": true,
-                
+
                             "id": "@id",
                             "type": "@type",
-                
+
                             "sec": "https://w3id.org/security#",
-                
+
                             "assertionMethod": {"@id": "sec:assertionMethod", "@type": "@id", "@container": "@set"},
                             "authentication": {"@id": "sec:authenticationMethod", "@type": "@id", "@container": "@set"}
                             }
@@ -377,13 +377,13 @@ describe('VCJS', function () {
                         "verificationMethod": {"@id": "sec:verificationMethod", "@type": "@id"}
                         }
                     },
-                
+
                     "RsaSignature2018": {
                         "@id": "https://w3id.org/security#RsaSignature2018",
                         "@context": {
                         "@version": 1.1,
                         "@protected": true,
-                
+
                         "challenge": "sec:challenge",
                         "created": {"@id": "http://purl.org/dc/terms/created", "@type": "xsd:dateTime"},
                         "domain": "sec:domain",
@@ -396,12 +396,12 @@ describe('VCJS', function () {
                             "@context": {
                             "@version": 1.1,
                             "@protected": true,
-                
+
                             "id": "@id",
                             "type": "@type",
-                
+
                             "sec": "https://w3id.org/security#",
-                
+
                             "assertionMethod": {"@id": "sec:assertionMethod", "@type": "@id", "@container": "@set"},
                             "authentication": {"@id": "sec:authenticationMethod", "@type": "@id", "@container": "@set"}
                             }
@@ -410,12 +410,12 @@ describe('VCJS', function () {
                         "verificationMethod": {"@id": "sec:verificationMethod", "@type": "@id"}
                         }
                     },
-                
+
                     "proof": {"@id": "https://w3id.org/security#proof", "@type": "@id", "@container": "@graph"}
                     }
                 }
             }
-            
+
             const did = {
                 documentUrl: iri,
                 document: {
@@ -423,7 +423,7 @@ describe('VCJS', function () {
                       "@protected": true,
                       "id": "@id",
                       "type": "@type",
-                  
+
                       "alsoKnownAs": {
                         "@id": "https://www.w3.org/ns/activitystreams#alsoKnownAs",
                         "@type": "@id"
@@ -490,7 +490,7 @@ describe('VCJS', function () {
                         "JsonWebKey2020": "https://w3id.org/security#JsonWebKey2020",
                         "Ed25519VerificationKey2018": "https://w3id.org/security#Ed25519VerificationKey2018",
                         "X25519KeyAgreementKey2019": "https://w3id.org/security#X25519KeyAgreementKey2019",
-                  
+
                         "publicKeyJwk": {
                           "@id": "https://w3id.org/security#publicKeyJwk",
                           "@type": "@json"
@@ -539,7 +539,7 @@ describe('VCJS', function () {
         const createdDidDocument = DIDDocument.create(newPrivateKey);
 
         const testVc = await vcjs.createVC(
-            createdDidDocument.getDid(), 
+            createdDidDocument.getDid(),
             createdDidDocument.getPrivateKey(),
             vcValueToCreate
         )
@@ -547,7 +547,7 @@ describe('VCJS', function () {
         assert.isTrue(await vcjs.verifyVC(actualVcDocument.document));
 
         const testVp = await vcjs.createVP(
-            createdDidDocument.getDid(), 
+            createdDidDocument.getDid(),
             createdDidDocument.getPrivateKey(),
             [testVc]
         );

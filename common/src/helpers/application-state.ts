@@ -1,7 +1,34 @@
 import { Singleton } from '../decorators/singleton';
-import { MessageBrokerChannel } from '../mq';
-import { ApplicationStates, MessageAPI } from '@guardian/interfaces';
-import { MessageResponse, MessageError } from '../models/message-response';
+import { NatsService } from '../mq';
+import { ApplicationStates, GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
+import { MessageResponse, MessageError } from '../models';
+import { NatsConnection } from 'nats';
+
+/**
+ * PolicyEngineChannel
+ */
+@Singleton
+export class ApplicationStateChannel extends NatsService {
+    /**
+     * Message queue name
+     */
+    public messageQueueName = 'application-state-service-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'application-state-queue-reply-' + GenerateUUIDv4();
+
+    /**
+     * Register listener
+     * @param event
+     * @param cb
+     */
+    registerListener(event: string, cb: Function): void {
+        this.getMessages(event, cb);
+    }
+}
 
 /**
  * Application state container
@@ -12,7 +39,7 @@ export class ApplicationState {
      * Message broker channel
      * @private
      */
-    private channel: MessageBrokerChannel;
+    private channel: ApplicationStateChannel;
     /**
      * Current state
      * @private
@@ -28,9 +55,10 @@ export class ApplicationState {
      * Register channel
      * @param channel: MessageBrokerChannel
      */
-    public async setChannel(channel: MessageBrokerChannel): Promise<any> {
-        this.channel = channel;
-        await this.channel.response(MessageAPI.GET_STATUS, async () => {
+    public async setConnection(cn: NatsConnection): Promise<any> {
+        this.channel = new ApplicationStateChannel();
+        this.channel.setConnection(cn);
+        await this.channel.registerListener(MessageAPI.GET_STATUS, async () => {
             try {
                 return new MessageResponse(this.state);
             }
@@ -38,13 +66,6 @@ export class ApplicationState {
                 return new MessageError(error);
             }
         });
-    }
-
-    /**
-     * Get channel
-     */
-    public getChannel(): MessageBrokerChannel {
-        return this.channel;
     }
 
     constructor(serviceName?: string) {
@@ -67,7 +88,7 @@ export class ApplicationState {
         if (this.serviceName) {
             const res = {};
             res[this.serviceName] = state;
-            this.channel.request(['api-gateway', MessageAPI.UPDATE_STATUS].join('.'), res);
+            this.channel.sendMessage(MessageAPI.UPDATE_STATUS, res);
         }
     }
 }

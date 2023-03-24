@@ -52,6 +52,7 @@ import { analyticsAPI } from '@api/analytics.service';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 import { modulesAPI } from '@api/module.service';
+import { GuardiansService } from '@helpers/guardians';
 import { mapAPI } from '@api/map.service';
 
 export const obj = {};
@@ -76,16 +77,14 @@ Promise.all([
     const [_, db, cn] = values;
     DB_DI.orm = db;
     new PolicyServiceChannelsContainer().setConnection(cn);
+    new GuardiansService().setConnection(cn).init();
     const channel = new MessageBrokerChannel(cn, 'guardians');
-    const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
-    const policyServiceChannel = new MessageBrokerChannel(cn, 'policy-service');
 
-    new Logger().setChannel(channel);
+    await new Logger().setConnection(cn);
     const state = new ApplicationState('GUARDIAN_SERVICE');
-    state.setChannel(channel);
+    state.setConnection(cn);
     const settingsContainer = new SettingsContainer();
-    settingsContainer.setChannel(channel);
-
+    settingsContainer.setConnection(cn);
     await settingsContainer.init('OPERATOR_ID', 'OPERATOR_KEY');
 
     await state.updateState(ApplicationStates.STARTED);
@@ -104,19 +103,19 @@ Promise.all([
     const retireRequestRepository = new DataBaseHelper(RetireRequest);
 
     try {
-        await configAPI(channel, settingsRepository, topicRepository);
-        await schemaAPI(channel, apiGatewayChannel);
-        await tokenAPI(channel, apiGatewayChannel, tokenRepository);
-        await loaderAPI(channel, didDocumentRepository, schemaRepository);
-        await profileAPI(channel, apiGatewayChannel);
-        await documentsAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository, policyRepository);
-        await demoAPI(channel, apiGatewayChannel, settingsRepository);
-        await trustChainAPI(channel, didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
-        await artifactAPI(channel);
-        await contractAPI(channel, contractRepository, retireRequestRepository);
-        await modulesAPI(channel);
-        await analyticsAPI(channel);
-        await mapAPI(channel);
+        await configAPI(settingsRepository, topicRepository);
+        await schemaAPI();
+        await tokenAPI(tokenRepository);
+        await loaderAPI(didDocumentRepository, schemaRepository);
+        await profileAPI();
+        await documentsAPI(didDocumentRepository, vcDocumentRepository, vpDocumentRepository, policyRepository);
+        await demoAPI(settingsRepository);
+        await trustChainAPI(didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
+        await artifactAPI();
+        await contractAPI(contractRepository, retireRequestRepository);
+        await modulesAPI();
+        await analyticsAPI();
+        await mapAPI();
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -158,8 +157,8 @@ Promise.all([
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
 
-    new Wallet().setChannel(channel);
-    new Users().setChannel(channel);
+    await new Wallet().setConnection(cn).init();
+    await new Users().setConnection(cn).init();
     const workersHelper = new Workers();
     workersHelper.setChannel(channel);
     workersHelper.initListeners();
@@ -226,8 +225,9 @@ Promise.all([
 
         try {
             const policyEngine = new PolicyEngine();
-            policyEngine.setChannel(policyServiceChannel);
-            const policyService = new PolicyEngineService(channel, apiGatewayChannel);
+            await policyEngine.setConnection(cn).init();
+            const policyService = new PolicyEngineService(cn);
+            await policyService.init();
             policyService.registerListeners();
             await policyEngine.init();
             SynchronizationService.start();
@@ -246,7 +246,7 @@ Promise.all([
         }
 
         try {
-            await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'), channel);
+            await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'));
         } catch (error) {
             console.error(error.message);
         }

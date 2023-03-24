@@ -19,9 +19,9 @@ Promise.all([
     const channel = new MessageBrokerChannel(cn, 'worker');
 
     const logger = new Logger();
-    logger.setChannel(channel);
+    logger.setConnection(cn);
     const state = new ApplicationState(channelName);
-    state.setChannel(channel);
+    state.setConnection(cn);
     await state.updateState(ApplicationStates.STARTED);
 
     HederaSDKHelper.setTransactionLogSender(async (data) => {
@@ -29,7 +29,7 @@ Promise.all([
     });
 
     const settingsContainer = new SettingsContainer();
-    settingsContainer.setChannel(channel);
+    settingsContainer.setConnection(cn);
     await settingsContainer.init('IPFS_STORAGE_API_KEY');
 
     await state.updateState(ApplicationStates.INITIALIZING);
