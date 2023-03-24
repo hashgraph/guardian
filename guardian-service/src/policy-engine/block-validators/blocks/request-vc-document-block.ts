@@ -18,7 +18,7 @@ export class RequestVcDocumentBlock {
         try {
             // Test schema options
             if (!ref.options.schema) {
-                validator.addError('Option "schema" does not set');
+                validator.addError('Option "schema" is not set');
                 return;
             }
             if (typeof ref.options.schema !== 'string') {

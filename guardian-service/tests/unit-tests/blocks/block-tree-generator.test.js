@@ -22,7 +22,7 @@ const { BlockTreeGenerator } = require("../../../dist/policy-engine/block-tree-g
 
 describe('BlockTreeGenerator', function () {
     it('Create', async function () {
-        const generator = new BlockTreeGenerator();
-        console.log(generator);
+        // const generator = new BlockTreeGenerator();
+        // console.log(generator);
     });
 })

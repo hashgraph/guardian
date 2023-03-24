@@ -44,6 +44,13 @@
                 <mat-icon>delete</mat-icon>
             </div>
         </div>
+
+        <div *ngIf="isString" class="custom-field-name f5">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>Pattern</mat-label>
+                <input matInput placeholder="[0-9]" [formControl]="field.controlPattern">
+            </mat-form-field>
+        </div>
     </div>
 
     <div class="custom-field-type">

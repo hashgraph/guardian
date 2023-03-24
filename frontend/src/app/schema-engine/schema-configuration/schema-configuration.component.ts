@@ -406,7 +406,10 @@ export class SchemaConfigurationComponent implements OnInit {
                 }
             }
         }
-        return '';
+        const stringType = this.types.find(
+            (type) => type.name === 'String'
+        )?.value;
+        return (field.type === 'string' && stringType) || '';
     }
 
     private getFieldName(): string | undefined {
@@ -505,6 +508,7 @@ export class SchemaConfigurationComponent implements OnInit {
             textSize,
             textBold,
             isPrivate,
+            pattern,
         } = fieldConfig.getValue(data);
         const type = this.schemaTypeMap[typeIndex];
         return {
@@ -516,7 +520,7 @@ export class SchemaConfigurationComponent implements OnInit {
             isRef: type.isRef,
             type: type.type,
             format: type.format,
-            pattern: type.pattern,
+            pattern: type.pattern || pattern,
             unit: type.unitSystem ? unit : undefined,
             unitSystem: type.unitSystem,
             customType: type.customType,

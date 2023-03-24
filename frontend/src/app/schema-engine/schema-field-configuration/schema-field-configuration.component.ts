@@ -45,6 +45,7 @@ export class SchemaFieldConfigurationComponent implements OnInit {
     helpText: boolean = false;
     loading: boolean = false;
     keywords: string[] = [];
+    isString: boolean = false;
 
     constructor(
         public dialog: MatDialog,
@@ -123,7 +124,15 @@ export class SchemaFieldConfigurationComponent implements OnInit {
         } else {
             this.field.controlArray.enable();
         }
+
         this.unit = event == UnitSystem.Prefix || event == UnitSystem.Postfix;
+
+        this.isString = (item && item.name === 'String') || false;
+        if (!this.isString) {
+            this.field.controlPattern.disable();
+        } else {
+            this.field.controlPattern.enable();
+        }
 
         this.helpText = (item && item.name === 'Help Text') || false;
         if (!this.helpText) {

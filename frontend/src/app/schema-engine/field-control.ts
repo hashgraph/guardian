@@ -28,6 +28,7 @@ export class FieldControl {
     public controlSize: FormControl;
     public controlBold: FormControl;
     public controlPrivate: FormControl;
+    public controlPattern: FormControl;
     private readonly _defaultFieldMap!: any;
     private _entityType!: FormControl;
 
@@ -66,6 +67,7 @@ export class FieldControl {
             this.controlColor = new FormControl(field.textColor || '#000000');
             this.controlSize = new FormControl(field.textSize && +field.textSize.replace('px', '') || 18);
             this.controlBold = new FormControl(field.textBold || false);
+            this.controlPattern = new FormControl(field.pattern);
         } else {
             this.controlKey = new FormControl(name || this.name, [
                 Validators.required,
@@ -87,6 +89,7 @@ export class FieldControl {
             this.controlSize = new FormControl(18);
             this.controlBold = new FormControl(false);
             this.controlPrivate = new FormControl(false);
+            this.controlPattern = new FormControl('');
         }
         this._entityType.valueChanges
             .pipe(takeUntil(destroyEvent))
@@ -162,6 +165,7 @@ export class FieldControl {
             controlSize: this.controlSize,
             controlBold: this.controlBold,
             controlPrivate: this.controlPrivate,
+            controlPattern: this.controlPattern,
         });
     }
 
@@ -183,6 +187,7 @@ export class FieldControl {
                 : undefined;
             const textBold = group.controlBold;
             const isPrivate = group.controlPrivate;
+            const pattern = group.controlPattern;
             return {
                 key,
                 title,
@@ -197,6 +202,7 @@ export class FieldControl {
                 textSize,
                 textBold,
                 isPrivate,
+                pattern,
             };
         } else {
             return null;

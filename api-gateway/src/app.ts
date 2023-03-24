@@ -30,6 +30,7 @@ import { singleSchemaRoute } from '@api/service/schema';
 import { artifactAPI } from '@api/service/artifact';
 import fileupload from 'express-fileupload';
 import { contractAPI } from '@api/service/contract';
+import { mapAPI } from '@api/service/map';
 
 const PORT = process.env.PORT || 3002;
 const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -40,6 +41,7 @@ Promise.all([
 ]).then(async ([cn]) => {
     try {
         const app = express();
+
         app.use(express.json({
             limit: JSON_REQUEST_LIMIT
         }));
@@ -49,20 +51,18 @@ Promise.all([
             type: 'binary/octet-stream'
         }));
         app.use(fileupload());
-        const channel = new MessageBrokerChannel(cn, 'guardian');
-        const apiGatewayChannel = new MessageBrokerChannel(cn, 'api-gateway');
-        new Logger().setChannel(channel);
-        new Guardians().setChannel(channel);
-        new IPFS().setChannel(channel);
-        new PolicyEngine().setChannel(channel);
-        new Users().setChannel(channel);
-        new Wallet().setChannel(channel);
+        new Logger().setConnection(cn);
+        await new Guardians().setConnection(cn).init();
+        await new IPFS().setConnection(cn).init();
+        await new PolicyEngine().setConnection(cn).init();
+        await new Users().setConnection(cn).init();
+        await new Wallet().setConnection(cn).init();
 
         const server = createServer(app);
-        const wsService = new WebSocketsService(server, apiGatewayChannel);
+        const wsService = new WebSocketsService(server, cn);
         wsService.init();
 
-        new TaskManager().setDependecies(wsService, apiGatewayChannel);
+        new TaskManager().setDependecies(wsService, cn);
 
         ////////////////////////////////////////
 
@@ -85,9 +85,11 @@ Promise.all([
         app.use('/contracts', authorizationHelper, contractAPI);
         app.use('/branding', authorizationHelper, brandingAPI);
         app.use('/modules', authorizationHelper, moduleAPI);
+        app.use('/map', authorizationHelper, mapAPI);
         /////////////////////////////////////////
 
-        server.listen(PORT, () => {
+        server.setTimeout()
+        server.setTimeout(12000000).listen(PORT, () => {
             new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);
         });
     } catch (error) {

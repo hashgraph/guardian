@@ -74,12 +74,12 @@ Promise.all([
     const channel = new MessageBrokerChannel(cn, policyServiceName);
     new CommonVariables().setVariable('channel', channel);
 
-    new Logger().setChannel(channel);
-    new BlockTreeGenerator().setChannel(channel);
+    new Logger().setConnection(cn);
+    new BlockTreeGenerator().setConnection(cn);
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
-    new Wallet().setChannel(channel);
-    new Users().setChannel(channel);
+    await new Wallet().setConnection(cn).init();
+    await new Users().setConnection(cn).init();
     const workersHelper = new Workers();
     workersHelper.setChannel(channel);
     workersHelper.initListeners();
@@ -92,7 +92,7 @@ Promise.all([
 
     await generator.generate(policyConfig, skipRegistration, policyValidator);
 
-    channel.publish(PolicyEvents.POLICY_READY, {
+    generator.sendMessage(PolicyEvents.POLICY_READY, {
         policyId: policyId.toString(),
         data: policyValidator.getSerializedErrors()
     });

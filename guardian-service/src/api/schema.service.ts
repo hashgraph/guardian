@@ -10,6 +10,7 @@ import {
     GenerateUUIDv4,
     Schema,
     IRootConfig,
+    GeoJsonContext,
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
@@ -17,7 +18,7 @@ import { MessageAction, MessageServer, MessageType, SchemaMessage, TopicConfig, 
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger, RunFunctionAsync, schemasToContext } from '@guardian/common';
+import { MessageResponse, MessageError, Logger, RunFunctionAsync, schemasToContext } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
@@ -399,14 +400,20 @@ export async function publishSchema(
     for (const name of names) {
         const field = SchemaHelper.parseProperty(name, itemDocument.properties[name]);
         if (!field.type) {
-            throw new Error(`Field type not set. Field: ${name}`);
+            throw new Error(`Field type is not set. Field: ${name}`);
         }
         if (field.isRef && (!itemDocument.$defs || !itemDocument.$defs[field.type])) {
             throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);
         }
     }
 
-    item.context = schemasToContext([...defsArray, itemDocument]);
+    let additionalContexts: Map<string, any>;
+    if (itemDocument.$defs && itemDocument.$defs['#GeoJSON']) {
+        additionalContexts = new Map<string, any>();
+        additionalContexts.set('#GeoJSON', GeoJsonContext);
+    }
+
+    item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);
 
     const message = new SchemaMessage(type || MessageAction.PublishSchema);
     message.setDocument(item);
@@ -681,13 +688,19 @@ export async function findAndDryRunSchema(item: SchemaCollection, version: strin
     for (const name of names) {
         const field = SchemaHelper.parseProperty(name, itemDocument.properties[name]);
         if (!field.type) {
-            throw new Error(`Field type not set. Field: ${name}`);
+            throw new Error(`Field type is not set. Field: ${name}`);
         }
         if (field.isRef && (!itemDocument.$defs || !itemDocument.$defs[field.type])) {
             throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);
         }
     }
-    item.context = schemasToContext([...defsArray, itemDocument]);
+    let additionalContexts: Map<string, any>;
+    if (itemDocument.$defs && itemDocument.$defs['#GeoJSON']) {
+        additionalContexts = new Map<string, any>();
+        additionalContexts.set('#GeoJSON', GeoJsonContext);
+    }
+
+    item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);
     // item.status = SchemaStatus.PUBLISHED;
 
     SchemaHelper.updateIRI(item);
@@ -817,7 +830,7 @@ export async function deleteSchema(schemaId: any, notifier: INotifier) {
  * @param channel - channel
  * @param apiGatewayChannel
  */
-export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel: MessageBrokerChannel): Promise<void> {
+export async function schemaAPI(): Promise<void> {
 
     /**
      * Create schema
@@ -826,7 +839,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {ISchema[]} - all schemas
      */
-    ApiResponse(channel, MessageAPI.CREATE_SCHEMA, async (msg) => {
+    ApiResponse(MessageAPI.CREATE_SCHEMA, async (msg) => {
         try {
             const schemaObject = msg as ISchema;
             SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
@@ -839,9 +852,9 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
         }
     });
 
-    ApiResponse(channel, MessageAPI.CREATE_SCHEMA_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.CREATE_SCHEMA_ASYNC, async (msg) => {
         const { item, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
         RunFunctionAsync(async () => {
             const schemaObject = item as ISchema;
             SchemaHelper.setVersion(schemaObject, null, schemaObject.version);
@@ -861,7 +874,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {ISchema[]} - all schemas
      */
-    ApiResponse(channel, MessageAPI.UPDATE_SCHEMA, async (msg) => {
+    ApiResponse(MessageAPI.UPDATE_SCHEMA, async (msg) => {
         try {
             const id = msg.id as string;
             const item = await DatabaseServer.getSchema(id);
@@ -894,7 +907,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {ISchema[]} - all schemas
      */
-    ApiResponse(channel, MessageAPI.GET_SCHEMA, async (msg) => {
+    ApiResponse(MessageAPI.GET_SCHEMA, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid load schema parameter');
@@ -924,7 +937,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {ISchema[]} - all schemas
      */
-    ApiResponse(channel, MessageAPI.GET_SCHEMAS, async (msg) => {
+    ApiResponse(MessageAPI.GET_SCHEMAS, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid load schema parameter');
@@ -978,7 +991,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {ISchema[]} - all schemas
      */
-    ApiResponse(channel, MessageAPI.PUBLISH_SCHEMA, async (msg) => {
+    ApiResponse(MessageAPI.PUBLISH_SCHEMA, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid id');
@@ -996,9 +1009,9 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
         }
     });
 
-    ApiResponse(channel, MessageAPI.PUBLISH_SCHEMA_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.PUBLISH_SCHEMA_ASYNC, async (msg) => {
         const { id, version, owner, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
         RunFunctionAsync(async () => {
             if (!msg) {
                 notifier.error('Invalid id');
@@ -1024,7 +1037,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {ISchema[]} - all schemas
      */
-    ApiResponse(channel, MessageAPI.DELETE_SCHEMA, async (msg) => {
+    ApiResponse(MessageAPI.DELETE_SCHEMA, async (msg) => {
         try {
             if (msg && msg.id) {
                 await deleteSchema(msg.id, emptyNotifier());
@@ -1043,7 +1056,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {Schema} Found or uploaded schema
      */
-    ApiResponse(channel, MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, async (msg) => {
+    ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid import schema parameter');
@@ -1062,9 +1075,9 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
         }
     });
 
-    ApiResponse(channel, MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_MESSAGES_ASYNC, async (msg) => {
         const { owner, messageIds, topicId, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
         RunFunctionAsync(async () => {
             if (!msg) {
                 notifier.error('Invalid import schema parameter');
@@ -1089,7 +1102,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {Schema} Found or uploaded schema
      */
-    ApiResponse(channel, MessageAPI.IMPORT_SCHEMAS_BY_FILE, async (msg) => {
+    ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_FILE, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid import schema parameter');
@@ -1108,9 +1121,9 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
         }
     });
 
-    ApiResponse(channel, MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.IMPORT_SCHEMAS_BY_FILE_ASYNC, async (msg) => {
         const { owner, files, topicId, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
         RunFunctionAsync(async () => {
             if (!msg) {
                 notifier.error('Invalid import schema parameter');
@@ -1135,7 +1148,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {Schema} Found or uploaded schema
      */
-    ApiResponse(channel, MessageAPI.PREVIEW_SCHEMA, async (msg) => {
+    ApiResponse(MessageAPI.PREVIEW_SCHEMA, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid preview schema parameters');
@@ -1166,7 +1179,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {Schema} Found or uploaded schema
      */
-    ApiResponse(channel, MessageAPI.PREVIEW_SCHEMA_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.PREVIEW_SCHEMA_ASYNC, async (msg) => {
         const { messageIds, taskId } = msg as {
             /**
              * Message ids
@@ -1177,7 +1190,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
              */
             taskId: string;
         };
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
         RunFunctionAsync(async () => {
             if (!msg) {
                 notifier.error('Invalid preview schema parameters');
@@ -1206,7 +1219,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {any} - Response result
      */
-    ApiResponse(channel, MessageAPI.EXPORT_SCHEMAS, async (msg) => {
+    ApiResponse(MessageAPI.EXPORT_SCHEMAS, async (msg) => {
         try {
             const ids = msg as string[];
             const schemas = await DatabaseServer.getSchemasByIds(ids);
@@ -1235,7 +1248,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
         }
     });
 
-    ApiResponse(channel, MessageAPI.INCREMENT_SCHEMA_VERSION, async (msg) => {
+    ApiResponse(MessageAPI.INCREMENT_SCHEMA_VERSION, async (msg) => {
         try {
             const { owner, iri } = msg as {
                 /**
@@ -1262,7 +1275,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {ISchema[]} - all schemas
      */
-    ApiResponse(channel, MessageAPI.CREATE_SYSTEM_SCHEMA, async (msg) => {
+    ApiResponse(MessageAPI.CREATE_SYSTEM_SCHEMA, async (msg) => {
         try {
             const schemaObject = msg as ISchema;
             SchemaHelper.setVersion(schemaObject, null, null);
@@ -1287,7 +1300,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {ISchema[]} - all schemas
      */
-    ApiResponse(channel, MessageAPI.GET_SYSTEM_SCHEMAS, async (msg) => {
+    ApiResponse(MessageAPI.GET_SYSTEM_SCHEMAS, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid load schema parameter');
@@ -1326,7 +1339,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {ISchema[]} - all schemas
      */
-    ApiResponse(channel, MessageAPI.ACTIVE_SCHEMA, async (msg) => {
+    ApiResponse(MessageAPI.ACTIVE_SCHEMA, async (msg) => {
         try {
             if (msg && msg.id) {
                 const item = await DatabaseServer.getSchema(msg.id);
@@ -1353,7 +1366,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {ISchema[]} - all schemas
      */
-    ApiResponse(channel, MessageAPI.GET_SYSTEM_SCHEMA, async (msg) => {
+    ApiResponse(MessageAPI.GET_SYSTEM_SCHEMA, async (msg) => {
         try {
             if (!msg || !msg.entity) {
                 return new MessageError('Invalid load schema parameter');
@@ -1377,7 +1390,7 @@ export async function schemaAPI(channel: MessageBrokerChannel, apiGatewayChannel
      *
      * @returns {any[]} - all schemas
      */
-    ApiResponse(channel, MessageAPI.GET_LIST_SCHEMAS, async (msg) => {
+    ApiResponse(MessageAPI.GET_LIST_SCHEMAS, async (msg) => {
         try {
             if (!msg || !msg.owner) {
                 return new MessageError('Invalid schema owner');

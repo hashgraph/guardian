@@ -17,12 +17,12 @@ export class RevokeBlock {
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
             if (!ref.options.uiMetaData || (typeof ref.options.uiMetaData !== 'object')) {
-                validator.addError('Option "uiMetaData" does not set');
+                validator.addError('Option "uiMetaData" is not set');
                 return;
             }
 
             if (ref.options.uiMetaData.updatePrevDoc && !ref.options.uiMetaData.prevDocStatus) {
-                validator.addError('Option "Status Value" does not set');
+                validator.addError('Option "Status Value" is not set');
             }
         } catch (error) {
             validator.addError(`Unhandled exception ${validator.getErrorMessage(error)}`);

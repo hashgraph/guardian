@@ -10,7 +10,7 @@ import {
     VpDocument as HVpDocument
 } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger, DataBaseHelper } from '@guardian/common';
+import { MessageResponse, MessageError, Logger, DataBaseHelper } from '@guardian/common';
 
 /**
  * Get field
@@ -67,7 +67,6 @@ function checkPolicy(vcDocument: VcDocument, policyId: string) {
  * @param vpDocumentRepository - table with VP Documents
  */
 export async function trustChainAPI(
-    channel: MessageBrokerChannel,
     didDocumentRepository: DataBaseHelper<DidDocument>,
     vcDocumentRepository: DataBaseHelper<VcDocument>,
     vpDocumentRepository: DataBaseHelper<VpDocument>
@@ -227,7 +226,7 @@ export async function trustChainAPI(
      *
      * @returns {IChainItem[]} - trust chain
      */
-    ApiResponse(channel, MessageAPI.GET_CHAIN, async (msg) => {
+    ApiResponse(MessageAPI.GET_CHAIN, async (msg) => {
         try {
             const hash = msg.id;
             const chain: IChainItem[] = [];

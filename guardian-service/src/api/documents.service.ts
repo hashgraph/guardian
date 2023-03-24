@@ -13,7 +13,6 @@ import {
 } from '@guardian/interfaces';
 import { ApiResponse } from '@api/api-response';
 import {
-    MessageBrokerChannel,
     MessageResponse,
     MessageError,
     DataBaseHelper
@@ -29,7 +28,6 @@ import { Policy } from '@entity/policy';
  * @param vpDocumentRepository - table with VP Documents
  */
 export async function documentsAPI(
-    channel: MessageBrokerChannel,
     didDocumentRepository: DataBaseHelper<DidDocument>,
     vcDocumentRepository: DataBaseHelper<VcDocument>,
     vpDocumentRepository: DataBaseHelper<VpDocument>,
@@ -75,7 +73,7 @@ export async function documentsAPI(
      *
      * @returns {IDidDocument[]} - DID Documents
      */
-    ApiResponse(channel, MessageAPI.GET_DID_DOCUMENTS, async (msg) => {
+    ApiResponse(MessageAPI.GET_DID_DOCUMENTS, async (msg) => {
         const reqObj = { where: { did: { $eq: msg.did } } };
         const didDocuments: IDidObject[] = await didDocumentRepository.find(reqObj);
         return new MessageResponse(didDocuments);
@@ -90,7 +88,7 @@ export async function documentsAPI(
      *
      * @returns {IVCDocument[]} - VC Documents
      */
-    ApiResponse(channel, MessageAPI.GET_VC_DOCUMENTS, async (msg) => {
+    ApiResponse(MessageAPI.GET_VC_DOCUMENTS, async (msg) => {
         try {
             if (msg) {
                 const reqObj: any = {};
@@ -123,7 +121,7 @@ export async function documentsAPI(
      *
      * @returns {IDidDocument} - new DID Document
      */
-    ApiResponse(channel, MessageAPI.SET_DID_DOCUMENT, async (msg) => {
+    ApiResponse(MessageAPI.SET_DID_DOCUMENT, async (msg) => {
         if (msg.did && msg.operation) {
             const did = msg.did;
             const operation = msg.operation;
@@ -157,7 +155,7 @@ export async function documentsAPI(
      *
      * @returns {IVCDocument} - new VC Document
      */
-    ApiResponse(channel, MessageAPI.SET_VC_DOCUMENT, async (msg) => {
+    ApiResponse(MessageAPI.SET_VC_DOCUMENT, async (msg) => {
         let result: IVCDocument;
 
         const hash = msg.hash;
@@ -219,7 +217,7 @@ export async function documentsAPI(
      *
      * @returns {IVPDocument} - new VP Document
      */
-    ApiResponse(channel, MessageAPI.SET_VP_DOCUMENT, async (msg) => {
+    ApiResponse(MessageAPI.SET_VP_DOCUMENT, async (msg) => {
         const result: any = await vpDocumentRepository.save(msg);
         return new MessageResponse(result);
     });
@@ -231,7 +229,7 @@ export async function documentsAPI(
      *
      * @returns {IVPDocument[]} - VP Documents
      */
-    ApiResponse(channel, MessageAPI.GET_VP_DOCUMENTS, async (msg) => {
+    ApiResponse(MessageAPI.GET_VP_DOCUMENTS, async (msg) => {
         if (msg) {
             const { filters, pageIndex, pageSize } = msg;
             const otherOptions: any = {};

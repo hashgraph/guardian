@@ -223,7 +223,7 @@ export class MessageServer {
      */
     private async sendHedera<T extends Message>(message: T, memo?: string): Promise<T> {
         if (!this.topicId) {
-            throw new Error('Topic not set');
+            throw new Error('Topic is not set');
         }
         message.setLang(MessageServer.lang);
         const time = await this.messageStartLog('Hedera');

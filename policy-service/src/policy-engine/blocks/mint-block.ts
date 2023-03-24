@@ -135,7 +135,7 @@ export class MintBlock {
                 targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner);
             }
             if (!targetAccountId) {
-                throw new BlockActionError('Token recipient not set', ref.blockType, ref.uuid);
+                throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
             }
         } else {
             targetAccountId = ref.options.accountIdValue;

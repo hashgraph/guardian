@@ -12,7 +12,8 @@
                 </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field" *ngIf="!isHelpText(item)">{{item.description}}</div>
-                <div *ngIf="isHelpText(item)" class="label-field help-text" [ngStyle]="{ 'color': item.textColor, 'font-size': item.textSize}">
+                <div *ngIf="isHelpText(item)" class="label-field help-text"
+                    [ngStyle]="{ 'color': item.textColor, 'font-size': item.textSize}">
                     <b *ngIf="item.textBold; else plainDescription">{{item.description}}</b>
                     <ng-template #plainDescription>{{item.description}}</ng-template>
                 </div>
@@ -107,10 +108,15 @@
                 </div>
                 <div *ngIf="item.control" class="form-field-array-item">
                     <div class="form-field-group" [ngClass]="{'schema-form-field-group' : !item.required}">
-                        <app-schema-form [formGroup]="item.control" [fields]="item.fields" [context]="item.context"
-                            [private-fields]="hide" [delimiter-hide]="true" [conditions]="item.conditions"
-                            [preset]="item.preset" [showChildSchemaForm]="!showChildSchemaForm" [buttonOnceRaised]="true">
-                        </app-schema-form>
+                        <ng-container [ngSwitch]="item.customType">
+                            <app-geojson-type *ngSwitchCase="'geo'" [formGroup]="item.control" [preset]="item.preset"
+                                [disabled]="item.control?.disabled">
+                            </app-geojson-type>
+                            <app-schema-form *ngSwitchDefault [formGroup]="item.control" [fields]="item.fields"
+                                [context]="item.context" [private-fields]="hide" [delimiter-hide]="true"
+                                [conditions]="item.conditions" [preset]="item.preset" [showChildSchemaForm]="!showChildSchemaForm" [buttonOnceRaised]="true">
+                            </app-schema-form>
+                        </ng-container>
                     </div>
                 </div>
                 <div *ngIf="!item.control" class="add-btn" (click)="addGroup(item)">
@@ -118,7 +124,8 @@
                         <mat-icon>add</mat-icon> Add Entity
                     </span>
                 </div>
-                <div *ngIf="item.control && !item.required && !item.control.disabled" class="remove-btn" (click)="removeGroup(item)">
+                <div *ngIf="item.control && !item.required && !item.control.disabled" class="remove-btn"
+                    (click)="removeGroup(item)">
                     <span>
                         <mat-icon>remove</mat-icon> Remove Entity
                     </span>
@@ -248,10 +255,16 @@
                 <div *ngFor="let listItem of item.list" class="form-field-array-item" [attr.index]="listItem.index"
                     [attr.required]="item.required">
                     <div class="form-field-group">
-                        <app-schema-form [formGroup]="listItem.control" [fields]="item.fields" [context]="item.context"
-                            [private-fields]="hide" [delimiter-hide]="true" [conditions]="item.conditions"
-                            [preset]="listItem.preset">
-                        </app-schema-form>
+                        <ng-container [ngSwitch]="item.customType">
+                            <app-geojson-type *ngSwitchCase="'geo'" [formGroup]="listItem.control"
+                                [disabled]="item.control?.disabled" [preset]="listItem.preset">
+                            </app-geojson-type>
+                            <app-schema-form *ngSwitchDefault [formGroup]="listItem.control" [fields]="item.fields"
+                                [context]="item.context" [private-fields]="hide" [delimiter-hide]="true"
+                                [conditions]="item.conditions" [preset]="listItem.preset">
+                            </app-schema-form>
+                        </ng-container>
+
                         <div class="remove-btn" *ngIf="!item.control.disabled" (click)="removeItem(item, listItem)">
                             <span>
                                 <mat-icon>remove</mat-icon> Remove Entity
@@ -287,8 +300,9 @@
                     (destroy)="removeConditionFields(condition.thenFields, condition)"></app-schema-form>
                 <ng-template #elseCondition>
                     <app-schema-form *ngIf="condition.elseFields && condition.elseFields.length > 0"
-                        [readonly-fields]="readonly" [fields]="condition.elseFields" [formGroup]="condition.conditionForm"
-                        [preset]="condition.preset" (destroy)="removeConditionFields(condition.elseFields, condition)">
+                        [readonly-fields]="readonly" [fields]="condition.elseFields"
+                        [formGroup]="condition.conditionForm" [preset]="condition.preset"
+                        (destroy)="removeConditionFields(condition.elseFields, condition)">
                     </app-schema-form>
                 </ng-template>
             </div>

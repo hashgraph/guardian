@@ -19,14 +19,8 @@ export class DocumentState extends BaseEntity {
     documentId?: string;
 
     /**
-     * State status
+     * Document
      */
     @Property({ nullable: true })
-    status?: string;
-
-    /**
-     * State reason
-     */
-    @Property({ nullable: true })
-    reason?: string;
+    document?: any;
 }

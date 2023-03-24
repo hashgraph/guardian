@@ -56,6 +56,23 @@ class MockUsers {
     }
 }
 
+class MockNatsService {
+    sendRawMessage() {
+        console.log('send messages');
+    }
+
+    async getMessages() {
+        return {}
+    }
+}
+documentsAPIModule.__set__('api_response_1', {
+    ApiResponse: function (event, cb) {
+        methods[event] = async (...args) => {
+            return cb(...args)
+        }
+    }
+})
+
 function getMongoRepositoryMock(entity) {
     const instance = new entity;
 
@@ -118,7 +135,7 @@ const channel = {
 
 describe('Documents Service API', function () {
     it('Get DID Documents', async function () {
-        await documentsAPIModule.documentsAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
+        await documentsAPIModule.documentsAPI(getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
         const data = await methods['get-did-documents']({ did: 'test' });
         assert.equal(data.code, 200);
         assert.equal(typeof data.body === 'object', true);
@@ -133,7 +150,7 @@ describe('Documents Service API', function () {
     // })
 
     it('Get DID Documents', async function () {
-        await documentsAPIModule.documentsAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
+        await documentsAPIModule.documentsAPI(getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
         const data = await methods['set-did-document']({ did: 'test' });
         assert.equal(data.code, 200);
         assert.equal(typeof data.body === 'object', true);
@@ -141,14 +158,14 @@ describe('Documents Service API', function () {
     })
 
     it('Set VC Documents', async function () {
-        await documentsAPIModule.documentsAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
+        await documentsAPIModule.documentsAPI(getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
         const data = await methods['set-vc-document']({ hash: 'test' });
         assert.equal(data.code, 200);
         assert.equal(typeof data.body === 'object', true);
     })
 
     it('Set VP Documents', async function () {
-        await documentsAPIModule.documentsAPI(channel, getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
+        await documentsAPIModule.documentsAPI(getMongoRepositoryMock(DidDocument), getMongoRepositoryMock(VcDocument), getMongoRepositoryMock(VpDocument));
         const data = await methods['set-vp-document']();
         assert.equal(data.code, 200);
         assert.equal(typeof data.body === 'object', true);

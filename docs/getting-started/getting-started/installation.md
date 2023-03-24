@@ -1,5 +1,7 @@
 # 🛠 Installation
 
+### Build Guardian from source and run as docker containers
+
 1.  Clone the repo
 
     ```
@@ -69,7 +71,9 @@ docker-compose up -d --build
 
 5\. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup.
 
-### Docker compose configuration for apple M1 using images:
+### Run pre-build containers from the repository
+
+#### Docker compose configuration for apple M1 using images:
 
 ```
 version: "3.8"
@@ -178,7 +182,7 @@ volumes:
   #  volume-message-broker:
 ```
 
-### Manual Installation
+### (Advanced) Build executables and run manually
 
 If you want to manually build every component with debug information, then build and run the services and packages in the following sequence: Interfaces, Logger Helper, Message Broker, Logger Service, Auth Service, IPFS, Guardian Service, UI Service, and lastly, the MRV Sender Service. See below for commands.
 
@@ -448,17 +452,29 @@ cd message-broker
 npm run test
 ```
 
+### INITIALIZATION\_TOPIC\_ID for different Hedera Networks&#x20;
+
+| Network    | INITIALIZATION\_TOPIC\_ID |
+| ---------- | ------------------------- |
+| Mainnet    | 0.0.1368856               |
+| Testnet    | 0.0.2030                  |
+| Previewnet | 0.0.155110                |
+
 ### Launching the Guardian
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to first generate Operator ID and Operator Key by clicking on Generate button as shown below:
 
 <figure><img src="../../.gitbook/assets/image (18) (3).png" alt=""><figcaption></figcaption></figure>
 
+{% hint style="info" %}
+Note: If OPERATORID and OPERATOR KEY are added in .env file, we can click on Generate button directly without entering the details again in the UI.
+{% endhint %}
+
 Once you generated Operator ID and Operator Key, we can either click on Next or restore the Data, by selecting Restore Data from the Next button dropdown to setup Registry as shown below.
 
 **Note**: Restore Data can be restored from Hedera if data is available for setting up the Registry.
 
-<figure><img src="../../.gitbook/assets/image (21) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (6).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Limitations on restoring the data:**\
@@ -469,7 +485,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
-![](<../../.gitbook/assets/image (14) (3).png>)
+![](<../../.gitbook/assets/image (23) (1).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
@@ -535,6 +551,7 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | MQ\_MESSAGE\_CHUNK                     | To set up the message chunk size                                                   | 500000                             |
 | HEDERA\_CUSTOM\_NODES                  | Define hedera nodes to execute and pay transaction fee                             | 0.testnet.hedera.com:50211":"0.0.3 |
 | HEDERA\_CUSTOM\_MIRROR\_NODES          | Define hedera mirror nodes                                                         | testnet.mirrornode.hedera.com:443" |
+| MAP\_API\_KEY                          | Defines api to integrate Map schema type                                           | ALZ\_X.....                        |
 
 ### .env / .env.docker Parameters in api-gateway
 
