@@ -6,7 +6,7 @@ const fieldsValidation = {
   description: yup.string().required('The description field is required'),
   baseTokenId: yup.string().required('The baseTokenId field is required'),
   oppositeTokenId: yup.string().nullable().typeError('The oppositeTokenId field must be a string'),
-  baseTokenCount: yup.string().nullable().required('The baseTokenCount field is required'),
+  baseTokenCount: yup.string().nullable().typeError('The baseTokenCount field must be a string'),
   oppositeTokenCount: yup.string().nullable().typeError('The oppositeTokenId field must be a string'),
   baseTokenSerials: yup.array().typeError('The baseTokenSerials field must be an array').of(yup.number())
     .min(1, 'The baseTokenSerials field must contains at least 1 item')
