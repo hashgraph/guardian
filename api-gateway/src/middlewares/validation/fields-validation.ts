@@ -4,15 +4,18 @@ import { UserRole, SchemaEntity } from '@guardian/interfaces';
 const fieldsValidation = {
   contractId: yup.string().required('The contractId field is required'),
   description: yup.string().required('The description field is required'),
-  baseTokenId: yup.string().required('The requestId field is required'),
+  baseTokenId: yup.string().required('The baseTokenId field is required'),
   oppositeTokenId: yup.string().nullable().typeError('The oppositeTokenId field must be a string'),
   baseTokenCount: yup.number().required('The baseTokenCount field is required'),
-  oppositeTokenCount: yup.number().required('The oppositeTokenCount field is required'),
+  oppositeTokenCount: yup.string().nullable().typeError('The oppositeTokenId field must be a string'),
   baseTokenSerials: yup.array().typeError('The baseTokenSerials field must be an array').of(yup.number())
     .min(1, 'The baseTokenSerials field must contains at least 1 item')
     .required('The baseTokenSerials field is required'),
   oppositeTokenSerials: yup.array().of(yup.number())
-    .nullable(),
+    .nullable().when(['baseTokenId', 'oppositeTokenId'], {
+      is: false,
+      then: yup.array().of(yup.number()).required('The field oppositeTokenSerials must be provided')
+    }),
   requestId: yup.string().required('The requestId field is required'),
   name: yup.string().min(1, 'The name field can not be empty').required('The name field is required'),
   username: yup.string().min(1, 'The username field can not be empty').required('The username field is required'),
