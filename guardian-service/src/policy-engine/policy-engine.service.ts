@@ -2,16 +2,15 @@ import {
     PolicyEngineEvents,
     TopicType,
     PolicyType,
-    ExternalMessageEvents, PolicyEvents
+    ExternalMessageEvents, PolicyEvents, GenerateUUIDv4
 } from '@guardian/interfaces';
 import {
     IAuthUser,
-    MessageBrokerChannel,
     MessageResponse,
     MessageError,
     BinaryMessageResponse,
     Logger,
-    ExternalEventChannel, RunFunctionAsync
+    RunFunctionAsync, NatsService, Singleton
 } from '@guardian/common';
 import {
     DIDDocument, TopicConfig,
@@ -27,7 +26,34 @@ import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from './policy-engine';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { findAllEntities } from '@helpers/utils';
-import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
+import { NatsConnection } from 'nats';
+import { GuardiansService } from '@helpers/guardians';
+
+/**
+ * PolicyEngineChannel
+ */
+@Singleton
+export class PolicyEngineChannel extends NatsService {
+    /**
+     * Message queue name
+     */
+    public messageQueueName = 'policy-engine-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'policy-engine-reply-' + GenerateUUIDv4();
+
+    /**
+     * Register listener
+     * @param event
+     * @param cb
+     */
+    registerListener(event: string, cb: Function): void {
+        this.getMessages(event, cb);
+    }
+}
 
 /**
  * Policy engine service
@@ -44,17 +70,7 @@ export class PolicyEngineService {
      * Message broker service
      * @private
      */
-    private readonly channel: MessageBrokerChannel;
-
-    /**
-     * API-gateway message broker service
-     */
-    private readonly apiGatewayChannel: MessageBrokerChannel;
-
-    /**
-     * External event channel
-     */
-    private readonly externalEventChannel: ExternalEventChannel;
+    private readonly channel: PolicyEngineChannel;
 
     /**
      * Policy Engine
@@ -62,11 +78,17 @@ export class PolicyEngineService {
      */
     private readonly policyEngine: PolicyEngine;
 
-    constructor(channel: MessageBrokerChannel, apiGatewayChannel: MessageBrokerChannel) {
-        this.channel = channel;
-        this.apiGatewayChannel = apiGatewayChannel;
+    constructor(cn: NatsConnection) {
+        this.channel = new PolicyEngineChannel();
+        this.channel.setConnection(cn)
         this.policyEngine = new PolicyEngine()
-        this.externalEventChannel = new ExternalEventChannel()
+    }
+
+    /**
+     * Init
+     */
+    public async init(): Promise<void> {
+        await this.channel.init();
     }
 
     /**
@@ -88,33 +110,11 @@ export class PolicyEngineService {
             return;
         }
 
-        await this.channel.request(['api-gateway', 'update-block'].join('.'), {
+        await this.channel.sendMessage('update-block', {
             uuid,
             state,
             user
         });
-
-        // if (!PolicyComponentsUtils.IfUUIDRegistered(uuid)) {
-        //     return;
-        // }
-        //
-        // const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(uuid);
-        // if (await block.isAvailable(user)) {
-        //     let changed = true;
-        //     if (block.blockClassName === 'ContainerBlock') {
-        //         changed = true;
-        //     } else if (typeof block.getData === 'function') {
-        //         const data = await block.getData(user, null, null);
-        //         changed = block.updateDataState(user, data);
-        //     }
-        //     if (changed) {
-        //         await this.channel.request(['api-gateway', 'update-block'].join('.'), {
-        //             uuid,
-        //             state,
-        //             user
-        //         });
-        //     }
-        // }
     }
 
     /**
@@ -129,7 +129,7 @@ export class PolicyEngineService {
             return;
         }
 
-        await this.channel.request(['api-gateway', 'block-error'].join('.'), {
+        await this.channel.sendMessage('block-error', {
             blockType,
             message,
             user
@@ -155,7 +155,7 @@ export class PolicyEngineService {
         }
         const userRole = userGroup ? userGroup.role : 'No role';
 
-        await this.channel.request(['api-gateway', 'update-user-info'].join('.'), {
+        await this.channel.sendMessage('update-user-info', {
             policyId: policy.id.toString(),
             user: {
                 did: user.virtual ? policy.owner : user.did,
@@ -186,13 +186,13 @@ export class PolicyEngineService {
 
         PolicyComponentsUtils.ExternalEventFn = async (...args: any[]) => {
             try {
-                this.externalEventChannel.publishMessage(ExternalMessageEvents.BLOCK_EVENTS, args);
+                this.channel.sendMessage(ExternalMessageEvents.BLOCK_EVENTS, args);
             } catch (error) {
                 console.error(error);
             }
         };
 
-        this.channel.subscribe(PolicyEvents.BLOCK_UPDATE_BROADCAST, (msg: any) => {
+        this.channel.getMessages(PolicyEvents.BLOCK_UPDATE_BROADCAST, (msg: any) => {
             const { type, args } = msg;
 
             switch (type) {
@@ -217,26 +217,22 @@ export class PolicyEngineService {
             }
         })
 
-        this.channel.response<any, any>('mrv-data', async (msg) => {
+        this.channel.getMessages<any, any>('mrv-data', async (msg) => {
             // await PolicyComponentsUtils.ReceiveExternalData(msg);
 
             const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
             if (policy) {
                 const policyId = policy.id.toString();
-                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                if (serviceChannelEntity) {
-                    const { channel, name } = serviceChannelEntity;
-                    await channel.request([name, PolicyEvents.MRV_DATA].join('.'), {
-                        policyId,
-                        data: msg
-                    });
-                }
+                await new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA, policyId, {
+                    policyId,
+                    data: msg
+                });
             }
 
             return new MessageResponse({})
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.GET_POLICY, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY, async (msg) => {
             const { filters, userDid } = msg;
             const policy = await DatabaseServer.getPolicy(filters);
 
@@ -248,7 +244,7 @@ export class PolicyEngineService {
             return new MessageResponse(result);
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.GET_TOKENS_MAP, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_TOKENS_MAP, async (msg) => {
             try {
                 const { owner, status } = msg;
                 const filters: any = {};
@@ -275,7 +271,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.GET_POLICIES, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICIES, async (msg) => {
             try {
                 const { filters, pageIndex, pageSize, userDid } = msg;
                 const filter: any = { ...filters };
@@ -318,7 +314,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.CREATE_POLICIES, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_POLICIES, async (msg) => {
             try {
                 const user = msg.user;
                 const did = await this.getUserDid(user.username);
@@ -331,9 +327,9 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.CREATE_POLICIES_ASYNC, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_POLICIES_ASYNC, async (msg) => {
             const { model, user, taskId } = msg;
-            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+            const notifier = initNotifier(taskId);
             RunFunctionAsync(async () => {
                 const did = await this.getUserDid(user.username);
                 const policy = await this.policyEngine.createPolicy(model, did, notifier);
@@ -344,9 +340,9 @@ export class PolicyEngineService {
             return new MessageResponse({ taskId });
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.CLONE_POLICY_ASYNC, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.CLONE_POLICY_ASYNC, async (msg) => {
             const { policyId, model, user, taskId } = msg;
-            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+            const notifier = initNotifier(taskId);
             RunFunctionAsync(async () => {
                 const result = await this.policyEngine.clonePolicy(policyId, model, user.did, notifier);
                 if (result?.errors?.length) {
@@ -362,9 +358,9 @@ export class PolicyEngineService {
             return new MessageResponse({ taskId });
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.DELETE_POLICY_ASYNC, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DELETE_POLICY_ASYNC, async (msg) => {
             const { policyId, user, taskId } = msg;
-            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+            const notifier = initNotifier(taskId);
             RunFunctionAsync(async () => {
                 notifier.result(await this.policyEngine.deletePolicy(policyId, user, notifier));
             }, async (error) => {
@@ -373,7 +369,7 @@ export class PolicyEngineService {
             return new MessageResponse({ taskId });
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.SAVE_POLICIES, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SAVE_POLICIES, async (msg) => {
             try {
                 const result = await DatabaseServer.updatePolicyConfig(msg.policyId, msg.model);
                 return new MessageResponse(result);
@@ -383,7 +379,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.PUBLISH_POLICIES, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.PUBLISH_POLICIES, async (msg) => {
             try {
                 if (!msg.model || !msg.model.policyVersion) {
                     throw new Error('Policy version in body is empty');
@@ -406,9 +402,9 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.PUBLISH_POLICIES_ASYNC, async (msg) => {
             const { model, policyId, user, taskId } = msg;
-            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+            const notifier = initNotifier(taskId);
 
             RunFunctionAsync(async () => {
                 if (!model || !model.policyVersion) {
@@ -428,7 +424,7 @@ export class PolicyEngineService {
             return new MessageResponse({ taskId });
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.DRY_RUN_POLICIES, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DRY_RUN_POLICIES, async (msg) => {
             try {
                 const policyId: string = msg.policyId;
                 const user = msg.user;
@@ -473,7 +469,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.DRAFT_POLICIES, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DRAFT_POLICIES, async (msg) => {
             try {
                 const policyId = msg.policyId;
                 const user = msg.user;
@@ -515,7 +511,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.VALIDATE_POLICIES, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.VALIDATE_POLICIES, async (msg) => {
             try {
                 const policy = msg.model as Policy;
                 const results = await this.policyEngine.validateModel(policy);
@@ -529,20 +525,15 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.POLICY_BLOCKS, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_BLOCKS, async (msg) => {
             try {
                 const { user, policyId } = msg;
 
-                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                if (serviceChannelEntity) {
-                    const { channel, name } = serviceChannelEntity;
-                    const blockData = await channel.request([name, PolicyEvents.GET_ROOT_BLOCK_DATA].join('.'), {
-                        user,
-                        policyId
-                    });
-                    return new MessageResponse(blockData.body);
-                }
-                return new MessageResponse(null);
+                const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, {
+                    user,
+                    policyId
+                }) as any;
+                return new MessageResponse(blockData);
 
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -550,173 +541,134 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.GET_BLOCK_DATA, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_DATA, async (msg) => {
             try {
                 const { user, blockId, policyId } = msg;
 
-                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                if (serviceChannelEntity) {
-                    const { channel, name } = serviceChannelEntity;
-                    const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_DATA].join('.'), {
-                        user,
-                        blockId,
-                        policyId
-                    })
-                    return new MessageResponse(blockData.body);
-                }
-                return new MessageResponse(null);
+                const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA, policyId, {
+                    user,
+                    blockId,
+                    policyId
+                }) as any
+                return new MessageResponse(blockData);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_DATA_BY_TAG, async (msg) => {
             try {
                 const { user, tag, policyId } = msg;
 
-                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                if (serviceChannelEntity) {
-                    const { channel, name } = serviceChannelEntity;
-                    const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_DATA_BY_TAG].join('.'), {
-                        user,
-                        tag,
-                        policyId
-                    })
-                    return new MessageResponse(blockData.body);
-                }
-                return new MessageResponse(null);
+                const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, {
+                    user,
+                    tag,
+                    policyId
+                }) as any
+                return new MessageResponse(blockData);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.SET_BLOCK_DATA, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_BLOCK_DATA, async (msg) => {
             try {
                 const { user, blockId, policyId, data } = msg;
 
-                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                if (serviceChannelEntity) {
-                    const { channel, name } = serviceChannelEntity;
-                    const blockData = await channel.request([name, PolicyEvents.SET_BLOCK_DATA].join('.'), {
-                        user,
-                        blockId,
-                        policyId,
-                        data
-                    });
-                    return new MessageResponse(blockData.body);
-                }
-                return new MessageError(new Error('Permission denied'));
+                const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.SET_BLOCK_DATA, policyId, {
+                    user,
+                    blockId,
+                    policyId,
+                    data
+                }) as any;
+                return new MessageResponse(blockData);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_BLOCK_DATA_BY_TAG, async (msg) => {
             try {
                 const { user, tag, policyId, data } = msg;
 
-                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                if (serviceChannelEntity) {
-                    const { channel, name } = serviceChannelEntity;
-                    const blockData = await channel.request([name, PolicyEvents.SET_BLOCK_DATA_BY_TAG].join('.'), {
-                        user,
-                        tag,
-                        policyId,
-                        data
-                    })
-                    return new MessageResponse(blockData.body);
-                }
-                return new MessageError(new Error('Permission denied'));
+                const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, {
+                    user,
+                    tag,
+                    policyId,
+                    data
+                }) as any
+                return new MessageResponse(blockData);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.BLOCK_BY_TAG, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.BLOCK_BY_TAG, async (msg) => {
             try {
                 const { tag, policyId } = msg;
 
-                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                if (serviceChannelEntity) {
-                    const { channel, name } = serviceChannelEntity;
-                    const blockData = await channel.request([name, PolicyEvents.BLOCK_BY_TAG].join('.'), {
-                        tag,
-                        policyId,
-                    })
+                const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.BLOCK_BY_TAG, policyId, {
+                    tag,
+                    policyId,
+                }) as any
 
-                    return new MessageResponse(blockData.body);
-                }
-                return new MessageError(new Error('Permission denied'));
+                return new MessageResponse(blockData);
             } catch (error) {
                 return new MessageError('The policy does not exist, or is not published, or tag was not registered in policy', 404);
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.GET_BLOCK_PARENTS, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_BLOCK_PARENTS, async (msg) => {
             try {
                 const { blockId, policyId } = msg;
 
-                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                if (serviceChannelEntity) {
-                    const { channel, name } = serviceChannelEntity;
-                    const blockData = await channel.request([name, PolicyEvents.GET_BLOCK_PARENTS].join('.'), {
-                        blockId
-                    });
-                    return new MessageResponse(blockData.body);
-                }
-                return new MessageError(new Error('Permission denied'));
+                const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_BLOCK_PARENTS, policyId, {
+                    blockId
+                }) as any;
+                return new MessageResponse(blockData);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.GET_POLICY_GROUPS, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_GROUPS, async (msg) => {
             try {
                 const { user, policyId } = msg;
 
-                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                if (serviceChannelEntity) {
-                    const { channel, name } = serviceChannelEntity;
-                    const blockData = await channel.request([name, PolicyEvents.GET_POLICY_GROUPS].join('.'), {
-                        user,
-                        policyId
-                    })
-                    return new MessageResponse(blockData.body);
-                }
-                return new MessageError(new Error('Permission denied'));
+                const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.GET_POLICY_GROUPS, policyId, {
+                    user,
+                    policyId
+                }) as any;
+                return new MessageResponse(blockData);
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.SELECT_POLICY_GROUP, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SELECT_POLICY_GROUP, async (msg) => {
             try {
                 const { user, policyId, uuid } = msg;
 
-                const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                if (serviceChannelEntity) {
-                    const { channel, name } = serviceChannelEntity;
-                    const blockData = await channel.request([name, PolicyEvents.SELECT_POLICY_GROUP].join('.'), {
-                        user,
-                        policyId,
-                        uuid
-                    });
-                    return new MessageResponse(blockData.body);
-                }
-                return new MessageError(new Error('Permission denied'));
+                const blockData = await new GuardiansService().sendPolicyMessage(PolicyEvents.SELECT_POLICY_GROUP, policyId, {
+                    user,
+                    policyId,
+                    uuid
+                }) as any;
+                return new MessageResponse(blockData);
+
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.POLICY_EXPORT_FILE, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_EXPORT_FILE, async (msg) => {
             try {
                 const { policyId } = msg;
                 const policy = await DatabaseServer.getPolicyById(policyId);
@@ -740,7 +692,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.POLICY_EXPORT_MESSAGE, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_EXPORT_MESSAGE, async (msg) => {
             try {
                 const { policyId } = msg;
                 const policy = await DatabaseServer.getPolicyById(policyId);
@@ -761,7 +713,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_PREVIEW, async (msg) => {
             try {
                 const { zip } = msg;
                 if (!zip) {
@@ -775,7 +727,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE, async (msg) => {
             try {
                 const { zip, user, versionOfTopicId } = msg;
                 if (!zip) {
@@ -798,9 +750,9 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_FILE_ASYNC, async (msg) => {
             const { zip, user, versionOfTopicId, taskId } = msg;
-            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+            const notifier = initNotifier(taskId);
 
             RunFunctionAsync(async () => {
                 if (!zip) {
@@ -830,7 +782,7 @@ export class PolicyEngineService {
             return new MessageResponse({ taskId });
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW, async (msg) => {
             try {
                 const { messageId, user } = msg;
                 const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, user, emptyNotifier());
@@ -841,9 +793,9 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC, async (msg) => {
             const { messageId, user, taskId } = msg;
-            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+            const notifier = initNotifier(taskId);
 
             RunFunctionAsync(async () => {
                 const policyToImport = await this.policyEngine.preparePolicyPreviewMessage(messageId, user, notifier);
@@ -856,7 +808,7 @@ export class PolicyEngineService {
             return new MessageResponse({ taskId });
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE, async (msg) => {
             try {
                 const { messageId, user, versionOfTopicId } = msg;
                 const did = await this.getUserDid(user.username);
@@ -881,9 +833,9 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.POLICY_IMPORT_MESSAGE_ASYNC, async (msg) => {
             const { messageId, user, versionOfTopicId, taskId } = msg;
-            const notifier = initNotifier(this.apiGatewayChannel, taskId);
+            const notifier = initNotifier(taskId);
 
             RunFunctionAsync(async () => {
                 try {
@@ -914,20 +866,16 @@ export class PolicyEngineService {
             return new MessageResponse({ taskId });
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, async (msg) => {
             try {
                 const policy = await DatabaseServer.getPolicyByTag(msg?.policyTag);
                 if (policy) {
                     const policyId = policy.id.toString();
 
-                    const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-                    if (serviceChannelEntity) {
-                        const { channel, name } = serviceChannelEntity;
-                        await channel.request([name, PolicyEvents.MRV_DATA].join('.'), {
-                            policyId,
-                            data: msg
-                        });
-                    }
+                    new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA, policyId, {
+                        policyId,
+                        data: msg
+                    });
                 }
                 return new MessageResponse(true);
             } catch (error) {
@@ -936,7 +884,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.BLOCK_ABOUT, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.BLOCK_ABOUT, async (msg) => {
             try {
                 // TODO: Create real block about
                 const about = '{"aggregateDocumentBlock":{"label":"Aggregate Data","title":"Add \'Aggregate\' Block","post":false,"get":false,"children":"None","control":"Server","input":["PopEvent","RunEvent","TimerEvent"],"output":["RunEvent","RefreshEvent"],"defaultEvent":true,"properties":[{"name":"disableUserGrouping","label":"Disable user grouping","title":"Disable user grouping","type":"Checkbox","default":false},{"name":"groupByFields","label":"Group By Fields","title":"Group By Fields","type":"Array","items":{"label":"Field Path","value":"@fieldPath","properties":[{"name":"fieldPath","label":"Field Path","title":"Field Path","type":"Path"}]}}]},"calculateContainerBlock":{"label":"Calculate","title":"Add \'Calculate\' Block","post":false,"get":false,"children":"Special","control":"Server","input":["RunEvent"],"output":["RunEvent","RefreshEvent","ErrorEvent"],"defaultEvent":true},"calculateMathAddon":{"label":"Math Addon","title":"Add \'Math\' Addon","post":false,"get":false,"children":"None","control":"Special","input":null,"output":null,"defaultEvent":false},"customLogicBlock":{"label":"Custom Logic","title":"Add \'Custom Logic\' Block","post":false,"get":false,"children":"Special","control":"Server","input":["RunEvent"],"output":["RunEvent","RefreshEvent","ErrorEvent"],"defaultEvent":true},"documentsSourceAddon":{"label":"Source","title":"Add \'DocumentsSourceAddon\' Addon","post":false,"get":false,"children":"Special","control":"Special","input":null,"output":null,"defaultEvent":false},"externalDataBlock":{"label":"External Data","title":"Add \'External Data\' Block","post":true,"get":false,"children":"None","control":"Server","input":null,"output":["RunEvent","RefreshEvent","ErrorEvent"],"defaultEvent":true},"filtersAddon":{"label":"Filters Addon","title":"Add \'Filters\' Addon","post":true,"get":true,"children":"Special","control":"Special","input":null,"output":null,"defaultEvent":false},"informationBlock":{"label":"Information","title":"Add \'Information\' Block","post":false,"get":true,"children":"None","control":"UI","input":["RunEvent","RefreshEvent"],"output":null,"defaultEvent":false},"interfaceContainerBlock":{"label":"Container","title":"Add \'Container\' Block","post":false,"get":true,"children":"Any","control":"UI","input":["RunEvent","RefreshEvent"],"output":null,"defaultEvent":false},"interfaceActionBlock":{"label":"Action","title":"Add \'Action\' Block","post":true,"get":true,"children":"Special","control":"UI","input":["RunEvent","RefreshEvent"],"output":null,"defaultEvent":false},"interfaceDocumentsSourceBlock":{"label":"Documents","title":"Add \'Documents Source\' Block","post":false,"get":true,"children":"Special","control":"UI","input":["RunEvent","RefreshEvent"],"output":null,"defaultEvent":false},"interfaceStepBlock":{"label":"Step","title":"Add \'Step\' Block","post":false,"get":true,"children":"Any","control":"UI","input":["RunEvent","RefreshEvent"],"output":["RefreshEvent"],"defaultEvent":false,"properties":[{"name":"cyclic","label":"Cyclic","title":"Restart the block when the final step is reached?","type":"Checkbox"},{"name":"finalBlocks","label":"Final steps","title":"Final steps","type":"MultipleSelect","items":"Children"},{"name":"uiMetaData","label":"UI","title":"UI Properties","type":"Group","properties":[{"name":"title","label":"Title","title":"Title","type":"Input"}]}]},"mintDocumentBlock":{"label":"Mint","title":"Add \'Mint\' Block","post":false,"get":false,"children":"None","control":"Server","input":["RunEvent","AdditionalMintEvent"],"output":["RunEvent","RefreshEvent","ErrorEvent"],"defaultEvent":true},"paginationAddon":{"label":"Pagination","title":"Add \'Pagination\' Addon","post":true,"get":true,"children":"None","control":"Special","input":null,"output":null,"defaultEvent":false},"policyRolesBlock":{"label":"Roles","title":"Add \'Choice Of Roles\' Block","post":true,"get":true,"children":"None","control":"UI","input":["RunEvent","RefreshEvent"],"output":["CreateGroup","JoinGroup"],"defaultEvent":false},"reassigningBlock":{"label":"Reassigning","title":"Add \'Reassigning\' Block","post":false,"get":false,"children":"None","control":"Server","input":["RunEvent"],"output":["RunEvent","RefreshEvent","ErrorEvent"],"defaultEvent":true},"reportBlock":{"label":"Report","title":"Add \'Report\' Block","post":true,"get":true,"children":"Special","control":"UI","input":["RunEvent","RefreshEvent"],"output":null,"defaultEvent":false},"reportItemBlock":{"label":"Report Item","title":"Add \'Report Item\' Block","post":false,"get":false,"children":"None","control":"Special","input":null,"output":null,"defaultEvent":false},"retirementDocumentBlock":{"label":"Wipe","title":"Add \'Wipe\' Block","post":false,"get":false,"children":"None","control":"Server","input":["RunEvent"],"output":["RunEvent","RefreshEvent","ErrorEvent"],"defaultEvent":true},"requestVcDocumentBlock":{"label":"Request","title":"Add \'Request\' Block","post":true,"get":true,"children":"Special","control":"UI","input":["RunEvent","RefreshEvent","RestoreEvent"],"output":["RunEvent","RefreshEvent"],"defaultEvent":true},"sendToGuardianBlock":{"label":"Send","title":"Add \'Send\' Block","post":false,"get":false,"children":"None","control":"Server","input":["RunEvent"],"output":["RunEvent","RefreshEvent","ErrorEvent"],"defaultEvent":true},"switchBlock":{"label":"Switch","title":"Add \'Switch\' Block","post":false,"get":false,"children":"None","control":"Server","input":["RunEvent"],"output":["RefreshEvent"],"defaultEvent":false},"timerBlock":{"label":"Timer","title":"Add \'Timer\' Block","post":false,"get":false,"children":"None","control":"Special","input":["RunEvent","StartTimerEvent","StopTimerEvent"],"output":["RunEvent","RefreshEvent","TimerEvent"],"defaultEvent":true},"revokeBlock":{"label":"Revoke Document","title":"Add \'Revoke\' Block","post":true,"get":true,"children":"None","control":"Server","input":["RunEvent"],"output":["RunEvent","ErrorEvent"],"defaultEvent":true},"setRelationshipsBlock":{"label":"Set Relationships","title":"Add \'Relationships\' Block","post":false,"get":false,"children":"Special","control":"Server","input":["RunEvent"],"output":["RunEvent"],"defaultEvent":true,"properties":[{"name":"includeAccounts","label":"Include Accounts","title":"Include Related Documents Accounts","type":"Checkbox","default":false},{"name":"includeTokens","label":"Include Tokens","title":"Include Related Documents Tokens","type":"Checkbox","default":false},{"name":"changeOwner","label":"Change Owner","title":"Change Document Owner","type":"Checkbox","default":false}]},"buttonBlock":{"label":"Button","title":"Add \'Button\' Block","post":true,"get":true,"children":"Special","control":"UI","input":["RunEvent"],"output":null,"defaultEvent":false},"tokenActionBlock":{"label":"Token Action","title":"Add \'Token Action\' Block","post":false,"get":false,"children":"None","control":"Server","input":["RunEvent"],"output":["RunEvent","RefreshEvent","ErrorEvent"],"defaultEvent":true},"documentValidatorBlock":{"label":"Validator","title":"Add \'Validator\' Block","post":false,"get":false,"children":"None","control":"Special","input":["RunEvent"],"output":["RunEvent","RefreshEvent","ErrorEvent"],"defaultEvent":true},"tokenConfirmationBlock":{"label":"Token Confirmation","title":"Add \'Token Confirmation\' Block","post":true,"get":true,"children":"None","control":"UI","input":["RunEvent"],"output":["Confirm","RefreshEvent","ErrorEvent"],"defaultEvent":false},"groupManagerBlock":{"label":"Group Manager","title":"Add \'Group Manager\' Block","post":true,"get":true,"children":"None","control":"UI","input":["RunEvent","RefreshEvent"],"output":null,"defaultEvent":false},"multiSignBlock":{"label":"Multiple Signature","title":"Add \'Multiple Signature\' Block","post":true,"get":true,"children":"None","control":"UI","input":["RunEvent"],"output":["RefreshEvent","SignatureQuorumReachedEvent","SignatureSetInsufficientEvent"],"defaultEvent":false,"properties":[{"name":"threshold","label":"Threshold (%)","title":"Number of signatures required to move to the next step, as a percentage of the total number of users in the group.","type":"Input","default":"50"}]},"calculateMathVariables":{"label":"Math Variables","title":"Add \'Math\' Variables","post":false,"get":false,"children":"None","control":"Special","input":null,"output":null,"defaultEvent":false,"properties":[{"name":"sourceSchema","label":"Source schema","title":"Source schema","type":"Schemas"},{"name":"onlyOwnDocuments","label":"Owned by User","title":"Owned by User","type":"Checkbox"},{"name":"onlyOwnByGroupDocuments","label":"Owned by Group","title":"Owned by Group","type":"Checkbox"},{"name":"onlyAssignDocuments","label":"Assigned to User","title":"Assigned to User","type":"Checkbox"},{"name":"onlyAssignByGroupDocuments","label":"Assigned to Group","title":"Assigned to Group","type":"Checkbox"},{"name":"selectors","label":"Selectors","title":"Selectors","type":"Array","items":{"label":"Selector","value":"@sourceField @selectorType @comparisonValue","properties":[{"name":"sourceField","label":"Source field","title":"Source field","type":"Path"},{"name":"selectorType","label":"Selector type","title":"Selector type","type":"Select","items":[{"label":"Equal","value":"equal"},{"label":"Not Equal","value":"not_equal"},{"label":"In","value":"in"},{"label":"Not In","value":"not_in"}],"default":"equal"},{"name":"comparisonValue","label":"Comparison value","title":"Comparison value","type":"Input"},{"name":"comparisonValueType","label":"Comparison value type","title":"Comparison value type","type":"Select","items":[{"label":"Constanta","value":"const"},{"label":"Variable","value":"var"}],"default":"const"}]}},{"name":"variables","label":"Variables","title":"Variables","type":"Array","items":{"label":"Variable","value":"var @variableName = @variablePath","properties":[{"name":"variableName","label":"Variable name","title":"Variable name","type":"Input"},{"name":"variablePath","label":"Variable Path","title":"Variable Path","type":"Path"}]}}]},"createTokenBlock":{"label":"Create Token","title":"Add \'Create Token\' Block","post":true,"get":true,"children":"None","control":"UI","input":["RunEvent"],"output":["RunEvent","RefreshEvent"],"defaultEvent":true},"splitBlock":{"label":"Split Block","title":"Add \'Split\' Block","post":false,"get":false,"children":"None","control":"Server","input":["RunEvent"],"output":["RunEvent","RefreshEvent","ErrorEvent"],"defaultEvent":true,"properties":[{"name":"threshold","label":"Threshold","title":"Threshold","type":"Input"},{"name":"sourceField","label":"Source field","title":"Source field","type":"Path"}]},"impactAddon":{"label":"Impact","title":"Add \'Impact\'","post":false,"get":false,"children":"None","control":"Special","input":null,"output":null,"defaultEvent":false,"properties":[{"name":"impactType","label":"Impact type","title":"Impact type","type":"Select","items":[{"label":"Primary Impacts","value":"Primary Impacts"},{"label":"Secondary Impacts","value":"Secondary Impacts"}],"default":"Secondary Impacts","required":true},{"name":"label","label":"Label","title":"Label","type":"Input"},{"name":"description","label":"Description","title":"Description","type":"Input"},{"name":"amount","label":"Amount (Formula)","title":"Amount (Formula)","required":true,"type":"Input"},{"name":"unit","label":"Unit","title":"Unit","type":"Input"}]},"httpRequestBlock":{"label":"Request data","title":"Add \'Request Data\' Block","post":false,"get":false,"children":"None","control":"Server","input":["RunEvent"],"output":["RunEvent","RefreshEvent","ErrorEvent"],"defaultEvent":true}, "historyAddon":{"label":"History","title":"Add \'History\' Addon","post":false,"get":false,"children":"None","control":"Special","input":null,"output":null,"defaultEvent":false,"properties":[{"name":"timelineLabelPath","label":"Timeline Label Path","title":"Timeline unit label path","type":"Path","default":""},{"name":"timelineDescriptionPath","label":"Timeline Description Path","title":"Timeline unit description","type":"Path","default":""}]}, "selectiveAttributes":{"label":"Selective Attributes","title":"Add \'Selective Attributes\' Addon","post":false,"get":false,"children":"None","control":"Special","input":null,"output":null,"defaultEvent":false,"properties":[{"name":"attributes","label":"Attributes To Select","title":"Attributes To Select","type":"Array","items":{"label":"Attribute Path","value":"@attributePath","properties":[{"name":"attributePath","label":"Attribute Path","title":"Attribute Path","type":"Input"}]}}]}}';
@@ -946,7 +894,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.GET_VIRTUAL_USERS, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_VIRTUAL_USERS, async (msg) => {
             try {
                 const { policyId } = msg;
 
@@ -965,7 +913,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.CREATE_VIRTUAL_USER, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_VIRTUAL_USER, async (msg) => {
             try {
                 const { policyId, did } = msg;
 
@@ -1013,7 +961,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.SET_VIRTUAL_USER, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_VIRTUAL_USER, async (msg) => {
             try {
                 const { policyId, did } = msg;
 
@@ -1033,7 +981,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.RESTART_DRY_RUN, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RESTART_DRY_RUN, async (msg) => {
             try {
                 if (!msg.model) {
                     throw new Error('Policy is empty');
@@ -1071,7 +1019,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS, async (msg) => {
             try {
                 const { policyId, type, pageIndex, pageSize } = msg;
 
@@ -1090,7 +1038,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.GET_MULTI_POLICY, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_MULTI_POLICY, async (msg) => {
             try {
                 const { user, policyId } = msg;
 
@@ -1116,7 +1064,7 @@ export class PolicyEngineService {
             }
         });
 
-        this.channel.response<any, any>(PolicyEngineEvents.SET_MULTI_POLICY, async (msg) => {
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SET_MULTI_POLICY, async (msg) => {
             try {
                 const { user, policyId, data } = msg;
 

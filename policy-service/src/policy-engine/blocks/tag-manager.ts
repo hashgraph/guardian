@@ -235,7 +235,7 @@ export class TagsManagerBlock {
         const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, ref.dryRun);
         const topic = await ref.databaseServer.getTopicById(topicId);
         const topicConfig = await TopicConfig.fromObject(topic, !ref.dryRun);
-        
+
         item.operation = 'Create';
         item.status = 'Published';
         const message = new TagMessage(MessageAction.PublishTag);
@@ -243,7 +243,6 @@ export class TagsManagerBlock {
         const result = await messageServer
             .setTopicObject(topicConfig)
             .sendMessage(message);
-
 
         item.messageId = result.getId();
         item.topicId = result.getTopicId();

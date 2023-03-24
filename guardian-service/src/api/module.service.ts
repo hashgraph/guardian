@@ -1,5 +1,5 @@
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger, BinaryMessageResponse } from '@guardian/common';
+import { MessageResponse, MessageError, Logger, BinaryMessageResponse } from '@guardian/common';
 import { GenerateUUIDv4, MessageAPI, ModuleStatus, TagType, TopicType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
 import { PolicyModule } from '@entity/module';
@@ -204,12 +204,8 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
 
 /**
  * Connect to the message broker methods of working with modules.
- *
- * @param channel - channel
  */
-export async function modulesAPI(
-    channel: MessageBrokerChannel
-): Promise<void> {
+export async function modulesAPI(): Promise<void> {
     /**
      * Create new module
      *
@@ -217,7 +213,7 @@ export async function modulesAPI(
      *
      * @returns {PolicyModule} new module
      */
-    ApiResponse(channel, MessageAPI.CREATE_MODULE, async (msg) => {
+    ApiResponse(MessageAPI.CREATE_MODULE, async (msg) => {
         try {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -235,7 +231,7 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.GET_MODULES, async (msg) => {
+    ApiResponse(MessageAPI.GET_MODULES, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid load modules parameter');
@@ -267,7 +263,7 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.DELETE_MODULES, async (msg) => {
+    ApiResponse(MessageAPI.DELETE_MODULES, async (msg) => {
         try {
             if (!msg.uuid || !msg.owner) {
                 return new MessageError('Invalid load modules parameter');
@@ -284,7 +280,7 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.GET_MENU_MODULES, async (msg) => {
+    ApiResponse(MessageAPI.GET_MENU_MODULES, async (msg) => {
         try {
             if (!msg.owner) {
                 return new MessageError('Invalid load modules parameter');
@@ -299,7 +295,7 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.UPDATE_MODULES, async (msg) => {
+    ApiResponse(MessageAPI.UPDATE_MODULES, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid load modules parameter');
@@ -325,7 +321,7 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.GET_MODULE, async (msg) => {
+    ApiResponse(MessageAPI.GET_MODULE, async (msg) => {
         try {
             if (!msg.uuid || !msg.owner) {
                 return new MessageError('Invalid load modules parameter');
@@ -341,7 +337,7 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.MODULE_EXPORT_FILE, async (msg) => {
+    ApiResponse(MessageAPI.MODULE_EXPORT_FILE, async (msg) => {
         try {
             if (!msg.uuid || !msg.owner) {
                 return new MessageError('Invalid load modules parameter');
@@ -368,7 +364,7 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.MODULE_EXPORT_MESSAGE, async (msg) => {
+    ApiResponse(MessageAPI.MODULE_EXPORT_MESSAGE, async (msg) => {
         try {
             if (!msg.uuid || !msg.owner) {
                 return new MessageError('Invalid load modules parameter');
@@ -392,7 +388,7 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.MODULE_IMPORT_FILE_PREVIEW, async (msg) => {
+    ApiResponse(MessageAPI.MODULE_IMPORT_FILE_PREVIEW, async (msg) => {
         try {
             const { zip } = msg;
             if (!zip) {
@@ -406,7 +402,7 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.MODULE_IMPORT_MESSAGE_PREVIEW, async (msg) => {
+    ApiResponse(MessageAPI.MODULE_IMPORT_MESSAGE_PREVIEW, async (msg) => {
         try {
             const { messageId, owner } = msg;
             const preview = await preparePreviewMessage(messageId, owner, emptyNotifier());
@@ -417,7 +413,7 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.MODULE_IMPORT_FILE, async (msg) => {
+    ApiResponse(MessageAPI.MODULE_IMPORT_FILE, async (msg) => {
         try {
             const { zip, owner } = msg;
             if (!zip) {
@@ -453,7 +449,7 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.MODULE_IMPORT_MESSAGE, async (msg) => {
+    ApiResponse(MessageAPI.MODULE_IMPORT_MESSAGE, async (msg) => {
         try {
             const { messageId, owner } = msg;
             if (!messageId) {
@@ -490,7 +486,7 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.PUBLISH_MODULES, async (msg) => {
+    ApiResponse(MessageAPI.PUBLISH_MODULES, async (msg) => {
         try {
             const { uuid, owner } = msg;
             const result = await validateAndPublish(uuid, owner, emptyNotifier());
@@ -505,7 +501,7 @@ export async function modulesAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.VALIDATE_MODULES, async (msg) => {
+    ApiResponse(MessageAPI.VALIDATE_MODULES, async (msg) => {
         try {
             const { module } = msg;
             const results = await validateModel(module);

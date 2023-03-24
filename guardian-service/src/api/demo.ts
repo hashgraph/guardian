@@ -4,7 +4,6 @@ import { Policy } from '@entity/policy';
 import {
     DataBaseHelper,
     Logger,
-    MessageBrokerChannel,
     MessageError,
     MessageResponse, RunFunctionAsync,
     SettingsContainer
@@ -71,11 +70,9 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
  * @param settingsRepository
  */
 export async function demoAPI(
-    channel: MessageBrokerChannel,
-    apiGatewayChannel: MessageBrokerChannel,
     settingsRepository: DataBaseHelper<Settings>
 ): Promise<void> {
-    ApiResponse(channel, MessageAPI.GENERATE_DEMO_KEY, async (msg) => {
+    ApiResponse(MessageAPI.GENERATE_DEMO_KEY, async (msg) => {
         try {
             const role = msg?.role;
             const result = await generateDemoKey(role, settingsRepository, emptyNotifier());
@@ -86,9 +83,9 @@ export async function demoAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.GENERATE_DEMO_KEY_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.GENERATE_DEMO_KEY_ASYNC, async (msg) => {
         const { role, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
 
         RunFunctionAsync(async () => {
             const result = await generateDemoKey(role, settingsRepository, emptyNotifier());
@@ -101,7 +98,7 @@ export async function demoAPI(
         return new MessageResponse({ taskId });
     });
 
-    ApiResponse(channel, MessageAPI.GET_USER_ROLES, async (msg) => {
+    ApiResponse(MessageAPI.GET_USER_ROLES, async (msg) => {
         try {
             const did = msg.did;
             const policies = await new DataBaseHelper(Policy).findAll();

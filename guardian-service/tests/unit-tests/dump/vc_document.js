@@ -10,7 +10,7 @@ module.exports.vc_document = [{
         '@context': [
             'https://www.w3.org/2018/credentials/v1'
         ],
-        'id': '4cb4a454-74f5-4b30-853d-524e36174614',
+        'id': 'urn:uuid:4cb4a454-74f5-4b30-853d-524e36174614',
         'type': [
             'VerifiableCredential',
             'StandardRegistry'

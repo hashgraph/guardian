@@ -1,19 +1,14 @@
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageResponse, MessageError, Logger } from '@guardian/common';
 import { ExternalMessageEvents, MessageAPI } from '@guardian/interfaces';
 import { IPFS } from '@helpers/ipfs';
 import { IPFSTaskManager } from '@helpers/ipfs-task-manager';
 
 /**
  * TODO
- *
- * @param externalEventsChannel - channel
  */
-export async function ipfsAPI(
-    externalEventsChannel: MessageBrokerChannel,
-    mainChannel: MessageBrokerChannel
-): Promise<void> {
-    ApiResponse(externalEventsChannel, ExternalMessageEvents.IPFS_ADDED_FILE, async (msg) => {
+export async function ipfsAPI(): Promise<void> {
+    ApiResponse(ExternalMessageEvents.IPFS_ADDED_FILE, async (msg) => {
         try {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -35,7 +30,7 @@ export async function ipfsAPI(
         }
     });
 
-    ApiResponse(externalEventsChannel, ExternalMessageEvents.IPFS_LOADED_FILE, async (msg) => {
+    ApiResponse(ExternalMessageEvents.IPFS_LOADED_FILE, async (msg) => {
         try {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -57,7 +52,7 @@ export async function ipfsAPI(
         }
     });
 
-    ApiResponse(mainChannel, MessageAPI.IPFS_ADD_FILE, async (msg) => {
+    ApiResponse( MessageAPI.IPFS_ADD_FILE, async (msg) => {
         try {
             const result = await IPFS.addFile(msg);
             return new MessageResponse(result);
@@ -68,7 +63,7 @@ export async function ipfsAPI(
         }
     })
 
-    ApiResponse(mainChannel, MessageAPI.IPFS_GET_FILE, async (msg) => {
+    ApiResponse(MessageAPI.IPFS_GET_FILE, async (msg) => {
         try {
             if (!msg) {
                 throw new Error('Invalid payload');

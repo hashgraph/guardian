@@ -146,6 +146,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
 
         switch (this.type) {
             case GeoJsonType.POLYGON:
+                this.pointConstructor.push(this.pointConstructor[0]);
                 this.polygons[0] = {
                     paths: this.pointConstructor,
                 };
@@ -157,6 +158,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 ]);
                 break;
             case GeoJsonType.MULTI_POLYGON:
+                this.pointConstructor.push(this.pointConstructor[0]);
                 this.polygons.push({
                     paths: this.pointConstructor,
                 });

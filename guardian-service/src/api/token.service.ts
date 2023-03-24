@@ -3,7 +3,6 @@ import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
 import {
-    MessageBrokerChannel,
     MessageResponse,
     MessageError,
     Logger,
@@ -560,14 +559,9 @@ async function freezeToken(
 /**
  * Connect to the message broker methods of working with tokens.
  *
- * @param channel - channel
  * @param tokenRepository - table with tokens
  */
-export async function tokenAPI(
-    channel: MessageBrokerChannel,
-    apiGatewayChannel: MessageBrokerChannel,
-    tokenRepository: DataBaseHelper<Token>
-): Promise<void> {
+export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<void> {
     /**
      * Create new token
      *
@@ -575,7 +569,7 @@ export async function tokenAPI(
      *
      * @returns {IToken[]} - all tokens
      */
-    ApiResponse(channel, MessageAPI.SET_TOKEN, async (msg) => {
+    ApiResponse(MessageAPI.SET_TOKEN, async (msg) => {
         try {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -593,9 +587,9 @@ export async function tokenAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.SET_TOKEN_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.SET_TOKEN_ASYNC, async (msg) => {
         const { token, owner, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
 
         RunFunctionAsync(async () => {
             if (!msg) {
@@ -611,9 +605,9 @@ export async function tokenAPI(
         return new MessageResponse({ taskId });
     });
 
-    ApiResponse(channel, MessageAPI.UPDATE_TOKEN_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.UPDATE_TOKEN_ASYNC, async (msg) => {
         const { token, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
         RunFunctionAsync(async () => {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -632,9 +626,9 @@ export async function tokenAPI(
         return new MessageResponse({ taskId });
     });
 
-    ApiResponse(channel, MessageAPI.DELETE_TOKEN_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.DELETE_TOKEN_ASYNC, async (msg) => {
         const { tokenId, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
         RunFunctionAsync(async () => {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -652,7 +646,7 @@ export async function tokenAPI(
         return new MessageResponse({ taskId });
     });
 
-    ApiResponse(channel, MessageAPI.FREEZE_TOKEN, async (msg) => {
+    ApiResponse(MessageAPI.FREEZE_TOKEN, async (msg) => {
         try {
             const { tokenId, username, owner, freeze } = msg;
             const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, emptyNotifier());
@@ -663,9 +657,9 @@ export async function tokenAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.FREEZE_TOKEN_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.FREEZE_TOKEN_ASYNC, async (msg) => {
         const { tokenId, username, owner, freeze, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
 
         RunFunctionAsync(async () => {
             const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, notifier);
@@ -678,7 +672,7 @@ export async function tokenAPI(
         return new MessageResponse({ taskId });
     });
 
-    ApiResponse(channel, MessageAPI.KYC_TOKEN, async (msg) => {
+    ApiResponse(MessageAPI.KYC_TOKEN, async (msg) => {
         try {
             const { tokenId, username, owner, grant } = msg;
             const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, emptyNotifier());
@@ -689,9 +683,9 @@ export async function tokenAPI(
         }
     });
 
-    ApiResponse(channel, MessageAPI.KYC_TOKEN_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.KYC_TOKEN_ASYNC, async (msg) => {
         const { tokenId, username, owner, grant, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
 
         RunFunctionAsync(async () => {
             const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, notifier);
@@ -704,7 +698,7 @@ export async function tokenAPI(
         return new MessageResponse({ taskId });
     });
 
-    ApiResponse(channel, MessageAPI.ASSOCIATE_TOKEN, async (msg) => {
+    ApiResponse(MessageAPI.ASSOCIATE_TOKEN, async (msg) => {
         try {
             const { tokenId, did, associate } = msg;
             const status = await associateToken(tokenId, did, associate, tokenRepository, emptyNotifier());
@@ -715,9 +709,9 @@ export async function tokenAPI(
         }
     })
 
-    ApiResponse(channel, MessageAPI.ASSOCIATE_TOKEN_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.ASSOCIATE_TOKEN_ASYNC, async (msg) => {
         const { tokenId, did, associate, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
 
         RunFunctionAsync(async () => {
             const status = await associateToken(tokenId, did, associate, tokenRepository, notifier);
@@ -730,7 +724,7 @@ export async function tokenAPI(
         return new MessageResponse({ taskId });
     })
 
-    ApiResponse(channel, MessageAPI.GET_INFO_TOKEN, async (msg) => {
+    ApiResponse(MessageAPI.GET_INFO_TOKEN, async (msg) => {
         try {
             const { tokenId, username, owner } = msg;
 
@@ -769,7 +763,7 @@ export async function tokenAPI(
         }
     })
 
-    ApiResponse(channel, MessageAPI.GET_ASSOCIATED_TOKENS, async (msg) => {
+    ApiResponse(MessageAPI.GET_ASSOCIATED_TOKENS, async (msg) => {
         try {
             const wallet = new Wallet();
             const users = new Users();
@@ -842,7 +836,7 @@ export async function tokenAPI(
      *
      * @returns {IToken[]} - tokens
      */
-    ApiResponse(channel, MessageAPI.GET_TOKENS, async (msg) => {
+    ApiResponse(MessageAPI.GET_TOKENS, async (msg) => {
         if (msg) {
             if (msg.tokenId) {
                 const reqObj: any = { where: {} as unknown };
@@ -875,7 +869,7 @@ export async function tokenAPI(
      *
      * @returns {IToken} - token
      */
-    ApiResponse(channel, MessageAPI.GET_TOKEN, async (msg) => {
+    ApiResponse(MessageAPI.GET_TOKEN, async (msg) => {
         if (msg) {
             const token = await tokenRepository.findOne(msg);
             return new MessageResponse(token);
@@ -890,7 +884,7 @@ export async function tokenAPI(
      *
      * @returns {IToken[]} - all tokens
      */
-    ApiResponse(channel, MessageAPI.IMPORT_TOKENS, async (msg) => {
+    ApiResponse(MessageAPI.IMPORT_TOKENS, async (msg) => {
         try {
             let items: IToken[] = msg;
             if (!Array.isArray(items)) {

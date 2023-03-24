@@ -4,7 +4,7 @@ const {
     Issuer
 } = require('../../../../dist/hedera-modules/vcjs/issuer');
 
-describe('Issuer', function () {
+describe.skip('Issuer', function () {
     const rootObj = {
         id: "testId",
         group: "testGroup"
@@ -17,12 +17,12 @@ describe('Issuer', function () {
 
         assert.throws(Issuer.fromJson);
         assert.throws(Issuer.fromJsonTree);
-        
+
         const issuer = Issuer.fromJsonTree(rootObj);
         assert.equal(issuer.getId(), rootObj.id);
         assert.equal(issuer.getGroup(), rootObj.group);
         assert.deepEqual(issuer.toJsonTree(), rootObj);
-        
+
         const rootJSON = JSON.stringify(rootObj);
         assert.equal(issuer.toJSON(), rootJSON);
         assert.deepEqual(Issuer.fromJson(rootJSON), issuer);

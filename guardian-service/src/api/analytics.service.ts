@@ -1,17 +1,16 @@
 import { ApiResponse } from '@api/api-response';
 import { DatabaseServer } from '@database-modules';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 import * as crypto from 'crypto';
 import { PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaModel, TokenModel } from '@analytics';
 
 /**
  * API analytics
- * @param channel
  * @constructor
  */
-export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void> {
-    ApiResponse(channel, MessageAPI.COMPARE_POLICIES, async (msg) => {
+export async function analyticsAPI(): Promise<void> {
+    ApiResponse(MessageAPI.COMPARE_POLICIES, async (msg) => {
         try {
             const {
                 type,
@@ -131,7 +130,7 @@ export async function analyticsAPI(channel: MessageBrokerChannel): Promise<void>
         }
     });
 
-    ApiResponse(channel, MessageAPI.COMPARE_SCHEMAS, async (msg) => {
+    ApiResponse(MessageAPI.COMPARE_SCHEMAS, async (msg) => {
         try {
             const {
                 type,

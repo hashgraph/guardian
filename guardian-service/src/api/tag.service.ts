@@ -1,5 +1,5 @@
 import { ApiResponse } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageResponse, MessageError, Logger } from '@guardian/common';
 import { GenerateUUIDv4, IRootConfig, MessageAPI, TagType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
 import { Tag } from '@entity/tag';
@@ -301,10 +301,8 @@ export async function getTarget(entity: TagType, id: string): Promise<{
 
 /**
  * Connect to the message broker methods of working with tags.
- *
- * @param channel - channel
  */
-export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
+export async function tagsAPI(): Promise<void> {
     /**
      * Create new tag
      *
@@ -312,7 +310,7 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
      *
      * @returns {Tag} new tag
      */
-    ApiResponse(channel, MessageAPI.CREATE_TAG, async (msg) => {
+    ApiResponse(MessageAPI.CREATE_TAG, async (msg) => {
         try {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -353,7 +351,7 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
         }
     });
 
-    ApiResponse(channel, MessageAPI.GET_TAGS, async (msg) => {
+    ApiResponse(MessageAPI.GET_TAGS, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid load tags parameter');
@@ -373,7 +371,7 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
         }
     });
 
-    ApiResponse(channel, MessageAPI.GET_TAG_CACHE, async (msg) => {
+    ApiResponse(MessageAPI.GET_TAG_CACHE, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid load tags parameter');
@@ -393,7 +391,7 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
         }
     });
 
-    ApiResponse(channel, MessageAPI.GET_SYNCHRONIZATION_TAGS, async (msg) => {
+    ApiResponse(MessageAPI.GET_SYNCHRONIZATION_TAGS, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid load tags parameter');
@@ -469,7 +467,7 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
         }
     });
 
-    ApiResponse(channel, MessageAPI.DELETE_TAG, async (msg) => {
+    ApiResponse(MessageAPI.DELETE_TAG, async (msg) => {
         try {
             if (!msg.uuid || !msg.owner) {
                 return new MessageError('Invalid load tags parameter');
@@ -497,7 +495,7 @@ export async function tagsAPI(channel: MessageBrokerChannel): Promise<void> {
         }
     });
 
-    ApiResponse(channel, MessageAPI.EXPORT_TAGS, async (msg) => {
+    ApiResponse(MessageAPI.EXPORT_TAGS, async (msg) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid load tags parameter');
