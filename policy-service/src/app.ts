@@ -12,18 +12,17 @@ Promise.all([
     MessageBrokerChannel.connect('policy-service')
 ]).then(async values => {
     const [cn] = values;
-    const channel = new MessageBrokerChannel(cn, 'policy-service');
 
-    new Logger().setChannel(channel);
+    new Logger().setConnection(cn);
     const state = new ApplicationState('POLICY_SERVICE');
-    state.setChannel(channel);
+    state.setConnection(cn);
     await state.updateState(ApplicationStates.STARTED);
 
     /////////////
 
     state.updateState(ApplicationStates.INITIALIZING);
 
-    await policyAPI(channel);
+    await policyAPI(cn);
 
     await new Logger().info('Policy service started', ['GUARDIAN_SERVICE']);
 

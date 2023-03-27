@@ -23,7 +23,7 @@ export class PropertyValidator {
      */
     public static inputValidator(name: string, value: string, type?: string): string {
         if (!value) {
-            return `Option "${name}" does not set`;
+            return `Option "${name}" is not set`;
         }
         if (type && typeof value !== 'string') {
             return `Option "${name}" must be a ${type}`;

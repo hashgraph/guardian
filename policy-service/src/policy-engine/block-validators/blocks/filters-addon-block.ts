@@ -17,7 +17,7 @@ export class FiltersAddonBlock {
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
             if (!ref.options.type) {
-                validator.addError('Option "type" does not set');
+                validator.addError('Option "type" is not set');
             } else {
                 switch (ref.options.type) {
                     case 'dropdown':

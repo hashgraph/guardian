@@ -32,17 +32,17 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 2.1.1 Add ‘**tokenActionBlock**_**’**_ immediately after the user registration
 
-![Adding TokenActionBlock](<../../../../.gitbook/assets/2 (2).png>)
+![Adding TokenActionBlock](<../../../../.gitbook/assets/2 (2) (1).png>)
 
 2.1.2 Select token and action type
 
-![Selecting Token and Token Action Type](<../../../../.gitbook/assets/3 (1).png>)
+![Selecting Token and Token Action Type](<../../../../.gitbook/assets/3 (1) (1).png>)
 
 2.2 Set user KYC
 
 2.2.1 Add ‘_**tokenActionBlock’**_ immediately after ‘_token\_associate’_
 
-![Adding tokenActionBlock ](<../../../../.gitbook/assets/4 (1) (1).png>)
+![Adding tokenActionBlock ](<../../../../.gitbook/assets/4 (1) (1) (1).png>)
 
 2.2.2 Select token and the action type
 
@@ -52,7 +52,7 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 3.1 Add ‘**mintDocumentBlock**_**’**_ immediately after saving the new document (**save\_new\_documents**)
 
-![Adding mintDocumentBlock](../../../../.gitbook/assets/6.png)
+![Adding mintDocumentBlock](<../../../../.gitbook/assets/6 (1).png>)
 
 3.2 Select token which will be minted
 

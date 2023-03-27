@@ -27,7 +27,6 @@ import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { ApiResponse } from '@api/api-response';
 import {
-    MessageBrokerChannel,
     MessageResponse,
     MessageError,
     Logger,
@@ -319,8 +318,8 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
  * @param channel - channel
  *
  */
-export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: MessageBrokerChannel) {
-    ApiResponse(channel, MessageAPI.GET_BALANCE, async (msg) => {
+export function profileAPI() {
+    ApiResponse(MessageAPI.GET_BALANCE, async (msg) => {
         try {
             const { username } = msg;
             const wallet = new Wallet();
@@ -337,6 +336,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
             }
 
             const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
+            console.log(key);
             const balance = await workers.addNonRetryableTask({
                 type: WorkerTaskType.GET_USER_BALANCE,
                 data: {
@@ -344,6 +344,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
                     hederaAccountKey: key
                 }
             }, 1);
+            console.log(balance);
             return new MessageResponse({
                 balance,
                 unit: 'Hbar',
@@ -359,7 +360,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
         }
     });
 
-    ApiResponse(channel, MessageAPI.GET_USER_BALANCE, async (msg) => {
+    ApiResponse(MessageAPI.GET_USER_BALANCE, async (msg) => {
         try {
             const { username } = msg;
 
@@ -397,7 +398,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
     /**
      * @deprecated 2022-07-27
      */
-    ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE, async (msg) => {
+    ApiResponse(MessageAPI.CREATE_USER_PROFILE, async (msg) => {
         try {
             const userDID = await createUserProfile(msg, emptyNotifier());
 
@@ -409,7 +410,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
         }
     });
 
-    ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE_COMMON, async (msg) => {
+    ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON, async (msg) => {
         try {
             const { username, profile } = msg;
 
@@ -429,9 +430,9 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
         }
     });
 
-    ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
         const { username, profile, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {
@@ -453,9 +454,9 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
         return new MessageResponse({ taskId });
     });
 
-    ApiResponse(channel, MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
         const { username, profile, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {
@@ -479,9 +480,9 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
         return new MessageResponse({ taskId });
     });
 
-    ApiResponse(channel, MessageAPI.GET_ALL_USER_TOPICS_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.GET_ALL_USER_TOPICS_ASYNC, async (msg) => {
         const { username, profile, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {

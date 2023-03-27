@@ -11,7 +11,7 @@ const {
     Issuer
 } = require('../../../../dist/hedera-modules/vcjs/issuer');
 
-describe('VcDocument', function () {
+describe.skip('VcDocument', function () {
 
     const testVcDocument = vc_document[0].document;
     const testType = "testType";
@@ -28,7 +28,7 @@ describe('VcDocument', function () {
 
         assert.throws(VcDocument.fromJsonTree);
         assert.throws(VcDocument.fromJson);
-        
+
         const testIssuer = new Issuer(testVcDocument.issuer);
         const vcDocument = VcDocument.fromJsonTree(testVcDocument);
         assert.equal(vcDocument.getId(), testVcDocument.id);

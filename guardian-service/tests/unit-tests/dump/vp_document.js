@@ -7,7 +7,7 @@ module.exports.vp_document = [{
     'owner': 'did:hedera:testnet:DngCWN5hckWLRYnAijxQz5Q2Gyy6cxjnDgvq2VNbGMJj;hedera:testnet:fid=0.0.2276271',
     'hash': '6FNz1t4eHNDncM1zn6J8djJLPnjuhQq3hp6EmcF1ictB',
     'document': {
-        'id': '5d46d1fd-75ad-4073-ade7-322d6f31374c',
+        'id': 'urn:uuid:5d46d1fd-75ad-4073-ade7-322d6f31374c',
         'type': [
             'VerifiablePresentation'
         ],

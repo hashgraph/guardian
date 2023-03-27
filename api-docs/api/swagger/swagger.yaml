@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: "Guardian"
   description: "The Guardian is a modular open-source solution that includes best-in-class identity management and decentralized ledger technology (DLT) libraries. At the heart of the Guardian solution is a sophisticated Policy Workflow Engine (PWE) that enables applications to offer a requirements-based tokenization implementation."
-  version: "2.10.0"
+  version: "2.11.0"
   contact:
     name: "API developer"
     url: "https://envisionblockchain.com"
@@ -740,6 +740,8 @@ tags:
     description: "Contracts"
   - name: "modules"
     description: "Policy Modules"
+  - name: "maps"
+    description: "Map operations"
 paths:
   /accounts:
     get:
@@ -4056,6 +4058,50 @@ paths:
     post:
       tags:
         - policies
+      description: Sends data to the specified block.
+      security:
+        - bearerAuth: []
+      summary: Sends data to the specified block.
+      parameters:
+        - in: path
+          name: policyId
+          schema:
+            type: string
+          required: true
+          description: Policy ID.
+        - in: path
+          name: tag
+          schema:
+            type: string
+          required: true
+          description: Tag from the selected policy.
+      requestBody:
+        description: Object with the data to be sent to the block.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyBlockData'
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - policies
       description: Requests block data by tag. Only users with a role that described in block are allowed to make the request.
       security:
         - bearerAuth: []
@@ -4090,39 +4136,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-    get:
-      tags:
-        - policies
-      description: Sends data to the specified block.
-      security:
-        - bearerAuth: []
-      summary: Sends data to the specified block.
-      parameters:
-        - in: path
-          name: policyId
-          schema:
-            type: string
-          required: true
-          description: Policy ID.
-        - in: path
-          name: tag
-          schema:
-            type: string
-          required: true
-          description: Tag from the selected policy.
-      responses:
-        200:
-          description: Successful operation.
-        401:
-          description: Unauthorized.
-        403:
-          description: Forbidden.
-        500:
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /policies/{policyId}/multiple:
     post:
       tags:
@@ -4130,7 +4143,7 @@ paths:
       description: Creates a link between the current policy and the main policy. Or creates a group making the current policy the main one.
       security:
         - bearerAuth: []
-      summary: Requests Multi policy config.
+      summary: Creates Multi policy config.
       parameters:
         - in: path
           name: policyId
@@ -5675,6 +5688,29 @@ paths:
           description: Unauthorized.
         403:
           description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /map/key:
+    get:
+      tags:
+        - maps
+      description: Returns map api key.
+      security:
+      - bearerAuth: []
+      summary: Returns map api key.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: string
+        401:
+          description: Unauthorized.
         500:
           description: Internal server error.
           content:

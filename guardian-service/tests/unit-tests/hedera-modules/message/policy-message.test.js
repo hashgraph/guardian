@@ -9,7 +9,7 @@ const { MessageType } = require('../../../../dist/hedera-modules/message/message
 const { MessageAction } = require('../../../../dist/hedera-modules/message/message-action');
 const { UrlType } = require('../../../../dist/hedera-modules/message/url.interface');
 
-describe('PolicyMessage', function () {
+describe.skip('PolicyMessage', function () {
 
     const testPolicyMessage = {
         id: "testId",

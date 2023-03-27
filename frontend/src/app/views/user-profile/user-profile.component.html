@@ -14,7 +14,11 @@
                 <mat-tab label="ACCOUNT">
                     <div class="profile-item">
                         <div class="profile-item-name">HEDERA ID:</div>
-                        <div class="profile-item-value"> {{profile.hederaAccountId}}</div>
+                        <div class="profile-item-value">
+                            <hedera-explorer type="accounts"
+                                [params]="profile.hederaAccountId || ''">{{profile.hederaAccountId}}
+                            </hedera-explorer>
+                        </div>
                     </div>
                     <div class="profile-item">
                         <div class="profile-item-name"> BALANCE:</div>
@@ -22,7 +26,11 @@
                     </div>
                     <div *ngIf="profile.topicId" class="profile-item">
                         <div class="profile-item-name"> USER TOPIC:</div>
-                        <div class="profile-item-value"> {{profile.topicId}} </div>
+                        <div class="profile-item-value">
+                            <hedera-explorer type="topics"
+                                [params]="profile.topicId">{{profile.topicId}}
+                            </hedera-explorer>
+                        </div>
                     </div>
                     <div class="profile-item">
                         <div class="profile-item-name"> Standard Registry:</div>

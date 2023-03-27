@@ -38,7 +38,7 @@ See detailed information about the Roles in [Example 1](creating-and-using-roles
 * **End Date** of type ‘Date’
 * **Amount** of type ‘Number to represent the amount of CO2 emissions for the time period (between the ‘Start Date’ and ‘End Date’)
 
-![Creation of 3 fields](<../../../../.gitbook/assets/2 (2) (1).png>)
+![Creation of 3 fields](<../../../../.gitbook/assets/2 (2) (1) (1).png>)
 
 #### 2. To perform data input into the Policy the ‘**requestVcDocumentBlock**’ will be used
 
@@ -62,7 +62,7 @@ For this ‘**interfaceStepBlock**’ is required with ‘**Cyclic**’ option e
 
 2.5 By default ‘**requestVcDocumentBlock**’ is displayed as a Form covering the entire page. To prevent this choose ‘**DIALOG**’ value for the field ‘Type’.
 
-![Selecting DIALOG as Type](<../../../../.gitbook/assets/7 (2) (1).png>)
+![Selecting DIALOG as Type](<../../../../.gitbook/assets/7 (2) (1) (1).png>)
 
 #### 3. Save documents in the Database.
 
@@ -86,7 +86,7 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.1 Add ’**interfaceDocumentsSourceBlock**_’_ into the ‘**user\_roles**_’_ container
 
-![Adding interfaceDocumentsSourceBlock into user\_roles container](<../../../../.gitbook/assets/11 (2).png>)
+![Adding interfaceDocumentsSourceBlock into user\_roles container](<../../../../.gitbook/assets/11 (2) (1).png>)
 
 1.2 Specify the needed columns, their titles and where the values will be taken for display
 
@@ -96,7 +96,7 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.3.1 Add ‘**documentsSourceAddon**_’ to the_ ‘**user\_grid**_’_
 
-![Adding documentsSourceAddon to retrieve data](<../../../../.gitbook/assets/13 (2).png>)
+![Adding documentsSourceAddon to retrieve data](<../../../../.gitbook/assets/13 (2) (1).png>)
 
 1.3.2 Select where to retrieve the documents from
 

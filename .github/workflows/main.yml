@@ -32,6 +32,8 @@ jobs:
           pushd frontend
           npm install
           npm run build
+          npm run build:prod
+          npm run build:demo
           popd
           pushd auth-service
           npm install

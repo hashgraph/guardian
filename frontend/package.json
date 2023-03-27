@@ -9,6 +9,7 @@
         "@angular/compiler": "~12.1.1",
         "@angular/core": "~12.1.1",
         "@angular/forms": "~12.1.1",
+        "@angular/google-maps": "^12.1.1",
         "@angular/material": "^12.1.1",
         "@angular/platform-browser": "~12.1.1",
         "@angular/platform-browser-dynamic": "~12.1.1",
@@ -16,6 +17,7 @@
         "@ctrl/ngx-codemirror": "^5.1.1",
         "@enonic/global-polyfill": "^1.0.0",
         "@guardian/interfaces": "file:../interfaces",
+        "ajv": "^8.10.0",
         "ajv-formats": "^2.1.1",
         "codemirror": "^5.65.0",
         "cronstrue": "^2.4.0",
@@ -62,5 +64,6 @@
         "test": "ng test",
         "watch": "ng build --watch --configuration development --output-path ../www-data"
     },
-    "version": "2.10.0"
+    "version": "2.11.0-prerelease",
+    "stableVersion": "2.10.0"
 }

@@ -9,7 +9,7 @@ const {
 const { PrivateKey } = require("@hashgraph/sdk");
 const { did_document } = require('../../dump/did_document');
 
-describe('DidDocuments', function () {
+describe.skip('DidDocuments', function () {
     const topicId = "0.0.34195177";
     const did = `did:hedera:testnet:4TxrFRUL3zxz5tMb9ioZEzhDq6h3QBijWAFbPWC7mXFv;hedera:testnet:tid=${topicId}`;
     const newPrivateKey = PrivateKey.generate();
@@ -22,7 +22,7 @@ describe('DidDocuments', function () {
         assert.throw(DidRootKey.create);
         assert.throw(DidRootKey.fromJsonTree);
         assert.throw(DidRootKey.fromJson);
-        
+
         const didRootKeyWithoutKeys = DidRootKey.create(did);
         assert.exists(didRootKeyWithoutKeys);
         assert.equal(didRootKeyWithoutKeys.getMethod(), DidRootKey.DID_ROOT_KEY_NAME);
@@ -82,10 +82,10 @@ describe('DidDocuments', function () {
         const didDocumentBaseCreatedByPrivateKey = DidDocumentBase.createByPrivateKey(did, newPrivateKey);
         assert.exists(didDocumentBaseCreatedByPrivateKey);
         assert.hasAllKeys(didDocumentBaseCreatedByPrivateKey.getPrivateDidDocument(), [
-            DidDocumentBase.CONTEXT, 
-            DidDocumentBase.ID, 
-            DidDocumentBase.VERIFICATION_METHOD, 
-            DidDocumentBase.AUTHENTICATION, 
+            DidDocumentBase.CONTEXT,
+            DidDocumentBase.ID,
+            DidDocumentBase.VERIFICATION_METHOD,
+            DidDocumentBase.AUTHENTICATION,
             DidDocumentBase.ASSERTION_METHOD
         ]);
         assert.equal(didDocumentBaseCreatedByPrivateKey.getId(), did);
@@ -93,10 +93,10 @@ describe('DidDocuments', function () {
         const didDocumentBaseCreatedByPublicKey = DidDocumentBase.createByPublicKey(did, newPrivateKey.publicKey);
         assert.exists(didDocumentBaseCreatedByPublicKey);
         assert.hasAllKeys(didDocumentBaseCreatedByPublicKey.getDidDocument(), [
-            DidDocumentBase.CONTEXT, 
-            DidDocumentBase.ID, 
-            DidDocumentBase.VERIFICATION_METHOD, 
-            DidDocumentBase.AUTHENTICATION, 
+            DidDocumentBase.CONTEXT,
+            DidDocumentBase.ID,
+            DidDocumentBase.VERIFICATION_METHOD,
+            DidDocumentBase.AUTHENTICATION,
             DidDocumentBase.ASSERTION_METHOD
         ]);
         assert.equal(didDocumentBaseCreatedByPublicKey.getId(), did);

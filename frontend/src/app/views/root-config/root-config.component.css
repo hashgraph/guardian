@@ -67,7 +67,7 @@
     border-radius: 36px;
 }
 
-a {
+:host ::ng-deep a {
     color: rgb(0, 0, 238);
     cursor: pointer;
     text-decoration: underline;
