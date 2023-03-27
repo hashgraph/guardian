@@ -1,4 +1,4 @@
-import { NatsConnection, StringCodec, JSONCodec, headers } from 'nats';
+import { NatsConnection, StringCodec, JSONCodec, headers, Subscription } from 'nats';
 import { Codec } from 'nats/lib/nats-base-client/codec';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
@@ -80,6 +80,42 @@ export abstract class NatsService {
     public setConnection(cn: NatsConnection): NatsService {
         this.connection = cn;
         return this
+    }
+
+    /**
+     * Publish
+     * @param subject
+     * @param data
+     * @param replySubject
+     */
+    public publish(subject: string, data?: unknown, replySubject?: string): void {
+        const opts: any = {};
+
+        if (replySubject) {
+            opts.reply = replySubject;
+        }
+
+        this.connection.publish(subject, this.jsonCodec.encode(data), opts);
+    }
+
+    /**
+     * Subscribe
+     * @param subject
+     * @param cb
+     */
+    public subscribe(subject: string, cb: Function): Subscription {
+        const sub = this.connection.subscribe(subject);
+        const fn = async (_sub: Subscription) => {
+            for await (const m of _sub) {
+                try {
+                    cb(this.jsonCodec.decode(m.data));
+                } catch (e) {
+                    console.error(e.message);
+                }
+            }
+        }
+        fn(sub);
+        return sub;
     }
 
     /**

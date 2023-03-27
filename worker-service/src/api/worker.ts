@@ -1,6 +1,13 @@
-import { Logger, MessageBrokerChannel, SettingsContainer, ValidateConfiguration } from '@guardian/common';
 import {
-    ExternalMessageEvents,
+    Logger,
+    MessageBrokerChannel,
+    MessageResponse,
+    NatsService,
+    SettingsContainer,
+    ValidateConfiguration
+} from '@guardian/common';
+import {
+    ExternalMessageEvents, GenerateUUIDv4,
     ITask,
     ITaskResult,
     IWorkerRequest,
@@ -13,6 +20,7 @@ import Blob from 'cross-blob';
 import { AccountId, ContractFunctionParameters, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { HederaUtils } from './helpers/utils';
 import axios from 'axios';
+import process from 'process';
 
 /**
  * Sleep helper
@@ -29,12 +37,29 @@ function rejectTimeout(t: number): Promise<void> {
 /**
  * Worker class
  */
-export class Worker {
+export class Worker extends NatsService{
     /**
      * Logger instance
      * @private
      */
     private readonly logger: Logger;
+
+    /**
+     * Message queue name
+     */
+    public messageQueueName = 'workers-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'workers-queue-reply-' + GenerateUUIDv4();
+
+    /**
+     * Old channel
+     * @private
+     */
+    private channel: MessageBrokerChannel;
 
     /**
      * Ipfs client
@@ -93,9 +118,8 @@ export class Worker {
     private readonly taskTimeout: number;
 
     constructor(
-        private readonly channel: MessageBrokerChannel,
-        private readonly channelName: string
     ) {
+        super();
         const { IPFS_STORAGE_API_KEY } = new SettingsContainer().settings;
 
         this.logger = new Logger();
@@ -109,29 +133,77 @@ export class Worker {
     /**
      * Initialize worker
      */
-    public init(): void {
-        setInterval(() => {
-            if (!this.isInUse) {
-                this.getItem().then();
-            }
-        }, parseInt(process.env.REFRESH_INTERVAL, 10) * 1000);
+    public async init(): Promise<void> {
+        await super.init();
+        this.channel = new MessageBrokerChannel(this.connection, 'worker');
+        // setInterval(() => {
+        //     if (!this.isInUse) {
+        //         this.getItem().then();
+        //     }
+        // }, parseInt(process.env.REFRESH_INTERVAL, 10) * 1000);
 
-        this.channel.subscribe(WorkerEvents.QUEUE_UPDATED, () => {
+        // this.subscribe(WorkerEvents.QUEUE_UPDATED, (msg) => {
+        //     if (!this.isInUse) {
+        //         this.getItem(msg.subject).then();
+        //     } else {
+        //         this.updateEventReceived = true;
+        //     }
+        // });
+
+        this.subscribe(WorkerEvents.GET_FREE_WORKERS, async (msg) => {
             if (!this.isInUse) {
-                this.getItem().then();
-            } else {
-                this.updateEventReceived = true;
+                this.publish(msg.replySubject, {
+                    subject: [this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('-'),
+                    minPriority: this.minPriority,
+                    maxPriority: this.maxPriority
+                })
             }
         });
 
-        this.channel.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
+        const runTask = async (task) => {
+            this.isInUse = true;
+            this.currentTaskId = task.id;
+
+            this.logger.info(`Task started: ${task.id}, ${task.type}`, [process.env.SERVICE_CHANNEL]);
+
+            const result = await this.processTaskWithTimeout(task);
+
+            try {
+                await this.sendMessage([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
+                if (result?.error) {
+                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [process.env.SERVICE_CHANNEL]);
+                } else {
+                    this.logger.info(`Task completed: ${this.currentTaskId}`, [process.env.SERVICE_CHANNEL]);
+                }
+            } catch (error) {
+                this.logger.error(error.message, [process.env.SERVICE_CHANNEL]);
+                this.clearState();
+
+            }
+            this.isInUse = false;
+        }
+
+        this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('-'), async (task) => {
+            if (!this.isInUse) {
+                runTask(task);
+
+                return new MessageResponse({
+                    result: true
+                })
+            }
+            return new MessageResponse({
+                result: false
+            })
+        })
+
+        this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
             await new SettingsContainer().updateSetting('IPFS_STORAGE_API_KEY', msg.ipfsStorageApiKey);
             try {
                 this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
                 const validator = new ValidateConfiguration();
                 await validator.validate();
             } catch (error) {
-                this.logger.error(`Update settings error, ${error.message}`, [this.channelName]);
+                this.logger.error(`Update settings error, ${error.message}`, ['WORKER']);
             }
         });
 
@@ -147,27 +219,6 @@ export class Worker {
                 throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
             }
         })
-    }
-
-    /**
-     * Request to guardian service method
-     * @param entity
-     * @param params
-     * @param type
-     */
-    private async request<T extends any>(entity: string, params?: IWorkerRequest | ITaskResult, type?: string): Promise<T> {
-        try {
-            const response = await this.channel.request<any, T>(`guardians.${entity}`, params);
-            if (!response) {
-                throw new Error('Server is not available');
-            }
-            if (response.error) {
-                throw new Error(response.error);
-            }
-            return response.body;
-        } catch (error) {
-            throw new Error(`Guardian (${entity}) send: ` + error);
-        }
     }
 
     /**
@@ -985,63 +1036,5 @@ export class Worker {
                 resolve(error);
             }
         })
-    }
-
-    /**
-     * Get item from queue
-     */
-    public async getItem(): Promise<any> {
-        this.isInUse = true;
-
-        // this.logger.info(`Search task`, [this.channelName]);
-
-        let task: any = null;
-        try {
-            task = await Promise.race([
-                this.request(WorkerEvents.QUEUE_GET, {
-                    minPriority: this.minPriority,
-                    maxPriority: this.maxPriority,
-                    taskTimeout: this.taskTimeout
-                }),
-                rejectTimeout(this.taskTimeout)
-            ]);
-        } catch (e) {
-            this.clearState();
-            return;
-        }
-
-        if (!task) {
-            this.isInUse = false;
-
-            // this.logger.info(`Task not found`, [this.channelName]);
-
-            if (this.updateEventReceived) {
-                this.updateEventReceived = false;
-                this.getItem().then();
-            }
-
-            return;
-        }
-
-        this.currentTaskId = task.id;
-
-        this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.channelName]);
-
-        const result = await this.processTaskWithTimeout(task);
-
-        try {
-            await this.request(WorkerEvents.TASK_COMPLETE, result);
-            if (result?.error) {
-                this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this.channelName]);
-            } else {
-                this.logger.info(`Task completed: ${this.currentTaskId}`, [this.channelName]);
-            }
-        } catch (error) {
-            this.logger.error(error.message, [this.channelName]);
-            this.clearState();
-
-        }
-
-        this.getItem().then();
     }
 }

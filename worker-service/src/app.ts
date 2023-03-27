@@ -33,8 +33,8 @@ Promise.all([
     await settingsContainer.init('IPFS_STORAGE_API_KEY');
 
     await state.updateState(ApplicationStates.INITIALIZING);
-    const w = new Worker(channel, channelName);
-    w.init();
+    const w = new Worker();
+    await w.setConnection(cn).init();
 
     const validator = new ValidateConfiguration();
 
