@@ -160,7 +160,7 @@ Promise.all([
     await new Wallet().setConnection(cn).init();
     await new Users().setConnection(cn).init();
     const workersHelper = new Workers();
-    workersHelper.setChannel(channel);
+    await workersHelper.setConnection(cn).init();
     workersHelper.initListeners();
 
     const validator = new ValidateConfiguration();
