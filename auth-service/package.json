@@ -9,7 +9,7 @@
     "@guardian/common": "^2.11.0-prerelease",
     "@guardian/interfaces": "^2.11.0-prerelease",
     "@mikro-orm/core": "~5.3.0",
-    "@mikro-orm/mongodb": "~5.3.0",
+    "@mikro-orm/mongodb": "~5.6.15",
     "dotenv": "^16.0.0",
     "jsonwebtoken": "^8.5.1",
     "module-alias": "^2.2.2",
