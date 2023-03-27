@@ -92,7 +92,7 @@ Promise.all([
 
     await generator.generate(policyConfig, skipRegistration, policyValidator);
 
-    generator.sendMessage(PolicyEvents.POLICY_READY, {
+    generator.publish(PolicyEvents.POLICY_READY, {
         policyId: policyId.toString(),
         data: policyValidator.getSerializedErrors()
     });

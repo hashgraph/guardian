@@ -106,10 +106,9 @@ export class PolicyEngine extends NatsService {
     public async init(): Promise<void> {
         await super.init();
 
-        this.getMessages(PolicyEvents.POLICY_READY, (msg: any) => {
-            console.log(msg);
+        this.subscribe(PolicyEvents.POLICY_READY, (msg: any) => {
             PolicyEngine.runReadyEvent(msg.policyId, msg.data);
-        }, true);
+        });
 
         const policies = await DatabaseServer.getPolicies({
             where: {
@@ -135,9 +134,9 @@ export class PolicyEngine extends NatsService {
     private runReadyEvent(policyId: string, data?: any): void {
         console.log('policy ready', policyId, this.policyReadyCallbacks.has(policyId));
 
-        // if (this.policyReadyCallbacks.has(policyId)) {
+        if (this.policyReadyCallbacks.has(policyId)) {
             this.policyReadyCallbacks.get(policyId)(data);
-        // }
+        }
     }
 
     /**
