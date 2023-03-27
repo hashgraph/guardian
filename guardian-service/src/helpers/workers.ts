@@ -150,7 +150,7 @@ export class Workers extends NatsService {
             setTimeout(() => {
                 subscription.unsubscribe();
                 resolve(workers);
-            }, 500);
+            }, 300);
         })
     }
 
@@ -158,7 +158,7 @@ export class Workers extends NatsService {
      * Init listeners
      */
     public initListeners() {
-        setInterval(async () => {
+        const searchAndUpdateTasks = async () => {
             if (this.queue.length > 0) {
                 for (const worker of await this.getFreeWorkers()) {
                     const itemIndex = this.queue.findIndex(_item => {
@@ -175,7 +175,11 @@ export class Workers extends NatsService {
                     }
                 }
             }
-        }, 1000);
+        }
+
+        this.subscribe(WorkerEvents.WORKER_READY, searchAndUpdateTasks);
+
+        setInterval(searchAndUpdateTasks, 1000);
 
         this.getMessages([this.messageQueueName, WorkerEvents.TASK_COMPLETE].join('-'), async (msg: any) => {
             console.log('TASK_COMPLETE', msg.id);

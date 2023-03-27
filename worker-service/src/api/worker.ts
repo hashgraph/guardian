@@ -160,6 +160,8 @@ export class Worker extends NatsService{
                 this.clearState();
 
             }
+            await this.sendMessage([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
+            await this.publish(WorkerEvents.WORKER_READY);
             this.isInUse = false;
         }
 
