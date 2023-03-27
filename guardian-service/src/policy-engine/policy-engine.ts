@@ -913,16 +913,8 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      */
     public async destroyModel(policyId: string): Promise<void> {
-        const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-        if (serviceChannelEntity) {
-            const { name } = serviceChannelEntity;
-            PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
-            this.sendMessage(PolicyEvents.DELETE_POLICY, {
-                policyId,
-                policyServiceName: name
-
-            });
-        }
+        PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
+        new GuardiansService().sendPolicyMessage(PolicyEvents.DELETE_POLICY, policyId, {});
     }
 
     /**
