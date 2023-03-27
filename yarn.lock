@@ -292,9 +292,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hashgraph/sdk@npm:^2.22.0":
-  version: 2.22.0
-  resolution: "@hashgraph/sdk@npm:2.22.0"
+"@hashgraph/sdk@npm:^2.23.0":
+  version: 2.23.0
+  resolution: "@hashgraph/sdk@npm:2.23.0"
   dependencies:
     "@ethersproject/rlp": ^5.7.0
     "@grpc/grpc-js": ^1.7.3
@@ -313,7 +313,7 @@ __metadata:
   peerDependenciesMeta:
     expo:
       optional: true
-  checksum: c4dce1470856dcb58ec65d421ec120593e0641f05530bfdd0b00b7ed2530d0a6626fb7c24514bf41607512e623f29523cc8aaec901be4d32ae6ab6d288c1c13a
+  checksum: 34e81b50b15891ecec72c4c38e662ec9a51c7217cf469adae5c74a231743d344a4d99916ff70e85f6abee2b546882b07dfd64b9e7589e23ea162a8e6257f4124
   languageName: node
   linkType: hard
 
@@ -4683,7 +4683,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.11.0-prerelease
     "@guardian/interfaces": ^2.11.0-prerelease
-    "@hashgraph/sdk": ^2.22.0
+    "@hashgraph/sdk": ^2.23.0
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.3.0
@@ -8311,7 +8311,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.11.0-prerelease
     "@guardian/interfaces": ^2.11.0-prerelease
-    "@hashgraph/sdk": ^2.22.0
+    "@hashgraph/sdk": ^2.23.0
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.3.0
@@ -10734,7 +10734,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.11.0-prerelease
     "@guardian/interfaces": ^2.11.0-prerelease
-    "@hashgraph/sdk": ^2.22.0
+    "@hashgraph/sdk": ^2.23.0
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
