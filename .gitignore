@@ -6,7 +6,10 @@ config.keys
 www-data/
 /test_results/
 /guardian-service/config.json
-*/.env*
+/guardian-service/.env
+/guardian-service/.env.docker
+/worker-service/.env
+/worker-service/.env.docker
 tsconfig.tsbuildinfo
 .yarn/*
 !.yarn/patches
