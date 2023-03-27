@@ -1,7 +1,7 @@
 import { Logger, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import path from 'path';
-import { fork, ChildProcess } from 'node:child_process';
+import { execFile, fork, ChildProcess } from 'node:child_process';
 import * as process from 'process';
 import { headers, NatsConnection } from 'nats';
 
@@ -9,6 +9,11 @@ import { headers, NatsConnection } from 'nats';
  * Max policy instances
  */
 const MAX_POLICY_INSTANCES = (process.env.MAX_POLICY_INSTANCES) ? parseInt(process.env.MAX_POLICY_INSTANCES, 10) : 1000;
+/**
+ * Service scripts
+ */
+const { RUN_SERVICE_SCRIPT, STOP_SERVICE_SCRIPT } = process.env;
+
 
 /**
  * PolicyEngineChannel
@@ -112,6 +117,15 @@ function runPolicyProcess(policy: unknown, policyId: string, policyServiceName: 
     childProcess.on('exit', (code) => {
         logger.info(`Policy process exit with code ${code}`, ['POLICY-SERVICE', policyId]);
         --processCount;
+        if (processCount === 0) {
+            execFile(STOP_SERVICE_SCRIPT, (error, _data) => {
+                if (error) {
+                    logger.error(error, ['POLICY-SERVICE', STOP_SERVICE_SCRIPT]);
+                    return;
+                }
+                logger.info(_data, ['POLICY-SERVICE', STOP_SERVICE_SCRIPT]);
+            })
+        }
     });
     models.set(policyId, childProcess);
     processCount++;
@@ -126,6 +140,16 @@ export async function policyAPI(cn: NatsConnection): Promise<void> {
     const channel = new PolicyEngineChannel();
     await channel.setConnection(cn).init();
 
+    channel.subscribe(PolicyEvents.GET_FREE_POLICY_SERVICES, (msg) => {
+        const { replySubject } = msg;
+        if (replySubject) {
+            channel.publish(replySubject, {
+                service: process.env.SERVICE_CHANNEL,
+                free: processCount <= MAX_POLICY_INSTANCES
+            })
+        }
+    });
+
     channel.registerListener(PolicyEvents.GENERATE_POLICY, async (data: any) => {
         if (processCount <= MAX_POLICY_INSTANCES) {
             const {
@@ -137,6 +161,38 @@ export async function policyAPI(cn: NatsConnection): Promise<void> {
             } = data;
             runPolicyProcess(policy, policyId, policyServiceName, skipRegistration, resultsContainer);
             return true;
+        } else {
+            if (RUN_SERVICE_SCRIPT) {
+                const freeServices = [];
+                const sub = channel.subscribe([channel.replySubject, PolicyEvents.POLICY_SERVICE_FREE_STATUS].join('-'), (msg) => {
+                    freeServices.push(msg);
+                })
+
+                channel.publish(PolicyEvents.GET_FREE_POLICY_SERVICES, {
+                    replySubject: [channel.replySubject, PolicyEvents.POLICY_SERVICE_FREE_STATUS].join('-')
+                });
+
+                setTimeout(() => {
+                    sub.unsubscribe();
+                    console.log(freeServices);
+                    let freeExist = true;
+
+                    for (const s of freeServices) {
+                        freeExist = freeExist && s.free
+                    }
+                    if (!freeExist) {
+                        console.log('run', RUN_SERVICE_SCRIPT);
+                        execFile(RUN_SERVICE_SCRIPT, (error, _data) => {
+                            const logger = new Logger();
+                            if (error) {
+                                logger.error(error, ['POLICY-SERVICE', RUN_SERVICE_SCRIPT]);
+                                return;
+                            }
+                            logger.info(_data, ['POLICY-SERVICE', RUN_SERVICE_SCRIPT]);
+                        })
+                    }
+                }, 1000);
+            }
         }
 
         return false;
