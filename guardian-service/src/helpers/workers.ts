@@ -38,12 +38,6 @@ export class Workers extends NatsService {
     private readonly maxRepetitions = 25;
 
     /**
-     * Adding task
-     * @private
-     */
-    private addingTask: boolean = false;
-
-    /**
      * Add non retryable task
      * @param task
      * @param priority
@@ -89,7 +83,6 @@ export class Workers extends NatsService {
      * @param registerCallback
      */
     private addTask(task: ITask, priority: number, isRetryableTask: boolean = false, attempts: number = 0, registerCallback = true): Promise<any> {
-        this.addingTask = true;
         const taskId = task.id || GenerateUUIDv4();
         task.id = taskId;
         task.priority = priority;
@@ -130,9 +123,7 @@ export class Workers extends NatsService {
                 resolve(null);
             }
         });
-        this.addingTask = false;
 
-        // this.publish(WorkerEvents.QUEUE_UPDATED, {subject: [this.messageQueueName, WorkerEvents.QUEUE_GET].join('-')});
         return result;
     }
 

@@ -10,7 +10,6 @@ import {
     ExternalMessageEvents, GenerateUUIDv4,
     ITask,
     ITaskResult,
-    IWorkerRequest,
     WorkerEvents,
     WorkerTaskType
 } from '@guardian/interfaces';
@@ -72,12 +71,6 @@ export class Worker extends NatsService{
     private currentTaskId: string;
 
     /**
-     * Update event received flag
-     * @private
-     */
-    private updateEventReceived = false;
-
-    /**
      * Worker in use
      * @private
      */
@@ -136,19 +129,6 @@ export class Worker extends NatsService{
     public async init(): Promise<void> {
         await super.init();
         this.channel = new MessageBrokerChannel(this.connection, 'worker');
-        // setInterval(() => {
-        //     if (!this.isInUse) {
-        //         this.getItem().then();
-        //     }
-        // }, parseInt(process.env.REFRESH_INTERVAL, 10) * 1000);
-
-        // this.subscribe(WorkerEvents.QUEUE_UPDATED, (msg) => {
-        //     if (!this.isInUse) {
-        //         this.getItem(msg.subject).then();
-        //     } else {
-        //         this.updateEventReceived = true;
-        //     }
-        // });
 
         this.subscribe(WorkerEvents.GET_FREE_WORKERS, async (msg) => {
             if (!this.isInUse) {
@@ -228,7 +208,6 @@ export class Worker extends NatsService{
     private clearState(): void {
         this.isInUse = false;
         this.currentTaskId = null;
-        this.updateEventReceived = false;
     }
 
     /**
