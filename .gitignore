@@ -6,7 +6,7 @@ config.keys
 www-data/
 /test_results/
 /guardian-service/config.json
-.env
+*/.env*
 tsconfig.tsbuildinfo
 .yarn/*
 !.yarn/patches
