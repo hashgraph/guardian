@@ -14,7 +14,6 @@ const MAX_POLICY_INSTANCES = (process.env.MAX_POLICY_INSTANCES) ? parseInt(proce
  */
 const { RUN_SERVICE_SCRIPT, STOP_SERVICE_SCRIPT } = process.env;
 
-
 /**
  * PolicyEngineChannel
  */
