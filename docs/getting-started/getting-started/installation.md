@@ -452,6 +452,14 @@ cd message-broker
 npm run test
 ```
 
+### INITIALIZATION\_TOPIC\_ID for different Hedera Networks&#x20;
+
+| Network    | INITIALIZATION\_TOPIC\_ID |
+| ---------- | ------------------------- |
+| Mainnet    | 0.0.1368856               |
+| Testnet    | 0.0.2030                  |
+| Previewnet | 0.0.155110                |
+
 ### Launching the Guardian
 
 Once [http://localhost:3000](http://localhost:3000) is launched, we need to first generate Operator ID and Operator Key by clicking on Generate button as shown below:

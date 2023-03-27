@@ -6,7 +6,7 @@ export function uriValidator(): ValidatorFn {
         let errors = null;
         try {
             const uriValidatorFn = fullFormats.uri as (value: any) => boolean;
-            if (!uriValidatorFn(control.value)) {
+            if (control.value && !uriValidatorFn(control.value)) {
                 errors = {
                     uri: {
                         valid: false,
