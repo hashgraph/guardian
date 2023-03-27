@@ -124,6 +124,8 @@ export class Workers extends NatsService {
             }
         });
 
+        this.searchAndUpdateTasks();
+
         return result;
     }
 
@@ -155,31 +157,39 @@ export class Workers extends NatsService {
     }
 
     /**
-     * Init listeners
+     * Search and update tasks
+     * @private
      */
-    public initListeners() {
-        const searchAndUpdateTasks = async () => {
-            if (this.queue.length > 0) {
-                for (const worker of await this.getFreeWorkers()) {
-                    const itemIndex = this.queue.findIndex(_item => {
-                        return (_item.priority >= worker.minPriority) && (_item.priority <= worker.maxPriority)
-                    });
-                    if (itemIndex === -1) {
-                        return;
-                    }
-                    const item: any = this.queue[itemIndex];
-                    item.reply = this.messageQueueName;
-                    const r = await this.sendMessage(worker.subject, item) as any;
-                    if (r?.result) {
-                        this.queue.splice(itemIndex, 1);
-                    }
+    private async searchAndUpdateTasks(): Promise<void> {
+        if (this.queue.length > 0) {
+            for (const worker of await this.getFreeWorkers()) {
+                const itemIndex = this.queue.findIndex(_item => {
+                    return (_item.priority >= worker.minPriority) && (_item.priority <= worker.maxPriority)
+                });
+                if (itemIndex === -1) {
+                    return;
+                }
+                const item: any = this.queue[itemIndex];
+                item.reply = this.messageQueueName;
+                const r = await this.sendMessage(worker.subject, item) as any;
+                if (r?.result) {
+                    this.queue.splice(itemIndex, 1);
                 }
             }
         }
+    }
 
-        this.subscribe(WorkerEvents.WORKER_READY, searchAndUpdateTasks);
+    /**
+     * Init listeners
+     */
+    public initListeners() {
+        this.subscribe(WorkerEvents.WORKER_READY, async () => {
+            await this.searchAndUpdateTasks();
+        });
 
-        setInterval(searchAndUpdateTasks, 1000);
+        setInterval(async () => {
+            await this.searchAndUpdateTasks();
+        }, 1000);
 
         this.getMessages([this.messageQueueName, WorkerEvents.TASK_COMPLETE].join('-'), async (msg: any) => {
             console.log('TASK_COMPLETE', msg.id);
