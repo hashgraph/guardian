@@ -18,7 +18,7 @@ export class AppComponent {
         mapService: MapService,
         httpClient: HttpClient
     ) {
-        mapService.getApiKey().subscribe((value) => {
+        const mapRequest = (value?: string) => {
             httpClient
                 .jsonp(
                     `https://maps.googleapis.com/maps/api/js${
@@ -27,6 +27,7 @@ export class AppComponent {
                     'callback'
                 )
                 .subscribe();
-        });
+        };
+        mapService.getApiKey().subscribe(mapRequest, () => mapRequest());
     }
 }

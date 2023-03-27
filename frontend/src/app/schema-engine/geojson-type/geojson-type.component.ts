@@ -107,8 +107,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                     },
                 };
                 this.updateCoordinates.next([
-                    event.latLng.lat(),
                     event.latLng.lng(),
+                    event.latLng.lat(),
                 ]);
                 break;
             case GeoJsonType.MULTI_POINT:
@@ -120,8 +120,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 });
                 this.updateCoordinates.next(
                     this.markers.map((item: any) => [
-                        item.position.lat,
                         item.position.lng,
+                        item.position.lat,
                     ])
                 );
                 break;
@@ -130,8 +130,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
             case GeoJsonType.LINE_STRING:
             case GeoJsonType.POLYGON:
                 this.pointConstructor.push({
-                    lat: event.latLng.lat(),
                     lng: event.latLng.lng(),
+                    lat: event.latLng.lat(),
                 });
                 break;
             default:
@@ -152,8 +152,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 };
                 this.updateCoordinates.next([
                     this.polygons[0].paths.map((path: any) => [
-                        path.lat,
                         path.lng,
+                        path.lat,
                     ]),
                 ]);
                 break;
@@ -164,7 +164,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 });
                 this.updateCoordinates.next(
                     this.polygons.map((polygon: any) => [
-                        polygon.paths.map((path: any) => [path.lat, path.lng]),
+                        polygon.paths.map((path: any) => [path.lng, path.lat]),
                     ])
                 );
                 break;
@@ -173,7 +173,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                     path: this.pointConstructor,
                 };
                 this.updateCoordinates.next(
-                    this.lines[0].path.map((path: any) => [path.lat, path.lng])
+                    this.lines[0].path.map((path: any) => [path.lng, path.lat])
                 );
                 break;
             case GeoJsonType.MULTI_LINE_STRING:
@@ -182,7 +182,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 });
                 this.updateCoordinates.next(
                     this.lines.map((line: any) =>
-                        line.path.map((path: any) => [path.lat, path.lng])
+                        line.path.map((path: any) => [path.lng, path.lat])
                     )
                 );
                 break;
@@ -205,8 +205,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 this.updateCoordinates.next(
                     this.markers[0]
                         ? [
-                              this.markers[0].position.lat,
                               this.markers[0].position.lng,
+                              this.markers[0].position.lat,
                           ]
                         : null
                 );
@@ -216,8 +216,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 this.updateCoordinates.next(
                     this.markers.length
                         ? this.markers.map((item: any) => [
-                              item.position.lat,
                               item.position.lng,
+                              item.position.lat,
                           ])
                         : null
                 );
@@ -228,8 +228,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                     this.polygons[0]
                         ? [
                               this.polygons[0].paths.map((path: any) => [
-                                  path.lat,
                                   path.lng,
+                                  path.lat,
                               ]),
                           ]
                         : null
@@ -241,8 +241,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                     this.polygons.length
                         ? this.polygons.map((polygon: any) => [
                               polygon.paths.map((path: any) => [
-                                  path.lat,
                                   path.lng,
+                                  path.lat,
                               ]),
                           ])
                         : null
@@ -252,8 +252,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 this.lines?.pop();
                 this.updateCoordinates.next(
                     this.lines[0]?.path.map((path: any) => [
-                        path.lat,
                         path.lng,
+                        path.lat,
                     ]) || null
                 );
                 break;
@@ -262,7 +262,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 this.updateCoordinates.next(
                     this.lines.length
                         ? this.lines.map((line: any) =>
-                              line.path.map((path: any) => [path.lat, path.lng])
+                              line.path.map((path: any) => [path.lng, path.lat])
                           )
                         : null
                 );
@@ -411,75 +411,75 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                 case GeoJsonType.POINT:
                     this.markers.push({
                         position: {
-                            lat: parsedCoordinates[0],
-                            lng: parsedCoordinates[1],
+                            lat: parsedCoordinates[1],
+                            lng: parsedCoordinates[0],
                         },
                     });
                     this.center = {
-                        lat: parsedCoordinates[0],
-                        lng: parsedCoordinates[1],
+                        lat: parsedCoordinates[1],
+                        lng: parsedCoordinates[0],
                     };
                     break;
                 case GeoJsonType.POLYGON:
                     this.polygons.push({
                         paths: parsedCoordinates[0].map((path: any) => {
-                            return { lat: path[0], lng: path[1] };
+                            return { lat: path[1], lng: path[0] };
                         }),
                     });
                     this.center = {
-                        lat: parsedCoordinates[0][0][0],
-                        lng: parsedCoordinates[0][0][1],
+                        lat: parsedCoordinates[0][0][1],
+                        lng: parsedCoordinates[0][0][0],
                     };
                     break;
                 case GeoJsonType.LINE_STRING:
                     this.lines.push({
                         path: parsedCoordinates.map((path: any) => {
-                            return { lat: path[0], lng: path[1] };
+                            return { lat: path[1], lng: path[0] };
                         }),
                     });
                     this.center = {
-                        lat: parsedCoordinates[0][0],
-                        lng: parsedCoordinates[0][1],
+                        lat: parsedCoordinates[0][1],
+                        lng: parsedCoordinates[0][0],
                     };
                     break;
                 case GeoJsonType.MULTI_POINT:
                     for (const coordinate of parsedCoordinates) {
                         this.markers.push({
                             position: {
-                                lat: coordinate[0],
-                                lng: coordinate[1],
+                                lat: coordinate[1],
+                                lng: coordinate[0],
                             },
                         });
                     }
                     this.center = {
-                        lat: parsedCoordinates[0][0],
-                        lng: parsedCoordinates[0][1],
+                        lat: parsedCoordinates[0][1],
+                        lng: parsedCoordinates[0][0],
                     };
                     break;
                 case GeoJsonType.MULTI_POLYGON:
                     for (const paths of parsedCoordinates) {
                         this.polygons.push({
                             paths: paths[0].map((path: any) => {
-                                return { lat: path[0], lng: path[1] };
+                                return { lat: path[1], lng: path[0] };
                             }),
                         });
                     }
                     this.center = {
-                        lat: parsedCoordinates[0][0][0][0],
-                        lng: parsedCoordinates[0][0][0][1],
+                        lat: parsedCoordinates[0][0][0][1],
+                        lng: parsedCoordinates[0][0][0][0],
                     };
                     break;
                 case GeoJsonType.MULTI_LINE_STRING:
                     for (const paths of parsedCoordinates) {
                         this.lines.push({
                             path: paths.map((path: any) => {
-                                return { lat: path[0], lng: path[1] };
+                                return { lat: path[1], lng: path[0] };
                             }),
                         });
                     }
                     this.center = {
-                        lat: parsedCoordinates[0][0][0],
-                        lng: parsedCoordinates[0][0][1],
+                        lat: parsedCoordinates[0][0][1],
+                        lng: parsedCoordinates[0][0][0],
                     };
                     break;
                 default:
