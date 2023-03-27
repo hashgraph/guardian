@@ -1,14 +1,13 @@
 import { Singleton } from '@helpers/decorators/singleton';
-import { GenerateUUIDv4, IActiveTask, ITask, IWorkerRequest, WorkerEvents } from '@guardian/interfaces';
-import { ServiceRequestsBase } from '@helpers/service-requests-base';
-import { doNothing, MessageResponse } from '@guardian/common';
+import { GenerateUUIDv4, IActiveTask, ITask, WorkerEvents } from '@guardian/interfaces';
+import { doNothing, MessageResponse, NatsService } from '@guardian/common';
 import { Environment } from '@hedera-modules';
 
 /**
  * Workers helper
  */
 @Singleton
-export class Workers extends ServiceRequestsBase {
+export class Workers extends NatsService {
     /**
      * Tasks sended to work
      * @private
@@ -16,9 +15,15 @@ export class Workers extends ServiceRequestsBase {
     private readonly tasksCallbacks: Map<string, IActiveTask> = new Map();
 
     /**
-     * Target
+     * Message queue name
      */
-    public target: string = 'worker.*';
+    public messageQueueName = 'workers-queue-' + GenerateUUIDv4();
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'workers-queue-reply-' + GenerateUUIDv4();
 
     /**
      * Queue
@@ -78,73 +83,124 @@ export class Workers extends ServiceRequestsBase {
      * @param registerCallback
      */
     private addTask(task: ITask, priority: number, isRetryableTask: boolean = false, attempts: number = 0, registerCallback = true): Promise<any> {
-        task.id = task.id || GenerateUUIDv4();
+        const taskId = task.id || GenerateUUIDv4();
+        task.id = taskId;
         task.priority = priority;
         attempts = attempts > 0 && attempts < this.maxRepetitions ? attempts : this.maxRepetitions;
         this.queue.push(task);
-        const result = new Promise((resolve, reject) => {
 
+        const result = new Promise((resolve, reject) => {
             if (registerCallback) {
-                this.tasksCallbacks.set(task.id, {
+                this.tasksCallbacks.set(taskId, {
                     task,
                     number: 0,
                     callback: (data, error) => {
                         if (error) {
                             if (isRetryableTask) {
-                                if (this.tasksCallbacks.has(task.id)) {
-                                    const callback = this.tasksCallbacks.get(task.id);
+                                if (this.tasksCallbacks.has(taskId)) {
+                                    const callback = this.tasksCallbacks.get(taskId);
                                     callback.number++;
                                     if (callback.number > attempts) {
-                                        this.tasksCallbacks.delete(task.id);
-                                        this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: task.id, data, error });
+                                        this.tasksCallbacks.delete(taskId);
+                                        this.sendMessage(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId, data, error });
                                         reject(error);
                                         return;
                                     }
                                 }
                                 this.queue.push(task);
                             } else {
-                                this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: task.id ,data, error });
+                                this.sendMessage(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId ,data, error });
                                 reject(error);
                             }
                         } else {
                             this.tasksCallbacks.delete(task.id);
-                            this.channel.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: task.id, data, error });
+                            this.sendMessage(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId, data, error });
                             resolve(data);
                         }
                     }
                 });
+            } else {
+                resolve(null);
             }
         });
-        this.channel.publish(WorkerEvents.QUEUE_UPDATED, null);
+
+        this.searchAndUpdateTasks();
+
         return result;
+    }
+
+    /**
+     * Get free workers
+     * @private
+     */
+    private getFreeWorkers(): Promise<any[]> {
+        const workers = [];
+
+        return new Promise((resolve) => {
+            this.publish(WorkerEvents.GET_FREE_WORKERS, {
+                replySubject: [this.replySubject, WorkerEvents.WORKER_FREE_RESPONSE].join('-')
+            });
+
+            const subscription = this.subscribe([this.replySubject, WorkerEvents.WORKER_FREE_RESPONSE].join('-'), (msg) => {
+                workers.push({
+                    subject: msg.subject,
+                    minPriority: msg.minPriority,
+                    maxPriority: msg.maxPriority
+                });
+            });
+
+            setTimeout(() => {
+                subscription.unsubscribe();
+                resolve(workers);
+            }, 300);
+        })
+    }
+
+    /**
+     * Search and update tasks
+     * @private
+     */
+    private async searchAndUpdateTasks(): Promise<void> {
+        if (this.queue.length > 0) {
+            for (const worker of await this.getFreeWorkers()) {
+                const itemIndex = this.queue.findIndex(_item => {
+                    return (_item.priority >= worker.minPriority) && (_item.priority <= worker.maxPriority)
+                });
+                if (itemIndex === -1) {
+                    return;
+                }
+                const item: any = this.queue[itemIndex];
+                item.reply = this.messageQueueName;
+                const r = await this.sendMessage(worker.subject, item) as any;
+                if (r?.result) {
+                    this.queue.splice(itemIndex, 1);
+                }
+            }
+        }
     }
 
     /**
      * Init listeners
      */
     public initListeners() {
-        this.channel.response(WorkerEvents.QUEUE_GET, async (msg: IWorkerRequest) => {
-            const itemIndex = this.queue.findIndex(_item => {
-                return (_item.priority >= msg.minPriority) && (_item.priority <= msg.maxPriority)
-            });
-            if (itemIndex === -1) {
-                return new MessageResponse(null);
-            }
-            const item = this.queue[itemIndex];
-            this.queue.splice(itemIndex, 1);
-            return new MessageResponse(item || null);
+        this.subscribe(WorkerEvents.WORKER_READY, async () => {
+            await this.searchAndUpdateTasks();
         });
 
-        this.channel.response(WorkerEvents.TASK_COMPLETE, async (msg: any) => {
+        setInterval(async () => {
+            await this.searchAndUpdateTasks();
+        }, 1000);
+
+        this.getMessages([this.messageQueueName, WorkerEvents.TASK_COMPLETE].join('-'), async (msg: any) => {
+            console.log('TASK_COMPLETE', msg.id);
             if (this.tasksCallbacks.has(msg.id)) {
                 const activeTask = this.tasksCallbacks.get(msg.id);
 
                 activeTask.callback(msg.data, msg.error);
             }
-            return new MessageResponse(null);
         });
 
-        this.channel.response(WorkerEvents.PUSH_TASK, async (msg: any) => {
+        this.getMessages(WorkerEvents.PUSH_TASK, async (msg: any) => {
             const { task, priority, isRetryableTask, attempts } = msg;
             this.addTask(task, priority, isRetryableTask, attempts).then(doNothing, doNothing);
             return new MessageResponse(null);
@@ -161,6 +217,6 @@ export class Workers extends ServiceRequestsBase {
         ipfsStorageApiKey: string
     }) {
         console.log('update worker settings', settings);
-        this.channel.publish(WorkerEvents.UPDATE_SETTINGS, settings);
+        this.publish(WorkerEvents.UPDATE_SETTINGS, settings);
     }
 }

@@ -105,6 +105,10 @@ export class BlockTreeGenerator extends NatsService {
             return new MessageResponse(true);
         });
 
+        this.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, () => {
+            process.exit(9);
+        });
+
         this.getPolicyMessages(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId,async (msg: any) => {
 
             const { user } = msg;
