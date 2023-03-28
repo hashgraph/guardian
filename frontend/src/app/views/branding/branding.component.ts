@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { InformService } from 'src/app/services/inform.service';
 import { BrandingService } from 'src/app/services/branding.service';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 @Component({
   selector: 'app-branding',
