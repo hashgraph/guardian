@@ -13,4 +13,4 @@ This Block can be placed inside documentsSourceAddon. This will filter attribute
 | On Errors        | Called if the system error has occurs in the Block                                | <p>- No action<br> - Retry</p>                                                                                                                                                                                             |        |
 | Attributes       | Array of attributes to select                                                     | <p>"attributes": [</p><p>    {</p><p>      "attributePath": "status"</p><p>    },<br><br><strong>Note:</strong> If value is empty no attributes will be selected and field option in returned documents will be empty.</p> |        |
 
-<figure><img src="../../../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (10) (3).png" alt=""><figcaption></figcaption></figure>

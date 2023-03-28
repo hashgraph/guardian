@@ -296,6 +296,7 @@
   * [☘ Carbon Offsets](guardian/demo-guide/carbon-offsets/README.md)
     * [📖 Introduction to Verra Redd+](guardian/demo-guide/carbon-offsets/introduction-to-verra-redd+.md)
     * [💻 Verra Redd+ Demo UI Guide](guardian/demo-guide/carbon-offsets/verra-redd+-demo-guide.md)
+    * [🧑🌾 Dovu Methodologies](guardian/demo-guide/carbon-offsets/dovu-methodologies.md)
   * [🏭 Carbon Emissions](guardian/demo-guide/carbon-emissions/README.md)
     * [🏡 Remote Work GHG Policy](guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/README.md)
       * [📖 Introduction to Remote Work GHG](guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/introduction-to-remote-work-ghg.md)

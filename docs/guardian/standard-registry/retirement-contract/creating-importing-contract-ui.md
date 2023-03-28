@@ -2,7 +2,7 @@
 
 We have new Contracts tab added in the menu option for Standard Registry. This option is used to create, import, add pair, approve retire requests contract as shown below:
 
-<figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### 1. Creating Contract
 

@@ -29,7 +29,7 @@ Verra REDD 4 = 1677110652.603453479
 Verra REDD 5 = 1679441780.655736003
 ```
 
-<figure><img src="../../../.gitbook/assets/image (1) (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once Policy is imported successfully, you get two options : Publish and Dry Run mode.
 
