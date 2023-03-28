@@ -4,7 +4,7 @@ We can add user to contract so that users can use this particular contract to re
 
 In order to add user to the contract, we need to select second option, Add User from the operations drop down of the particular contract as shown below:
 
-<figure><img src="../../../.gitbook/assets/image (19).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (19) (4).png" alt=""><figcaption></figcaption></figure>
 
 Once, we click on Add User button, we get a pop up to enter User Hedera Identifier as shown:
 

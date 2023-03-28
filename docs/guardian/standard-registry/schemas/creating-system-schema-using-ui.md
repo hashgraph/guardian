@@ -14,7 +14,7 @@ In addition to the basic Schema details we also have an option to add Field and 
 
 We can also customize the Field keys and Field Title by clicking on Advanced Tab.
 
-![](<../../../.gitbook/assets/image (27).png>)
+![](<../../../.gitbook/assets/image (27) (1).png>)
 
 There are different types of Schema Types:
 

@@ -27,12 +27,12 @@ The first step towards compliance was building a system to support manual attest
 
 1. We need to download the policy from open source repo and import it by clicking on Import button.
 
-<figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (1).png" alt=""><figcaption></figcaption></figure>
 
 2. Once, imported the policy, you can publish the policy to Hedera by clicking on publish button.
 3. Now, we will logout and login as a Registrant role and click on Go on the respective policy:
 
-<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 4. We need to fill the Registrant Application form and click on OK as shown below:
 
@@ -42,36 +42,36 @@ For AgreCalc we see below form:
 
 for Cool Farm, we see below form:
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 5. Once submitted, it is waiting for Standard Registry to approve it.
 6. Now we log out and login as Standard Registry, once viewing the registrant documents, we approve the application by clicking on Approve button.
 7. Once approved, we again login back as Registrant and submit Farm Registrant form by clicking on Create Farm button:
 
-<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 8. Once filled and clicked on OK, Registrant waits for approval from Standard Registry:
 
-<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 9. Now we login as Standard Registry and click on Farm Projects tab, we can see the Request being submitted by Registrant for Approve/Reject
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (30).png" alt=""><figcaption></figcaption></figure>
 
 For testing purpose, we will approve the farm project.
 
 10. Once SR approves, we login back as Registrant and submit AgreCalc Document by filling out the form:
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 For Cool Farm Tool methodology, you will see the below request form:
 
-<figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (9) (1).png" alt=""><figcaption></figcaption></figure>
 
 11. Once the Request is submitted, Registrant is waiting for it to be approved by Verifier.
 12. Now we logout and login as Verifier, we verify the documents by clicking on approve.
 
-<figure><img src="../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (6) (1).png" alt=""><figcaption></figcaption></figure>
 
 13. Once approved, we login as SR and check the Token History by clicking on Token History Tab:
 
@@ -79,4 +79,4 @@ For Cool Farm Tool methodology, you will see the below request form:
 
 14. We can also check the TrustChain by clicking on View TrustChain button:
 
-<figure><img src="../../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (10) (1).png" alt=""><figcaption></figcaption></figure>

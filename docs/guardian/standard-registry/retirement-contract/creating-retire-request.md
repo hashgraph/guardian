@@ -24,7 +24,7 @@ Contract in the drop down is only available if the user is added to the contract
 
 Once, contract is selected, the third and final step is to select the base token and opposite token serials to perform retirement of tokens.
 
-<figure><img src="../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13) (4).png" alt=""><figcaption></figcaption></figure>
 
 In addition to creation of requests, Users also can see created requests, they can cancel created requests (by clicking on “Cancel Request” button) and return their tokens from contract account before it will be approved by SR. If request is already approved users can see details of retire VC.
 
