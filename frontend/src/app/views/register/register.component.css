@@ -137,6 +137,8 @@ mat-form-field {
     
     .role-select-step {
         width: 90%;
+        height: 70vh;
+        padding: 40px;
     }
       
     .role-select-step button:not(.close-button) {

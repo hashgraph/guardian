@@ -333,6 +333,14 @@ a[hidden="true"] {
 
 @media (max-width: 810px) {
 
+    /*
+    .content {
+        position: fixed;
+        top: 0;
+        width: 100vw;
+    }
+    */
+
     .mobile-header {
         width: 100%;
         height: 100%;
@@ -375,7 +383,7 @@ a[hidden="true"] {
         height: 100%;
         width: 0;
         position: fixed;
-        z-index: 2;
+        z-index: 5000;
         top: 0;
         left: 0;
         background-color: white;

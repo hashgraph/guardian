@@ -187,6 +187,19 @@ body {
 }
 
 @media (max-width: 810px) {
+
+    .app {
+        /* fallback */
+        height: 100vh;
+        /* apply the --vh variable as the height */
+        height: calc(var(--vh, 1vh) * 100);
+        min-height: 0;
+    }
+
+    .content {
+        height: calc(var(--vh, 1vh) * 100 - var(--header-height));
+    }
+
     ::ng-deep body .mat-form-field-wrapper {
         padding-bottom: 0;
         font-size: 1.75vh;

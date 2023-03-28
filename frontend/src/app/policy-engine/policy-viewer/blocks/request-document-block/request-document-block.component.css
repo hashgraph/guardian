@@ -62,8 +62,10 @@
 }
 
 .body-dialog-template {
-    padding-bottom: 25px;
-    max-height: 70vh !important;
+    margin: 0;
+    padding: 0;
+    padding-bottom: 70px;
+    max-height: calc(70 * var(--vh)) !important;
     position: relative;
 }
 
@@ -134,7 +136,7 @@
 @media (max-width: 810px) {
 
     h1 {
-        height: 56px;
+        height: 40px;
         padding: 0 !important;
         margin: 0 auto;
         margin-top: 16px;

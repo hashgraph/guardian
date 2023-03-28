@@ -1322,11 +1322,4 @@ export class Guardians extends NatsService {
     public async getMapApiKey(): Promise<string> {
         return await this.sendMessage<string>(MessageAPI.GET_MAP_API_KEY);
     }
-
-    /**
-     * Get map api key
-     */
-    public async getMapApiKey(): Promise<string> {
-        return await this.request<string>(MessageAPI.GET_MAP_API_KEY);
-    }
 }

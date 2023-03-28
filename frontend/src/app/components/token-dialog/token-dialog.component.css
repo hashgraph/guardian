@@ -46,6 +46,7 @@
     .g-dialog-body {
         width: 90%;
         margin: 0 auto !important;
+        max-height: calc(var(--vh, 1vh) * 100 - var(--header-height) - 90px - 107px - 55px);
         padding: 0;
     }
 
@@ -80,6 +81,17 @@
     #create-btn[disabled] {
         opacity: 0.5;
         background: #2C78F6;
+        color: white;
+    }
+
+    #save-btn {
+        grid-column: 2;
+        background: #2C78F6;
+    }
+
+    #save-btn[disabled] {
+        opacity: 0.5;
+        background-color: rgba(0,0,0,.12);
         color: white;
     }
 }

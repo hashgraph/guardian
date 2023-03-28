@@ -338,14 +338,36 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     importPolicyDetails(result: any) {
         const { type, data, policy } = result;
         const distinctPolicies = this.getDistinctPolicy();
-        const dialogRef = this.dialog.open(PreviewPolicyDialog, {
-            width: '950px',
-            panelClass: 'g-dialog',
-            data: {
-                policy: policy,
-                policies: distinctPolicies
-            }
-        });
+        let dialogRef;
+        if (this.innerWidth <= 810) {
+            const bodyStyles = window.getComputedStyle(document.body);
+            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
+            dialogRef = this.dialog.open(PreviewPolicyDialog, {
+                width: `${this.innerWidth.toString()}px`,
+                maxWidth: '100vw',
+                height: `${this.innerHeight - headerHeight}px`,
+                position: {
+                    'bottom': '0'
+                },
+                panelClass: 'g-dialog',
+                hasBackdrop: true, // Shadows beyond the dialog
+                closeOnNavigation: true,
+                autoFocus: false,
+                data: {
+                    policy: policy,
+                    policies: distinctPolicies
+                }
+            });
+        } else {
+            dialogRef = this.dialog.open(PreviewPolicyDialog, {
+                width: '950px',
+                panelClass: 'g-dialog',
+                data: {
+                    policy: policy,
+                    policies: distinctPolicies
+                }
+            });
+        }
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 if (result.messageId) {

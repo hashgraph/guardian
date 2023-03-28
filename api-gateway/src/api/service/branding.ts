@@ -12,20 +12,18 @@ export const brandingAPI = Router();
 
 brandingAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
     try {
-        const { headerColor, primaryColor, fontFamily, companyName, companyLogoUrl, loginBannerUrl, faviconURL } = req.body;
+        const { headerColor, primaryColor, companyName, companyLogoUrl, loginBannerUrl, faviconUrl } = req.body;
 
         const data = {
             headerColor,
             primaryColor,
-            fontFamily,
             companyName,
             companyLogoUrl,
             loginBannerUrl,
-            faviconURL
+            faviconUrl
         };
 
-        await fs.mkdirSync('/var/store');
-        await fs.writeFileSync('/var/store/branding.json', JSON.stringify(data));
+        await fs.writeFileSync('../frontend/src/assets/branding.json', JSON.stringify(data));
         res.status(204).end()
     } catch (error) {
         console.log(error)

@@ -93,6 +93,7 @@ import { MapService } from './services/map.service';
         AddPairDialogComponent,
         RetireTokenDialogComponent,
         DataInputDialogComponent,
+        BrandingComponent
     ],
     imports: [
         BrowserModule,

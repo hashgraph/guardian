@@ -248,4 +248,8 @@
     .error-schema {
         top: var(--header-height);
     }
+
+    .loading {
+        height: calc(var(--vh, 1vh) * 100 - var(--header-height));
+    }
 }

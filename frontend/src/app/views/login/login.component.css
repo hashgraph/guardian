@@ -101,3 +101,10 @@ form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
 .create-link mat-icon {
     font-weight: bold;
 }
+
+@media (max-width: 810px) {
+    
+    .content {
+        height: calc(var(--vh, 1vh) * 100 - var(--header-height));
+    }
+}

@@ -434,7 +434,8 @@ a.go-back-link mat-icon {
 
 @media (max-width: 810px) {
     .policy-header {
-        top: var(--header-height);
+        position: sticky;
+        top: 0 /*var(--header-height)*/;
         box-shadow: none;
         border: none;
     }

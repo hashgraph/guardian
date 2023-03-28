@@ -305,7 +305,7 @@
         </div>
 
         <mat-menu #menu="matMenu" xPosition="before">
-            <button *ngIf="isLogin && role === 'STANDARD_REGISTRY'" mat-menu-item (click)="doBranding()">Branding</button>
+            <!--<button *ngIf="isLogin && role === 'STANDARD_REGISTRY'" mat-menu-item (click)="doBranding()">Branding</button>-->
             <button *ngIf="isLogin" mat-menu-item (click)="logOut()">Log out</button>
 
             <div *ngIf="!isLogin" mat-menu-item style="
