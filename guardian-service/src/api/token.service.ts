@@ -1,7 +1,7 @@
 import { Token } from '@entity/token';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
-import { ApiResponse } from '@api/api-response';
+import { ApiResponse } from '@api/helpers/api-response';
 import {
     MessageResponse,
     MessageError,

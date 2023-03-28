@@ -1382,4 +1382,57 @@ export class Guardians extends NatsService {
     public async synchronizationTags(entity: string, target: string): Promise<any[]> {
         return await this.sendMessage<any>(MessageAPI.GET_SYNCHRONIZATION_TAGS, { entity, target });
     }
+
+    /**
+     * Return tag schemas
+     * @param {string} owner
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async getTagSchemas(
+        owner: string,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_TAG_SCHEMAS, {
+            owner,
+            pageIndex,
+            pageSize
+        });
+    }
+
+    /**
+     * Create tag schema
+     *
+     * @param {ISchema} item - schema
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async createTagSchema(item: ISchema | any): Promise<ISchema> {
+        return await this.sendMessage(MessageAPI.CREATE_TAG_SCHEMA, item);
+    }
+
+    /**
+     * Changing the status of a schema on PUBLISHED.
+     *
+     * @param {string} id - schema id
+     * @param {string} version - schema version
+     * @param {string} owner - schema message
+     *
+     * @returns {ISchema} - message
+     */
+    public async publishTagSchema(id: string, version: string, owner: string): Promise<ISchema> {
+        return await this.sendMessage(MessageAPI.PUBLISH_TAG_SCHEMA, { id, version, owner });
+    }
+
+    /**
+     * Return published schemas
+     *
+     * @returns {ISchema[]} - schemas
+     */
+    public async getPublishedTagSchemas(): Promise<ISchema> {
+        return await this.sendMessage(MessageAPI.GET_PUBLISHED_TAG_SCHEMAS);
+    }
 }

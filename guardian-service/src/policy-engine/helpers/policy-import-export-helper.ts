@@ -15,13 +15,14 @@ import { SchemaEntity, TopicType, GenerateUUIDv4, TagType } from '@guardian/inte
 import { Users } from '@helpers/users';
 import { MessageAction, MessageServer, MessageType, PolicyMessage, TopicConfig, TopicHelper } from '@hedera-modules';
 import { Topic } from '@entity/topic';
-import { importSchemaByFiles, publishSystemSchemas } from '@api/schema.service';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
 import { DatabaseServer } from '@database-modules';
 import { DataBaseHelper } from '@guardian/common';
 import { Artifact } from '@entity/artifact';
 import { exportTag, importTag } from '@api/tag.service';
+import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
+import { importSchemaByFiles } from '@api/helpers/schema-import-export-helper';
 
 /**
  * Policy import export helper

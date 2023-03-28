@@ -1,22 +1,24 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { forkJoin, Subscription } from 'rxjs';
-import { AuthService } from '../../services/auth.service';
-import { ProfileService } from "../../services/profile.service";
-import { TokenService } from '../../services/token.service';
 import { IUser, Token, SchemaEntity, Schema, TagType } from '@guardian/interfaces';
-import { DemoService } from 'src/app/services/demo.service';
-import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
-import { SchemaService } from 'src/app/services/schema.service';
-import { HeaderPropsService } from 'src/app/services/header-props.service';
-import { InformService } from 'src/app/services/inform.service';
-import { TasksService } from 'src/app/services/tasks.service';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dialog/retire-token-dialog.component';
-import { ContractService } from 'src/app/services/contract.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TagsService } from 'src/app/services/tag.service';
+//services
+import { AuthService } from '../../services/auth.service';
+import { ProfileService } from '../../services/profile.service';
+import { TokenService } from '../../services/token.service';
+import { DemoService } from '../../services/demo.service';
+import { SchemaService } from '../../services/schema.service';
+import { HeaderPropsService } from '../../services/header-props.service';
+import { InformService } from '../../services/inform.service';
+import { TasksService } from '../../services/tasks.service';
+import { WebSocketService } from '../../services/web-socket.service';
+import { TagsService } from '../../services/tag.service';
+import { ContractService } from '../../services/contract.service';
+//modules
+import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
+import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dialog/retire-token-dialog.component';
 
 enum OperationMode {
     None, Generate, SetProfile, Associate
@@ -315,14 +317,14 @@ export class UserProfileComponent implements OnInit {
     }
 
     getColor(status: string, reverseLogic: boolean) {
-        if (status === "n/a") return "grey";
-        else if (status === "Yes") return reverseLogic ? "red" : "green";
-        else return reverseLogic ? "green" : "red";
+        if (status === 'n/a') return 'grey';
+        else if (status === 'Yes') return reverseLogic ? 'red' : 'green';
+        else return reverseLogic ? 'green' : 'red';
     }
 
     associate(token: Token) {
         this.loading = true;
-        this.tokenService.pushAssociate(token.tokenId, token.associated != "Yes").subscribe((result) => {
+        this.tokenService.pushAssociate(token.tokenId, token.associated != 'Yes').subscribe((result) => {
             const { taskId, expectation } = result;
             this.taskId = taskId;
             this.expectedTaskMessages = expectation;
@@ -369,7 +371,7 @@ export class UserProfileComponent implements OnInit {
 
     getPoliciesInfo(policies: string[]): string {
         if (!policies || !policies.length) {
-            return "";
+            return '';
         }
         return policies.length === 1
             ? policies[0]

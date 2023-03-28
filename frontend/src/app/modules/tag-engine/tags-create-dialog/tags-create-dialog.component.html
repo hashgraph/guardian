@@ -1,0 +1,66 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onNoClick()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div class="g-dialog-title">
+            {{title}}
+        </div>
+        <div class="g-dialog-actions">
+            <div class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="disabled">
+                Create
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div style="padding: 20px 35px 30px 35px">
+            <form [formGroup]="dataForm">
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>* Label</mat-label>
+                    <input matInput type="text" placeholder="Label" formControlName="name">
+                </mat-form-field>
+
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>Description</mat-label>
+                    <input matInput type="text" placeholder="Description" formControlName="description">
+                </mat-form-field>
+            </form>
+
+            <div *ngIf="schemas && schemas.length" class="artifact-container">
+                <div *ngIf="!schema" class="add-artifact" (click)="onAddArtifact(selector)">
+                    <mat-icon class="add-icon">add</mat-icon>
+                    <div class="btn-name">
+                        Add Artifact
+                    </div>
+                </div>
+
+                <mat-select #selector class="artifact-selector" [(value)]="schema" (selectionChange)="onSelectSchema()">
+                    <mat-option *ngFor="let schema of schemas" [value]="schema">
+                        <span>{{schema.name}}</span>
+                    </mat-option>
+                </mat-select>
+
+                <div *ngIf="schema" class="selected-artifact">
+                    <div class="selected-artifact-name">
+                        <span class="selected-artifact-label">Artifact</span>
+                        <span>{{schema.name}}</span>
+                    </div>
+                    <div class="delete-artifact" (click)="onDeleteArtifact()">
+                        <mat-icon>delete</mat-icon>
+                    </div>
+                </div>
+
+                <div *ngIf="schema" class="artifact-form">
+                    <div class="artifact-form-label">
+                        Artifact
+                    </div>
+                    <form [formGroup]="schemaForm">
+                        <app-schema-form [formGroup]="schemaForm" [schema]="schema"></app-schema-form>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

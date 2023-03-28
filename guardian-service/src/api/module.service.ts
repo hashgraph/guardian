@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/api-response';
+import { ApiResponse } from '@api/helpers/api-response';
 import { MessageResponse, MessageError, Logger, BinaryMessageResponse } from '@guardian/common';
 import { GenerateUUIDv4, MessageAPI, ModuleStatus, TagType, TopicType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';

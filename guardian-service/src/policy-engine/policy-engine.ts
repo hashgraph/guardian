@@ -21,8 +21,14 @@ import {
     TopicConfig,
     TopicHelper
 } from '@hedera-modules'
-import { findAllEntities, getArtifactType, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, SchemaFields } from '@helpers/utils';
-import { incrementSchemaVersion, findAndPublishSchema, findAndDryRunSchema, deleteSchema, publishSystemSchemas } from '@api/schema.service';
+import {
+    findAllEntities,
+    getArtifactType,
+    replaceAllEntities,
+    replaceAllVariables,
+    replaceArtifactProperties,
+    SchemaFields
+} from '@helpers/utils';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { VcHelper } from '@helpers/vc-helper';
 import { Users } from '@helpers/users';
@@ -41,6 +47,8 @@ import { PolicyValidator } from '@policy-engine/block-validators';
 import { publishPolicyTags } from '@api/tag.service';
 import { createHederaToken } from '@api/token.service';
 import { GuardiansService } from '@helpers/guardians';
+import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
+import { deleteSchema, incrementSchemaVersion } from '@api/helpers/schema-helper';
 
 /**
  * Result of publishing
@@ -135,7 +143,7 @@ export class PolicyEngine extends NatsService {
         console.log('policy ready', policyId, this.policyReadyCallbacks.has(policyId));
 
         // if (this.policyReadyCallbacks.has(policyId)) {
-            this.policyReadyCallbacks.get(policyId)(data);
+        this.policyReadyCallbacks.get(policyId)(data);
         // }
     }
 

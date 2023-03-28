@@ -3,14 +3,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
-import { TokenDialog } from '../../components/token-dialog/token-dialog.component';
+import { TokenDialog } from '../../modules/common/token-dialog/token-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TagType, Token } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
 
 enum OperationMode {

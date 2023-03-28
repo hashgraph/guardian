@@ -1,5 +1,6 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { ISchema } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 
@@ -28,5 +29,34 @@ export class TagsService {
 
     public delete(uuid: string): Observable<boolean> {
         return this.http.delete<boolean>(`${this.url}/${uuid}`);
+    }
+
+    public getSchemas(pageIndex?: number, pageSize?: number): Observable<HttpResponse<ISchema[]>> {
+        let url = `${this.url}/schemas`;
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
+        }
+        return this.http.get<any>(url, { observe: 'response' });
+    }
+
+    public createSchemas(schema: ISchema): Observable<ISchema> {
+        return this.http.post<any>(`${this.url}/schemas`, schema);
+    }
+
+    public deleteSchemas(id: string): Observable<any> {
+        return this.http.delete<any>(`${this.url}/schemas/${id}`);
+    }
+
+    public updateSchemas(schema: ISchema, id: string): Observable<ISchema[]> {
+        const data = Object.assign({}, schema, { id });
+        return this.http.put<any[]>(`${this.url}/schemas/${id}`, data);
+    }
+
+    public publishSchemas(id: string): Observable<any> {
+        return this.http.put<any>(`${this.url}/schemas/${id}/publish`, null);
+    }
+
+    public getPublishedSchemas(): Observable<ISchema[]> {
+        return this.http.get<ISchema[]>(`${this.url}/schemas/published`);
     }
 }

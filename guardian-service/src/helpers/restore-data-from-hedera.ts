@@ -149,10 +149,10 @@ export class RestoreDataFromHedera {
             isCreator: true,
             system: false,
             active: true,
-            category: SchemaCategory.USER,
+            category: SchemaCategory.POLICY,
             codeVersion: s.codeVersion
         };
-        const result = await new DataBaseHelper(SchemaCollection).create(schemaObj);
+        const result = new DataBaseHelper(SchemaCollection).create(schemaObj);
         await new DataBaseHelper(SchemaCollection).save(result);
     }
 

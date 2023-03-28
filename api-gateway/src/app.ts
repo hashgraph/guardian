@@ -68,20 +68,20 @@ Promise.all([
 
         // Config routes
         app.use('/policies', authorizationHelper, policyAPI);
-        app.use('/accounts/', accountAPI);
-        app.use('/profiles/', authorizationHelper, profileAPI);
-        app.use('/settings/', authorizationHelper, settingsAPI);
+        app.use('/accounts', accountAPI);
+        app.use('/profiles', authorizationHelper, profileAPI);
+        app.use('/settings', authorizationHelper, settingsAPI);
         app.use('/schema', authorizationHelper, singleSchemaRoute);
         app.use('/schemas', authorizationHelper, schemaAPI);
         app.use('/tokens', authorizationHelper, tokenAPI);
         app.use('/artifact', authorizationHelper, artifactAPI);
-        app.use('/trustchains/', authorizationHelper, trustchainsAPI);
-        app.use('/external/', externalAPI);
-        app.use('/demo/', demoAPI);
+        app.use('/trustchains', authorizationHelper, trustchainsAPI);
+        app.use('/external', externalAPI);
+        app.use('/demo', demoAPI);
         app.use('/ipfs', authorizationHelper, ipfsAPI);
         app.use('/logs', authorizationHelper, loggerAPI);
-        app.use('/tasks/', taskAPI);
-        app.use('/analytics/', authorizationHelper, analyticsAPI);
+        app.use('/tasks', taskAPI);
+        app.use('/analytics', authorizationHelper, analyticsAPI);
         app.use('/contracts', authorizationHelper, contractAPI);
         app.use('/modules', authorizationHelper, moduleAPI);
         app.use('/map', authorizationHelper, mapAPI);

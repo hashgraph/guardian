@@ -332,9 +332,10 @@ export class DryRun extends BaseEntity {
     active?: any;
 
     /**
-     * Virtual column.
+     * Category.
      */
-    category: any;
+    @Property({ nullable: true })
+    category?: any;
 
     /**
      * Policy previous version

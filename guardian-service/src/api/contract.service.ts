@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/api-response';
+import { ApiResponse } from '@api/helpers/api-response';
 import {
     MessageResponse,
     MessageError,
@@ -29,9 +29,9 @@ import {
     VCMessage,
 } from '@hedera-modules';
 import { Topic } from '@entity/topic';
-import { publishSystemSchema } from './schema.service';
 import { VcHelper } from '@helpers/vc-helper';
 import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { publishSystemSchema } from './helpers/schema-publish-helper';
 
 /**
  * Connect to the message broker methods of working with contracts.
