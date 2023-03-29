@@ -238,7 +238,7 @@ export class Worker extends NatsService{
                     }
                     const blob: any = new Blob([fileContent]);
                     const r = await this.ipfsClient.addFile(blob);
-                    this.channel.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
+                    this.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
                     result.data = r;
                     break;
                 }

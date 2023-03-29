@@ -9,7 +9,7 @@ import { GuardiansService } from '@helpers/guardians';
  * @param handleFunc
  * @constructor
  */
-export function ApiResponse<T>(event: any, handleFunc: (msg) => Promise<MessageResponse<T>>): void {
+export function ApiResponse<T>(event: any, handleFunc: (msg) => Promise<MessageResponse<T>>, noCompress = false): void {
     const state = new ApplicationState();
     new GuardiansService().registerListener(event, async (msg) => {
         if (![ApplicationStates.READY, ApplicationStates.BAD_CONFIGURATION].includes(state.getState())) {

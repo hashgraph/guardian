@@ -24,7 +24,7 @@ export class GuardiansService extends NatsService {
      * @param event
      * @param cb
      */
-    registerListener(event: string, cb: Function): void {
+    registerListener(event: string, cb: Function, noCompress = false): void {
         this.getMessages(event, cb);
     }
 

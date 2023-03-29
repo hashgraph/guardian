@@ -25,8 +25,7 @@ export function ZipCodec() {
                 return JSON.parse(decompressed.toString())
             } catch (error) {
                 console.log('error string', a.toString());
-                return a.toString();
-                // throw NatsError.errorForCode(ErrorCode.BadJson, error);
+                throw NatsError.errorForCode(ErrorCode.BadJson, error);
             }
         }
     }
