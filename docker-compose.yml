@@ -19,7 +19,7 @@ services:
       - mongo
 
   ipfs-node:
-    image: ipfs/kubo:v0.17.0
+    image: ipfs/kubo:v0.18.1
     ports:
       - "5001:5001"
       - "5002:5002"
@@ -27,6 +27,9 @@ services:
       - "4002:4002"
       - "8080:8080"
       - "8081:8081"
+    volumes:
+      - ./runtime-data/ipfs/staging:/export:rw
+      - ./runtime-data/ipfs/data:/data/ipfs:rw
 
   api-docs:
     build:
@@ -85,47 +88,6 @@ services:
     environment:
       SERVICE_CHANNEL: worker.2
 
-  worker-service-3:
-    build:
-      context: .
-      dockerfile: ./worker-service/Dockerfile
-    depends_on:
-      - ipfs-node
-      - auth-service
-    environment:
-      SERVICE_CHANNEL: worker.3
-
-  worker-service-4:
-    build:
-      context: .
-      dockerfile: ./worker-service/Dockerfile
-    depends_on:
-      - ipfs-node
-      - auth-service
-    environment:
-      SERVICE_CHANNEL: worker.4
-
-  worker-service-5:
-    build:
-      context: .
-      dockerfile: ./worker-service/Dockerfile
-    depends_on:
-      - ipfs-node
-      - auth-service
-    environment:
-      SERVICE_CHANNEL: worker.5
-      IPFS_STORAGE_API_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDZhY0FFMmM3QjA5ODdCMjU1ZGZFMjMxZTA0YzI5NDZBZWI0YzE5NkQiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NjAwNzIyNzg4MDgsIm5hbWUiOiJ0ZXN0In0.vzt0-vBlbKiUSeyBZ6i3qTBKVMR3RL7CnkEXVNqvSH4
-
-  worker-service-6:
-    build:
-      context: .
-      dockerfile: ./worker-service/Dockerfile
-    depends_on:
-      - ipfs-node
-      - auth-service
-    environment:
-      SERVICE_CHANNEL: worker.6
-
   auth-service:
     build:
       context: .
@@ -171,9 +133,6 @@ services:
       - worker-service-1
       - worker-service-2
       - policy-service
-    environment:
-      OPERATOR_ID: 0.0.10295
-      OPERATOR_KEY: 302e020100300506032b65700422042022c85d6c64bda64aa458cf715314c5469b3b84c58690470f5289cbada3af8dfb
 
   mrv-sender:
     build:
