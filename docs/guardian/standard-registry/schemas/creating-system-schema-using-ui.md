@@ -14,7 +14,7 @@ In addition to the basic Schema details we also have an option to add Field and 
 
 We can also customize the Field keys and Field Title by clicking on Advanced Tab.
 
-![](<../../../.gitbook/assets/image (27).png>)
+![](<../../../.gitbook/assets/image (27) (1).png>)
 
 There are different types of Schema Types:
 
@@ -50,6 +50,7 @@ There are different types of Field Types:
 * Enum
 * Help Text
 * GeoJSON
+* URI
 
 Each of the above field types can be marked as either Marked or optional by checking the Required Field checkbox.
 
@@ -88,7 +89,7 @@ Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup
 Detailed information for patterns is available on [https://json-schema.org/understanding-json-schema/reference/regular\_expressions.html](https://json-schema.org/understanding-json-schema/reference/regular\_expressions.html).
 {% endhint %}
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (8).png" alt=""><figcaption></figcaption></figure>
 
 Once the above details are added, click on the Create button.
 
