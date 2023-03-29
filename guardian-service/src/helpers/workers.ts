@@ -164,17 +164,18 @@ export class Workers extends NatsService {
     private async searchAndUpdateTasks(): Promise<void> {
         if (this.queue.length > 0) {
             for (const worker of await this.getFreeWorkers()) {
-                const itemIndex = this.queue.findIndex(_item => {
+                const queue = this.queue;
+                const itemIndex = queue.findIndex(_item => {
                     return (_item.priority >= worker.minPriority) && (_item.priority <= worker.maxPriority) && !_item.sent
                 });
                 if (itemIndex === -1) {
                     return;
                 }
-                const item: any = this.queue[itemIndex];
+                const item: any = queue[itemIndex];
                 item.reply = this.messageQueueName;
                 const r = await this.sendMessage(worker.subject, item) as any;
                 if (r?.result) {
-                    this.queue[itemIndex].sent = true;
+                    queue[itemIndex].sent = true;
                     // this.queue.splice(itemIndex, 1);
                 }
             }
