@@ -9,7 +9,7 @@ import { GuardiansService } from '@helpers/guardians';
  * @param handleFunc
  * @constructor
  */
-export function ApiResponse<T>(event: any, handleFunc: (msg) => Promise<MessageResponse<T>>, noCompress = false): void {
+export function ApiResponse<T>(event: any, handleFunc: (msg) => Promise<MessageResponse<T>>): void {
     const state = new ApplicationState();
     new GuardiansService().registerListener(event, async (msg) => {
         if (![ApplicationStates.READY, ApplicationStates.BAD_CONFIGURATION].includes(state.getState())) {
@@ -18,5 +18,18 @@ export function ApiResponse<T>(event: any, handleFunc: (msg) => Promise<MessageR
         }
 
         return await handleFunc(msg);
+    })
+}
+
+/**
+ * API response
+ * @param channel
+ * @param event
+ * @param handleFunc
+ * @constructor
+ */
+export function ApiResponseSubscribe<T>(event: any, handleFunc: (msg) => Promise<void>): void {
+    new GuardiansService().subscribe(event, async (msg) => {
+        await handleFunc(msg);
     })
 }

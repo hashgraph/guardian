@@ -176,15 +176,21 @@ export abstract class NatsService {
         this.connection.subscribe(subject, {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
-                const messageId = msg.headers.get('messageId');
-                // const isRaw = msg.headers.get('rawMessage');
-                const head = headers();
-                head.append('messageId', messageId);
-                // head.append('rawMessage', isRaw);
-                if (!noRespond) {
-                    msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), {headers: head});
-                } else {
-                    cb(await this.codec.decode(msg.data), msg.headers);;
+                try {
+                    const messageId = msg.headers.get('messageId');
+                    // const isRaw = msg.headers.get('rawMessage');
+                    const head = headers();
+                    head.append('messageId', messageId);
+                    // head.append('rawMessage', isRaw);
+                    if (!noRespond) {
+                        msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), {headers: head});
+                    } else {
+                        cb(await this.codec.decode(msg.data), msg.headers);
+                    }
+                } catch (error) {
+                    console.log(msg);
+                    console.log(subject);
+                    console.error(error);
                 }
             }
         });

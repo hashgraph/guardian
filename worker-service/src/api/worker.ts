@@ -149,7 +149,7 @@ export class Worker extends NatsService{
             const result = await this.processTaskWithTimeout(task);
 
             try {
-                await this.sendMessage([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
+                // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
                 if (result?.error) {
                     this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [process.env.SERVICE_CHANNEL]);
                 } else {
@@ -160,7 +160,7 @@ export class Worker extends NatsService{
                 this.clearState();
 
             }
-            await this.sendMessage([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
+            await this.publish([WorkerEvents.TASK_COMPLETE, task.reply].join('.'), result);
             await this.publish(WorkerEvents.WORKER_READY);
             this.isInUse = false;
         }
