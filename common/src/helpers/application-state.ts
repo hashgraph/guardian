@@ -1,7 +1,7 @@
 import { Singleton } from '../decorators/singleton';
 import { NatsService } from '../mq';
 import { ApplicationStates, GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
-import { MessageResponse, MessageError } from '../models';
+import { MessageError, MessageResponse } from '../models';
 import { NatsConnection } from 'nats';
 
 /**
@@ -77,6 +77,7 @@ export class ApplicationState {
      */
     public getState(): ApplicationStates {
         return this.state;
+        return ApplicationStates.READY;
     }
 
     /**

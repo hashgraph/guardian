@@ -69,7 +69,7 @@ export class GuardiansService extends NatsService {
         //         })
         //     })
         // ]) as any;
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             this.responseCallbacksMap.set(messageId, (d: T, error?) => {
                 if (error) {
                     reject(error);
@@ -78,7 +78,7 @@ export class GuardiansService extends NatsService {
                 resolve(d);
             })
 
-            this.connection.publish([policyId, subject].join('-'), this.jsonCodec.encode(data) , {
+            this.connection.publish([policyId, subject].join('-'), await this.codec.encode(data) , {
                 reply: this.replySubject,
                 headers: head
             })

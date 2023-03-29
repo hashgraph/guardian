@@ -43,9 +43,9 @@ export class PolicyEngineChannel extends NatsService {
                 const head = headers();
                 head.append('messageId', messageId);
 
-                const respond = await cb(this.jsonCodec.decode(msg.data), msg.headers);
+                const respond = await cb(await this.codec.decode(msg.data), msg.headers);
                 if (respond) {
-                    msg.respond(this.jsonCodec.encode(null), {headers: head});
+                    msg.respond(await this.codec.encode(null), {headers: head});
                 }
             }
         });
