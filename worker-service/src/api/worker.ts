@@ -162,15 +162,15 @@ export class Worker extends NatsService{
             }
 
             const completeTask = (data) => {
-                let count = 0;
+                // let count = 0;
                 const fn = async () => {
                     await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('.'), data);
-                    if (count < 5) {
-                        setTimeout(async () => {
-                            await fn()
-                        })
-                        count++
-                    }
+                    // if (count < 5) {
+                    //     setTimeout(async () => {
+                    //         await fn()
+                    //     })
+                    //     count++
+                    // }
                 }
                 fn();
             }

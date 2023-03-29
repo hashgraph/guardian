@@ -29,7 +29,7 @@ export class Workers extends NatsService {
      * Queue
      * @private
      */
-    private queue: ITask[] = [];
+    private queue: Set<ITask> = new Set();
 
     /**
      * Max Repetitions
@@ -87,7 +87,7 @@ export class Workers extends NatsService {
         task.id = taskId;
         task.priority = priority;
         attempts = attempts > 0 && attempts < this.maxRepetitions ? attempts : this.maxRepetitions;
-        this.queue.push(task);
+        this.queue.add(task);
 
         const result = new Promise((resolve, reject) => {
             if (registerCallback) {
@@ -107,7 +107,8 @@ export class Workers extends NatsService {
                                         return;
                                     }
                                 }
-                                this.queue.push(task);
+                                task.sent = false;
+                                this.queue.add(task);
                             } else {
                                 this.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId ,data, error });
                                 reject(error);
@@ -162,9 +163,9 @@ export class Workers extends NatsService {
      * @private
      */
     private async searchAndUpdateTasks(): Promise<void> {
-        if (this.queue.length > 0) {
+        if ([...this.queue.values()].filter(i => !i.sent).length > 0) {
             for (const worker of await this.getFreeWorkers()) {
-                const queue = this.queue;
+                const queue = [...this.queue.values()];
                 const itemIndex = queue.findIndex(_item => {
                     return (_item.priority >= worker.minPriority) && (_item.priority <= worker.maxPriority) && !_item.sent
                 });
@@ -173,11 +174,18 @@ export class Workers extends NatsService {
                 }
                 const item: any = queue[itemIndex];
                 item.reply = this.messageQueueName;
+                queue[itemIndex].sent = true;
+                console.log('send message to worker', item.id);
                 const r = await this.sendMessage(worker.subject, item) as any;
+                console.log('sent message to worker', item.id, r.result);
                 if (r?.result) {
                     queue[itemIndex].sent = true;
+                    this.queue.delete(item);
                     // this.queue.splice(itemIndex, 1);
+                } else {
+                    queue[itemIndex].sent = false;
                 }
+                // this.queue = this.queue.filter(item => !item.sent)
             }
         }
     }
@@ -198,6 +206,9 @@ export class Workers extends NatsService {
             if (!msg.id) {
                 throw new Error('Message without id');
             }
+            if (msg.error) {
+                console.log(msg);
+            }
             if (this.tasksCallbacks.has(msg.id)) {
                 const activeTask = this.tasksCallbacks.get(msg.id);
                 activeTask.callback(msg.data, msg.error);
@@ -208,11 +219,7 @@ export class Workers extends NatsService {
             const { task, priority, isRetryableTask, attempts } = msg;
             this.addTask(task, priority, isRetryableTask, attempts).then(doNothing, doNothing);
             return new MessageResponse(null);
-        })
-
-        setInterval(() => {
-            this.queue = this.queue.filter(item => !item.sent)
-        }, 1000);
+        });
     }
 
     /**
