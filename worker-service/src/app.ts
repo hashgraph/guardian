@@ -20,8 +20,8 @@ Promise.all([
 
     const logger = new Logger();
     logger.setConnection(cn);
-    const state = new ApplicationState(channelName);
-    state.setConnection(cn);
+    const state = new ApplicationState();
+    await state.setServiceName('WORKER').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);
 
     HederaSDKHelper.setTransactionLogSender(async (data) => {

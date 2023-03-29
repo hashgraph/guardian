@@ -81,8 +81,8 @@ Promise.all([
     const channel = new MessageBrokerChannel(cn, 'guardians');
 
     await new Logger().setConnection(cn);
-    const state = new ApplicationState('GUARDIAN_SERVICE');
-    state.setConnection(cn);
+    const state = new ApplicationState();
+    await state.setServiceName('GUARDIAN_SERVICE').setConnection(cn).init();
     const settingsContainer = new SettingsContainer();
     settingsContainer.setConnection(cn);
     await settingsContainer.init('OPERATOR_ID', 'OPERATOR_KEY');

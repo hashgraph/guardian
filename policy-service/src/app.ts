@@ -14,8 +14,8 @@ Promise.all([
     const [cn] = values;
 
     new Logger().setConnection(cn);
-    const state = new ApplicationState('POLICY_SERVICE');
-    state.setConnection(cn);
+    const state = new ApplicationState();
+    await state.setServiceName('POLICY_SERVICE').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);
 
     /////////////
