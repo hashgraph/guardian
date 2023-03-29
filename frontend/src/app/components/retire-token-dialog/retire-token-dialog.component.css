@@ -201,6 +201,21 @@
         transform: translateX(-50%);
     }
 
+    .lack-input {
+        display: grid;
+        grid-template-columns: 24px auto;
+        column-gap: 10px;
+        padding: 10px;
+        border: 1px solid var(--primary-color);
+        border-radius: 5px;
+    }
+
+    .lack-input .lack-input-text {
+        margin-top: 5px;
+        line-height: 16px;
+        font-weight: 300;
+    }
+
     #cancel-btn {
         border: 1px solid #2C78F6;
         background: none !important;

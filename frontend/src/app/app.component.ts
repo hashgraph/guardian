@@ -33,7 +33,7 @@ export class AppComponent {
     }
 
     ngOnInit(): void {
-      this.brandingService.loadBrandingData();
+      //this.brandingService.loadBrandingData();
     }
 
   @HostListener('window:resize')

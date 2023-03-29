@@ -185,6 +185,10 @@
                     <div class="page-number">3</div>
                     Set Count
                 </div>
+                <div *ngIf="!(baseTokenType || oppositeTokenType)" class="lack-input">
+                    <span class="material-icons-outlined" style="color: var(--primary-color);">info</span>
+                    <div class="lack-input-text">Choose a base or opposite token</div>
+                </div>
                 <div class="contract-info">
                     <!--<div *ngIf="!contractAndRates.length">Choose tokens to find available pairs</div>-->
                     <div class="pair-rate" *ngIf="baseTokenRate && oppositeTokenRate"><b>Ratio {{baseTokenRate}} :
