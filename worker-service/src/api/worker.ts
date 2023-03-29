@@ -208,7 +208,7 @@ export class Worker extends NatsService{
         HederaSDKHelper.setTransactionResponseCallback(async (client: any) => {
             try {
                 const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
-                await this.channel.request(['api-gateway', 'update-user-balance'].join('.'), {
+                await this.sendMessage('update-user-balance', {
                     balance,
                     unit: 'Hbar',
                     operatorAccountId: client.operatorAccountId.toString()

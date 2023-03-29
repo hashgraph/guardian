@@ -1,14 +1,12 @@
 import { Singleton } from '../decorators/singleton';
 import { NatsService } from '../mq';
 import { ApplicationStates, GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
-import { MessageError, MessageResponse } from '../models';
-import { NatsConnection } from 'nats';
 
 /**
- * PolicyEngineChannel
+ * Application state container
  */
 @Singleton
-export class ApplicationStateChannel extends NatsService {
+export class ApplicationState extends NatsService {
     /**
      * Message queue name
      */
@@ -19,27 +17,6 @@ export class ApplicationStateChannel extends NatsService {
      * @private
      */
     public replySubject = 'application-state-queue-reply-' + GenerateUUIDv4();
-
-    /**
-     * Register listener
-     * @param event
-     * @param cb
-     */
-    registerListener(event: string, cb: Function): void {
-        this.getMessages(event, cb);
-    }
-}
-
-/**
- * Application state container
- */
-@Singleton
-export class ApplicationState {
-    /**
-     * Message broker channel
-     * @private
-     */
-    private channel: ApplicationStateChannel;
     /**
      * Current state
      * @private
@@ -49,27 +26,28 @@ export class ApplicationState {
      * Service name
      * @private
      */
-    private readonly serviceName: string;
+    private serviceName: string;
 
     /**
-     * Register channel
-     * @param channel: MessageBrokerChannel
+     * Init
      */
-    public async setConnection(cn: NatsConnection): Promise<any> {
-        this.channel = new ApplicationStateChannel();
-        this.channel.setConnection(cn);
-        await this.channel.registerListener(MessageAPI.GET_STATUS, async () => {
-            try {
-                return new MessageResponse(this.state);
-            }
-            catch (error) {
-                return new MessageError(error);
-            }
+    public async init(): Promise<void> {
+        await super.init();
+        await this.subscribe(MessageAPI.GET_STATUS, async () => {
+            this.publish(MessageAPI.SEND_STATUS, {
+                name: this.serviceName,
+                state: this.state
+            })
         });
     }
 
-    constructor(serviceName?: string) {
-        this.serviceName = serviceName;
+    /**
+     * Set service name
+     * @param serviceName
+     */
+    setServiceName(serviceName: string): ApplicationState {
+        this.serviceName = serviceName
+        return this;
     }
 
     /**
@@ -89,7 +67,7 @@ export class ApplicationState {
         if (this.serviceName) {
             const res = {};
             res[this.serviceName] = state;
-            this.channel.sendMessage(MessageAPI.UPDATE_STATUS, res);
+            this.publish(MessageAPI.UPDATE_STATUS, res);
         }
     }
 }

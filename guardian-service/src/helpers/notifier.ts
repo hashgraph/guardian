@@ -65,7 +65,7 @@ export function initNotifier(taskId: string): INotifier {
     if (taskId) {
         let currentStep: string;
         const sendStatuses = async (...statuses: IStatus[]) => {
-            await new GuardiansService().sendMessage(chanelEvent, { taskId, statuses });
+            await new GuardiansService().publish(chanelEvent, { taskId, statuses });
         };
         const notifier = {
             start: async (step: string) => {
@@ -105,10 +105,10 @@ export function initNotifier(taskId: string): INotifier {
                         result.message = 'Unknown error';
                     }
                 }
-                await new GuardiansService().sendMessage(chanelEvent, { taskId, error: result });
+                await new GuardiansService().publish(chanelEvent, { taskId, error: result });
             },
             result: async (result: any) => {
-                await new GuardiansService().sendMessage(chanelEvent, { taskId, result });
+                await new GuardiansService().publish(chanelEvent, { taskId, result });
             }
         }
         return notifier;
