@@ -3,7 +3,8 @@ import {
     MessageAPI,
     SchemaStatus,
     SchemaHelper,
-    SchemaCategory
+    SchemaCategory,
+    TopicType
 } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/helpers/api-response';
@@ -31,6 +32,7 @@ import {
 } from './helpers/schema-import-export-helper';
 import { findAndPublishSchema } from './helpers/schema-publish-helper';
 import { getPageOptions } from './helpers/api-helper';
+import { TopicConfig } from '@hedera-modules';
 
 /**
  * Connect to the message broker methods of working with schemas.
@@ -682,11 +684,12 @@ export async function schemaAPI(): Promise<void> {
             SchemaHelper.setVersion(schemaObject, null, null);
             SchemaHelper.updateIRI(schemaObject);
             schemaObject.status = SchemaStatus.DRAFT;
-            schemaObject.topicId = null;
             schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
             schemaObject.category = SchemaCategory.TAG;
             schemaObject.readonly = false;
             schemaObject.system = false;
+            const topic = await DatabaseServer.getTopicByType(schemaObject.owner, TopicType.UserTopic);
+            schemaObject.topicId = topic.topicId;
             const item = await DatabaseServer.createAndSaveSchema(schemaObject);
             return new MessageResponse(item);
         } catch (error) {
@@ -727,13 +730,17 @@ export async function schemaAPI(): Promise<void> {
         try {
             const schema = await DatabaseServer.getSchemas({
                 system: false,
-                readonly: false
+                readonly: false,
+                category: SchemaCategory.TAG
             }, {
                 fields: [
                     'id',
                     'name',
                     'description',
                     'topicId',
+                    'uuid', 
+                    'version',
+                    'iri',
                     'document'
                 ]
             });

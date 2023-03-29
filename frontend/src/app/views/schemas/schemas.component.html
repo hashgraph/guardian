@@ -2,47 +2,44 @@
 
     <div class="actions">
         <div style="padding: 6px 0px">
-            <mat-button-toggle-group [(ngModel)]="system" (change)="onChangeType($event)">
-                <mat-button-toggle [value]="true">System Schemas</mat-button-toggle>
-                <mat-button-toggle [value]="false">Policy Schemas</mat-button-toggle>
+            <mat-button-toggle-group [(ngModel)]="type" (change)="onChangeType($event)">
+                <mat-button-toggle value="system">System Schemas</mat-button-toggle>
+                <mat-button-toggle value="tag">Tag Schemas</mat-button-toggle>
+                <mat-button-toggle value="policy">Policy Schemas</mat-button-toggle>
             </mat-button-toggle-group>
         </div>
-        <div *ngIf="!system && isConfirmed">
-            <mat-form-field appearance="outline">
-                <mat-label>Policy</mat-label>
-                <mat-select [(value)]="currentTopicPolicy" (selectionChange)="onFilter()">
-                    <mat-option value="">All policies</mat-option>
-                    <mat-option *ngFor="let policy of policies" [value]="policy.topicId">
-                        <span>{{policy.name}}</span>
-                        <span> ({{policy.topicId}})</span>
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>
-        </div>
-        <div *ngIf="system">
-
+        <div>
+            <ng-container *ngIf="isPolicy">
+                <mat-form-field appearance="outline">
+                    <mat-label>Policy</mat-label>
+                    <mat-select [(value)]="currentTopicPolicy" (selectionChange)="onFilter()">
+                        <mat-option value="">All policies</mat-option>
+                        <mat-option *ngFor="let policy of policies" [value]="policy.topicId">
+                            <span>{{policy.name}}</span>
+                            <span> ({{policy.topicId}})</span>
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </ng-container>
         </div>
         <div style="text-align: end">
-            <button *ngIf="system || (!system && isConfirmed)" mat-raised-button color="primary" (click)="newSchemas()"
-                class="toolbar-btn add">
+            <button *ngIf="isAny" mat-raised-button color="primary" class="toolbar-btn add" (click)="newSchemas()">
                 <mat-icon>add</mat-icon>
                 <span>Create New</span>
             </button>
-            <button *ngIf="!system && isConfirmed" mat-raised-button color="primary" (click)="importSchemas()"
-                class="toolbar-btn">
+            <button *ngIf="isPolicy" mat-raised-button color="primary" class="toolbar-btn" (click)="importSchemas()">
                 <mat-icon>file_open</mat-icon>
                 <span>Import</span>
             </button>
-            <button *ngIf="!system && isConfirmed" mat-raised-button color="primary" (click)="compareSchemas()"
-                class="toolbar-btn">
+            <button *ngIf="isPolicy" mat-raised-button color="primary" class="toolbar-btn" (click)="compareSchemas()">
                 <mat-icon>compare</mat-icon>
                 <span>Compare</span>
             </button>
         </div>
     </div>
 
-    <div *ngIf="system || (!system && isConfirmed)" class="table-container">
-        <table mat-table [dataSource]="schemas" class="schemas-table" [attr.system]="system">
+    <div *ngIf="isAny" class="table-container">
+        <table mat-table [dataSource]="schemas" class="schemas-table" [attr.system]="isSystem">
             <ng-container matColumnDef="selected">
                 <th mat-header-cell *matHeaderCellDef>
                     <mat-checkbox class="example-margin" [checked]="selectedAll" color="primary"
@@ -88,13 +85,8 @@
             <ng-container matColumnDef="tags">
                 <th mat-header-cell *matHeaderCellDef> Tags </th>
                 <td mat-cell *matCellDef="let element">
-                    <tags-explorer 
-                        [data]="element._tags" 
-                        [owner]="owner" 
-                        [target]="element.id" 
-                        [entity]="tagEntity"
-                        [schemas]="tagSchemas"
-                        [service]="tagsService"></tags-explorer>
+                    <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id" [entity]="tagEntity"
+                        [schemas]="tagSchemas" [service]="tagsService"></tags-explorer>
                 </td>
             </ng-container>
             <ng-container matColumnDef="status">
@@ -145,6 +137,13 @@
                 <th mat-header-cell *matHeaderCellDef> Operations </th>
                 <td mat-cell *matCellDef="let element">
                     <div *ngIf="!element.active" class="btn-approve" (click)="active(element)">Active</div>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="tagOperation">
+                <th mat-header-cell *matHeaderCellDef> Operations </th>
+                <td mat-cell *matCellDef="let element">
+                    <div *ngIf="element.status =='DRAFT'" class="btn-approve" (click)="publishTagSchema(element)">Publish</div>
                 </td>
             </ng-container>
 
@@ -230,14 +229,14 @@
             <tr mat-row *matRowDef="let row; columns: columns;"></tr>
         </table>
     </div>
-    <div *ngIf="system || (!system && isConfirmed)" class="table-paginator">
+    <div *ngIf="isAny" class="table-paginator">
         <mat-paginator [length]="schemasCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
             [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
         </mat-paginator>
     </div>
 
 
-    <div *ngIf="!system && !(!system && isConfirmed)" class="not-exist">
+    <div *ngIf="!isSystem && !isConfirmed" class="not-exist">
         Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
     </div>
 

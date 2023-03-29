@@ -7,20 +7,24 @@
     </mat-form-field>
 
     <div class="optional-row">
-        <mat-form-field *ngIf="!system" appearance="outline" [attr.disabled]="type=='version' || type=='edit'">
+        <mat-form-field *ngIf="isPolicy" appearance="outline" [attr.disabled]="type=='version' || type=='edit'">
             <mat-label>* Policy</mat-label>
             <mat-select formControlName="topicId" tabindex='-1' (selectionChange)="onFilter($event)">
                 <mat-option *ngFor="let policy of policies" [value]="policy.topicId">{{policy.name}}</mat-option>
             </mat-select>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" [attr.disabled]="type=='version'">
+        <mat-form-field *ngIf="isSystem" appearance="outline" [attr.disabled]="type=='version'">
             <mat-label>For (Entity)</mat-label>
-            <mat-select *ngIf="system" formControlName="entity" tabindex='-1'>
+            <mat-select formControlName="entity" tabindex='-1'>
                 <mat-option value="STANDARD_REGISTRY">STANDARD REGISTRY</mat-option>
                 <mat-option value="USER">USER</mat-option>
             </mat-select>
-            <mat-select *ngIf="!system" formControlName="entity" tabindex='-1'>
+        </mat-form-field>
+
+        <mat-form-field *ngIf="isPolicy" appearance="outline" [attr.disabled]="type=='version'">
+            <mat-label>For (Entity)</mat-label>
+            <mat-select formControlName="entity" tabindex='-1'>
                 <mat-option value="NONE">Default</mat-option>
                 <mat-option value="VC">Verifiable Credential</mat-option>
                 <mat-option value="EVC">Encrypted Verifiable Credential</mat-option>
@@ -54,8 +58,8 @@
                     <mat-icon>drag_handle</mat-icon>
                 </div>
                 <schema-field-configuration [form]="dataForm" [field]="field" [types]="types"
-                    [private]="dataForm.value?.entity === 'EVC'" [measureTypes]="measureTypes" [schemaTypes]="schemaTypes"
-                    [extended]="extended" (remove)="onRemove(field)">
+                    [private]="dataForm.value?.entity === 'EVC'" [measureTypes]="measureTypes"
+                    [schemaTypes]="schemaTypes" [extended]="extended" (remove)="onRemove(field)">
                 </schema-field-configuration>
             </div>
         </div>

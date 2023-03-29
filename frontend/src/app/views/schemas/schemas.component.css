@@ -43,7 +43,7 @@ a {
 
 .actions {
     display: grid;
-    grid-template-columns: 300px auto 470px;
+    grid-template-columns: 400px auto 470px;
     padding: 14px 14px 14px 14px;
     border-bottom: 1px solid #eee;
     margin: 0;
@@ -197,6 +197,7 @@ a {
     padding-left: 10px;
 }
 
+.schemas-table .mat-column-tagOperation,
 .schemas-table .mat-column-activeOperation,
 .schemas-table .mat-column-operation {
     width: 135px;

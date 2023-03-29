@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ISchema, IUser, Schema, SchemaHelper, TagType } from '@guardian/interfaces';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 //services
 import { ProfileService } from '../../services/profile.service';
 import { SchemaService } from '../../services/schema.service';
@@ -58,6 +58,15 @@ export class SchemaConfigComponent implements OnInit {
         'deleteSystem',
         'document',
     ];
+    tagSchemaColumns: string[] = [
+        'type',
+        'owner',
+        'status',
+        'tagOperation',
+        'editSystem',
+        'deleteSystem',
+        'document',
+    ];
     selectedAll!: boolean;
     policies: any[] | null;
     currentTopicPolicy: any = '';
@@ -65,14 +74,29 @@ export class SchemaConfigComponent implements OnInit {
     pageSize: number;
     schemasMap: any;
     policyNameByTopic: any;
-    system: boolean = false;
     allSchemas: Schema[] = [];
     tagSchemas: Schema[] = [];
-
     taskId: string | undefined = undefined;
     expectedTaskMessages: number = 0;
     owner: any;
     tagEntity = TagType.Schema;
+    type: string = 'system';
+
+    public get isSystem(): boolean {
+        return this.type === 'system';
+    }
+
+    public get isPolicy(): boolean {
+        return this.type === 'policy' && this.isConfirmed;
+    }
+
+    public get isTag(): boolean {
+        return this.type === 'tag' && this.isConfirmed;
+    }
+
+    public get isAny(): boolean {
+        return this.isSystem || this.isPolicy || this.isTag;
+    }
 
     constructor(
         public tagsService: TagsService,
@@ -92,9 +116,32 @@ export class SchemaConfigComponent implements OnInit {
     ngOnInit() {
         const type = this.route.snapshot.queryParams['type'];
         const topic = this.route.snapshot.queryParams['topic'];
-        this.system = type == 'system';
+
+        this.type = type === 'tag' ? 'tag' : (type === 'policy' ? 'policy' : 'system');
         this.currentTopicPolicy = topic && topic != 'all' ? topic : '';
         this.loadProfile()
+    }
+
+    private _deleteSystem(id: string): Observable<ISchema[]> {
+        switch (this.type) {
+            case 'system':
+                return this.schemaService.deleteSystemSchemas(id);
+            case 'tag':
+                return this.schemaService.deleteSystemSchemas(id);
+            default:
+                return this.schemaService.delete(id);
+        }
+    }
+
+    private _updateSystem(schema: Schema, id: string): Observable<ISchema[]> {
+        switch (this.type) {
+            case 'system':
+                return this.schemaService.updateSystemSchemas(schema, id);
+            case 'tag':
+                return this.schemaService.updateSystemSchemas(schema, id);
+            default:
+                return this.schemaService.update(schema, id);
+        }
     }
 
     loadProfile() {
@@ -115,7 +162,7 @@ export class SchemaConfigComponent implements OnInit {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.owner = profile?.did;
             if (!this.isConfirmed) {
-                this.system = true;
+                this.type = 'system';
             }
 
             this.policyNameByTopic = {};
@@ -155,34 +202,15 @@ export class SchemaConfigComponent implements OnInit {
 
     loadSchemas() {
         this.loading = true;
-        if (this.system) {
-            this.columns = this.systemSchemaColumns;
-            this.schemaService.getSystemSchemas(this.pageIndex, this.pageSize)
-                .subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
-                    this.schemas = SchemaHelper.map(schemasResponse.body || []);
-                    this.schemasCount = schemasResponse.headers.get('X-Total-Count') || this.schemas.length;
-                    this.schemaMapping(this.schemas);
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                }, (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                });
 
-        } else {
-            this.columns = this.policySchemaColumns;
-            this.schemaService.getSchemasByPage(this.currentTopicPolicy, this.pageIndex, this.pageSize)
-                .subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
-                    this.schemas = SchemaHelper.map(schemasResponse.body || []);
-                    this.schemasCount = schemasResponse.headers.get('X-Total-Count') || this.schemas.length;
-                    this.schemaMapping(this.schemas);
-
-                    const ids = this.schemas.map(e => e.id);
-                    this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
-                        for (const schema of this.schemas) {
-                            (schema as any)._tags = data[schema.id];
-                        }
+        switch (this.type) {
+            case 'system': {
+                this.columns = this.systemSchemaColumns;
+                this.schemaService.getSystemSchemas(this.pageIndex, this.pageSize)
+                    .subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
+                        this.schemas = SchemaHelper.map(schemasResponse.body || []);
+                        this.schemasCount = schemasResponse.headers.get('X-Total-Count') || this.schemas.length;
+                        this.schemaMapping(this.schemas);
                         setTimeout(() => {
                             this.loading = false;
                         }, 500);
@@ -190,11 +218,49 @@ export class SchemaConfigComponent implements OnInit {
                         console.error(e.error);
                         this.loading = false;
                     });
-                }, (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                });
-
+                break;
+            }
+            case 'tag': {
+                this.columns = this.tagSchemaColumns;
+                this.tagsService.getSchemas(this.pageIndex, this.pageSize)
+                    .subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
+                        this.schemas = SchemaHelper.map(schemasResponse.body || []);
+                        this.schemasCount = schemasResponse.headers.get('X-Total-Count') || this.schemas.length;
+                        this.schemaMapping(this.schemas);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    }, (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    });
+                break;
+            }
+            default: {
+                this.columns = this.policySchemaColumns;
+                this.schemaService.getSchemasByPage(this.currentTopicPolicy, this.pageIndex, this.pageSize)
+                    .subscribe((schemasResponse: HttpResponse<ISchema[]>) => {
+                        this.schemas = SchemaHelper.map(schemasResponse.body || []);
+                        this.schemasCount = schemasResponse.headers.get('X-Total-Count') || this.schemas.length;
+                        this.schemaMapping(this.schemas);
+                        const ids = this.schemas.map(e => e.id);
+                        this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+                            for (const schema of this.schemas) {
+                                (schema as any)._tags = data[schema.id];
+                            }
+                            setTimeout(() => {
+                                this.loading = false;
+                            }, 500);
+                        }, (e) => {
+                            console.error(e.error);
+                            this.loading = false;
+                        });
+                    }, (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    });
+                break;
+            }
         }
     }
 
@@ -239,17 +305,20 @@ export class SchemaConfigComponent implements OnInit {
             panelClass: 'g-dialog',
             disableClose: true,
             data: {
-                system: this.system,
                 type: 'new',
+                schemaType: this.type,
                 schemasMap: this.schemasMap,
                 topicId: this.currentTopicPolicy,
                 policies: this.policies
             }
         });
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
-            if (schema) {
-                this.loading = true;
-                if (schema.system) {
+            if (!schema) {
+                return;
+            }
+            this.loading = true;
+            switch (this.type) {
+                case 'system': {
                     this.schemaService.createSystemSchemas(schema).subscribe((data) => {
                         localStorage.removeItem('restoreSchemaData');
                         this.loadSchemas();
@@ -257,7 +326,19 @@ export class SchemaConfigComponent implements OnInit {
                         console.error(e.error);
                         this.loading = false;
                     });
-                } else {
+                    break;
+                }
+                case 'tag': {
+                    this.tagsService.createSchema(schema).subscribe((data) => {
+                        localStorage.removeItem('restoreSchemaData');
+                        this.loadSchemas();
+                    }, (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    });
+                    break;
+                }
+                default: {
                     this.schemaService.pushCreate(schema, schema.topicId).subscribe((result) => {
                         const { taskId, expectation } = result;
                         this.taskId = taskId;
@@ -266,6 +347,7 @@ export class SchemaConfigComponent implements OnInit {
                         this.loading = false;
                         this.taskId = undefined;
                     });
+                    break;
                 }
             }
         });
@@ -290,7 +372,7 @@ export class SchemaConfigComponent implements OnInit {
             disableClose: true,
             data: {
                 type: 'edit',
-                system: this.system,
+                schemaType: this.type,
                 schemasMap: this.schemasMap,
                 topicId: this.currentTopicPolicy,
                 policies: this.policies,
@@ -300,11 +382,7 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.afterClosed().subscribe(async (schema: Schema | null) => {
             if (schema) {
                 this.loading = true;
-
-                const request = this.system ?
-                    this.schemaService.updateSystemSchemas(schema, element.id) :
-                    this.schemaService.update(schema, element.id);
-                request.subscribe((data) => {
+                this._updateSystem(schema, element.id).subscribe((data) => {
                     localStorage.removeItem('restoreSchemaData');
                     this.loadSchemas();
                 }, (e) => {
@@ -439,11 +517,7 @@ export class SchemaConfigComponent implements OnInit {
             }
 
             this.loading = true;
-            const request = this.system ?
-                this.schemaService.deleteSystemSchemas(element.id) :
-                this.schemaService.delete(element.id);
-
-            request.subscribe((data: any) => {
+            this._deleteSystem(element.id).subscribe((data: any) => {
                 const schemas = SchemaHelper.map(data);
                 this.schemaMapping(schemas);
                 this.loadSchemas();
@@ -551,17 +625,23 @@ export class SchemaConfigComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 100;
         this.currentTopicPolicy = undefined;
-        this.router.navigate(['/schemas'], {
-            queryParams: {
-                type: this.system ? 'system' : 'policy'
-            }
-        });
+        this.router.navigate(['/schemas'], { queryParams: { type: this.type } });
         this.loadSchemas();
     }
 
     active(element: any) {
         this.loading = true;
         this.schemaService.activeSystemSchemas(element.id).subscribe((res) => {
+            this.loading = false;
+            this.loadSchemas();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
+
+    publishTagSchema(element: any) {
+        this.loading = true;
+        this.tagsService.publishSchema(element.id).subscribe((res) => {
             this.loading = false;
             this.loadSchemas();
         }, (e) => {

@@ -36,7 +36,7 @@
     <div class="g-dialog-body" cdkDropList [cdkDropListData]="fields" (cdkDropListDropped)="drop($event)">
         <div style="padding: 0px 55px 30px 55px;">
             <app-schema-configuration #document [value]="scheme" [schemas-map]="schemasMap" [type]="type"
-                [policies]="policies" [topicId]="topicId" [system]="system" [extended]="extended"
+                [policies]="policies" [topicId]="topicId" [schemaType]="schemaType" [extended]="extended"
                 (change-form)="onChangeForm($event)" (change-fields)="onChangeFields($event)">
             </app-schema-configuration>
         </div>

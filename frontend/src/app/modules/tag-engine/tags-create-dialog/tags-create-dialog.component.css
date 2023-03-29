@@ -119,6 +119,12 @@ form {
     border-radius: 6px;
     cursor: pointer;
     margin-left: 8px;
+
+    position: absolute;
+    right: -10px;
+    top: -26px;
+    background: #ffffff;
+    box-shadow: -5px 0px 0px 0px #ffffff;
 }
 
 .delete-artifact:hover {
@@ -135,10 +141,9 @@ form {
     font-size: 28px;
 }
 
-
 .artifact-form {
     position: relative;
-    margin: 45px 8px 0px 8px;
+    margin: 40px 8px 0px 8px;
     padding: 40px 0px 0px 0px;
     border-top: 1px solid #c8c8c8;
 }

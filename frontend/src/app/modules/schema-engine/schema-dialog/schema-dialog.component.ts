@@ -22,12 +22,11 @@ export class SchemaDialog {
     type: 'new' | 'edit' | 'version' = 'new';
     topicId: any;
     policies: any[];
-    system: boolean = false;
+    schemaType: string = 'policy';
     valid: boolean = true;
     extended: boolean = false;
     fields: any[] = [];
     restoreData: any = null;
-
     constructor(
         public dialogRef: MatDialogRef<SchemaDialog>,
         private fb: FormBuilder,
@@ -38,7 +37,7 @@ export class SchemaDialog {
         this.type = data.type || null;
         this.topicId = data.topicId || null;
         this.policies = data.policies || [];
-        this.system = data.system || false;
+        this.schemaType = data.schemaType || 'policy';
     }
 
     ngOnInit(): void {
@@ -72,7 +71,7 @@ export class SchemaDialog {
     onChangeForm(schemaControl: SchemaConfigurationComponent) {
         this.valid = schemaControl.isValid();
     }
-    
+
     onChangeFields(fields: any[]) {
         this.fields = fields;
         this.cdr.detectChanges();

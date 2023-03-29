@@ -1,4 +1,5 @@
-import { ISchema } from '@guardian/interfaces';
+import { IAuthUser } from '@guardian/common';
+import { ISchema, SchemaCategory } from '@guardian/interfaces';
 import JSZip from 'jszip';
 
 /**
@@ -92,5 +93,53 @@ export class SchemaUtils {
             schema.context = JSON.parse(schema.context);
         }
         return schema;
+    }
+
+    /**
+     * Check schema permission
+     * @param {ISchema} schema
+     * @param {IAuthUser} user
+     * @param {SchemaCategory} type
+     * 
+     * @returns {string} error
+     */
+    public static checkPermission(schema: ISchema, user: IAuthUser, type: SchemaCategory): string | null {
+        if (!schema) {
+            return 'Schema does not exist.';
+        }
+        if (schema.system) {
+            if (schema.creator !== user.username) {
+                return 'Invalid creator.';
+            }
+        } else {
+            if (schema.creator !== user.did) {
+                return 'Invalid creator.';
+            }
+        }
+        if (type === SchemaCategory.TAG) {
+            if (schema.system) {
+                return 'Schema is system.';
+            }
+            if (schema.category !== SchemaCategory.TAG) {
+                return 'Invalid schema category.';
+            }
+        } else if (type === SchemaCategory.SYSTEM) {
+            if (!schema.system) {
+                return 'Schema is not system.';
+            }
+            if (schema.category === SchemaCategory.POLICY ||
+                schema.category === SchemaCategory.TAG) {
+                return 'Invalid schema category.';
+            }
+        } else {
+            if (schema.system) {
+                return 'Schema is system.';
+            }
+            if (schema.category === SchemaCategory.SYSTEM ||
+                schema.category === SchemaCategory.TAG) {
+                return 'Invalid schema category.';
+            }
+        }
+        return null;
     }
 }

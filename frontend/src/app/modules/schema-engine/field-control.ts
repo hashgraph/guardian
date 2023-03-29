@@ -30,14 +30,14 @@ export class FieldControl {
     public controlPrivate: FormControl;
     public controlPattern: FormControl;
     private readonly _defaultFieldMap!: any;
-    private _entityType!: FormControl;
+    private _entityType: FormControl | undefined;
 
     constructor(
         field: SchemaField | null,
         type: string,
         destroyEvent: Subject<any>,
         defaultFieldMap: any,
-        entityType: FormControl,
+        entityType?: FormControl,
         name?: string
     ) {
         this._defaultFieldMap = defaultFieldMap;
@@ -91,9 +91,11 @@ export class FieldControl {
             this.controlPrivate = new FormControl(false);
             this.controlPattern = new FormControl('');
         }
-        this._entityType.valueChanges
-            .pipe(takeUntil(destroyEvent))
-            .subscribe(() => this.controlKey.updateValueAndValidity());
+        if (this._entityType) {
+            this._entityType.valueChanges
+                .pipe(takeUntil(destroyEvent))
+                .subscribe(() => this.controlKey.updateValueAndValidity());
+        }
     }
 
     private trimFormControlValue(value: string) {
@@ -220,19 +222,21 @@ export class FieldControl {
     private fieldSystemKeyValidator(): ValidatorFn {
         return (control: any): ValidationErrors | null => {
             let systemFields = SYSTEM_FIELDS;
-            const entityTypeValue = this._entityType?.value;
-            if (entityTypeValue && this._defaultFieldMap && this._defaultFieldMap[entityTypeValue]) {
-                systemFields = systemFields.concat(this._defaultFieldMap[entityTypeValue].map((item: any) => item.name));
+            if (this._entityType) {
+                const entityTypeValue = this._entityType?.value;
+                if (entityTypeValue && this._defaultFieldMap && this._defaultFieldMap[entityTypeValue]) {
+                    systemFields = systemFields.concat(this._defaultFieldMap[entityTypeValue].map((item: any) => item.name));
+                }
             }
             return systemFields.includes(control.value)
-                ? { systemName: { valid: false }}
+                ? { systemName: { valid: false } }
                 : null;
         };
     }
 
     private keyValidator(): ValidatorFn {
         return (control: any): ValidationErrors | null => {
-            if(!control.value || /\s/.test(control.value)) {
+            if (!control.value || /\s/.test(control.value)) {
                 return {
                     key: {
                         valid: false

@@ -11,4 +11,5 @@ export interface TagItem {
     readonly status: TagStatus;
     readonly operation: TagOperation;
     readonly messageId: string;
+    readonly document: any;
 }

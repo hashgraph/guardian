@@ -29,6 +29,7 @@ export class TagsExplorerDialog {
     public time: string | undefined;
     public tab: number = 1;
     public tagsService: TagsService;
+    public schemas: any[] = [];
 
     constructor(
         public dialogRef: MatDialogRef<TagsExplorerDialog>,
@@ -36,6 +37,7 @@ export class TagsExplorerDialog {
         private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
+        this.schemas = data?.schemas;
         this.tagsService = data.service;
         this.history = data.history;
         this.owner = this.history.owner;
@@ -68,7 +70,10 @@ export class TagsExplorerDialog {
         const dialogRef = this.dialog.open(TagCreateDialog, {
             width: '800px',
             panelClass: 'g-dialog',
-            disableClose: true
+            disableClose: true,
+            data: {
+                schemas: this.schemas
+            }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
@@ -154,5 +159,9 @@ export class TagsExplorerDialog {
         } else {
             this.time = undefined;
         }
+    }
+
+    public json(doc: any):string {
+        return JSON.stringify(doc, null, 4);
     }
 }

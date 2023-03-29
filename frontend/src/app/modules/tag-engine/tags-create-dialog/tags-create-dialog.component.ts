@@ -40,6 +40,10 @@ export class TagCreateDialog {
     onCreate() {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
+            if(this.schema) {
+                const vc = this.schemaForm.value;
+                data.document = vc;
+            }
             this.dialogRef.close(data);
         }
     }

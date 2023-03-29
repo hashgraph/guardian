@@ -42,7 +42,7 @@
                     </mat-option>
                 </mat-select>
 
-                <div *ngIf="schema" class="selected-artifact">
+                <!-- <div *ngIf="schema" class="selected-artifact">
                     <div class="selected-artifact-name">
                         <span class="selected-artifact-label">Artifact</span>
                         <span>{{schema.name}}</span>
@@ -50,11 +50,14 @@
                     <div class="delete-artifact" (click)="onDeleteArtifact()">
                         <mat-icon>delete</mat-icon>
                     </div>
-                </div>
+                </div> -->
 
                 <div *ngIf="schema" class="artifact-form">
                     <div class="artifact-form-label">
-                        Artifact
+                        {{schema.name}}
+                    </div>
+                    <div class="delete-artifact" (click)="onDeleteArtifact()">
+                        <mat-icon>delete</mat-icon>
                     </div>
                     <form [formGroup]="schemaForm">
                         <app-schema-form [formGroup]="schemaForm" [schema]="schema"></app-schema-form>

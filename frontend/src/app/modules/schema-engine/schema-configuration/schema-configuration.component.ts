@@ -16,7 +16,8 @@ import {
     SchemaField,
     FieldTypesDictionary,
     UnitSystem,
-    SchemaEntity
+    SchemaEntity,
+    SchemaCategory
 } from '@guardian/interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
@@ -45,7 +46,7 @@ export class SchemaConfigurationComponent implements OnInit {
     @Input('schemas-map') schemasMap!: { [x: string]: Schema[] };
     @Input('policies') policies!: any[];
     @Input('topicId') topicId!: any;
-    @Input('system') system!: boolean;
+    @Input('schemaType') schemaType!: string;
     @Input('extended') extended!: boolean;
 
     @Output('change-form') changeForm = new EventEmitter<any>();
@@ -58,7 +59,6 @@ export class SchemaConfigurationComponent implements OnInit {
     fieldsForm!: FormGroup;
     conditionsForm!: FormGroup;
     dataForm!: FormGroup;
-    defaultFields!: FormControl;
     defaultFieldsMap!: any;
     typesMap!: any;
     types!: any[];
@@ -74,6 +74,18 @@ export class SchemaConfigurationComponent implements OnInit {
         number: /^-?\d*(\.\d+)?$/,
         integer: /^-?\d*$/
     };
+
+    public get isSystem(): boolean {
+        return this.schemaType === 'system';
+    }
+
+    public get isTag(): boolean {
+        return this.schemaType === 'tag';
+    }
+
+    public get isPolicy(): boolean {
+        return this.schemaType !== 'system' && this.schemaType !== 'tag';
+    }
 
     constructor(
         private fb: FormBuilder,
@@ -173,17 +185,32 @@ export class SchemaConfigurationComponent implements OnInit {
         if (changes.value && Object.keys(changes).length === 1) {
             this.dataForm = null as any;
         }
-        if (this.system) {
-            this.updateSubSchemas(null);
-        } else {
+        if (this.isPolicy) {
             this.updateSubSchemas(this.value?.topicId || this.topicId);
+        } else {
+            this.updateSubSchemas(null);
         }
+        this.buildForm();
+        if (changes.value && this.value) {
+            this.updateFormControls();
+        }
+        this.changeForm.emit(this);
+    }
+
+    buildForm() {
         if (this.dataForm) {
-            if (this.system) {
+            if (this.isSystem) {
                 this.dataForm.setValue({
                     name: '',
                     description: '',
                     entity: SchemaEntity.STANDARD_REGISTRY,
+                    fields: {},
+                    conditions: {}
+                });
+            } else if (this.isTag) {
+                this.dataForm.setValue({
+                    name: '',
+                    description: '',
                     fields: {},
                     conditions: {}
                 });
@@ -200,44 +227,43 @@ export class SchemaConfigurationComponent implements OnInit {
         } else {
             this.fieldsForm = this.fb.group({});
             this.conditionsForm = new FormGroup({});
-            if (this.system) {
-                this.defaultFields = new FormControl(SchemaEntity.STANDARD_REGISTRY, Validators.required);
-                this.dataForm = this.fb.group({
+
+            let props: any;
+            if (this.isSystem) {
+                props = {
                     name: ['', Validators.required],
                     description: [''],
-                    entity: this.defaultFields,
+                    entity: new FormControl(SchemaEntity.STANDARD_REGISTRY, Validators.required),
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
-                }, {
-                    validators: this.fieldNameValidator()
-                });
-                this.dataForm.valueChanges.subscribe(() => {
-                    this.changeForm.emit(this);
-                })
+                };
+            } else if (this.isTag) {
+                props = {
+                    name: ['', Validators.required],
+                    description: [''],
+                    fields: this.fieldsForm,
+                    conditions: this.conditionsForm
+                };
             } else {
-                this.defaultFields = new FormControl(SchemaEntity.VC, Validators.required);
-                this.dataForm = this.fb.group({
+                props = {
                     name: ['', Validators.required],
                     description: [''],
                     topicId: [this.topicId, Validators.required],
-                    entity: this.defaultFields,
+                    entity: new FormControl(SchemaEntity.VC, Validators.required),
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
-                }, {
-                    validators: this.fieldNameValidator()
-                });
-                this.dataForm.valueChanges.subscribe(() => {
-                    this.changeForm.emit(this);
-                })
+                };
             }
+            this.dataForm = this.fb.group(props, {
+                validators: this.fieldNameValidator()
+            });
+            this.dataForm.valueChanges.subscribe(() => {
+                this.changeForm.emit(this);
+            })
             this.fields = [];
             this.changeFields.emit(this.fields);
             this.conditions = [];
         }
-        if (changes.value && this.value) {
-            this.updateFormControls();
-        }
-        this.changeForm.emit(this);
     }
 
     onFilter(event: any) {
@@ -343,11 +369,19 @@ export class SchemaConfigurationComponent implements OnInit {
 
     updateFormControls() {
         this.fieldsForm.reset();
-        if (this.system) {
+
+        if (this.isSystem) {
             this.dataForm.setValue({
                 name: this.value.name,
                 description: this.value.description,
                 entity: this.value.entity,
+                fields: {},
+                conditions: {}
+            });
+        } else if (this.isTag) {
+            this.dataForm.setValue({
+                name: this.value.name,
+                description: this.value.description,
                 fields: {},
                 conditions: {}
             });
@@ -615,9 +649,12 @@ export class SchemaConfigurationComponent implements OnInit {
         const value = this.dataForm.value;
         const schema = this.buildSchema(value);
         schema.topicId = value.topicId;
-        schema.system = this.system;
+        schema.system = this.isSystem;
         schema.active = false;
         schema.readonly = false;
+        schema.category = this.isPolicy ? SchemaCategory.POLICY : (
+            this.isTag ? SchemaCategory.TAG : SchemaCategory.SYSTEM
+        );
         return schema;
     }
 
@@ -870,9 +907,9 @@ export class SchemaConfigurationComponent implements OnInit {
                 if (map[control.value] > 1) {
                     error = { unique: true };
                     control.setErrors(error);
-                } else if(control.errors) {
+                } else if (control.errors) {
                     delete control.errors.unique;
-                    if(Object.keys(control.errors).length === 0) {
+                    if (Object.keys(control.errors).length === 0) {
                         control.setErrors(null);
                     } else {
                         control.setErrors(control.errors);

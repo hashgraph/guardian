@@ -92,6 +92,12 @@
                                 {{item.messageId}}
                             </div>
                         </div>
+                        <div *ngIf="item.document" class="tag-details-description tag-details-field">
+                            <div class="tag-details-field-name">Document</div>
+                            <div class="tag-details-field-value">
+                                {{json(item.document)}}
+                            </div>
+                        </div>
                     </div>
 
                 </div>

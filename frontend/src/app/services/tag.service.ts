@@ -39,20 +39,20 @@ export class TagsService {
         return this.http.get<any>(url, { observe: 'response' });
     }
 
-    public createSchemas(schema: ISchema): Observable<ISchema> {
+    public createSchema(schema: ISchema): Observable<ISchema> {
         return this.http.post<any>(`${this.url}/schemas`, schema);
     }
 
-    public deleteSchemas(id: string): Observable<any> {
+    public deleteSchema(id: string): Observable<any> {
         return this.http.delete<any>(`${this.url}/schemas/${id}`);
     }
 
-    public updateSchemas(schema: ISchema, id: string): Observable<ISchema[]> {
+    public updateSchema(schema: ISchema, id: string): Observable<ISchema[]> {
         const data = Object.assign({}, schema, { id });
         return this.http.put<any[]>(`${this.url}/schemas/${id}`, data);
     }
 
-    public publishSchemas(id: string): Observable<any> {
+    public publishSchema(id: string): Observable<any> {
         return this.http.put<any>(`${this.url}/schemas/${id}/publish`, null);
     }
 

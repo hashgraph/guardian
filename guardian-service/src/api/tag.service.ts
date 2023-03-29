@@ -1,6 +1,6 @@
 import { ApiResponse } from '@api/helpers/api-response';
 import { MessageResponse, MessageError, Logger } from '@guardian/common';
-import { GenerateUUIDv4, IRootConfig, MessageAPI, TagType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IRootConfig, MessageAPI, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
 import { Tag } from '@entity/tag';
 import { MessageAction, MessageServer, MessageType, TagMessage, TopicConfig } from '@hedera-modules';
@@ -9,6 +9,7 @@ import { Policy as PolicyCollection } from '@entity/policy';
 import { Token as TokenCollection } from '@entity/token';
 import { PolicyModule as ModuleCollection } from '@entity/module';
 import { Users } from '@helpers/users';
+import { VcHelper } from '@helpers/vc-helper';
 
 /**
  * Publish schema tags
@@ -323,13 +324,32 @@ export async function tagsAPI(): Promise<void> {
 
             const target = await getTarget(tag.entity, tag.localTarget || tag.target);
             if (target) {
+                const users = new Users();
+                const root = await users.getHederaAccount(owner);
+                //Document
+                if (tag.document && typeof tag.document === 'object') {
+                    const vcHelper = new VcHelper();
+                    let credentialSubject: any = { ...tag.document } || {};
+                    credentialSubject.id = owner;
+                    const tagSchema = await DatabaseServer.getSchema({ iri: `#${credentialSubject.type}` });
+                    if (
+                        tagSchema &&
+                        tagSchema.category === SchemaCategory.TAG &&
+                        tagSchema.status === SchemaStatus.PUBLISHED
+                    ) {
+                        const schemaObject = new Schema(tagSchema);
+                        credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
+                    }
+                    const vcObject = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
+                    tag.document = vcObject;
+                } else {
+                    tag.document = null;
+                }
+                //Message
                 if (target.target && target.topicId) {
                     tag.target = target.target;
                     tag.localTarget = target.id;
                     tag.status = 'Published';
-
-                    const users = new Users();
-                    const root = await users.getHederaAccount(owner);
                     const topic = await DatabaseServer.getTopicById(target.topicId);
                     const topicConfig = await TopicConfig.fromObject(topic, true);
                     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)

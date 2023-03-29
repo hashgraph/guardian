@@ -53,7 +53,8 @@ export class TagsExplorer {
             disableClose: true,
             data: {
                 service: this.tagsService,
-                history: this.history
+                history: this.history,
+                schemas: this.schemas
             }
         });
         dialogRef.afterClosed().subscribe(async (result) => {

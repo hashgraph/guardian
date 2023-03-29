@@ -1,6 +1,6 @@
 import { Guardians } from '@helpers/guardians';
 import { Request, Response, Router } from 'express';
-import { ISchema, UserRole, SchemaHelper, SchemaEntity, StatusType } from '@guardian/interfaces';
+import { ISchema, UserRole, SchemaHelper, SchemaEntity, StatusType, SchemaCategory, SchemaStatus } from '@guardian/interfaces';
 import { permissionHelper } from '@auth/authorization-helper';
 import { AuthenticatedRequest, Logger, RunFunctionAsync } from '@guardian/common';
 import { PolicyEngine } from '@helpers/policy-engine';
@@ -237,23 +237,14 @@ schemaAPI.put('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Aut
         const newSchema = req.body;
         const guardians = new Guardians();
         const schema = await guardians.getSchemaById(newSchema.id);
-        if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
+        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        if (error) {
+            res.status(500).json({ code: 500, message: error });
             return;
         }
-        if (schema.system) {
-            if (schema.creator !== user.username) {
-                res.status(500).json({ code: 500, message: 'Invalid creator.' });
-                return;
-            } else {
-                res.status(500).json({ code: 500, message: 'Schema is system.' });
-                return;
-            }
-        } else {
-            if (schema.creator !== user.did) {
-                res.status(500).json({ code: 500, message: 'Invalid creator.' });
-                return;
-            }
+        if (schema.status === SchemaStatus.PUBLISHED) {
+            res.status(500).json({ code: 500, message: 'Schema is published.' });
+            return;
         }
         SchemaUtils.fromOld(newSchema);
         const schemas = await updateSchema(newSchema, user.did)
@@ -270,23 +261,14 @@ schemaAPI.delete('/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), asy
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
         const schema = await guardians.getSchemaById(schemaId);
-        if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
+        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        if (error) {
+            res.status(500).json({ code: 500, message: error });
             return;
         }
-        if (schema.system) {
-            if (schema.creator !== user.username) {
-                res.status(500).json({ code: 500, message: 'Invalid creator.' });
-                return;
-            } else {
-                res.status(500).json({ code: 500, message: 'Schema is system.' });
-                return;
-            }
-        } else {
-            if (schema.creator !== user.did) {
-                res.status(500).json({ code: 500, message: 'Invalid creator.' });
-                return;
-            }
+        if (schema.status === SchemaStatus.PUBLISHED) {
+            res.status(500).json({ code: 500, message: 'Schema is published.' });
+            return;
         }
         const schemas = (await guardians.deleteSchema(schemaId));
         SchemaHelper.updatePermission(schemas, user.did);
@@ -303,23 +285,14 @@ schemaAPI.put('/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGISTRY)
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
         const schema = await guardians.getSchemaById(schemaId);
-        if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
+        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        if (error) {
+            res.status(500).json({ code: 500, message: error });
             return;
         }
-        if (schema.system) {
-            if (schema.creator !== user.username) {
-                res.status(500).json({ code: 500, message: 'Invalid creator.' });
-                return;
-            } else {
-                res.status(500).json({ code: 500, message: 'Schema is system.' });
-                return;
-            }
-        } else {
-            if (schema.creator !== user.did) {
-                res.status(500).json({ code: 500, message: 'Invalid creator.' });
-                return;
-            }
+        if (schema.status === SchemaStatus.PUBLISHED) {
+            res.status(500).json({ code: 500, message: 'Schema is published.' });
+            return;
         }
         const allVersion = await guardians.getSchemasByUUID(schema.uuid);
         const { version } = req.body;
@@ -349,23 +322,14 @@ schemaAPI.put('/push/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGI
         const guardians = new Guardians();
         taskManager.addStatus(taskId, 'Load schema data', StatusType.PROCESSING);
         const schema = await guardians.getSchemaById(schemaId);
-        if (!schema) {
-            taskManager.addError(taskId, { code: 500, message: 'Schema does not exist.' });
+        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
+        if (error) {
+            taskManager.addError(taskId, { code: 500, message: error });
             return;
         }
-        if (schema.system) {
-            if (schema.creator !== user.username) {
-                taskManager.addError(taskId, { code: 500, message: 'Invalid creator.' });
-                return;
-            } else {
-                taskManager.addError(taskId, { code: 500, message: 'Schema is system.' });
-                return;
-            }
-        } else {
-            if (schema.creator !== user.did) {
-                taskManager.addError(taskId, { code: 500, message: 'Invalid creator.' });
-                return;
-            }
+        if (schema.status === SchemaStatus.PUBLISHED) {
+            taskManager.addError(taskId, { code: 500, message: 'Schema is published.' });
+            return;
         }
         const allVersion = await guardians.getSchemasByUUID(schema.uuid);
         if (allVersion.findIndex(s => s.version === version) !== -1) {
@@ -601,7 +565,10 @@ schemaAPI.post('/system/:username', permissionHelper(UserRole.STANDARD_REGISTRY)
             res.status(500).json({ code: 500, message: 'Schema does not exist.' });
             return;
         }
-        if (newSchema.entity !== SchemaEntity.STANDARD_REGISTRY && newSchema.entity !== SchemaEntity.USER) {
+        if (
+            newSchema.entity !== SchemaEntity.STANDARD_REGISTRY && 
+            newSchema.entity !== SchemaEntity.USER
+        ) {
             res.status(500).json({
                 code: 500,
                 message: `Invalid schema types. Entity must be ${SchemaEntity.STANDARD_REGISTRY} or ${SchemaEntity.USER}`
@@ -655,27 +622,14 @@ schemaAPI.delete('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTR
         const guardians = new Guardians();
         const schemaId = req.params.schemaId;
         const schema = await guardians.getSchemaById(schemaId);
-        if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
+        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.SYSTEM);
+        if (error) {
+            res.status(500).json({ code: 500, message: error });
             return;
         }
-        if (schema.system) {
-            if (schema.owner !== user.username) {
-                res.status(500).json({ code: 500, message: 'Invalid creator.' });
-                return;
-            }
-            if (schema.active) {
-                res.status(500).json({ code: 500, message: 'Schema is active.' });
-                return;
-            }
-        } else {
-            if (schema.owner !== user.did) {
-                res.status(500).json({ code: 500, message: 'Invalid creator.' });
-                return;
-            } else {
-                res.status(500).json({ code: 500, message: 'Schema is not system.' });
-                return;
-            }
+        if (schema.active) {
+            res.status(500).json({ code: 500, message: 'Schema is active.' });
+            return;
         }
         await guardians.deleteSchema(schemaId);
         res.status(200).json(null);
@@ -691,27 +645,14 @@ schemaAPI.put('/system/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY),
         const newSchema = req.body;
         const guardians = new Guardians();
         const schema = await guardians.getSchemaById(newSchema.id);
-        if (!schema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
+        const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.SYSTEM);
+        if (error) {
+            res.status(500).json({ code: 500, message: error });
             return;
         }
-        if (schema.system) {
-            if (schema.owner !== user.username) {
-                res.status(500).json({ code: 500, message: 'Invalid creator.' });
-                return;
-            }
-            if (schema.active) {
-                res.status(500).json({ code: 500, message: 'Schema is active.' });
-                return;
-            }
-        } else {
-            if (schema.owner !== user.did) {
-                res.status(500).json({ code: 500, message: 'Invalid creator.' });
-                return;
-            } else {
-                res.status(500).json({ code: 500, message: 'Schema is not system.' });
-                return;
-            }
+        if (schema.active) {
+            res.status(500).json({ code: 500, message: 'Schema is active.' });
+            return;
         }
         SchemaUtils.fromOld(newSchema);
         const schemas = await updateSchema(newSchema, user.username);
