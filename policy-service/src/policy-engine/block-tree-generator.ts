@@ -89,9 +89,9 @@ export class BlockTreeGenerator extends NatsService {
                     const messageId = msg.headers.get('messageId');
                     const head = headers();
                     head.append('messageId', messageId);
-                    const respond = await cb(this.jsonCodec.decode(msg.data), msg.headers);
+                    const respond = await cb(await this.codec.decode(msg.data), msg.headers);
                     console.log(respond);
-                    msg.respond(this.jsonCodec.encode(respond), {headers: head});
+                    msg.respond(await this.codec.encode(respond), {headers: head});
                 }
             }
         });

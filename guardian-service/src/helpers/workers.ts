@@ -191,7 +191,7 @@ export class Workers extends NatsService {
             await this.searchAndUpdateTasks();
         }, 1000);
 
-        this.getMessages([this.messageQueueName, WorkerEvents.TASK_COMPLETE].join('-'), async (msg: any) => {
+        this.subscribe([WorkerEvents.TASK_COMPLETE, this.messageQueueName].join('.'), async (msg: any) => {
             console.log('TASK_COMPLETE', msg.id);
             if (this.tasksCallbacks.has(msg.id)) {
                 const activeTask = this.tasksCallbacks.get(msg.id);
