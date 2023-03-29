@@ -29,7 +29,7 @@ export class Workers extends NatsService {
      * Queue
      * @private
      */
-    private queue: Set<ITask> = new Set();
+    private readonly queue: Set<ITask> = new Set();
 
     /**
      * Max Repetitions
