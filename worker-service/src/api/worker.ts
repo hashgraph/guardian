@@ -133,7 +133,7 @@ export class Worker extends NatsService{
         this.subscribe(WorkerEvents.GET_FREE_WORKERS, async (msg) => {
             if (!this.isInUse) {
                 this.publish(msg.replySubject, {
-                    subject: [this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('-'),
+                    subject: [this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'),
                     minPriority: this.minPriority,
                     maxPriority: this.maxPriority
                 })
@@ -160,12 +160,28 @@ export class Worker extends NatsService{
                 this.clearState();
 
             }
-            await this.publish([WorkerEvents.TASK_COMPLETE, task.reply].join('.'), result);
+
+            const completeTask = (data) => {
+                // let count = 0;
+                const fn = async () => {
+                    await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('.'), data);
+                    // if (count < 5) {
+                    //     setTimeout(async () => {
+                    //         await fn()
+                    //     })
+                    //     count++
+                    // }
+                }
+                fn();
+            }
+
+            await completeTask(result);
+            // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('.'), result);
             await this.publish(WorkerEvents.WORKER_READY);
             this.isInUse = false;
         }
 
-        this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('-'), async (task) => {
+        this.getMessages([this.replySubject, WorkerEvents.SEND_TASK_TO_WORKER].join('.'), async (task) => {
             if (!this.isInUse) {
                 runTask(task);
 
@@ -192,7 +208,7 @@ export class Worker extends NatsService{
         HederaSDKHelper.setTransactionResponseCallback(async (client: any) => {
             try {
                 const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
-                await this.channel.request(['api-gateway', 'update-user-balance'].join('.'), {
+                await this.sendMessage('update-user-balance', {
                     balance,
                     unit: 'Hbar',
                     operatorAccountId: client.operatorAccountId.toString()

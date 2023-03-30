@@ -80,7 +80,7 @@ export class TaskManager {
         this.wsService = wsService;
         this.channel = new TaskManagerChannel();
         this.channel.setConnection(cn);
-        this.channel.registerListener(MessageAPI.UPDATE_TASK_STATUS, async (msg) => {
+        this.channel.subscribe(MessageAPI.UPDATE_TASK_STATUS, async (msg) => {
             const { taskId, statuses, result, error } = msg;
             if (taskId) {
                 if (statuses) {
