@@ -136,7 +136,7 @@ export class PolicyEngine extends NatsService {
 
         if (this.policyReadyCallbacks.has(policyId)) {
             this.policyReadyCallbacks.get(policyId)(data);
-        // }
+        }
     }
 
     /**
