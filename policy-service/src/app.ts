@@ -24,8 +24,6 @@ Promise.all([
 
     await new PolicyContainer().setConnection(cn).init();
 
-    // await policyAPI(cn);
-
     await new Logger().info('Policy service started', ['GUARDIAN_SERVICE']);
 
     await state.updateState(ApplicationStates.READY);
