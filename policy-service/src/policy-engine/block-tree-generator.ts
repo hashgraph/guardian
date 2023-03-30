@@ -89,9 +89,9 @@ export class BlockTreeGenerator extends NatsService {
                     const messageId = msg.headers.get('messageId');
                     const head = headers();
                     head.append('messageId', messageId);
-                    const respond = await cb(this.jsonCodec.decode(msg.data), msg.headers);
+                    const respond = await cb(await this.codec.decode(msg.data), msg.headers);
                     console.log(respond);
-                    msg.respond(this.jsonCodec.encode(respond), {headers: head});
+                    msg.respond(await this.codec.encode(respond), {headers: head});
                 }
             }
         });
@@ -103,6 +103,10 @@ export class BlockTreeGenerator extends NatsService {
     async initPolicyEvents(policyId: string, policyInstance: any): Promise<void> {
         this.getPolicyMessages(PolicyEvents.CHECK_IF_ALIVE, policyId,async (msg: any) => {
             return new MessageResponse(true);
+        });
+
+        this.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, () => {
+            process.exit(9);
         });
 
         this.getPolicyMessages(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId,async (msg: any) => {

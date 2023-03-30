@@ -119,7 +119,7 @@
                         </ng-container>
                     </div>
                 </div>
-                <div *ngIf="!item.control" class="add-btn" (click)="addGroup(item)">
+                <div *ngIf="!item.control && !item.readonly" class="add-btn" (click)="addGroup(item)">
                     <span>
                         <mat-icon>add</mat-icon> Add Entity
                     </span>

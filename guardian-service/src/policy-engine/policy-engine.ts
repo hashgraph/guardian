@@ -106,10 +106,9 @@ export class PolicyEngine extends NatsService {
     public async init(): Promise<void> {
         await super.init();
 
-        this.getMessages(PolicyEvents.POLICY_READY, (msg: any) => {
-            console.log(msg);
+        this.subscribe(PolicyEvents.POLICY_READY, (msg: any) => {
             PolicyEngine.runReadyEvent(msg.policyId, msg.data);
-        }, true);
+        });
 
         const policies = await DatabaseServer.getPolicies({
             where: {
@@ -135,7 +134,7 @@ export class PolicyEngine extends NatsService {
     private runReadyEvent(policyId: string, data?: any): void {
         console.log('policy ready', policyId, this.policyReadyCallbacks.has(policyId));
 
-        // if (this.policyReadyCallbacks.has(policyId)) {
+        if (this.policyReadyCallbacks.has(policyId)) {
             this.policyReadyCallbacks.get(policyId)(data);
         // }
     }
@@ -913,16 +912,8 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      */
     public async destroyModel(policyId: string): Promise<void> {
-        const serviceChannelEntity = PolicyServiceChannelsContainer.getPolicyServiceChannel(policyId);
-        if (serviceChannelEntity) {
-            const { name } = serviceChannelEntity;
-            PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
-            this.sendMessage(PolicyEvents.DELETE_POLICY, {
-                policyId,
-                policyServiceName: name
-
-            });
-        }
+        PolicyServiceChannelsContainer.deletePolicyServiceChannel(policyId);
+        new GuardiansService().sendPolicyMessage(PolicyEvents.DELETE_POLICY, policyId, {});
     }
 
     /**

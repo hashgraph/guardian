@@ -18,7 +18,7 @@ import { GetBlockAbout } from '@policy-engine/blocks';
 import { DatabaseServer } from '@database-modules';
 import { IPolicyUser } from './policy-user';
 import { ExternalEvent } from './interfaces/external-event';
-import { CommonVariables } from '@helpers/common-variables';
+import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 
 /**
  * Policy action map type
@@ -31,10 +31,7 @@ export type PolicyActionMap = Map<string, Map<PolicyInputEventType, EventCallbac
  * @param args
  */
 export function blockUpdate(type: string, args: any[]) {
-    const commonVars = new CommonVariables();
-    const channel = commonVars.getVariable('channel');
-
-    channel.publish(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, args });
+    new BlockTreeGenerator().publish(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, args });
 }
 
 /**

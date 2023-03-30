@@ -27,9 +27,8 @@ Promise.all([
     InitializeVault(process.env.VAULT_PROVIDER)
 ]).then(async ([_, db, cn, vault]) => {
     DB_DI.orm = db;
-    const state = new ApplicationState('AUTH_SERVICE');
-
-    state.setConnection(cn);
+    const state = new ApplicationState();
+    await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
     state.updateState(ApplicationStates.INITIALIZING);
     try {
         await fixtures();

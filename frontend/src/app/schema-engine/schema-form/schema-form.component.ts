@@ -324,6 +324,7 @@ export class SchemaFormComponent implements OnInit {
                 (readonlyItem: any) => readonlyItem.name === field.name
             )
         ) {
+            item.readonly = true;
             setTimeout(() => {
                 item.control?.disable();
                 item.control?.disable();

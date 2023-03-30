@@ -180,7 +180,8 @@ export class WebSocketService {
                 case MessageAPI.GET_STATUS:
                 case MessageAPI.UPDATE_STATUS:
                     this.updateStatus(event.data);
-                    const allStatesReady = !this.serviesStates.find((item: any) => item.state !== ApplicationStates.READY)
+                    const allStatesReady = !this.serviesStates.find((item: any) => !item.states.includes(ApplicationStates.READY));
+                    console.log(allStatesReady, this.serviesStates);
                     if (!allStatesReady) {
                         if (!['/status', '/admin/settings', '/admin/logs'].includes(location.pathname)) {
                             const last = location.pathname === '/status' ? null : btoa(location.href);
@@ -293,6 +294,7 @@ export class WebSocketService {
     }
 
     private updateStatus(serviceStatus: any) {
+        console.log(serviceStatus);
         if (!serviceStatus || !Object.keys(serviceStatus).length) {
             return;
         }
@@ -303,11 +305,11 @@ export class WebSocketService {
             if (!existsService) {
                 this.serviesStates.push({
                     serviceName,
-                    state: serviceStatus[serviceName]
+                    states: serviceStatus[serviceName]
                 });
                 continue;
             }
-            existsService.state = serviceStatus[serviceName]
+            existsService.states = serviceStatus[serviceName]
         }
     }
 

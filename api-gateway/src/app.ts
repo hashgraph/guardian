@@ -85,7 +85,7 @@ Promise.all([
         app.use('/contracts', authorizationHelper, contractAPI);
         app.use('/branding', authorizationHelper, brandingAPI);
         app.use('/modules', authorizationHelper, moduleAPI);
-        app.use('/map', authorizationHelper, mapAPI);
+        app.use('/map', mapAPI);
         /////////////////////////////////////////
 
         server.setTimeout()

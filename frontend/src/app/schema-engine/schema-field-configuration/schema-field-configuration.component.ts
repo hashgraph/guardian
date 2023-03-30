@@ -134,13 +134,6 @@ export class SchemaFieldConfigurationComponent implements OnInit {
             this.field.controlPattern.enable();
         }
 
-        this.isString = (item && item.name === 'String') || false;
-        if (!this.isString) {
-            this.field.controlPattern.disable();
-        } else {
-            this.field.controlPattern.enable();
-        }
-
         this.helpText = (item && item.name === 'Help Text') || false;
         if (!this.helpText) {
             this.field.controlColor.disable();
