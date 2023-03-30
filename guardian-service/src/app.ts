@@ -238,7 +238,6 @@ Promise.all([
             process.exit(0);
         }
 
-
         try {
             await setDefaultSchema();
         } catch (error) {

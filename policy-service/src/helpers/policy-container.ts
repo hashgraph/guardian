@@ -8,7 +8,7 @@ import { POLICY_PROCESS_PATH } from '@api/policy-process-path';
 /**
  * Policy start options
  */
-interface IPolicyStartOptions {
+export interface IPolicyStartOptions {
     /**
      * Config
      */
@@ -33,7 +33,7 @@ interface IPolicyStartOptions {
 /**
  * Policy instance
  */
-interface IPolicyInstance {
+export interface IPolicyInstance {
     /**
      * Process
      */
@@ -47,7 +47,7 @@ interface IPolicyInstance {
 /**
  * Policy info
  */
-interface IPolicyServiceInfo {
+export interface IPolicyServiceInfo {
     /**
      * Service name
      */
@@ -125,7 +125,7 @@ export class PolicyContainer extends NatsService {
      * Policy info array
      * @private
      */
-    private _policiInfoArrays: Map<string, IPolicyServiceInfo[]>
+    private readonly _policiInfoArrays: Map<string, IPolicyServiceInfo[]>
 
     /**
      * Process count
@@ -139,7 +139,7 @@ export class PolicyContainer extends NatsService {
      * Logger instance
      * @private
      */
-    private logger: Logger
+    private readonly logger: Logger
 
     /**
      * Generate policy subscription
@@ -183,7 +183,7 @@ export class PolicyContainer extends NatsService {
             }
         });
 
-        this.getMessages([this.replySubject, PolicyEvents.POLICY_SERVICE_FREE_STATUS].join('.'), (msg: IPolicyServiceInfo) => {
+        this.getMessages([this.replySubject, PolicyEvents.POLICY_SERVICE_FREE_STATUS, this.instanceId].join('.'), (msg: IPolicyServiceInfo) => {
             if (!this._policiInfoArrays.has(msg.requestId)) {
                 this._policiInfoArrays.set(msg.requestId, [])
             }
@@ -192,7 +192,7 @@ export class PolicyContainer extends NatsService {
         });
 
         setInterval(() => {
-            this.container.forEach(this.runPolicyProcess);
+            this.container.forEach(this.runPolicyProcess, this);
             this.checkForRunNewInstance();
         }, 1000);
 
@@ -221,7 +221,7 @@ export class PolicyContainer extends NatsService {
     public getFreePolicyServices(): Promise<IPolicyServiceInfo[]> {
         const requestId = GenerateUUIDv4();
         this.publish(PolicyEvents.GET_FREE_POLICY_SERVICES, {
-            replySubject: [this.replySubject, PolicyEvents.POLICY_SERVICE_FREE_STATUS].join('.'),
+            replySubject: [this.replySubject, PolicyEvents.POLICY_SERVICE_FREE_STATUS, this.instanceId].join('.'),
             requestId
         });
 
@@ -271,20 +271,23 @@ export class PolicyContainer extends NatsService {
             return;
         }
         const freeCheck = await this.getFreePolicyServices();
-        let hasFree = true;
+        if (!freeCheck) {
+            return;
+        }
+        let hasFree = false;
         for (const info of freeCheck) {
-            hasFree = hasFree && info.free
+            hasFree = hasFree || info.free
         }
         if (hasFree) {
             return;
         }
+
         execFile(this.runServiceScript, (error, _data) => {
-            const logger = new Logger();
             if (error) {
-                logger.error(error, ['POLICY-SERVICE', this.runServiceScript]);
+                this.logger.error(error, ['POLICY-SERVICE', this.runServiceScript]);
                 return;
             }
-            logger.info(_data, ['POLICY-SERVICE', this.runServiceScript]);
+            this.logger.info(_data, ['POLICY-SERVICE', this.runServiceScript]);
         });
         this.startNewPolicyServiceTriggered = true;
     }
@@ -313,36 +316,45 @@ export class PolicyContainer extends NatsService {
                 policyServiceName,
                 skipRegistration
             }),
-        })
+        });
 
-        instance.process = fork(POLICY_PROCESS_PATH, {
+        const p = fork(POLICY_PROCESS_PATH, {
             env: childEnvironment,
             silent: false,
             detached: false
         });
-        instance.process.on('error', (error) => {
+        p.once('error', (error) => {
             this.logger.error(error.message, ['POLICY-SERVICE', policyId]);
             // Restart policy
         });
-        instance.process.on('exit', (code) => {
+        p.once('exit', (code) => {
             this.logger.info(`Policy process exit with code ${code}`, ['POLICY-SERVICE', policyId]);
-            this.container.delete(policyId);
+            if (code === 0) {
+                this.container.delete(policyId);
 
-            if (this.processCount < this.maxPolicyInstances) {
-                this.subscribeForModelGeneration();
-            }
-
-            if (this.processCount === 0) {
-                if (this.stopServiceScript) {
-                    execFile(this.stopServiceScript, (error, _data) => {
-                        if (error) {
-                            this.logger.error(error, ['POLICY-SERVICE', this.stopServiceScript]);
-                            return;
-                        }
-                        this.logger.info(_data, ['POLICY-SERVICE', this.stopServiceScript]);
-                    })
+                if (this.processCount < this.maxPolicyInstances) {
+                    this.subscribeForModelGeneration();
                 }
+
+                if (this.processCount === 0) {
+                    if (this.stopServiceScript) {
+                        execFile(this.stopServiceScript, (error, _data) => {
+                            if (error) {
+                                this.logger.error(error, ['POLICY-SERVICE', this.stopServiceScript]);
+                                return;
+                            }
+                            this.logger.info(_data, ['POLICY-SERVICE', this.stopServiceScript]);
+                        })
+                    }
+                }
+            } else {
+                // rerun every 10 secs
+                setTimeout(() => {
+                    this.logger.warn(`Process for policy with id: ${policyId} respawning`, ['POLICY-SERVICE', policyId]);
+                    instance.process = null;
+                }, 10000)
             }
         });
+        instance.process = p;
     }
 }

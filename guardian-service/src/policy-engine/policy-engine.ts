@@ -133,8 +133,6 @@ export class PolicyEngine extends NatsService {
      * @param error
      */
     private runReadyEvent(policyId: string, data?: any, error?: any): void {
-        console.log('policy ready', policyId, this.policyReadyCallbacks.has(policyId));
-
         if (this.policyReadyCallbacks.has(policyId)) {
             this.policyReadyCallbacks.get(policyId)(data, error);
         }
@@ -931,9 +929,7 @@ export class PolicyEngine extends NatsService {
         const exist = await new GuardiansService().checkIfPolicyAlive(policyId);
 
         if (!exist) {
-            console.log('generate with id', policyId);
-
-            let confirmed: boolean = false;
+            let confirmed: boolean;
 
             try {
                 const r = await this.sendMessageWithTimeout<any>(PolicyEvents.GENERATE_POLICY, 1000, {
@@ -942,7 +938,6 @@ export class PolicyEngine extends NatsService {
                     skipRegistration: false
                 });
                 confirmed = r.confirmed;
-                console.log('generation result', r);
             } catch (e) {
                 confirmed = false
                 console.error(e.message);

@@ -24,7 +24,6 @@ export function ZipCodec() {
                 const decompressed = await util.promisify(unzip)(a);
                 return JSON.parse(decompressed.toString())
             } catch (error) {
-                console.log('error string', a.toString());
                 throw NatsError.errorForCode(ErrorCode.BadJson, error);
             }
         }

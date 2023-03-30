@@ -336,7 +336,6 @@ export function profileAPI() {
             }
 
             const key = await wallet.getKey(user.walletToken, KeyType.KEY, user.did);
-            console.log(key);
             const balance = await workers.addNonRetryableTask({
                 type: WorkerTaskType.GET_USER_BALANCE,
                 data: {
@@ -344,7 +343,6 @@ export function profileAPI() {
                     hederaAccountKey: key
                 }
             }, 1);
-            console.log(balance);
             return new MessageResponse({
                 balance,
                 unit: 'Hbar',

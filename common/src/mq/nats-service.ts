@@ -196,8 +196,6 @@ export abstract class NatsService {
                         cb(await this.codec.decode(msg.data), msg.headers);
                     }
                 } catch (error) {
-                    console.log(msg);
-                    console.log(subject);
                     console.error(error);
                 }
             }
