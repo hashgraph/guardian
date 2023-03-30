@@ -223,6 +223,8 @@ Promise.all([
             }, 1);
         }
 
+        state.updateState(ApplicationStates.INITIALIZING);
+
         try {
             const policyEngine = new PolicyEngine();
             await policyEngine.setConnection(cn).init();
@@ -235,8 +237,6 @@ Promise.all([
             console.error(error.message);
             process.exit(0);
         }
-
-        state.updateState(ApplicationStates.INITIALIZING);
 
         try {
             await setDefaultSchema();
