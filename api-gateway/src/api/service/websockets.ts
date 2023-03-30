@@ -222,7 +222,8 @@ export class WebSocketsService {
                         LOGGER_SERVICE: [],
                         GUARDIAN_SERVICE: [],
                         AUTH_SERVICE: [],
-                        WORKER: []
+                        WORKER: [],
+                        POLICY_SERVICE: []
                     };
 
                     const getStatuses = (): Promise<void> => {

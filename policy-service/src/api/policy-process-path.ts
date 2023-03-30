@@ -15,6 +15,11 @@ const MAX_POLICY_INSTANCES = (process.env.MAX_POLICY_INSTANCES) ? parseInt(proce
 const { RUN_SERVICE_SCRIPT, STOP_SERVICE_SCRIPT } = process.env;
 
 /**
+ * Exec script started
+ */
+let execScriptStarted = false;
+
+/**
  * PolicyEngineChannel
  */
 @Singleton
@@ -88,7 +93,7 @@ function stopPolicyProcess(policyId: string): void {
  * @param skipRegistration
  * @param resultsContainer
  */
-function runPolicyProcess(policy: unknown, policyId: string, policyServiceName: string, skipRegistration: boolean, resultsContainer: unknown): void {
+function runPolicyProcess(policy: unknown, policyId: string, policyServiceName: string, skipRegistration: boolean): void {
     stopPolicyProcess(policyId);
 
     const logger = new Logger();
@@ -98,12 +103,12 @@ function runPolicyProcess(policy: unknown, policyId: string, policyServiceName: 
             policy,
             policyId,
             policyServiceName,
-            skipRegistration,
-            resultsContainer
+            skipRegistration
         }),
 
     })
 
+    processCount++;
     const childProcess = fork(POLICY_PROCESS_PATH, {
         env: childEnvironment,
         silent: false,
@@ -127,7 +132,6 @@ function runPolicyProcess(policy: unknown, policyId: string, policyServiceName: 
         }
     });
     models.set(policyId, childProcess);
-    processCount++;
 }
 
 /**
@@ -150,17 +154,21 @@ export async function policyAPI(cn: NatsConnection): Promise<void> {
     });
 
     channel.registerListener(PolicyEvents.GENERATE_POLICY, async (data: any) => {
+        const {
+            policy,
+            policyServiceName,
+            policyId,
+            skipRegistration,
+        } = data;
+
         if (processCount <= MAX_POLICY_INSTANCES) {
-            const {
-                policy,
-                policyServiceName,
-                policyId,
-                skipRegistration,
-                resultsContainer
-            } = data;
-            runPolicyProcess(policy, policyId, policyServiceName, skipRegistration, resultsContainer);
+            runPolicyProcess(policy, policyId, policyServiceName, skipRegistration);
             return true;
         } else {
+            channel.publish(PolicyEvents.POLICY_READY, {
+                policyId,
+                error: true
+            })
             if (RUN_SERVICE_SCRIPT) {
                 const freeServices = [];
                 const sub = channel.subscribe([channel.replySubject, PolicyEvents.POLICY_SERVICE_FREE_STATUS].join('-'), (msg) => {
@@ -179,16 +187,21 @@ export async function policyAPI(cn: NatsConnection): Promise<void> {
                     for (const s of freeServices) {
                         freeExist = freeExist && s.free
                     }
-                    if (!freeExist) {
+                    if (!freeExist && !execScriptStarted) {
                         console.log('run', RUN_SERVICE_SCRIPT);
-                        execFile(RUN_SERVICE_SCRIPT, (error, _data) => {
+                        execScriptStarted = true;
+                        const p = execFile(RUN_SERVICE_SCRIPT, (error, _data) => {
                             const logger = new Logger();
                             if (error) {
                                 logger.error(error, ['POLICY-SERVICE', RUN_SERVICE_SCRIPT]);
                                 return;
                             }
                             logger.info(_data, ['POLICY-SERVICE', RUN_SERVICE_SCRIPT]);
+                        });
+                        p.on('exit', () => {
+                            execScriptStarted = false;
                         })
+
                     }
                 }, 1000);
             }
