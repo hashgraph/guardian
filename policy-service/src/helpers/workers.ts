@@ -1,14 +1,13 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import { GenerateUUIDv4, IActiveTask, ITask, WorkerEvents } from '@guardian/interfaces';
-import { ServiceRequestsBase } from '@helpers/service-requests-base';
 import { Environment } from '@hedera-modules';
-import { doNothing } from '@guardian/common';
+import { doNothing, NatsService } from '@guardian/common';
 
 /**
  * Workers helper
  */
 @Singleton
-export class Workers extends ServiceRequestsBase {
+export class Workers extends NatsService {
     /**
      * Tasks sended to work
      * @private
@@ -16,9 +15,15 @@ export class Workers extends ServiceRequestsBase {
     private readonly tasksCallbacks: Map<string, IActiveTask> = new Map();
 
     /**
-     * Target
+     * Message queue name
      */
-    public target: string = 'guardians';
+    public messageQueueName = 'workers-policy-instance-queue-' + GenerateUUIDv4();
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'workers-policy-instance-queue-reply-' + GenerateUUIDv4();
 
     /**
      * Max Repetitions
@@ -89,7 +94,7 @@ export class Workers extends ServiceRequestsBase {
                 }
             });
         });
-        this.request(WorkerEvents.PUSH_TASK, {task, priority, isRetryableTask, attempts}).then(doNothing, doNothing);
+        this.sendMessage(WorkerEvents.PUSH_TASK, {task, priority, isRetryableTask, attempts}).then(doNothing, doNothing);
         return result;
     }
 
@@ -97,7 +102,7 @@ export class Workers extends ServiceRequestsBase {
      * Init listeners
      */
     public initListeners() {
-        this.channel.subscribe(WorkerEvents.TASK_COMPLETE_BROADCAST, async (msg: any) => {
+        this.subscribe(WorkerEvents.TASK_COMPLETE_BROADCAST, async (msg: any) => {
             const activeTask = this.tasksCallbacks.get(msg.id);
             activeTask?.callback(msg.data, msg.error);
         });

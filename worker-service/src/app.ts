@@ -20,8 +20,8 @@ Promise.all([
 
     const logger = new Logger();
     logger.setConnection(cn);
-    const state = new ApplicationState(channelName);
-    state.setConnection(cn);
+    const state = new ApplicationState();
+    await state.setServiceName('WORKER').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);
 
     HederaSDKHelper.setTransactionLogSender(async (data) => {
@@ -33,8 +33,8 @@ Promise.all([
     await settingsContainer.init('IPFS_STORAGE_API_KEY');
 
     await state.updateState(ApplicationStates.INITIALIZING);
-    const w = new Worker(channel, channelName);
-    w.init();
+    const w = new Worker();
+    await w.setConnection(cn).init();
 
     const validator = new ValidateConfiguration();
 

@@ -84,7 +84,7 @@ Promise.all([
         app.use('/analytics', authorizationHelper, analyticsAPI);
         app.use('/contracts', authorizationHelper, contractAPI);
         app.use('/modules', authorizationHelper, moduleAPI);
-        app.use('/map', authorizationHelper, mapAPI);
+        app.use('/map', mapAPI);
         app.use('/tags', authorizationHelper, tagsAPI);
         /////////////////////////////////////////
 

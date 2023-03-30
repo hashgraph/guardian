@@ -81,7 +81,7 @@ Promise.all([
     await new Wallet().setConnection(cn).init();
     await new Users().setConnection(cn).init();
     const workersHelper = new Workers();
-    workersHelper.setChannel(channel);
+    await workersHelper.setConnection(cn).init();;
     workersHelper.initListeners();
 
     new Logger().info(`Process for with id ${policyId} was started started PID: ${process.pid}, SERVICE_CHANNEL: ${process.env.SERVICE_CHANNEL}`, ['POLICY', policyId]);
@@ -92,7 +92,7 @@ Promise.all([
 
     await generator.generate(policyConfig, skipRegistration, policyValidator);
 
-    generator.sendMessage(PolicyEvents.POLICY_READY, {
+    generator.publish(PolicyEvents.POLICY_READY, {
         policyId: policyId.toString(),
         data: policyValidator.getSerializedErrors()
     });

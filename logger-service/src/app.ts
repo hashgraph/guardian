@@ -24,8 +24,8 @@ Promise.all([
 ]).then(async values => {
     const [_, db, mqConnection] = values;
     DB_DI.orm = db;
-    const state = new ApplicationState('LOGGER_SERVICE');
-    state.setConnection(mqConnection);
+    const state = new ApplicationState();
+    await state.setServiceName('LOGGER_SERVICE').setConnection(mqConnection).init();
     state.updateState(ApplicationStates.STARTED);
     const logRepository = new DataBaseHelper(Log);
 

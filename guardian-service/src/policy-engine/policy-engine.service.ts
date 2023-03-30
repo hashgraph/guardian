@@ -110,7 +110,7 @@ export class PolicyEngineService {
             return;
         }
 
-        await this.channel.sendMessage('update-block', {
+        await this.channel.publish('update-block', {
             uuid,
             state,
             user
@@ -129,7 +129,7 @@ export class PolicyEngineService {
             return;
         }
 
-        await this.channel.sendMessage('block-error', {
+        await this.channel.publish('block-error', {
             blockType,
             message,
             user
@@ -155,7 +155,7 @@ export class PolicyEngineService {
         }
         const userRole = userGroup ? userGroup.role : 'No role';
 
-        await this.channel.sendMessage('update-user-info', {
+        await this.channel.publish('update-user-info', {
             policyId: policy.id.toString(),
             user: {
                 did: user.virtual ? policy.owner : user.did,
@@ -192,7 +192,7 @@ export class PolicyEngineService {
             }
         };
 
-        this.channel.getMessages(PolicyEvents.BLOCK_UPDATE_BROADCAST, (msg: any) => {
+        this.channel.subscribe(PolicyEvents.BLOCK_UPDATE_BROADCAST, (msg: any) => {
             const { type, args } = msg;
 
             switch (type) {

@@ -76,7 +76,7 @@ services:
       - ipfs-node
       - auth-service
     environment:
-      - SERVICE_CHANNEL="worker.1"
+      SERVICE_CHANNEL: worker.1
 
   worker-service-2:
     build:
@@ -86,7 +86,7 @@ services:
       - ipfs-node
       - auth-service
     environment:
-      - SERVICE_CHANNEL="worker.2"
+      SERVICE_CHANNEL: worker.2
 
   auth-service:
     build:
