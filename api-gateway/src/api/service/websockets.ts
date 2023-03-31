@@ -102,15 +102,27 @@ export class WebSocketsService {
      * @private
      */
     private registerMessageHandler(): void {
+        let updateArray = [];
+
+        setInterval(() => {
+            const a = updateArray;
+            updateArray = [];
+            for (const msg of a) {
+                this.wss.clients.forEach((client: any) => {
+                    if (this.checkUserByDid(client, msg)) {
+                        this.send(client, {
+                            type: 'update-event',
+                            data: msg.uuid
+                        });
+                    }
+                });
+            }
+
+        }, 500);
+
         this.channel.subscribe('update-block', async (msg) => {
-            this.wss.clients.forEach((client: any) => {
-                if (this.checkUserByDid(client, msg)) {
-                    this.send(client, {
-                        type: 'update-event',
-                        data: msg.uuid
-                    });
-                }
-            });
+            updateArray.push(msg);
+
             return new MessageResponse({})
         });
 
