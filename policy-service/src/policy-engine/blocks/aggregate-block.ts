@@ -1,5 +1,5 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { AggregateVC } from '@entity/aggregate-documents';
+import { AggregateVC } from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { VcDocument } from '@hedera-modules';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';

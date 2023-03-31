@@ -1,5 +1,5 @@
 import { DatabaseServer } from '@database-modules';
-import { Policy } from '@entity/policy';
+import { Policy } from '@guardian/common';
 import { PolicyType } from '@guardian/interfaces';
 import { BlockValidator } from './block-validator';
 import { ModuleValidator } from './module-validator';

@@ -6,7 +6,7 @@ import { BlockActionError } from '@policy-engine/errors';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcDocument } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { VcDocument as VcDocumentCollection } from '@guardian/common';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyUtils } from '@policy-engine/helpers/utils';

@@ -1,4 +1,4 @@
-import { Schema } from '@entity/schema';
+import { Schema } from '@guardian/common';
 import { Message } from './message';
 import { IURL, UrlType } from './url.interface';
 import { MessageAction } from './message-action';

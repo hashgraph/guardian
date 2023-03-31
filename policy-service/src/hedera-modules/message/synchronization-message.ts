@@ -3,7 +3,7 @@ import { IURL } from './url.interface';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { SynchronizationMessageBody } from './message-body.interface';
-import { MultiPolicy } from '@entity/multi-policy';
+import { MultiPolicy } from '@guardian/common';
 
 /**
  * Synchronization message

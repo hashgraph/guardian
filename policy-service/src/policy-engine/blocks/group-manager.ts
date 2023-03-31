@@ -5,7 +5,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { PolicyRoles } from '@entity/policy-roles';
+import { PolicyRoles } from '@guardian/common';
 import { MessageServer, MessageStatus } from '@hedera-modules';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';

@@ -9,7 +9,7 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
 import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { VcDocument as VcDocumentCollection } from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';

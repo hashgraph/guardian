@@ -1,4 +1,4 @@
-import { Topic } from '@entity/topic';
+import { Topic } from '@guardian/common';
 import { TopicType } from '@guardian/interfaces';
 import { KeyType, Wallet } from '@helpers/wallet';
 

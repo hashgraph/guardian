@@ -1,4 +1,3 @@
-import { Schema as SchemaCollection } from '@entity/schema';
 import {
     ISchema,
     SchemaEntity,
@@ -18,7 +17,7 @@ import { Users } from '@helpers/users';
 import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
-import { schemasToContext } from '@guardian/common';
+import { schemasToContext, Schema as SchemaCollection } from '@guardian/common';
 
 export const schemaCache = {};
 

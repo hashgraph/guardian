@@ -10,7 +10,7 @@ import { AnyBlockType, IPolicyDocument, IPolicyValidatorBlock } from '@policy-en
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { VcDocument as VcDocumentCollection } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**

@@ -1,4 +1,3 @@
-import { Policy } from '@entity/policy';
 import {
     IPolicyBlock,
     IPolicyInstance,
@@ -7,7 +6,7 @@ import {
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { Singleton } from '@helpers/decorators/singleton';
 import { GenerateUUIDv4, IUser, PolicyEvents, UserRole } from '@guardian/interfaces';
-import { Logger, MessageError, MessageResponse, NatsService } from '@guardian/common';
+import { Logger, MessageError, MessageResponse, NatsService, Policy } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import { IPolicyUser, PolicyUser } from './policy-user';
 import { Users } from '@helpers/users';

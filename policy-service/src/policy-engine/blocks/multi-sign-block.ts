@@ -10,8 +10,7 @@ import { VcHelper } from '@helpers/vc-helper';
 import { Inject } from '@helpers/decorators/inject';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { MessageAction, MessageServer, VcDocument, VPMessage } from '@hedera-modules';
-import { PolicyRoles } from '@entity/policy-roles';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { PolicyRoles, VcDocument as VcDocumentCollection } from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**

@@ -5,7 +5,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage, MessageMemo } from '@hedera-modules';
 import { VcHelper } from '@helpers/vc-helper';
-import { Token as TokenCollection } from '@entity/token';
+import { Token as TokenCollection } from '@guardian/common';
 import { DataTypes, IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType, IPolicyDocument, IPolicyMintEventState, IPolicyTokenBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';

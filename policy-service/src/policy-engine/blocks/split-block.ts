@@ -6,13 +6,12 @@ import { IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { SplitDocuments } from '@entity/split-documents';
+import { SplitDocuments, Schema as SchemaCollection } from '@guardian/common';
 import { VcHelper } from '@helpers/vc-helper';
 import { Inject } from '@helpers/decorators/inject';
 import { VcDocument } from '@hedera-modules';
 import { SchemaEntity } from '@guardian/interfaces';
 import { BlockActionError } from '@policy-engine/errors';
-import { Schema as SchemaCollection } from '@entity/schema';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
