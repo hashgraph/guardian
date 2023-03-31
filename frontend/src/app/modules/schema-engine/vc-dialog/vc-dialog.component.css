@@ -7,13 +7,19 @@
     white-space: pre;
     margin-bottom: 8px;
     font-family: monospace;
-    overflow: auto;
     cursor: text;
+    height: 640px;
+    width: 780px;
+    overflow: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 .content {
-    height: 550px;
-    overflow-y: scroll;
+    height: 650px;
+    overflow-y: auto;
     overflow-x: hidden;
     padding-right: 10px;
 }

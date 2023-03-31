@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { SchemaHelper } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
@@ -29,6 +30,7 @@ export class TagsManagerBlockComponent implements OnInit {
     public owner: any;
 
     public tagsService: any;
+    public tagSchemas: any[] = [];
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -105,12 +107,15 @@ export class TagsManagerBlockComponent implements OnInit {
                 this.entity = null;
                 this.owner = null;
             }
+            const tagSchemas = data.tagSchemas || [];
+            this.tagSchemas = SchemaHelper.map(tagSchemas);
             this.isActive = true;
         } else {
             this.tags = null;
             this.target = null;
             this.entity = null;
             this.owner = null;
+            this.tagSchemas = [];
             this.isActive = false;
         }
     }

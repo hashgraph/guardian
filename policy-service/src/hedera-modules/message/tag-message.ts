@@ -1,5 +1,5 @@
 import { Message } from './message';
-import { IURL } from './url.interface';
+import { IURL, UrlType } from './url.interface';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { TagMessageBody } from './message-body.interface';
@@ -37,6 +37,10 @@ export class TagMessage extends Message {
      * Entity
      */
     public entity: string;
+    /**
+     * Document
+     */
+    public document: any;
 
     constructor(action: MessageAction) {
         super(action, MessageType.Tag);
@@ -57,13 +61,21 @@ export class TagMessage extends Message {
         this.target = tag.target;
         this.operation = tag.operation;
         this.entity = tag.entity;
+        this.document = tag.document;
+    }
+
+    /**
+     * Get documents
+     */
+    public getDocument(): any {
+        return this.document;
     }
 
     /**
      * To message object
      */
     public override toMessageObject(): TagMessageBody {
-        return {
+        const result: any = {
             id: null,
             status: null,
             type: this.type,
@@ -77,13 +89,24 @@ export class TagMessage extends Message {
             operation: this.operation,
             entity: this.entity
         }
+        if (this.isDocuments()) {
+            result.cid = this.getDocumentUrl(UrlType.cid);
+            result.uri = this.getDocumentUrl(UrlType.url);
+        }
+        return result;
     }
 
     /**
      * To documents
      */
     public async toDocuments(): Promise<ArrayBuffer[]> {
-        return [];
+        if (this.document) {
+            const json = JSON.stringify(this.document);
+            const buffer = Buffer.from(json);
+            return [buffer];
+        } else {
+            return [];
+        }
     }
 
     /**
@@ -91,7 +114,12 @@ export class TagMessage extends Message {
      * @param documents
      */
     public loadDocuments(documents: string[]): TagMessage {
-        return this;
+        if (Array.isArray(documents) && documents.length) {
+            this.document = JSON.parse(documents[0]);
+            return this;
+        } else {
+            return this;
+        }
     }
 
     /**
@@ -146,5 +174,13 @@ export class TagMessage extends Message {
      */
     public override validate(): boolean {
         return true;
+    }
+
+    /**
+     * Get document URL
+     * @param type
+     */
+    public getDocumentUrl(type: UrlType): string | null {
+        return this.getUrlValue(0, type);
     }
 }

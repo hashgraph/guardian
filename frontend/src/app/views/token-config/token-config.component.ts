@@ -5,7 +5,7 @@ import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
 import { TokenDialog } from '../../modules/common/token-dialog/token-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TagType, Token } from '@guardian/interfaces';
+import { SchemaHelper, TagType, Token } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin } from 'rxjs';
@@ -58,6 +58,7 @@ export class TokenConfigComponent implements OnInit {
     policies: any[] | null = null;
     tagEntity = TagType.Token;
     owner: any;
+    tagSchemas: any[] = [];
 
     constructor(
         public tagsService: TagsService,
@@ -96,8 +97,15 @@ export class TokenConfigComponent implements OnInit {
     }
 
     loadTokens() {
-        this.tokenService.getTokens(this.currentPolicy).subscribe((data: any) => {
+        forkJoin([
+            this.tokenService.getTokens(this.currentPolicy),
+            this.tagsService.getPublishedSchemas()
+        ]).subscribe((value) => {
+            const data: any = value[0];
+            const tagSchemas: any[] = value[1] || [];
+
             this.tokens = data.map((e: any) => new Token(e));
+            this.tagSchemas = SchemaHelper.map(tagSchemas);
 
             const ids = this.tokens.map(e => e.id);
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {

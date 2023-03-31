@@ -83,6 +83,18 @@ export class Tag extends BaseEntity {
     policyId?: string;
 
     /**
+     * VC document
+     */
+    @Property({ nullable: true })
+    document?: any;
+
+    /**
+     * Document uri
+     */
+    @Property({ nullable: true })
+    uri?: string;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()

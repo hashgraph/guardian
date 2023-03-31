@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { forkJoin, Subscription } from 'rxjs';
-import { IUser, Token, SchemaEntity, Schema, TagType } from '@guardian/interfaces';
+import { IUser, Token, SchemaEntity, Schema, TagType, SchemaHelper } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 //services
 import { AuthService } from '../../services/auth.service';
@@ -91,6 +91,7 @@ export class UserProfileComponent implements OnInit {
     operationMode: OperationMode = OperationMode.None;
     taskId: string | undefined = undefined;
     expectedTaskMessages: number = 0;
+    tagSchemas: Schema[] = [];
 
     private subscription = new Subscription();
     private tabs = ['account', 'tokens', 'retire'];
@@ -158,7 +159,14 @@ export class UserProfileComponent implements OnInit {
 
     private loadTokenData() {
         this.loading = true;
-        this.tokenService.getTokens().subscribe((tokens) => {
+
+        forkJoin([
+            this.tokenService.getTokens(),
+            this.tagsService.getPublishedSchemas()
+        ]).subscribe((value) => {
+            const tokens: any[] = value[0];
+            const tagSchemas: any[] = value[1] || [];
+
             this.tokens = tokens.map((e: any) => {
                 return {
                     ...new Token(e),
@@ -167,6 +175,7 @@ export class UserProfileComponent implements OnInit {
                     decimals: e.decimals
                 }
             });
+            this.tagSchemas = SchemaHelper.map(tagSchemas);
 
             const ids = this.tokens.map(e => e.id);
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {

@@ -19,6 +19,7 @@ export class VCViewerDialog {
     type: any;
     isVpDocument!: boolean;
     isJsonDocument!: boolean;
+    toggle: boolean = true;
 
     constructor(
         public dialogRef: MatDialogRef<VCViewerDialog>,
@@ -26,7 +27,8 @@ export class VCViewerDialog {
             document: any,
             title: string,
             viewDocument?: boolean,
-            type?: 'VC' | 'VP' | 'JSON'
+            type?: 'VC' | 'VP' | 'JSON',
+            toggle?: boolean
         }) {
     }
 
@@ -35,12 +37,14 @@ export class VCViewerDialog {
             document,
             title,
             viewDocument,
-            type
+            type,
+            toggle
         } = this.data;
         this.title = title;
         this.json = JSON.stringify((document), null, 4);
         this.document = document;
         this.type = type || 'JSON';
+        this.toggle = toggle !== false;
 
         this.isVcDocument = false;
         this.isVpDocument = false;

@@ -60,7 +60,7 @@
                     [attr.status]="item.status" [attr.open]="item === open">
 
                     <mat-icon class="tag-collapse" (click)="onOpen(item)">arrow_drop_down</mat-icon>
-                    <div class="tag-owner">
+                    <div class="tag-owner" (click)="onOpen(item)">
                         <span>{{item.owner}}</span>
                     </div>
                     <div class="delete-tag" (click)="onDelete(item)">
@@ -76,7 +76,7 @@
                         </div>
                         <div class="tag-details-status tag-details-field">
                             <div class="tag-details-field-name">Status</div>
-                            <div class="tag-details-field-value">
+                            <div class="tag-details-field-value status">
                                 {{item.status}}
                             </div>
                         </div>
@@ -86,16 +86,28 @@
                                 {{item.description}}
                             </div>
                         </div>
+                        <div *ngIf="item.topicId" class="tag-details-description tag-details-field">
+                            <div class="tag-details-field-name">Topic Id</div>
+                            <div class="tag-details-field-value">
+                                <hedera-explorer type="topics" [params]="item.topicId">{{item.topicId}}</hedera-explorer>
+                            </div>
+                        </div>
                         <div *ngIf="item.messageId" class="tag-details-description tag-details-field">
                             <div class="tag-details-field-name">Message Id</div>
                             <div class="tag-details-field-value">
                                 {{item.messageId}}
                             </div>
                         </div>
+                        <div *ngIf="item.uri" class="tag-details-description tag-details-field">
+                            <div class="tag-details-field-name">Document URL</div>
+                            <div class="tag-details-field-value">
+                                <file-explorer type="ipfs" [params]="item.uri">{{item.uri}}</file-explorer>
+                            </div>
+                        </div>
                         <div *ngIf="item.document" class="tag-details-description tag-details-field">
                             <div class="tag-details-field-name">Document</div>
                             <div class="tag-details-field-value">
-                                {{json(item.document)}}
+                                <a (click)="openVCDocument(item.document, 'VC')">View Document</a>
                             </div>
                         </div>
                     </div>

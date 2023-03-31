@@ -89,6 +89,12 @@ export class Tag extends BaseEntity {
     document?: any;
 
     /**
+     * Document uri
+     */
+    @Property({ nullable: true })
+    uri?: string;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()

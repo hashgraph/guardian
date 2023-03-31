@@ -6,6 +6,7 @@ import { TagsExplorer } from './tags-explorer/tags-explorer.component';
 import { TagsExplorerDialog } from './tags-explorer-dialog/tags-explorer-dialog.component';
 import { TagCreateDialog } from './tags-create-dialog/tags-create-dialog.component';
 import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
+import { CommonComponentsModule } from '../common/common-components.module';
 
 @NgModule({
     declarations: [
@@ -16,6 +17,7 @@ import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
     imports: [
         CommonModule,
         FormsModule,
+        CommonComponentsModule,
         MaterialModule,
         SchemaEngineModule
     ],

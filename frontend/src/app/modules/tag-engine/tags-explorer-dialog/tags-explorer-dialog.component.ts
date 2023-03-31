@@ -8,6 +8,7 @@ import { TagsHistory } from "../models/tags-history";
 import { TagMapItem } from "../models/tag-map-item";
 import { TagItem } from "../models/tag-item";
 import * as moment from 'moment';
+import { VCViewerDialog } from '../../schema-engine/vc-dialog/vc-dialog.component';
 
 /**
  * Dialog for creating tokens.
@@ -161,7 +162,22 @@ export class TagsExplorerDialog {
         }
     }
 
-    public json(doc: any):string {
-        return JSON.stringify(doc, null, 4);
+    public json(doc: any): string {
+        return JSON.stringify(doc, null, 2);
+    }
+
+    public openVCDocument(document: any, title: string) {
+        const dialogRef = this.dialog.open(VCViewerDialog, {
+            width: '850px',
+            data: {
+                document: document,
+                title: title,
+                type: 'VC',
+                viewDocument: false,
+                toggle: false
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+        });
     }
 }

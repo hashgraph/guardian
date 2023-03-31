@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, TagType } from '@guardian/interfaces';
+import { IUser, SchemaHelper, TagType } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
 import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-policy-dialog.component';
@@ -15,6 +15,7 @@ import { ToastrService } from 'ngx-toastr';
 import { ModulesService } from 'src/app/services/modules.service';
 import { NewModuleDialog } from '../helpers/new-module-dialog/new-module-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
+import { forkJoin } from 'rxjs';
 
 enum OperationMode {
     None,
@@ -53,6 +54,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     public expectedTaskMessages: number = 0;
     public tagEntity = TagType.Module;
     public owner: any;
+    public tagSchemas: any[] = [];
 
     constructor(
         public tagsService: TagsService,
@@ -80,9 +82,17 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         this.modules = null;
         this.isConfirmed = false;
         this.loading = true;
-        this.profileService.getProfile().subscribe((profile: IUser | null) => {
+        forkJoin([
+            this.profileService.getProfile(),
+            this.tagsService.getPublishedSchemas()
+        ]).subscribe((value) => {
+            const profile: IUser | null = value[0];
+            const tagSchemas: any[] = value[1] || [];
+
             this.isConfirmed = !!(profile && profile.confirmed);
             this.owner = profile?.did;
+            this.tagSchemas = SchemaHelper.map(tagSchemas);
+
             if (this.isConfirmed) {
                 this.loadAllModules();
             } else {

@@ -349,4 +349,11 @@ export abstract class Message {
         const hash: Uint8Array = Hashing.sha256.digest(json);
         return Hashing.base58.encode(hash);
     }
+
+    /**
+     * Is documents
+     */
+    public isDocuments(index: number = 0): boolean {
+        return !!(this.urls && this.urls[index]);
+    }
 }

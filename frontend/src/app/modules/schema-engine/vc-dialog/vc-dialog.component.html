@@ -1,5 +1,5 @@
 <h1 mat-dialog-title class="dialog-title">{{title}}</h1>
-<mat-slide-toggle *ngIf="isVcDocument || isVpDocument" class="view-toggle" labelPosition='before'
+<mat-slide-toggle *ngIf="(isVcDocument || isVpDocument) && toggle" class="view-toggle" labelPosition='before'
     [(ngModel)]="viewDocument" color="primary">View as form</mat-slide-toggle>
 <div mat-dialog-content class="dialog-content">
     <div class="content" [ngSwitch]="viewDocument">

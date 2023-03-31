@@ -14,6 +14,7 @@ import { IconPreviewDialog } from './icon-preview-dialog/icon-preview-dialog.com
 import { TokenConfigurationComponent } from './token-configuration/token-configuration.component';
 import { TokenDialog } from './token-dialog/token-dialog.component';
 import { NgxFileDropModule } from 'ngx-file-drop';
+import { FileExplorer } from './file-explorer/file-explorer.component';
 
 @NgModule({
     declarations: [
@@ -26,7 +27,8 @@ import { NgxFileDropModule } from 'ngx-file-drop';
         FileDragNDropComponent,
         IconPreviewDialog,
         TokenConfigurationComponent,
-        TokenDialog
+        TokenDialog,
+        FileExplorer
     ],
     imports: [
         CommonModule,
@@ -45,7 +47,8 @@ import { NgxFileDropModule } from 'ngx-file-drop';
         FileDragNDropComponent,
         IconPreviewDialog,
         TokenConfigurationComponent,
-        TokenDialog
+        TokenDialog,
+        FileExplorer
     ]
 })
 export class CommonComponentsModule { }

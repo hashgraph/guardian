@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, TagType, UserRole } from '@guardian/interfaces';
+import { IUser, SchemaHelper, TagType, UserRole } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -18,6 +18,7 @@ import { ToastrService } from 'ngx-toastr';
 import { ComparePolicyDialog } from '../helpers/compare-policy-dialog/compare-policy-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
 import { SetVersionDialog } from '../../schema-engine/set-version-dialog/set-version-dialog.component';
+import { forkJoin } from 'rxjs';
 
 enum OperationMode {
     None,
@@ -48,6 +49,7 @@ export class PoliciesComponent implements OnInit, OnDestroy {
     policyCount: any;
     owner: any;
     tagEntity = TagType.Policy;
+    tagSchemas: any[] = [];
 
     mode: OperationMode = OperationMode.None;
     taskId: string | undefined = undefined;
@@ -146,10 +148,18 @@ export class PoliciesComponent implements OnInit, OnDestroy {
         this.policies = null;
         this.isConfirmed = false;
         this.loading = true;
-        this.profileService.getProfile().subscribe((profile: IUser | null) => {
+        forkJoin([
+            this.profileService.getProfile(),
+            this.tagsService.getPublishedSchemas()
+        ]).subscribe((value) => {
+            const profile: IUser | null = value[0];
+            const tagSchemas: any[] = value[1] || [];
+
             this.isConfirmed = !!(profile && profile.confirmed);
             this.role = profile ? profile.role : null;
             this.owner = profile?.did;
+            this.tagSchemas = SchemaHelper.map(tagSchemas);
+
             if (this.role == UserRole.STANDARD_REGISTRY) {
                 this.columns = this.columnsRole[UserRole.STANDARD_REGISTRY];
             } else {

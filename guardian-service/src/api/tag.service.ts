@@ -3,7 +3,7 @@ import { MessageResponse, MessageError, Logger } from '@guardian/common';
 import { GenerateUUIDv4, IRootConfig, MessageAPI, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
 import { Tag } from '@entity/tag';
-import { MessageAction, MessageServer, MessageType, TagMessage, TopicConfig } from '@hedera-modules';
+import { MessageAction, MessageServer, MessageType, TagMessage, TopicConfig, UrlType } from '@hedera-modules';
 import { Schema as SchemaCollection } from '@entity/schema';
 import { Policy as PolicyCollection } from '@entity/policy';
 import { Token as TokenCollection } from '@entity/token';
@@ -142,6 +142,7 @@ export async function publishTag(
     const topicId = result.getTopicId();
     item.messageId = messageId;
     item.topicId = topicId;
+    item.uri = result.getDocumentUrl(UrlType.url);
     return item;
 }
 
@@ -341,7 +342,7 @@ export async function tagsAPI(): Promise<void> {
                         credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
                     }
                     const vcObject = await vcHelper.createVC(owner, root.hederaAccountKey, credentialSubject);
-                    tag.document = vcObject;
+                    tag.document = vcObject.getDocument();
                 } else {
                     tag.document = null;
                 }

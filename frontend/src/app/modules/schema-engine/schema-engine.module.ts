@@ -29,8 +29,6 @@ import { SchemaFieldConfigurationComponent } from './schema-field-configuration/
 import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.component';
 import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dialog.component';
 
-// import { AppRoutingModule } from '../app-routing.module';
-
 @NgModule({
     declarations: [
         SchemaDialog,
@@ -58,7 +56,6 @@ import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dial
         NgxMatTimepickerModule,
         ClipboardModule,
         CodemirrorModule,
-        // AppRoutingModule,
         ArtifactEngineModule,
         GoogleMapsModule,
     ],
