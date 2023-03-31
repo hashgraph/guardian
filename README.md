@@ -111,9 +111,9 @@ If you want to manually build every component with debug information, then build
 
 ### Prerequisites for manual installation
 
-* [MongoDB](https://www.mongodb.com)
-* [NodeJS](https://nodejs.org)
-* [Nats](https://nats.io/)
+* [MongoDB V6](https://www.mongodb.com)
+* [NodeJS V16](https://nodejs.org)
+* [Nats 1.12.2](https://nats.io/)
 
 ### Build and start each component
 
