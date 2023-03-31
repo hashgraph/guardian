@@ -21,7 +21,6 @@ export class ServiceStatusComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router
     ) {
-        console.log(this);
         this.servicesStates = this.wsService.getServicesStatesArray();
         this.last = this.route?.snapshot?.queryParams?.last;
         try {

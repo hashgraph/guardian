@@ -294,7 +294,6 @@ export class WebSocketService {
     }
 
     private updateStatus(serviceStatus: any) {
-        console.log(serviceStatus);
         if (!serviceStatus || !Object.keys(serviceStatus).length) {
             return;
         }
