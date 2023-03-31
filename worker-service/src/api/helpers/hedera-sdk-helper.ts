@@ -45,6 +45,7 @@ import { Environment } from './environment';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger';
+import process from 'process';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
@@ -126,7 +127,7 @@ export class HederaSDKHelper {
     /**
      * Max timeout
      */
-    public static readonly MAX_TIMEOUT: number = 120000;
+    public static readonly MAX_TIMEOUT: number = (process.env.MAX_HEDERA_TIMEOUT) ? parseInt(process.env.MAX_HEDERA_TIMEOUT, 10) * 1000 : 10 * 60 * 1000;
     /**
      * Callback
      * @private

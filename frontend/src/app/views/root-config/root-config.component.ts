@@ -249,7 +249,6 @@ export class RootConfigComponent implements OnInit {
 
     onActionMenuClick(event: MouseEvent): void {
         event.stopPropagation();
-        console.log(this.actionMenu);
     }
 
     onActionClick(event: MouseEvent): void {

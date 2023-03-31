@@ -78,9 +78,10 @@ export class PolicyEngine extends NatsService {
      * Run ready event
      * @param policyId
      * @param data
+     * @param error
      */
-    public static runReadyEvent(policyId: string, data: any): void {
-        new PolicyEngine().runReadyEvent(policyId, data);
+    public static runReadyEvent(policyId: string, data: any, error?: any): void {
+        new PolicyEngine().runReadyEvent(policyId, data, error);
     }
 
     /**
@@ -105,7 +106,7 @@ export class PolicyEngine extends NatsService {
      * Policy ready callbacks
      * @private
      */
-    private readonly policyReadyCallbacks: Map<string, (data: any) => void> = new Map();
+    private readonly policyReadyCallbacks: Map<string, (data: any, error?: any) => void> = new Map();
 
     /**
      * Initialization
@@ -114,7 +115,7 @@ export class PolicyEngine extends NatsService {
         await super.init();
 
         this.subscribe(PolicyEvents.POLICY_READY, (msg: any) => {
-            PolicyEngine.runReadyEvent(msg.policyId, msg.data);
+            PolicyEngine.runReadyEvent(msg.policyId, msg.data, msg.error);
         });
 
         const policies = await DatabaseServer.getPolicies({
@@ -124,25 +125,23 @@ export class PolicyEngine extends NatsService {
         });
         await Promise.all(policies.map(async (policy) => {
             try {
-                console.log('model generating', policy.id.toString());
                 await this.generateModel(policy.id.toString());
-                console.log('model generated', policy.id.toString());
             } catch (error) {
                 new Logger().error(error, ['GUARDIAN_SERVICE']);
             }
         }));
+
     }
 
     /**
      * Run ready event
      * @param policyId
      * @param data
+     * @param error
      */
-    private runReadyEvent(policyId: string, data?: any): void {
-        console.log('policy ready', policyId, this.policyReadyCallbacks.has(policyId));
-
+    private runReadyEvent(policyId: string, data?: any, error?: any): void {
         if (this.policyReadyCallbacks.has(policyId)) {
-            this.policyReadyCallbacks.get(policyId)(data);
+            this.policyReadyCallbacks.get(policyId)(data, error);
         }
     }
 
@@ -150,6 +149,7 @@ export class PolicyEngine extends NatsService {
      * Create policy
      * @param data
      * @param owner
+     * @param notifier
      */
     public async createPolicy(data: Policy, owner: string, notifier: INotifier): Promise<Policy> {
         const logger = new Logger();
@@ -875,33 +875,44 @@ export class PolicyEngine extends NatsService {
      * Generate Model
      * @param policyId
      */
-    public async generateModel(policyId: string): Promise<void> {
+    public async generateModel(policyId: string): Promise<any> {
         const policy = await DatabaseServer.getPolicyById(policyId);
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
         }
 
-        const exist = await Promise.race([
-            new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    resolve(false);
-                }, 1 * 1000)
-            }),
-            new GuardiansService().sendPolicyMessage(PolicyEvents.CHECK_IF_ALIVE, policyId, {})
-        ]);
+        const exist = await new GuardiansService().checkIfPolicyAlive(policyId);
 
         if (!exist) {
-            this.sendMessage(PolicyEvents.GENERATE_POLICY, {
-                policy,
-                policyId,
-                skipRegistration: false
-            });
+            let confirmed: boolean;
 
-            return new Promise((resolve) => {
-                this.policyReadyCallbacks.set(policyId, (data) => {
-                    resolve(data);
-                })
-            });
+            try {
+                const r = await this.sendMessageWithTimeout<any>(PolicyEvents.GENERATE_POLICY, 1000, {
+                    policy,
+                    policyId,
+                    skipRegistration: false
+                });
+                confirmed = r.confirmed;
+            } catch (e) {
+                confirmed = false
+                console.error(e.message);
+            }
+
+            if (confirmed) {
+                return new Promise((resolve, reject) => {
+                    this.policyReadyCallbacks.set(policyId, (data, error) => {
+                        if (error) {
+                            reject(new Error(error));
+                        }
+                        resolve(data);
+                        this.policyReadyCallbacks.delete(policyId);
+                    })
+                });
+            } else {
+                await new Promise(resolve => setTimeout(resolve, 10000));
+
+                return this.generateModel(policyId);
+            }
         } else {
             return Promise.resolve();
         }

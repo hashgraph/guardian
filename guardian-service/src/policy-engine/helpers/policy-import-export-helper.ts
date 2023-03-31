@@ -310,7 +310,6 @@ export class PolicyImportExportHelper {
                     draftToken: true
                 });
                 await tokenRepository.save(tokenObject);
-                console.log(tokenObject);
                 replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenObject.tokenId);
                 replaceAllVariables(policy.config, 'Token', token.tokenId, tokenObject.tokenId);
 

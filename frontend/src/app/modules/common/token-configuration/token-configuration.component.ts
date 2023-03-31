@@ -57,7 +57,6 @@ export class TokenConfigurationComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        console.log(this);
         if (this.preset) {
             this.dataForm.patchValue(this.preset);
             for (let presetEntry of Object.entries(this.preset)) {

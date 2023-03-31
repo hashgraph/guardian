@@ -23,7 +23,7 @@ export class WebSocketsServiceChannel extends NatsService {
     /**
      * Message queue name
      */
-    public messageQueueName = 'wss-queue';
+    public messageQueueName = 'wss-queue-' + GenerateUUIDv4();
 
     /**
      * Reply subject
@@ -111,6 +111,7 @@ export class WebSocketsService {
                     });
                 }
             });
+
             return new MessageResponse({})
         });
 
@@ -222,7 +223,8 @@ export class WebSocketsService {
                         LOGGER_SERVICE: [],
                         GUARDIAN_SERVICE: [],
                         AUTH_SERVICE: [],
-                        WORKER: []
+                        WORKER: [],
+                        POLICY_SERVICE: []
                     };
 
                     const getStatuses = (): Promise<void> => {

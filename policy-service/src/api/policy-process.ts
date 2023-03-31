@@ -84,13 +84,17 @@ Promise.all([
     await workersHelper.setConnection(cn).init();;
     workersHelper.initListeners();
 
-    new Logger().info(`Process for with id ${policyId} was started started PID: ${process.pid}, SERVICE_CHANNEL: ${process.env.SERVICE_CHANNEL}`, ['POLICY', policyId]);
+    new Logger().info(`Process for with id ${policyId} was started started PID: ${process.pid}`, ['POLICY', policyId]);
 
     const policyConfig = await DatabaseServer.getPolicyById(policyId);
     const generator = new BlockTreeGenerator();
     const policyValidator = new PolicyValidator(policyConfig);
 
     await generator.generate(policyConfig, skipRegistration, policyValidator);
+
+    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, () => {
+        process.exit(0);
+    });
 
     generator.publish(PolicyEvents.POLICY_READY, {
         policyId: policyId.toString(),

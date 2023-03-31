@@ -46,19 +46,15 @@ export abstract class NatsService {
             callback: async (error, msg) => {;
                 if (!error) {
                     const messageId = msg.headers.get('messageId');
-                    const isRaw = msg.headers.get('rawMessage') === 'true';
                     const fn = this.responseCallbacksMap.get(messageId);
                     if (fn) {
-                        if (isRaw) {
-                            fn(msg.data);
+                        const message = await this.codec.decode(msg.data) as any;
+                        if (!message) {
+                            fn(null)
                         } else {
-                            const message = await this.codec.decode(msg.data) as any;
-                            if (!message) {
-                                fn(null)
-                            } else {
-                                fn(message.body, message.error);
-                            }
+                            fn(message.body, message.error);
                         }
+                        this.responseCallbacksMap.delete(messageId)
                     }
                 } else {
                     console.error(error);
@@ -122,11 +118,9 @@ export abstract class NatsService {
         return new Promise( async (resolve, reject) => {
             const head = headers();
             head.append('messageId', messageId);
-            // head.append('rawMessage', 'false');
-
             this.responseCallbacksMap.set(messageId, (d: T, error?) => {
                 if (error) {
-                    reject(error);
+                    reject(new Error(error));
                     return
                 }
                 resolve(d);
@@ -137,6 +131,21 @@ export abstract class NatsService {
                 headers: head
             })
         });
+    }
+
+    /**
+     * Send message with timeout
+     * @param subject
+     * @param timeout
+     * @param data
+     */
+    public sendMessageWithTimeout<T>(subject: string, timeout: number, data?: unknown): Promise<T> {
+        return Promise.race([
+            this.sendMessage<T>(subject, data),
+            new Promise<T>((_, reject) => {
+                setTimeout(() => { reject(new Error('Timeout exceed')) }, timeout)
+            })
+        ])
     }
 
     /**
@@ -172,8 +181,8 @@ export abstract class NatsService {
      * @param cb
      * @param noRespond
      */
-    public getMessages<T, A>(subject: string, cb: Function, noRespond = false) {
-        this.connection.subscribe(subject, {
+    public getMessages<T, A>(subject: string, cb: Function, noRespond = false): Subscription {
+        return this.connection.subscribe(subject, {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
                 try {
@@ -188,8 +197,6 @@ export abstract class NatsService {
                         cb(await this.codec.decode(msg.data), msg.headers);
                     }
                 } catch (error) {
-                    console.log(msg);
-                    console.log(subject);
                     console.error(error);
                 }
             }

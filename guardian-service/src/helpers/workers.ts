@@ -17,7 +17,7 @@ export class Workers extends NatsService {
     /**
      * Message queue name
      */
-    public messageQueueName = 'workers-queue-' + GenerateUUIDv4();
+    public messageQueueName = 'workers-queue';
 
     /**
      * Reply subject
@@ -152,7 +152,6 @@ export class Workers extends NatsService {
 
             setTimeout(() => {
                 subscription.unsubscribe();
-                console.log(workers);
                 resolve(workers);
             }, 300);
         })
@@ -175,9 +174,7 @@ export class Workers extends NatsService {
                 const item: any = queue[itemIndex];
                 item.reply = this.messageQueueName;
                 queue[itemIndex].sent = true;
-                console.log('send message to worker', item.id);
                 const r = await this.sendMessage(worker.subject, item) as any;
-                console.log('sent message to worker', item.id, r.result);
                 if (r?.result) {
                     queue[itemIndex].sent = true;
                     this.queue.delete(item);
@@ -217,6 +214,7 @@ export class Workers extends NatsService {
 
         this.getMessages(WorkerEvents.PUSH_TASK, async (msg: any) => {
             const { task, priority, isRetryableTask, attempts } = msg;
+            console.log({ task, priority, isRetryableTask, attempts });
             this.addTask(task, priority, isRetryableTask, attempts).then(doNothing, doNothing);
             return new MessageResponse(null);
         });

@@ -2,6 +2,8 @@
  * Policy events
  */
 export enum PolicyEvents {
+    CHECK_POLICY_SERVICES = 'check-policy-services',
+    NEW_POLICY_SERVICE_NODE_STARTED = 'new-policy-service-node-started',
     GET_FREE_POLICY_SERVICES = 'get-free-policy-services',
     POLICY_SERVICE_FREE_STATUS = 'policy-service-free-status',
     GENERATE_POLICY = 'policy-event-generate-policy',
