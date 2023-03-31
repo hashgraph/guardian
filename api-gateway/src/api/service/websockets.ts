@@ -23,7 +23,7 @@ export class WebSocketsServiceChannel extends NatsService {
     /**
      * Message queue name
      */
-    public messageQueueName = 'wss-queue';
+    public messageQueueName = 'wss-queue-' + GenerateUUIDv4();
 
     /**
      * Reply subject
@@ -111,6 +111,7 @@ export class WebSocketsService {
                     });
                 }
             });
+
             return new MessageResponse({})
         });
 
