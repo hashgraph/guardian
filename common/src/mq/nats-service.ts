@@ -54,6 +54,7 @@ export abstract class NatsService {
                         } else {
                             fn(message.body, message.error);
                         }
+                        this.responseCallbacksMap.delete(messageId)
                     }
                 } else {
                     console.error(error);
