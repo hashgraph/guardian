@@ -7,7 +7,7 @@ import {
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { Singleton } from '@helpers/decorators/singleton';
 import { GenerateUUIDv4, IUser, PolicyEvents, UserRole } from '@guardian/interfaces';
-import { Logger, MessageResponse, NatsService } from '@guardian/common';
+import { Logger, MessageError, MessageResponse, NatsService } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import { IPolicyUser, PolicyUser } from './policy-user';
 import { Users } from '@helpers/users';
@@ -83,13 +83,17 @@ export class BlockTreeGenerator extends NatsService {
         this.connection.subscribe([policyId, subject].join('-'), {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
-                const pId = msg.headers.get('policyId');
-                if (pId === policyId) {
-                    const messageId = msg.headers.get('messageId');
-                    const head = headers();
-                    head.append('messageId', messageId);
-                    const respond = await cb(await this.codec.decode(msg.data), msg.headers);
-                    msg.respond(await this.codec.encode(respond), {headers: head});
+                try {
+                    const pId = msg.headers.get('policyId');
+                    if (pId === policyId) {
+                        const messageId = msg.headers.get('messageId');
+                        const head = headers();
+                        head.append('messageId', messageId);
+                        const respond = await cb(await this.codec.decode(msg.data), msg.headers);
+                        msg.respond(await this.codec.encode(respond), {headers: head});
+                    }
+                } catch (error) {
+                    msg.respond(await this.codec.encode(new MessageError(error.message)));
                 }
             }
         });
