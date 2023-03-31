@@ -64,7 +64,7 @@ module.exports.vc_document = [{
                 '@context': [
                     'https://localhost/schema'
                 ],
-                'id': '6169b4533101240013a15fa8',
+                'id': 'urn:uuid:6169b4533101240013a15fa8',
                 'type': 'Policy',
                 'name': 't1',
                 'description': '1',

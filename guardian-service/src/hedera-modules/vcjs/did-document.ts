@@ -727,6 +727,7 @@ export class DIDDocument {
      * From
      * @param did
      * @param didRootKey
+     * @deprecated only for old DID versions
      */
     public static from(did: string, didRootKey: PublicKey | string): DIDDocument {
         try {
