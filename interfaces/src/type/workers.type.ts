@@ -81,6 +81,11 @@ export interface ITask {
      */
     data: any;
 
+    /**
+     * Sent
+     */
+    sent?: boolean;
+
 }
 
 /**

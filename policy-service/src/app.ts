@@ -4,7 +4,7 @@ import {
     Logger
 } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
-import { policyAPI } from '@api/policy.service';
+import { PolicyContainer } from '@helpers/policy-container';
 
 export const obj = {};
 
@@ -14,15 +14,15 @@ Promise.all([
     const [cn] = values;
 
     new Logger().setConnection(cn);
-    const state = new ApplicationState('POLICY_SERVICE');
-    state.setConnection(cn);
+    const state = new ApplicationState();
+    await state.setServiceName('POLICY_SERVICE').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);
 
     /////////////
 
     state.updateState(ApplicationStates.INITIALIZING);
 
-    await policyAPI(cn);
+    await new PolicyContainer().setConnection(cn).init();
 
     await new Logger().info('Policy service started', ['GUARDIAN_SERVICE']);
 

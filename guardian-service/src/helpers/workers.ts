@@ -17,7 +17,7 @@ export class Workers extends NatsService {
     /**
      * Message queue name
      */
-    public messageQueueName = 'workers-queue-' + GenerateUUIDv4();
+    public messageQueueName = 'workers-queue';
 
     /**
      * Reply subject
@@ -29,7 +29,7 @@ export class Workers extends NatsService {
      * Queue
      * @private
      */
-    private readonly queue: ITask[] = [];
+    private readonly queue: Set<ITask> = new Set();
 
     /**
      * Max Repetitions
@@ -87,7 +87,7 @@ export class Workers extends NatsService {
         task.id = taskId;
         task.priority = priority;
         attempts = attempts > 0 && attempts < this.maxRepetitions ? attempts : this.maxRepetitions;
-        this.queue.push(task);
+        this.queue.add(task);
 
         const result = new Promise((resolve, reject) => {
             if (registerCallback) {
@@ -102,19 +102,20 @@ export class Workers extends NatsService {
                                     callback.number++;
                                     if (callback.number > attempts) {
                                         this.tasksCallbacks.delete(taskId);
-                                        this.sendMessage(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId, data, error });
+                                        this.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId, data, error });
                                         reject(error);
                                         return;
                                     }
                                 }
-                                this.queue.push(task);
+                                task.sent = false;
+                                this.queue.add(task);
                             } else {
-                                this.sendMessage(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId ,data, error });
+                                this.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId ,data, error });
                                 reject(error);
                             }
                         } else {
                             this.tasksCallbacks.delete(task.id);
-                            this.sendMessage(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId, data, error });
+                            this.publish(WorkerEvents.TASK_COMPLETE_BROADCAST, { id: taskId, data, error });
                             resolve(data);
                         }
                     }
@@ -138,10 +139,10 @@ export class Workers extends NatsService {
 
         return new Promise((resolve) => {
             this.publish(WorkerEvents.GET_FREE_WORKERS, {
-                replySubject: [this.replySubject, WorkerEvents.WORKER_FREE_RESPONSE].join('-')
+                replySubject: [this.replySubject, WorkerEvents.WORKER_FREE_RESPONSE].join('.')
             });
 
-            const subscription = this.subscribe([this.replySubject, WorkerEvents.WORKER_FREE_RESPONSE].join('-'), (msg) => {
+            const subscription = this.subscribe([this.replySubject, WorkerEvents.WORKER_FREE_RESPONSE].join('.'), (msg) => {
                 workers.push({
                     subject: msg.subject,
                     minPriority: msg.minPriority,
@@ -161,20 +162,27 @@ export class Workers extends NatsService {
      * @private
      */
     private async searchAndUpdateTasks(): Promise<void> {
-        if (this.queue.length > 0) {
+        if ([...this.queue.values()].filter(i => !i.sent).length > 0) {
             for (const worker of await this.getFreeWorkers()) {
-                const itemIndex = this.queue.findIndex(_item => {
-                    return (_item.priority >= worker.minPriority) && (_item.priority <= worker.maxPriority)
+                const queue = [...this.queue.values()];
+                const itemIndex = queue.findIndex(_item => {
+                    return (_item.priority >= worker.minPriority) && (_item.priority <= worker.maxPriority) && !_item.sent
                 });
                 if (itemIndex === -1) {
                     return;
                 }
-                const item: any = this.queue[itemIndex];
+                const item: any = queue[itemIndex];
                 item.reply = this.messageQueueName;
+                queue[itemIndex].sent = true;
                 const r = await this.sendMessage(worker.subject, item) as any;
                 if (r?.result) {
-                    this.queue.splice(itemIndex, 1);
+                    queue[itemIndex].sent = true;
+                    this.queue.delete(item);
+                    // this.queue.splice(itemIndex, 1);
+                } else {
+                    queue[itemIndex].sent = false;
                 }
+                // this.queue = this.queue.filter(item => !item.sent)
             }
         }
     }
@@ -191,20 +199,25 @@ export class Workers extends NatsService {
             await this.searchAndUpdateTasks();
         }, 1000);
 
-        this.getMessages([this.messageQueueName, WorkerEvents.TASK_COMPLETE].join('-'), async (msg: any) => {
-            console.log('TASK_COMPLETE', msg.id);
+        this.subscribe([this.messageQueueName, WorkerEvents.TASK_COMPLETE].join('.'), async (msg: any) => {
+            if (!msg.id) {
+                throw new Error('Message without id');
+            }
+            if (msg.error) {
+                console.log(msg);
+            }
             if (this.tasksCallbacks.has(msg.id)) {
                 const activeTask = this.tasksCallbacks.get(msg.id);
-
                 activeTask.callback(msg.data, msg.error);
             }
         });
 
         this.getMessages(WorkerEvents.PUSH_TASK, async (msg: any) => {
             const { task, priority, isRetryableTask, attempts } = msg;
+            console.log({ task, priority, isRetryableTask, attempts });
             this.addTask(task, priority, isRetryableTask, attempts).then(doNothing, doNothing);
             return new MessageResponse(null);
-        })
+        });
     }
 
     /**

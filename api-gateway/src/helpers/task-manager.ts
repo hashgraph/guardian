@@ -80,7 +80,7 @@ export class TaskManager {
         this.wsService = wsService;
         this.channel = new TaskManagerChannel();
         this.channel.setConnection(cn);
-        this.channel.registerListener(MessageAPI.UPDATE_TASK_STATUS, async (msg) => {
+        this.channel.subscribe(MessageAPI.UPDATE_TASK_STATUS, async (msg) => {
             const { taskId, statuses, result, error } = msg;
             if (taskId) {
                 if (statuses) {
@@ -96,6 +96,12 @@ export class TaskManager {
 
             return new MessageResponse({});
         });
+        this.channel.subscribe(MessageAPI.PUBLISH_TASK, async (msg) => {
+            const {taskId, taskName} = msg;
+            if (!this.tasks[taskId]) {
+                this.tasks[taskId] = new Task(taskName);
+            }
+        })
     }
 
     /**
@@ -110,6 +116,10 @@ export class TaskManager {
         }
 
         this.tasks[taskId] = new Task(taskName);
+        this.channel.publish(MessageAPI.PUBLISH_TASK, {
+            taskId,
+            taskName
+        })
 
         const expectation = this.getExpectation(taskName);
         return { taskId, expectation };

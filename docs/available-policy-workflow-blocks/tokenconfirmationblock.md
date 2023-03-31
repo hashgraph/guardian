@@ -34,7 +34,7 @@ This block enables the owner of the private key for the account to manually perf
 
 ![Configuring tokenConfirmationBlock](<../.gitbook/assets/image (1) (3) (1).png>)
 
-![Creating Event to move to next step](<../.gitbook/assets/image (8) (2).png>)
+![Creating Event to move to next step](<../.gitbook/assets/image (8) (2) (1).png>)
 
 ### 2. Performing Token Associate using Guardian UI
 

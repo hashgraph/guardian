@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/api-response';
+import { ApiResponse, ApiResponseSubscribe } from '@api/api-response';
 import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
 import { ExternalMessageEvents, MessageAPI } from '@guardian/interfaces';
 import { IPFS } from '@helpers/ipfs';
@@ -12,7 +12,7 @@ import { IPFSTaskManager } from '@helpers/ipfs-task-manager';
 export async function ipfsAPI(
     externalEventsChannel: MessageBrokerChannel,
 ): Promise<void> {
-    ApiResponse(ExternalMessageEvents.IPFS_ADDED_FILE, async (msg) => {
+    ApiResponseSubscribe(ExternalMessageEvents.IPFS_ADDED_FILE, async (msg) => {
         try {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -26,15 +26,12 @@ export async function ipfsAPI(
                     IPFSTaskManager.Resolve(taskId, { cid, url });
                 }
             }
-
-            return Promise.resolve(new MessageResponse<unknown>(null));
         } catch (error) {
             new Logger().error(error, ['IPFS_SERVICE']);
-            return new MessageError(error);
         }
     });
 
-    ApiResponse(ExternalMessageEvents.IPFS_LOADED_FILE, async (msg) => {
+    ApiResponseSubscribe(ExternalMessageEvents.IPFS_LOADED_FILE, async (msg) => {
         try {
             if (!msg) {
                 throw new Error('Invalid Params');
@@ -48,11 +45,8 @@ export async function ipfsAPI(
                     IPFSTaskManager.Resolve(taskId, fileContent);
                 }
             }
-
-            return Promise.resolve(new MessageResponse<unknown>(null));
         } catch (error) {
             new Logger().error(error, ['IPFS_SERVICE']);
-            return new MessageError(error);
         }
     });
 

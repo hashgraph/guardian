@@ -1,6 +1,6 @@
 import { Singleton } from '@helpers/decorators/singleton';
 import { NatsService } from '@guardian/common';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { headers } from 'nats';
 
 /**
@@ -24,8 +24,17 @@ export class GuardiansService extends NatsService {
      * @param event
      * @param cb
      */
-    registerListener(event: string, cb: Function): void {
+    registerListener(event: string, cb: Function, noCompress = false): void {
         this.getMessages(event, cb);
+    }
+
+    /**
+     * If policy started
+     * @param policyId
+     */
+    public async checkIfPolicyAlive(policyId: string): Promise<boolean> {
+        const exist = await this.sendPolicyMessage<boolean>(PolicyEvents.CHECK_IF_ALIVE, policyId, {})
+        return !!exist
     }
 
     /**
@@ -35,53 +44,31 @@ export class GuardiansService extends NatsService {
      * @param data
      */
     public sendPolicyMessage<T>(subject: string, policyId: string, data?: unknown): Promise<T>{
-
-        /**
-         * Timeout promise
-         */
-        // function timeoutPromise(): Promise<void> {
-        //     return new Promise((resolve, reject) => {
-        //         setTimeout(() => {
-        //             resolve(null);
-        //         }, 100 * 1000)
-        //     })
-        // }
-
         const messageId = GenerateUUIDv4();
         const head = headers();
         head.append('messageId', messageId);
         head.append('policyId', policyId);
 
-        // return Promise.race([
-        //     timeoutPromise(),
-        //     new Promise((resolve, reject) => {
-        //         this.responseCallbacksMap.set(messageId, (d: T, error?) => {
-        //             if (error) {
-        //                 reject(error);
-        //                 return
-        //             }
-        //             resolve(d);
-        //         })
-        //
-        //         this.connection.publish(subject, this.jsonCodec.encode(data) , {
-        //             reply: this.replySubject,
-        //             headers: head
-        //         })
-        //     })
-        // ]) as any;
-        return new Promise((resolve, reject) => {
-            this.responseCallbacksMap.set(messageId, (d: T, error?) => {
-                if (error) {
-                    reject(error);
-                    return
-                }
-                resolve(d);
-            })
+        return Promise.race([
+            new Promise<T>(async (resolve, reject) => {
+                this.responseCallbacksMap.set(messageId, (d: T, error?) => {
+                    if (error) {
+                        reject(new Error(error));
+                        return
+                    }
+                    resolve(d);
+                })
 
-            this.connection.publish([policyId, subject].join('-'), this.jsonCodec.encode(data) , {
-                reply: this.replySubject,
-                headers: head
-            })
-        })
+                this.connection.publish([policyId, subject].join('-'), await this.codec.encode(data) , {
+                    reply: this.replySubject,
+                    headers: head
+                })
+            }),
+            new Promise<T>((resolve, reject) => {
+                setTimeout(() => {
+                    resolve(null);
+                }, 1 * 1000)
+            }),
+        ])
     }
 }

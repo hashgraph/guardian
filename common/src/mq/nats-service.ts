@@ -1,6 +1,6 @@
-import { NatsConnection, StringCodec, JSONCodec, headers, Subscription } from 'nats';
-import { Codec } from 'nats/lib/nats-base-client/codec';
+import { NatsConnection, headers, Subscription } from 'nats';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { ZipCodec } from './zip-codec';
 
 /**
  * Nats service
@@ -19,12 +19,7 @@ export abstract class NatsService {
     /**
      * jsonCodec
      */
-    protected readonly jsonCodec: Codec<unknown>;
-
-    /**
-     * stringCodec
-     */
-    protected readonly stringCodec: Codec<string>
+    protected readonly codec;
 
     /**
      * connection
@@ -37,8 +32,7 @@ export abstract class NatsService {
     protected responseCallbacksMap: Map<string, Function> = new Map();
 
     constructor() {
-        this.jsonCodec = JSONCodec<unknown>();
-        this.stringCodec = StringCodec();
+        this.codec = ZipCodec();
     }
 
     /**
@@ -49,22 +43,18 @@ export abstract class NatsService {
             throw new Error('Connection must set first');
         }
         this.connection.subscribe(this.replySubject, {
-            callback: (error, msg) => {;
+            callback: async (error, msg) => {;
                 if (!error) {
                     const messageId = msg.headers.get('messageId');
-                    const isRaw = msg.headers.get('rawMessage') === 'true';
                     const fn = this.responseCallbacksMap.get(messageId);
                     if (fn) {
-                        if (isRaw) {
-                            fn(msg.data);
+                        const message = await this.codec.decode(msg.data) as any;
+                        if (!message) {
+                            fn(null)
                         } else {
-                            const message = this.jsonCodec.decode(msg.data) as any;
-                            if (!message) {
-                                fn(null)
-                            } else {
-                                fn(message.body, message.error);
-                            }
+                            fn(message.body, message.error);
                         }
+                        this.responseCallbacksMap.delete(messageId)
                     }
                 } else {
                     console.error(error);
@@ -88,14 +78,14 @@ export abstract class NatsService {
      * @param data
      * @param replySubject
      */
-    public publish(subject: string, data?: unknown, replySubject?: string): void {
+    public async publish(subject: string, data?: unknown, replySubject?: string): Promise<void> {
         const opts: any = {};
 
         if (replySubject) {
             opts.reply = replySubject;
         }
 
-        this.connection.publish(subject, this.jsonCodec.encode(data), opts);
+        this.connection.publish(subject, await this.codec.encode(data), opts);
     }
 
     /**
@@ -108,7 +98,7 @@ export abstract class NatsService {
         const fn = async (_sub: Subscription) => {
             for await (const m of _sub) {
                 try {
-                    cb(this.jsonCodec.decode(m.data));
+                    cb(await this.codec.decode(m.data));
                 } catch (e) {
                     console.error(e.message);
                 }
@@ -125,24 +115,37 @@ export abstract class NatsService {
      */
     public sendMessage<T>(subject: string, data?: unknown): Promise<T>{
         const messageId = GenerateUUIDv4();
-        return new Promise((resolve, reject) => {
+        return new Promise( async (resolve, reject) => {
             const head = headers();
             head.append('messageId', messageId);
-            // head.append('rawMessage', 'false');
-
             this.responseCallbacksMap.set(messageId, (d: T, error?) => {
                 if (error) {
-                    reject(error);
+                    reject(new Error(error));
                     return
                 }
                 resolve(d);
             })
 
-            this.connection.publish(subject, this.jsonCodec.encode(data) , {
+            this.connection.publish(subject, await this.codec.encode(data) , {
                 reply: this.replySubject,
                 headers: head
             })
         });
+    }
+
+    /**
+     * Send message with timeout
+     * @param subject
+     * @param timeout
+     * @param data
+     */
+    public sendMessageWithTimeout<T>(subject: string, timeout: number, data?: unknown): Promise<T> {
+        return Promise.race([
+            this.sendMessage<T>(subject, data),
+            new Promise<T>((_, reject) => {
+                setTimeout(() => { reject(new Error('Timeout exceed')) }, timeout)
+            })
+        ])
     }
 
     /**
@@ -152,7 +155,7 @@ export abstract class NatsService {
      */
     public sendRawMessage<T>(subject: string, data?: unknown): Promise<T>{
         const messageId = GenerateUUIDv4();
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             const head = headers();
             head.append('messageId', messageId);
             // head.append('rawMessage', 'true');
@@ -165,7 +168,7 @@ export abstract class NatsService {
                 resolve(d);
             })
 
-            this.connection.publish(subject, this.jsonCodec.encode(data) , {
+            this.connection.publish(subject, await this.codec.encode(data) , {
                 reply: this.replySubject,
                 headers: head
             })
@@ -178,19 +181,23 @@ export abstract class NatsService {
      * @param cb
      * @param noRespond
      */
-    public getMessages<T, A>(subject: string, cb: Function, noRespond = false) {
-        this.connection.subscribe(subject, {
+    public getMessages<T, A>(subject: string, cb: Function, noRespond = false): Subscription {
+        return this.connection.subscribe(subject, {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
-                const messageId = msg.headers.get('messageId');
-                // const isRaw = msg.headers.get('rawMessage');
-                const head = headers();
-                head.append('messageId', messageId);
-                // head.append('rawMessage', isRaw);
-                if (!noRespond) {
-                    msg.respond(this.jsonCodec.encode(await cb(this.jsonCodec.decode(msg.data), msg.headers)), {headers: head});
-                } else {
-                    cb(this.jsonCodec.decode(msg.data), msg.headers);;
+                try {
+                    const messageId = msg.headers.get('messageId');
+                    // const isRaw = msg.headers.get('rawMessage');
+                    const head = headers();
+                    head.append('messageId', messageId);
+                    // head.append('rawMessage', isRaw);
+                    if (!noRespond) {
+                        msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), {headers: head});
+                    } else {
+                        cb(await this.codec.decode(msg.data), msg.headers);
+                    }
+                } catch (error) {
+                    console.error(error);
                 }
             }
         });

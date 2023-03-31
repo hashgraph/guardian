@@ -81,8 +81,8 @@ Promise.all([
     const channel = new MessageBrokerChannel(cn, 'guardians');
 
     await new Logger().setConnection(cn);
-    const state = new ApplicationState('GUARDIAN_SERVICE');
-    state.setConnection(cn);
+    const state = new ApplicationState();
+    await state.setServiceName('GUARDIAN_SERVICE').setConnection(cn).init();
     const settingsContainer = new SettingsContainer();
     settingsContainer.setConnection(cn);
     await settingsContainer.init('OPERATOR_ID', 'OPERATOR_KEY');
@@ -223,6 +223,8 @@ Promise.all([
             }, 1);
         }
 
+        state.updateState(ApplicationStates.INITIALIZING);
+
         try {
             const policyEngine = new PolicyEngine();
             await policyEngine.setConnection(cn).init();
@@ -235,8 +237,6 @@ Promise.all([
             console.error(error.message);
             process.exit(0);
         }
-
-        state.updateState(ApplicationStates.INITIALIZING);
 
         try {
             await setDefaultSchema();

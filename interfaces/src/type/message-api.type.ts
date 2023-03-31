@@ -2,6 +2,7 @@
  * Message api
  */
 export enum MessageAPI {
+    PUBLISH_TASK = 'publish-task',
     GET_DID_DOCUMENTS = 'get-did-documents',
     GET_VC_DOCUMENTS = 'get-vc-documents',
     SET_DID_DOCUMENT = 'set-did-document',
@@ -61,6 +62,7 @@ export enum MessageAPI {
     GET_TOPIC = 'GET_TOPIC',
     GET_ATTRIBUTES = 'GET_ATTRIBUTES',
     GET_STATUS = 'GET_STATUS',
+    SEND_STATUS = 'SEND_STATUS',
     UPDATE_STATUS = 'UPDATE_STATUS',
     CREATE_SCHEMA = 'CREATE_SCHEMA',
     CREATE_SCHEMA_ASYNC = 'CREATE_SCHEMA_ASYNC',

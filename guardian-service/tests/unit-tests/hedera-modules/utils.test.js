@@ -1,19 +1,13 @@
 const {
-    HederaUtils
+    timeout
 } = require('../../../dist/hedera-modules/utils');
 const { expect, assert } = require('chai');
 
-describe.skip('HederaUtils', function () {
+describe('HederaUtils', function () {
 
     it('Test Utils', async function () {
-        // const uuid = HederaUtils.randomUUID();
-        // assert.exists(uuid);
-        //
-        // const key = HederaUtils.randomKey();
-        // assert.exists(key);
-
-        const message = HederaUtils.encode(HederaUtils.decode('Test Message'));
-        assert.equal(message, 'Test Message');
+        assert.isFunction(timeout);
+        await timeout(12);
     });
 
 });

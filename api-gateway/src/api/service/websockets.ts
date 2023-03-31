@@ -23,7 +23,7 @@ export class WebSocketsServiceChannel extends NatsService {
     /**
      * Message queue name
      */
-    public messageQueueName = 'wss-queue';
+    public messageQueueName = 'wss-queue-' + GenerateUUIDv4();
 
     /**
      * Reply subject
@@ -102,19 +102,30 @@ export class WebSocketsService {
      * @private
      */
     private registerMessageHandler(): void {
-        this.channel.registerListener('update-block', async (msg) => {
-            this.wss.clients.forEach((client: any) => {
-                if (this.checkUserByDid(client, msg)) {
-                    this.send(client, {
-                        type: 'update-event',
-                        data: msg.uuid
-                    });
-                }
-            });
+        let updateArray = [];
+
+        setInterval(() => {
+            const a = updateArray;
+            updateArray = [];
+            for (const msg of a) {
+                this.wss.clients.forEach((client: any) => {
+                    if (this.checkUserByDid(client, msg)) {
+                        this.send(client, {
+                            type: 'update-event',
+                            data: msg.uuid
+                        });
+                    }
+                });
+            }
+        }, 500);
+
+        this.channel.subscribe('update-block', async (msg) => {
+            updateArray.push(msg);
+
             return new MessageResponse({})
         });
 
-        this.channel.registerListener('block-error', async (msg) => {
+        this.channel.subscribe('block-error', async (msg) => {
             this.wss.clients.forEach((client: any) => {
                 if (this.checkUserByDid(client, msg)) {
                     this.send(client, {
@@ -129,7 +140,7 @@ export class WebSocketsService {
             return new MessageResponse({})
         });
 
-        this.channel.registerListener('update-user-info', async (msg) => {
+        this.channel.subscribe('update-user-info', async (msg) => {
             this.wss.clients.forEach((client: any) => {
                 if (this.checkUserByDid(client, msg)) {
                     this.send(client, {
@@ -141,7 +152,7 @@ export class WebSocketsService {
             return new MessageResponse({});
         });
 
-        this.channel.registerListener('update-user-balance',  async (msg) => {
+        this.channel.subscribe('update-user-balance',  async (msg) => {
             this.wss.clients.forEach(client => {
                 new Users().getUserByAccount(msg.operatorAccountId).then(user => {{
                     Object.assign(msg, {
@@ -162,7 +173,7 @@ export class WebSocketsService {
             return new MessageResponse({});
         });
 
-        this.channel.registerListener(MessageAPI.UPDATE_STATUS, async (msg) => {
+        this.channel.subscribe(MessageAPI.UPDATE_STATUS, async (msg) => {
             this.wss.clients.forEach((client: any) => {
                 for (const [key, value] of Object.entries(msg)) {
                     this.knownServices[key] = value as any;
@@ -216,28 +227,41 @@ export class WebSocketsService {
                     }
                     break;
                 case MessageAPI.GET_STATUS:
-                    // const logger = new Logger();
-                    // const guardians = new Guardians();
-                    // const auth = new Users();
+                    const channel = new WebSocketsServiceChannel();
 
-                    // const [
-                    //     LOGGER_SERVICE,
-                    //     GUARDIAN_SERVICE,
-                    //     AUTH_SERVICE
-                    // ] = await Promise.all([
-                    //     logger.getStatus(),
-                    //     guardians.getStatus(),
-                    //     auth.getStatus()
-                    // ]);
+                    const statuses = {
+                        LOGGER_SERVICE: [],
+                        GUARDIAN_SERVICE: [],
+                        AUTH_SERVICE: [],
+                        WORKER: [],
+                        POLICY_SERVICE: []
+                    };
+
+                    const getStatuses = (): Promise<void> => {
+                        channel.publish(MessageAPI.GET_STATUS);
+                        return new Promise(resolve => {
+                            const sub = channel.subscribe(MessageAPI.SEND_STATUS, (msg) => {
+                                const { name, state } = msg;
+
+                                if (!statuses[name]) {
+                                    statuses[name] = [];
+                                }
+                                statuses[name].push(state);
+                            })
+
+                            setTimeout(() => {
+                                sub.unsubscribe();
+                                resolve();
+                            }, 300);
+                        })
+                    }
+
+                    await getStatuses();
 
                     ws.send(JSON.stringify(
                         {
                             type: MessageAPI.GET_STATUS,
-                            data: Object.assign(this.knownServices, {
-                                // LOGGER_SERVICE,
-                                // GUARDIAN_SERVICE,
-                                // AUTH_SERVICE
-                            })
+                            data: statuses
                         }
                     ));
                     break;
