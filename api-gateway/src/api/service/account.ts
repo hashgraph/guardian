@@ -1,32 +1,30 @@
-import { Request, Response, Router } from 'express';
+import { Request, Response, Router, NextFunction } from 'express';
 import { permissionHelper, authorizationHelper } from '@auth/authorization-helper';
 import { Users } from '@helpers/users';
 import { AuthenticatedRequest, Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { UserRole } from '@guardian/interfaces';
+import validate, { prepareValidationResponse } from '@middlewares/validation';
+import { registerSchema, loginSchema } from '@middlewares/validation/schemas/accounts';
 
 /**
  * User account route
  */
 export const accountAPI = Router();
 
-accountAPI.get('/session', async (req: Request, res: Response) => {
+accountAPI.get('/session', authorizationHelper, async (req: Request, res: Response, next: NextFunction) => {
     const users = new Users();
     try {
         const authHeader = req.headers.authorization;
-        if (authHeader) {
-            const token = authHeader.split(' ')[1];
-            res.status(200).json(await users.getUserByToken(token));
-        } else {
-            res.sendStatus(401);
-        }
+        const token = authHeader.split(' ')[1];
+        res.json(await users.getUserByToken(token));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-accountAPI.post('/register', async (req: Request, res: Response) => {
+accountAPI.post('/register', validate(registerSchema()),async (req: Request, res: Response, next: NextFunction) => {
     const users = new Users();
     try {
         const { username, password } = req.body;
@@ -38,57 +36,61 @@ accountAPI.post('/register', async (req: Request, res: Response) => {
         res.status(201).json(await users.registerNewUser(username, password, role));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Server error' });
+        if (error.message.includes('already exists')) {
+            return res.status(422).json(prepareValidationResponse('An account with the same name already exists.'));
+        }
+        next(error)
     }
 });
 
-accountAPI.post('/login', async (req: Request, res: Response) => {
+accountAPI.post('/login', validate(loginSchema()), async (req: Request, res: Response, next: NextFunction) => {
     const users = new Users();
     try {
         const { username, password } = req.body;
-        res.status(200).json(await users.generateNewToken(username, password));
+        res.json(await users.generateNewToken(username, password));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(404).send({ code: 404, message: error });
+        next(error)
     }
 });
 
-accountAPI.get('/', authorizationHelper, permissionHelper(UserRole.STANDARD_REGISTRY),async (req: AuthenticatedRequest, res: Response) => {
+accountAPI.get('/', [authorizationHelper, permissionHelper(UserRole.STANDARD_REGISTRY)],
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const users = new Users();
-        res.status(200).json(await users.getAllUserAccounts());
+        res.json(await users.getAllUserAccounts());
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Server error' });
+        next(error)
     }
 });
 
 /**
  * @deprecated 2022-10-01
  */
-accountAPI.get('/root-authorities', authorizationHelper, async (req: Request, res: Response) => {
+accountAPI.get('/root-authorities', authorizationHelper, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const users = new Users();
         const standardRegistries = await users.getAllStandardRegistryAccounts();
         res.json(standardRegistries);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
-        res.json('null');
+        return next(error)
     }
 });
 
-accountAPI.get('/standard-registries', authorizationHelper, async (req: Request, res: Response) => {
+accountAPI.get('/standard-registries', authorizationHelper, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const users = new Users();
         const standardRegistries = await users.getAllStandardRegistryAccounts();
         res.json(standardRegistries);
     } catch (error) {
         new Logger().error(error.message, ['API_GATEWAY']);
-        res.json('null');
+        return next(error);
     }
 });
 
-accountAPI.get('/balance', async (req: Request, res: Response) => {
+accountAPI.get('/balance', authorizationHelper, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const authHeader = req.headers.authorization;
         const users = new Users();
@@ -99,20 +101,17 @@ accountAPI.get('/balance', async (req: Request, res: Response) => {
                 if (user) {
                     const guardians = new Guardians();
                     const balance = await guardians.getBalance(user.username);
-                    res.json(balance);
-                    return;
-                } else {
-                    res.json('null');
-                    return;
+                    return res.json(balance);
                 }
+                return res.json({});
+
             } catch (error) {
-                res.json('null');
-                return;
+                return res.json({});
             }
         }
-        res.json('null');
+        res.json({});
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.json('null');
+        return next(error)
     }
 });

@@ -1,5 +1,5 @@
 import { permissionHelper } from '@auth/authorization-helper';
-import { Request, Response, Router } from 'express';
+import { Request, Response, Router, NextFunction } from 'express';
 import { IPageParameters, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
 
@@ -21,7 +21,7 @@ function escapeRegExp(text: string): string {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }
 
-loggerAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
+loggerAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response, next: NextFunction) => {
     try {
         const filters: any = {};
         const pageParameters: IPageParameters = {};
@@ -56,11 +56,12 @@ loggerAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Re
         return res.send(logsObj);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-loggerAPI.get('/attributes', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
+loggerAPI.get('/attributes', permissionHelper(UserRole.STANDARD_REGISTRY),
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
         const logger = new Logger();
         if (req.query.existingAttributes && !Array.isArray(req.query.existingAttributes)) {
@@ -70,6 +71,6 @@ loggerAPI.get('/attributes', permissionHelper(UserRole.STANDARD_REGISTRY), async
         return res.send(attributes);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });

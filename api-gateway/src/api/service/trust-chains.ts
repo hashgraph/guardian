@@ -1,5 +1,5 @@
 import { Guardians } from '@helpers/guardians';
-import { Response, Router } from 'express';
+import { Response, Router, NextFunction } from 'express';
 import { UserRole } from '@guardian/interfaces';
 import { permissionHelper } from '@auth/authorization-helper';
 import { Users } from '@helpers/users';
@@ -8,12 +8,10 @@ import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
 /**
  * Audit route
  */
-export const trustchainsAPI = Router();
+export const trustChainsAPI = Router();
 
-/**
- * @deprecated
- */
-trustchainsAPI.get('/', permissionHelper(UserRole.AUDITOR), async (req: AuthenticatedRequest, res: Response) => {
+trustChainsAPI.get('/', permissionHelper(UserRole.AUDITOR),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
         let pageIndex: any;
@@ -39,17 +37,15 @@ trustchainsAPI.get('/', permissionHelper(UserRole.AUDITOR), async (req: Authenti
             pageIndex,
             pageSize
         });
-        res.status(200).setHeader('X-Total-Count', count).json(items);
+        return res.setHeader('X-Total-Count', count).json(items);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-/**
- * @deprecated
- */
-trustchainsAPI.get('/:hash', permissionHelper(UserRole.AUDITOR), async (req: AuthenticatedRequest, res: Response) => {
+trustChainsAPI.get('/:hash', permissionHelper(UserRole.AUDITOR),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
         const hash = req.params.hash;
@@ -74,9 +70,9 @@ trustchainsAPI.get('/:hash', permissionHelper(UserRole.AUDITOR), async (req: Aut
             return { username: user.username, did: user.did }
         })
 
-        res.status(200).json({ chain, userMap });
+        res.json({ chain, userMap });
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
