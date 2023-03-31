@@ -1,27 +1,35 @@
-import { BlockState } from '@entity/block-state';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { VpDocument as VpDocumentCollection } from '@entity/vp-document';
-import { DidDocument as DidDocumentCollection } from '@entity/did-document';
-import { Schema as SchemaCollection } from '@entity/schema';
-import { DocumentState } from '@entity/document-state';
-import { Policy } from '@entity/policy';
-import { AggregateVC } from '@entity/aggregate-documents';
-import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
-import { Token as TokenCollection } from '@entity/token';
-import { Topic as TopicCollection } from '@entity/topic';
-import { DryRun } from '@entity/dry-run';
-import { PolicyRoles as PolicyRolesCollection } from '@entity/policy-roles';
-import { GenerateUUIDv4, IVC, SchemaEntity, TopicType } from '@guardian/interfaces';
-import { BaseEntity, DataBaseHelper } from '@guardian/common';
-import { PolicyInvitations } from '@entity/policy-invitations';
-import { MultiDocuments } from '@entity/multi-documents';
-import { Artifact as ArtifactCollection } from '@entity/artifact';
-import { ArtifactChunk as ArtifactChunkCollection } from '@entity/artifact-chunk';
+import {
+    BlockState,
+    VcDocument as VcDocumentCollection,
+    VpDocument as VpDocumentCollection,
+    DidDocument as DidDocumentCollection,
+    Schema as SchemaCollection,
+    DocumentState,
+    Policy,
+    AggregateVC,
+    ApprovalDocument as ApprovalDocumentCollection,
+    Token as TokenCollection,
+    Topic as TopicCollection,
+    DryRun,
+    PolicyRoles as PolicyRolesCollection,
+    BaseEntity,
+    DataBaseHelper,
+    PolicyInvitations,
+    MultiDocuments,
+    Artifact as ArtifactCollection,
+    ArtifactChunk as ArtifactChunkCollection,
+    SplitDocuments,
+    MultiPolicy,
+    MultiPolicyTransaction,
+    PolicyModule,
+} from '@guardian/common';
 import { Binary } from 'bson';
-import { SplitDocuments } from '@entity/split-documents';
-import { MultiPolicy } from '@entity/multi-policy';
-import { MultiPolicyTransaction } from '@entity/multi-policy-transaction';
-import { PolicyModule } from '@entity/module';
+import {
+    GenerateUUIDv4,
+    IVC,
+    SchemaEntity,
+    TopicType,
+} from '@guardian/interfaces';
 
 /**
  * Database server

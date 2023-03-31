@@ -4,6 +4,11 @@ import {
     MessageError,
     Logger,
     DataBaseHelper,
+    Contract,
+    RetireRequest,
+    Schema as SchemaCollection,
+    Topic,
+    VcDocument as VcDocumentCollection
 } from '@guardian/common';
 import {
     ContractStatus,
@@ -14,13 +19,10 @@ import {
     TopicType,
     WorkerTaskType,
 } from '@guardian/interfaces';
-import { Contract } from '@entity/contract';
 import { Workers } from '@helpers/workers';
 import { Users } from '@helpers/users';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { DatabaseServer } from '@database-modules';
-import { RetireRequest } from '@entity/retire-request';
-import { Schema as SchemaCollection } from '@entity/schema';
 import {
     MessageAction,
     MessageServer,
@@ -28,10 +30,8 @@ import {
     TopicHelper,
     VCMessage,
 } from '@hedera-modules';
-import { Topic } from '@entity/topic';
 import { publishSystemSchema } from './schema.service';
 import { VcHelper } from '@helpers/vc-helper';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 
 /**
  * Connect to the message broker methods of working with contracts.

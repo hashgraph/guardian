@@ -1,4 +1,3 @@
-import { Token } from '@entity/token';
 import { KeyType, Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
@@ -7,7 +6,8 @@ import {
     MessageError,
     Logger,
     DataBaseHelper,
-    RunFunctionAsync
+    RunFunctionAsync,
+    Token
 } from '@guardian/common';
 import { MessageAPI, IToken, WorkerTaskType, GenerateUUIDv4 } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';

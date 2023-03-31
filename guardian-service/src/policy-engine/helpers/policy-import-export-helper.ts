@@ -1,4 +1,3 @@
-import { Policy } from '@entity/policy';
 import {
     findAllEntities,
     getArtifactType,
@@ -9,18 +8,21 @@ import {
     SchemaFields
 } from '@helpers/utils';
 import JSZip from 'jszip';
-import { Token } from '@entity/token';
-import { Schema } from '@entity/schema';
 import { SchemaEntity, TopicType, GenerateUUIDv4 } from '@guardian/interfaces';
 import { Users } from '@helpers/users';
 import { MessageAction, MessageServer, MessageType, PolicyMessage, TopicConfig, TopicHelper } from '@hedera-modules';
-import { Topic } from '@entity/topic';
 import { importSchemaByFiles, publishSystemSchemas } from '@api/schema.service';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
 import { DatabaseServer } from '@database-modules';
-import { DataBaseHelper } from '@guardian/common';
-import { Artifact } from '@entity/artifact';
+import {
+    DataBaseHelper,
+    Artifact,
+    Topic,
+    Schema,
+    Token,
+    Policy,
+} from '@guardian/common';
 
 /**
  * Policy import export helper

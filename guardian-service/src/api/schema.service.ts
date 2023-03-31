@@ -1,4 +1,3 @@
-import { Schema as SchemaCollection } from '@entity/schema';
 import {
     ISchema,
     MessageAPI,
@@ -18,7 +17,14 @@ import { MessageAction, MessageServer, MessageType, SchemaMessage, TopicConfig, 
 import { replaceValueRecursive } from '@helpers/utils';
 import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
-import { MessageResponse, MessageError, Logger, RunFunctionAsync, schemasToContext } from '@guardian/common';
+import {
+    MessageResponse,
+    MessageError,
+    Logger,
+    RunFunctionAsync,
+    schemasToContext,
+    Schema as SchemaCollection,
+} from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { SchemaConverterUtils } from '@helpers/schema-converter-utils';

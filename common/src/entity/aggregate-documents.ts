@@ -1,6 +1,6 @@
 import { DocumentSignature, DocumentStatus, IVC } from '@guardian/interfaces';
 import { Entity, Property, Enum } from '@mikro-orm/core';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '../models';
 
 /**
  * Documents for aggregate collection

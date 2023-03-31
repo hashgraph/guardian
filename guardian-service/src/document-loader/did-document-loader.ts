@@ -1,5 +1,4 @@
-import { DidDocument } from '@entity/did-document';
-import { DataBaseHelper } from '@guardian/common';
+import { DataBaseHelper, DidDocument } from '@guardian/common';
 import { DidRootKey, DocumentLoader, IDocumentFormat } from '@hedera-modules';
 
 /**

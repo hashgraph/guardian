@@ -1,8 +1,13 @@
-import { Schema } from '@entity/schema';
-import { DidDocument } from '@entity/did-document';
 import { DidRootKey } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
-import { MessageResponse, MessageError, Logger, DataBaseHelper } from '@guardian/common';
+import {
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper,
+    Schema,
+    DidDocument,
+} from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
 /**

@@ -1,8 +1,7 @@
 import { ApiResponse } from '@api/api-response';
-import { MessageResponse, MessageError, Logger, BinaryMessageResponse } from '@guardian/common';
+import { MessageResponse, MessageError, Logger, BinaryMessageResponse, PolicyModule } from '@guardian/common';
 import { GenerateUUIDv4, MessageAPI, ModuleStatus, TopicType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
-import { PolicyModule } from '@entity/module';
 import JSZip from 'jszip';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { MessageAction, MessageServer, MessageType, ModuleMessage, TopicConfig } from '@hedera-modules';

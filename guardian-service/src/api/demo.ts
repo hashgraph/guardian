@@ -1,12 +1,12 @@
-import { Settings } from '@entity/settings';
 import { ApiResponse } from '@api/api-response';
-import { Policy } from '@entity/policy';
 import {
     DataBaseHelper,
     Logger,
     MessageError,
     MessageResponse, RunFunctionAsync,
-    SettingsContainer
+    SettingsContainer,
+    Policy,
+    Settings
 } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';

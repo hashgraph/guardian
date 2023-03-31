@@ -3,7 +3,7 @@ import { IURL, UrlType } from './url.interface';
 import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { IPFS } from '@helpers/ipfs';
-import { PolicyModule } from '@entity/module';
+import { PolicyModule } from '@guardian/common';
 import { ModuleMessageBody } from './message-body.interface';
 
 /**

@@ -1,5 +1,4 @@
-import { Schema } from '@entity/schema';
-import { DataBaseHelper } from '@guardian/common';
+import { DataBaseHelper, Schema } from '@guardian/common';
 import { ISchema } from '@guardian/interfaces';
 import { DocumentLoader, IDocumentFormat } from '@hedera-modules';
 

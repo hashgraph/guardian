@@ -10,7 +10,10 @@ import {
     MessageError,
     BinaryMessageResponse,
     Logger,
-    RunFunctionAsync, NatsService, Singleton
+    RunFunctionAsync,
+    NatsService,
+    Singleton,
+    Policy
 } from '@guardian/common';
 import {
     DIDDocument, TopicConfig,
@@ -18,7 +21,6 @@ import {
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { Users } from '@helpers/users';
 import { Inject } from '@helpers/decorators/inject';
-import { Policy } from '@entity/policy';
 import { PolicyComponentsUtils } from './policy-components-utils';
 import { DatabaseServer } from '@database-modules';
 import { IPolicyUser } from './policy-user';

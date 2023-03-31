@@ -13,8 +13,8 @@ import {
     BeforeCreate,
     OnLoad
 } from '@mikro-orm/core';
-import { BaseEntity } from '@guardian/common';
-import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
+import { BaseEntity } from '../models';
+import { SchemaConverterUtils } from '../helpers';
 
 /**
  * Schema collection

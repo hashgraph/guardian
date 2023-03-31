@@ -1,4 +1,4 @@
-import { Policy } from '@entity/policy';
+import { Policy } from '@guardian/common';
 import { Message } from './message';
 import { IURL, UrlType } from './url.interface';
 import { MessageAction } from './message-action';

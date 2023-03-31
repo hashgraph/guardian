@@ -21,20 +21,20 @@ import {
     TopicHelper,
     VCMessage
 } from '@hedera-modules';
-import { Topic } from '@entity/topic';
-import { DidDocument as DidDocumentCollection } from '@entity/did-document';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { Schema as SchemaCollection } from '@entity/schema';
 import { ApiResponse } from '@api/api-response';
 import {
     MessageResponse,
     MessageError,
     Logger,
     DataBaseHelper,
-    IAuthUser, RunFunctionAsync
+    IAuthUser, RunFunctionAsync,
+    Topic,
+    DidDocument as DidDocumentCollection,
+    VcDocument as VcDocumentCollection,
+    Schema as SchemaCollection,
+    Settings
 } from '@guardian/common';
 import { publishSystemSchema } from './schema.service';
-import { Settings } from '@entity/settings';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
 import { Workers } from '@helpers/workers';
 import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';

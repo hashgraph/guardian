@@ -16,8 +16,7 @@ import {
     SignatureType,
 } from '@guardian/interfaces';
 import { PrivateKey } from '@hashgraph/sdk';
-import { Schema as SchemaCollection } from '@entity/schema';
-import { DataBaseHelper } from '@guardian/common';
+import { DataBaseHelper, Schema as SchemaCollection } from '@guardian/common';
 // tslint:disable-next-line:no-duplicate-imports
 import { Schema } from '@guardian/interfaces';
 import {

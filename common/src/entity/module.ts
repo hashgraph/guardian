@@ -1,4 +1,4 @@
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '../models';
 import { GenerateUUIDv4, ModuleStatus } from '@guardian/interfaces';
 import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
 

@@ -1,11 +1,11 @@
 import { Entity, Property } from '@mikro-orm/core';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '../models';
 
 /**
  * MultiPolicy collection
  */
 @Entity()
-export class MultiPolicyTransaction extends BaseEntity {
+export class MultiPolicy extends BaseEntity {
     /**
      * Group UUID
      */
@@ -13,10 +13,22 @@ export class MultiPolicyTransaction extends BaseEntity {
     uuid?: string;
 
     /**
-     * Policy Id name
+     * Policy Topic Id
      */
     @Property({ nullable: true })
-    policyId?: string;
+    instanceTopicId?: string;
+
+    /**
+     * Policy Topic Id
+     */
+    @Property({ nullable: true })
+    mainPolicyTopicId?: string;
+
+    /**
+     * Topic for synchronization
+     */
+    @Property({ nullable: true })
+    synchronizationTopicId?: string;
 
     /**
      * User DID
@@ -25,32 +37,20 @@ export class MultiPolicyTransaction extends BaseEntity {
     owner?: string;
 
     /**
-     * Token Id
+     * Policy Type
      */
     @Property({ nullable: true })
-    tokenId?: string;
-
-    /**
-     * Amount
-     */
-    @Property({ nullable: true })
-    amount?: number;
-
-    /**
-     * Target Account
-     */
-    @Property({ nullable: true })
-    target?: string;
-
-    /**
-     * Status
-     */
-    @Property({ nullable: true })
-    status?: string;
+    type?: string;
 
     /**
      * User ID (Account ID)
      */
     @Property({ nullable: true })
     user?: string;
+
+    /**
+     * Policy Owner ID (Account ID)
+     */
+    @Property({ nullable: true })
+    policyOwner?: string;
 }

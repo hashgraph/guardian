@@ -5,17 +5,10 @@ import { profileAPI } from '@api/profile.service';
 import { schemaAPI, setDefaultSchema } from '@api/schema.service';
 import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
-import { DidDocument } from '@entity/did-document';
-import { Schema } from '@entity/schema';
-import { Token } from '@entity/token';
-import { VcDocument } from '@entity/vc-document';
-import { VpDocument } from '@entity/vp-document';
 import { IPFS } from '@helpers/ipfs';
 import { demoAPI } from '@api/demo';
 import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
-import { Settings } from '@entity/settings';
-import { Topic } from '@entity/topic';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import {
     MessageBrokerChannel,
@@ -26,7 +19,17 @@ import {
     DB_DI,
     Migration,
     COMMON_CONNECTION_CONFIG,
-    SettingsContainer, ValidateConfiguration
+    SettingsContainer, ValidateConfiguration,
+    Topic,
+    VpDocument,
+    VcDocument,
+    Token,
+    Schema,
+    DidDocument,
+    Settings,
+    Policy,
+    Contract,
+    RetireRequest
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import {
@@ -42,12 +45,9 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { ipfsAPI } from '@api/ipfs.service';
 import { Workers } from '@helpers/workers';
 import { artifactAPI } from '@api/artifact.service';
-import { Policy } from '@entity/policy';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
 import { SynchronizationService } from '@policy-engine/multi-policy-service';
-import { Contract } from '@entity/contract';
 import { contractAPI } from '@api/contract.service';
-import { RetireRequest } from '@entity/retire-request';
 import { analyticsAPI } from '@api/analytics.service';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyEngine } from '@policy-engine/policy-engine';

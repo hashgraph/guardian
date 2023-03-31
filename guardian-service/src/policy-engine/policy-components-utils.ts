@@ -1,5 +1,5 @@
 import { PolicyType } from '@guardian/interfaces';
-import { Policy } from '@entity/policy';
+import { Policy } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 import { IPolicyUser } from './policy-user';
 import { ExternalEvent } from './interfaces/external-event';

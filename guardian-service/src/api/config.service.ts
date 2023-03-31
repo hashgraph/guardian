@@ -1,11 +1,13 @@
-import { Settings } from '@entity/settings';
-import { Topic } from '@entity/topic';
 import { ApiResponse } from '@api/api-response';
 import {
     MessageResponse,
     MessageError,
     Logger,
-    DataBaseHelper, SettingsContainer, ValidateConfiguration
+    DataBaseHelper,
+    SettingsContainer,
+    ValidateConfiguration,
+    Topic,
+    Settings
 } from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
 import { Environment } from '@hedera-modules';

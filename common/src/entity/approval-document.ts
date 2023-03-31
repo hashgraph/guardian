@@ -1,6 +1,6 @@
 import { ApproveStatus, IApprovalDocument, IVC } from '@guardian/interfaces';
 import { Entity, Property, BeforeCreate, Enum } from '@mikro-orm/core';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '../models';
 
 /**
  * Document for approve
