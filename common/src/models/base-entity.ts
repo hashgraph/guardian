@@ -1,4 +1,5 @@
-import { PrimaryKey, SerializedPrimaryKey } from '@mikro-orm/core';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 
 /**
@@ -16,6 +17,20 @@ export abstract class BaseEntity {
      */
     @SerializedPrimaryKey()
     id!: string;
+
+    /**
+     * Created at
+     */
+    @Property({
+        index: true
+    })
+    createDate: Date = new Date();
+
+    /**
+     * Updated at
+     */
+    @Property({ onUpdate: () => new Date() })
+    updateDate: Date = new Date();
 
     /**
      * Returns object in JSON string

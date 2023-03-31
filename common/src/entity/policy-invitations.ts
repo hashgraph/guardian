@@ -25,12 +25,6 @@ export class PolicyInvitations extends BaseEntity {
     owner?: string;
 
     /**
-     * Created at
-     */
-    @Property()
-    createDate: Date = new Date();
-
-    /**
      * Is active
      */
     @Property({ nullable: true })

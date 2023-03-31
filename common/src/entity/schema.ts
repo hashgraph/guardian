@@ -11,10 +11,12 @@ import {
     Property,
     Enum,
     BeforeCreate,
-    OnLoad
+    OnLoad,
+    BeforeUpdate
 } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
-import { SchemaConverterUtils } from '../helpers';
+import { DataBaseHelper, SchemaConverterUtils } from '../helpers';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 /**
  * Schema collection
@@ -60,14 +62,26 @@ export class Schema extends BaseEntity implements ISchema {
     /**
      * Schema instance
      */
-    @Property({ nullable: true })
+    @Property({ persist: false })
     document?: ISchemaDocument;
+
+    /**
+     * Document file id
+     */
+    @Property({ nullable: true })
+    documentFileId?: ObjectId;
 
     /**
      * Context
      */
-    @Property({ nullable: true })
+    @Property({ persist: false })
     context?: any;
+
+    /**
+     * Context file id
+     */
+    @Property({ nullable: true })
+    contextFileId?: ObjectId;
 
     /**
      * Version
@@ -178,5 +192,109 @@ export class Schema extends BaseEntity implements ISchema {
         this.category = this.readonly
             ? SchemaCategory.SYSTEM
             : SchemaCategory.USER;
+    }
+
+    /**
+     * Create document
+     */
+    @BeforeCreate()
+    createDocument() {
+        if (this.document) {
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.documentFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.document));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Update document
+     */
+    @BeforeUpdate()
+    updateDocument() {
+        if (this.document) {
+            if (this.documentFileId) {
+                DataBaseHelper.gridFS
+                    .delete(this.documentFileId)
+                    .catch(console.error);
+            }
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.documentFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.document));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Load document
+     */
+    @OnLoad()
+    async loadDocument() {
+        if (this.documentFileId && !this.document) {
+            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+                this.documentFileId
+            );
+            const bufferArray = [];
+            for await (const data of fileRS) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.document = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Create context
+     */
+    @BeforeCreate()
+    createContext() {
+        if (this.context) {
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.contextFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.context));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Update context
+     */
+    @BeforeUpdate()
+    updateContext() {
+        if (this.context) {
+            if (this.contextFileId) {
+                DataBaseHelper.gridFS.delete(this.contextFileId).catch();
+            }
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.contextFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.context));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Load context
+     */
+    @OnLoad()
+    async loadContext() {
+        if (this.contextFileId && !this.context) {
+            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+                this.contextFileId
+            );
+            const bufferArray = [];
+            for await (const data of fileRS) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.context = JSON.parse(buffer.toString());
+        }
     }
 }

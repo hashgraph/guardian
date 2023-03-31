@@ -16,7 +16,6 @@ import {
     Logger,
     ExternalEventChannel,
     DataBaseHelper,
-    DB_DI,
     Migration,
     COMMON_CONNECTION_CONFIG,
     SettingsContainer, ValidateConfiguration,
@@ -29,7 +28,8 @@ import {
     Settings,
     Policy,
     Contract,
-    RetireRequest
+    RetireRequest,
+    entities
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import {
@@ -54,6 +54,7 @@ import { PolicyEngine } from '@policy-engine/policy-engine';
 import { modulesAPI } from '@api/module.service';
 import { GuardiansService } from '@helpers/guardians';
 import { mapAPI } from '@api/map.service';
+import { GridFSBucket } from 'mongodb';
 
 export const obj = {};
 
@@ -63,7 +64,8 @@ Promise.all([
         migrations: {
             path: 'dist/migrations',
             transactional: false
-        }
+        },
+        entities
     }),
     MikroORM.init<MongoDriver>({
         ...COMMON_CONNECTION_CONFIG,
@@ -71,11 +73,15 @@ Promise.all([
             useUnifiedTopology: true
         },
         ensureIndexes: true,
+        entities
     }),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE')
 ]).then(async values => {
     const [_, db, cn] = values;
-    DB_DI.orm = db;
+    DataBaseHelper.orm = db;
+    DataBaseHelper.gridFS = new GridFSBucket(
+        db.em.getDriver().getConnection().getDb()
+    );
     new PolicyServiceChannelsContainer().setConnection(cn);
     new GuardiansService().setConnection(cn).init();
     const channel = new MessageBrokerChannel(cn, 'guardians');

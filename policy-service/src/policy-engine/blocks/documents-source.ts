@@ -138,7 +138,7 @@ export class InterfaceDocumentsSource {
                                           'option.comment'
                                     : 'option.comment'
                             ),
-                            created: state.created,
+                            created: state.createDate,
                         }
                     )
                 );
@@ -219,7 +219,7 @@ export class InterfaceDocumentsSource {
                                           .timelineDescriptionPath ||
                                           'option.comment')
                                     : '$document.option.comment',
-                                created: '$created',
+                                created: '$createDate',
                             },
                         },
                     ],

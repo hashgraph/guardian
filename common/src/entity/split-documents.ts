@@ -7,18 +7,6 @@ import { BaseEntity } from '../models';
 @Entity()
 export class SplitDocuments extends BaseEntity {
     /**
-     * Created at
-     */
-    @Property()
-    created: Date = new Date();
-
-    /**
-     * Updated at
-     */
-    @Property({ onUpdate: () => new Date() })
-    updated: Date = new Date();
-
-    /**
      * Policy id
      */
     @Property({

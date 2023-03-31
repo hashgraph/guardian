@@ -1,6 +1,8 @@
 import { ApproveStatus, DocumentSignature, DocumentStatus, GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity } from '@guardian/interfaces';
-import { Entity, Property, BeforeCreate } from '@mikro-orm/core';
+import { Entity, Property, BeforeCreate, BeforeUpdate, OnLoad } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
+import { ObjectId } from '@mikro-orm/mongodb';
+import { DataBaseHelper } from '../helpers';
 
 /**
  * DryRun document
@@ -34,32 +36,14 @@ export class DryRun extends BaseEntity {
     /**
      * Document instance
      */
-    @Property({ nullable: true })
+    @Property({ persist: false })
     document?: any;
 
     /**
-     * Created at
+     * Document file id
      */
-    @Property()
-    createDate: any = new Date();
-
-    /**
-     * Updated at
-     */
-    @Property({ onUpdate: () => new Date() })
-    updateDate: any = new Date();
-
-    /**
-     * Created at
-     */
-    @Property()
-    created: any = new Date();
-
-    /**
-     * Updated at
-     */
-    @Property({ onUpdate: () => new Date() })
-    updated: any = new Date();
+    @Property({ nullable: true })
+    documentFileId?: ObjectId;
 
     /**
      * Document status
@@ -280,8 +264,14 @@ export class DryRun extends BaseEntity {
     /**
      * Context
      */
-    @Property({ nullable: true })
+    @Property({ persist: false })
     context?: any;
+
+    /**
+     * Context file id
+     */
+    @Property({ nullable: true })
+    contextFileId?: ObjectId;
 
     /**
      * Version
@@ -351,8 +341,14 @@ export class DryRun extends BaseEntity {
     /**
      * Policy config
      */
-    @Property({ nullable: true })
+    @Property({ persist: false })
     config?: any;
+
+    /**
+     * Config file id
+     */
+    @Property({ nullable: true })
+    configFileId?: ObjectId;
 
     /**
      * Policy roles
@@ -527,5 +523,162 @@ export class DryRun extends BaseEntity {
         this.active = this.active || false;
         this.hederaStatus = this.hederaStatus || DocumentStatus.NEW;
         this.signature = this.signature || DocumentSignature.NEW;
+    }
+
+    /**
+     * Create document
+     */
+    @BeforeCreate()
+    createDocument() {
+        if (this.document) {
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.documentFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.document));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Update document
+     */
+    @BeforeUpdate()
+    updateDocument() {
+        if (this.document) {
+            if (this.documentFileId) {
+                DataBaseHelper.gridFS
+                    .delete(this.documentFileId)
+                    .catch(console.error);
+            }
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.documentFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.document));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Load document
+     */
+    @OnLoad()
+    async loadDocument() {
+        if (this.documentFileId && !this.document) {
+            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+                this.documentFileId
+            );
+            const bufferArray = [];
+            for await (const data of fileRS) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.document = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Create context
+     */
+    @BeforeCreate()
+    createContext() {
+        if (this.context) {
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.contextFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.context));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Update context
+     */
+    @BeforeUpdate()
+    updateContext() {
+        if (this.context) {
+            if (this.contextFileId) {
+                DataBaseHelper.gridFS.delete(this.contextFileId).catch();
+            }
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.contextFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.context));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Load context
+     */
+    @OnLoad()
+    async loadContext() {
+        if (this.contextFileId && !this.context) {
+            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+                this.contextFileId
+            );
+            const bufferArray = [];
+            for await (const data of fileRS) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.context = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Create config
+     */
+    @BeforeCreate()
+    createConfig() {
+        if (this.config) {
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.configFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.config));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Update config
+     */
+    @BeforeUpdate()
+    updateConfig() {
+        if (this.config) {
+            if (this.configFileId) {
+                DataBaseHelper.gridFS
+                    .delete(this.configFileId)
+                    .catch(console.error);
+            }
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.configFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.config));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Load config
+     */
+    @OnLoad()
+    async loadConfig() {
+        if (this.configFileId && !this.config) {
+            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+                this.configFileId
+            );
+            const bufferArray = [];
+            for await (const data of fileRS) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.config = JSON.parse(buffer.toString());
+        }
     }
 }

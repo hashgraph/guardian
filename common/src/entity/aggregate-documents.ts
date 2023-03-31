@@ -1,6 +1,8 @@
-import { DocumentSignature, DocumentStatus, IVC } from '@guardian/interfaces';
-import { Entity, Property, Enum } from '@mikro-orm/core';
+import { DocumentSignature, DocumentStatus, GenerateUUIDv4, IVC } from '@guardian/interfaces';
+import { Entity, Property, Enum, BeforeCreate, BeforeUpdate, OnLoad } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
+import { DataBaseHelper } from '../helpers';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 /**
  * Documents for aggregate collection
@@ -37,8 +39,14 @@ export class AggregateVC extends BaseEntity {
     /**
      * Document instance
      */
-    @Property({ nullable: true })
+    @Property({ persist: false })
     document?: IVC;
+
+    /**
+     * Document file id
+     */
+    @Property({ nullable: true })
+    documentFileId?: ObjectId;
 
     /**
      * Document hedera status
@@ -150,4 +158,57 @@ export class AggregateVC extends BaseEntity {
      */
     @Property({ nullable: true })
     messageIds?: string[];
+
+    /**
+     * Create document
+     */
+    @BeforeCreate()
+    createDocument() {
+        if (this.document) {
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.documentFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.document));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Update document
+     */
+    @BeforeUpdate()
+    updateDocument() {
+        if (this.document) {
+            if (this.documentFileId) {
+                DataBaseHelper.gridFS
+                    .delete(this.documentFileId)
+                    .catch(console.error);
+            }
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.documentFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.document));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Load document
+     */
+    @OnLoad()
+    async loadDocument() {
+        if (this.documentFileId && !this.document) {
+            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+                this.documentFileId
+            );
+            const bufferArray = [];
+            for await (const data of fileRS) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.document = JSON.parse(buffer.toString());
+        }
+    }
 }

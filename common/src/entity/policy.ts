@@ -1,6 +1,8 @@
 import { BaseEntity } from '../models';
 import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
-import { BeforeCreate, Entity, Property, Unique } from '@mikro-orm/core';
+import { AfterUpdate, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
+import { DataBaseHelper } from '../helpers';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 /**
  * Policy collection
@@ -48,8 +50,14 @@ export class Policy extends BaseEntity {
     /**
      * Policy config
      */
-    @Property({ nullable: true })
+    @Property({ persist: false })
     config?: any;
+
+    /**
+     * Config file id
+     */
+    @Property({ nullable: true })
+    configFileId?: ObjectId;
 
     /**
      * Policy status
@@ -132,12 +140,6 @@ export class Policy extends BaseEntity {
     codeVersion?: string;
 
     /**
-     * Created at
-     */
-    @Property()
-    createDate: Date = new Date();
-
-    /**
      * User roles
      * @deprecated
      */
@@ -153,5 +155,58 @@ export class Policy extends BaseEntity {
         this.uuid = this.uuid || GenerateUUIDv4();
         this.codeVersion = this.codeVersion || '1.0.0';
         delete this.registeredUsers;
+    }
+
+    /**
+     * Create config
+     */
+    @BeforeCreate()
+    createConfig() {
+        if (this.config) {
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.configFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.config));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Update config
+     */
+    @BeforeUpdate()
+    updateConfig() {
+        if (this.config) {
+            if (this.configFileId) {
+                DataBaseHelper.gridFS
+                    .delete(this.configFileId)
+                    .catch(console.error);
+            }
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                GenerateUUIDv4()
+            );
+            this.configFileId = fileStream.id;
+            fileStream.write(JSON.stringify(this.config));
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Load config
+     */
+    @OnLoad()
+    async loadConfig() {
+        if (this.configFileId && !this.config) {
+            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+                this.configFileId
+            );
+            const bufferArray = [];
+            for await (const data of fileRS) {
+                bufferArray.push(data);
+            }
+            const buffer = Buffer.concat(bufferArray);
+            this.config = JSON.parse(buffer.toString());
+        }
     }
 }

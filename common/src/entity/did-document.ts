@@ -30,20 +30,6 @@ export class DidDocument extends BaseEntity implements IDidObject {
     document?: any;
 
     /**
-     * Created at
-     */
-    @Property({
-        index: true
-    })
-    createDate: Date = new Date();
-
-    /**
-     * Updated at
-     */
-    @Property({ onUpdate: () => new Date() })
-    updateDate: Date = new Date();
-
-    /**
      * Document status
      */
     @Enum({ nullable: true })
