@@ -93,7 +93,10 @@ export class BlockTreeGenerator extends NatsService {
                         msg.respond(await this.codec.encode(respond), {headers: head});
                     }
                 } catch (error) {
-                    msg.respond(await this.codec.encode(new MessageError(error.message)));
+                    const messageId = msg.headers.get('messageId');
+                    const head = headers();
+                    head.append('messageId', messageId);
+                    msg.respond(await this.codec.encode(new MessageError(error.message)), {headers: head});
                 }
             }
         });
