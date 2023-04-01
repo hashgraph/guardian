@@ -9,7 +9,7 @@ const { MessageAction } = require('../../../../dist/hedera-modules/message/messa
 const { MessageStatus } = require('../../../../dist/hedera-modules/message/message');
 const { UrlType } = require('../../../../dist/hedera-modules/message/url.interface');
 
-describe.skip('Message', function () {
+describe('Message', function () {
 
     const testUrls = [{
         cid: "testCidFirst",
@@ -30,7 +30,7 @@ describe.skip('Message', function () {
         assert.equal(message.getId(), testId);
         message.setTopicId(topicId);
         assert.equal(message.getTopicId(), topicId);
-        assert.equal(message.getUrlValue(0), testUrls[0].url);
+        assert.equal(message.getUrlValue(0, UrlType.url), testUrls[0].url);
         assert.equal(message.getUrlValue(0, UrlType.cid), testUrls[0].cid);
         message.revoke();
 

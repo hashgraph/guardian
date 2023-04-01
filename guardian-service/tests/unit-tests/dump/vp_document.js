@@ -19,7 +19,7 @@ module.exports.vp_document = [{
                 '@context': [
                     'https://www.w3.org/2018/credentials/v1'
                 ],
-                'id': '5b6e9587-ea25-440f-85ba-979472e9a2d3',
+                'id': 'urn:uuid:5b6e9587-ea25-440f-85ba-979472e9a2d3',
                 'type': [
                     'VerifiableCredential',
                     'MRV'
@@ -51,7 +51,7 @@ module.exports.vp_document = [{
                 '@context': [
                     'https://www.w3.org/2018/credentials/v1'
                 ],
-                'id': '35b290df-17a9-4f20-8932-bae8bc4cea7a',
+                'id': 'urn:uuid:35b290df-17a9-4f20-8932-bae8bc4cea7a',
                 'type': [
                     'VerifiableCredential',
                     'MintToken'
@@ -117,7 +117,7 @@ module.exports.vp_document = [{
                 '@context': [
                     'https://www.w3.org/2018/credentials/v1'
                 ],
-                'id': '7da2317f-e937-4503-8b80-fc722599055a',
+                'id': 'urn:uuid:7da2317f-e937-4503-8b80-fc722599055a',
                 'type': [
                     'VerifiableCredential',
                     'MRV'
@@ -149,7 +149,7 @@ module.exports.vp_document = [{
                 '@context': [
                     'https://www.w3.org/2018/credentials/v1'
                 ],
-                'id': 'd383eb83-dded-48f5-ac55-20769bd8ab9b',
+                'id': 'urn:uuid:d383eb83-dded-48f5-ac55-20769bd8ab9b',
                 'type': [
                     'VerifiableCredential',
                     'MintNFToken'

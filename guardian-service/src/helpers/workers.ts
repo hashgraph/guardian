@@ -17,7 +17,7 @@ export class Workers extends NatsService {
     /**
      * Message queue name
      */
-    public messageQueueName = 'workers-queue-' + GenerateUUIDv4();
+    public messageQueueName = 'workers-queue';
 
     /**
      * Reply subject
@@ -214,6 +214,7 @@ export class Workers extends NatsService {
 
         this.getMessages(WorkerEvents.PUSH_TASK, async (msg: any) => {
             const { task, priority, isRetryableTask, attempts } = msg;
+            console.log({ task, priority, isRetryableTask, attempts });
             this.addTask(task, priority, isRetryableTask, attempts).then(doNothing, doNothing);
             return new MessageResponse(null);
         });

@@ -12,7 +12,7 @@ const { MessageStatus } = require('../../../../dist/hedera-modules/message/messa
 const { MessageType } = require('../../../../dist/hedera-modules/message/message-type');
 const { MessageAction } = require('../../../../dist/hedera-modules/message/message-action');
 
-describe.skip('DIDMessage', function () {
+describe('DIDMessage', function () {
     const testDidMessage = {
         id: "testId",
         status: MessageStatus.ISSUE,
@@ -20,7 +20,7 @@ describe.skip('DIDMessage', function () {
         action: MessageAction.CreateDID,
         did: "testDid",
         cid: "testCid",
-        url: "testUrl"
+        url: "ipfs://testCid"
     };
     const testDocumentObject = JSON.stringify({
         name: "testDocumentName"
@@ -30,7 +30,7 @@ describe.skip('DIDMessage', function () {
         assert.throws(DIDMessage.fromMessage);
         assert.throws(DIDMessage.fromMessageObject);
 
-        const testDidDocument = DIDDocument.create();
+        const testDidDocument = await DIDDocument.create();
         const didMessage = new DIDMessage(MessageAction.CreateDID);
         assert.exists(didMessage);
         didMessage.setDocument(testDidDocument);

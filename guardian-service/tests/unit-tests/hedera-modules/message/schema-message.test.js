@@ -8,7 +8,7 @@ const { MessageType } = require('../../../../dist/hedera-modules/message/message
 const { MessageAction } = require('../../../../dist/hedera-modules/message/message-action');
 const { UrlType } = require('../../../../dist/hedera-modules/message/url.interface');
 
-describe.skip('SchemaMessage', function () {
+describe('SchemaMessage', function () {
 
     const testSchemaMessage = {
         id: "testId",
@@ -56,7 +56,7 @@ describe.skip('SchemaMessage', function () {
             cid: testSchemaMessage.context_cid, url: testSchemaMessage.context_url
         }]);
         assert.equal(schemaMessageByTestMessage.getDocumentUrl(UrlType.cid), testSchemaMessage.document_cid);
-        assert.equal(schemaMessageByTestMessage.getDocumentUrl(), testSchemaMessage.document_url);
+        assert.equal(schemaMessageByTestMessage.getDocumentUrl(UrlType.url), testSchemaMessage.document_url);
         assert.exists(schemaMessageByTestMessage.toMessageObject());
 
         const schemaMessageByTestJSON = SchemaMessage.fromMessage(JSON.stringify(testSchemaMessage));
@@ -67,7 +67,7 @@ describe.skip('SchemaMessage', function () {
             cid: testSchemaMessage.context_cid, url: testSchemaMessage.context_url
         }]);
         assert.equal(schemaMessageByTestJSON.getDocumentUrl(UrlType.cid), testSchemaMessage.document_cid);
-        assert.equal(schemaMessageByTestJSON.getDocumentUrl(), testSchemaMessage.document_url);
+        assert.equal(schemaMessageByTestJSON.getDocumentUrl(UrlType.url), testSchemaMessage.document_url);
         assert.exists(schemaMessageByTestJSON.toMessageObject());
     });
 });

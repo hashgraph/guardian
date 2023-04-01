@@ -12,7 +12,7 @@ const { MessageAction } = require('../../../../dist/hedera-modules/message/messa
 const { UrlType } = require('../../../../dist/hedera-modules/message/url.interface');
 const { vp_document } = require('../../dump/vp_document');
 
-describe.skip('VPMessage', function () {
+describe('VPMessage', function () {
 
     const testVPMessage = {
         id: "testId",
@@ -21,7 +21,7 @@ describe.skip('VPMessage', function () {
         action: MessageAction.CreateVP,
         issuer: "testIssuer",
         cid: "testCID",
-        url: "testCID",
+        url: "ipfs://testCID",
         relationships: ["testRelation1", "testRelation2", "testRelation3"]
     };
     const testDocumentObject = JSON.stringify({
@@ -50,7 +50,7 @@ describe.skip('VPMessage', function () {
             cid: testVPMessage.cid, url: testVPMessage.url
         });
         assert.equal(vpMessageByTestMessage.getDocumentUrl(UrlType.cid), testVPMessage.cid);
-        assert.equal(vpMessageByTestMessage.getDocumentUrl(), testVPMessage.url);
+        assert.equal(vpMessageByTestMessage.getDocumentUrl(UrlType.url), testVPMessage.url);
         assert.exists(vpMessageByTestMessage.toMessageObject());
 
         const vpMessageByTestJSON = VPMessage.fromMessage(JSON.stringify(testVPMessage));
@@ -59,7 +59,7 @@ describe.skip('VPMessage', function () {
             cid: testVPMessage.cid, url: testVPMessage.url
         });
         assert.equal(vpMessageByTestJSON.getDocumentUrl(UrlType.cid), testVPMessage.cid);
-        assert.equal(vpMessageByTestJSON.getDocumentUrl(), testVPMessage.url);
+        assert.equal(vpMessageByTestJSON.getDocumentUrl(UrlType.url), testVPMessage.url);
         assert.exists(vpMessageByTestJSON.toMessageObject());
     });
 });
