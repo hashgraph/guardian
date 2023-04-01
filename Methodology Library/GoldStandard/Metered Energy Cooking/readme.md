@@ -55,9 +55,9 @@ This policy is published to Hedera network and can either be imported via Github
 
 <h3> Step By Step </h3>
 
-<h4> Registry(Gold Standard) Responsibilities </h4>
+<h4> Registry(Gold Standard) Flow </h4>
 
-Registry is allowed to publish and edit policy config, schemas, tokens and all the workflow logic associated with it. They are also responsible for approving projects, project proponents and VVBs.
+Registry is allowed to publish and edit policy config, schemas, tokens and all the workflow logic associated with it. They are responsible for approving projects, project proponents, VVBs, and credit issue requests. 
 
 1. Login into the service using registry credentials
     
@@ -79,8 +79,16 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
     <img width="1496" alt="image" src="https://user-images.githubusercontent.com/9518151/229287139-4717b23f-7c46-408e-8ed6-7af4405046f8.png">
 
+5. Once PDD and MR are approved by VVB, project proponents can submit credit issue requests(VER) which registries have to take decisions on.
 
-<h4> Project Proponent Responsibilities </h4>
+    <img width="1493" alt="Screenshot 2023-04-01 at 6 29 07 PM" src="https://user-images.githubusercontent.com/9518151/229294747-90409e66-2f9a-442d-a29d-3b49213e12d7.png">
+    
+6. Once VER issue request is approved, an end-to-end trust chain can be viewed by administrator. Since everything is happening transparently on public ledger(Hedera), anyone can trace the source of credits and each step that happened in the process.
+
+    ![trustchain](https://user-images.githubusercontent.com/9518151/229289672-6e33a6b4-af1d-427a-b742-ba68a6a9e162.png)
+
+
+<h4> Project Proponent Flow </h4>
 
 1. Complete the sign up form(RAA) to become a project proponent
 
@@ -115,10 +123,22 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
     <img width="1496" alt="image" src="https://user-images.githubusercontent.com/9518151/229290452-b6346557-4cb6-44dc-a653-43a6b8a0786a.png">
 
 
+<h4> VVB Flow </h4>
 
+VVB is the external independent third party responsible for reviewing Project Design Documents and Monitoring reports submitted by proponents. They can comment and reject/request changes as well.
 
+1. After logging in as VVB, they can view review requests related to project documents. First step is to review PDDs submitted by project proponents.
 
-![trustchain](https://user-images.githubusercontent.com/9518151/229289672-6e33a6b4-af1d-427a-b742-ba68a6a9e162.png)
+    <img width="1496" alt="Screenshot 2023-04-01 at 6 20 50 PM" src="https://user-images.githubusercontent.com/9518151/229294451-cbaa1e7a-9796-410f-9a1f-9e6ec002e8e9.png">
+
+    <img width="575" alt="Screenshot 2023-04-01 at 6 21 49 PM" src="https://user-images.githubusercontent.com/9518151/229294461-25425f99-a316-4e8e-bcaa-1630f7c57120.png">
+
+    <img width="578" alt="Screenshot 2023-04-01 at 6 22 34 PM" src="https://user-images.githubusercontent.com/9518151/229294467-1e9b061d-6a22-4007-bf76-2bc80b962c29.png">
+
+2. After PDD approval, proponents will be able to send monitoring reports for review. Once approved, project proponents will be able to claim corresponding VERs.
+
+    <img width="1496" alt="Screenshot 2023-04-01 at 6 24 00 PM" src="https://user-images.githubusercontent.com/9518151/229294542-6359707e-b6aa-4c4c-b5b5-c5a71ae14b88.png">
+
 
 Future Work
 Futureproofing by using automated credit issuance
