@@ -1,4 +1,22 @@
-<h2> Introduction </h2>
+## Table of content
+<!-- TOC -->
+
+- [Table of content](#table-of-content)
+- [Introduction](#introduction)
+- [Why ME\&ED(Metered and Measured Energy) Methodology?](#why-meedmetered-and-measured-energy-methodology)
+- [Policy Workflow](#policy-workflow)
+- [Policy Guide](#policy-guide)
+  - [Available Roles](#available-roles)
+  - [Important Documents \& Schemas](#important-documents--schemas)
+  - [Token(Carbon credit)](#tokencarbon-credit)
+  - [Step By Step](#step-by-step)
+    - [Registry(Gold Standard) Flow](#registrygold-standard-flow)
+    - [Project Proponent Flow](#project-proponent-flow)
+    - [VVB Flow](#vvb-flow)
+
+<!-- /TOC -->
+
+## Introduction
 
 According to [Gold Standard](https://www.goldstandard.org/our-story/sector-community-based-energy-efficiency) more than 3 billion people lack access to clean cooking solutions leading to over 4 million premature deaths each year. This doesn't attribute the havoc GHG emissions from wood or fossil fuel based cookstoves are going to cause in the future.
 
@@ -6,7 +24,7 @@ According to the 2021 State of the Voluntary Carbon Markets report by Ecosystem 
 
 This Guardian Policy tokenizes the VER(verified emission reduction) after verifying emissions reductions from improved cookstove projects according to Gold standard's methodology for Metered & Measured Energy Cooking Devices (ME&ED). The methodology is based on the use of energy meters and temperature sensors to collect data on the energy consumption and thermal efficiency of cookstoves, which is then used to calculate the emissions reductions achieved.
 
-<h2> Why ME&ED(Metered and Measured Energy) Methodology? </h2>
+## Why ME&ED(Metered and Measured Energy) Methodology?
 
 Carbon offsets from improved cookstove projects help advance Sustainable Development Goals 13 (climate), 7 (energy), 5 (gender), and 3 (health). However, for the carbon offsets generated from these projects to be considered legitimate, methodologies must provide accurate or conservative measurements of the climate impact of these projects.
 
@@ -23,24 +41,24 @@ According to a new [research](https://assets.researchsquare.com/files/rs-2606020
 
 This approach is more precise than traditional methodologies, which rely on more generalized assumptions or estimates to calculate emissions reductions. It also places a strong emphasis on stakeholder engagement and the inclusion of local communities in the project development and monitoring process. This approach promotes greater transparency and accountability and helps to ensure that the environmental and social benefits of the project are maximized. This Guardian policy, is a reflection of same methodology according to the [Gold standard's typical project lifecycle](https://academy.sustain-cert.com/wp-content/uploads/sites/3/2021/10/GS-Project-Cycle_15042021_Annyta.pdf).
 
-<h2> Policy Workflow </h2>
+## Policy Workflow
   
  <img width="1128" alt="image" src="https://user-images.githubusercontent.com/9518151/229273768-9fdd71c9-8bf6-41e8-b6ee-f494145fe0e5.png">
 
-<h2> Policy Guide </h2>
+## Policy Guide
 
 This policy is published to Hedera network and can either be imported via Github(.policy file) or IPSF timestamp.
 
 <img width="1153" alt="image" src="https://user-images.githubusercontent.com/9518151/229278890-83b3b4b3-2c4b-45f5-8231-b02db2c2dd04.png">
 
 
-<h3> Available Roles </h3>
+### Available Roles 
  
   - Project Proponent - Project developer who proposes and executes cookstove project and receives credits(VER)
   - VVB(Validation & Verification Body) - Independent third party who audits project's critical documentation and monitoring reports
   - Gold Standard(GS) - GS is the trusted registry overseeing the entire project cycle and issuing the credits(VER)
   
-<h3> Important Documents & Schemas </h3>
+### Important Documents & Schemas 
   
   1. Registry Account Application(RAA) - Account applications to become a project proponent, VVB with registry
   2. Project Inception Document (PID) - Preliminary design of project highlighting eligibility, additionality and methodology criteria along with stakeholder consultation report
@@ -50,12 +68,12 @@ This policy is published to Hedera network and can either be imported via Github
   6. Measuring Device - Registering a stove usage IOT device alongside the cookstove for automatic MRs
   7. VER Auto Credit Request(VACR) - Requesting automated issuance of credits based on data sent by a measuring device
   
-<h3> Token(Carbon credit) </h3>
+### Token(Carbon credit) 
   Verified Emission Reduction(VER) equivalent to 1 ton of CO2 offset
 
-<h3> Step By Step </h3>
+### Step By Step 
 
-<h4> Registry(Gold Standard) Flow </h4>
+#### Registry(Gold Standard) Flow 
 
 Registry is allowed to publish and edit policy config, schemas, tokens and all the workflow logic associated with it. They are responsible for approving projects, project proponents, VVBs, and credit issue requests. 
 
@@ -88,7 +106,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
     ![trustchain](https://user-images.githubusercontent.com/9518151/229289672-6e33a6b4-af1d-427a-b742-ba68a6a9e162.png)
 
 
-<h4> Project Proponent Flow </h4>
+#### Project Proponent Flow 
 
 1. Complete the sign up form(RAA) to become a project proponent
 
@@ -123,7 +141,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
     <img width="1496" alt="image" src="https://user-images.githubusercontent.com/9518151/229290452-b6346557-4cb6-44dc-a653-43a6b8a0786a.png">
 
 
-<h4> VVB Flow </h4>
+#### VVB Flow 
 
 VVB is the external independent third party responsible for reviewing Project Design Documents and Monitoring reports submitted by proponents. They can comment and reject/request changes as well.
 
@@ -145,3 +163,4 @@ Futureproofing by using automated credit issuance
 Comparison with existing improved cookstove policy
 
 Implementation is just a generic project cycle which doesn't capture critical flows
+
