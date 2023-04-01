@@ -13,6 +13,7 @@
     - [Registry(Gold Standard) Flow](#registrygold-standard-flow)
     - [Project Proponent Flow](#project-proponent-flow)
     - [VVB Flow](#vvb-flow)
+- [Futureproofing(Automated credit issuance)](#futureproofingautomated-credit-issuance)
 
 <!-- /TOC -->
 
@@ -158,7 +159,12 @@ VVB is the external independent third party responsible for reviewing Project De
     <img width="1496" alt="Screenshot 2023-04-01 at 6 24 00 PM" src="https://user-images.githubusercontent.com/9518151/229294542-6359707e-b6aa-4c4c-b5b5-c5a71ae14b88.png">
 
 
-Future Work
+## Futureproofing(Automated credit issuance)
+
+This workflow includes a bonus flow which is a major distinction from other existing policies. Building monitoring reports for cookstove projects is a very manual and error-prone process due to distributed nature of project. Often, a sample group of households are selected to be monitored and results are extrapolated for all the households(in thousands) leading to overcrediting. Since this methodology focuses on having direct measurement devices associated with a stove, an automated way of monitoring is possible.
+
+1. Project proponent can register a measuring device 
+
 Futureproofing by using automated credit issuance
 Comparison with existing improved cookstove policy
 
