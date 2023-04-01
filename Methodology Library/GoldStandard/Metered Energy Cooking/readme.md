@@ -14,6 +14,7 @@
     - [Project Proponent Flow](#project-proponent-flow)
     - [VVB Flow](#vvb-flow)
 - [Futureproofing(Automated credit issuance)](#futureproofingautomated-credit-issuance)
+- [Existing Cookstove Policy Comparison](#existing-cookstove-policy-comparison)
 
 <!-- /TOC -->
 
@@ -179,6 +180,15 @@ This workflow includes a bonus flow which is a major distinction from other exis
 
 4. After an approval from VVB for the automated monitoring report, VER mint will be initiated in owner account. This will help in faster crediting cycles along with a transparent process for tracking all the intermediate steps. It'll be a huge boost to scaling up the supply of credits in VCM(Voluntary carbon markets).
 
+## Existing Cookstove Policy Comparison
 
-Implementation is just a generic project cycle which doesn't capture critical flows
+Latest version of Guardian provides a policy for [improved cookstoves](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/improved-cookstove). This new Guardian policy builds on top of it to make it more robust, aligned and future-proof.
 
+| **Features**                                                                                                                                                       | **ME&ED**                | **Improved Cookstove** |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|------------------------|
+| Follows VCM industry project cycle and terminologies(Verra, Gold Standard)                                                                                         | Yes(GS)                  | No                     |
+| Substantial overcrediting possible                                                                                                                                 | No                       | Yes                    |
+| Critical metrics tracked directly in VC document  - Additionality criteria \| Baseline emissions calculation \| Project emissions calculation \| Leakage emissions | Yes \| Yes \| Yes \| Yes | No \| No \| No \| No   |
+| IOT based monitoring & automated credit issuance                                                                                                                   | Yes                      | No                     |
+| Scalable according to future credits demand                                                                                                                        | Yes                      | No                     |
+| Exhaustive documentation                                                                                                                                           | Yes                      | No(incomplete)         |
