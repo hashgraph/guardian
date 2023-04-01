@@ -163,10 +163,22 @@ VVB is the external independent third party responsible for reviewing Project De
 
 This workflow includes a bonus flow which is a major distinction from other existing policies. Building monitoring reports for cookstove projects is a very manual and error-prone process due to distributed nature of project. Often, a sample group of households are selected to be monitored and results are extrapolated for all the households(in thousands) leading to overcrediting. Since this methodology focuses on having direct measurement devices associated with a stove, an automated way of monitoring is possible.
 
-1. Project proponent can register a measuring device 
+1. Project proponent can register a measuring device associated a given cookstove
 
-Futureproofing by using automated credit issuance
-Comparison with existing improved cookstove policy
+   <img width="1494" alt="image" src="https://user-images.githubusercontent.com/9518151/229299395-692e4b41-fc17-456d-8e1e-89c1b1a1cd07.png">
+
+2. Device can be approved/rejected by the VVB
+
+   <img width="1496" alt="image" src="https://user-images.githubusercontent.com/9518151/229299474-2b4aa6ff-c83c-417f-a1d0-a15a59b73d96.png">
+
+3. Once approved, project developer can raise on-demand credit issuance associated with approved devices. These requests would contain stove fuel usage and temperature data collected automatically by the device
+
+   <img width="574" alt="image" src="https://user-images.githubusercontent.com/9518151/229299617-bef5ae45-7a60-4bd8-9414-920050669eb2.png">
+
+   <img width="578" alt="image" src="https://user-images.githubusercontent.com/9518151/229299665-623d859b-1ba9-401c-8f4a-70543e1a6316.png">
+
+4. After an approval from VVB for the automated monitoring report, VER mint will be initiated in owner account. This will help in faster crediting cycles along with a transparent process for tracking all the intermediate steps. It'll be a huge boost to scaling up the supply of credits in VCM(Voluntary carbon markets).
+
 
 Implementation is just a generic project cycle which doesn't capture critical flows
 
