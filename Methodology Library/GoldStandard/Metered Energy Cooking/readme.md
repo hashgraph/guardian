@@ -51,7 +51,7 @@ This approach is more precise than traditional methodologies, which rely on more
 
 This policy is published to Hedera network and can either be imported via Github(.policy file) or IPSF timestamp.
 
-<img width="1153" alt="image" src="https://user-images.githubusercontent.com/9518151/229278890-83b3b4b3-2c4b-45f5-8231-b02db2c2dd04.png">
+<img width="717" alt="image" src="https://user-images.githubusercontent.com/9518151/229341068-fb33b357-712e-4f52-ac6e-8eb46fbc2dab.png">
 
 
 ### Available Roles 
