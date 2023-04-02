@@ -164,6 +164,8 @@ VVB is the external independent third party responsible for reviewing Project De
 
 This workflow includes a bonus flow which is a major distinction from other existing policies. Building monitoring reports for cookstove projects is a very manual and error-prone process due to distributed nature of project. Often, a sample group of households are selected to be monitored and results are extrapolated for all the households(in thousands) leading to overcrediting. Since this methodology focuses on having direct measurement devices associated with a stove, an automated way of monitoring is possible.
 
+<img width="966" alt="image" src="https://user-images.githubusercontent.com/9518151/229339269-9fcb699b-5bd2-4a22-821f-f6bc72c4d890.png">
+
 1. Project proponent can register a measuring device associated a given cookstove
 
    <img width="1494" alt="image" src="https://user-images.githubusercontent.com/9518151/229299395-692e4b41-fc17-456d-8e1e-89c1b1a1cd07.png">
