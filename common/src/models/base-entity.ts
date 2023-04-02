@@ -1,4 +1,3 @@
-import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 

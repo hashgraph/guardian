@@ -18,7 +18,7 @@ moduleAlias.addAliases({
 
 const {Inject} = rewire('../../../dist/helpers/decorators/inject');
 
-const { BlockTreeGenerator } = require("../../../dist/policy-engine/block-tree-generator");
+//const { BlockTreeGenerator } = require("../../../dist/policy-engine/block-tree-generator");
 
 describe('BlockTreeGenerator', function () {
     it('Create', async function () {

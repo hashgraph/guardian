@@ -1,5 +1,5 @@
 import { DocumentSignature, DocumentStatus, GenerateUUIDv4, IVP, IVPDocument } from '@guardian/interfaces';
-import { Entity, Property, Enum, BeforeCreate, Unique, BeforeUpdate, OnLoad, AfterUpdate } from '@mikro-orm/core';
+import { Entity, Property, Enum, BeforeCreate, Unique, BeforeUpdate, OnLoad } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers';
