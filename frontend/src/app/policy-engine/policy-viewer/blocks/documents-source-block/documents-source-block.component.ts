@@ -82,7 +82,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
-    loadData() {
+     loadData() {
         this.loading = true;
         if (this.static) {
             this.setData(this.static);
@@ -95,9 +95,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
             ]).subscribe((value) => {
                 const data: any = value[0];
                 this.setData(data).then(() => {
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
                 });
             }, (e) => {
                 console.error(e.error);
@@ -109,8 +109,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
     async setData(data: any) {
         if (data) {
             const fields: any[] = data.fields || [];
-            this.fieldMap = {};
-            this.fields = [];
+            const _fieldMap: any = {};
+            const _fields: any[] = [];
             for (let i = 0; i < fields.length; i++) {
                 const element = fields[i];
                 element.names = element.name.split('.');
@@ -118,22 +118,22 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 if (element.bindBlock) {
                     element._block = await this.getBindBlock(element);
                 }
-                if (this.fieldMap[element.title]) {
-                    this.fieldMap[element.title].push(element);
+                if (_fieldMap[element.title]) {
+                    _fieldMap[element.title].push(element);
                 } else {
-                    this.fieldMap[element.title] = [element];
-                    this.fields.push(element);
+                    _fieldMap[element.title] = [element];
+                    _fields.push(element);
                 }
             }
             this.children = data.children;
-            this.columns = this.fields.map(f => f.index);
+            this.columns = _fields.map(f => f.index);
             if (data.viewHistory) {
                 this.columns.unshift('history');
             }
             this.documents = data.data || [];
             this.sortHistory(this.documents);
             this.isActive = true;
-            const sortingField = this.fields.find(item => item.name === data.orderField);
+            const sortingField = _fields.find(item => item.name === data.orderField);
             this.sortOptions.active = sortingField && sortingField.index || '';
             this.sortOptions.direction = data.orderDirection && data.orderDirection.toLowerCase() || '';
             this.enableSorting = data.enableSorting;
@@ -142,7 +142,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.commonAddons = data.commonAddons;
             this.paginationAddon = this.commonAddons.find((addon) => {
                 return addon.blockType === "paginationAddon"
-            })
+            });
+            this.fieldMap = _fieldMap;
+            this.fields = _fields;
         } else {
             this.fieldMap = {};
             this.fields = [];
