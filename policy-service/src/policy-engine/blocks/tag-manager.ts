@@ -4,10 +4,12 @@ import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about
 import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { BlockActionError } from '@policy-engine/errors';
-import { GenerateUUIDv4, TagType } from '@guardian/interfaces';
+import { GenerateUUIDv4, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import { MessageAction, MessageServer, MessageType, TagMessage, TopicConfig } from '@hedera-modules';
 import { Tag } from '@entity/tag';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
+import { VcHelper } from '@helpers/vc-helper';
+import { DatabaseServer } from '@database-modules';
 
 /**
  * Tag Manager
@@ -87,9 +89,26 @@ export class TagsManagerBlock {
      */
     async getData(user: IPolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const schema = await DatabaseServer.getSchemas({
+            system: false,
+            readonly: false,
+            category: SchemaCategory.TAG
+        }, {
+            fields: [
+                'id',
+                'name',
+                'description',
+                'topicId',
+                'uuid',
+                'version',
+                'iri',
+                'document'
+            ]
+        });
         const data: any = {
             id: ref.uuid,
-            blockType: ref.blockType
+            blockType: ref.blockType,
+            tagSchemas: schema
         }
         return data;
     }
@@ -112,8 +131,38 @@ export class TagsManagerBlock {
                     throw new BlockActionError(`Invalid tag`, ref.blockType, ref.uuid);
                 }
 
-                const target = await this.getTarget(TagType.PolicyDocument, tag.localTarget || tag.target);
+                const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
+                //Document
+                if (tag.document && typeof tag.document === 'object') {
+                    const vcHelper = new VcHelper();
+                    let credentialSubject: any = { ...tag.document } || {};
+                    credentialSubject.id = user.did;
 
+                    const tagSchema = await DatabaseServer.getSchema({ iri: `#${credentialSubject.type}` });
+                    if (
+                        tagSchema &&
+                        tagSchema.category === SchemaCategory.TAG &&
+                        tagSchema.status === SchemaStatus.PUBLISHED
+                    ) {
+                        credentialSubject = {
+                            ...credentialSubject,
+                            ...SchemaHelper.getContext(tagSchema),
+                        }
+                    }
+                    if (ref.dryRun) {
+                        vcHelper.addDryRunContext(credentialSubject);
+                    }
+                    const vcObject = await vcHelper.createVC(
+                        user.did,
+                        hederaAccount.hederaAccountKey,
+                        credentialSubject
+                    );
+                    tag.document = vcObject.getDocument();
+                } else {
+                    tag.document = null;
+                }
+
+                const target = await this.getTarget(TagType.PolicyDocument, tag.localTarget || tag.target);
                 if (target) {
                     tag.uuid = tag.uuid || GenerateUUIDv4();
                     tag.operation = 'Create';
@@ -127,10 +176,15 @@ export class TagsManagerBlock {
                     throw new BlockActionError(`Invalid target`, ref.blockType, ref.uuid);
                 }
 
-                if (target.topicId) {
+                //Message
+                if (target.target && target.topicId) {
                     tag.target = target.target;
                     tag.status = 'Published';
-                    await this.publishTag(tag, target.topicId, user.did);
+                    await this.publishTag(tag, target.topicId, hederaAccount);
+                } else {
+                    tag.target = null;
+                    tag.localTarget = target.id;
+                    tag.status = 'Draft';
                 }
 
                 const item = await ref.databaseServer.createTag(tag);
@@ -229,10 +283,9 @@ export class TagsManagerBlock {
      * Publish tag
      * @param tag
      */
-    private async publishTag(item: Tag, topicId: string, owner: string): Promise<Tag> {
+    private async publishTag(item: Tag, topicId: string, owner: IHederaAccount): Promise<Tag> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const user = await PolicyUtils.getHederaAccount(ref, owner);
-        const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, ref.dryRun);
+        const messageServer = new MessageServer(owner.hederaAccountId, owner.hederaAccountKey, ref.dryRun);
         const topic = await ref.databaseServer.getTopicById(topicId);
         const topicConfig = await TopicConfig.fromObject(topic, !ref.dryRun);
 
