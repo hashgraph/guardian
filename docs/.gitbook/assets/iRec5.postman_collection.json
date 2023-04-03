@@ -1,0 +1,2051 @@
+{
+	"info": {
+		"_postman_id": "e45cfb27-a025-4e3d-ae29-a71797af2ac5",
+		"name": "iRec5",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20721078"
+	},
+	"item": [
+		{
+			"name": "1. Reg new SR",
+			"item": [
+				{
+					"name": "1.1. Create SR Account",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var randomName = Math.random().toString(36).substring(2,10);\r",
+									"pm.collectionVariables.set('sr_login', randomName)\r",
+									"pm.collectionVariables.set('sr_password', 'test')"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\":\"{{sr_login}}\",\r\n    \"password\":\"{{sr_password}}\",\r\n    \"role\":\"STANDARD_REGISTRY\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.2. Login SR",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var obj = JSON.parse(responseBody)\r",
+									"pm.collectionVariables.set('sr_auth_token', obj.accessToken)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\":\"{{sr_login}}\",\r\n    \"password\":\"{{sr_password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.3. Generate Hedera Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var obj = JSON.parse(responseBody)\r",
+									"pm.collectionVariables.set('sr_hedera_id', obj.id)\r",
+									"pm.collectionVariables.set('sr_hedera_key', obj.key)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sr_auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/demo/randomKey",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"demo",
+								"randomKey"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.4. Completion of registration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sr_auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"hederaAccountId\":\"{{sr_hedera_id}}\",\r\n    \"hederaAccountKey\":\"{{sr_hedera_key}}\",\r\n    \"vcDocument\":{\r\n        \"geography\":\"geography\",\r\n        \"law\":\"law\",\r\n        \"tags\":\"tags\",\r\n        \"ISIC\":\"ISIC\",\r\n        \"type\":\"StandardRegistry\",\r\n        \"@context\":[]\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/profiles/{{sr_login}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles",
+								"{{sr_login}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.5. Get SR DID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var obj = JSON.parse(responseBody)\r",
+									"pm.collectionVariables.set('sr_did', obj.did)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sr_auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/profiles/{{sr_login}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles",
+								"{{sr_login}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Reg new User (Registrant)",
+			"item": [
+				{
+					"name": "2.1. Create User Account",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var randomName = Math.random().toString(36).substring(2,10);\r",
+									"pm.collectionVariables.set('user_login', randomName)\r",
+									"pm.collectionVariables.set('user_password', 'test')"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\":\"{{user_login}}\",\r\n    \"password\":\"{{user_password}}\",\r\n    \"role\":\"USER\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.2. Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var obj = JSON.parse(responseBody)\r",
+									"pm.collectionVariables.set('user_auth_token', obj.accessToken)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\":\"{{user_login}}\",\r\n    \"password\":\"{{user_password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.3. Generate Hedera Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var obj = JSON.parse(responseBody)\r",
+									"pm.collectionVariables.set('user_hedera_id', obj.id)\r",
+									"pm.collectionVariables.set('user_hedera_key', obj.key)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/demo/randomKey",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"demo",
+								"randomKey"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.4. Completion of registration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"hederaAccountId\":\"{{user_hedera_id}}\",\r\n    \"hederaAccountKey\":\"{{user_hedera_key}}\",\r\n    \"parent\": \"{{sr_did}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/profiles/{{user_login}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles",
+								"{{user_login}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2.5. Get User DID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var obj = JSON.parse(responseBody)\r",
+									"pm.collectionVariables.set('user_did', obj.did)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{user_auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/profiles/{{user_login}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles",
+								"{{user_login}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Reg new User (Approver)",
+			"item": [
+				{
+					"name": "3.1. Create User Account",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var randomName = Math.random().toString(36).substring(2,10);\r",
+									"pm.collectionVariables.set('approver_login', randomName)\r",
+									"pm.collectionVariables.set('approver_password', 'test')"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\":\"{{approver_login}}\",\r\n    \"password\":\"{{approver_password}}\",\r\n    \"role\":\"USER\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.2. Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var obj = JSON.parse(responseBody)\r",
+									"pm.collectionVariables.set('approver_auth_token', obj.accessToken)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\":\"{{approver_login}}\",\r\n    \"password\":\"{{approver_password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"accounts",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.3. Generate Hedera Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var obj = JSON.parse(responseBody)\r",
+									"pm.collectionVariables.set('approver_hedera_id', obj.id)\r",
+									"pm.collectionVariables.set('approver_hedera_key', obj.key)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{approver_auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/demo/randomKey",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"demo",
+								"randomKey"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.4. Completion of registration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{approver_auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"hederaAccountId\":\"{{approver_hedera_id}}\",\r\n    \"hederaAccountKey\":\"{{approver_hedera_key}}\",\r\n    \"parent\": \"{{sr_did}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/profiles/{{user_login}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles",
+								"{{user_login}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3.5. Get User DID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var obj = JSON.parse(responseBody)\r",
+									"pm.collectionVariables.set('approver_did', obj.did)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{approver_auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/profiles/{{user_login}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"profiles",
+								"{{user_login}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Import Policy",
+			"item": [
+				{
+					"name": "4.1. Import Policy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var policies = JSON.parse(responseBody);\r",
+									"var last = policies[policies.length-1];\r",
+									"pm.collectionVariables.set('policy_id', last.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sr_auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"messageId\": \"{{policy_message_id}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/policies/import/message",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"policies",
+								"import",
+								"message"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4.2. Publish Policy",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sr_auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"policyVersion\": \"1.0.0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/policies/{{policy_id}}/publish",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"policies",
+								"{{policy_id}}",
+								"publish"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Run Policy",
+			"item": [
+				{
+					"name": "5.1. Role",
+					"item": [
+						{
+							"name": "5.1.1. Choose role (Registrant)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{user_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"role\": \"Registrant\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/choose_role/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"choose_role",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5.1.2. Choose role (Approver)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{approver_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"role\": \"Approver\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/choose_role/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"choose_role",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "5.2. Application",
+					"item": [
+						{
+							"name": "5.2.1. Get Application Schema (Registrant)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var obj = JSON.parse(responseBody)\r",
+											"var schema = obj.schema\r",
+											"\r",
+											"pm.collectionVariables.set('app_schema_context', schema.contextURL)\r",
+											"pm.collectionVariables.set('app_schema_type', schema.type)\r",
+											"pm.collectionVariables.set('app_schema_field1_context', schema.fields[1].context.context[0])\r",
+											"pm.collectionVariables.set('app_schema_field1_type', schema.fields[1].context.type)\r",
+											"pm.collectionVariables.set('app_schema_field2_context', schema.fields[2].context.context[0])\r",
+											"pm.collectionVariables.set('app_schema_field2_type', schema.fields[2].context.type)\r",
+											"pm.collectionVariables.set('app_schema_field3_context', schema.fields[3].context.context[0])\r",
+											"pm.collectionVariables.set('app_schema_field3_type', schema.fields[3].context.type)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{user_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/create_application/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"create_application",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5.2.2. Create Application (Registrant)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{user_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"document\": {\r\n        \"type\": \"{{app_schema_type}}\",\r\n        \"@context\": [\r\n            \"{{app_schema_context}}\"\r\n        ],\r\n        \"field0\": \"2022-05-11\",\r\n        \"field1\": {\r\n            \"type\": \"{{app_schema_field1_type}}\",\r\n            \"@context\": [\r\n                \"{{app_schema_field1_context}}\"\r\n            ],\r\n            \"field0\": \"Applicant Legal Name\",\r\n            \"field1\": \"Registered address line 1\",\r\n            \"field2\": \"Registered address line 2\",\r\n            \"field3\": \"Registered address line 3\",\r\n            \"field4\": \"Postal (ZIP) code\",\r\n            \"field5\": \"Country\",\r\n            \"field6\": \"Legal Status\",\r\n            \"field7\": \"Country of company registration/private residence\",\r\n            \"field8\": \"Corporate registration number/passport number\",\r\n            \"field9\": \"VAT number\",\r\n            \"field10\": \"Website URL\",\r\n            \"field11\": \"Main business (e.g. food retailer)\",\r\n            \"field12\": 1,\r\n            \"field13\": 1,\r\n            \"field14\": \"Name of the Chief Executive Officer/General Manager\",\r\n            \"field15\": \"Chief Executive Officer/General Manager passport number\",\r\n            \"field16\": \"Please state in which countries the organization is active\",\r\n            \"field17\": \"Please list the main (>10%) shareholders\",\r\n            \"field18\": 1,\r\n            \"field19\": \"email@email.com\"\r\n        },\r\n        \"field2\": {\r\n            \"type\": \"{{app_schema_field2_type}}\",\r\n            \"@context\": [\r\n                \"{{app_schema_field2_context}}\"\r\n            ],\r\n            \"field0\": \"Organization Name\",\r\n            \"field1\": \"Address line 1\",\r\n            \"field2\": \"Address line 2\",\r\n            \"field3\": \"Address line 3\",\r\n            \"field4\": \"Postal code\",\r\n            \"field5\": \"Country\",\r\n            \"field6\": \"Contact person\",\r\n            \"field7\": \"email@email.com\",\r\n            \"field8\": \"123456789\",\r\n            \"field9\": \"Fax\",\r\n            \"field10\": \"Existing I-REC Registry organization(s) to become subsidiary\"\r\n        },\r\n        \"field3\": {\r\n            \"type\": \"{{app_schema_field3_type}}\",\r\n            \"@context\": [\r\n                \"{{app_schema_field3_context}}\"\r\n            ],\r\n            \"field0\": \"Family Name (surname)\",\r\n            \"field1\": \"Other (Given) Names\",\r\n            \"field2\": \"Title\",\r\n            \"field3\": \"email@email.com\",\r\n            \"field4\": \"123456789\",\r\n            \"field5\": \"Fax\"\r\n        }\r\n    },\r\n    \"ref\": null\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/create_application/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"create_application",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5.2.3. Get Applications (Approver)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var obj = JSON.parse(responseBody)\r",
+											"var rows = obj.data;\r",
+											"pm.collectionVariables.set('app_row', JSON.stringify(rows[rows.length-1]))"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{approver_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/registrants_grid/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"registrants_grid",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5.2.4. Approve Application (Approver)",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var row = pm.collectionVariables.get('app_row')\r",
+											"var doc = JSON.parse(row)\r",
+											"pm.collectionVariables.set('app_row_body', JSON.stringify({\r",
+											"    document: doc, \r",
+											"    status: \"SIGNED\"\r",
+											"}));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{approver_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{{app_row_body}}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/approve_registrant_btn/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"approve_registrant_btn",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "5.3. Device",
+					"item": [
+						{
+							"name": "5.3.1. Get Device Schema (Registrant)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var obj = JSON.parse(responseBody)\r",
+											"var schema = obj.schema\r",
+											"var preset = obj.data\r",
+											"var presetFields = obj.presetFields\r",
+											"\r",
+											"pm.collectionVariables.set('device_preset', JSON.stringify(preset))\r",
+											"pm.collectionVariables.set('device_presetFields', JSON.stringify(presetFields))\r",
+											"pm.collectionVariables.set('device_schema_context', schema.contextURL)\r",
+											"pm.collectionVariables.set('device_schema_type', schema.type)\r",
+											"pm.collectionVariables.set('device_schema_field3_context', schema.fields[3].context.context)\r",
+											"pm.collectionVariables.set('device_schema_field3_type', schema.fields[3].context.type)\r",
+											"pm.collectionVariables.set('device_schema_field4_context', schema.fields[4].context.context)\r",
+											"pm.collectionVariables.set('device_schema_field4_type', schema.fields[4].context.type)\r",
+											"pm.collectionVariables.set('device_schema_field5_context', schema.fields[5].context.context)\r",
+											"pm.collectionVariables.set('device_schema_field5_type', schema.fields[5].context.type)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{user_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/create_device_form/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"create_device_form",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5.3.2. Create Device (Registrant)",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var device_preset = pm.collectionVariables.get('device_preset')\r",
+											"var preset = JSON.parse(device_preset)\r",
+											"var device_presetFields = pm.collectionVariables.get('device_presetFields')\r",
+											"var presetFields = JSON.parse(device_presetFields)\r",
+											"\r",
+											"var device_schema_context = pm.collectionVariables.get('device_schema_context')\r",
+											"var device_schema_type = pm.collectionVariables.get('device_schema_type')\r",
+											"var device_schema_field3_context = pm.collectionVariables.get('device_schema_field3_context')\r",
+											"var device_schema_field3_type = pm.collectionVariables.get('device_schema_field3_type')\r",
+											"var device_schema_field4_context = pm.collectionVariables.get('device_schema_field4_context')\r",
+											"var device_schema_field4_type = pm.collectionVariables.get('device_schema_field4_type')\r",
+											"var device_schema_field5_context = pm.collectionVariables.get('device_schema_field5_context')\r",
+											"var device_schema_field5_type = pm.collectionVariables.get('device_schema_field5_type')\r",
+											"\r",
+											"var body = {\r",
+											"    \"document\": {\r",
+											"        \"type\": device_schema_type,\r",
+											"        \"@context\": [\r",
+											"            device_schema_context\r",
+											"        ],\r",
+											"        \"field1\": \"2022-05-11\",\r",
+											"        \"field2\": \"Is the Registrant also the owner of the Device? (provide evidence)\",\r",
+											"        \"field3\": {\r",
+											"            \"type\": device_schema_field3_type,\r",
+											"            \"@context\": device_schema_field3_context\r",
+											"        },\r",
+											"        \"field4\": {\r",
+											"            \"type\": device_schema_field4_type,\r",
+											"            \"@context\": device_schema_field4_context,\r",
+											"            \"field0\": \"Device Name\",\r",
+											"            \"field1\": \"Address\",\r",
+											"            \"field2\": \"Postal code\",\r",
+											"            \"field3\": \"Country\",\r",
+											"            \"field4\": \"Longitude\",\r",
+											"            \"field5\": \"Latitude\",\r",
+											"            \"field6\": \"TSO’s ID for measurement point\",\r",
+											"            \"field7\": 1,\r",
+											"            \"field8\": 1,\r",
+											"            \"field9\": \"2022-05-11\",\r",
+											"            \"field10\": \"Owner of the network to which the Production Device is connected and the voltage of that connection\",\r",
+											"            \"field11\": \"If the Production Device is not connected directly to the grid, specify the circumstances, and additional relevant meter registration numbers\",\r",
+											"            \"field12\": \"Expected form of volume evidence\",\r",
+											"            \"field13\": \"If other please specify\"\r",
+											"        },\r",
+											"        \"field5\": {\r",
+											"            \"type\": device_schema_field5_type,\r",
+											"            \"@context\": device_schema_field5_context,\r",
+											"            \"field0\": \"Energy Source (Input) – see Appendix 2\",\r",
+											"            \"field1\": \"Technology – see Appendix 2\",\r",
+											"            \"field2\": true,\r",
+											"            \"field3\": \"If yes give details\",\r",
+											"            \"field4\": true,\r",
+											"            \"field5\": \"If yes give details\",\r",
+											"            \"field6\": \"Please give details of how the site can import electricity by means other than through the meter(s) specified above\",\r",
+											"            \"field7\": \"Please give details (including registration id) of any carbon offset or energy tracking scheme for which the Production Device is registered. State ‘None’ if that is the case\",\r",
+											"            \"field8\": \"Please identify any labeling schemes for which the Device is accredited\",\r",
+											"            \"field9\": true,\r",
+											"            \"field10\": \"If public (government) funding has been received when did/will it finish?\",\r",
+											"            \"field11\": \"2022-05-11\",\r",
+											"            \"field12\": \"Preferred I-REC Device Verifier\"\r",
+											"        }\r",
+											"    },\r",
+											"    \"ref\": preset\r",
+											"}; \r",
+											"\r",
+											"var presetObject = preset.document.credentialSubject[0];\r",
+											"for(var i = 0; i< presetFields.length; i++) {\r",
+											"    if(presetFields[i].value) {\r",
+											"        var value = presetObject[presetFields[i].value];\r",
+											"        if(typeof value == 'object') {\r",
+											"            value = Object.assign(value, body.document[presetFields[i].name]) \r",
+											"        }\r",
+											"        body.document[presetFields[i].name] = value;\r",
+											"    }\r",
+											"}\r",
+											"pm.collectionVariables.set('device_body', JSON.stringify(body));\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{user_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{{device_body}}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/create_device_form/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"create_device_form",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5.3.3. Get Devices (Approver)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var obj = JSON.parse(responseBody)\r",
+											"var rows = obj.data;\r",
+											"pm.collectionVariables.set('device_row', JSON.stringify(rows[rows.length-1]))"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{approver_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/approve_devices_grid/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"approve_devices_grid",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5.3.4. Approve Device (Approver)",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var row = pm.collectionVariables.get('device_row')\r",
+											"var doc = JSON.parse(row)\r",
+											"pm.collectionVariables.set('device_row_body', JSON.stringify({\r",
+											"    document: doc, \r",
+											"    status: \"SIGNED\"\r",
+											"}));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{approver_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{{device_row_body}}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/approve_device_btn/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"approve_device_btn",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "5.4. Issue",
+					"item": [
+						{
+							"name": "5.4.1. Get Devices (Registrant)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var obj = JSON.parse(responseBody)\r",
+											"pm.collectionVariables.set('device_issue_row', JSON.stringify(obj.data[obj.data.length-1]))"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{user_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/devices_grid/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"devices_grid",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5.4.2. Get Issue Schema (Registrant)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"//if the block is in the grid, then the data for it is the grid itself\r",
+											"var device_issue_row = pm.collectionVariables.get('device_issue_row')\r",
+											"var preset = JSON.parse(device_issue_row)\r",
+											"pm.collectionVariables.set('issue_preset', JSON.stringify(preset))\r",
+											"\r",
+											"var obj = JSON.parse(responseBody)\r",
+											"var schema = obj.schema\r",
+											"var presetFields = obj.presetFields\r",
+											"\r",
+											"pm.collectionVariables.set('issue_presetFields', JSON.stringify(presetFields))\r",
+											"pm.collectionVariables.set('issue_schema_context', schema.contextURL)\r",
+											"pm.collectionVariables.set('issue_schema_type', schema.type)\r",
+											"pm.collectionVariables.set('issue_schema_field2_context', schema.fields[2].context.context)\r",
+											"pm.collectionVariables.set('issue_schema_field2_type', schema.fields[2].context.type)\r",
+											"pm.collectionVariables.set('issue_schema_field3_context', schema.fields[3].context.context)\r",
+											"pm.collectionVariables.set('issue_schema_field3_type', schema.fields[3].context.type)\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{user_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/create_issue_request_form/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"create_issue_request_form",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5.4.3. Create Issue (Registrant)",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var mrvValue = 1;\r",
+											"\r",
+											"var username = pm.collectionVariables.get('user_login')\r",
+											"var hederaAccountId = pm.collectionVariables.get('user_hedera_id')\r",
+											"var issue_preset = pm.collectionVariables.get('issue_preset')\r",
+											"var preset = JSON.parse(issue_preset)\r",
+											"var issue_presetFields = pm.collectionVariables.get('issue_presetFields')\r",
+											"var presetFields = JSON.parse(issue_presetFields)\r",
+											"var issue_schema_context = pm.collectionVariables.get('issue_schema_context')\r",
+											"var issue_schema_type = pm.collectionVariables.get('issue_schema_type')\r",
+											"var issue_schema_field2_context = pm.collectionVariables.get('issue_schema_field2_context')\r",
+											"var issue_schema_field2_type = pm.collectionVariables.get('issue_schema_field2_type')\r",
+											"var issue_schema_field3_context = pm.collectionVariables.get('issue_schema_field3_context')\r",
+											"var issue_schema_field3_type = pm.collectionVariables.get('issue_schema_field3_type')\r",
+											"\r",
+											"var body = {\r",
+											"    \"document\": {\r",
+											"        \"type\": issue_schema_type,\r",
+											"        \"@context\": [\r",
+											"            issue_schema_context\r",
+											"        ],\r",
+											"        \"field2\": {\r",
+											"            \"type\": issue_schema_field2_type,\r",
+											"            \"@context\": issue_schema_field2_context\r",
+											"        },\r",
+											"        \"field3\": {\r",
+											"            \"type\": issue_schema_field3_type,\r",
+											"            \"@context\": issue_schema_field3_context\r",
+											"        },\r",
+											"        \"field4\": \"labeling scheme(s)\",\r",
+											"        \"field5\": \"2022-05-01\",\r",
+											"        \"field6\": \"2022-05-01\",\r",
+											"        \"field7\": mrvValue,\r",
+											"        \"field8\": \"2022-05-31\",\r",
+											"        \"field9\": 1,\r",
+											"        \"field10\": \"Type a: Settlement Metering data\",\r",
+											"        \"field11\": \"Type b: Non-settlement Metering data\",\r",
+											"        \"field12\": \"Type c: Measured Volume Transfer documentation\",\r",
+											"        \"field13\": \"Type d: Other\",\r",
+											"        \"field14\": true,\r",
+											"        \"field15\": true,\r",
+											"        \"field16\": true,\r",
+											"        \"field17\": \"zmjoore4\",\r",
+											"        \"field18\": \"0.0.34743908\",\r",
+											"    },\r",
+											"    \"ref\": preset\r",
+											"}\r",
+											"\r",
+											"var presetObject = preset.document.credentialSubject[0];\r",
+											"for(var i = 0; i< presetFields.length; i++) {\r",
+											"    if(presetFields[i].value=='username') {\r",
+											"        body.document[presetFields[i].name] = username;\r",
+											"    } else if(presetFields[i].value=='hederaAccountId') {\r",
+											"        body.document[presetFields[i].name] = hederaAccountId;\r",
+											"    } else if(presetFields[i].value) {\r",
+											"        var value = presetObject[presetFields[i].value];\r",
+											"        if(typeof value == 'object') {\r",
+											"            value = Object.assign(value, body.document[presetFields[i].name]) \r",
+											"        }\r",
+											"        body.document[presetFields[i].name] = value;\r",
+											"    }\r",
+											"}\r",
+											"pm.collectionVariables.set('issue_body', JSON.stringify(body));\r",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{user_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{{issue_body}}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/create_issue_request_form/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"create_issue_request_form",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5.4.4. Get Issues (Approver)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var obj = JSON.parse(responseBody)\r",
+											"var rows = obj.data;\r",
+											"pm.collectionVariables.set('issue_row', JSON.stringify(rows[rows.length-1]))"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{approver_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/issue_requests_grid(evident)/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"issue_requests_grid(evident)",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5.4.5. Approve Issue (Approver)",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"var row = pm.collectionVariables.get('issue_row')\r",
+											"var doc = JSON.parse(row)\r",
+											"pm.collectionVariables.set('issue_row_body', JSON.stringify({\r",
+											"    document: doc, \r",
+											"    status: \"SIGNED\"\r",
+											"}));"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{approver_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{{issue_row_body}}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/approve_issue_requests_btn/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"approve_issue_requests_btn",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "5.5. Trust Chain",
+					"item": [
+						{
+							"name": "5.5.1. Get VPs (SR)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var obj = JSON.parse(responseBody)\r",
+											"var rows = obj.data;\r",
+											"var last = rows[rows.length-1];\r",
+											"var hash = last ? last.hash : null;\r",
+											"pm.collectionVariables.set('vp_hash', hash)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{sr_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/vp_grid/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"vp_grid",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5.5.2. Set filter",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{sr_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"filterValue\":\"{{vp_hash}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/trustChainBlock/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"trustChainBlock",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5.5.3. Get Trust Chain",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var obj = JSON.parse(responseBody)\r",
+											"var report = obj.data;\r",
+											"\r",
+											"var policyDocument = report.policyDocument;\r",
+											"var srDocument = report.policyCreatorDocument;\r",
+											"var vpDocument = report.vpDocument;\r",
+											"var mintDocument = report.mintDocument;\r",
+											"var trustChain = report.documents;\r",
+											"\r",
+											"console.log(trustChain);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{sr_auth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/policies/{{policy_id}}/tag/trustChainBlock/blocks",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"policies",
+										"{{policy_id}}",
+										"tag",
+										"trustChainBlock",
+										"blocks"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:4200/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "policy_message_id",
+			"value": "1680177232.344469003",
+			"type": "string"
+		},
+		{
+			"key": "sr_login",
+			"value": ""
+		},
+		{
+			"key": "sr_password",
+			"value": ""
+		},
+		{
+			"key": "sr_auth_token",
+			"value": ""
+		},
+		{
+			"key": "sr_hedera_id",
+			"value": ""
+		},
+		{
+			"key": "sr_hedera_key",
+			"value": ""
+		},
+		{
+			"key": "sr_did",
+			"value": ""
+		},
+		{
+			"key": "user_login",
+			"value": ""
+		},
+		{
+			"key": "user_password",
+			"value": ""
+		},
+		{
+			"key": "user_auth_token",
+			"value": ""
+		},
+		{
+			"key": "user_hedera_id",
+			"value": ""
+		},
+		{
+			"key": "user_hedera_key",
+			"value": ""
+		},
+		{
+			"key": "user_did",
+			"value": ""
+		},
+		{
+			"key": "approver_login",
+			"value": ""
+		},
+		{
+			"key": "approver_password",
+			"value": ""
+		},
+		{
+			"key": "approver_auth_token",
+			"value": ""
+		},
+		{
+			"key": "approver_hedera_key",
+			"value": ""
+		},
+		{
+			"key": "approver_hedera_id",
+			"value": ""
+		},
+		{
+			"key": "approver_did",
+			"value": ""
+		},
+		{
+			"key": "policy_id",
+			"value": ""
+		},
+		{
+			"key": "app_schema_context",
+			"value": ""
+		},
+		{
+			"key": "app_schema_type",
+			"value": ""
+		},
+		{
+			"key": "app_schema_field1_context",
+			"value": ""
+		},
+		{
+			"key": "app_schema_field1_type",
+			"value": ""
+		},
+		{
+			"key": "app_schema_field2_context",
+			"value": ""
+		},
+		{
+			"key": "app_schema_field2_type",
+			"value": ""
+		},
+		{
+			"key": "app_schema_field3_context",
+			"value": ""
+		},
+		{
+			"key": "app_schema_field3_type",
+			"value": ""
+		},
+		{
+			"key": "app_row",
+			"value": ""
+		},
+		{
+			"key": "app_row_body",
+			"value": ""
+		},
+		{
+			"key": "device_preset",
+			"value": ""
+		},
+		{
+			"key": "device_presetFields",
+			"value": ""
+		},
+		{
+			"key": "device_schema_context",
+			"value": ""
+		},
+		{
+			"key": "device_schema_type",
+			"value": ""
+		},
+		{
+			"key": "device_schema_field3_context",
+			"value": ""
+		},
+		{
+			"key": "device_schema_field3_type",
+			"value": ""
+		},
+		{
+			"key": "device_schema_field4_context",
+			"value": ""
+		},
+		{
+			"key": "device_schema_field4_type",
+			"value": ""
+		},
+		{
+			"key": "device_schema_field5_context",
+			"value": ""
+		},
+		{
+			"key": "device_schema_field5_type",
+			"value": ""
+		},
+		{
+			"key": "device_body",
+			"value": ""
+		},
+		{
+			"key": "device_row",
+			"value": ""
+		},
+		{
+			"key": "device_row_body",
+			"value": ""
+		},
+		{
+			"key": "device_issue_row",
+			"value": ""
+		},
+		{
+			"key": "issue_preset",
+			"value": ""
+		},
+		{
+			"key": "issue_presetFields",
+			"value": ""
+		},
+		{
+			"key": "issue_schema_context",
+			"value": ""
+		},
+		{
+			"key": "issue_schema_type",
+			"value": ""
+		},
+		{
+			"key": "issue_schema_field2_context",
+			"value": ""
+		},
+		{
+			"key": "issue_schema_field2_type",
+			"value": ""
+		},
+		{
+			"key": "issue_schema_field3_context",
+			"value": ""
+		},
+		{
+			"key": "issue_schema_field3_type",
+			"value": ""
+		},
+		{
+			"key": "issue_body",
+			"value": ""
+		},
+		{
+			"key": "issue_row",
+			"value": ""
+		},
+		{
+			"key": "issue_row_body",
+			"value": ""
+		},
+		{
+			"key": "token_id",
+			"value": ""
+		},
+		{
+			"key": "vp_row",
+			"value": ""
+		},
+		{
+			"key": "vp_hash",
+			"value": ""
+		}
+	]
+}
