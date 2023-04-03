@@ -180,7 +180,7 @@ tagsAPI.delete('/schemas/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY
             return;
         }
         await guardians.deleteSchema(schemaId);
-        res.status(200).json(null);
+        res.status(200).json(true);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: 500, message: error.message });
