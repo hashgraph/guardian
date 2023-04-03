@@ -426,10 +426,7 @@ export class PolicyRolesBlock {
             ref.triggerEvents(PolicyOutputEventType.CreateGroup, newUser, null);
         }
 
-        await Promise.all([
-            PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag),
-            PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance)
-        ]);
+        await PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             group: group.uuid,

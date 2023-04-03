@@ -105,15 +105,18 @@ export class TokenConfirmationBlockComponent implements OnInit {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
             this.loading = true;
-            this.policyEngineService.setBlockData(this.id, this.policyId, {
-                hederaAccountKey: data.privateKey,
-                action: 'confirm'
-            }).subscribe(() => {
-                this.loading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .setBlockData(this.id, this.policyId, {
+                    hederaAccountKey: data.privateKey,
+                    action: 'confirm',
+                })
+                .subscribe(
+                    () => undefined,
+                    (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    }
+                );
         }
     }
 

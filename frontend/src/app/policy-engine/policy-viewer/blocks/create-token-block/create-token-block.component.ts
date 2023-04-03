@@ -132,7 +132,6 @@ export class CreateTokenBlockComponent implements OnInit {
             this.dialogLoading = true;
             this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
                 this.dialogLoading = false;
-                this.loading = false;
             }, (e) => {
                 console.error(e.error);
                 this.dialogLoading = false;
