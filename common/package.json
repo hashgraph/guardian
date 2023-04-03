@@ -15,7 +15,7 @@
   },
   "description": "Common package share cross all services",
   "devDependencies": {
-    "@types/node": "^18.11.9",
+    "@types/node": "^18.15.11",
     "@types/winston": "^2.4.4",
     "mocha-junit-reporter": "^2.0.2",
     "tslint": "^6.1.3",
