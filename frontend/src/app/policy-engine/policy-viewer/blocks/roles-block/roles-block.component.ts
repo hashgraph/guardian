@@ -19,6 +19,7 @@ export class RolesBlockComponent implements OnInit {
 
     isActive = false;
     loading: boolean = true;
+    disabled: boolean = false;
     socket: any;
     content: string | null = null;
 
@@ -96,7 +97,9 @@ export class RolesBlockComponent implements OnInit {
     setData(data: any) {
         if (data) {
             const uiMetaData = data.uiMetaData || {};
+            const active = data.active;
 
+            this.disabled = active === false;
             this.groups = data.groups;
             this.roles = data.roles;
             this.groupMap = data.groupMap || {};
@@ -125,6 +128,7 @@ export class RolesBlockComponent implements OnInit {
         } else {
             this.content = null;
             this.isActive = false;
+            this.disabled = false;
         }
     }
 

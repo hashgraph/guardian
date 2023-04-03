@@ -44,6 +44,7 @@ export class WebSocketsServiceChannel extends NatsService {
 /**
  * WebSocket service class
  */
+@Singleton
 export class WebSocketsService {
     /**
      * Channel
