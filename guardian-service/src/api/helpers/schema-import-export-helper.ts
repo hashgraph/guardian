@@ -21,8 +21,8 @@ import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
 import { importTag } from './../tag.service';
 import {
     createSchema,
-    fixSchemaDefsOnImport, 
-    ImportResult, 
+    fixSchemaDefsOnImport,
+    ImportResult,
     onlyUnique
 } from './schema-helper';
 

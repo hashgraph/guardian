@@ -100,7 +100,7 @@ export class SchemaUtils {
      * @param {ISchema} schema
      * @param {IAuthUser} user
      * @param {SchemaCategory} type
-     * 
+     *
      * @returns {string} error
      */
     public static checkPermission(schema: ISchema, user: IAuthUser, type: SchemaCategory): string | null {

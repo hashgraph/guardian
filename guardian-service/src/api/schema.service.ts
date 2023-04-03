@@ -32,7 +32,6 @@ import {
 } from './helpers/schema-import-export-helper';
 import { findAndPublishSchema } from './helpers/schema-publish-helper';
 import { getPageOptions } from './helpers/api-helper';
-import { TopicConfig } from '@hedera-modules';
 
 /**
  * Connect to the message broker methods of working with schemas.
@@ -738,7 +737,7 @@ export async function schemaAPI(): Promise<void> {
                     'name',
                     'description',
                     'topicId',
-                    'uuid', 
+                    'uuid',
                     'version',
                     'iri',
                     'document'

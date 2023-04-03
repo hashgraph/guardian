@@ -115,9 +115,6 @@ tagsAPI.post('/synchronization', async (req: AuthenticatedRequest, res: Response
     }
 });
 
-
-
-
 tagsAPI.get('/schemas', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;

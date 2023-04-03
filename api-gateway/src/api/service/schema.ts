@@ -566,7 +566,7 @@ schemaAPI.post('/system/:username', permissionHelper(UserRole.STANDARD_REGISTRY)
             return;
         }
         if (
-            newSchema.entity !== SchemaEntity.STANDARD_REGISTRY && 
+            newSchema.entity !== SchemaEntity.STANDARD_REGISTRY &&
             newSchema.entity !== SchemaEntity.USER
         ) {
             res.status(500).json({
