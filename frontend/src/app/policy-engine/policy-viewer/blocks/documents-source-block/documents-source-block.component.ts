@@ -82,7 +82,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
-     loadData() {
+    loadData() {
         this.loading = true;
         if (this.static) {
             this.setData(this.static);
@@ -95,9 +95,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
             ]).subscribe((value) => {
                 const data: any = value[0];
                 this.setData(data).then(() => {
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
                 });
             }, (e) => {
                 console.error(e.error);
