@@ -172,7 +172,7 @@ export class TagsExplorerDialog {
             data: {
                 document: document,
                 title: title,
-                type: 'VC',
+                type: 'Document',
                 viewDocument: false,
                 toggle: false
             }

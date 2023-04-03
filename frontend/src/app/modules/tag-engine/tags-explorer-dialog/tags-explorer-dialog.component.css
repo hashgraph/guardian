@@ -189,7 +189,7 @@
     padding: 6px 12px;
     border-left: 1px solid #999;
     display: grid;
-    grid-template-columns: 100px auto;
+    grid-template-columns: 125px auto;
 }
 
 .tag-details-field .tag-details-field-name {
@@ -197,8 +197,12 @@
     font-weight: 500;
 }
 
+.tag-details-field-value {
+    color: #444444;
+}
+
 .tag-details-name .tag-details-field-value {
-    color: #1274fb;
+    color: #444444;
     font-weight: 500;
 }
 
