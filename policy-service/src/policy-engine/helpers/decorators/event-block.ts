@@ -2,6 +2,7 @@ import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-opt
 import { BasicBlock } from './basic-block';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 
 /**
  * Event block decorator
@@ -19,12 +20,24 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
             public readonly blockClassName = 'EventBlock';
 
             /**
+             * Access block methods map
+             */
+            private readonly _accessMap = new Map<string, boolean>();
+
+            /**
              * Get block data
              * @param args
              */
             async getData(...args) {
                 if (typeof super.getData === 'function') {
-                    return await super.getData(...args);
+                    const userDid = args[0]?.did;
+                    const result = await super.getData(...args);
+                    return result
+                        ? {
+                              ...result,
+                              active: !this._accessMap.get(userDid),
+                          }
+                        : result;
                 }
                 return {};
             }
@@ -37,10 +50,25 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (!this.isActive(args[0])) {
                     throw new BlockActionError('Block not available', this.blockType, this.uuid);
                 }
-                if (typeof super.getData === 'function') {
-                    return await super.setData(...args);
+                const user = args[0];
+                if (this._accessMap.get(user?.did) === true) {
+                    throw new BlockActionError('Block is unavailable', this.blockType, this.uuid);
                 }
-                return {};
+                this._accessMap.set(user?.did, true);
+                PolicyComponentsUtils.BlockUpdateFn(super.parent.uuid, {}, user, super.tag);
+                let result = {};
+                if (typeof super.getData === 'function') {
+                    try {
+                        result = await super.setData(...args);
+                    } catch (err) {
+                        this._accessMap.delete(user?.did);
+                        PolicyComponentsUtils.BlockUpdateFn(super.parent.uuid, {}, user, super.tag);
+                        throw err;
+                    }
+                }
+                this._accessMap.delete(user?.did);
+                PolicyComponentsUtils.BlockUpdateFn(super.parent.uuid, {}, user, super.tag);
+                return result;
             }
 
             /**

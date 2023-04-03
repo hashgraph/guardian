@@ -98,47 +98,6 @@ export class RequestVcDocumentBlock {
     }
 
     /**
-     * Change active
-     * @param user
-     * @param active
-     */
-    @ActionCallback({
-        output: PolicyOutputEventType.RefreshEvent
-    })
-    async changeActive(user: IPolicyUser, active: boolean) {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        let blockState: any;
-        if (!this.state.hasOwnProperty(user.id)) {
-            blockState = {};
-            this.state[user.id] = blockState;
-        } else {
-            blockState = this.state[user.id];
-        }
-        blockState.active = active;
-
-        ref.updateBlock(blockState, user);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
-    }
-
-    /**
-     * Get active
-     * @param user
-     */
-    getActive(user: IPolicyUser) {
-        let blockState: any;
-        if (!this.state.hasOwnProperty(user.id)) {
-            blockState = {};
-            this.state[user.id] = blockState;
-        } else {
-            blockState = this.state[user.id];
-        }
-        if (blockState.active === undefined) {
-            blockState.active = true;
-        }
-        return blockState.active;
-    }
-
-    /**
      * Get Schema
      */
     async getSchema(): Promise<Schema> {
@@ -173,7 +132,6 @@ export class RequestVcDocumentBlock {
             presetFields: options.presetFields,
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || [],
-            active: this.getActive(user),
             data: sources && sources.length && sources[0] || null,
             restoreData
         };
@@ -213,14 +171,7 @@ export class RequestVcDocumentBlock {
             throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
         }
 
-        const active = this.getActive(user);
-        if (!active) {
-            throw new BlockActionError('Block not available', ref.blockType, ref.uuid);
-        }
-
         try {
-            await this.changeActive(user, false);
-
             const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
 
             const document = _data.document;
@@ -279,8 +230,6 @@ export class RequestVcDocumentBlock {
             if (error) {
                 throw new BlockActionError(error, ref.blockType, ref.uuid);
             }
-
-            await this.changeActive(user, true);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
@@ -290,7 +239,6 @@ export class RequestVcDocumentBlock {
             }));
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
-            await this.changeActive(user, true);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
 
