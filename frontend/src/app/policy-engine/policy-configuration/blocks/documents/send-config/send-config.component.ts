@@ -18,10 +18,12 @@ export class SendConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlockModel;
-    
+
     propHidden: any = {
         main: false,
         optionGroup: false,
+        fieldGroup: false,
+        fields: {},
         options: {}
     };
 
@@ -47,6 +49,7 @@ export class SendConfigComponent implements OnInit {
         this.properties = block.properties;
         this.properties.uiMetaData = this.properties.uiMetaData || {};
         this.properties.options = this.properties.options || [];
+        this.properties.fields = this.properties.fields || [];
         if (!this.properties.dataType && !this.properties.dataSource) {
             this.properties.dataSource = 'auto';
         }
@@ -81,8 +84,18 @@ export class SendConfigComponent implements OnInit {
 
     onDataSource(event: any) {
     }
-    
+
     onSave() {
         this.item.changed = true;
+    }
+
+    onRemoveField(i: number) {
+        this.properties.fields.splice(i, 1);
+    }
+
+    addField() {
+        this.properties.fields.push({
+            fieldPath: ""
+        });
     }
 }

@@ -54,7 +54,7 @@ enum Operation {
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
-        defaultEvent: true
+        defaultEvent: true,
     },
     variables: [
         { path: 'options.topic', alias: 'topic', type: 'Topic' }
@@ -384,6 +384,10 @@ export class SendToGuardianBlock {
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
         const operation: Operation = Operation.auto;
+        if (ref.options.chunking) {
+            document.documentFields =
+                ref.options.fields?.map((field) => field.fieldPath) || [];
+        }
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
         } else if (type === DocumentType.VerifiableCredential) {
