@@ -719,8 +719,12 @@ schemaAPI.get('/list/all', permissionHelper(UserRole.STANDARD_REGISTRY), async (
     try {
         const user = req.user;
         const guardians = new Guardians();
-        const schemas = await guardians.getListSchemas(user.did);
-        res.status(200).send(schemas);
+        if (user.did) {
+            const schemas = await guardians.getListSchemas(user.did);
+            res.status(200).send(schemas);
+        } else {
+            res.status(200).send([]);
+        }
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         res.status(500).json({ code: error.code, message: error.message });
