@@ -1,6 +1,6 @@
-import { WorkerTaskType } from '@guardian/interfaces';
+import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
 import { Workers } from '@helpers/workers';
-import { Logger, MessageResponse, RunFunctionAsync, SettingsContainer } from '@guardian/common';
+import { Logger, MessageResponse, NatsService, RunFunctionAsync, SettingsContainer, Singleton } from '@guardian/common';
 import { DatabaseServer } from '@database-modules';
 
 /**
@@ -15,66 +15,78 @@ export enum TransactionLogLvl {
 /**
  * Transaction logger
  */
-export class TransactionLogger {
+@Singleton
+export class TransactionLogger extends NatsService {
+    /**
+     * Message queue name
+     */
+    public messageQueueName = 'guardian-transaction-logs-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'guardian-transaction-logs-queue-reply-' + GenerateUUIDv4();
+
     /**
      * Log level
      * @private
      */
-    private static logLvl: TransactionLogLvl = TransactionLogLvl.NONE;
+    private logLvl: TransactionLogLvl = TransactionLogLvl.NONE;
     /**
      * Callback
      * @private
      */
-    private static fn: Function = null;
+    private fn: Function = null;
 
     /**
      * Callback
      * @private
      */
-    private static virtualFileCallback: Function = null;
+    private virtualFileCallback: Function = null;
 
     /**
      * Callback
      * @private
      */
-    private static virtualTransactionCallback: Function = null;
+    private virtualTransactionCallback: Function = null;
 
     /**
      * Time map
      * @private
      */
-    private static readonly map = {};
+    private readonly map = {};
 
     /**
      * Set log level
      * @param lvl
      */
-    public static setLogLevel(lvl: TransactionLogLvl): void {
-        TransactionLogger.logLvl = lvl || TransactionLogLvl.NONE;
+    public setLogLevel(lvl: TransactionLogLvl): void {
+        this.logLvl = lvl || TransactionLogLvl.NONE;
     }
 
     /**
      * Set log function
      * @param fn
      */
-    public static setLogFunction(fn: Function): void {
-        TransactionLogger.fn = fn;
+    public setLogFunction(fn: Function): void {
+        this.fn = fn;
     }
 
     /**
      * Set virtual file function
      * @param fn
      */
-    public static setVirtualFileFunction(fn: Function): void {
-        TransactionLogger.virtualFileCallback = fn;
+    public setVirtualFileFunction(fn: Function): void {
+        this.virtualFileCallback = fn;
     }
 
     /**
      * Set virtual transaction function
      * @param fn
      */
-    public static setVirtualTransactionFunction(fn: Function): void {
-        TransactionLogger.virtualTransactionCallback = fn;
+    public setVirtualTransactionFunction(fn: Function): void {
+        this.virtualTransactionCallback = fn;
     }
 
     /**
@@ -85,12 +97,12 @@ export class TransactionLogger {
      * @param attr
      * @private
      */
-    private static log(types: string[], duration: number, name: string, attr?: string[]) {
+    private log(types: string[], duration: number, name: string, attr?: string[]) {
         const date = (new Date()).toISOString();
         const d = duration ? `${(duration / 1000)}s` : '_';
         const attribute = attr || [];
-        if (TransactionLogger.fn) {
-            TransactionLogger.fn(types, date, d, name, attribute);
+        if (this.fn) {
+            this.fn(types, date, d, name, attribute);
         }
     }
 
@@ -99,23 +111,23 @@ export class TransactionLogger {
      * @param id
      * @param name
      */
-    public static async messageLog(id: string, name: string): Promise<void> {
+    public async messageLog(id: string, name: string): Promise<void> {
         try {
-            if (TransactionLogger.logLvl === TransactionLogLvl.NONE) {
+            if (this.logLvl === TransactionLogLvl.NONE) {
                 return;
             }
             const time = Date.now();
-            const start = TransactionLogger.map[id];
-            TransactionLogger.map[id] = time;
+            const start = this.map[id];
+            this.map[id] = time;
 
             if (start) {
                 const duration = time - start;
-                TransactionLogger.log(['MESSAGE', 'COMPLETION'], duration, name, [id]);
+                this.log(['MESSAGE', 'COMPLETION'], duration, name, [id]);
             } else {
-                TransactionLogger.log(['MESSAGE', 'SEND'], null, name, [id]);
+                this.log(['MESSAGE', 'SEND'], null, name, [id]);
             }
         } catch (error) {
-            TransactionLogger.log(['MESSAGE', 'ERROR'], null, name, [id, error.message]);
+            this.log(['MESSAGE', 'ERROR'], null, name, [id, error.message]);
         }
     }
 
@@ -127,7 +139,7 @@ export class TransactionLogger {
      * @param completed
      * @param metadata
      */
-    public static async transactionLog(
+    public async transactionLog(
         id: string,
         operatorAccountId: string,
         transactionName: string,
@@ -135,17 +147,17 @@ export class TransactionLogger {
         metadata: string = ''
     ): Promise<void> {
         try {
-            if (TransactionLogger.logLvl === TransactionLogLvl.NONE) {
+            if (this.logLvl === TransactionLogLvl.NONE) {
                 return;
             }
             const time = Date.now();
-            const start = TransactionLogger.map[id];
-            TransactionLogger.map[id] = time;
+            const start = this.map[id];
+            this.map[id] = time;
 
             const account = operatorAccountId.toString();
             const attr = [id, account, metadata];
 
-            if (TransactionLogger.logLvl === TransactionLogLvl.DEBUG) {
+            if (this.logLvl === TransactionLogLvl.DEBUG) {
                 try {
                     const settingsContainer = new SettingsContainer();
                     const { OPERATOR_ID, OPERATOR_KEY } = settingsContainer.settings;
@@ -165,12 +177,12 @@ export class TransactionLogger {
 
             if (completed) {
                 const duration = time - start;
-                TransactionLogger.log(['TRANSACTION', 'COMPLETION'], duration, transactionName, attr);
+                this.log(['TRANSACTION', 'COMPLETION'], duration, transactionName, attr);
             } else {
-                TransactionLogger.log(['TRANSACTION', 'CREATE'], null, transactionName, attr);
+                this.log(['TRANSACTION', 'CREATE'], null, transactionName, attr);
             }
         } catch (error) {
-            TransactionLogger.log(['TRANSACTION', 'ERROR'], null, transactionName, [id, error.message]);
+            this.log(['TRANSACTION', 'ERROR'], null, transactionName, [id, error.message]);
         }
     }
 
@@ -182,7 +194,7 @@ export class TransactionLogger {
      * @param transaction
      * @param message
      */
-    public static async transactionErrorLog(
+    public async transactionErrorLog(
         id: string,
         operatorAccountId: string,
         transactionName: string,
@@ -191,9 +203,9 @@ export class TransactionLogger {
         try {
             const account = operatorAccountId.toString();
             const attr = [id, account, message];
-            TransactionLogger.log(['TRANSACTION', 'ERROR'], null, transactionName, attr);
+            this.log(['TRANSACTION', 'ERROR'], null, transactionName, attr);
         } catch (error) {
-            TransactionLogger.log(['TRANSACTION', 'ERROR'], null, transactionName, [error.message]);
+            this.log(['TRANSACTION', 'ERROR'], null, transactionName, [error.message]);
         }
     }
 
@@ -202,10 +214,10 @@ export class TransactionLogger {
      * @param id
      * @param file
      */
-    public static async virtualFileLog(id: string, file: ArrayBuffer, url: any): Promise<void> {
+    public async virtualFileLog(id: string, file: ArrayBuffer, url: any): Promise<void> {
         const date = (new Date()).toISOString();
-        if (TransactionLogger.virtualFileCallback) {
-            TransactionLogger.virtualFileCallback(date, id, file, url);
+        if (this.virtualFileCallback) {
+            this.virtualFileCallback(date, id, file, url);
         }
     }
 
@@ -215,10 +227,10 @@ export class TransactionLogger {
      * @param type
      * @param operatorId
      */
-    public static async virtualTransactionLog(id: string, type: string, operatorId?: string): Promise<void> {
+    public async virtualTransactionLog(id: string, type: string, operatorId?: string): Promise<void> {
         const date = (new Date()).toISOString();
-        if (TransactionLogger.virtualTransactionCallback) {
-            TransactionLogger.virtualTransactionCallback(date, id, type, operatorId);
+        if (this.virtualTransactionCallback) {
+            this.virtualTransactionCallback(date, id, type, operatorId);
         }
     }
 
@@ -226,20 +238,20 @@ export class TransactionLogger {
      * Worker Subscribe
      * @param channel
      */
-    public static workerSubscribe(channel: any): void {
-        channel.response('guardians.transaction-log-event', async (data: any) => {
+    public workerSubscribe(): void {
+        this.getMessages('guardians.transaction-log-event', async (data: any) => {
             RunFunctionAsync(async () => {
                 switch (data.type) {
                     case 'start-log': {
                         const { id, operatorAccountId, transactionName } = data.data;
-                        await TransactionLogger.transactionLog(id, operatorAccountId, transactionName);
+                        await this.transactionLog(id, operatorAccountId, transactionName);
                         break;
                     }
 
                     case 'end-log': {
                         const { id, operatorAccountId, transactionName } = data.data;
                         const metadata = data.metadata;
-                        await TransactionLogger.transactionLog(id, operatorAccountId, transactionName, true, metadata);
+                        await this.transactionLog(id, operatorAccountId, transactionName, true, metadata);
                         break;
                     }
 
@@ -247,14 +259,14 @@ export class TransactionLogger {
                         const { id, operatorAccountId, transactionName } = data.data;
                         const error = data.error;
 
-                        await TransactionLogger.transactionErrorLog(id, operatorAccountId, transactionName, error);
+                        await this.transactionErrorLog(id, operatorAccountId, transactionName, error);
                         break;
                     }
 
                     case 'virtual-function-log': {
                         const { id, operatorAccountId, transactionName } = data.data;
 
-                        await TransactionLogger.virtualTransactionLog(id, transactionName, operatorAccountId);
+                        await this.virtualTransactionLog(id, transactionName, operatorAccountId);
                         break;
                     }
 
@@ -271,9 +283,10 @@ export class TransactionLogger {
      * Init logger
      * @param channel
      */
-    public static init(channel: any, lvl: TransactionLogLvl): void {
-        TransactionLogger.setLogLevel(lvl);
-        TransactionLogger.setLogFunction((types: string[], date: string, duration: string, name: string, attr?: string[]) => {
+    public async initialization(channel: any, lvl: TransactionLogLvl): Promise<void> {
+        await super.setConnection(channel).init();
+        this.setLogLevel(lvl);
+        this.setLogFunction((types: string[], date: string, duration: string, name: string, attr?: string[]) => {
             const log = new Logger();
             const attributes = [
                 ...types,
@@ -288,12 +301,12 @@ export class TransactionLogger {
                 log.info(name, attributes, 4);
             }
         });
-        TransactionLogger.setVirtualFileFunction(async (date: string, id: string, file: ArrayBuffer, url: any) => {
+        this.setVirtualFileFunction(async (date: string, id: string, file: ArrayBuffer, url: any) => {
             await DatabaseServer.setVirtualFile(id, file, url);
         });
-        TransactionLogger.setVirtualTransactionFunction(async (date: string, id: string, type: string, operatorId?: string) => {
+        this.setVirtualTransactionFunction(async (date: string, id: string, type: string, operatorId?: string) => {
             await DatabaseServer.setVirtualTransaction(id, type, operatorId);
         });
-        TransactionLogger.workerSubscribe(channel);
+        this.workerSubscribe();
     }
 }

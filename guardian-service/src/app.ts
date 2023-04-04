@@ -77,6 +77,7 @@ Promise.all([
     const [_, db, cn] = values;
     DB_DI.orm = db;
     new PolicyServiceChannelsContainer().setConnection(cn);
+    new TransactionLogger().initialization(cn, process.env.LOG_LEVEL as TransactionLogLvl);
     new GuardiansService().setConnection(cn).init();
     const channel = new MessageBrokerChannel(cn, 'guardians');
 
@@ -152,8 +153,6 @@ Promise.all([
         }
     }
     MessageServer.setLang(process.env.MESSAGE_LANG);
-    TransactionLogger.init(channel, process.env.LOG_LEVEL as TransactionLogLvl);
-
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
 
