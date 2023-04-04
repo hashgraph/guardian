@@ -4,7 +4,7 @@ import {
     SchemaCategory,
     SchemaEntity,
     SchemaStatus,
-    GenerateUUIDv4
+    GenerateUUIDv4,
 } from '@guardian/interfaces';
 import {
     Entity,
@@ -12,7 +12,8 @@ import {
     Enum,
     BeforeCreate,
     OnLoad,
-    BeforeUpdate
+    BeforeUpdate,
+    AfterDelete,
 } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
 import { DataBaseHelper, SchemaConverterUtils } from '../helpers';
@@ -234,16 +235,28 @@ export class Schema extends BaseEntity implements ISchema {
      */
     @OnLoad()
     async loadDocument() {
-        if (this.documentFileId && !this.document) {
-            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+        if (this.documentFileId) {
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
                 this.documentFileId
             );
             const bufferArray = [];
-            for await (const data of fileRS) {
+            for await (const data of fileStream) {
                 bufferArray.push(data);
             }
             const buffer = Buffer.concat(bufferArray);
             this.document = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Delete document
+     */
+    @AfterDelete()
+    deleteDocument() {
+        if (this.documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.documentFileId)
+                .catch(console.error);
         }
     }
 
@@ -286,15 +299,27 @@ export class Schema extends BaseEntity implements ISchema {
     @OnLoad()
     async loadContext() {
         if (this.contextFileId && !this.context) {
-            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
                 this.contextFileId
             );
             const bufferArray = [];
-            for await (const data of fileRS) {
+            for await (const data of fileStream) {
                 bufferArray.push(data);
             }
             const buffer = Buffer.concat(bufferArray);
             this.context = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Delete context
+     */
+    @AfterDelete()
+    deleteContext() {
+        if (this.contextFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.contextFileId)
+                .catch(console.error);
         }
     }
 }

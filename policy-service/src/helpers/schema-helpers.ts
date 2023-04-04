@@ -425,7 +425,7 @@ async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
         return;
     }
 
-    const schema = await DatabaseServer.getSchema({ 'document.$id': schemaId });
+    const schema = await DatabaseServer.getSchema({ iri: schemaId });
     if (!schema) {
         throw new Error(`Can not find schema ${schemaId}`);
     }
@@ -520,7 +520,7 @@ export async function publishDefsSchemas(defs: any, owner: string, root: IRootCo
     const schemasIdsInDocument = Object.keys(defs);
     for (const schemaId of schemasIdsInDocument) {
         let schema = await DatabaseServer.getSchema({
-            'document.$id': schemaId
+            iri: schemaId
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
             schema = await incrementSchemaVersion(schema.iri, owner);

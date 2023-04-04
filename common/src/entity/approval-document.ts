@@ -1,8 +1,23 @@
-import { ApproveStatus, GenerateUUIDv4, IApprovalDocument, IVC } from '@guardian/interfaces';
-import { Entity, Property, BeforeCreate, Enum, BeforeUpdate, OnLoad } from '@mikro-orm/core';
+import {
+    ApproveStatus,
+    GenerateUUIDv4,
+    IApprovalDocument,
+    IVC,
+} from '@guardian/interfaces';
+import {
+    Entity,
+    Property,
+    BeforeCreate,
+    Enum,
+    BeforeUpdate,
+    OnLoad,
+    AfterDelete,
+} from '@mikro-orm/core';
 import { BaseEntity } from '../models';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers';
+import ObjGet from 'lodash.get';
+import ObjSet from 'lodash.set';
 
 /**
  * Document for approve
@@ -14,7 +29,7 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
      */
     @Property({
         nullable: true,
-        index: true
+        index: true,
     })
     owner?: string;
 
@@ -27,7 +42,7 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
     /**
      * Document instance
      */
-    @Property({ persist: false })
+    @Property({ nullable: true })
     document?: IVC;
 
     /**
@@ -37,11 +52,17 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
     documentFileId?: ObjectId;
 
     /**
+     * Document fields
+     */
+    @Property({ nullable: true })
+    documentFields?: string[];
+
+    /**
      * Document policy id
      */
     @Property({
         nullable: true,
-        index: true
+        index: true,
     })
     policyId?: string;
 
@@ -108,6 +129,13 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
             this.documentFileId = fileStream.id;
             fileStream.write(JSON.stringify(this.document));
             fileStream.end();
+            if (this.documentFields) {
+                const newDocument: any = {};
+                for (const field of this.documentFields) {
+                    ObjSet(newDocument, field, ObjGet(this.document, field));
+                }
+                this.document = newDocument;
+            }
         }
     }
 
@@ -128,6 +156,13 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
             this.documentFileId = fileStream.id;
             fileStream.write(JSON.stringify(this.document));
             fileStream.end();
+            if (this.documentFields) {
+                const newDocument: any = {};
+                for (const field of this.documentFields) {
+                    ObjSet(newDocument, field, ObjGet(this.document, field));
+                }
+                this.document = newDocument;
+            }
         }
     }
 
@@ -136,16 +171,28 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
      */
     @OnLoad()
     async loadDocument() {
-        if (this.documentFileId && !this.document) {
-            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+        if (this.documentFileId) {
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
                 this.documentFileId
             );
             const bufferArray = [];
-            for await (const data of fileRS) {
+            for await (const data of fileStream) {
                 bufferArray.push(data);
             }
             const buffer = Buffer.concat(bufferArray);
             this.document = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Delete document
+     */
+    @AfterDelete()
+    deleteDocument() {
+        if (this.documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.documentFileId)
+                .catch(console.error);
         }
     }
 }

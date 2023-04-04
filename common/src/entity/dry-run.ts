@@ -1,8 +1,10 @@
 import { ApproveStatus, DocumentSignature, DocumentStatus, GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity } from '@guardian/interfaces';
-import { Entity, Property, BeforeCreate, BeforeUpdate, OnLoad } from '@mikro-orm/core';
+import { Entity, Property, BeforeCreate, BeforeUpdate, OnLoad, AfterDelete } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers';
+import ObjGet from 'lodash.get';
+import ObjSet from 'lodash.set';
 
 /**
  * DryRun document
@@ -36,7 +38,7 @@ export class DryRun extends BaseEntity {
     /**
      * Document instance
      */
-    @Property({ persist: false })
+    @Property({ nullable: true })
     document?: any;
 
     /**
@@ -44,6 +46,12 @@ export class DryRun extends BaseEntity {
      */
     @Property({ nullable: true })
     documentFileId?: ObjectId;
+
+    /**
+     * Document fields
+     */
+    @Property({ nullable: true })
+    documentFields?: string[];
 
     /**
      * Document status
@@ -537,6 +545,13 @@ export class DryRun extends BaseEntity {
             this.documentFileId = fileStream.id;
             fileStream.write(JSON.stringify(this.document));
             fileStream.end();
+            if (this.documentFields) {
+                const newDocument: any = {};
+                for (const field of this.documentFields) {
+                    ObjSet(newDocument, field, ObjGet(this.document, field));
+                }
+                this.document = newDocument;
+            }
         }
     }
 
@@ -557,6 +572,13 @@ export class DryRun extends BaseEntity {
             this.documentFileId = fileStream.id;
             fileStream.write(JSON.stringify(this.document));
             fileStream.end();
+            if (this.documentFields) {
+                const newDocument: any = {};
+                for (const field of this.documentFields) {
+                    ObjSet(newDocument, field, ObjGet(this.document, field));
+                }
+                this.document = newDocument;
+            }
         }
     }
 
@@ -565,16 +587,28 @@ export class DryRun extends BaseEntity {
      */
     @OnLoad()
     async loadDocument() {
-        if (this.documentFileId && !this.document) {
-            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+        if (this.documentFileId) {
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
                 this.documentFileId
             );
             const bufferArray = [];
-            for await (const data of fileRS) {
+            for await (const data of fileStream) {
                 bufferArray.push(data);
             }
             const buffer = Buffer.concat(bufferArray);
             this.document = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Delete document
+     */
+    @AfterDelete()
+    deleteDocument() {
+        if (this.documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.documentFileId)
+                .catch(console.error);
         }
     }
 
@@ -630,6 +664,18 @@ export class DryRun extends BaseEntity {
     }
 
     /**
+     * Delete context
+     */
+    @AfterDelete()
+    deleteContext() {
+        if (this.contextFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.contextFileId)
+                .catch(console.error);
+        }
+    }
+
+    /**
      * Create config
      */
     @BeforeCreate()
@@ -670,15 +716,27 @@ export class DryRun extends BaseEntity {
     @OnLoad()
     async loadConfig() {
         if (this.configFileId && !this.config) {
-            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
                 this.configFileId
             );
             const bufferArray = [];
-            for await (const data of fileRS) {
+            for await (const data of fileStream) {
                 bufferArray.push(data);
             }
             const buffer = Buffer.concat(bufferArray);
             this.config = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Delete context
+     */
+    @AfterDelete()
+    deleteConfig() {
+        if (this.configFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.configFileId)
+                .catch(console.error);
         }
     }
 }

@@ -1,4 +1,11 @@
-import { BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
+import {
+    BeforeCreate,
+    BeforeUpdate,
+    Entity,
+    OnLoad,
+    Property,
+    AfterDelete,
+} from '@mikro-orm/core';
 import { BaseEntity } from '../models';
 import { GenerateUUIDv4, IVC } from '@guardian/interfaces';
 import { ObjectId } from '@mikro-orm/mongodb';
@@ -104,15 +111,27 @@ export class MultiDocuments extends BaseEntity {
     @OnLoad()
     async loadDocument() {
         if (this.documentFileId && !this.document) {
-            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
                 this.documentFileId
             );
             const bufferArray = [];
-            for await (const data of fileRS) {
+            for await (const data of fileStream) {
                 bufferArray.push(data);
             }
             const buffer = Buffer.concat(bufferArray);
             this.document = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Delete document
+     */
+    @AfterDelete()
+    deleteDocument() {
+        if (this.documentFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.documentFileId)
+                .catch(console.error);
         }
     }
 }

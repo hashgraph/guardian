@@ -1,6 +1,6 @@
 import { BaseEntity } from '../models';
 import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
-import { BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
+import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers';
 import { ObjectId } from '@mikro-orm/mongodb';
 
@@ -198,15 +198,27 @@ export class Policy extends BaseEntity {
     @OnLoad()
     async loadConfig() {
         if (this.configFileId && !this.config) {
-            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
                 this.configFileId
             );
             const bufferArray = [];
-            for await (const data of fileRS) {
+            for await (const data of fileStream) {
                 bufferArray.push(data);
             }
             const buffer = Buffer.concat(bufferArray);
             this.config = JSON.parse(buffer.toString());
+        }
+    }
+
+    /**
+     * Delete document
+     */
+    @AfterDelete()
+    deleteConfig() {
+        if (this.configFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.configFileId)
+                .catch(console.error);
         }
     }
 }
