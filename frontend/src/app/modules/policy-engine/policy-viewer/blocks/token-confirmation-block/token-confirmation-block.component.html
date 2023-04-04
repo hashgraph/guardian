@@ -1,5 +1,5 @@
 <div class="content" [hidden]="!isActive">
-    <div *ngIf="loading" class="loading">
+    <div *ngIf="loading || disabled" class="loading">
         <mat-spinner></mat-spinner>
     </div>
     <div class="dialog">

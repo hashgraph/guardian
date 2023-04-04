@@ -1,7 +1,7 @@
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/decorators';
+import { ActionCallback, EventBlock, StateField } from '@policy-engine/helpers/decorators';
 import { IPolicyBlock, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -13,7 +13,7 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
 /**
  * Information block
  */
-@BasicBlock({
+@EventBlock({
     blockType: 'tokenConfirmationBlock',
     commonBlock: false,
     about: {

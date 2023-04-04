@@ -31,7 +31,7 @@ export type PolicyActionMap = Map<string, Map<PolicyInputEventType, EventCallbac
  * @param args
  */
 export function blockUpdate(type: string, args: any[]) {
-    new BlockTreeGenerator().publish(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, args });
+    new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, args });
 }
 
 /**

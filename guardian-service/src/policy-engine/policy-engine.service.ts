@@ -193,7 +193,7 @@ export class PolicyEngineService {
             }
         };
 
-        this.channel.subscribe(PolicyEvents.BLOCK_UPDATE_BROADCAST, (msg: any) => {
+        this.channel.getMessages(PolicyEvents.BLOCK_UPDATE_BROADCAST, (msg: any) => {
             const { type, args } = msg;
 
             switch (type) {
