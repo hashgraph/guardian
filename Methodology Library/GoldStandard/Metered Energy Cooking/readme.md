@@ -4,6 +4,7 @@
 - [Table of content](#table-of-content)
 - [Introduction](#introduction)
 - [Why ME\&ED(Metered and Measured Energy) Methodology?](#why-meedmetered-and-measured-energy-methodology)
+- [Demo Video](#demo-video)
 - [Policy Workflow](#policy-workflow)
 - [Policy Guide](#policy-guide)
   - [Available Roles](#available-roles)
@@ -42,6 +43,10 @@ There are a bunch of improved cookstove methodologies to choose from -
 According to a new [research](https://assets.researchsquare.com/files/rs-2606020/v1/c2e6a772-b013-49f9-9fc4-8d7d82d4bebc.pdf?c=1678869691) from scholars of University of California, Berkeley - Gold Standard’s Metered and Measured methodology, which directly monitors fuel use, is most aligned with the estimates (only 1.3 times over-credited) and is best suited for fuel switching projects which provide the most abatement potential and health benefit.
 
 This approach is more precise than traditional methodologies, which rely on more generalized assumptions or estimates to calculate emissions reductions. It also places a strong emphasis on stakeholder engagement and the inclusion of local communities in the project development and monitoring process. This approach promotes greater transparency and accountability and helps to ensure that the environmental and social benefits of the project are maximized. This Guardian policy, is a reflection of same methodology according to the [Gold standard's typical project lifecycle](https://academy.sustain-cert.com/wp-content/uploads/sites/3/2021/10/GS-Project-Cycle_15042021_Annyta.pdf).
+
+## Demo Video
+
+[Youtube](https://youtu.be/nOQpLmbW0hA)
 
 ## Policy Workflow
   
@@ -184,7 +189,7 @@ This workflow includes a bonus flow which is a major distinction from other exis
 
 ## Existing Cookstove Policy Comparison
 
-Latest version of Guardian provides a policy for [improved cookstoves](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/improved-cookstove). This new Guardian policy builds on top of it to make it more robust, aligned and future-proof.
+Latest version of Guardian provides a policy for [improved cookstoves](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/improved-cookstove). This new Guardian policy builds on top of it to make it more robust, aligned and future-proof. [Here's a section in demo video](https://youtu.be/nOQpLmbW0hA?t=1318) on differences using policy compare feature provided by Guardian.
 
 | **Features**                                                                                                                                                       | **ME&ED**                | **Improved Cookstove** |
 |--------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|------------------------|
