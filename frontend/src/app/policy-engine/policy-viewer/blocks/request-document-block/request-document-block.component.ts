@@ -194,16 +194,18 @@ export class RequestDocumentBlockComponent implements OnInit {
             const data = this.dataForm.getRawValue();
             this.prepareDataFrom(data);
             this.dialogLoading = true;
+            this.loading = true;
             this.policyEngineService.setBlockData(this.id, this.policyId, {
                 document: data,
                 ref: this.ref
             }).subscribe(() => {
-                this.dialogLoading = false;
-                this.loading = false;
-                if (this.dialogRef) {
-                    this.dialogRef.close();
-                    this.dialogRef = null;
-                }
+                setTimeout(() => {
+                    this.dialogLoading = false;
+                    if (this.dialogRef) {
+                        this.dialogRef.close();
+                        this.dialogRef = null;
+                    }
+                }, 1000);
             }, (e) => {
                 console.error(e.error);
                 this.dialogLoading = false;

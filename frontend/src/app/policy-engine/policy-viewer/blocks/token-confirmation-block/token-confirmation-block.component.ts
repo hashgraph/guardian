@@ -19,6 +19,7 @@ export class TokenConfirmationBlockComponent implements OnInit {
 
     isActive = false;
     loading: boolean = true;
+    disabled: boolean = false;
     socket: any;
     content: string | null = null;
     action: string | null = null;
@@ -87,6 +88,7 @@ export class TokenConfirmationBlockComponent implements OnInit {
     setData(data: any) {
         if (data) {
             const uiMetaData = data.uiMetaData || {};
+            this.disabled = data.active === false;
             this.action = data.action;
             this.accountId = data.accountId;
             this.tokenName = data.tokenName;
@@ -95,6 +97,7 @@ export class TokenConfirmationBlockComponent implements OnInit {
         } else {
             this.content = null;
             this.isActive = false;
+            this.disabled = false;
         }
     }
 
@@ -102,15 +105,18 @@ export class TokenConfirmationBlockComponent implements OnInit {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
             this.loading = true;
-            this.policyEngineService.setBlockData(this.id, this.policyId, {
-                hederaAccountKey: data.privateKey,
-                action: 'confirm'
-            }).subscribe(() => {
-                this.loading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .setBlockData(this.id, this.policyId, {
+                    hederaAccountKey: data.privateKey,
+                    action: 'confirm',
+                })
+                .subscribe(
+                    () => undefined,
+                    (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    }
+                );
         }
     }
 
