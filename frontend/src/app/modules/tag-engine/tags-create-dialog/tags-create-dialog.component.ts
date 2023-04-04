@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
@@ -13,8 +13,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 export class TagCreateDialog {
     started = false;
     dataForm = this.fb.group({
-        name: ['Label', Validators.required],
-        description: ['description'],
+        name: ['', Validators.required],
+        description: [''],
     });
     title: string = "New Tag";
     schemas: any[] = [];
@@ -23,6 +23,7 @@ export class TagCreateDialog {
 
     constructor(
         public dialogRef: MatDialogRef<TagCreateDialog>,
+        private changeDetector: ChangeDetectorRef,
         private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this.schemas = data?.schemas;
@@ -40,7 +41,7 @@ export class TagCreateDialog {
     onCreate() {
         if (this.dataForm.valid) {
             const data = this.dataForm.value;
-            if(this.schema) {
+            if (this.schema) {
                 const vc = this.schemaForm.value;
                 data.document = vc;
             }
@@ -49,26 +50,31 @@ export class TagCreateDialog {
     }
 
     onAddArtifact(selector: any) {
-        if(this.schemas.length === 1) {
+        if (this.schemas.length === 1) {
+            this.schemaForm = this.fb.group({});
             this.schema = this.schemas[0];
+            this.changeDetector.detectChanges();
         } else {
             selector?.open();
         }
     }
 
     onSelectSchema() {
-
+        this.changeDetector.detectChanges();
     }
 
     onDeleteArtifact() {
         this.schema = null;
     }
 
-    get disabled(): boolean {
-        if(this.schema) {
-            return !(this.dataForm.valid && this.started && this.schemaForm.valid);
-        } else {
-            return !(this.dataForm.valid && this.started);
+    public get disabled(): boolean {
+        if (this.started) {
+            if (this.schema) {
+                return !(this.dataForm.valid && this.schemaForm.valid);
+            } else {
+                return !(this.dataForm.valid);
+            }
         }
+        return true;
     }
 }

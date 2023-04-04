@@ -565,7 +565,7 @@ const TagManager: IBlockSetting = {
     type: BlockType.TagsManager,
     icon: 'sell',
     group: BlockGroup.Documents,
-    header: BlockHeaders.Addons,
+    header: BlockHeaders.UIComponents,
     factory: TagsManagerBlockComponent,
     property: null
 }

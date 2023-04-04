@@ -3,9 +3,9 @@
     <div class="actions">
         <div style="padding: 6px 0px">
             <mat-button-toggle-group [(ngModel)]="type" (change)="onChangeType($event)">
-                <mat-button-toggle value="system">System Schemas</mat-button-toggle>
-                <mat-button-toggle value="tag">Tag Schemas</mat-button-toggle>
                 <mat-button-toggle value="policy">Policy Schemas</mat-button-toggle>
+                <mat-button-toggle value="tag">Tag Schemas</mat-button-toggle>
+                <mat-button-toggle value="system">System Schemas</mat-button-toggle>
             </mat-button-toggle-group>
         </div>
         <div>

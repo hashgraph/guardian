@@ -64,7 +64,7 @@ export class TagsExplorer {
 
     public onAdd() {
         const dialogRef = this.dialog.open(TagCreateDialog, {
-            width: '800px',
+            width: '850px',
             panelClass: 'g-dialog',
             disableClose: true,
             data: {

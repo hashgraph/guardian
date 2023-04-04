@@ -161,7 +161,9 @@ export class SchemaConfigComponent implements OnInit {
 
             this.isConfirmed = !!(profile && profile.confirmed);
             this.owner = profile?.did;
-            if (!this.isConfirmed) {
+            if (this.isConfirmed) {
+                this.type = 'policy';
+            } else {
                 this.type = 'system';
             }
 

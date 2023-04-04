@@ -78,7 +78,6 @@ export class RenderBlockComponent {
         }
         this.target.clear();
         const factory: any = this.registeredService.getFactory(this.blockType);
-        console.log(this.blockType, !!factory);
         if (factory) {
             let componentFactory = this.componentFactoryResolver.resolveComponentFactory(factory);
             this.componentRef = this.target.createComponent(componentFactory);

@@ -356,7 +356,6 @@ export async function modulesAPI(): Promise<void> {
                     level: 3,
                 },
             });
-            console.log('File size: ' + file.byteLength);
             return new BinaryMessageResponse(file);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
