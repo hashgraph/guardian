@@ -6,12 +6,12 @@ import {
     MessageResponse, RunFunctionAsync,
     SettingsContainer,
     Policy,
-    Settings
+    Settings,
+    DatabaseServer,
+    Workers
 } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
-import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { Workers } from '@helpers/workers';
 
 /**
  * Demo key

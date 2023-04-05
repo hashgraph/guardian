@@ -5,14 +5,24 @@ import {
     IRootConfig,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { ExternalEventChannel, Logger, Token, MultiPolicy } from '@guardian/common';
+import {
+    ExternalEventChannel,
+    Logger,
+    Token,
+    MultiPolicy,
+    KeyType,
+    Wallet,
+    DatabaseServer,
+    MessageAction,
+    MessageServer,
+    SynchronizationMessage,
+    TopicConfig,
+    VcDocumentDefinition as VcDocument,
+    Workers,
+} from '@guardian/common';
 import { PrivateKey } from '@hashgraph/sdk';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Workers } from '@helpers/workers';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { DatabaseServer } from '@database-modules';
-import { MessageAction, MessageServer, SynchronizationMessage, TopicConfig, VcDocument } from '@hedera-modules';
 
 /**
  * Token Config

@@ -8,8 +8,19 @@ import {
     Policy as PolicyCollection,
     Topic,
     Token,
+    Workers,
+    DIDDocument,
+    DIDMessage,
+    MessageServer,
+    MessageType,
+    TopicMessage,
+    VcDocumentDefinition as VcDocument,
+    VCMessage,
+    VpDocumentDefinition as VpDocument,
+    VPMessage,
+    KeyType, Wallet,
+    Users
 } from '@guardian/common';
-import { Workers } from '@helpers/workers';
 import {
     DidDocumentStatus,
     ISchema,
@@ -20,19 +31,6 @@ import {
     UserRole,
     WorkerTaskType,
 } from '@guardian/interfaces';
-import {
-    DIDDocument,
-    DIDMessage,
-    MessageServer,
-    MessageType,
-    TopicMessage,
-    VcDocument,
-    VCMessage,
-    VpDocument,
-    VPMessage,
-} from '@hedera-modules';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
 import { PolicyImportExportHelper } from '@policy-engine/helpers/policy-import-export-helper';
 import { PolicyEngine } from '@policy-engine/policy-engine';
 

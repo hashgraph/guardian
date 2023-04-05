@@ -1,4 +1,3 @@
-import { DidRootKey } from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import {
     MessageResponse,
@@ -7,6 +6,7 @@ import {
     DataBaseHelper,
     Schema,
     DidDocument,
+    DidRootKey,
 } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 

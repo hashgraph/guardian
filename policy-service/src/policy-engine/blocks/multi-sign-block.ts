@@ -6,12 +6,18 @@ import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfac
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { BlockActionError } from '@policy-engine/errors';
-import { VcHelper } from '@helpers/vc-helper';
-import { Inject } from '@helpers/decorators/inject';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { MessageAction, MessageServer, VcDocument, VPMessage } from '@hedera-modules';
-import { PolicyRoles, VcDocument as VcDocumentCollection } from '@guardian/common';
+import {
+    PolicyRoles,
+    VcDocument as VcDocumentCollection,
+    MessageAction,
+    MessageServer,
+    VcHelper,
+    VcDocumentDefinition as VcDocument,
+    VPMessage,
+} from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { Inject } from '@helpers/decorators/inject';
 
 /**
  * Sign Status

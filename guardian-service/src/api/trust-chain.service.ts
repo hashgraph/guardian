@@ -3,9 +3,6 @@ import {
     MessageAPI,
     SchemaEntity
 } from '@guardian/interfaces';
-import {
-    VpDocument as HVpDocument
-} from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import {
     MessageResponse,
@@ -15,6 +12,7 @@ import {
     DidDocument,
     VcDocument,
     VpDocument,
+    VpDocumentDefinition as HVpDocument
 } from '@guardian/common';
 
 /**

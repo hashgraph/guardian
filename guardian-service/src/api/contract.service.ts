@@ -8,7 +8,18 @@ import {
     RetireRequest,
     Schema as SchemaCollection,
     Topic,
-    VcDocument as VcDocumentCollection
+    VcDocument as VcDocumentCollection,
+    Workers,
+    Users,
+    KeyType,
+    Wallet,
+    MessageAction,
+    MessageServer,
+    TopicConfig,
+    TopicHelper,
+    VCMessage,
+    DatabaseServer,
+    VcHelper
 } from '@guardian/common';
 import {
     ContractStatus,
@@ -19,19 +30,7 @@ import {
     TopicType,
     WorkerTaskType,
 } from '@guardian/interfaces';
-import { Workers } from '@helpers/workers';
-import { Users } from '@helpers/users';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { DatabaseServer } from '@database-modules';
-import {
-    MessageAction,
-    MessageServer,
-    TopicConfig,
-    TopicHelper,
-    VCMessage,
-} from '@hedera-modules';
 import { publishSystemSchema } from './schema.service';
-import { VcHelper } from '@helpers/vc-helper';
 
 /**
  * Connect to the message broker methods of working with contracts.

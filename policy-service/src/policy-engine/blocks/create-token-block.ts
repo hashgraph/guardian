@@ -19,7 +19,7 @@ import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { MessageAction, MessageServer, TokenMessage } from '@hedera-modules';
+import { MessageAction, MessageServer, TokenMessage } from '@guardian/common';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**

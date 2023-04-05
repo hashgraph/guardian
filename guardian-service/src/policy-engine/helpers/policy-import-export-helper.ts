@@ -1,20 +1,8 @@
-import {
-    findAllEntities,
-    getArtifactType,
-    regenerateIds,
-    replaceAllEntities,
-    replaceAllVariables,
-    replaceArtifactProperties,
-    SchemaFields
-} from '@helpers/utils';
 import JSZip from 'jszip';
 import { SchemaEntity, TopicType, GenerateUUIDv4 } from '@guardian/interfaces';
-import { Users } from '@helpers/users';
-import { MessageAction, MessageServer, MessageType, PolicyMessage, TopicConfig, TopicHelper } from '@hedera-modules';
 import { importSchemaByFiles, publishSystemSchemas } from '@api/schema.service';
 import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
 import { INotifier } from '@helpers/notifier';
-import { DatabaseServer } from '@database-modules';
 import {
     DataBaseHelper,
     Artifact,
@@ -22,6 +10,21 @@ import {
     Schema,
     Token,
     Policy,
+    findAllEntities,
+    getArtifactType,
+    regenerateIds,
+    replaceAllEntities,
+    replaceAllVariables,
+    replaceArtifactProperties,
+    SchemaFields,
+    DatabaseServer,
+    Users,
+    MessageAction,
+    MessageServer,
+    MessageType,
+    PolicyMessage,
+    TopicConfig,
+    TopicHelper,
 } from '@guardian/common';
 
 /**

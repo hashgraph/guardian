@@ -13,23 +13,22 @@ import {
     RunFunctionAsync,
     NatsService,
     Singleton,
-    Policy
+    Policy,
+    DIDDocument,
+    TopicConfig,
+    Users,
+    DatabaseServer,
+    findAllEntities
 } from '@guardian/common';
-import {
-    DIDDocument, TopicConfig,
-} from '@hedera-modules'
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { Users } from '@helpers/users';
-import { Inject } from '@helpers/decorators/inject';
 import { PolicyComponentsUtils } from './policy-components-utils';
-import { DatabaseServer } from '@database-modules';
 import { IPolicyUser } from './policy-user';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import { PolicyEngine } from './policy-engine';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
-import { findAllEntities } from '@helpers/utils';
 import { NatsConnection } from 'nats';
 import { GuardiansService } from '@helpers/guardians';
+import { Inject } from '@helpers/decorators/inject';
 
 /**
  * PolicyEngineChannel

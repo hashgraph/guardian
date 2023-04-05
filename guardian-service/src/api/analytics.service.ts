@@ -1,6 +1,5 @@
 import { ApiResponse } from '@api/api-response';
-import { DatabaseServer } from '@database-modules';
-import { MessageResponse, MessageError, Logger } from '@guardian/common';
+import { MessageResponse, MessageError, Logger, DatabaseServer } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 import * as crypto from 'crypto';
 import { PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaModel, TokenModel } from '@analytics';

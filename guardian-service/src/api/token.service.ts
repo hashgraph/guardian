@@ -1,5 +1,3 @@
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/api-response';
 import {
     MessageResponse,
@@ -7,11 +5,14 @@ import {
     Logger,
     DataBaseHelper,
     RunFunctionAsync,
-    Token
+    Token,
+    KeyType,
+    Wallet,
+    Users,
+    Workers,
 } from '@guardian/common';
 import { MessageAPI, IToken, WorkerTaskType, GenerateUUIDv4 } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { Workers } from '@helpers/workers';
 
 /**
  * Get token info

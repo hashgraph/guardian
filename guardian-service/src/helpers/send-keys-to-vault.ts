@@ -1,6 +1,5 @@
-import { Logger } from '@guardian/common';
+import { Logger, KeyType, Wallet } from '@guardian/common';
 import { MongoEntityManager } from '@mikro-orm/mongodb';
-import { KeyType, Wallet } from '@helpers/wallet';
 
 /**
  * Migration function

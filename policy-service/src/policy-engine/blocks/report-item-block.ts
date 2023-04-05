@@ -1,4 +1,4 @@
-import { findOptions, getVCIssuer } from '@helpers/utils';
+import { findOptions, getVCIssuer } from '@guardian/common';
 import { ReportItem } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';

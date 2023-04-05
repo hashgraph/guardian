@@ -7,12 +7,12 @@ import {
     SettingsContainer,
     ValidateConfiguration,
     Topic,
-    Settings
+    Settings,
+    Environment,
+    Workers
 } from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
-import { Environment } from '@hedera-modules';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
-import { Workers } from '@helpers/workers';
 
 /**
  * Connecting to the message broker methods of working with root address book.

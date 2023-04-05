@@ -22,8 +22,6 @@ import {
     Artifact,
     Topic,
     Policy,
-} from '@guardian/common';
-import {
     MessageAction,
     MessageServer,
     MessageType,
@@ -31,23 +29,29 @@ import {
     SynchronizationMessage,
     TokenMessage,
     TopicConfig,
-    TopicHelper
-} from '@hedera-modules'
-import { findAllEntities, getArtifactType, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, SchemaFields } from '@helpers/utils';
+    TopicHelper,
+    VcHelper,
+    Users,
+    DatabaseServer,
+    KeyType,
+    Wallet,
+    Workers,
+    findAllEntities,
+    getArtifactType,
+    replaceAllEntities,
+    replaceAllVariables,
+    replaceArtifactProperties,
+    SchemaFields,
+} from '@guardian/common';
 import { incrementSchemaVersion, findAndPublishSchema, findAndDryRunSchema, deleteSchema, publishSystemSchemas } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { VcHelper } from '@helpers/vc-helper';
-import { Users } from '@helpers/users';
-import { Inject } from '@helpers/decorators/inject';
 import { PolicyConverterUtils } from './policy-converter-utils';
-import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from './policy-validation-results-container';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Workers } from '@helpers/workers';
 import { PolicyValidator } from '@policy-engine/block-validators';
 import { GuardiansService } from '@helpers/guardians';
+import { Inject } from '@helpers/decorators/inject';
 
 /**
  * Result of publishing

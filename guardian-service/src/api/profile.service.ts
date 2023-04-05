@@ -8,19 +8,6 @@ import {
     TopicType,
     UserRole, WorkerTaskType
 } from '@guardian/interfaces';
-import { VcHelper } from '@helpers/vc-helper';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
-import {
-    DIDDocument,
-    DIDMessage,
-    MessageAction,
-    MessageServer,
-    RegistrationMessage,
-    TopicConfig,
-    TopicHelper,
-    VCMessage
-} from '@hedera-modules';
 import { ApiResponse } from '@api/api-response';
 import {
     MessageResponse,
@@ -32,11 +19,23 @@ import {
     DidDocument as DidDocumentCollection,
     VcDocument as VcDocumentCollection,
     Schema as SchemaCollection,
-    Settings
+    Settings,
+    DIDDocument,
+    DIDMessage,
+    MessageAction,
+    MessageServer,
+    RegistrationMessage,
+    TopicConfig,
+    TopicHelper,
+    VCMessage,
+    Users,
+    KeyType,
+    Wallet,
+    VcHelper,
+    Workers
 } from '@guardian/common';
 import { publishSystemSchema } from './schema.service';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { Workers } from '@helpers/workers';
 import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
 
 /**

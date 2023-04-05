@@ -11,10 +11,8 @@ import {
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { Workers } from '@helpers/workers';
+import { Workers, VcHelper, VcDocumentDefinition as VcDocument } from '@guardian/common';
 import { WorkerTaskType } from '@guardian/interfaces';
-import { VcHelper } from '@helpers/vc-helper';
-import { VcDocument } from '@hedera-modules';
 
 /**
  * Http request block

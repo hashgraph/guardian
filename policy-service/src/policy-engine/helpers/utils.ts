@@ -1,4 +1,3 @@
-import { VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument, TopicConfig, DIDDocument } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import {
@@ -17,12 +16,18 @@ import {
     Topic,
     Schema as SchemaCollection,
     VcDocument as VcDocumentCollection,
+    VcDocumentDefinition as VcDocument,
+    VcDocumentDefinition as HVcDocument,
+    TopicHelper,
+    VpDocumentDefinition as VpDocument,
+    TopicConfig,
+    DIDDocument,
+    KeyType, Wallet,
+    Users,
+    Workers,
 } from '@guardian/common';
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
-import { Workers } from '@helpers/workers';
 import { DocumentType } from '@policy-engine/interfaces/document.type';
 
 /**

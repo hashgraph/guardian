@@ -1,4 +1,3 @@
-import { KeyType } from '@helpers/wallet';
 import { GenerateUUIDv4, Schema } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
@@ -7,9 +6,15 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, 
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
-import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-modules';
-import { VcHelper } from '@helpers/vc-helper';
-import { VcDocument as VcDocumentCollection } from '@guardian/common';
+import {
+    VcDocument as VcDocumentCollection,
+    DIDDocument,
+    DIDMessage,
+    MessageAction,
+    MessageServer,
+    KeyType,
+    VcHelper,
+} from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';

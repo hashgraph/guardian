@@ -1,5 +1,4 @@
 
-import { VcHelper } from '@helpers/vc-helper';
 import {
     DidDocumentStatus,
     DocumentSignature,
@@ -18,6 +17,7 @@ import {
     VcDocument,
     VpDocument,
     Policy,
+    VcHelper
 } from '@guardian/common';
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents

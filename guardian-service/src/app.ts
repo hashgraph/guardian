@@ -5,10 +5,7 @@ import { profileAPI } from '@api/profile.service';
 import { schemaAPI, setDefaultSchema } from '@api/schema.service';
 import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
-import { IPFS } from '@helpers/ipfs';
 import { demoAPI } from '@api/demo';
-import { Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import {
     MessageBrokerChannel,
@@ -29,21 +26,22 @@ import {
     Policy,
     Contract,
     RetireRequest,
-    entities
-} from '@guardian/common';
-import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
-import {
+    entities,
+    IPFS,
+    Wallet,
+    Users,
     Environment,
     MessageServer,
     TopicMemo,
     TransactionLogger,
-    TransactionLogLvl
-} from '@hedera-modules';
+    TransactionLogLvl,
+    Workers
+} from '@guardian/common';
+import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { ipfsAPI } from '@api/ipfs.service';
-import { Workers } from '@helpers/workers';
 import { artifactAPI } from '@api/artifact.service';
 import { sendKeysToVault } from '@helpers/send-keys-to-vault';
 import { SynchronizationService } from '@policy-engine/multi-policy-service';

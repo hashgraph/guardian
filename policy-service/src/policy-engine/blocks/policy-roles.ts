@@ -7,8 +7,7 @@ import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity, S
 import { BlockActionError } from '@policy-engine/errors';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
-import { VcHelper } from '@helpers/vc-helper';
-import { MessageAction, MessageServer, VCMessage } from '@hedera-modules';
+import { VcHelper, MessageAction, MessageServer, VCMessage } from '@guardian/common';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**

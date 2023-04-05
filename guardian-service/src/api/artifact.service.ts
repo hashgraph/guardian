@@ -1,8 +1,13 @@
 import { ApiResponse } from '@api/api-response';
-import { MessageResponse, MessageError, Logger } from '@guardian/common';
+import {
+    MessageResponse,
+    MessageError,
+    Logger,
+    getArtifactExtention,
+    getArtifactType,
+    DatabaseServer,
+} from '@guardian/common';
 import { MessageAPI, PolicyType } from '@guardian/interfaces';
-import { DatabaseServer } from '@database-modules';
-import { getArtifactExtention, getArtifactType } from '@helpers/utils';
 
 /**
  * Connect to the message broker methods of working with artifacts.
