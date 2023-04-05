@@ -742,9 +742,9 @@ export class Worker extends NatsService {
                     );
                     const owner = AccountId.fromSolidityAddress(address.getAddress()).toString();
                     const info = await client.getContractInfo(contractId);
-                    result.data = { 
-                        owner, 
-                        memo: info.contractMemo 
+                    result.data = {
+                        owner,
+                        memo: info.contractMemo
                     };
                     break;
                 }
