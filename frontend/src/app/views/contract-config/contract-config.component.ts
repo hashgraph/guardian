@@ -1,12 +1,14 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { IUser, Token } from '@guardian/interfaces';
+import { IUser, SchemaHelper, TagType, Token } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
 import { ContractService } from 'src/app/services/contract.service';
 import { AddPairDialogComponent } from 'src/app/components/add-pair-dialog/add-pair-dialog.component';
 import { MatIcon } from '@angular/material/icon';
 import { DataInputDialogComponent } from 'src/app/components/data-input-dialog/data-input-dialog.component';
+import { TagsService } from 'src/app/services/tag.service';
+import { forkJoin } from 'rxjs';
 
 /**
  * Component for operating with Contracts
@@ -25,7 +27,9 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     pageIndex: number;
     pageSize: number;
     contractsCount: any = 0;
-
+    tagEntity = TagType.Contract;
+    owner: any;
+    tagSchemas: any[] = [];
     operationsOptions = [
         {
             id: 'addPair',
@@ -42,6 +46,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     ];
 
     constructor(
+        public tagsService: TagsService,
         private profileService: ProfileService,
         private contractsService: ContractService,
         private tokenService: TokenService,
@@ -50,7 +55,13 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
         this.contracts = null;
         this.pageIndex = 0;
         this.pageSize = 100;
-        this.columns = ['contractId', 'description', 'operations', 'retire'];
+        this.columns = [
+            'contractId',
+            'description',
+            'tags',
+            'operations',
+            'retire'
+        ];
     }
 
     ngOnInit() {
@@ -58,46 +69,61 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
         this.loadContracts();
     }
 
-    ngOnDestroy() {}
+    ngOnDestroy() { }
 
     loadContracts() {
         this.contracts = null;
         this.isConfirmed = false;
         this.loading = true;
-        this.profileService.getProfile().subscribe(
-            (profile: IUser | null) => {
-                this.isConfirmed = !!(profile && profile.confirmed);
-                this.role = profile ? profile.role : null;
-                if (this.isConfirmed) {
-                    this.loadAllContracts();
-                } else {
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                }
-            },
-            (e) => {
-                this.loading = false;
+        forkJoin([
+            this.profileService.getProfile(),
+            this.tagsService.getPublishedSchemas()
+        ]).subscribe((value) => {
+            const profile: IUser | null = value[0];
+            const tagSchemas: any[] = value[1] || [];
+
+            this.isConfirmed = !!(profile && profile.confirmed);
+            this.role = profile ? profile.role : null;
+            this.owner = profile?.did;
+            this.tagSchemas = SchemaHelper.map(tagSchemas);
+
+            if (this.isConfirmed) {
+                this.loadAllContracts();
+            } else {
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
             }
-        );
+        }, (e) => {
+            this.loading = false;
+        });
     }
 
     loadAllContracts() {
         this.loading = true;
-        this.contractsService.page(this.pageIndex, this.pageSize).subscribe(
-            (policiesResponse) => {
-                this.contracts = policiesResponse.body || [];
-                this.contractsCount =
-                    policiesResponse.headers.get('X-Total-Count') ||
-                    this.contracts.length;
+        this.contractsService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
+            this.contracts = policiesResponse.body || [];
+            this.contractsCount =
+                policiesResponse.headers.get('X-Total-Count') ||
+                this.contracts.length;
+
+            const ids = this.contracts.map(e => e.id);
+            this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+                if (this.contracts) {
+                    for (const contract of this.contracts) {
+                        (contract as any)._tags = data[contract.id];
+                    }
+                }
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
-            },
-            (e) => {
+            }, (e) => {
+                console.error(e.error);
                 this.loading = false;
-            }
-        );
+            });
+        }, (e) => {
+            this.loading = false;
+        });
     }
 
     onPage(event: any) {

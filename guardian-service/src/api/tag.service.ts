@@ -134,6 +134,7 @@ export async function publishTag(
 ): Promise<any> {
     item.operation = 'Create';
     item.status = 'Published';
+    item.date = item.date || (new Date()).toISOString();
     const message = new TagMessage(MessageAction.PublishTag);
     message.setDocument(item);
     const result = await messageServer
@@ -157,6 +158,7 @@ export async function deleteTag(
 ): Promise<any> {
     item.operation = 'Delete';
     item.status = 'Published';
+    item.date = item.date || (new Date()).toISOString();
     const message = new TagMessage(MessageAction.DeleteTag);
     message.setDocument(item);
     const result = await messageServer
@@ -225,6 +227,7 @@ export async function importTag(
             tag.uuid = GenerateUUIDv4();
         }
         tag.status = 'History';
+        tag.date = tag.date || (new Date()).toISOString();
         await DatabaseServer.createTag(tag);
     }
 }
@@ -296,6 +299,18 @@ export async function getTarget(entity: TagType, id: string): Promise<{
                 return null;
             }
         }
+        case TagType.Contract: {
+            const item = await DatabaseServer.getContractById(id);
+            if (item) {
+                return {
+                    id: item.id.toString(),
+                    target: item.contractId,
+                    topicId: item.topicId
+                };
+            } else {
+                return null;
+            }
+        }
         default:
             return null;
     }
@@ -322,6 +337,7 @@ export async function tagsAPI(): Promise<void> {
             tag.uuid = tag.uuid || GenerateUUIDv4();
             tag.owner = owner;
             tag.operation = 'Create';
+            tag.date = (new Date()).toISOString();
 
             const target = await getTarget(tag.entity, tag.localTarget || tag.target);
             if (target) {
@@ -456,6 +472,7 @@ export async function tagsAPI(): Promise<void> {
                             tag.messageId = message.getId();
                             tag.topicId = message.getTopicId();
                             tag.status = 'Published';
+                            tag.date = tag.date || (new Date()).toISOString();
 
                             if (tag.id) {
                                 await DatabaseServer.updateTag(tag);

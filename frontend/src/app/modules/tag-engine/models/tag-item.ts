@@ -15,4 +15,6 @@ export interface TagItem {
     readonly topicId: string;
     readonly document: any;
     readonly uri: string;
+    readonly date: string;
+    open?: boolean;
 }

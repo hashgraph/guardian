@@ -730,7 +730,7 @@ components:
           example: did
         entity:
           type: string
-          enum: [Schema, Policy, Token, Module, PolicyDocument]
+          enum: [Schema, Policy, Token, Module, Contract, PolicyDocument]
           example: PolicyDocument
         target:
           type: string
@@ -746,6 +746,9 @@ components:
           type: string
           enum: [Create, Delete]
           example: Create
+        date:
+          type: string
+          example: 1900-01-01T00:00:00.000Z
         topicId:
           type: string
           example: 0.0.0000000
@@ -770,7 +773,7 @@ components:
       properties:
         entity:
           type: string
-          enum: [Schema, Policy, Token, Module, PolicyDocument]
+          enum: [Schema, Policy, Token, Module, Contract, PolicyDocument]
           example: PolicyDocument
         target:
           type: string
@@ -5862,7 +5865,7 @@ paths:
                   properties:
                     entity:
                       type: string
-                      enum: [Schema, Policy, Token, Module, PolicyDocument]
+                      enum: [Schema, Policy, Token, Module, Contract, PolicyDocument]
                     target:
                       type: string
                 - type: object
@@ -5872,7 +5875,7 @@ paths:
                   properties:
                     entity:
                       type: string
-                      enum: [Schema, Policy, Token, Module, PolicyDocument]
+                      enum: [Schema, Policy, Token, Module, Contract, PolicyDocument]
                     targets:
                       type: array
                       items:
@@ -5962,7 +5965,7 @@ paths:
               properties:
                 entity:
                   type: string
-                  enum: [Schema, Policy, Token, Module, PolicyDocument]
+                  enum: [Schema, Policy, Token, Module, Contract, PolicyDocument]
                   example: PolicyDocument
                 target:
                   type: string

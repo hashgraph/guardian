@@ -429,4 +429,8 @@ export interface TagMessageBody extends MessageBody {
      * Entity
      */
     entity: string;
+    /**
+     * Date
+     */
+    date: string;
 }

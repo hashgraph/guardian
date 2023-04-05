@@ -36,7 +36,7 @@ function rejectTimeout(t: number): Promise<void> {
 /**
  * Worker class
  */
-export class Worker extends NatsService{
+export class Worker extends NatsService {
     /**
      * Logger instance
      * @private
@@ -644,7 +644,9 @@ export class Worker extends NatsService{
                         hederaAccountKey,
                         topicKey,
                         bytecodeFileId,
+                        memo
                     } = task.data;
+                    const contractMemo = memo || '';
                     const client = new HederaSDKHelper(
                         hederaAccountId,
                         hederaAccountKey,
@@ -653,7 +655,8 @@ export class Worker extends NatsService{
                     );
                     result.data = await client.createContract(
                         bytecodeFileId,
-                        new ContractFunctionParameters().addString(topicKey)
+                        new ContractFunctionParameters().addString(topicKey),
+                        contractMemo
                     );
                     break;
                 }
@@ -732,15 +735,17 @@ export class Worker extends NatsService{
                         null,
                         networkOptions
                     );
-                    result.data = AccountId.fromSolidityAddress(
-                        (
-                            await client.contractQuery(
-                                contractId,
-                                'getOwner',
-                                new ContractFunctionParameters()
-                            )
-                        ).getAddress()
-                    ).toString();
+                    const address = await client.contractQuery(
+                        contractId,
+                        'getOwner',
+                        new ContractFunctionParameters()
+                    );
+                    const owner = AccountId.fromSolidityAddress(address.getAddress()).toString();
+                    const info = await client.getContractInfo(contractId);
+                    result.data = { 
+                        owner, 
+                        memo: info.contractMemo 
+                    };
                     break;
                 }
 

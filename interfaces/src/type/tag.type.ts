@@ -7,4 +7,5 @@ export enum TagType {
     Token = 'Token',
     Module = 'Module',
     PolicyDocument = 'PolicyDocument',
+    Contract = 'Contract'
 }

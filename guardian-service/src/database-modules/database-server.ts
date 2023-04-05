@@ -9,6 +9,7 @@ import { AggregateVC } from '@entity/aggregate-documents';
 import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
 import { Token as TokenCollection } from '@entity/token';
 import { Topic as TopicCollection } from '@entity/topic';
+import { Contract as ContractCollection } from '@entity/contract';
 import { DryRun } from '@entity/dry-run';
 import { PolicyRoles as PolicyRolesCollection } from '@entity/policy-roles';
 import { GenerateUUIDv4, IVC, SchemaEntity, TopicType } from '@guardian/interfaces';
@@ -2040,6 +2041,14 @@ export class DatabaseServer {
      */
     public static async getTokenById(id: string): Promise<TokenCollection> {
         return await new DataBaseHelper(TokenCollection).findOne(id);
+    }
+
+    /**
+     * Get Contract by ID
+     * @param id
+     */
+    public static async getContractById(id: string): Promise<ContractCollection> {
+        return await new DataBaseHelper(ContractCollection).findOne(id);
     }
 
     /**

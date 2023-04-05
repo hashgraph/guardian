@@ -95,6 +95,12 @@ export class Tag extends BaseEntity {
     uri?: string;
 
     /**
+     * Date
+     */
+    @Property({ nullable: false })
+    date: string;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()
@@ -102,5 +108,6 @@ export class Tag extends BaseEntity {
         this.uuid = this.uuid || GenerateUUIDv4();
         this.status = this.status || 'Draft';
         this.operation = this.operation || 'Create';
+        this.date = this.date || (new Date()).toISOString();
     }
 }

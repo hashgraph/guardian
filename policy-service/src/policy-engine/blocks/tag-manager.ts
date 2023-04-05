@@ -172,6 +172,7 @@ export class TagsManagerBlock {
                     tag.status = 'Draft';
                     tag.owner = user.did;
                     tag.policyId = ref.policyId;
+                    tag.date = (new Date()).toISOString();
                 } else {
                     throw new BlockActionError(`Invalid target`, ref.blockType, ref.uuid);
                 }
@@ -291,6 +292,7 @@ export class TagsManagerBlock {
 
         item.operation = 'Create';
         item.status = 'Published';
+        item.date = item.date || (new Date()).toISOString();
         const message = new TagMessage(MessageAction.PublishTag);
         message.setDocument(item);
         const result = await messageServer
@@ -315,6 +317,7 @@ export class TagsManagerBlock {
 
         item.operation = 'Delete';
         item.status = 'Published';
+        item.date = item.date || (new Date()).toISOString();
         const message = new TagMessage(MessageAction.DeleteTag);
         message.setDocument(item);
         const result = await messageServer
@@ -375,6 +378,7 @@ export class TagsManagerBlock {
                 tag.messageId = message.getId();
                 tag.topicId = message.getTopicId();
                 tag.status = 'Published';
+                tag.date = tag.date || (new Date()).toISOString();
 
                 if (tag.id) {
                     await ref.databaseServer.updateTag(tag);

@@ -38,6 +38,10 @@ export class TagMessage extends Message {
      */
     public entity: string;
     /**
+     * Date
+     */
+    public date: string;
+    /**
      * Document
      */
     public document: any;
@@ -61,6 +65,7 @@ export class TagMessage extends Message {
         this.target = tag.target;
         this.operation = tag.operation;
         this.entity = tag.entity;
+        this.date = tag.date;
         this.document = tag.document;
     }
 
@@ -87,6 +92,7 @@ export class TagMessage extends Message {
             owner: this.owner,
             target: this.target,
             operation: this.operation,
+            date: this.date,
             entity: this.entity
         }
         if (this.isDocuments()) {
@@ -159,6 +165,7 @@ export class TagMessage extends Message {
         message.target = json.target;
         message.operation = json.operation;
         message.entity = json.entity;
+        message.date = json.date;
         return message;
     }
 

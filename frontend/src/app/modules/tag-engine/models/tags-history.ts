@@ -2,7 +2,7 @@ import { TagItem } from './tag-item';
 import { TagMapItem } from './tag-map-item';
 import { TagOperation } from './tag-operation';
 import { TagStatus } from './tag-status';
-
+import * as moment from 'moment';
 
 export class TagsHistory {
     public readonly entity: string;
@@ -26,6 +26,7 @@ export class TagsHistory {
     private mapping(tags: TagItem[]): TagMapItem[] {
         const idMap = new Map<string, TagItem>();
         for (const tag of tags) {
+            tag.open = false;
             idMap.set(tag.uuid, tag);
         }
         const tagMap = new Map<string, TagItem[]>();
@@ -49,13 +50,26 @@ export class TagsHistory {
                     break;
                 }
             }
+            let maxDate: number = 0;
+            let date: string = '';
+            for (const t of value) {
+                const m = moment(t.date, moment.ISO_8601, true);
+                if (m.isValid() && m.valueOf() > maxDate) {
+                    maxDate = m.valueOf();
+                    date = t.date;
+                }
+            }
             result.push({
                 name: key,
                 owner,
+                date,
+                timestamp: maxDate,
                 count: value.length,
                 items: value
             });
         }
+        result.sort((a, b) => a.timestamp > b.timestamp ? 1 : -1);
+        console.log(result);
         return result;
     }
 

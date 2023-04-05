@@ -314,9 +314,9 @@ a[disabled="true"]{
 }
 
 .token-table .mat-column-tags {
-    max-width: 220px;
-    min-width: 140px;
-    width: 140px;
+    max-width: 175px;
+    min-width: 175px;
+    width: 175px;
     border-left: 1px solid #dddddd;
     padding-left: 10px;
 }

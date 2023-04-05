@@ -63,6 +63,7 @@ export class TopicMemo extends MemoMap {
         topicMemo[TopicType.SchemaTopic] = 'Schema development topic';
         topicMemo[TopicType.TokenTopic] = 'Token topic';
         topicMemo[TopicType.ModuleTopic] = 'Policy module topic';
+        topicMemo[TopicType.ContractTopic] = 'Contract topic';
         return topicMemo;
     }
 

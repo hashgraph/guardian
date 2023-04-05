@@ -57,7 +57,7 @@
             <div *ngIf="select" class="details">
 
                 <div *ngFor="let item of select.items" class="tag-details" [attr.owner]="item.owner === owner"
-                    [attr.status]="item.status" [attr.open]="item === open">
+                    [attr.status]="item.status" [attr.open]="item.open">
 
                     <mat-icon class="tag-collapse" (click)="onOpen(item)">arrow_drop_down</mat-icon>
                     <div class="tag-owner" (click)="onOpen(item)">
@@ -84,6 +84,12 @@
                             <div class="tag-details-field-name">Description</div>
                             <div class="tag-details-field-value">
                                 {{item.description}}
+                            </div>
+                        </div>
+                        <div *ngIf="item.date" class="tag-details-description tag-details-field">
+                            <div class="tag-details-field-name">Date</div>
+                            <div class="tag-details-field-value">
+                                {{item.date}}
                             </div>
                         </div>
                         <div *ngIf="item.topicId" class="tag-details-description tag-details-field">

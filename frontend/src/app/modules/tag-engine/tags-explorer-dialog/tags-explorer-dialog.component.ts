@@ -60,10 +60,10 @@ export class TagsExplorerDialog {
     }
 
     public onOpen(item: TagItem) {
-        if (this.open == item) {
-            this.open = undefined;
+        if (item.open) {
+            item.open = false;
         } else {
-            this.open = item;
+            item.open = true;
         }
     }
 
