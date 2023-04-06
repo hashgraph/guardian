@@ -51,6 +51,7 @@ export class TransactionLogger {
         if (!transaction) {
             return data;
         }
+        data += `txid: ${transaction.transactionId}; `;
         if (transactionName === 'TokenCreateTransaction') {
             const t = transaction as TokenCreateTransaction;
             data += 'payer sigs: 1; ';
