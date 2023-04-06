@@ -69,7 +69,6 @@ export class TagsHistory {
             });
         }
         result.sort((a, b) => a.timestamp > b.timestamp ? 1 : -1);
-        console.log(result);
         return result;
     }
 
