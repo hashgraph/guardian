@@ -471,7 +471,7 @@ a[hidden="true"] {
         text-decoration: none;
         font-size: 20px;
         display: block;
-        transition: 0.05s;
+        transition: 0.2s;
         text-align: left;
     }
 
@@ -486,6 +486,7 @@ a[hidden="true"] {
         font-size: 14px;
         border-top: 2px solid var(--primary-color);
         width: 100%;
+        transition: max-height 0.2s ease-in-out;
     }
 
     .name {
