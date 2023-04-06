@@ -34,6 +34,8 @@ export class HeaderComponent implements OnInit {
     ws!: any;
     authSubscription!: any;
     displayDemoAccounts: boolean = environment.displayDemoAccounts;
+    hederaAccountID: string | undefined;
+    profileData: IUser | null = null;
 
     public innerWidth: any;
     public innerHeight: any;
@@ -350,11 +352,25 @@ export class HeaderComponent implements OnInit {
         document.getElementById("menu-backdrop")!.style.zIndex = "1000";
         document.getElementById("nav-items")!.style.width = "250px";
         document.getElementById("nav-items")!.style.zIndex = "1001";
+        document.getElementById("footer")!.style.display = "block";
+        document.getElementById("footer")!.style.width = "210px";
+        document.getElementById("footer")!.style.zIndex = "1001";
+
+        this.profileService.getProfile().subscribe(
+            (profile: IUser) => {
+              this.profileData = profile;
+              this.hederaAccountID = this.profileData.hederaAccountId;
+            },
+            (error) => {
+              console.error('Failed to get profile data:', error);
+            }
+        );
     }
 
     closeNav() {
         document.getElementById("menu-backdrop")!.style.display = "none";
         document.getElementById("nav-items")!.style.width = "0";
+        document.getElementById("footer")!.style.display = "none";
     }
 
     openSubMenu(subMenuID: string) {

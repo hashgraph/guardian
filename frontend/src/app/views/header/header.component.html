@@ -242,7 +242,7 @@
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_STATUS')" (click)="routActive('SR_STATUS')">
                             Status
                         </div>
-                    </div>
+                    </div>                    
                 </div>
             </div>
 
@@ -281,6 +281,31 @@
                     </div>
                 </div>
             </div>
+
+
+            <!--FOOTER-->
+            <div id="footer" class="footer">
+                <div class="logout" (click)="logOut()">
+                    Logout
+                    <span class="material-icons">logout</span>
+                </div>
+                <div *ngIf="balanceType" class="user-info">
+                    <div class="name">
+                        <p class="user-name">
+                            {{username}}
+                        </p>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-item-name">HEDERA ID:</div>
+                        <div class="profile-item-value">{{hederaAccountID}}</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-item-name"> BALANCE:</div>
+                        <div class="profile-item-value"> {{balance}}</div>
+                    </div>
+                </div>
+            </div>
+            
         </div>
 
         <div class="user-content-info" *ngIf="isLogin || displayDemoAccounts">

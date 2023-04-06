@@ -726,6 +726,18 @@ export class SchemaFormComponent implements OnInit {
         }
         console.log(this.isShown)
         console.log("next " + this.currentIndex)
+        const contentElement = document.querySelector('#main-content');
+        setTimeout(() => {
+            contentElement!.scrollTo({
+                top: -1,
+                behavior: 'smooth'
+            });
+            window.scrollTo({
+                top: -1,
+                behavior: 'smooth'
+            });
+        }, 100)
+
         return this.isShown;
     }
 
@@ -776,6 +788,19 @@ export class SchemaFormComponent implements OnInit {
             }
         }
         console.log(this.isShown)
+        const contentElement = document.querySelector('#main-content');
+        setTimeout(() => {
+            contentElement!.scrollTo({
+                top: -1,
+                behavior: 'smooth'
+            });
+            window.scrollTo({
+                top: -1,
+                behavior: 'smooth'
+            });
+        }, 100)
+        
+
         return this.isShown;
     }
       
