@@ -2,6 +2,7 @@
  * Schema category
  */
 export enum SchemaCategory {
-    USER = 'USER',
-    SYSTEM = 'SYSTEM'
+    POLICY = 'POLICY',
+    SYSTEM = 'SYSTEM',
+    TAG = 'TAG'
 }

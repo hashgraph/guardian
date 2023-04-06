@@ -13,5 +13,6 @@ export enum MessageType {
     StandardRegistry = 'Standard Registry',
     Token = 'Token',
     Synchronization = 'Synchronization Event',
-    Module = 'Module'
+    Module = 'Module',
+    Tag = 'Tag'
 }

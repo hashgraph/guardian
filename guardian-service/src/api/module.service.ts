@@ -1,14 +1,15 @@
-import { ApiResponse } from '@api/api-response';
+import { ApiResponse } from '@api/helpers/api-response';
 import { MessageResponse, MessageError, Logger, BinaryMessageResponse } from '@guardian/common';
-import { GenerateUUIDv4, MessageAPI, ModuleStatus, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, MessageAPI, ModuleStatus, TagType, TopicType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
 import { PolicyModule } from '@entity/module';
 import JSZip from 'jszip';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
-import { MessageAction, MessageServer, MessageType, ModuleMessage, TopicConfig } from '@hedera-modules';
+import { MessageAction, MessageServer, MessageType, ModuleMessage, TopicConfig, TopicHelper } from '@hedera-modules';
 import { Users } from '@helpers/users';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
 import { ModuleValidator } from '@policy-engine/block-validators/module-validator';
+import { exportTag, importTag } from './tag.service';
 
 /**
  * Generate Zip File
@@ -17,6 +18,9 @@ import { ModuleValidator } from '@policy-engine/block-validators/module-validato
  * @returns Zip file
  */
 export async function generateZipFile(module: PolicyModule): Promise<JSZip> {
+    const tagTargets: string[] = [];
+    tagTargets.push(module.id.toString());
+
     const moduleObject = { ...module };
     delete moduleObject._id;
     delete moduleObject.id;
@@ -27,6 +31,14 @@ export async function generateZipFile(module: PolicyModule): Promise<JSZip> {
     delete moduleObject.createDate;
     const zip = new JSZip();
     zip.file('module.json', JSON.stringify(moduleObject));
+
+    zip.folder('tags');
+    const tags = await exportTag(tagTargets)
+    for (let index = 0; index < tags.length; index++) {
+        const tag = tags[index];
+        zip.file(`tags/${index}.json`, JSON.stringify(tag));
+    }
+
     return zip;
 }
 
@@ -42,8 +54,15 @@ export async function parseZipFile(zipFile: any): Promise<any> {
         throw new Error('Zip file is not a module');
     }
     const moduleString = await content.files['module.json'].async('string');
+    const tagsStringArray = await Promise.all(Object.entries(content.files)
+        .filter(file => !file[1].dir)
+        .filter(file => /^tags\/.+/.test(file[0]))
+        .map(file => file[1].async('string')));
+
     const module = JSON.parse(moduleString);
-    return { module };
+    const tags = tagsStringArray.map(item => JSON.parse(item));
+
+    return { module, tags };
 }
 
 /**
@@ -71,10 +90,10 @@ export async function preparePreviewMessage(messageId: string, owner: string, no
     }
 
     notifier.completedAndStart('Parse module files');
-    const json = await parseZipFile(message.document);
+    const result = await parseZipFile(message.document);
 
     notifier.completed();
-    return json;
+    return result;
 }
 
 /**
@@ -86,7 +105,7 @@ export async function preparePreviewMessage(messageId: string, owner: string, no
  */
 export async function validateAndPublish(uuid: string, owner: string, notifier: INotifier) {
     notifier.start('Find and validate module');
-    const item = await DatabaseServer.getModuleById(uuid);
+    const item = await DatabaseServer.getModuleByUUID(uuid);
     if (!item) {
         throw new Error('Unknown module');
     }
@@ -134,12 +153,24 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
     const root = await users.getHederaAccount(owner);
     notifier.completedAndStart('Find topic');
 
-    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicByType(owner, TopicType.UserTopic), true);
+    const userTopic = await TopicConfig.fromObject(await DatabaseServer.getTopicByType(owner, TopicType.UserTopic), true);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey)
-        .setTopicObject(topic);
+        .setTopicObject(userTopic);
 
-    notifier.completedAndStart('Publish schemas');
+    notifier.completedAndStart('Create module topic');
+    const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey);
+    const rootTopic = await topicHelper.create({
+        type: TopicType.ModuleTopic,
+        name: model.name || TopicType.ModuleTopic,
+        description: TopicType.ModuleTopic,
+        owner,
+        policyId: null,
+        policyUUID: null
+    });
+    await rootTopic.saveKeys();
+    await DatabaseServer.saveTopic(rootTopic.toObject());
 
+    model.topicId = rootTopic.topicId;
     model.status = ModuleStatus.PUBLISHED;
 
     notifier.completedAndStart('Generate file');
@@ -160,6 +191,9 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
         .sendMessage(message);
     model.messageId = result.getId();
 
+    notifier.completedAndStart('Link topic and module');
+    await topicHelper.twoWayLink(rootTopic, userTopic, result.getId());
+
     logger.info('Published module', ['GUARDIAN_SERVICE']);
 
     notifier.completedAndStart('Saving in DB');
@@ -170,11 +204,8 @@ export async function publishModule(model: PolicyModule, owner: string, notifier
 
 /**
  * Connect to the message broker methods of working with modules.
- *
- * @param channel - channel
  */
-export async function modulesAPI(
-): Promise<void> {
+export async function modulesAPI(): Promise<void> {
     /**
      * Create new module
      *
@@ -237,7 +268,7 @@ export async function modulesAPI(
             if (!msg.uuid || !msg.owner) {
                 return new MessageError('Invalid load modules parameter');
             }
-            const item = await DatabaseServer.getModuleById(msg.uuid);
+            const item = await DatabaseServer.getModuleByUUID(msg.uuid);
             if (!item || item.owner !== msg.owner) {
                 throw new Error('Invalid module');
             }
@@ -270,7 +301,7 @@ export async function modulesAPI(
                 return new MessageError('Invalid load modules parameter');
             }
             const { uuid, module, owner } = msg;
-            const item = await DatabaseServer.getModuleById(uuid);
+            const item = await DatabaseServer.getModuleByUUID(uuid);
             if (!item || item.owner !== owner) {
                 throw new Error('Invalid module');
             }
@@ -295,7 +326,7 @@ export async function modulesAPI(
             if (!msg.uuid || !msg.owner) {
                 return new MessageError('Invalid load modules parameter');
             }
-            const item = await DatabaseServer.getModuleById(msg.uuid);
+            const item = await DatabaseServer.getModuleByUUID(msg.uuid);
             if (!item || item.owner !== msg.owner) {
                 throw new Error('Invalid module');
             }
@@ -312,7 +343,7 @@ export async function modulesAPI(
                 return new MessageError('Invalid load modules parameter');
             }
 
-            const item = await DatabaseServer.getModuleById(msg.uuid);
+            const item = await DatabaseServer.getModuleByUUID(msg.uuid);
             if (!item || item.owner !== msg.owner) {
                 throw new Error('Invalid module');
             }
@@ -325,7 +356,6 @@ export async function modulesAPI(
                     level: 3,
                 },
             });
-            console.log('File size: ' + file.byteLength);
             return new BinaryMessageResponse(file);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -339,7 +369,7 @@ export async function modulesAPI(
                 return new MessageError('Invalid load modules parameter');
             }
 
-            const item = await DatabaseServer.getModuleById(msg.uuid);
+            const item = await DatabaseServer.getModuleByUUID(msg.uuid);
             if (!item || item.owner !== msg.owner) {
                 throw new Error('Invalid module');
             }
@@ -391,7 +421,7 @@ export async function modulesAPI(
 
             const preview = await parseZipFile(Buffer.from(zip.data));
 
-            const { module } = preview;
+            const { module, tags } = preview;
             delete module._id;
             delete module.id;
             delete module.messageId;
@@ -405,6 +435,11 @@ export async function modulesAPI(
                 module.name = module.name + '_' + Date.now();
             }
             const item = await DatabaseServer.createModules(module);
+
+            if (Array.isArray(tags)) {
+                const moduleTags = tags.filter((t: any) => t.entity === TagType.Module);
+                await importTag(moduleTags, item.id.toString());
+            }
 
             return new MessageResponse(item);
         } catch (error) {
@@ -423,7 +458,7 @@ export async function modulesAPI(
             const notifier = emptyNotifier();
             const preview = await preparePreviewMessage(messageId, owner, notifier);
 
-            const { module } = preview;
+            const { module, tags } = preview;
             delete module._id;
             delete module.id;
             delete module.messageId;
@@ -437,6 +472,11 @@ export async function modulesAPI(
                 module.name = module.name + '_' + Date.now();
             }
             const item = await DatabaseServer.createModules(module);
+
+            if (Array.isArray(tags)) {
+                const moduleTags = tags.filter((t: any) => t.entity === TagType.Module);
+                await importTag(moduleTags, item.id.toString());
+            }
 
             return new MessageResponse(item);
         } catch (error) {
@@ -463,7 +503,6 @@ export async function modulesAPI(
     ApiResponse(MessageAPI.VALIDATE_MODULES, async (msg) => {
         try {
             const { module } = msg;
-            console.log('---- module', module)
             const results = await validateModel(module);
             return new MessageResponse({
                 results,

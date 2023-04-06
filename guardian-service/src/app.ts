@@ -2,7 +2,7 @@ import { configAPI } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
 import { loaderAPI } from '@api/loader.service';
 import { profileAPI } from '@api/profile.service';
-import { schemaAPI, setDefaultSchema } from '@api/schema.service';
+import { schemaAPI } from '@api/schema.service';
 import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
 import { DidDocument } from '@entity/did-document';
@@ -11,7 +11,7 @@ import { Token } from '@entity/token';
 import { VcDocument } from '@entity/vc-document';
 import { VpDocument } from '@entity/vp-document';
 import { IPFS } from '@helpers/ipfs';
-import { demoAPI } from '@api/demo';
+import { demoAPI } from '@api/demo.service';
 import { Wallet } from '@helpers/wallet';
 import { Users } from '@helpers/users';
 import { Settings } from '@entity/settings';
@@ -54,6 +54,8 @@ import { PolicyEngine } from '@policy-engine/policy-engine';
 import { modulesAPI } from '@api/module.service';
 import { GuardiansService } from '@helpers/guardians';
 import { mapAPI } from '@api/map.service';
+import { tagsAPI } from '@api/tag.service';
+import { setDefaultSchema } from '@api/helpers/schema-helper';
 
 export const obj = {};
 
@@ -115,6 +117,7 @@ Promise.all([
         await artifactAPI();
         await contractAPI(contractRepository, retireRequestRepository);
         await modulesAPI();
+        await tagsAPI();
         await analyticsAPI();
         await mapAPI();
     } catch (error) {
@@ -245,7 +248,7 @@ Promise.all([
         }
 
         try {
-            await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'));
+            await ipfsAPI();
         } catch (error) {
             console.error(error.message);
         }

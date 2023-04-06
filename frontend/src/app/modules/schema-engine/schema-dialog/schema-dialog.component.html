@@ -1,0 +1,44 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onClose()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div *ngIf="type=='new'" class="g-dialog-title">
+            New Schema
+        </div>
+        <div *ngIf="type=='edit'" class="g-dialog-title">
+            Edit Schema
+        </div>
+        <div *ngIf="type=='version'" class="g-dialog-title">
+            New Version
+        </div>
+        <div class="restore-data">
+            <button class="restore-data-button" *ngIf="restoreData && restoreData.id == scheme?.id" mat-raised-button
+                aria-label="Restore Values" type="button" (click)="onRestoreClick()">
+                Restore Values<mat-icon>restore</mat-icon>
+            </button>
+        </div>
+        <div class="g-dialog-actions">
+            <div class="switch-btn">
+                <switch-button [on-label]="'Advanced'" [off-label]="'Simplified'" [(value)]="extended"></switch-button>
+            </div>
+            <div *ngIf="!scheme" class="g-dialog-actions-btn" (click)="onCreate()"
+                [attr.disabled]="!(valid && started)">
+                Create
+            </div>
+            <div *ngIf="scheme" class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="!(valid && started)">
+                Save
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body" cdkDropList [cdkDropListData]="fields" (cdkDropListDropped)="drop($event)">
+        <div style="padding: 0px 55px 30px 55px;">
+            <app-schema-configuration #document [value]="scheme" [schemas-map]="schemasMap" [type]="type"
+                [policies]="policies" [topicId]="topicId" [schemaType]="schemaType" [extended]="extended"
+                (change-form)="onChangeForm($event)" (change-fields)="onChangeFields($event)">
+            </app-schema-configuration>
+        </div>
+    </div>
+</div>

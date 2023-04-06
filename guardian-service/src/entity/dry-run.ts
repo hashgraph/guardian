@@ -332,9 +332,10 @@ export class DryRun extends BaseEntity {
     active?: any;
 
     /**
-     * Virtual column.
+     * Category.
      */
-    category: any;
+    @Property({ nullable: true })
+    category?: any;
 
     /**
      * Policy previous version
@@ -509,6 +510,36 @@ export class DryRun extends BaseEntity {
      */
     @Property({ nullable: true })
     messageIds?: string[];
+
+    /**
+     * Target ID
+     */
+    @Property({ nullable: true })
+    target?: string;
+
+    /**
+     * Target ID (Local)
+     */
+    @Property({ nullable: true })
+    localTarget?: string;
+
+    /**
+     * Operation
+     */
+    @Property({ nullable: true })
+    operation?: string;
+
+    /**
+     * Date
+     */
+    @Property({ nullable: true })
+    date?: string;
+
+    /**
+     * Document uri
+     */
+    @Property({ nullable: true })
+    uri?: string;
 
     /**
      * Default document values

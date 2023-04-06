@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/api-response';
+import { ApiResponse } from '@api/helpers/api-response';
 import { MessageResponse, MessageError, Logger } from '@guardian/common';
 import { MessageAPI, PolicyType } from '@guardian/interfaces';
 import { DatabaseServer } from '@database-modules';
@@ -6,12 +6,8 @@ import { getArtifactExtention, getArtifactType } from '@helpers/utils';
 
 /**
  * Connect to the message broker methods of working with artifacts.
- *
- * @param channel - channel
  */
-export async function artifactAPI(
-): Promise<void> {
-
+export async function artifactAPI(): Promise<void> {
     /**
      * Upload artifact
      *

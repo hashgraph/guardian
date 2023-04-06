@@ -24,6 +24,7 @@ import { TopicMessage } from './topic-message';
 import { TopicConfig } from 'hedera-modules/topic';
 import { TokenMessage } from './token-message';
 import { ModuleMessage } from './module-message';
+import { TagMessage } from './tag-message';
 
 /**
  * Message server
@@ -297,6 +298,9 @@ export class MessageServer {
             case MessageType.Module:
                 message = ModuleMessage.fromMessageObject(json);
                 break;
+            case MessageType.Tag:
+                message = TagMessage.fromMessageObject(json);
+                break;
             // Default schemas
             case 'schema-document':
                 message = SchemaMessage.fromMessageObject(json);
@@ -348,6 +352,10 @@ export class MessageServer {
      */
     private async getTopicMessages(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<Message[]> {
         const { operatorId, operatorKey, dryRun } = this.clientOptions;
+
+        if(!topicId) {
+            throw new Error(`Invalid Topic Id`);
+        }
 
         const topic = topicId.toString();
         const workers = new Workers();

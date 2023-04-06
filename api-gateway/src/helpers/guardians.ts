@@ -457,7 +457,6 @@ export class Guardians extends NatsService {
      * @param username
      */
     public async getBalance(username: string): Promise<string> {
-        console.log(username, MessageAPI.GET_BALANCE);
         return await this.sendMessage(MessageAPI.GET_BALANCE, { username });
     }
 
@@ -573,7 +572,7 @@ export class Guardians extends NatsService {
      * @returns {{ schemasMap: any[], errors: any[] }}
      */
     public async importSchemasByFile(
-        files: ISchema[],
+        files: any,
         owner: string,
         topicId: string
     ): Promise<{
@@ -597,7 +596,7 @@ export class Guardians extends NatsService {
      * @param {string} taskId
      */
     public async importSchemasByFileAsync(
-        files: ISchema[],
+        files: any,
         owner: string,
         topicId: string,
         taskId: string
@@ -1321,5 +1320,118 @@ export class Guardians extends NatsService {
      */
     public async getMapApiKey(): Promise<string> {
         return await this.sendMessage<string>(MessageAPI.GET_MAP_API_KEY);
+    }
+
+    /**
+     * Create tag
+     * @param tag
+     * @param owner
+     * @returns tag
+     */
+    public async createTag(tag: any, owner: string): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.CREATE_TAG, { tag, owner });
+    }
+
+    /**
+     * Return tags
+     * @param entity
+     * @param targets
+     * @returns {any[]}
+     */
+    public async getTags(entity: string, targets: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.GET_TAGS, { entity, targets });
+    }
+
+    /**
+     * Delete tag
+     * @param uuid
+     * @param owner
+     * @returns Operation Success
+     */
+    public async deleteTag(uuid: string, owner: string): Promise<boolean> {
+        return await this.sendMessage<any>(MessageAPI.DELETE_TAG, { uuid, owner });
+    }
+
+    /**
+     * Export Tags
+     * @param entity
+     * @param targets
+     * @returns {any[]}
+     */
+    public async exportTags(entity: string, targets: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.EXPORT_TAGS, { entity, targets });
+    }
+
+    /**
+     * Return tags
+     * @param entity
+     * @param targets
+     * @returns {any[]}
+     */
+    public async getTagCache(entity: string, targets: string[]): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.GET_TAG_CACHE, { entity, targets });
+    }
+
+    /**
+     * Return tags
+     * @param entity
+     * @param targets
+     * @returns {any[]}
+     */
+    public async synchronizationTags(entity: string, target: string): Promise<any[]> {
+        return await this.sendMessage<any>(MessageAPI.GET_SYNCHRONIZATION_TAGS, { entity, target });
+    }
+
+    /**
+     * Return tag schemas
+     * @param {string} owner
+     * @param {string} [pageIndex]
+     * @param {string} [pageSize]
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async getTagSchemas(
+        owner: string,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<ResponseAndCount<ISchema>> {
+        return await this.sendMessage(MessageAPI.GET_TAG_SCHEMAS, {
+            owner,
+            pageIndex,
+            pageSize
+        });
+    }
+
+    /**
+     * Create tag schema
+     *
+     * @param {ISchema} item - schema
+     *
+     * @returns {ISchema[]} - all schemas
+     */
+    public async createTagSchema(item: ISchema | any): Promise<ISchema> {
+        return await this.sendMessage(MessageAPI.CREATE_TAG_SCHEMA, item);
+    }
+
+    /**
+     * Changing the status of a schema on PUBLISHED.
+     *
+     * @param {string} id - schema id
+     * @param {string} version - schema version
+     * @param {string} owner - schema message
+     *
+     * @returns {ISchema} - message
+     */
+    public async publishTagSchema(id: string, version: string, owner: string): Promise<ISchema> {
+        return await this.sendMessage(MessageAPI.PUBLISH_TAG_SCHEMA, { id, version, owner });
+    }
+
+    /**
+     * Return published schemas
+     *
+     * @returns {ISchema[]} - schemas
+     */
+    public async getPublishedTagSchemas(): Promise<ISchema> {
+        return await this.sendMessage(MessageAPI.GET_PUBLISHED_TAG_SCHEMAS);
     }
 }

@@ -7,6 +7,7 @@ import { SchemaEntity } from '../type/schema-entity.type';
 import { SchemaStatus } from '../type/schema-status.type';
 import { GenerateUUIDv4 } from '../helpers/generate-uuid-v4';
 import { SchemaField } from '../interface/schema-field.interface';
+import { SchemaCategory } from '../type/schema-category.type';
 
 /**
  * Schema class
@@ -114,11 +115,14 @@ export class Schema implements ISchema {
      */
     public system?: boolean;
     /**
+     * Schema Category
+     */
+    public category?: SchemaCategory;
+    /**
      * User DID
      * @private
      */
     private userDID: string;
-
     /**
      * Schema constructor
      * @param schema
@@ -146,6 +150,11 @@ export class Schema implements ISchema {
             this.documentURL = schema.documentURL || '';
             this.contextURL = schema.contextURL || '';
             this.iri = schema.iri || '';
+            this.category = schema.category || (
+                this.system ?
+                    SchemaCategory.SYSTEM :
+                    SchemaCategory.POLICY
+            );
             if (schema.isOwner) {
                 this.userDID = this.owner;
             }

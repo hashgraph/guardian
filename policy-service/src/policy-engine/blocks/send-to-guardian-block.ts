@@ -521,10 +521,6 @@ export class SendToGuardianBlock {
         } else {
             throw new BlockActionError(`dataSource "${ref.options.dataSource}" is unknown`, ref.blockType, ref.uuid);
         }
-
-        console.log(' -- end', ref.uuid);
-        console.log(' ');
-
         return document;
     }
 
