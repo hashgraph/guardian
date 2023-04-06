@@ -473,7 +473,7 @@ export class PolicyEngine extends NatsService {
                 if (token.draftToken) {
                     const oldId = token.tokenId;
                     const newToken = await createHederaToken({ ...token, changeSupply: true }, root);
-                    _token = await new DataBaseHelper(Token).save(newToken);
+                    _token = await new DataBaseHelper(Token).update(newToken, token?.id);
 
                     replaceAllEntities(model.config, ['tokenId'], oldId, newToken.tokenId);
                     replaceAllVariables(model.config, 'Token', oldId, newToken.tokenId);

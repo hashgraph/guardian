@@ -167,7 +167,12 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
  * @param tokenRepository
  * @param notifier
  */
-async function createToken(token: any, owner: any, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<Token> {
+async function createToken(
+    token: any,
+    owner: any,
+    tokenRepository: DataBaseHelper<Token>,
+    notifier: INotifier
+): Promise<Token> {
     if (!token.tokenName) {
         throw new Error('Invalid Token Name');
     }
@@ -209,11 +214,16 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
  * @param tokenRepository
  * @param notifier
  */
-async function updateToken(oldToken: Token, newToken: Token, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<Token> {
+async function updateToken(
+    oldToken: Token,
+    newToken: Token,
+    tokenRepository: DataBaseHelper<Token>,
+    notifier: INotifier
+): Promise<Token> {
     if (oldToken.draftToken && newToken.draftToken) {
         notifier.start('Update token');
         const tokenObject = Object.assign(oldToken, newToken);
-        const result = await tokenRepository.update(tokenObject);
+        const result = await tokenRepository.update(tokenObject, oldToken?.id);
         notifier.completed();
 
         return result;
@@ -227,7 +237,7 @@ async function updateToken(oldToken: Token, newToken: Token, tokenRepository: Da
         const newTokenObject = await createHederaToken(newToken, root);
         const tokenObject = Object.assign(oldToken, newTokenObject);
 
-        const result = await tokenRepository.update(tokenObject);
+        const result = await tokenRepository.update(tokenObject, oldToken?.id);
 
         notifier.completedAndStart('Publish tags');
         try {
@@ -293,7 +303,7 @@ async function updateToken(oldToken: Token, newToken: Token, tokenRepository: Da
         oldToken.tokenName = newToken.tokenName;
         oldToken.tokenSymbol = newToken.tokenSymbol;
 
-        const result = await tokenRepository.update(oldToken);
+        const result = await tokenRepository.update(oldToken, oldToken?.id);
 
         const saveKeys = [];
         if (changes.enableFreeze) {
