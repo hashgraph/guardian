@@ -2,8 +2,6 @@ import { Singleton } from '../decorators/singleton';
 import { GenerateUUIDv4, IActiveTask, ITask, WorkerEvents } from '@guardian/interfaces';
 import { Environment } from '../hedera-modules';
 import { NatsService } from '../mq';
-import { MessageResponse } from '../models';
-import { doNothing } from './do-nothing';
 
 /**
  * Workers helper
