@@ -674,8 +674,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} - all schemas
      */
-    public async deleteSchema(id: string): Promise<ISchema[]> {
-        return await this.sendMessage(MessageAPI.DELETE_SCHEMA, { id });
+    public async deleteSchema(id: string, needResult = false): Promise<ISchema[] | boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMA, { id, needResult });
     }
 
     /**

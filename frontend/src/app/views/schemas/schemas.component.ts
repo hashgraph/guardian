@@ -519,8 +519,6 @@ export class SchemaConfigComponent implements OnInit {
 
             this.loading = true;
             this._deleteSystem(element.id).subscribe((data: any) => {
-                const schemas = SchemaHelper.map(data);
-                this.schemaMapping(schemas);
                 this.loadSchemas();
             }, (e) => {
                 this.loading = false;

@@ -270,7 +270,7 @@ schemaAPI.delete('/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), asy
             res.status(500).json({ code: 500, message: 'Schema is published.' });
             return;
         }
-        const schemas = (await guardians.deleteSchema(schemaId));
+        const schemas = (await guardians.deleteSchema(schemaId, true) as ISchema[]);
         SchemaHelper.updatePermission(schemas, user.did);
         res.status(200).json(SchemaUtils.toOld(schemas));
     } catch (error) {

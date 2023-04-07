@@ -251,11 +251,18 @@ export async function schemaAPI(): Promise<void> {
      */
     ApiResponse(MessageAPI.DELETE_SCHEMA, async (msg) => {
         try {
-            if (msg && msg.id) {
+            if (!msg) {
+                return new MessageError('Invalid delete schema parameter');
+            }
+            if (msg.id) {
                 await deleteSchema(msg.id, emptyNotifier());
             }
-            const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
-            return new MessageResponse(schemas);
+            if (msg.needResult) {
+                const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
+                return new MessageResponse(schemas);
+            } else {
+                return new MessageResponse(true);
+            }
         } catch (error) {
             return new MessageError(error);
         }
