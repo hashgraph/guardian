@@ -63,8 +63,8 @@ export class SchemaConfigComponent implements OnInit {
         'owner',
         'status',
         'tagOperation',
-        'editSystem',
-        'deleteSystem',
+        'editTag',
+        'deleteTag',
         'document',
     ];
     selectedAll!: boolean;
@@ -116,8 +116,9 @@ export class SchemaConfigComponent implements OnInit {
     ngOnInit() {
         const type = this.route.snapshot.queryParams['type'];
         const topic = this.route.snapshot.queryParams['topic'];
-
-        this.type = type === 'tag' ? 'tag' : (type === 'policy' ? 'policy' : 'system');
+        this.type = 
+            type === 'tag' ? 'tag' : 
+            (type === 'system' ? 'system' : 'policy');
         this.currentTopicPolicy = topic && topic != 'all' ? topic : '';
         this.loadProfile()
     }
@@ -125,9 +126,9 @@ export class SchemaConfigComponent implements OnInit {
     private _deleteSystem(id: string): Observable<ISchema[]> {
         switch (this.type) {
             case 'system':
-                return this.schemaService.deleteSystemSchemas(id);
+                return this.schemaService.deleteSystemSchema(id);
             case 'tag':
-                return this.schemaService.deleteSystemSchemas(id);
+                return this.tagsService.deleteSchema(id);
             default:
                 return this.schemaService.delete(id);
         }
@@ -136,9 +137,9 @@ export class SchemaConfigComponent implements OnInit {
     private _updateSystem(schema: Schema, id: string): Observable<ISchema[]> {
         switch (this.type) {
             case 'system':
-                return this.schemaService.updateSystemSchemas(schema, id);
+                return this.schemaService.updateSystemSchema(schema, id);
             case 'tag':
-                return this.schemaService.updateSystemSchemas(schema, id);
+                return this.tagsService.updateSchema(schema, id);
             default:
                 return this.schemaService.update(schema, id);
         }
@@ -161,9 +162,7 @@ export class SchemaConfigComponent implements OnInit {
 
             this.isConfirmed = !!(profile && profile.confirmed);
             this.owner = profile?.did;
-            if (this.isConfirmed) {
-                this.type = 'policy';
-            } else {
+            if (!this.isConfirmed) {
                 this.type = 'system';
             }
 
@@ -633,7 +632,7 @@ export class SchemaConfigComponent implements OnInit {
 
     active(element: any) {
         this.loading = true;
-        this.schemaService.activeSystemSchemas(element.id).subscribe((res) => {
+        this.schemaService.activeSystemSchema(element.id).subscribe((res) => {
             this.loading = false;
             this.loadSchemas();
         }, (e) => {

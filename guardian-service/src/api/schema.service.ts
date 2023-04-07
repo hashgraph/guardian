@@ -730,7 +730,8 @@ export async function schemaAPI(): Promise<void> {
             const schema = await DatabaseServer.getSchemas({
                 system: false,
                 readonly: false,
-                category: SchemaCategory.TAG
+                category: SchemaCategory.TAG,
+                status: SchemaStatus.PUBLISHED
             }, {
                 fields: [
                     'id',
