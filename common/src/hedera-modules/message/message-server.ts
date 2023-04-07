@@ -22,6 +22,7 @@ import { TopicConfig } from '../../hedera-modules';
 import { TokenMessage } from './token-message';
 import { ModuleMessage } from './module-message';
 import { DatabaseServer } from '../../database-modules';
+import { TagMessage } from './tag-message';
 
 /**
  * Message server
@@ -79,7 +80,7 @@ export class MessageServer {
                 cid: id,
                 url: id
             }
-            await TransactionLogger.virtualFileLog(this.dryRun, file, result);
+            await new TransactionLogger().virtualFileLog(this.dryRun, file, result);
             return result
         }
         return IPFS.addFile(file);
@@ -113,7 +114,7 @@ export class MessageServer {
      */
     public async messageStartLog(name: string): Promise<string> {
         const id = GenerateUUIDv4();
-        await TransactionLogger.messageLog(id, name);
+        await new TransactionLogger().messageLog(id, name);
         return id;
     }
 
@@ -123,7 +124,7 @@ export class MessageServer {
      * @param name
      */
     public async messageEndLog(id: string, name: string): Promise<void> {
-        await TransactionLogger.messageLog(id, name);
+        await new TransactionLogger().messageLog(id, name);
     }
 
     /**
@@ -295,6 +296,9 @@ export class MessageServer {
             case MessageType.Module:
                 message = ModuleMessage.fromMessageObject(json);
                 break;
+            case MessageType.Tag:
+                message = TagMessage.fromMessageObject(json);
+                break;
             // Default schemas
             case 'schema-document':
                 message = SchemaMessage.fromMessageObject(json);
@@ -346,6 +350,10 @@ export class MessageServer {
      */
     private async getTopicMessages(topicId: string | TopicId, type?: MessageType, action?: MessageAction): Promise<Message[]> {
         const { operatorId, operatorKey, dryRun } = this.clientOptions;
+
+        if(!topicId) {
+            throw new Error(`Invalid Topic Id`);
+        }
 
         const topic = topicId.toString();
         const workers = new Workers();

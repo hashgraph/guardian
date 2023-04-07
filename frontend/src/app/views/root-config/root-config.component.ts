@@ -3,14 +3,14 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
-import { ProfileService } from 'src/app/services/profile.service';
-import { SchemaService } from 'src/app/services/schema.service';
-import { IUser, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
-import { DemoService } from 'src/app/services/demo.service';
-import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
-import { HeaderPropsService } from 'src/app/services/header-props.service';
-import { InformService } from 'src/app/services/inform.service';
-import { TasksService } from 'src/app/services/tasks.service';
+import { ProfileService } from '../../services/profile.service';
+import { SchemaService } from '../../services/schema.service';
+import { IUser, Schema, SchemaEntity } from '@guardian/interfaces';
+import { DemoService } from '../../services/demo.service';
+import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
+import { HeaderPropsService } from '../../services/header-props.service';
+import { InformService } from '../../services/inform.service';
+import { TasksService } from '../../services/tasks.service';
 
 enum OperationMode {
     None,

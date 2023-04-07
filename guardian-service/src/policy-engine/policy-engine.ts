@@ -8,8 +8,7 @@ import {
     PolicyType,
     IRootConfig,
     GenerateUUIDv4,
-    PolicyEvents,
-    WorkerTaskType,
+    PolicyEvents
 } from '@guardian/interfaces';
 import {
     DataBaseHelper,
@@ -43,15 +42,18 @@ import {
     replaceArtifactProperties,
     SchemaFields,
 } from '@guardian/common';
-import { incrementSchemaVersion, findAndPublishSchema, findAndDryRunSchema, deleteSchema, publishSystemSchemas } from '@api/schema.service';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
 import { PolicyConverterUtils } from './policy-converter-utils';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from './policy-validation-results-container';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
 import { PolicyValidator } from '@policy-engine/block-validators';
+import { publishPolicyTags } from '@api/tag.service';
+import { createHederaToken } from '@api/token.service';
 import { GuardiansService } from '@helpers/guardians';
 import { Inject } from '@helpers/decorators/inject';
+import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
+import { deleteSchema, incrementSchemaVersion } from '@api/helpers/schema-helper';
 
 /**
  * Result of publishing
@@ -320,9 +322,7 @@ export class PolicyEngine extends NatsService {
             artifact.data = await DatabaseServer.getArtifactFileByUUID(artifact.uuid);
         }
 
-        const dataToCreate = {
-            policy, schemas, tokens, artifacts
-        };
+        const dataToCreate = { policy, schemas, tokens, artifacts, tags: [] };
         return await PolicyImportExportHelper.importPolicy(dataToCreate, owner, null, notifier, data);
     }
 
@@ -474,76 +474,19 @@ export class PolicyEngine extends NatsService {
             const tokenIds = findAllEntities(model.config, ['tokenId']);
             const tokens = await DatabaseServer.getTokens({ tokenId: { $in: tokenIds }, owner: model.owner });
             for (const token of tokens) {
+                let _token = token;
                 if (token.draftToken) {
-                    const workers = new Workers();
-                    const tokenData = await workers.addRetryableTask({
-                        type: WorkerTaskType.CREATE_TOKEN,
-                        data: {
-                            operatorId: root.hederaAccountId,
-                            operatorKey: root.hederaAccountKey,
-                            tokenName: token.tokenName,
-                            tokenSymbol: token.tokenSymbol,
-                            tokenType: token.tokenType,
-                            initialSupply: token.initialSupply,
-                            decimals: token.decimals,
-                            changeSupply: true,
-                            enableAdmin: token.enableAdmin,
-                            enableFreeze: token.enableFreeze,
-                            enableKYC: token.enableKYC,
-                            enableWipe: token.enableWipe,
-                        }
-                    }, 1);
-                    const wallet = new Wallet();
-                    await Promise.all([
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_TREASURY_KEY,
-                            tokenData.tokenId,
-                            tokenData.treasuryKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_ADMIN_KEY,
-                            tokenData.tokenId,
-                            tokenData.adminKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_FREEZE_KEY,
-                            tokenData.tokenId,
-                            tokenData.freezeKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_KYC_KEY,
-                            tokenData.tokenId,
-                            tokenData.kycKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_SUPPLY_KEY,
-                            tokenData.tokenId,
-                            tokenData.supplyKey
-                        ),
-                        wallet.setUserKey(
-                            root.did,
-                            KeyType.TOKEN_WIPE_KEY,
-                            tokenData.tokenId,
-                            tokenData.wipeKey
-                        )
-                    ]);
+                    const oldId = token.tokenId;
+                    const newToken = await createHederaToken({ ...token, changeSupply: true }, root);
+                    _token = await new DataBaseHelper(Token).update(newToken, token?.id);
 
-                    replaceAllEntities(model.config, ['tokenId'], token.tokenId, tokenData.tokenId);
-                    replaceAllVariables(model.config, 'Token', token.tokenId, tokenData.tokenId);
-
-                    token.tokenId = tokenData.tokenId;
-                    token.draftToken = false;
-                    token.adminId = tokenData.treasuryId;
-                    await new DataBaseHelper(Token).save(token);
+                    replaceAllEntities(model.config, ['tokenId'], oldId, newToken.tokenId);
+                    replaceAllVariables(model.config, 'Token', oldId, newToken.tokenId);
                     await DatabaseServer.updatePolicy(model);
                 }
+
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
-                tokenMessage.setDocument(token);
+                tokenMessage.setDocument(_token);
                 await messageServer
                     .sendMessage(tokenMessage);
             }
@@ -650,13 +593,20 @@ export class PolicyEngine extends NatsService {
             });
 
             logger.info('Published Policy', ['GUARDIAN_SERVICE']);
-
         } catch (error) {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
             await DatabaseServer.updatePolicy(model);
             throw error
         }
+
+        notifier.completedAndStart('Publish tags');
+        try {
+            await publishPolicyTags(model, root);
+        } catch (error) {
+            logger.error(error, ['GUARDIAN_SERVICE, TAGS']);
+        }
+
         notifier.completedAndStart('Saving in DB');
         model.status = PolicyType.PUBLISH;
         const retVal = await DatabaseServer.updatePolicy(model);

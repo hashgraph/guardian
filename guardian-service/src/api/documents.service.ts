@@ -8,7 +8,7 @@ import {
     MessageAPI,
     PolicyType,
 } from '@guardian/interfaces';
-import { ApiResponse } from '@api/api-response';
+import { ApiResponse } from '@api/helpers/api-response';
 import {
     MessageResponse,
     MessageError,
@@ -22,7 +22,6 @@ import {
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
  *
- * @param channel - channel
  * @param didDocumentRepository - table with DID Documents
  * @param vcDocumentRepository - table with VC Documents
  * @param vpDocumentRepository - table with VP Documents

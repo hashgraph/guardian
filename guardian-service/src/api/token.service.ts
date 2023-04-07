@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/api-response';
+import { ApiResponse } from '@api/helpers/api-response';
 import {
     MessageResponse,
     MessageError,
@@ -10,9 +10,111 @@ import {
     Wallet,
     Users,
     Workers,
+    TopicHelper,
+    DatabaseServer,
 } from '@guardian/common';
-import { MessageAPI, IToken, WorkerTaskType, GenerateUUIDv4 } from '@guardian/interfaces';
+import {
+    MessageAPI,
+    IToken,
+    WorkerTaskType,
+    GenerateUUIDv4,
+    IRootConfig,
+    TopicType
+} from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
+import { publishTokenTags } from './tag.service';
+
+/**
+ * Create token in Hedera network
+ * @param token
+ * @param user
+ */
+export async function createHederaToken(token: any, user: IRootConfig) {
+    const topicHelper = new TopicHelper(user.hederaAccountId, user.hederaAccountKey);
+    const topic = await topicHelper.create({
+        type: TopicType.TokenTopic,
+        name: TopicType.TokenTopic,
+        description: TopicType.TokenTopic,
+        owner: user.did,
+        policyId: null,
+        policyUUID: null
+    }, {
+        admin: true,
+        submit: false
+    });
+    await topic.saveKeys();
+    await DatabaseServer.saveTopic(topic.toObject());
+
+    const workers = new Workers();
+    const tokenData = await workers.addNonRetryableTask({
+        type: WorkerTaskType.CREATE_TOKEN,
+        data: {
+            operatorId: user.hederaAccountId,
+            operatorKey: user.hederaAccountKey,
+            memo: topic.topicId,
+            ...token
+        }
+    }, 1);
+
+    const wallet = new Wallet();
+    await Promise.all([
+        wallet.setUserKey(
+            user.did,
+            KeyType.TOKEN_TREASURY_KEY,
+            tokenData.tokenId,
+            tokenData.treasuryKey
+        ),
+        wallet.setUserKey(
+            user.did,
+            KeyType.TOKEN_ADMIN_KEY,
+            tokenData.tokenId,
+            tokenData.adminKey
+        ),
+        wallet.setUserKey(
+            user.did,
+            KeyType.TOKEN_FREEZE_KEY,
+            tokenData.tokenId,
+            tokenData.freezeKey
+        ),
+        wallet.setUserKey(
+            user.did,
+            KeyType.TOKEN_KYC_KEY,
+            tokenData.tokenId,
+            tokenData.kycKey
+        ),
+        wallet.setUserKey(
+            user.did,
+            KeyType.TOKEN_SUPPLY_KEY,
+            tokenData.tokenId,
+            tokenData.supplyKey
+        ),
+        wallet.setUserKey(
+            user.did,
+            KeyType.TOKEN_WIPE_KEY,
+            tokenData.tokenId,
+            tokenData.wipeKey
+        )
+    ]);
+
+    return {
+        tokenId: tokenData.tokenId,
+        tokenName: tokenData.tokenName,
+        tokenSymbol: tokenData.tokenSymbol,
+        tokenType: tokenData.tokenType,
+        decimals: tokenData.decimals,
+        initialSupply: tokenData.initialSupply,
+        adminId: tokenData.treasuryId,
+        changeSupply: !!tokenData.supplyKey,
+        enableAdmin: !!tokenData.adminKey,
+        enableKYC: !!tokenData.kycKey,
+        enableFreeze: !!tokenData.freezeKey,
+        enableWipe: !!tokenData.wipeKey,
+        owner: user.did,
+        policyId: null,
+        draftToken: false,
+        topicId: topic.topicId
+    };
+}
 
 /**
  * Get token info
@@ -66,26 +168,17 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
  * @param tokenRepository
  * @param notifier
  */
-async function createToken(token: any, owner: any, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<Token> {
-    const {
-        changeSupply,
-        decimals,
-        enableAdmin,
-        enableFreeze,
-        enableKYC,
-        enableWipe,
-        initialSupply,
-        tokenName,
-        tokenSymbol,
-        tokenType,
-        draftToken
-    } = token;
-
-    if (!tokenName) {
+async function createToken(
+    token: any,
+    owner: any,
+    tokenRepository: DataBaseHelper<Token>,
+    notifier: INotifier
+): Promise<Token> {
+    if (!token.tokenName) {
         throw new Error('Invalid Token Name');
     }
 
-    if (!tokenSymbol) {
+    if (!token.tokenSymbol) {
         throw new Error('Invalid Token Symbol');
     }
 
@@ -95,101 +188,16 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
 
     notifier.completedAndStart('Create token');
 
-    let rawTokenObject: unknown = {
+    let rawTokenObject: any = {
+        ...token,
         tokenId: GenerateUUIDv4(),
-        tokenName,
-        tokenSymbol,
-        tokenType,
-        decimals,
-        initialSupply,
         adminId: null,
-        changeSupply,
-        enableAdmin,
-        enableFreeze,
-        enableKYC,
-        enableWipe,
         owner: root.did,
         policyId: null,
-        draftToken
     };
 
-    if (!draftToken) {
-        const workers = new Workers();
-        const tokenData = await workers.addNonRetryableTask({
-            type: WorkerTaskType.CREATE_TOKEN,
-            data: {
-                operatorId: root.hederaAccountId,
-                operatorKey: root.hederaAccountKey,
-                changeSupply,
-                decimals,
-                enableAdmin,
-                enableFreeze,
-                enableKYC,
-                enableWipe,
-                initialSupply,
-                tokenName,
-                tokenSymbol,
-                tokenType
-            }
-        }, 1);
-
-        rawTokenObject = {
-            tokenId: tokenData.tokenId,
-            tokenName: tokenData.tokenName,
-            tokenSymbol: tokenData.tokenSymbol,
-            tokenType: tokenData.tokenType,
-            decimals: tokenData.decimals,
-            initialSupply: tokenData.initialSupply,
-            adminId: tokenData.treasuryId,
-            changeSupply: !!tokenData.supplyKey,
-            enableAdmin: !!tokenData.adminKey,
-            enableKYC: !!tokenData.kycKey,
-            enableFreeze: !!tokenData.freezeKey,
-            enableWipe: !!tokenData.wipeKey,
-            owner: root.did,
-            policyId: null,
-            draftToken: false
-        };
-
-        const wallet = new Wallet();
-        await Promise.all([
-            wallet.setUserKey(
-                root.did,
-                KeyType.TOKEN_TREASURY_KEY,
-                tokenData.tokenId,
-                tokenData.treasuryKey
-            ),
-            wallet.setUserKey(
-                root.did,
-                KeyType.TOKEN_ADMIN_KEY,
-                tokenData.tokenId,
-                tokenData.adminKey
-            ),
-            wallet.setUserKey(
-                root.did,
-                KeyType.TOKEN_FREEZE_KEY,
-                tokenData.tokenId,
-                tokenData.freezeKey
-            ),
-            wallet.setUserKey(
-                root.did,
-                KeyType.TOKEN_KYC_KEY,
-                tokenData.tokenId,
-                tokenData.kycKey
-            ),
-            wallet.setUserKey(
-                root.did,
-                KeyType.TOKEN_SUPPLY_KEY,
-                tokenData.tokenId,
-                tokenData.supplyKey
-            ),
-            wallet.setUserKey(
-                root.did,
-                KeyType.TOKEN_WIPE_KEY,
-                tokenData.tokenId,
-                tokenData.wipeKey
-            )
-        ]);
+    if (!token.draftToken) {
+        rawTokenObject = await createHederaToken(rawTokenObject, root);
     }
 
     notifier.completedAndStart('Create and save token in DB');
@@ -207,102 +215,40 @@ async function createToken(token: any, owner: any, tokenRepository: DataBaseHelp
  * @param tokenRepository
  * @param notifier
  */
-async function updateToken(oldToken: Token, newToken: Token, tokenRepository: DataBaseHelper<Token>, notifier: INotifier): Promise<Token> {
+async function updateToken(
+    oldToken: Token,
+    newToken: Token,
+    tokenRepository: DataBaseHelper<Token>,
+    notifier: INotifier
+): Promise<Token> {
     if (oldToken.draftToken && newToken.draftToken) {
         notifier.start('Update token');
         const tokenObject = Object.assign(oldToken, newToken);
-        const result = await tokenRepository.update(tokenObject);
+        const result = await tokenRepository.update(tokenObject, oldToken?.id);
         notifier.completed();
 
         return result;
     } else if (oldToken.draftToken && !newToken.draftToken) {
         notifier.start('Resolve Hedera account');
         const users = new Users();
-        const wallet = new Wallet();
-        const workers = new Workers();
-
         const root = await users.getHederaAccount(oldToken.owner);
 
-        const tokenData = await workers.addNonRetryableTask({
-            type: WorkerTaskType.CREATE_TOKEN,
-            data: {
-                operatorId: root.hederaAccountId,
-                operatorKey: root.hederaAccountKey,
-                changeSupply: newToken.changeSupply,
-                decimals: newToken.decimals,
-                enableAdmin: newToken.enableAdmin,
-                enableFreeze: newToken.enableFreeze,
-                enableKYC: newToken.enableKYC,
-                enableWipe: newToken.enableWipe,
-                initialSupply: newToken.initialSupply,
-                tokenName: newToken.tokenName,
-                tokenSymbol: newToken.tokenSymbol,
-                tokenType: newToken.tokenType
-            }
-        }, 1);
         notifier.completedAndStart('Create and save token in DB');
 
-        const tokenObject = Object.assign(oldToken, {
-            tokenId: tokenData.tokenId,
-            tokenName: tokenData.tokenName,
-            tokenSymbol: tokenData.tokenSymbol,
-            tokenType: tokenData.tokenType,
-            decimals: tokenData.decimals,
-            initialSupply: tokenData.initialSupply,
-            adminId: tokenData.treasuryId,
-            changeSupply: !!tokenData.supplyKey,
-            enableAdmin: !!tokenData.adminKey,
-            enableKYC: !!tokenData.kycKey,
-            enableFreeze: !!tokenData.freezeKey,
-            enableWipe: !!tokenData.wipeKey,
-            owner: root.did,
-            policyId: null,
-            draftToken: false
-        })
+        const newTokenObject = await createHederaToken(newToken, root);
+        const tokenObject = Object.assign(oldToken, newTokenObject);
 
-        const result = await tokenRepository.update(tokenObject);
+        const result = await tokenRepository.update(tokenObject, oldToken?.id);
 
-        await Promise.all([
-            wallet.setUserKey(
-                root.did,
-                KeyType.TOKEN_TREASURY_KEY,
-                tokenData.tokenId,
-                tokenData.treasuryKey
-            ),
-            wallet.setUserKey(
-                root.did,
-                KeyType.TOKEN_ADMIN_KEY,
-                tokenData.tokenId,
-                tokenData.adminKey
-            ),
-            wallet.setUserKey(
-                root.did,
-                KeyType.TOKEN_FREEZE_KEY,
-                tokenData.tokenId,
-                tokenData.freezeKey
-            ),
-            wallet.setUserKey(
-                root.did,
-                KeyType.TOKEN_KYC_KEY,
-                tokenData.tokenId,
-                tokenData.kycKey
-            ),
-            wallet.setUserKey(
-                root.did,
-                KeyType.TOKEN_SUPPLY_KEY,
-                tokenData.tokenId,
-                tokenData.supplyKey
-            ),
-            wallet.setUserKey(
-                root.did,
-                KeyType.TOKEN_WIPE_KEY,
-                tokenData.tokenId,
-                tokenData.wipeKey
-            )
-        ]);
+        notifier.completedAndStart('Publish tags');
+        try {
+            await publishTokenTags(result, root);
+        } catch (error) {
+            const log = new Logger();
+            log.error(error, ['GUARDIAN_SERVICE, TAGS']);
+        }
 
         notifier.completed();
-
         return result;
 
     } else {
@@ -358,7 +304,7 @@ async function updateToken(oldToken: Token, newToken: Token, tokenRepository: Da
         oldToken.tokenName = newToken.tokenName;
         oldToken.tokenSymbol = newToken.tokenSymbol;
 
-        const result = await tokenRepository.update(oldToken);
+        const result = await tokenRepository.update(oldToken, oldToken?.id);
 
         const saveKeys = [];
         if (changes.enableFreeze) {
@@ -624,12 +570,9 @@ async function freezeToken(
 /**
  * Connect to the message broker methods of working with tokens.
  *
- * @param channel - channel
  * @param tokenRepository - table with tokens
  */
-export async function tokenAPI(
-    tokenRepository: DataBaseHelper<Token>
-): Promise<void> {
+export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<void> {
     /**
      * Create new token
      *

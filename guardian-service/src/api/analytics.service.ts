@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/api-response';
+import { ApiResponse } from '@api/helpers/api-response';
 import { MessageResponse, MessageError, Logger, DatabaseServer } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 import * as crypto from 'crypto';
@@ -6,7 +6,6 @@ import { PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaMo
 
 /**
  * API analytics
- * @param channel
  * @constructor
  */
 export async function analyticsAPI(): Promise<void> {

@@ -288,7 +288,7 @@ a[hidden="true"] {
 }
 
 ::ng-deep .sub-nav-backdrop {
-    background: linear-gradient(180deg, transparent 125px, rgb(40 40 40) 125px, rgb(40 40 40) 190px, transparent 190px);
+    background: linear-gradient(180deg, transparent 124px, rgb(40 40 40) 124px, rgb(40 40 40) 190px, transparent 190px);
 }
 
 .sub-nav-list {
@@ -301,6 +301,6 @@ a[hidden="true"] {
     background: #282828 !important;
     padding: 7px 220px;
     transition: none;
-    box-shadow: none;
     box-sizing: border-box;
+    box-shadow: 0px 3px 4px 0px #282828a1;
 }

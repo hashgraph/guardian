@@ -157,9 +157,10 @@ export class Schema extends BaseEntity implements ISchema {
     active?: boolean;
 
     /**
-     * Virtual column.
+     * Schema Category.
      */
-    category: SchemaCategory;
+    @Property({ nullable: true })
+    category?: SchemaCategory;
 
     /**
      * Schema code version
@@ -183,6 +184,11 @@ export class Schema extends BaseEntity implements ISchema {
         this.system = this.system || false;
         this.active = this.active || false;
         this.codeVersion = this.codeVersion || SchemaConverterUtils.VERSION;
+        if (!this.category) {
+            this.category = this.readonly
+                ? SchemaCategory.SYSTEM
+                : SchemaCategory.POLICY;
+        }
     }
 
     /**
@@ -190,9 +196,11 @@ export class Schema extends BaseEntity implements ISchema {
      */
     @OnLoad()
     defineLabel() {
-        this.category = this.readonly
-            ? SchemaCategory.SYSTEM
-            : SchemaCategory.USER;
+        if (!this.category) {
+            this.category = this.readonly
+                ? SchemaCategory.SYSTEM
+                : SchemaCategory.POLICY;
+        }
     }
 
     /**

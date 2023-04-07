@@ -18,6 +18,8 @@ export * from './retire-request';
 export * from './schema';
 export * from './settings';
 export * from './split-documents';
+export * from './tag-cache';
+export * from './tag';
 export * from './token';
 export * from './topic';
 export * from './vc-document';

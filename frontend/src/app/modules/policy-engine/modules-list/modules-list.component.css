@@ -1,0 +1,372 @@
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+}
+
+.loading {
+    background: #fff;
+    position: fixed;
+    z-index: 99;
+    top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.loading-progress {
+    width: 80%;
+    height: 80%;
+}
+
+.table {
+    width: 100%;
+}
+
+.btn-draft::ng-deep>* {
+    background: #9c27b0 !important;
+    color: #fff !important;
+    min-width: 93px;
+}
+
+.btn-dry-run::ng-deep>* {
+    background: #3f51b5 !important;
+    color: #fff !important;
+    min-width: 93px;
+}
+
+.btn-publish {
+    border-radius: 6px;
+    display: inline-block;
+    padding: 6px 12px 6px 12px;
+    margin: 0px 5px;
+    font-weight: 500;
+    text-align: center;
+    user-select: none;
+    position: relative;
+    background: #4caf50;
+    color: #fff;
+    min-width: 121px;
+    cursor: pointer;
+}
+
+.status-draft {
+    font-weight: 500;
+    color: #2196f3;
+}
+
+.status-publish {
+    font-weight: 500;
+    color: #4caf50;
+}
+
+.status-invalid {
+    font-weight: 500;
+    color: #ff0000;
+}
+
+.btn-settings {
+    color: #3f51b5;
+    font-weight: 500;
+    cursor: pointer;
+    padding-left: 22px;
+    position: relative;
+    width: 40px;
+    display: inline-block;
+}
+
+.btn-settings:hover {
+    text-decoration: underline;
+}
+
+.btn-settings mat-icon {
+    position: absolute;
+    left: 0;
+    top: -1px;
+    font-size: 20px;
+}
+
+.table .mat-column-export,
+.table .mat-column-edit,
+.table .mat-column-delete {
+    width: 110px;
+}
+
+.table .mat-column-open {
+    width: 110px;
+}
+
+.table .mat-column-status {
+    width: 110px;
+}
+
+.not-exist {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: darkgrey;
+}
+
+.table-container {
+    max-height: calc(100vh - var(--header-height) - 170px);
+    min-height: 100px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid #eee;
+}
+
+.table-container .mat-column-edit,
+.table-container .mat-column-export,
+.table-container .mat-column-delete {
+    padding-left: 8px;
+    width: 30px;
+    max-width: 30px;
+}
+
+.table-container .mat-column-open {
+    padding-left: 8px;
+    width: 100px;
+    max-width: 100px;
+}
+
+.table-container .mat-column-operations {
+    padding-left: 8px;
+    width: 125px;
+    max-width: 125px;
+    border-left: 1px solid #dddddd;
+}
+
+.table-container .mat-column-topic {
+    padding-left: 8px;
+    width: 150px;
+    max-width: 150px;
+}
+
+.table-container .mat-column-roles {
+    padding-left: 8px;
+    width: 150px;
+    max-width: 200px;
+}
+
+.table-container .mat-column-description {
+    padding-left: 8px;
+}
+
+.table-container .mat-column-name {
+    padding-left: 24px;
+    width: 150px;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.actions-container {
+    display: block;
+    z-index: 2;
+}
+
+.table-paginator {
+    height: 60px;
+    border-top: 1px solid #eee;
+    margin-top: 5px;
+    position: relative;
+    z-index: 0;
+}
+
+.btn-icon-edit,
+.btn-icon-delete,
+.btn-icon-import,
+.btn-icon-delete-des {
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    width: 30px;
+    height: 30px;
+}
+
+.btn-icon-import,
+.btn-icon-edit {
+    color: #3f51b5;
+}
+
+.btn-icon-delete {
+    color: #f44336;
+}
+
+.btn-icon-delete mat-icon,
+.btn-icon-delete-des mat-icon {
+    font-size: 30px;
+    position: absolute;
+    left: 0;
+    top: 0px;
+}
+
+.btn-icon-delete-des {
+    color: #b5b5b5;
+    cursor: not-allowed;
+}
+
+.btn-icon-edit mat-icon {
+    font-size: 30px;
+    position: absolute;
+    left: 0;
+    top: 0px;
+}
+
+.btn-icon-import mat-icon {
+    font-size: 32px;
+    position: absolute;
+    left: 0;
+    top: -1px;
+}
+
+.btn-icon-go {
+    background: #0B73F8;
+    color: #fff;
+    border-radius: 6px;
+    display: inline-block;
+    padding: 6px 42px 6px 18px;
+    margin: 0px 5px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: center;
+    -webkit-user-select: none;
+    user-select: none;
+    position: relative;
+}
+
+.btn-icon-go.go-published {
+    background: #4caf50;
+}
+
+.btn-icon-go.go-dry-run {
+    background: #3f51b5;
+}
+
+.btn-icon-go mat-icon {
+    position: absolute;
+    left: 50px;
+    top: 6px;
+    font-size: 22px;
+}
+
+.commands-line {
+    display: flex;
+    align-items: center;
+}
+
+.commands-line>*:not(:first-child) {
+    margin-left: 18px;
+}
+
+.btn-icon-import[status="Main"],
+.btn-icon-import[status="Sub"] {
+    color: #49af54;
+}
+
+.toolbar-btn {
+    margin: 15px;
+    min-width: 120px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: left;
+    user-select: none;
+    position: relative;
+    border-radius: 8px;
+    padding: 0;
+    font-size: 14px;
+    padding-left: 48px !important;
+    padding-right: 30px;
+}
+
+.toolbar-btn mat-icon {
+    position: absolute;
+    left: 14px;
+    top: 10px;
+}
+
+.toolbar-btn.add mat-icon {
+    font-size: 30px;
+    left: 10px;
+    top: 7px;
+}
+
+.module-status {
+    font-weight: 500;
+}
+
+.status-DRAFT {
+    color: #2196f3;
+}
+
+.status-PUBLISHED {
+    color: #4caf50;
+}
+
+.mat-column-tags {
+    max-width: 175px;
+    min-width: 175px;
+    width: 175px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
+.mat-column-status {
+    width: 125px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
+.mat-column-operation {
+    width: 135px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
+.mat-column-menu {
+    width: 135px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
+.mat-column-uuid {
+    width: 135px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
+.btn-menu {
+    position: relative;
+    padding: 6px 0px 6px 34px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.btn-menu:hover {
+    background: #f0f0f0;
+}
+
+.btn-menu mat-icon {
+    position: absolute;
+    left: 3px;
+    top: 5px;
+}
+
+.btn-menu-visible {
+    color: #119116;
+}
+
+.btn-menu-hidden {
+    color: #3f51b5;
+}

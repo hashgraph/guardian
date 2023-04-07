@@ -1115,19 +1115,22 @@ export class HederaSDKHelper {
      *
      * @param {string | FileId} bytecodeFileId - Code File Id
      * @param {ContractFunctionParameters} parameters - Contract Parameters
+     * @param {string} contractMemo - Memo
      *
      * @returns {string} - Contract Id
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async createContract(
         bytecodeFileId: string | FileId,
-        parameters: ContractFunctionParameters
+        parameters: ContractFunctionParameters,
+        contractMemo: string
     ): Promise<string> {
         const client = this.client;
         const contractInstantiateTx = new ContractCreateTransaction()
             .setBytecodeFileId(bytecodeFileId)
             .setGas(1000000)
             .setConstructorParameters(parameters)
+            .setContractMemo(contractMemo)
             .setMaxTransactionFee(MAX_FEE);
         const contractInstantiateSubmit = await contractInstantiateTx.execute(
             client
@@ -1293,5 +1296,24 @@ export class HederaSDKHelper {
             id: newAccountId,
             key: newPrivateKey
         };
+    }
+
+    /**
+     * Get Contract Info
+     *
+     * @param {string | ContractId} contractId - Contract Id
+     *
+     * @returns {any} - Contract Info
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async getContractInfoRest(contractId: string): Promise<any> {
+        const res = await axios.get(
+            `${Environment.HEDERA_CONTRACT_API}/${contractId}`,
+            { responseType: 'json' }
+        );
+        if (!res || !res.data) {
+            throw new Error(`Invalid contract '${contractId}'`);
+        }
+        return res.data;
     }
 }

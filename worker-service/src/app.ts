@@ -25,7 +25,7 @@ Promise.all([
     await state.updateState(ApplicationStates.STARTED);
 
     HederaSDKHelper.setTransactionLogSender(async (data) => {
-        await channel.request(`guardians.transaction-log-event`, data);
+        await channel.publish(`guardians.transaction-log-event`, data);
     });
 
     const settingsContainer = new SettingsContainer();

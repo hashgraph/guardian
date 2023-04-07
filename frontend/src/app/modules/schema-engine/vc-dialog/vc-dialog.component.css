@@ -1,0 +1,41 @@
+.mat-button-base:not([started]) {
+    background-color: rgba(0,0,0,.12);
+}
+
+.json {
+    word-break: keep-all;
+    white-space: pre;
+    margin-bottom: 8px;
+    font-family: monospace;
+    cursor: text;
+    height: 640px;
+    width: 780px;
+    overflow: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.content {
+    height: 650px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
+}
+
+.dialog-content {
+    overflow: hidden;
+}
+
+.view-toggle {
+    float: right
+}
+
+.dialog-title {
+    display: inline-block;
+}
+
+.dialog-actions {
+    padding-bottom: 20px;
+}

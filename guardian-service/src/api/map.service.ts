@@ -1,4 +1,4 @@
-import { ApiResponse } from '@api/api-response';
+import { ApiResponse } from '@api/helpers/api-response';
 import {
     MessageResponse,
     MessageError,
@@ -8,8 +8,6 @@ import { MessageAPI } from '@guardian/interfaces';
 
 /**
  * Connect to the message broker methods of working with map.
- *
- * @param channel - channel
  */
 export async function mapAPI(): Promise<void> {
     /**

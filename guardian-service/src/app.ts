@@ -2,10 +2,9 @@ import { configAPI } from '@api/config.service';
 import { documentsAPI } from '@api/documents.service';
 import { loaderAPI } from '@api/loader.service';
 import { profileAPI } from '@api/profile.service';
-import { schemaAPI, setDefaultSchema } from '@api/schema.service';
+import { schemaAPI } from '@api/schema.service';
 import { tokenAPI } from '@api/token.service';
 import { trustChainAPI } from '@api/trust-chain.service';
-import { demoAPI } from '@api/demo';
 import { PolicyEngineService } from '@policy-engine/policy-engine.service';
 import {
     MessageBrokerChannel,
@@ -53,6 +52,9 @@ import { modulesAPI } from '@api/module.service';
 import { GuardiansService } from '@helpers/guardians';
 import { mapAPI } from '@api/map.service';
 import { GridFSBucket } from 'mongodb';
+import { tagsAPI } from '@api/tag.service';
+import { setDefaultSchema } from '@api/helpers/schema-helper';
+import { demoAPI } from '@api/demo.service';
 
 export const obj = {};
 
@@ -81,6 +83,7 @@ Promise.all([
         db.em.getDriver().getConnection().getDb()
     );
     new PolicyServiceChannelsContainer().setConnection(cn);
+    new TransactionLogger().initialization(cn, process.env.LOG_LEVEL as TransactionLogLvl);
     new GuardiansService().setConnection(cn).init();
     const channel = new MessageBrokerChannel(cn, 'guardians');
 
@@ -118,6 +121,7 @@ Promise.all([
         await artifactAPI();
         await contractAPI(contractRepository, retireRequestRepository);
         await modulesAPI();
+        await tagsAPI();
         await analyticsAPI();
         await mapAPI();
     } catch (error) {
@@ -156,8 +160,6 @@ Promise.all([
         }
     }
     MessageServer.setLang(process.env.MESSAGE_LANG);
-    TransactionLogger.init(channel, process.env.LOG_LEVEL as TransactionLogLvl);
-
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
 
@@ -250,7 +252,7 @@ Promise.all([
         }
 
         try {
-            await ipfsAPI(new MessageBrokerChannel(cn, 'external-events'));
+            await ipfsAPI();
         } catch (error) {
             console.error(error.message);
         }

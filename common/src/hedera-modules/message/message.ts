@@ -116,13 +116,13 @@ export abstract class Message {
     /**
      * To document
      */
-public abstract toDocuments(key?: string): Promise<ArrayBuffer[]>;
+    public abstract toDocuments(key?: string): Promise<ArrayBuffer[]>;
 
-/**
- * Load documents
- * @param documents
- */
-public abstract loadDocuments(documents: any[], key?: string): Message | Promise<Message>;
+    /**
+     * Load documents
+     * @param documents
+     */
+    public abstract loadDocuments(documents: any[], key?: string): Message | Promise<Message>;
 
     /**
      * Set URLs
@@ -348,5 +348,12 @@ public abstract loadDocuments(documents: any[], key?: string): Message | Promise
         const json: string = JSON.stringify(map);
         const hash: Uint8Array = Hashing.sha256.digest(json);
         return Hashing.base58.encode(hash);
+    }
+
+    /**
+     * Is documents
+     */
+    public isDocuments(index: number = 0): boolean {
+        return !!(this.urls && this.urls[index]);
     }
 }

@@ -3,7 +3,7 @@ import {
     MessageAPI,
     SchemaEntity
 } from '@guardian/interfaces';
-import { ApiResponse } from '@api/api-response';
+import { ApiResponse } from '@api/helpers/api-response';
 import {
     MessageResponse,
     MessageError,

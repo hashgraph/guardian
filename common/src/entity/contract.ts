@@ -38,6 +38,12 @@ export class Contract extends BaseEntity {
     status?: ContractStatus;
 
     /**
+     * Topic id
+     */
+    @Property({ nullable: true })
+    topicId?: string;
+
+    /**
      * Contract defaults
      */
     @BeforeCreate()
