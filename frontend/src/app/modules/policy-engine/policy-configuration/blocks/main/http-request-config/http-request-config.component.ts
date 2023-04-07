@@ -19,7 +19,7 @@ export class HttpRequestConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlockModel;
-    
+
     propHidden: any = {
         main: false,
         options: false,
@@ -80,10 +80,12 @@ export class HttpRequestConfigComponent implements OnInit {
             disableClose: true
         })
         dialogRef.afterClosed().subscribe(result => {
-            this.properties.messageBody = result.expression;
+            if (result) {
+                this.properties.messageBody = result.expression;
+            }
         })
     }
-    
+
     onSave() {
         this.item.changed = true;
     }

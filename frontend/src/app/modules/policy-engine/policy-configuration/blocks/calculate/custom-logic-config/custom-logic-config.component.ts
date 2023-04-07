@@ -56,7 +56,9 @@ export class CustomLogicConfigComponent implements OnInit {
             disableClose: true
         })
         dialogRef.afterClosed().subscribe(result => {
-            this.properties.expression = result.expression;
+            if(result) {
+                this.properties.expression = result.expression;
+            }
         })
     }
     

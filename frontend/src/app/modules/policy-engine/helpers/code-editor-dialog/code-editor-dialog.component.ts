@@ -1,13 +1,6 @@
-import {
-    AfterContentChecked, AfterContentInit,
-    AfterViewChecked,
-    AfterViewInit,
-    Component,
-    Inject,
-    OnInit,
-    ViewChild
-} from '@angular/core';
+import { AfterContentInit, Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+
 /**
  * Export schema dialog.
  */
@@ -65,4 +58,7 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
         });
     }
 
+    onClose(): void {
+        this.dialogRef.close(null);
+    }
 }
