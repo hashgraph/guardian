@@ -276,7 +276,7 @@ export class TransactionLogger extends NatsService {
             })
 
             return new MessageResponse({});
-        });
+        }, true);
     }
 
     /**
