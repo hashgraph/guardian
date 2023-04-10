@@ -11,7 +11,7 @@
     "@transmute/jsonld-schema": "^0.7.0-unstable.80",
     "@transmute/security-context": "^0.7.0-unstable.80",
     "@transmute/vc.js": "^0.7.0-unstable.80",
-    "axios": "^0.25.0",
+    "axios": "^1.3.5",
     "axios-retry": "^3.2.4",
     "cross-blob": "^2.0.1",
     "dotenv": "^16.0.0",

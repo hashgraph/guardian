@@ -28,7 +28,7 @@
         "@transmute/vc.js": "0.7.0-unstable.80",
         "ajv": "^8.10.0",
         "ajv-formats": "^2.1.1",
-        "axios": "^0.25.0",
+        "axios": "^1.3.5",
         "bs58": "^4.0.1",
         "cors": "^2.8.5",
         "cron": "^2.0.0",
