@@ -13,7 +13,7 @@
     "@transmute/json-web-signature": "^0.7.0-unstable.80",
     "@transmute/security-context": "^0.7.0-unstable.80",
     "@transmute/vc.js": "^0.7.0-unstable.80",
-    "@hashgraph/sdk": "^2.22.0",
+    "@hashgraph/sdk": "^2.24.0",
     "ajv": "^8.10.0",
     "ajv-formats": "^2.1.1",
     "axios": "^0.25.0",
