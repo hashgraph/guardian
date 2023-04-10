@@ -4,6 +4,7 @@ import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { MessageBody } from './message-body.interface';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { Hashing } from '../hashing';
 
 /**
  * Message status
@@ -337,5 +338,22 @@ export abstract class Message {
             message._statusReason = json.reason;
             return message;
         }
+    }
+
+    /**
+     * To hash
+     */
+    public toHash(): string {
+        const map = this.toMessageObject();
+        const json: string = JSON.stringify(map);
+        const hash: Uint8Array = Hashing.sha256.digest(json);
+        return Hashing.base58.encode(hash);
+    }
+
+    /**
+     * Is documents
+     */
+    public isDocuments(index: number = 0): boolean {
+        return !!(this.urls && this.urls[index]);
     }
 }

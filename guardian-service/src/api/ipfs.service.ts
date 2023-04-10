@@ -1,17 +1,13 @@
-import { ApiResponse, ApiResponseSubscribe } from '@api/api-response';
-import { MessageBrokerChannel, MessageResponse, MessageError, Logger } from '@guardian/common';
+import { ApiResponse, ApiResponseSubscribe } from '@api/helpers/api-response';
+import { MessageResponse, MessageError, Logger } from '@guardian/common';
 import { ExternalMessageEvents, MessageAPI } from '@guardian/interfaces';
 import { IPFS } from '@helpers/ipfs';
 import { IPFSTaskManager } from '@helpers/ipfs-task-manager';
 
 /**
  * TODO
- *
- * @param externalEventsChannel - channel
  */
-export async function ipfsAPI(
-    externalEventsChannel: MessageBrokerChannel,
-): Promise<void> {
+export async function ipfsAPI(): Promise<void> {
     ApiResponseSubscribe(ExternalMessageEvents.IPFS_ADDED_FILE, async (msg) => {
         try {
             if (!msg) {

@@ -1,6 +1,6 @@
 import { Settings } from '@entity/settings';
 import { Topic } from '@entity/topic';
-import { ApiResponse } from '@api/api-response';
+import { ApiResponse } from '@api/helpers/api-response';
 import {
     MessageResponse,
     MessageError,
@@ -14,9 +14,6 @@ import { Workers } from '@helpers/workers';
 
 /**
  * Connecting to the message broker methods of working with root address book.
- *
- * @param channel - channel
- * @param approvalDocumentRepository - table with approve documents
  */
 export async function configAPI(
     settingsRepository: DataBaseHelper<Settings>,

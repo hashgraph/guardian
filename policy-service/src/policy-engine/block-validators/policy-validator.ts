@@ -276,7 +276,7 @@ export class PolicyValidator {
      * @param tokenId
      */
     public async getToken(tokenId: string): Promise<any> {
-        return await this.databaseServer.getTokenById(tokenId);
+        return await this.databaseServer.getToken(tokenId);
     }
 
     /**

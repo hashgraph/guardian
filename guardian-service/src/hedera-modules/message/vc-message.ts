@@ -5,6 +5,7 @@ import { MessageAction } from './message-action';
 import { MessageType } from './message-type';
 import { VcMessageBody } from './message-body.interface';
 import { IPFS } from '@helpers/ipfs';
+import { Hashing } from '../hashing';
 import { SignatureType } from '@guardian/interfaces';
 import {
     bytesToUtf8,
@@ -213,5 +214,23 @@ export class VCMessage extends Message {
      */
     public getDocumentUrl(type: UrlType): string | null {
         return this.getUrlValue(0, type);
+    }
+
+    /**
+     * To hash
+     */
+    public override toHash(): string {
+        const map:any = {
+            status: this._status,
+            type: this.type,
+            action: this.action,
+            lang: this.lang,
+            issuer: this.issuer,
+            relationships: this.relationships,
+            hash: this.hash
+        }
+        const json: string = JSON.stringify(map);
+        const hash: Uint8Array = Hashing.sha256.digest(json);
+        return Hashing.base58.encode(hash);
     }
 }

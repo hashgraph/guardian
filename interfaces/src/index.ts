@@ -14,6 +14,7 @@ export { RootState } from './type/root-state.type';
 export { PolicyEngineEvents } from './type/policy-engine-events';
 export { SchemaEntity } from './type/schema-entity.type';
 export { UserRole, PolicyRole } from './type/user-role.type';
+export { TagType } from './type/tag.type';
 export * from './type/message-api.type';
 export { IApprovalDocument } from './interface/approval-document.interface';
 export { ICredentialSubject } from './interface/credential-subject.interface';

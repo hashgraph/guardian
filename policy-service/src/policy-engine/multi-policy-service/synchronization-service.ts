@@ -221,7 +221,7 @@ export class SynchronizationService {
         const transactions = await DatabaseServer.getMultiPolicyTransactions(policy.id, user);
         for (const transaction of transactions) {
             if (transaction.amount <= min) {
-                const token = await DatabaseServer.getTokenById(transaction.tokenId);
+                const token = await DatabaseServer.getToken(transaction.tokenId);
                 const status = await SynchronizationService.completeTransaction(
                     messageServer, root, token, transaction, policies, vpMap
                 );

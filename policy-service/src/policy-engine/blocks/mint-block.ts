@@ -55,10 +55,10 @@ export class MintBlock {
         if (ref.options.useTemplate) {
             if (docs[0].tokens) {
                 const tokenId = docs[0].tokens[ref.options.template];
-                token = await ref.databaseServer.getTokenById(tokenId, ref.dryRun);
+                token = await ref.databaseServer.getToken(tokenId, ref.dryRun);
             }
         } else {
-            token = await ref.databaseServer.getTokenById(ref.options.tokenId);
+            token = await ref.databaseServer.getToken(ref.options.tokenId);
         }
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);

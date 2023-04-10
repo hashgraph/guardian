@@ -9,6 +9,7 @@ import { AggregateVC } from '@entity/aggregate-documents';
 import { ApprovalDocument as ApprovalDocumentCollection } from '@entity/approval-document';
 import { Token as TokenCollection } from '@entity/token';
 import { Topic as TopicCollection } from '@entity/topic';
+import { Contract as ContractCollection } from '@entity/contract';
 import { DryRun } from '@entity/dry-run';
 import { PolicyRoles as PolicyRolesCollection } from '@entity/policy-roles';
 import { GenerateUUIDv4, IVC, SchemaEntity, TopicType } from '@guardian/interfaces';
@@ -22,6 +23,8 @@ import { SplitDocuments } from '@entity/split-documents';
 import { MultiPolicy } from '@entity/multi-policy';
 import { MultiPolicyTransaction } from '@entity/multi-policy-transaction';
 import { PolicyModule } from '@entity/module';
+import { Tag } from '@entity/tag';
+import { TagCache } from '@entity/tag-cache';
 
 /**
  * Database server
@@ -901,7 +904,7 @@ export class DatabaseServer {
      * Get Token
      * @param tokenId
      */
-    public async getTokenById(tokenId: string, dryRun: any = null): Promise<TokenCollection> {
+    public async getToken(tokenId: string, dryRun: any = null): Promise<TokenCollection> {
         if (dryRun) {
             return this.findOne(TokenCollection, { tokenId });
         } else {
@@ -1622,7 +1625,7 @@ export class DatabaseServer {
      * @param row
      */
     public static async updateTopic(row: TopicCollection): Promise<void> {
-        await new DataBaseHelper(TopicCollection).update(row);
+        await new DataBaseHelper(TopicCollection).update(row, { id: row.id });
     }
 
     /**
@@ -2028,8 +2031,24 @@ export class DatabaseServer {
      * Get Token
      * @param tokenId
      */
-    public static async getTokenById(tokenId: string): Promise<TokenCollection> {
+    public static async getToken(tokenId: string): Promise<TokenCollection> {
         return await new DataBaseHelper(TokenCollection).findOne({ tokenId });
+    }
+
+    /**
+     * Get Token by ID
+     * @param id
+     */
+    public static async getTokenById(id: string): Promise<TokenCollection> {
+        return await new DataBaseHelper(TokenCollection).findOne(id);
+    }
+
+    /**
+     * Get Contract by ID
+     * @param id
+     */
+    public static async getContractById(id: string): Promise<ContractCollection> {
+        return await new DataBaseHelper(ContractCollection).findOne(id);
     }
 
     /**
@@ -2052,10 +2071,10 @@ export class DatabaseServer {
 
     /**
      * Update MultiPolicyTransaction
-     * @param item
+     * @param row
      */
-    public static async updateMultiPolicyTransactions(item: MultiPolicyTransaction): Promise<void> {
-        await new DataBaseHelper(MultiPolicyTransaction).update(item);
+    public static async updateMultiPolicyTransactions(row: MultiPolicyTransaction): Promise<void> {
+        await new DataBaseHelper(MultiPolicyTransaction).update(row);
     }
 
     /**
@@ -2088,8 +2107,16 @@ export class DatabaseServer {
      * Get Module By UUID
      * @param uuid
      */
-    public static async getModuleById(uuid: string): Promise<PolicyModule> {
+    public static async getModuleByUUID(uuid: string): Promise<PolicyModule> {
         return await new DataBaseHelper(PolicyModule).findOne({ uuid });
+    }
+
+    /**
+     * Get Module By ID
+     * @param uuid
+     */
+    public static async getModuleById(id: string): Promise<PolicyModule> {
+        return await new DataBaseHelper(PolicyModule).findOne(id);
     }
 
     /**
@@ -2101,10 +2128,8 @@ export class DatabaseServer {
     }
 
     /**
-     * Delete user
+     * Delete Module
      * @param module
-     *
-     * @virtual
      */
     public static async removeModule(module: PolicyModule): Promise<void> {
         return await new DataBaseHelper(PolicyModule).remove(module);
@@ -2125,5 +2150,73 @@ export class DatabaseServer {
      */
     public static async updateModule(row: PolicyModule): Promise<PolicyModule> {
         return await new DataBaseHelper(PolicyModule).update(row);
+    }
+
+    /**
+     * Create tag
+     * @param tag
+     */
+    public static async createTag(tag: any): Promise<Tag> {
+        const item = new DataBaseHelper(Tag).create(tag);
+        return await new DataBaseHelper(Tag).save(item);
+    }
+
+    /**
+     * Delete tag
+     * @param tag
+     */
+    public static async removeTag(tag: Tag): Promise<void> {
+        return await new DataBaseHelper(Tag).remove(tag);
+    }
+
+    /**
+     * Get tag By UUID
+     * @param uuid
+     */
+    public static async getTagById(uuid: string): Promise<Tag> {
+        return await new DataBaseHelper(Tag).findOne({ uuid });
+    }
+
+    /**
+     * Get tags
+     * @param filters
+     * @param options
+     */
+    public static async getTags(filters?: any, options?: any): Promise<Tag[]> {
+        return await new DataBaseHelper(Tag).find(filters, options);
+    }
+
+    /**
+     * Update tags
+     * @param row
+     */
+    public static async updateTag(row: Tag): Promise<Tag> {
+        return await new DataBaseHelper(Tag).update(row);
+    }
+
+    /**
+     * Create tag cache
+     * @param tag
+     */
+    public static async createTagCache(tag: any): Promise<TagCache> {
+        const item = new DataBaseHelper(TagCache).create(tag);
+        return await new DataBaseHelper(TagCache).save(item);
+    }
+
+    /**
+     * Get tags
+     * @param filters
+     * @param options
+     */
+    public static async getTagCache(filters?: any, options?: any): Promise<TagCache[]> {
+        return await new DataBaseHelper(TagCache).find(filters, options);
+    }
+
+    /**
+     * Update tag cache
+     * @param row
+     */
+    public static async updateTagCache(row: TagCache): Promise<TagCache> {
+        return await new DataBaseHelper(TagCache).update(row);
     }
 }

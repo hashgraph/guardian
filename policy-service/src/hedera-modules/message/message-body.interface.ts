@@ -366,3 +366,71 @@ export interface SynchronizationMessageBody extends MessageBody {
      */
     policyOwner?: string;
 }
+
+/**
+ * Module message body
+ */
+export interface ModuleMessageBody extends MessageBody {
+    /**
+     * UUID
+     */
+    uuid: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Owner
+     */
+    owner: string;
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+}
+
+/**
+ * Tag message body
+ */
+export interface TagMessageBody extends MessageBody {
+    /**
+     * UUID
+     */
+    uuid: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Owner
+     */
+    owner: string;
+    /**
+     * Target
+     */
+    target: string;
+    /**
+     * Operation
+     */
+    operation: 'Create' | 'Delete';
+    /**
+     * Entity
+     */
+    entity: string;
+    /**
+     * Date
+     */
+    date: string;
+}

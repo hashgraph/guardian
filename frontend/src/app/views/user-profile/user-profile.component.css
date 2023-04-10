@@ -313,6 +313,14 @@ a[disabled="true"]{
     background-color: #d1f1c8;
 }
 
+.token-table .mat-column-tags {
+    max-width: 175px;
+    min-width: 175px;
+    width: 175px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
 @media (max-width: 810px) {
     form {
         display: flex;

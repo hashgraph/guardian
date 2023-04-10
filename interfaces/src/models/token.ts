@@ -5,6 +5,10 @@ import { IToken, ITokenInfo } from '..';
  */
 export class Token {
     /**
+     * ID
+     */
+    public id: string;
+    /**
      * Token ID
      */
     public tokenId: string;
@@ -83,6 +87,7 @@ export class Token {
      * @constructor
      */
     constructor(data: ITokenInfo | IToken) {
+        this.id = data.id;
         this.tokenId = data.tokenId;
         this.tokenName = data.tokenName;
         this.tokenSymbol = data.tokenSymbol;

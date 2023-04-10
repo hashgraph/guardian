@@ -134,16 +134,16 @@ export class SchemaService {
         return this.http.get<any>(url, { observe: 'response' });
     }
 
-    public deleteSystemSchemas(id: string): Observable<any> {
+    public deleteSystemSchema(id: string): Observable<any> {
         return this.http.delete<any>(`${this.url}/system/${id}`);
     }
 
-    public updateSystemSchemas(schema: Schema, id?: string): Observable<ISchema[]> {
+    public updateSystemSchema(schema: Schema, id?: string): Observable<ISchema[]> {
         const data = Object.assign({}, schema, { id: id || schema.id });
         return this.http.put<any[]>(`${this.url}/system/${id}`, data);
     }
 
-    public activeSystemSchemas(id: string): Observable<any> {
+    public activeSystemSchema(id: string): Observable<any> {
         return this.http.put<any>(`${this.url}/system/${id}/active`, null);
     }
 

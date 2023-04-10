@@ -3,14 +3,15 @@ import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from "../../services/profile.service";
 import { TokenService } from '../../services/token.service';
-import { TokenDialog } from '../../components/token-dialog/token-dialog.component';
+import { TokenDialog } from '../../modules/common/token-dialog/token-dialog.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Token } from '@guardian/interfaces';
+import { SchemaHelper, TagType, Token } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { ConfirmationDialogComponent } from 'src/app/components/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
+import { TagsService } from 'src/app/services/tag.service';
 
 enum OperationMode {
     None, Create, Kyc, Freeze
@@ -31,6 +32,7 @@ export class TokenConfigComponent implements OnInit {
         'tokenName',
         'tokenSymbol',
         'policies',
+        'tags',
         'users',
         'edit',
         'delete'
@@ -45,7 +47,7 @@ export class TokenConfigComponent implements OnInit {
         'tokenBalance',
         'frozen',
         'kyc',
-        'refresh',
+        'refresh'
     ];
 
     taskId: string | undefined = undefined;
@@ -54,11 +56,15 @@ export class TokenConfigComponent implements OnInit {
     user: any;
     currentPolicy: any = '';
     policies: any[] | null = null;
+    tagEntity = TagType.Token;
+    owner: any;
+    tagSchemas: any[] = [];
 
     public innerWidth: any;
     public innerHeight: any;
 
     constructor(
+        public tagsService: TagsService,
         private auth: AuthService,
         private profileService: ProfileService,
         private tokenService: TokenService,
@@ -96,9 +102,28 @@ export class TokenConfigComponent implements OnInit {
     }
 
     loadTokens() {
-        this.tokenService.getTokens(this.currentPolicy).subscribe((data: any) => {
+        forkJoin([
+            this.tokenService.getTokens(this.currentPolicy),
+            this.tagsService.getPublishedSchemas()
+        ]).subscribe((value) => {
+            const data: any = value[0];
+            const tagSchemas: any[] = value[1] || [];
+
             this.tokens = data.map((e: any) => new Token(e));
-            this.loading = false;
+            this.tagSchemas = SchemaHelper.map(tagSchemas);
+
+            const ids = this.tokens.map(e => e.id);
+            this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+                for (const token of this.tokens) {
+                    (token as any)._tags = data[token.id];
+                }
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
         }, (e) => {
             console.error(e.error);
             this.loading = false;
@@ -137,6 +162,7 @@ export class TokenConfigComponent implements OnInit {
             const profile = value[0];
             const policies = value[1] || [];
             this.isConfirmed = !!(profile && profile.confirmed);
+            this.owner = profile?.did;
             this.policies = policies;
             if (this.isConfirmed) {
                 this.queryChange();
