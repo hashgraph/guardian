@@ -316,6 +316,9 @@ export class MintBlock {
         vpDocument.type = DataTypes.MINT;
         vpDocument.messageId = vpMessageId;
         vpDocument.topicId = vpMessageResult.getTopicId();
+        vpDocument.documentFields = Array.from(
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
+        );
         const savedVp = await ref.databaseServer.saveVP(vpDocument);
         // #endregion
 
