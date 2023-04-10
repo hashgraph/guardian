@@ -93,7 +93,7 @@ import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module
         AddPairDialogComponent,
         RetireTokenDialogComponent,
         DataInputDialogComponent,
-        SchemaConfigComponent
+        SchemaConfigComponent,
         BrandingComponent
     ],
     imports: [

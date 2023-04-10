@@ -727,11 +727,18 @@ export class SchemaFormComponent implements OnInit {
         console.log(this.isShown)
         console.log("next " + this.currentIndex)
         const contentElement = document.querySelector('#main-content');
+        const formElement = document.querySelector('.form-dialog');
         setTimeout(() => {
             contentElement!.scrollTo({
                 top: -1,
                 behavior: 'smooth'
             });
+            if (formElement) {
+                formElement.scrollTo({
+                    top: -1,
+                    behavior: 'smooth'
+                });
+            }
             window.scrollTo({
                 top: -1,
                 behavior: 'smooth'
@@ -757,43 +764,50 @@ export class SchemaFormComponent implements OnInit {
             }
         } else {
             for (let i = this.currentIndex - 1; i >= 0; i--) {
-            if (fields[i].isRef) {
-                console.log(i + " " + fields[i].isRef)
-                console.log("previous")
-                prevRefIndex = i;
-                for (let j = prevRefIndex - 1; j >= 0; j--) {
-                    console.log("Isto é J: " + j)
-                    if (fields[j].isRef) {
-                        break
-                    } else if (j == 0) {
-                        prevRefIndex = 0;
+                if (fields[i].isRef) {
+                    console.log(i + " " + fields[i].isRef)
+                    console.log("previous")
+                    prevRefIndex = i;
+                    for (let j = prevRefIndex - 1; j >= 0; j--) {
+                        console.log("Isto é J: " + j)
+                        if (fields[j].isRef) {
+                            break
+                        } else if (j == 0) {
+                            prevRefIndex = 0;
+                        }
                     }
+                    console.log(i)
+                    break;
                 }
+                //this.isShown[i] = true;
                 console.log(i)
-                break;
-            }
-            this.isShown[i] = true;
-            console.log(i)
-            this.currentIndex = i;
-            console.log("Pls dont break" + this.currentIndex)
+                this.currentIndex = i;
+                console.log("Pls dont break" + this.currentIndex)
             }
             if (prevRefIndex !== -1) {
-            for (let i = this.currentIndex - 1; i >= prevRefIndex; i--) {
-                console.log("começou")
-                console.log(i)
-                this.isShown[i] = true;
-            }
-            this.currentIndex = prevRefIndex;
-            console.log("Current Index: " + this.currentIndex)
+                for (let i = this.currentIndex - 1; i >= prevRefIndex; i--) {
+                    console.log("começou")
+                    console.log(i)
+                    this.isShown[i] = true;
+                }
+                this.currentIndex = prevRefIndex;
+                console.log("Current Index: " + this.currentIndex)
             }
         }
         console.log(this.isShown)
         const contentElement = document.querySelector('#main-content');
+        const formElement = document.querySelector('.form-dialog');
         setTimeout(() => {
             contentElement!.scrollTo({
                 top: -1,
                 behavior: 'smooth'
             });
+            if (formElement) {
+                formElement.scrollTo({
+                    top: -1,
+                    behavior: 'smooth'
+                });
+            }
             window.scrollTo({
                 top: -1,
                 behavior: 'smooth'
