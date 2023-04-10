@@ -10,6 +10,9 @@
     <div *ngIf="!isModuleValid" class="not-exist">
         Policy doesn't exist
     </div>
+
+    <policy-settings *ngIf="openSettings" [settings]="settings" (change)="onChangeSettings($event)"></policy-settings>
+
     <div *ngIf="isModuleValid" class="policy-configuration" [attr.readonly]="readonly">
         <div class="top-toolbar">
             <ng-container *ngIf="rootType === 'Policy'">
@@ -204,6 +207,13 @@
 
                 <div class="delimiter"></div>
             </ng-container>
+
+            <div class="top-toolbar-btn all-status" (click)="onSettings()" title="Settings">
+                <mat-icon>settings</mat-icon>
+                <span>Settings</span>
+            </div>
+
+            <div class="delimiter"></div>
         </div>
 
         <div class="main-container">
@@ -588,20 +598,20 @@
                         </div>
                         <div class="pc-tabs-content" [attr.readonly]="!isTree">
                             <div class="prop-container" [hidden]="!options.descriptionModule">
-                                <module-properties class="readonly-status" [module]="openModule" [readonly]="readonly" type="Main"
-                                    [errors]="errorsMap[openModule.id]"></module-properties>
+                                <module-properties class="readonly-status" [module]="openModule" [readonly]="readonly"
+                                    type="Main" [errors]="errorsMap[openModule.id]"></module-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.inputsModule">
-                                <module-properties class="readonly-status" [module]="openModule" [readonly]="readonly" type="Inputs"
-                                    [errors]="errorsMap[openModule.id]"></module-properties>
+                                <module-properties class="readonly-status" [module]="openModule" [readonly]="readonly"
+                                    type="Inputs" [errors]="errorsMap[openModule.id]"></module-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.outputsModule">
-                                <module-properties class="readonly-status" [module]="openModule" [readonly]="readonly" type="Outputs"
-                                    [errors]="errorsMap[openModule.id]"></module-properties>
+                                <module-properties class="readonly-status" [module]="openModule" [readonly]="readonly"
+                                    type="Outputs" [errors]="errorsMap[openModule.id]"></module-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.variablesModule">
-                                <module-properties class="readonly-status" [module]="openModule" [readonly]="readonly" type="Variables"
-                                    [errors]="errorsMap[openModule.id]"></module-properties>
+                                <module-properties class="readonly-status" [module]="openModule" [readonly]="readonly"
+                                    type="Variables" [errors]="errorsMap[openModule.id]"></module-properties>
                             </div>
                         </div>
                     </div>
@@ -637,12 +647,12 @@
                                         <span>{{item}}</span>
                                     </div>
                                 </div>
-                                <common-properties class="readonly-status" [module]="openModule" [block]="currentBlock" [readonly]="readonly"
-                                    type="Common"></common-properties>
+                                <common-properties class="readonly-status" [module]="openModule" [block]="currentBlock"
+                                    [readonly]="readonly" type="Common"></common-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.events">
-                                <common-properties class="readonly-status" [module]="openModule" [block]="currentBlock" [readonly]="readonly"
-                                    type="Events"></common-properties>
+                                <common-properties class="readonly-status" [module]="openModule" [block]="currentBlock"
+                                    [readonly]="readonly" type="Events"></common-properties>
                             </div>
                             <div class="prop-container" [hidden]="!options.artifacts">
                                 <artifact-properties class="readonly-status" [readonly]="readonly" [policyId]="policyId"

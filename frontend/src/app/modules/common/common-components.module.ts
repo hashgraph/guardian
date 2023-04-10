@@ -15,6 +15,7 @@ import { TokenConfigurationComponent } from './token-configuration/token-configu
 import { TokenDialog } from './token-dialog/token-dialog.component';
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { FileExplorer } from './file-explorer/file-explorer.component';
+import { NgxColorsModule } from 'ngx-colors';
 
 @NgModule({
     declarations: [
@@ -35,7 +36,8 @@ import { FileExplorer } from './file-explorer/file-explorer.component';
         FormsModule,
         MaterialModule,
         NgxMatDatetimePickerModule,
-        NgxFileDropModule
+        NgxFileDropModule,
+        NgxColorsModule
     ],
     exports: [
         DatetimePicker,
@@ -48,7 +50,8 @@ import { FileExplorer } from './file-explorer/file-explorer.component';
         IconPreviewDialog,
         TokenConfigurationComponent,
         TokenDialog,
-        FileExplorer
+        FileExplorer,
+        NgxColorsModule
     ]
 })
 export class CommonComponentsModule { }

@@ -92,6 +92,7 @@ import { PoliciesComponent } from './policies/policies.component';
 //Routing
 import { AppRoutingModule } from 'src/app/app-routing.module';
 import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.component';
+import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
 
 @NgModule({
     declarations: [
@@ -167,7 +168,8 @@ import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.c
         ModulesListComponent,
         NewModuleDialog,
         TagsManagerBlockComponent,
-        NewPolicyDialog
+        NewPolicyDialog,
+        PolicySettingsComponent
     ],
     imports: [
         CommonModule,

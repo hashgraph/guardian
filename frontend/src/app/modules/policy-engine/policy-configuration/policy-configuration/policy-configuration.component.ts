@@ -22,6 +22,7 @@ import { RegisteredService } from '../../registered-service/registered.service';
 import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, TemplateModel } from '../../structures';
 import { Options } from '../../structures/storage/config-options';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
+import { PolicySettings } from '../../structures/storage/config-settings';
 
 enum OperationMode {
     none,
@@ -68,6 +69,8 @@ export class PolicyConfigurationComponent implements OnInit {
     public openType: 'Root' | 'Sub' = 'Root';
     public rootType: 'Policy' | 'Module' = 'Policy';
     public selectType: 'Block' | 'Module' = 'Block';
+    public openSettings: boolean = false;
+    public settings: PolicySettings;
 
     readonly codeMirrorOptions = {
         theme: 'default',
@@ -176,6 +179,7 @@ export class PolicyConfigurationComponent implements OnInit {
         private modulesService: ModulesService
     ) {
         this.options = new Options();
+        this.settings = new PolicySettings();
         this.policyModel = new PolicyModel();
         this.storage = new PolicyStorage(localStorage);
         this.openModule = this.policyModel;
@@ -191,6 +195,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public ngOnInit() {
         this.loading = true;
         this.options.load();
+        this.settings.load();
         this.route.queryParams.subscribe(queryParams => {
             this.loadData();
         });
@@ -596,7 +601,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public onConvertToModule() {
         this.currentBlock = this.policyModel.getBlock(this.currentBlock);
         if (this.currentBlock) {
-            if(this.currentBlock.search('module')) {
+            if (this.currentBlock.search('module')) {
                 this.informService.errorShortMessage(
                     `Block cannot be converted to module as we have a module in it.`,
                     'Invalid operation.'
@@ -1127,5 +1132,18 @@ export class PolicyConfigurationComponent implements OnInit {
         }, (e) => {
             this.loading = false;
         });
+    }
+
+    public onSettings() {
+        this.openSettings = true;
+    }
+
+    public onChangeSettings(event:boolean) {
+        this.openSettings = false;
+        if(event) {
+            this.settings.save(); 
+        } else {
+            this.settings.load();
+        }
     }
 }

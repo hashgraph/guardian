@@ -1,0 +1,108 @@
+<div class="settings">
+    <div class="settings-header">
+        <div class="settings-header-icon">
+            <mat-icon>settings</mat-icon>
+        </div>
+        <div class="settings-header-path">
+            <span>Settings</span>
+        </div>
+        <div class="settings-header-buttons">
+            <div class="settings-header-button cancel" (click)="onSettingsCancel()">
+                Cancel
+            </div>
+            <div class="settings-header-button save" (click)="onSettingsSave()">
+                Save
+            </div>
+        </div>
+    </div>
+    <div class="settings-body">
+        <div class="settings-menu">
+            <div class="settings-menu-item" [attr.active]="settingsTab===0" (click)="onSettingsTab(0)">
+                <mat-icon>palette</mat-icon>
+                <span>Themes</span>
+            </div>
+        </div>
+        <div class="settings-container" [attr.active]="settingsTab===0">
+
+
+            <div class="settings-block-color">
+                <div class="settings-block-color-prev">
+                    <div class="settings-block-checkbox"></div>
+                    <div class="settings-block-prev" theme-code="ui">Block Name</div>
+                    <div class="settings-block-description">UI Components</div>
+                </div>
+                <div class="settings-block-color-prop">
+                    <div class="settings-block-color-prop-value">
+                        <ngx-colors ngx-colors-trigger [(ngModel)]="settings.themeUIText"></ngx-colors>
+                    </div>
+                    <div class="settings-block-color-prop-name">Text</div>
+                </div>
+                <div class="settings-block-color-prop">
+                    <div class="settings-block-color-prop-value">
+                        <ngx-colors ngx-colors-trigger [(ngModel)]="settings.themeUIBackground"></ngx-colors>
+                    </div>
+                    <div class="settings-block-color-prop-name">Background</div>
+                </div>
+                <div class="settings-block-color-prop">
+                    <div class="settings-block-color-prop-value">
+                        <ngx-colors ngx-colors-trigger [(ngModel)]="settings.themeUIBorder"></ngx-colors>
+                    </div>
+                    <div class="settings-block-color-prop-name">Border</div>
+                </div>
+            </div>
+
+            <div class="settings-block-color">
+                <div class="settings-block-color-prev">
+                    <div class="settings-block-checkbox"></div>
+                    <div class="settings-block-prev" theme-code="server">Block Name</div>
+                    <div class="settings-block-description">Server Blocks</div>
+                </div>
+                <div class="settings-block-color-prop">
+                    <div class="settings-block-color-prop-value">
+                        <ngx-colors ngx-colors-trigger [(ngModel)]="settings.themeServerText"></ngx-colors>
+                    </div>
+                    <div class="settings-block-color-prop-name">Text</div>
+                </div>
+                <div class="settings-block-color-prop">
+                    <div class="settings-block-color-prop-value">
+                        <ngx-colors ngx-colors-trigger [(ngModel)]="settings.themeServerBackground"></ngx-colors>
+                    </div>
+                    <div class="settings-block-color-prop-name">Background</div>
+                </div>
+                <div class="settings-block-color-prop">
+                    <div class="settings-block-color-prop-value">
+                        <ngx-colors ngx-colors-trigger [(ngModel)]="settings.themeServerBorder"></ngx-colors>
+                    </div>
+                    <div class="settings-block-color-prop-name">Border</div>
+                </div>
+            </div>
+
+            <div class="settings-block-color">
+                <div class="settings-block-color-prev">
+                    <div class="settings-block-checkbox"></div>
+                    <div class="settings-block-prev" theme-code="addon">Block Name</div>
+                    <div class="settings-block-description">Addons</div>
+                </div>
+                <div class="settings-block-color-prop">
+                    <div class="settings-block-color-prop-value">
+                        <ngx-colors ngx-colors-trigger [(ngModel)]="settings.themeAddonText"></ngx-colors>
+                    </div>
+                    <div class="settings-block-color-prop-name">Text</div>
+                </div>
+                <div class="settings-block-color-prop">
+                    <div class="settings-block-color-prop-value">
+                        <ngx-colors ngx-colors-trigger [(ngModel)]="settings.themeAddonBackground"></ngx-colors>
+                    </div>
+                    <div class="settings-block-color-prop-name">Background</div>
+                </div>
+                <div class="settings-block-color-prop">
+                    <div class="settings-block-color-prop-value">
+                        <ngx-colors ngx-colors-trigger [(ngModel)]="settings.themeAddonBorder"></ngx-colors>
+                    </div>
+                    <div class="settings-block-color-prop-name">Border</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

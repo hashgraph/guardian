@@ -2,7 +2,8 @@
     --pc-main-grid-border: #b4c4cb;
     --pc-border-color: #bdbdbd;
     --pc-active-icon-color: #3f51b5;
-    --pc-header-color: #646464;
+    --pc-active-background-color: #eff0f9;
+    --pc-header-color: #555555;
     --pc-favorite-color: #f3ac0e;
     --pc-un-favorite-color: #f0f0f0;
     --pc-favorite-focus-color: #d0d0d0;
@@ -159,7 +160,7 @@
     width: 100%;
     margin: 0px;
     border: none;
-    padding: 0; 
+    padding: 0;
 }
 
 .right-toolbar {
@@ -526,7 +527,7 @@
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
-            
+
             .component-btn-icon {
                 position: absolute;
                 top: 3px;
@@ -1376,7 +1377,7 @@
     top: 4px !important;
 }
 
-.errors-properties  {
+.errors-properties {
     max-height: 200px;
     overflow: auto;
 }
