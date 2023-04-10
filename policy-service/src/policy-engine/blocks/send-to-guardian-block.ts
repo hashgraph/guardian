@@ -54,7 +54,7 @@ enum Operation {
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
-        defaultEvent: true,
+        defaultEvent: true
     },
     variables: [
         { path: 'options.topic', alias: 'topic', type: 'Topic' }

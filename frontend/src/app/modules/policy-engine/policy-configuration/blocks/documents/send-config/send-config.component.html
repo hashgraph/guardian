@@ -90,17 +90,8 @@
         </td>
     </tr>
 
-    <tr class="propRow" [attr.collapse]="propHidden.main" *ngIf="['database', 'auto'].includes(properties.dataSource)">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Chunking</td>
-        <td class="propRowCell">
-            <input class="prop-input" type="checkbox" [(ngModel)]="properties.chunking" [readonly]="readonly">
-        </td>
-    </tr>
-
     <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'optionGroup')"
-            [attr.collapse]="propHidden.optionGroup">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'optionGroup')" [attr.collapse]="propHidden.optionGroup">
             <mat-icon>arrow_drop_down</mat-icon>
         </td>
         <td class="propHeaderCell cellName">Options</td>
@@ -114,8 +105,7 @@
 
     <ng-container *ngFor="let option of properties.options; let i=index">
         <tr class="propRow" [attr.collapse]="propHidden.optionGroup">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.options, i)"
-                [attr.collapse]="propHidden.options[i]">
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.options, i)" [attr.collapse]="propHidden.options[i]">
                 <mat-icon>arrow_drop_down</mat-icon>
             </td>
             <td class="propRowCell cellName">Option {{i}}</td>
@@ -142,44 +132,4 @@
             </td>
         </tr>
     </ng-container>
-
-    <ng-template [ngIf]="properties.chunking">
-        <tr class="propHeader">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fieldGroup')"
-                [attr.collapse]="propHidden.fieldsGroup">
-                <mat-icon>arrow_drop_down</mat-icon>
-            </td>
-            <td class="propHeaderCell cellName">Fields</td>
-            <td class="propHeaderCell">
-                <div class="propAdd" (click)="addField()">
-                    <mat-icon>add</mat-icon>
-                    <span>Add Field</span>
-                </div>
-            </td>
-        </tr>
-        <ng-container *ngFor="let field of properties.fields; let i=index">
-            <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup">
-                <td class="propRowCol cellCollapse" (click)="onHide(propHidden.fields, i)"
-                    [attr.collapse]="propHidden.fields[i]">
-                    <mat-icon>arrow_drop_down</mat-icon>
-                </td>
-                <td class="propRowCell cellName">Field {{i}}</td>
-                <td class="propRowCell not-editable-text">
-                    <span>{{field.fieldPath}}</span>
-                    <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveField(i)">
-                        <mat-icon>delete</mat-icon>
-                    </span>
-                </td>
-            </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName" title="Fields">
-                    Fields
-                </td>
-                <td class="propRowCell">
-                    <input class="prop-input" [(ngModel)]="field.fieldPath" [readonly]="readonly" (blur)="onSave()">
-                </td>
-            </tr>
-        </ng-container>
-    </ng-template>
 </table>
