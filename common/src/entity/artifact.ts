@@ -8,37 +8,37 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 @Entity()
 export class Artifact extends BaseEntity {
     /**
-     * Group UUID
+     * Artifact UUID
      */
     @Property({ nullable: true })
     uuid?: string;
 
     /**
-     * Policy Id name
+     * Policy identifier
      */
     @Property({ nullable: true })
     policyId?: string;
 
     /**
-     * User name
+     * Artifact name
      */
     @Property({ nullable: true })
     name?: string;
 
     /**
-     * Member (User DID)
+     * Artifact type
      */
     @Enum({ nullable: true })
     type?: string;
 
     /**
-     * Group owner (User DID)
+     * Atifact owner
      */
     @Property({ nullable: true })
     owner?: string;
 
     /**
-     * Extention
+     * Artifact extention
      */
     @Property({ nullable: true })
     extention?: string;

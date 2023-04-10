@@ -8,19 +8,19 @@ import { Binary } from 'bson';
 @Entity()
 export class ArtifactChunk extends BaseEntity {
     /**
-     * Group UUID
+     * Artifact UUID
      */
     @Property({ nullable: true })
     uuid?: string;
 
     /**
-     * Policy Id name
+     * Chunk number
      */
     @Property({ nullable: true })
     number?: number;
 
     /**
-     * Group UUID
+     * Chunk data
      */
     @Property({ nullable: true })
     data?: Binary;
