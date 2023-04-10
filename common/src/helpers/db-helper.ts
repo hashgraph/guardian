@@ -13,7 +13,9 @@ import { DataBaseNamingStrategy } from './db-naming-strategy';
 export const COMMON_CONNECTION_CONFIG: any = {
     type: 'mongo',
     namingStrategy: DataBaseNamingStrategy,
-    dbName: process.env.DB_DATABASE,
+    dbName: (process.env.ENV||(process.env.HEDERA_NET!==process.env.PREUSED_HEDERA_NET))?
+        `${process.env.ENV}_${process.env.HEDERA_NET}_${process.env.DB_DATABASE}`:
+        process.env.DB_DATABASE,
     clientUrl:`mongodb://${process.env.DB_HOST}`,
     entities: [
         'dist/entity/*.js'

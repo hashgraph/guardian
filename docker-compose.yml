@@ -62,13 +62,19 @@ services:
       - ./config:/vault/config:rw
 
   logger-service:
+    env_file:
+      - ./logger-service/.env.docker
     build:
       context: .
       dockerfile: ./logger-service/Dockerfile
     depends_on:
       - message-broker
-
+    environment:
+      - ENV=${GUARDIAN_ENV}
+      
   worker-service-1:
+    env_file:
+      - ./worker-service/.env.docker
     build:
       context: .
       dockerfile: ./worker-service/Dockerfile
@@ -76,9 +82,12 @@ services:
       - ipfs-node
       - auth-service
     environment:
-      SERVICE_CHANNEL: worker.1
-
+      - SERVICE_CHANNEL="worker.1"
+      - ENV=${GUARDIAN_ENV}
+      
   worker-service-2:
+    env_file:
+      - ./worker-service/.env.docker
     build:
       context: .
       dockerfile: ./worker-service/Dockerfile
@@ -86,9 +95,12 @@ services:
       - ipfs-node
       - auth-service
     environment:
-      SERVICE_CHANNEL: worker.2
-
+      - SERVICE_CHANNEL="worker.2"
+      - ENV=${GUARDIAN_ENV}
+      
   auth-service:
+    env_file:
+      - ./auth-service/.env.docker
     build:
       context: .
       dockerfile: ./auth-service/Dockerfile
@@ -97,8 +109,12 @@ services:
       - vault
       - message-broker
       - logger-service
-
+    environment:
+      - ENV=${GUARDIAN_ENV}
+      
   api-gateway:
+    env_file:
+      - ./api-gateway/.env.docker
     build:
       context: .
       dockerfile: ./api-gateway/Dockerfile
@@ -110,8 +126,12 @@ services:
       - guardian-service
       - auth-service
       - logger-service
-
+    environment:
+      - ENV=${GUARDIAN_ENV}
+      
   policy-service:
+    env_file:
+      - ./policy-service/.env.docker
     build:
       context: .
       dockerfile: ./policy-service/Dockerfile
@@ -120,8 +140,12 @@ services:
       - message-broker
       - auth-service
       - logger-service
-
+    environment:
+      - ENV=${GUARDIAN_ENV}
+      
   guardian-service:
+    env_file:
+      - ./guardian-service/.env.docker
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
@@ -133,7 +157,9 @@ services:
       - worker-service-1
       - worker-service-2
       - policy-service
-
+    environment:
+      - ENV=${GUARDIAN_ENV}
+      
   mrv-sender:
     build:
       context: .
