@@ -5,8 +5,7 @@ import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfac
 import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
-import { VcDocument } from '@hedera-modules';
-import { VcHelper } from '@helpers/vc-helper';
+import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/common';
 import { BlockActionError } from '@policy-engine/errors';
 
 /**

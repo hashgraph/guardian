@@ -195,11 +195,11 @@ export class RequestDocumentBlockComponent implements OnInit {
                 ref: this.ref
             }).subscribe(() => {
                 setTimeout(() => {
-                    this.dialogLoading = false;
                     if (this.dialogRef) {
                         this.dialogRef.close();
                         this.dialogRef = null;
                     }
+                    this.dialogLoading = false;
                 }, 1000);
             }, (e) => {
                 console.error(e.error);

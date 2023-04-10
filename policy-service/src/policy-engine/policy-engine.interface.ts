@@ -1,7 +1,7 @@
 import { DocumentStatus, PolicyRole } from '@guardian/interfaces';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { EventConfig, IPolicyEvent } from './interfaces';
-import { DatabaseServer } from '@database-modules';
+import { DatabaseServer } from '@guardian/common';
 import { IPolicyUser } from './policy-user';
 import { IHederaAccount } from './helpers/utils';
 

@@ -10,14 +10,12 @@ import {
     MessageAction,
     MessageServer,
     MessageType,
-    SchemaMessage, UrlType
-} from '@hedera-modules';
-import { replaceValueRecursive } from '@helpers/utils';
-import {
+    SchemaMessage, UrlType,
+    replaceValueRecursive,
+    SchemaConverterUtils,
     Logger
 } from '@guardian/common';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
-import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
 import { importTag } from './../tag.service';
 import {
     createSchema,

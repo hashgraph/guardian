@@ -5,7 +5,7 @@ import { ActionCallback, EventBlock, StateField } from '@policy-engine/helpers/d
 import { IPolicyBlock, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { Token as TokenCollection } from '@entity/token';
+import { Token as TokenCollection } from '@guardian/common';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';

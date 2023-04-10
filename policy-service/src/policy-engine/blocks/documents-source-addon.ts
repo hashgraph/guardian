@@ -33,8 +33,22 @@ export class DocumentsSourceAddon {
      * Block state field
      * @private
      */
-     @StateField()
-     private state;
+    @StateField()
+    private state;
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        ref.options?.filters
+            ?.filter((filter) => filter.field?.startsWith('document.'))
+            .forEach((filter) => {
+                documentCacheFields.add(filter.field.replace('document.', ''));
+            });
+    }
 
     constructor() {
         if (!this.state) {

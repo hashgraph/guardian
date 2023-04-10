@@ -8,10 +8,18 @@ import {
     TopicType,
     UserRole, WorkerTaskType
 } from '@guardian/interfaces';
-import { VcHelper } from '@helpers/vc-helper';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
+import { ApiResponse } from '@api/helpers/api-response';
 import {
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper,
+    IAuthUser, RunFunctionAsync,
+    Topic,
+    DidDocument as DidDocumentCollection,
+    VcDocument as VcDocumentCollection,
+    Schema as SchemaCollection,
+    Settings,
     DIDDocument,
     DIDMessage,
     MessageAction,
@@ -19,23 +27,14 @@ import {
     RegistrationMessage,
     TopicConfig,
     TopicHelper,
-    VCMessage
-} from '@hedera-modules';
-import { Topic } from '@entity/topic';
-import { DidDocument as DidDocumentCollection } from '@entity/did-document';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { Schema as SchemaCollection } from '@entity/schema';
-import { ApiResponse } from '@api/helpers/api-response';
-import {
-    MessageResponse,
-    MessageError,
-    Logger,
-    DataBaseHelper,
-    IAuthUser, RunFunctionAsync
+    VCMessage,
+    Users,
+    KeyType,
+    Wallet,
+    VcHelper,
+    Workers
 } from '@guardian/common';
-import { Settings } from '@entity/settings';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { Workers } from '@helpers/workers';
 import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
 import { publishSystemSchema } from './helpers/schema-publish-helper';
 

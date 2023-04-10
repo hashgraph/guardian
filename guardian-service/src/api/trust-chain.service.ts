@@ -1,16 +1,19 @@
-import { DidDocument } from '@entity/did-document';
-import { VcDocument } from '@entity/vc-document';
-import { VpDocument } from '@entity/vp-document';
 import {
     IChainItem,
     MessageAPI,
     SchemaEntity
 } from '@guardian/interfaces';
-import {
-    VpDocument as HVpDocument
-} from '@hedera-modules';
 import { ApiResponse } from '@api/helpers/api-response';
-import { MessageResponse, MessageError, Logger, DataBaseHelper } from '@guardian/common';
+import {
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper,
+    DidDocument,
+    VcDocument,
+    VpDocument,
+    VpDocumentDefinition as HVpDocument
+} from '@guardian/common';
 
 /**
  * Get field

@@ -1,16 +1,18 @@
-import { Settings } from '@entity/settings';
-import { Topic } from '@entity/topic';
 import { ApiResponse } from '@api/helpers/api-response';
 import {
     MessageResponse,
     MessageError,
     Logger,
-    DataBaseHelper, SettingsContainer, ValidateConfiguration
+    DataBaseHelper,
+    SettingsContainer,
+    ValidateConfiguration,
+    Topic,
+    Settings,
+    Environment,
+    Workers
 } from '@guardian/common';
 import { MessageAPI, CommonSettings } from '@guardian/interfaces';
-import { Environment } from '@hedera-modules';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
-import { Workers } from '@helpers/workers';
 
 /**
  * Connecting to the message broker methods of working with root address book.

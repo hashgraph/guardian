@@ -1,17 +1,17 @@
-import { Settings } from '@entity/settings';
 import { ApiResponse } from '@api/helpers/api-response';
-import { Policy } from '@entity/policy';
 import {
     DataBaseHelper,
     Logger,
     MessageError,
     MessageResponse, RunFunctionAsync,
-    SettingsContainer
+    SettingsContainer,
+    Policy,
+    Settings,
+    DatabaseServer,
+    Workers
 } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
-import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { Workers } from '@helpers/workers';
 
 /**
  * Demo key

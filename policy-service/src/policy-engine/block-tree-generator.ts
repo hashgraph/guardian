@@ -1,19 +1,24 @@
-import { Policy } from '@entity/policy';
 import {
     IPolicyBlock,
     IPolicyInstance,
     IPolicyInterfaceBlock
 } from './policy-engine.interface';
 import { PolicyComponentsUtils } from './policy-components-utils';
-import { Singleton } from '@helpers/decorators/singleton';
 import { GenerateUUIDv4, IUser, PolicyEvents, UserRole } from '@guardian/interfaces';
-import { Logger, MessageError, MessageResponse, NatsService } from '@guardian/common';
-import { DatabaseServer } from '@database-modules';
+import {
+    Logger,
+    MessageError,
+    MessageResponse,
+    NatsService,
+    Policy,
+    Singleton,
+    DatabaseServer,
+    Users,
+} from '@guardian/common';
 import { IPolicyUser, PolicyUser } from './policy-user';
-import { Users } from '@helpers/users';
-import { Inject } from '@helpers/decorators/inject';
 import { ISerializedErrors, PolicyValidator } from '@policy-engine/block-validators';
 import { headers } from 'nats';
+import { Inject } from '@helpers/decorators/inject';
 
 /**
  * Block tree generator

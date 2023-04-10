@@ -3,9 +3,16 @@ import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, GenerateUUIDv4, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, VCMessage, MessageAction, MessageServer, VPMessage, MessageMemo } from '@hedera-modules';
-import { VcHelper } from '@helpers/vc-helper';
-import { Token as TokenCollection } from '@entity/token';
+import {
+    Token as TokenCollection,
+    VcDocumentDefinition as VcDocument,
+    VCMessage,
+    MessageAction,
+    MessageServer,
+    VPMessage,
+    MessageMemo,
+    VcHelper,
+} from '@guardian/common';
 import { DataTypes, IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType, IPolicyDocument, IPolicyMintEventState, IPolicyTokenBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -289,6 +296,9 @@ export class MintBlock {
         mintVcDocument.messageId = vcMessageResult.getId();
         mintVcDocument.topicId = vcMessageResult.getTopicId();
         mintVcDocument.relationships = messages;
+        mintVcDocument.documentFields = Array.from(
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
+        );
         await ref.databaseServer.saveVC(mintVcDocument);
         // #endregion
 
@@ -306,6 +316,9 @@ export class MintBlock {
         vpDocument.type = DataTypes.MINT;
         vpDocument.messageId = vpMessageId;
         vpDocument.topicId = vpMessageResult.getTopicId();
+        vpDocument.documentFields = Array.from(
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
+        );
         const savedVp = await ref.databaseServer.saveVP(vpDocument);
         // #endregion
 

@@ -1,7 +1,4 @@
-import { DidDocument } from '@entity/did-document';
-import { VcDocument } from '@entity/vc-document';
-import { VpDocument } from '@entity/vp-document';
-import { VcHelper } from '@helpers/vc-helper';
+
 import {
     DidDocumentStatus,
     DocumentSignature,
@@ -15,10 +12,13 @@ import { ApiResponse } from '@api/helpers/api-response';
 import {
     MessageResponse,
     MessageError,
-    DataBaseHelper
+    DataBaseHelper,
+    DidDocument,
+    VcDocument,
+    VpDocument,
+    Policy,
+    VcHelper
 } from '@guardian/common';
-import { Policy } from '@entity/policy';
-
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
  *

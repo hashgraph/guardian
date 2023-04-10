@@ -1,15 +1,24 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import { MessageResponse, MessageError, Logger } from '@guardian/common';
+import {
+    MessageResponse,
+    MessageError,
+    Logger,
+    DatabaseServer,
+    Tag,
+    Schema as SchemaCollection,
+    Policy as PolicyCollection,
+    Token as TokenCollection,
+    PolicyModule as ModuleCollection,
+    Users,
+    VcHelper,
+    MessageAction,
+    MessageServer,
+    MessageType,
+    TagMessage,
+    TopicConfig,
+    UrlType,
+} from '@guardian/common';
 import { GenerateUUIDv4, IRootConfig, MessageAPI, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
-import { DatabaseServer } from '@database-modules';
-import { Tag } from '@entity/tag';
-import { MessageAction, MessageServer, MessageType, TagMessage, TopicConfig, UrlType } from '@hedera-modules';
-import { Schema as SchemaCollection } from '@entity/schema';
-import { Policy as PolicyCollection } from '@entity/policy';
-import { Token as TokenCollection } from '@entity/token';
-import { PolicyModule as ModuleCollection } from '@entity/module';
-import { Users } from '@helpers/users';
-import { VcHelper } from '@helpers/vc-helper';
 
 /**
  * Publish schema tags

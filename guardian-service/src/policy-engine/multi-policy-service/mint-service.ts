@@ -1,11 +1,8 @@
-import { Token } from '@entity/token';
 import {
     ExternalMessageEvents, IRootConfig,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { ExternalEventChannel, Logger } from '@guardian/common';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Workers } from '@helpers/workers';
+import { ExternalEventChannel, Logger, Token, KeyType, Wallet, Workers} from '@guardian/common';
 
 /**
  * Token Config

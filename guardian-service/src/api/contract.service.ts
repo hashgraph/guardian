@@ -4,6 +4,22 @@ import {
     MessageError,
     Logger,
     DataBaseHelper,
+    Contract,
+    RetireRequest,
+    Schema as SchemaCollection,
+    Topic,
+    VcDocument as VcDocumentCollection,
+    Workers,
+    Users,
+    KeyType,
+    Wallet,
+    MessageAction,
+    MessageServer,
+    TopicConfig,
+    TopicHelper,
+    VCMessage,
+    DatabaseServer,
+    VcHelper
 } from '@guardian/common';
 import {
     ContractStatus,
@@ -14,23 +30,6 @@ import {
     TopicType,
     WorkerTaskType,
 } from '@guardian/interfaces';
-import { Contract } from '@entity/contract';
-import { Workers } from '@helpers/workers';
-import { Users } from '@helpers/users';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { DatabaseServer } from '@database-modules';
-import { RetireRequest } from '@entity/retire-request';
-import { Schema as SchemaCollection } from '@entity/schema';
-import {
-    MessageAction,
-    MessageServer,
-    TopicConfig,
-    TopicHelper,
-    VCMessage,
-} from '@hedera-modules';
-import { Topic } from '@entity/topic';
-import { VcHelper } from '@helpers/vc-helper';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { publishSystemSchema } from './helpers/schema-publish-helper';
 
 /**

@@ -7,15 +7,15 @@ import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import {
     MessageAction,
     MessageServer,
-    VcDocument,
-    VpDocument,
+    VcDocumentDefinition as VcDocument,
+    VpDocumentDefinition as VpDocument,
     DIDDocument,
     VCMessage,
     MessageMemo,
     VPMessage,
     DIDMessage,
     Message
-} from '@hedera-modules';
+} from '@guardian/common';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
@@ -384,6 +384,9 @@ export class SendToGuardianBlock {
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
         const operation: Operation = Operation.auto;
+        document.documentFields = Array.from(
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
+        );
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
         } else if (type === DocumentType.VerifiableCredential) {

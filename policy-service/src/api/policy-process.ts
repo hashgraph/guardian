@@ -1,21 +1,27 @@
 import '../config'
-import { Environment, MessageServer } from '@hedera-modules';
 import {
     COMMON_CONNECTION_CONFIG,
-    DB_DI, ExternalEventChannel, Logger, MessageBrokerChannel
+    DataBaseHelper,
+    ExternalEventChannel,
+    Logger,
+    MessageBrokerChannel,
+    entities,
+    Environment,
+    MessageServer,
+    Wallet,
+    Users,
+    Workers,
+    IPFS,
+    DatabaseServer,
 } from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { PolicyValidator } from '@policy-engine/block-validators';
-import { Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
-import { Workers } from '@helpers/workers';
 import process from 'process';
-import { IPFS } from '@helpers/ipfs';
 import { CommonVariables } from '@helpers/common-variables';
 import { PolicyEvents } from '@guardian/interfaces';
-import { DatabaseServer } from '@database-modules';
+import { GridFSBucket } from 'mongodb';
 
 const {
     policy,
@@ -33,12 +39,15 @@ Promise.all([
             useUnifiedTopology: true
         },
         ensureIndexes: true,
+        entities
     }),
     MessageBrokerChannel.connect(policyServiceName)
 ]).then(async values => {
     const [db, cn] = values;
-    DB_DI.orm = db;
-
+    DataBaseHelper.orm = db;
+    DataBaseHelper.gridFS = new GridFSBucket(
+        db.em.getDriver().getConnection().getDb()
+    );
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);

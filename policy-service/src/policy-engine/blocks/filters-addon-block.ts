@@ -26,6 +26,19 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
     variables: []
 })
 export class FiltersAddonBlock {
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        if (ref.options?.field?.startsWith('document.')) {
+            documentCacheFields.add(ref.options.field.replace('document.', ''));
+        }
+    }
+
     /**
      * Block state
      * @private
