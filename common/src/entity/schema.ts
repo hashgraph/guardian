@@ -133,12 +133,6 @@ export class Schema extends BaseEntity implements ISchema {
     iri?: string;
 
     /**
-     * Created at
-     */
-    @Property()
-    createDate: Date = new Date();
-
-    /**
      * Readonly flag
      */
     @Property({ nullable: true })

@@ -177,7 +177,7 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
         return;
     }
 
-    const schema = await DatabaseServer.getSchema({ 'document.$id': schemaId });
+    const schema = await DatabaseServer.getSchema({ iri: schemaId });
     if (!schema) {
         throw new Error(`Can not find schema ${schemaId}`);
     }

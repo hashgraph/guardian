@@ -101,7 +101,7 @@ export async function schemaAPI(): Promise<void> {
                 SchemaHelper.setVersion(item, null, item.version);
                 SchemaHelper.updateIRI(item);
                 await DatabaseServer.updateSchema(item.id, item);
-                await updateSchemaDefs(item.document.$id);
+                await updateSchemaDefs(item.iri);
             }
             const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
             return new MessageResponse(schemas);

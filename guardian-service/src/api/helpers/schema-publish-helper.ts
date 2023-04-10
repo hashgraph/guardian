@@ -95,7 +95,7 @@ export async function publishDefsSchemas(defs: any, owner: string, root: IRootCo
     const schemasIdsInDocument = Object.keys(defs);
     for (const schemaId of schemasIdsInDocument) {
         let schema = await DatabaseServer.getSchema({
-            'document.$id': schemaId
+            iri: schemaId
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
             schema = await incrementSchemaVersion(schema.iri, owner);
@@ -136,7 +136,7 @@ export async function findAndPublishSchema(
     }
 
     notifier.completedAndStart('Publishing related schemas');
-    const oldSchemaId = item.document?.$id;
+    const oldSchemaIri = item.iri;
     await publishDefsSchemas(item.document?.$defs, owner, root);
     item = await DatabaseServer.getSchema(id);
 
@@ -154,7 +154,7 @@ export async function findAndPublishSchema(
 
     notifier.completedAndStart('Update in DB');
     await updateSchemaDocument(item);
-    await updateSchemaDefs(item.document?.$id, oldSchemaId);
+    await updateSchemaDefs(item.iri, oldSchemaIri);
     notifier.completed();
     return item;
 }
