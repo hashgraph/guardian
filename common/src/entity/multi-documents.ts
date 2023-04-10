@@ -5,6 +5,8 @@ import {
     OnLoad,
     Property,
     AfterDelete,
+    AfterUpdate,
+    AfterCreate,
 } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
 import { GenerateUUIDv4, IVC } from '@guardian/interfaces';
@@ -74,34 +76,37 @@ export class MultiDocuments extends BaseEntity {
      * Create document
      */
     @BeforeCreate()
-    createDocument() {
-        if (this.document) {
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.documentFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.document));
-            fileStream.end();
-        }
+    async createDocument() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.document) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+                    this.documentFileId = fileStream.id;
+                    fileStream.write(JSON.stringify(this.document));
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
+                }
+            } catch (error) {
+                reject(error)
+            }
+        });
     }
 
     /**
      * Update document
      */
     @BeforeUpdate()
-    updateDocument() {
+    async updateDocument() {
         if (this.document) {
             if (this.documentFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.documentFileId)
                     .catch(console.error);
             }
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.documentFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.document));
-            fileStream.end();
+            await this.createDocument();
         }
     }
 
@@ -109,8 +114,10 @@ export class MultiDocuments extends BaseEntity {
      * Load document
      */
     @OnLoad()
+    @AfterUpdate()
+    @AfterCreate()
     async loadDocument() {
-        if (this.documentFileId && !this.document) {
+        if (this.documentFileId) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(
                 this.documentFileId
             );

@@ -27,6 +27,29 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
     variables: []
 })
 export class ReportItemBlock {
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref =
+            PolicyComponentsUtils.GetBlockRef<IPolicyReportItemBlock>(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        ref.options?.filters
+            ?.filter((filter) => filter.field?.startsWith('document.'))
+            .forEach((filter) => {
+                documentCacheFields.add(filter.field.replace('document.', ''));
+            });
+        ref.options?.variables
+            ?.filter((variable) => variable.value?.startsWith('document.'))
+            .forEach((variable) => {
+                documentCacheFields.add(
+                    variable.value.replace('document.', '')
+                );
+            });
+    }
+
     /**
      * Run logic
      * @param resultFields

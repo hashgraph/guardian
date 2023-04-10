@@ -14,6 +14,8 @@ import {
     OnLoad,
     BeforeUpdate,
     AfterDelete,
+    AfterUpdate,
+    AfterCreate,
 } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
 import { DataBaseHelper, SchemaConverterUtils } from '../helpers';
@@ -207,34 +209,37 @@ export class Schema extends BaseEntity implements ISchema {
      * Create document
      */
     @BeforeCreate()
-    createDocument() {
-        if (this.document) {
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.documentFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.document));
-            fileStream.end();
-        }
+    async createDocument() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.document) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+                    this.documentFileId = fileStream.id;
+                    fileStream.write(JSON.stringify(this.document));
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
+                }
+            } catch (error) {
+                reject(error)
+            }
+        });
     }
 
     /**
      * Update document
      */
     @BeforeUpdate()
-    updateDocument() {
+    async updateDocument() {
         if (this.document) {
             if (this.documentFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.documentFileId)
                     .catch(console.error);
             }
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.documentFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.document));
-            fileStream.end();
+            await this.createDocument();
         }
     }
 
@@ -242,6 +247,8 @@ export class Schema extends BaseEntity implements ISchema {
      * Load document
      */
     @OnLoad()
+    @AfterUpdate()
+    @AfterCreate()
     async loadDocument() {
         if (this.documentFileId) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(
@@ -272,32 +279,35 @@ export class Schema extends BaseEntity implements ISchema {
      * Create context
      */
     @BeforeCreate()
-    createContext() {
-        if (this.context) {
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.contextFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.context));
-            fileStream.end();
-        }
+    async createContext() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.context) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+                    this.contextFileId = fileStream.id;
+                    fileStream.write(JSON.stringify(this.context));
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
+                }
+            } catch (error) {
+                reject(error)
+            }
+        });
     }
 
     /**
      * Update context
      */
     @BeforeUpdate()
-    updateContext() {
+    async updateContext() {
         if (this.context) {
             if (this.contextFileId) {
                 DataBaseHelper.gridFS.delete(this.contextFileId).catch();
             }
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.contextFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.context));
-            fileStream.end();
+            await this.createContext();
         }
     }
 
@@ -305,6 +315,8 @@ export class Schema extends BaseEntity implements ISchema {
      * Load context
      */
     @OnLoad()
+    @AfterCreate()
+    @AfterUpdate()
     async loadContext() {
         if (this.contextFileId && !this.context) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(

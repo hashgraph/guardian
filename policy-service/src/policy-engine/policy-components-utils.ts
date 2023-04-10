@@ -93,11 +93,32 @@ export class PolicyComponentsUtils {
     private static readonly PolicyById: Map<string, IPolicyInstance> = new Map();
 
     /**
+     * Document cache fieldsmap
+     * policyId -> fields
+     * @private
+     */
+    private static readonly DocumentCacheFieldsMap: Map<string, Set<string>> = new Map();
+
+    /**
      * Policy Internal Events
      * policyId -> eventType -> callback
      * @private
      */
     private static readonly InternalListeners: Map<string, Map<string, Function[]>> = new Map();
+
+    /**
+     * Get document cache fields
+     * @param policyId Policy identifier
+     * @returns Fields
+     */
+    public static getDocumentCacheFields(policyId: string) {
+        let cache = PolicyComponentsUtils.DocumentCacheFieldsMap.get(policyId);
+        if (!cache) {
+            cache = new Set<string>();
+            PolicyComponentsUtils.DocumentCacheFieldsMap.set(policyId, cache);
+        }
+        return cache;
+    }
 
     /**
      * Log events

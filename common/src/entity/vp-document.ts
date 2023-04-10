@@ -1,5 +1,5 @@
 import { DocumentSignature, DocumentStatus, GenerateUUIDv4, IVP, IVPDocument } from '@guardian/interfaces';
-import { Entity, Property, Enum, BeforeCreate, Unique, BeforeUpdate, OnLoad, AfterDelete } from '@mikro-orm/core';
+import { Entity, Property, Enum, BeforeCreate, Unique, BeforeUpdate, OnLoad, AfterDelete, AfterUpdate, AfterCreate } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers';
@@ -136,48 +136,56 @@ export class VpDocument extends BaseEntity implements IVPDocument {
      * Create document
      */
     @BeforeCreate()
-    createDocument() {
-        if (this.document) {
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.documentFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.document));
-            fileStream.end();
-            if (this.documentFields) {
-                const newDocument: any = {};
-                for (const field of this.documentFields) {
-                    ObjSet(newDocument, field, ObjGet(this.document, field));
+    async createDocument() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.document) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+                    this.documentFileId = fileStream.id;
+                    fileStream.write(JSON.stringify(this.document));
+                    if (this.documentFields) {
+                        const newDocument: any = {};
+                        for (const field of this.documentFields) {
+                            const fieldValue = ObjGet(this.document, field)
+                            if (
+                                (typeof fieldValue === 'string' &&
+                                    fieldValue.length <
+                                        (+process.env
+                                            .DOCUMENT_CACHE_FIELD_LIMIT ||
+                                            100)) ||
+                                typeof fieldValue === 'number'
+                            ) {
+                                ObjSet(newDocument, field, fieldValue);
+                            }
+                        }
+                        this.document = newDocument;
+                    } else {
+                        delete this.document;
+                    }
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
                 }
-                this.document = newDocument;
+            } catch (error) {
+                reject(error)
             }
-        }
+        });
     }
 
     /**
      * Update document
      */
     @BeforeUpdate()
-    updateDocument() {
+    async updateDocument() {
         if (this.document) {
             if (this.documentFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.documentFileId)
                     .catch(console.error);
             }
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.documentFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.document));
-            fileStream.end();
-            if (this.documentFields) {
-                const newDocument: any = {};
-                for (const field of this.documentFields) {
-                    ObjSet(newDocument, field, ObjGet(this.document, field));
-                }
-                this.document = newDocument;
-            }
+            await this.createDocument();
         }
     }
 
@@ -185,6 +193,8 @@ export class VpDocument extends BaseEntity implements IVPDocument {
      * Load document
      */
     @OnLoad()
+    @AfterUpdate()
+    @AfterCreate()
     async loadDocument() {
         if (this.documentFileId) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(

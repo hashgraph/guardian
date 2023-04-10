@@ -1,5 +1,5 @@
 import { ApproveStatus, DocumentSignature, DocumentStatus, GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity } from '@guardian/interfaces';
-import { Entity, Property, BeforeCreate, BeforeUpdate, OnLoad, AfterDelete } from '@mikro-orm/core';
+import { Entity, Property, BeforeCreate, BeforeUpdate, OnLoad, AfterDelete, AfterCreate, AfterUpdate } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DataBaseHelper } from '../helpers';
@@ -568,48 +568,56 @@ export class DryRun extends BaseEntity {
      * Create document
      */
     @BeforeCreate()
-    createDocument() {
-        if (this.document) {
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.documentFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.document));
-            fileStream.end();
-            if (this.documentFields) {
-                const newDocument: any = {};
-                for (const field of this.documentFields) {
-                    ObjSet(newDocument, field, ObjGet(this.document, field));
+    async createDocument() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.document) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+                    this.documentFileId = fileStream.id;
+                    fileStream.write(JSON.stringify(this.document));
+                    if (this.documentFields) {
+                        const newDocument: any = {};
+                        for (const field of this.documentFields) {
+                            const fieldValue = ObjGet(this.document, field)
+                            if (
+                                (typeof fieldValue === 'string' &&
+                                    fieldValue.length <
+                                        (+process.env
+                                            .DOCUMENT_CACHE_FIELD_LIMIT ||
+                                            100)) ||
+                                typeof fieldValue === 'number'
+                            ) {
+                                ObjSet(newDocument, field, fieldValue);
+                            }
+                        }
+                        this.document = newDocument;
+                    } else {
+                        delete this.document;
+                    }
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
                 }
-                this.document = newDocument;
+            } catch (error) {
+                reject(error)
             }
-        }
+        });
     }
 
     /**
      * Update document
      */
     @BeforeUpdate()
-    updateDocument() {
+    async updateDocument() {
         if (this.document) {
             if (this.documentFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.documentFileId)
                     .catch(console.error);
             }
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.documentFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.document));
-            fileStream.end();
-            if (this.documentFields) {
-                const newDocument: any = {};
-                for (const field of this.documentFields) {
-                    ObjSet(newDocument, field, ObjGet(this.document, field));
-                }
-                this.document = newDocument;
-            }
+            await this.createDocument();
         }
     }
 
@@ -617,6 +625,8 @@ export class DryRun extends BaseEntity {
      * Load document
      */
     @OnLoad()
+    @AfterUpdate()
+    @AfterCreate()
     async loadDocument() {
         if (this.documentFileId) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(
@@ -647,32 +657,35 @@ export class DryRun extends BaseEntity {
      * Create context
      */
     @BeforeCreate()
-    createContext() {
-        if (this.context) {
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.contextFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.context));
-            fileStream.end();
-        }
+    async createContext() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.context) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+                    this.contextFileId = fileStream.id;
+                    fileStream.write(JSON.stringify(this.context));
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
+                }
+            } catch (error) {
+                reject(error)
+            }
+        });
     }
 
     /**
      * Update context
      */
     @BeforeUpdate()
-    updateContext() {
+    async updateContext() {
         if (this.context) {
             if (this.contextFileId) {
                 DataBaseHelper.gridFS.delete(this.contextFileId).catch();
             }
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.contextFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.context));
-            fileStream.end();
+            await this.createContext();
         }
     }
 
@@ -680,13 +693,15 @@ export class DryRun extends BaseEntity {
      * Load context
      */
     @OnLoad()
+    @AfterCreate()
+    @AfterUpdate()
     async loadContext() {
         if (this.contextFileId && !this.context) {
-            const fileRS = DataBaseHelper.gridFS.openDownloadStream(
+            const fileStream = DataBaseHelper.gridFS.openDownloadStream(
                 this.contextFileId
             );
             const bufferArray = [];
-            for await (const data of fileRS) {
+            for await (const data of fileStream) {
                 bufferArray.push(data);
             }
             const buffer = Buffer.concat(bufferArray);
@@ -710,34 +725,37 @@ export class DryRun extends BaseEntity {
      * Create config
      */
     @BeforeCreate()
-    createConfig() {
-        if (this.config) {
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.configFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.config));
-            fileStream.end();
-        }
+    async createConfig() {
+        await new Promise<void>((resolve, reject) => {
+            try {
+                if (this.config) {
+                    const fileStream = DataBaseHelper.gridFS.openUploadStream(
+                        GenerateUUIDv4()
+                    );
+                    this.configFileId = fileStream.id;
+                    fileStream.write(JSON.stringify(this.config));
+                    fileStream.end(() => resolve());
+                } else {
+                    resolve();
+                }
+            } catch (error) {
+                reject(error)
+            }
+        });
     }
 
     /**
      * Update config
      */
     @BeforeUpdate()
-    updateConfig() {
+    async updateConfig() {
         if (this.config) {
             if (this.configFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.configFileId)
                     .catch(console.error);
             }
-            const fileStream = DataBaseHelper.gridFS.openUploadStream(
-                GenerateUUIDv4()
-            );
-            this.configFileId = fileStream.id;
-            fileStream.write(JSON.stringify(this.config));
-            fileStream.end();
+            await this.createConfig();
         }
     }
 
@@ -745,6 +763,8 @@ export class DryRun extends BaseEntity {
      * Load config
      */
     @OnLoad()
+    @AfterCreate()
+    @AfterUpdate()
     async loadConfig() {
         if (this.configFileId && !this.config) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(

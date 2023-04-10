@@ -384,10 +384,9 @@ export class SendToGuardianBlock {
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
         const operation: Operation = Operation.auto;
-        if (ref.options.chunking) {
-            document.documentFields =
-                ref.options.fields?.map((field) => field.fieldPath) || [];
-        }
+        document.documentFields = Array.from(
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
+        );
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
         } else if (type === DocumentType.VerifiableCredential) {

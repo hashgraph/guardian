@@ -296,6 +296,9 @@ export class MintBlock {
         mintVcDocument.messageId = vcMessageResult.getId();
         mintVcDocument.topicId = vcMessageResult.getTopicId();
         mintVcDocument.relationships = messages;
+        mintVcDocument.documentFields = Array.from(
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
+        );
         await ref.databaseServer.saveVC(mintVcDocument);
         // #endregion
 
