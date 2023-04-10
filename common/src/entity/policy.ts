@@ -1,6 +1,6 @@
 import { BaseEntity } from '../models';
 import { GenerateUUIDv4, PolicyType } from '@guardian/interfaces';
-import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
+import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers';
 import { ObjectId } from '@mikro-orm/mongodb';
 
@@ -199,8 +199,6 @@ export class Policy extends BaseEntity {
      * Load config
      */
     @OnLoad()
-    @AfterCreate()
-    @AfterUpdate()
     async loadConfig() {
         if (this.configFileId && !this.config) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(

@@ -693,8 +693,6 @@ export class DryRun extends BaseEntity {
      * Load context
      */
     @OnLoad()
-    @AfterCreate()
-    @AfterUpdate()
     async loadContext() {
         if (this.contextFileId && !this.context) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(
@@ -763,8 +761,6 @@ export class DryRun extends BaseEntity {
      * Load config
      */
     @OnLoad()
-    @AfterCreate()
-    @AfterUpdate()
     async loadConfig() {
         if (this.configFileId && !this.config) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(

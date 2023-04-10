@@ -5,13 +5,9 @@ import {
     OnLoad,
     BeforeUpdate,
     AfterDelete,
-    AfterCreate,
-    AfterUpdate,
 } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
 import { ObjectId } from '@mikro-orm/mongodb';
-import ObjGet from 'lodash.get';
-import ObjSet from 'lodash.set';
 import { DataBaseHelper } from '../helpers';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
@@ -56,7 +52,7 @@ export class SplitDocuments extends BaseEntity {
     /**
      * Document instance
      */
-    @Property({ nullable: true })
+    @Property({ persist: false })
     document?: any;
 
     /**
@@ -64,12 +60,6 @@ export class SplitDocuments extends BaseEntity {
      */
     @Property({ nullable: true })
     documentFileId?: ObjectId;
-
-    /**
-     * Document fields
-     */
-    @Property({ nullable: true })
-    documentFields?: string[];
 
     /**
      * Create document
@@ -84,25 +74,6 @@ export class SplitDocuments extends BaseEntity {
                     );
                     this.documentFileId = fileStream.id;
                     fileStream.write(JSON.stringify(this.document));
-                    if (this.documentFields) {
-                        const newDocument: any = {};
-                        for (const field of this.documentFields) {
-                            const fieldValue = ObjGet(this.document, field)
-                            if (
-                                (typeof fieldValue === 'string' &&
-                                    fieldValue.length <
-                                        (+process.env
-                                            .DOCUMENT_CACHE_FIELD_LIMIT ||
-                                            100)) ||
-                                typeof fieldValue === 'number'
-                            ) {
-                                ObjSet(newDocument, field, fieldValue);
-                            }
-                        }
-                        this.document = newDocument;
-                    } else {
-                        delete this.document;
-                    }
                     fileStream.end(() => resolve());
                 } else {
                     resolve();
@@ -132,8 +103,6 @@ export class SplitDocuments extends BaseEntity {
      * Load document
      */
     @OnLoad()
-    @AfterUpdate()
-    @AfterCreate()
     async loadDocument() {
         if (this.documentFileId) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(

@@ -5,8 +5,6 @@ import {
     OnLoad,
     Property,
     AfterDelete,
-    AfterUpdate,
-    AfterCreate,
 } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
 import { GenerateUUIDv4, IVC } from '@guardian/interfaces';
@@ -114,8 +112,6 @@ export class MultiDocuments extends BaseEntity {
      * Load document
      */
     @OnLoad()
-    @AfterUpdate()
-    @AfterCreate()
     async loadDocument() {
         if (this.documentFileId) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(

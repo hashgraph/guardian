@@ -58,6 +58,21 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
     variables: []
 })
 export class AggregateBlock {
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        ref.options?.groupByFields
+            ?.filter((field) => field.fieldPath?.startsWith('document.'))
+            .forEach((field) => {
+                documentCacheFields.add(field.fieldPath.replace('document.', ''));
+            });
+    }
+
     /**
      * Tick cron
      * @event PolicyEventType.PopEvent

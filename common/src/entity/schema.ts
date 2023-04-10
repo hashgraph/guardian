@@ -14,8 +14,6 @@ import {
     OnLoad,
     BeforeUpdate,
     AfterDelete,
-    AfterUpdate,
-    AfterCreate,
 } from '@mikro-orm/core';
 import { BaseEntity } from '../models';
 import { DataBaseHelper, SchemaConverterUtils } from '../helpers';
@@ -247,8 +245,6 @@ export class Schema extends BaseEntity implements ISchema {
      * Load document
      */
     @OnLoad()
-    @AfterUpdate()
-    @AfterCreate()
     async loadDocument() {
         if (this.documentFileId) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(
@@ -315,8 +311,6 @@ export class Schema extends BaseEntity implements ISchema {
      * Load context
      */
     @OnLoad()
-    @AfterCreate()
-    @AfterUpdate()
     async loadContext() {
         if (this.contextFileId && !this.context) {
             const fileStream = DataBaseHelper.gridFS.openDownloadStream(
