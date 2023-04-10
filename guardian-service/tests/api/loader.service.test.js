@@ -10,9 +10,6 @@ moduleAlias.addAliases({
   "@helpers": process.cwd() + '/dist' + "/helpers",
   "@auth": process.cwd() + '/dist' +  "/auth",
   "@policy-engine": process.cwd() + '/dist' +  "/policy-engine",
-  "@hedera-modules": process.cwd() + '/dist' +  "/hedera-modules/index",
-  "@document-loader": process.cwd() + '/dist' +  "/document-loader",
-  "@database-modules": process.cwd() + '/dist' + "/database-modules"
 });
 const { expect, assert } = require('chai');
 const rewire = require("rewire");
@@ -44,10 +41,7 @@ class MockLogger {
 }
 
 loaderAPIModule.__set__('common_1', {
-    Logger: MockLogger
-});
-
-loaderAPIModule.__set__('_hedera_modules_1', {
+    Logger: MockLogger,
     DidRootKey: {
         create: function () {
             return {
