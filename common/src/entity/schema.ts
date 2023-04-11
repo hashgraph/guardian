@@ -307,7 +307,9 @@ export class Schema extends BaseEntity implements ISchema {
     async updateContext() {
         if (this.context) {
             if (this.contextFileId) {
-                DataBaseHelper.gridFS.delete(this.contextFileId).catch();
+                DataBaseHelper.gridFS
+                    .delete(this.contextFileId)
+                    .catch(console.error);
             }
             await this.createContext();
         }

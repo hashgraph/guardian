@@ -118,14 +118,15 @@ export class MultiSignBlockComponent implements OnInit {
             },
             status
         }
-        this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-            setTimeout(() => {
-                this.loading = false;
-            }, 1000);
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, data)
+            .subscribe(
+                () => {},
+                (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                }
+            );
     }
 
     onDetails() {

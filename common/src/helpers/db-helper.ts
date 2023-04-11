@@ -29,6 +29,15 @@ export const COMMON_CONNECTION_CONFIG: any = {
 export class DataBaseHelper<T extends BaseEntity> {
 
     /**
+     * System fields
+     */
+    private static readonly _systemFields: string[] = [
+        'documentFileId',
+        'contextFileId',
+        'configFileId',
+    ];
+
+    /**
      * ORM
      */
     private static _orm?: MikroORM<MongoDriver>;
@@ -226,6 +235,9 @@ export class DataBaseHelper<T extends BaseEntity> {
 
         let entityToUpdateOrCreate: any = await repository.findOne(filter?.where || filter || entity.id || entity._id);
         if (entityToUpdateOrCreate) {
+            DataBaseHelper._systemFields.forEach(systemFields => {
+                delete entity[systemFields];
+            });
             wrap(entityToUpdateOrCreate).assign({ ...entity, updateDate: new Date() });
         } else {
             entityToUpdateOrCreate = repository.create({ ...entity });
@@ -267,6 +279,9 @@ export class DataBaseHelper<T extends BaseEntity> {
         const repository = this._em.getRepository(this.entityClass);
         const entitiesToUpdate: any = await repository.find(filter?.where || filter || entity.id || entity._id);
         for (const entityToUpdate of entitiesToUpdate) {
+            DataBaseHelper._systemFields.forEach(systemFields => {
+                delete entity[systemFields];
+            });
             wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() });
         }
         await repository.flush();
