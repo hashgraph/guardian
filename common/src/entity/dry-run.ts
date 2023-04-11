@@ -683,7 +683,9 @@ export class DryRun extends BaseEntity {
     async updateContext() {
         if (this.context) {
             if (this.contextFileId) {
-                DataBaseHelper.gridFS.delete(this.contextFileId).catch();
+                DataBaseHelper.gridFS
+                    .delete(this.contextFileId)
+                    .catch(console.error);
             }
             await this.createContext();
         }
