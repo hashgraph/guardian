@@ -31,7 +31,7 @@ export class DataBaseHelper<T extends BaseEntity> {
     /**
      * System fields
      */
-    private static _systemFields: string[] = [
+    private static readonly _systemFields: string[] = [
         'documentFileId',
         'contextFileId',
         'configFileId',
