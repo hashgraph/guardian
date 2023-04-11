@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { PolicySettings } from '../../structures/storage/config-settings';
+import { ThemeService } from '../../services/theme.service';
+import { Theme } from "../../services/theme";
+import { ThemeRole } from "../../services/theme-role";
 
 /**
  * Settings.
@@ -10,12 +12,15 @@ import { PolicySettings } from '../../structures/storage/config-settings';
     styleUrls: ['./policy-settings.component.scss']
 })
 export class PolicySettingsComponent implements OnInit {
-    @Input('settings') settings!: PolicySettings;
     @Output('change') update = new EventEmitter();
 
     public settingsTab: number = 0;
+    public themes!: Theme[];
+    public theme!: Theme;
 
-    constructor() {
+    constructor(private themeService: ThemeService) {
+        this.themes = this.themeService.load();
+        this.theme = this.themes[0];
     }
 
     ngOnInit(): void {
@@ -32,6 +37,17 @@ export class PolicySettingsComponent implements OnInit {
 
     public onSettingsTab(index: number) {
         this.settingsTab = index;
+    }
+
+    public onAddRole() {
+        this.theme.addRole();
+    }
+    public onDeleteRole(role: ThemeRole) {
+        this.theme.deleteRole(role);
+    }
+
+    public blockStyle(role: ThemeRole) {
+        return this.themeService.getStyleByRole(role)
     }
 }
 

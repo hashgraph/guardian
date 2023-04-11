@@ -216,3 +216,34 @@ button.mat-button {
     padding: 0px 2px !important;
     text-decoration: underline !important;
 }
+
+
+*[theme-block] {
+    color: var(--theme-color);
+    border-color: var(--theme-border-color);
+    background-color: var(--theme-background-color);
+    border-radius: var(--theme-border-radius);
+}
+
+*[theme-all] {
+    color: var(--theme-color) !important;
+    border-color: var(--theme-border-color) !important;
+    background-color: var(--theme-background-color) !important;
+    border-radius: var(--theme-border-radius) !important;
+}
+
+*[theme-block][theme-text],
+*[theme-block] *[theme-text] {
+    color: var(--theme-color) !important;
+}
+
+*[theme-block][theme-border],
+*[theme-block] *[theme-border] {
+    border-color: var(--theme-border-color) !important;
+    border-radius: var(--theme-border-radius) !important;
+}
+
+*[theme-block][theme-background],
+*[theme-block] *[theme-background] {
+    background-color: var(--theme-background-color) !important;
+}

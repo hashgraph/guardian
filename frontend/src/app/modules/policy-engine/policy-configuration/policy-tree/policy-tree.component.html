@@ -1,39 +1,21 @@
-<div class="container"(mousemove)="mousemove($event)" (mouseleave)="mouseleave($event)" >
-    <div #parent class="canvas" >
+<div class="container" (mousemove)="mousemove($event)" (mouseleave)="mouseleave($event)">
+    <div #parent class="canvas">
         <canvas #canvas></canvas>
     </div>
-    <div
-        class="drop-container"
-        #treeList="cdkDropList"
-        cdkDropList
-        onDragEntered
-        [cdkDropListDisabled]="readonly"
-        [cdkDropListConnectedTo]="menuList"
-        (cdkDropListDropped)="drop($event)"
-        (cdkDropListSorted)="onDragSorted($event)"
-        (cdkDropListEntered)="onDragEntered($event)"
-        [cdkDropListSortPredicate]="onDragSortPredicate"
-    >
+    <div class="drop-container" #treeList="cdkDropList" cdkDropList onDragEntered [cdkDropListDisabled]="readonly"
+        [cdkDropListConnectedTo]="menuList" (cdkDropListDropped)="drop($event)"
+        (cdkDropListSorted)="onDragSorted($event)" (cdkDropListEntered)="onDragEntered($event)"
+        [cdkDropListSortPredicate]="onDragSortPredicate">
         <div *ngIf="data" class="tree" [attr.readonly]="readonly" [attr.move-actions]="visibleMoveActions">
             <div class="block-all-expand" (click)="onAllCollapse()" [attr.collapsed]="allCollapse">
                 <mat-icon *ngIf="allCollapse === '2'">unfold_more</mat-icon>
                 <mat-icon *ngIf="allCollapse !== '2'">unfold_less</mat-icon>
             </div>
-            <div class="block-container" 
-                *ngFor="let item of data" 
-                [attr.expandable]="item.expandable"
-                [attr.collapsed]="item.collapsed" 
-                [attr.selected]="isSelect(item)" 
-                [attr.error]="item.error"
-                [attr.root]="item.root" 
-                [attr.block-id]="item.id" 
-                [attr.block-instance]="item.node.tag"
-                [attr.block-type]="item.type" 
-                [style.paddingLeft]="item.offset" 
-                cdkDrag
-                [cdkDragData]="item.level"
-                [cdkDragDisabled]="item.root"
-            >
+            <div class="block-container" *ngFor="let item of data" [attr.expandable]="item.expandable"
+                [attr.collapsed]="item.collapsed" [attr.selected]="isSelect(item)" [attr.error]="item.error"
+                [attr.root]="item.root" [attr.block-id]="item.id" [attr.block-instance]="item.node.tag"
+                [attr.block-type]="item.type" [style.paddingLeft]="item.offset" cdkDrag [cdkDragData]="item.level"
+                [cdkDragDisabled]="item.root">
                 <div class="block-expand" (click)="onCollapse($event, item)">
                     <mat-icon>arrow_drop_down</mat-icon>
                 </div>
@@ -67,8 +49,8 @@
                     </div>
                 </div>
 
-                <div *ngIf="!item.isModule && !item.root" class="block-body">
-                    <div class="block-item" (click)="onSelect($event, item)">
+                <div *ngIf="!item.isModule && !item.root" class="block-body" [style]="blockStyle(item)">
+                    <div class="block-item" (click)="onSelect($event, item)" theme-all>
                         <div class="block-item-icon">
                             <mat-icon>{{item.icon}}</mat-icon>
                         </div>
@@ -84,7 +66,8 @@
                             <button (click)="onDropLeft($event)" mat-icon-button class="action-button move-action-left">
                                 <mat-icon>arrow_left</mat-icon>
                             </button>
-                            <button (click)="onDropRight($event)" mat-icon-button class="action-button move-action-right">
+                            <button (click)="onDropRight($event)" mat-icon-button
+                                class="action-button move-action-right">
                                 <mat-icon>arrow_right</mat-icon>
                             </button>
                             <button (click)="onDropDown($event)" mat-icon-button class="action-button move-action-down">
@@ -131,7 +114,8 @@
                             <button (click)="onDropLeft($event)" mat-icon-button class="action-button move-action-left">
                                 <mat-icon>arrow_left</mat-icon>
                             </button>
-                            <button (click)="onDropRight($event)" mat-icon-button class="action-button move-action-right">
+                            <button (click)="onDropRight($event)" mat-icon-button
+                                class="action-button move-action-right">
                                 <mat-icon>arrow_right</mat-icon>
                             </button>
                             <button (click)="onDropDown($event)" mat-icon-button class="action-button move-action-down">

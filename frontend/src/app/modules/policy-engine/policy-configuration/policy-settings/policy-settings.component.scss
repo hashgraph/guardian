@@ -1,19 +1,19 @@
 *[theme-code="ui"] {
-    background: var( --block-theme-ui-background) !important;
-    border-color: var( --block-theme-ui-border) !important;
-    color: var( --block-theme-ui-text) !important;
+    background: var(--block-theme-ui-background) !important;
+    border-color: var(--block-theme-ui-border) !important;
+    color: var(--block-theme-ui-text) !important;
 }
 
 *[theme-code="server"] {
-    background: var( --block-theme-server-background) !important;
-    border-color: var( --block-theme-server-border) !important;
-    color: var( --block-theme-server-text) !important;
+    background: var(--block-theme-server-background) !important;
+    border-color: var(--block-theme-server-border) !important;
+    color: var(--block-theme-server-text) !important;
 }
 
 *[theme-code="addon"] {
-    background: var( --block-theme-addon-background) !important;
-    border-color: var( --block-theme-addon-border) !important;
-    color: var( --block-theme-addon-text) !important;
+    background: var(--block-theme-addon-background) !important;
+    border-color: var(--block-theme-addon-border) !important;
+    color: var(--block-theme-addon-text) !important;
 }
 
 .settings {
@@ -173,34 +173,39 @@
         &[active="true"] {
             display: block !important;
         }
-    }
 
-    .settings-block-color {
-        margin-top: 18px;
-        margin-left: 10px;
-
-        .settings-block-checkbox {
-            height: 34px;
-            padding: 9px;
-            box-sizing: border-box;
-            width: 4px;
-
-            input {
-                width: 16px;
-                height: 16px;
-                box-sizing: border-box;
-                line-height: 24px;
-                margin: 0;
-                display: block;
-                cursor: pointer;
-                border-radius: 4px;
-                outline: none;
-            }
-        }
-        .settings-block-color-prev {
+        .role-color {
+            height: 130px;
             display: grid;
-            grid-template-columns: 15px 180px auto;
-            align-items: center;
+            grid-template-columns: 50px auto 30px;
+            margin: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            box-sizing: border-box;
+            box-shadow: 3px 3px 6px 0px #00000020;
+        }
+
+        .role-color-container {
+            height: 108px;
+        }
+
+        .role-color-filter {
+            height: 50px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 100px 150px 100px auto;
+        }
+
+        .role-color-prev {
+            margin-top: 8px;
+            height: 50px;
+            width: 100%;
+        }
+
+        .role-color-prev {
+            display: flex;
+            flex-direction: row;
         }
 
         .settings-block-prev {
@@ -216,12 +221,86 @@
             box-shadow: 4px 4px 6px 0px #00000040;
         }
 
-        .settings-block-color-prop {
-            display: grid;
-            grid-template-columns: 50px auto;
+        .block-color-prev {
+            height: 34px;
+            position: relative;
+            width: 150px;
+            background: #fff;
+            border: 2px solid #000;
+            box-sizing: border-box;
+            padding: 6px 12px;
+            user-select: none;
+            margin: 4px 38px 4px 0px;
+            box-shadow: 4px 4px 6px 0px #00000040;
+        }
+
+        .role-color-prop {
+            display: flex;
+            height: 34px;
+            box-sizing: border-box;
+            margin: 4px 38px 4px 0px;
+            min-width: 60px;
             align-items: center;
-            margin-left: 30px;
-            margin-top: 10px;
+        }
+
+        .role-color-prop-value {
+            width: 30px;
+            height: 34px;
+            margin-right: 12px;
+        }
+
+        .new-role {
+            position: relative;
+            height: 34px;
+            box-sizing: border-box;
+            overflow: hidden;
+            padding: 7px 12px 7px 40px;
+            display: flex;
+            flex-direction: row;
+            user-select: none;
+            cursor: pointer;
+            margin: 30px 10px 5px 0px;
+            border-radius: 6px;
+            width: 140px;
+            margin-left: 10px;
+            border: 1px solid #5a9af9;
+
+            &:hover {
+                background: #f1f1f1;
+            }
+            & .new-icon {
+                position: absolute;
+                left: 8px;
+                top: 4px;
+                color: #1274fb;
+            }
+            & .new-role-name {
+                color: #1274fb;
+            }
+        }
+
+        .delete-btn {
+            cursor: pointer;
+            color: #eb0303;
+            border-radius: 6px;
+            user-select: none;
+            width: 30px;
+            height: 30px;
+            padding: 3px;
+            box-sizing: border-box;
+
+            &:hover {
+                background: #f1f1f1;
+            }
+        }
+
+        .role-color-number {
+            user-select: none;
+            padding: 3px;
+            box-sizing: border-box;
+            font-size: 16px;
+            color: #444;
+            font-weight: 500;
         }
     }
 }

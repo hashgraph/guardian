@@ -86,13 +86,14 @@ import { NewModuleDialog } from './helpers/new-module-dialog/new-module-dialog.c
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 //Registered Service
-import { RegisteredService } from './registered-service/registered.service';
+import { RegisteredService } from './services/registered.service';
 //Policies Grid
 import { PoliciesComponent } from './policies/policies.component';
 //Routing
 import { AppRoutingModule } from 'src/app/app-routing.module';
 import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.component';
 import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
+import { ThemeService } from './services/theme.service';
 
 @NgModule({
     declarations: [
@@ -235,7 +236,8 @@ import { PolicySettingsComponent } from './policy-configuration/policy-settings/
         // ModulesListComponent
     ],
     providers: [
-        RegisteredService
+        RegisteredService,
+        ThemeService
     ]
 })
 export class PolicyEngineModule { }

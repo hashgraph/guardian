@@ -2,7 +2,8 @@ import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, Input, O
 import { FlatBlockNode } from '../../structures/tree-model/block-node';
 import { CdkDropList } from '@angular/cdk/drag-drop';
 import { PolicyBlockModel, BlocLine, BlockRect, EventCanvas, PolicyModel, PolicyModuleModel } from '../../structures';
-import { RegisteredService } from '../../registered-service/registered.service';
+import { RegisteredService } from '../../services/registered.service';
+import { ThemeService } from '../../services/theme.service';
 
 /**
  * Settings for all blocks.
@@ -70,7 +71,8 @@ export class PolicyTreeComponent implements OnInit {
     constructor(
         private registeredService: RegisteredService,
         private element: ElementRef,
-        private componentFactoryResolver: ComponentFactoryResolver
+        private componentFactoryResolver: ComponentFactoryResolver,
+        private themeService: ThemeService
     ) {
         this.actorMap = {};
         this.actorMap[''] = 'Event Initiator';
@@ -601,5 +603,9 @@ export class PolicyTreeComponent implements OnInit {
 
     private reorderEvent(type: string, data?: any): any {
         return { type, data };
+    }
+
+    public blockStyle(node: FlatBlockNode):any {
+        return this.themeService.getStyle(node.node);
     }
 }

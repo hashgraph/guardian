@@ -22,20 +22,10 @@ export class PolicySettings {
 
     private setStyle():void {
         try {
-            document.body.style.setProperty('--block-theme-ui-text', this._theme.get('themeUIText'));
-            document.body.style.setProperty('--block-theme-ui-background', this._theme.get('themeUIBackground'));
-            document.body.style.setProperty('--block-theme-ui-border', this._theme.get('themeUIBorder'));
-            document.body.style.setProperty('--block-theme-server-text', this._theme.get('themeServerText'));
-            document.body.style.setProperty('--block-theme-server-background', this._theme.get('themeServerBackground'));
-            document.body.style.setProperty('--block-theme-server-border', this._theme.get('themeServerBorder'));
-            document.body.style.setProperty('--block-theme-addon-text', this._theme.get('themeAddonText'));
-            document.body.style.setProperty('--block-theme-addon-background', this._theme.get('themeAddonBackground'));
-            document.body.style.setProperty('--block-theme-addon-border', this._theme.get('themeAddonBorder'));
 
         } catch (error) {
             console.error(error);
         }
-
     }
 
     public load() {

@@ -18,11 +18,12 @@ import { TokenService } from 'src/app/services/token.service';
 import { NewModuleDialog } from '../../helpers/new-module-dialog/new-module-dialog.component';
 import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
 import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
-import { RegisteredService } from '../../registered-service/registered.service';
+import { RegisteredService } from '../../services/registered.service';
 import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, TemplateModel } from '../../structures';
 import { Options } from '../../structures/storage/config-options';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import { PolicySettings } from '../../structures/storage/config-settings';
+import { ThemeService } from '../../services/theme.service';
 
 enum OperationMode {
     none,
@@ -70,7 +71,6 @@ export class PolicyConfigurationComponent implements OnInit {
     public rootType: 'Policy' | 'Module' = 'Policy';
     public selectType: 'Block' | 'Module' = 'Block';
     public openSettings: boolean = false;
-    public settings: PolicySettings;
 
     readonly codeMirrorOptions = {
         theme: 'default',
@@ -176,10 +176,10 @@ export class PolicyConfigurationComponent implements OnInit {
         private matIconRegistry: MatIconRegistry,
         private domSanitizer: DomSanitizer,
         private registeredService: RegisteredService,
-        private modulesService: ModulesService
+        private modulesService: ModulesService,
+        private themeService: ThemeService
     ) {
         this.options = new Options();
-        this.settings = new PolicySettings();
         this.policyModel = new PolicyModel();
         this.storage = new PolicyStorage(localStorage);
         this.openModule = this.policyModel;
@@ -195,7 +195,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public ngOnInit() {
         this.loading = true;
         this.options.load();
-        this.settings.load();
+        this.themeService.load();
         this.route.queryParams.subscribe(queryParams => {
             this.loadData();
         });
@@ -1138,12 +1138,12 @@ export class PolicyConfigurationComponent implements OnInit {
         this.openSettings = true;
     }
 
-    public onChangeSettings(event:boolean) {
+    public onChangeSettings(event: boolean) {
         this.openSettings = false;
-        if(event) {
-            this.settings.save(); 
+        if (event) {
+            this.themeService.save();
         } else {
-            this.settings.load();
+            this.themeService.load();
         }
     }
 }

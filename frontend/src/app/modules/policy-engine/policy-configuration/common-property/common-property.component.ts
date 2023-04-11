@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Schema } from '@guardian/interfaces';
-import { RegisteredService } from '../../registered-service/registered.service';
+import { RegisteredService } from '../../services/registered.service';
 import { PolicyBlockModel, SchemaVariables } from '../../structures';
 
 /**
