@@ -1,17 +1,15 @@
 import { Injectable, NgModule } from '@angular/core';
 import { CanActivate, Router, RouterModule, Routes } from '@angular/router';
-import { ISession, IUser, UserRole } from '@guardian/interfaces';
+import { IUser, UserRole } from '@guardian/interfaces';
 import { of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, map, shareReplay } from 'rxjs/operators';
-import { PolicyConfigurationComponent } from './policy-engine/policy-configuration/policy-configuration/policy-configuration.component';
-import { PolicyViewerComponent } from './policy-engine/policy-viewer/policy-viewer/policy-viewer.component';
+import { catchError, map } from 'rxjs/operators';
 import { AuditComponent } from './views/audit/audit.component';
 import { HomeComponent } from './views/home/home.component';
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
 import { RegisterComponent } from './views/register/register.component';
 import { RootConfigComponent } from './views/root-config/root-config.component';
-import { SchemaConfigComponent } from './schema-engine/schemas/schemas.component';
+import { SchemaConfigComponent } from './views/schemas/schemas.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
 import { AuthService } from './services/auth.service';
@@ -21,11 +19,15 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { InfoComponent } from './components/info/info/info.component';
 import { WebSocketService } from './services/web-socket.service';
-import { PoliciesComponent } from './policy-engine/policies/policies.component';
-import { ArtifactConfigComponent } from './artifact-engine/artifact-config/artifact-config.component';
 import { ContractConfigComponent } from './views/contract-config/contract-config.component';
 import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
-import { CompareComponent } from './analytics/compare/compare.component';
+//Modules
+import { PoliciesComponent } from './modules/policy-engine/policies/policies.component';
+import { PolicyConfigurationComponent } from './modules/policy-engine/policy-configuration/policy-configuration/policy-configuration.component';
+import { PolicyViewerComponent } from './modules/policy-engine/policy-viewer/policy-viewer/policy-viewer.component';
+import { ArtifactConfigComponent } from './modules/artifact-engine/artifact-config/artifact-config.component';
+import { CompareComponent } from './modules/analytics/compare/compare.component';
+import { ModulesListComponent } from './modules/policy-engine/modules-list/modules-list.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -158,19 +160,21 @@ const routes: Routes = [
         path: 'admin', component: AdminHeaderComponent, canActivate: [StandardRegistryGuard], canActivateChild: [StandardRegistryGuard],
         children: [
             { path: 'status', component: ServiceStatusComponent },
-            { path: 'settings', component: SettingsViewComponent, canActivate: [ServicesStatusGuard] },
+            { path: 'settings', component: SettingsViewComponent },
             { path: 'logs', component: LogsViewComponent }
         ]
     },
     { path: 'status', component: ServiceStatusComponent },
+    { path: 'settings', component: SettingsViewComponent },
     { path: 'audit', component: AuditComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
     { path: 'trust-chain', component: TrustChainComponent, canActivate: [AuditorGuard, ServicesStatusGuard] },
 
     { path: 'policy-viewer', component: PoliciesComponent, canActivate: [ServicesStatusGuard] },
     { path: 'policy-viewer/:id', component: PolicyViewerComponent, canActivate: [ServicesStatusGuard] },
-    { path: 'policy-configuration', component: PolicyConfigurationComponent, canActivate: [ServicesStatusGuard] },
-    
-    { path: 'compare', component: CompareComponent, canActivate: [ServicesStatusGuard] },
+    { path: 'policy-configuration', component: PolicyConfigurationComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'modules', component: ModulesListComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+
+    { path: 'compare', component: CompareComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

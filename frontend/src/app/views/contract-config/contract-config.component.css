@@ -47,7 +47,7 @@
     min-height: 100px;
     overflow-y: auto;
     position: relative;
-    z-index: 0;
+    z-index: 1;
     border-top: 1px solid #eee;
 }
 
@@ -89,13 +89,14 @@
 
 .actions-container {
     display: block;
-    z-index: 1;
+    z-index: 2;
 }
 
 .table-paginator {
     height: 60px;
     border-top: 1px solid #eee;
     margin-top: 5px;
+    z-index: 0;
 }
 
 .action-btn {
@@ -149,4 +150,12 @@
     to {
         transform:rotate(0deg);
     }
+}
+
+.table-container .mat-column-tags {
+    max-width: 175px;
+    min-width: 175px;
+    width: 175px;
+    border-right: 1px solid #dddddd;
+    padding-left: 10px;
 }

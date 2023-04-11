@@ -1,0 +1,88 @@
+.block-name {
+    padding-left: 32px;
+    position: relative;
+}
+
+.block-icon {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+
+.custom {
+    height: 14px;
+    line-height: 14px;
+    display: inline-block;
+    min-width: 1px;
+}
+
+.mat-option-link {
+    color: #6166ff;
+}
+
+.mat-option-link mat-icon {
+    margin-right: 2px;
+    top: -2px;
+    left: -4px;
+    position: relative;
+}
+
+.ns {
+    user-select: none;
+}
+
+.prop-input-event {
+    color: #35a307;
+    height: 14px !important;
+    width: 20px !important;
+    line-height: 14px !important;
+    overflow: visible !important;
+    display: inline-block !important;
+    border-left: 2px solid #35a307;
+    margin: 0px 2px 0px 2px;
+    position: relative;
+    top: 4px;
+}
+.prop-input-event mat-icon {
+    position: relative !important;
+    font-size: 20px !important;
+    height: 20px;
+    width: 20px;
+    top: -3px;
+}
+
+.prop-output-icon {
+    color: #c53227;
+    height: 14px !important;
+    width: 20px !important;
+    line-height: 14px !important;
+    overflow: visible !important;
+    display: inline-block !important;
+    border-left: 2px solid #c53227;
+    margin: 0px 2px 0px 2px;
+    position: relative;
+    top: 4px;
+}
+
+.prop-output-icon mat-icon {
+    position: relative !important;
+    font-size: 20px !important;
+    height: 20px;
+    width: 20px;
+    top: -3px;
+}
+
+.source-elm {
+    color:#bd2a1f;
+    font-weight:500
+}
+
+.target-elm {
+    color:#2d8508;
+    font-weight:500
+}
+
+.current-elm {
+    color: #5161e1 !important;
+    font-weight: 500;
+}

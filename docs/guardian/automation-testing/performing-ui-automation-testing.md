@@ -20,7 +20,7 @@ After executing this command, you will see a welcome window where you need to se
 
 Click on the button ' Start E2E Testing in Electron '.
 
-<figure><img src="../../.gitbook/assets/image (9) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (9) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 and then select test under ui-tests/specs/policies
 
@@ -28,7 +28,7 @@ and then select test under ui-tests/specs/policies
 
 Finally, all the selected test runs and you can see the key components of the Test Runner that you need to pay attention to when executing tests.
 
-<figure><img src="../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 **Test Status Menu:** The menu shows a summary of the number of tests passed, passed, failed, or incomplete, and the time spent on the test.&#x20;
 

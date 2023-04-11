@@ -1,0 +1,34 @@
+.select-block-name {
+    padding-left: 32px;
+    position: relative;
+    height: 42px;
+}
+
+.select-block-icon {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    height: 42px;
+    width: 40px;
+}
+
+.select-block-icon mat-icon {
+    position: absolute;
+    left: 1px;
+    top: 9px;
+}
+
+.select-custom {
+    height: 14px;
+    line-height: 14px;
+    display: inline-block;
+    min-width: 1px;
+}
+
+.required-fields {
+    position: relative !important;
+    width: 8px !important;
+    max-width: 8px !important;
+    display: inline !important;
+    color: #f00 !important;
+}

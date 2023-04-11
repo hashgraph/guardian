@@ -1,0 +1,195 @@
+<!-- UI Prop -->
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Schema</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="properties.schema" [disabled]="readonly" (change)="onSave()">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.value">
+                    {{schema.name}}
+                    <span *ngIf="schema.version"> ({{schema.version}})</span>
+                    <span *ngIf="schema.status"> ({{schema.status}})</span>
+                </mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Id Type</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="properties.idType" [disabled]="readonly" (change)="onSave()">
+                <mat-option value=""></mat-option>
+                <mat-option value="DID">DID (New DID)</mat-option>
+                <mat-option value="UUID">UUID (New UUID)</mat-option>
+                <mat-option value="OWNER">Owner (Owner DID)</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Preset</td>
+        <td class="propRowCell">
+            <input class="prop-input" type="checkbox" [(ngModel)]="properties.preset" [readonly]="readonly"
+                (blur)="onSave()">
+        </td>
+    </tr>
+
+    <tr class="propHeader">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+            <mat-icon>arrow_drop_down</mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">UI</td>
+        <td class="propHeaderCell"></td>
+    </tr>
+
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Type</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="properties.uiMetaData.type" [disabled]="readonly" (change)="onSave()">
+                <mat-option value="page">PAGE</mat-option>
+                <mat-option value="dialog">DIALOG</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+
+    <ng-container *ngIf="properties.uiMetaData.type == 'page'">
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Title</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly"
+                    (blur)="onSave()">
+            </td>
+        </tr>
+
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Description</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.description" [readonly]="readonly"
+                    (blur)="onSave()">
+            </td>
+        </tr>
+    </ng-container>
+
+    <ng-container *ngIf="properties.uiMetaData.type == 'dialog'">
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Title</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly"
+                    (blur)="onSave()">
+            </td>
+        </tr>
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Button Content</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.content" [readonly]="readonly"
+                    (blur)="onSave()">
+            </td>
+        </tr>
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Button Class</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.buttonClass" [readonly]="readonly"
+                    (blur)="onSave()">
+            </td>
+        </tr>
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Dialog Title</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.dialogContent" [readonly]="readonly"
+                    (blur)="onSave()">
+            </td>
+        </tr>
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Dialog Description</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.description" [readonly]="readonly"
+                    (blur)="onSave()">
+            </td>
+        </tr>
+        <tr class="propRow" [attr.collapse]="propHidden.main">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Dialog Class</td>
+            <td class="propRowCell">
+                <input class="prop-input" [(ngModel)]="properties.uiMetaData.dialogClass" [readonly]="readonly"
+                    (blur)="onSave()">
+            </td>
+        </tr>
+    </ng-container>
+
+    <tr class="propHeader">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'preset')" [attr.collapse]="propHidden.preset">
+            <mat-icon>arrow_drop_down</mat-icon>
+        </td>
+        <td class="propHeaderCell cellName">Preset</td>
+        <td class="propHeaderCell"></td>
+    </tr>
+
+    <tr class="propRow" [attr.collapse]="propHidden.preset">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Preset Schema</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="properties.presetSchema" [disabled]="readonly" (selectionChange)="onSelectInput()">
+                <mat-option *ngFor="let schema of schemas" [value]="schema.value">
+                    {{schema.name}}
+                    <span *ngIf="schema.version"> ({{schema.version}})</span>
+                    <span *ngIf="schema.status"> ({{schema.status}})</span>
+                </mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <ng-container *ngFor="let field of properties.presetFields; let i=index">
+        <tr class="propRow" [attr.collapse]="propHidden.preset">
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.presetFields, i)"
+                [attr.collapse]="propHidden.presetFields[i]">
+                <mat-icon>arrow_drop_down</mat-icon>
+            </td>
+            <td class="propRowCell cellName">Field {{i}}</td>
+            <td class="propRowCell">
+                <span *ngIf="field.value">{{field.name}} = {{field.value}}</span>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.preset || propHidden.presetFields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">
+                Title
+            </td>
+            <td class="propRowCell cellValue" [title]="field.title">
+                <span>{{field.title}}</span>
+            </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.preset || propHidden.presetFields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">
+                Preset Field
+            </td>
+            <td class="propRowCell">
+                <mat-select [(value)]="field.value" [disabled]="readonly" (change)="onSave()">
+                    <mat-option *ngFor="let f of presetMap" [value]="f.name" [title]="f.title">
+                        {{f.title}}
+                    </mat-option>
+                </mat-select>
+            </td>
+        </tr>
+        <tr *ngIf="field.value" class="propRow subRow"
+            [attr.collapse]="propHidden.preset || propHidden.presetFields[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">
+                Readonly
+            </td>
+            <td class="propRowCell">
+                <input class="prop-input" type="checkbox" [(ngModel)]="field.readonly" [readonly]="readonly"
+                    (blur)="onSave()">
+            </td>
+        </tr>
+    </ng-container>
+</table>

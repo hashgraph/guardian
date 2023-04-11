@@ -18,8 +18,6 @@ const { expect, assert } = require('chai');
 const rewire = require("rewire");
 
 const { ApplicationState } = require("@guardian/common");
-const { Settings } = require("../../dist/entity/settings");
-const { Topic } = require("../../dist/entity/topic");
 const state = new ApplicationState();
 state.updateState('READY');
 

@@ -1,0 +1,23 @@
+<!-- UI Prop -->
+<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Can Invite</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="properties.canInvite" [disabled]="readonly" (change)="onSave()">
+                <mat-option value="owner">Group Owner</mat-option>
+                <mat-option value="all">All</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Can Delete</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="properties.canDelete" [disabled]="readonly" (change)="onSave()">
+                <mat-option value="owner">Group Owner</mat-option>
+                <mat-option value="all">All</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+</table>

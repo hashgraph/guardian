@@ -1,27 +1,33 @@
-import { Policy } from '@entity/policy';
+import JSZip from 'jszip';
+import { SchemaEntity, TopicType, GenerateUUIDv4, TagType } from '@guardian/interfaces';
+import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
+import { importSchemaByFiles } from '@api/helpers/schema-import-export-helper';
+import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
+import { INotifier } from '@helpers/notifier';
 import {
+    DataBaseHelper,
+    Artifact,
+    Topic,
+    Schema,
+    Token,
+    Policy,
     findAllEntities,
     getArtifactType,
     regenerateIds,
     replaceAllEntities,
+    replaceAllVariables,
     replaceArtifactProperties,
-    SchemaFields
-} from '@helpers/utils';
-import JSZip from 'jszip';
-import { Token } from '@entity/token';
-import { Schema } from '@entity/schema';
-import { SchemaEntity, TopicType, GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
-import { Users } from '@helpers/users';
-import { MessageAction, MessageServer, MessageType, PolicyMessage, TopicConfig, TopicHelper } from '@hedera-modules';
-import { Topic } from '@entity/topic';
-import { importSchemaByFiles, publishSystemSchemas } from '@api/schema.service';
-import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
-import { INotifier } from '@helpers/notifier';
-import { DatabaseServer } from '@database-modules';
-import { DataBaseHelper } from '@guardian/common';
-import { Workers } from '@helpers/workers';
-import { Artifact } from '@entity/artifact';
-import { KeyType, Wallet } from '@helpers/wallet';
+    SchemaFields,
+    DatabaseServer,
+    Users,
+    MessageAction,
+    MessageServer,
+    MessageType,
+    PolicyMessage,
+    TopicConfig,
+    TopicHelper,
+} from '@guardian/common';
+import { exportTag, importTag } from '@api/tag.service';
 
 /**
  * Policy import export helper
@@ -39,6 +45,9 @@ export class PolicyImportExportHelper {
      * @returns Zip file
      */
     static async generateZipFile(policy: Policy): Promise<JSZip> {
+        const tagTargets: string[] = [];
+        tagTargets.push(policy.id.toString());
+
         const policyObject = { ...policy };
         const topicId = policyObject.topicId;
 
@@ -61,7 +70,7 @@ export class PolicyImportExportHelper {
         const artifacts = await new DataBaseHelper(Artifact).find({
             policyId: policy.id
         })
-        zip.folder('artifacts')
+        zip.folder('artifacts');
         for (const artifact of artifacts) {
             zip.file(`artifacts/${artifact.uuid}`, await DatabaseServer.getArtifactFileByUUID(artifact.uuid));
         }
@@ -72,22 +81,34 @@ export class PolicyImportExportHelper {
                 extention: item.extention
             }
         })));
-        zip.folder('tokens')
+        zip.folder('tokens');
         for (const token of tokens) {
-            delete token._id;
-            delete token.id;
-            delete token.adminId;
-            delete token.owner;
-            zip.file(`tokens/${token.tokenName}.json`, JSON.stringify(token));
+            tagTargets.push(token.id.toString());
+            const item = { ...token };
+            delete item._id;
+            delete item.id;
+            delete item.adminId;
+            delete item.owner;
+            item.id = token.id.toString();
+            zip.file(`tokens/${item.tokenName}.json`, JSON.stringify(item));
         }
-        zip.folder('schemas')
+        zip.folder('schemas');
         for (const schema of schemas) {
+            tagTargets.push(schema.id.toString());
             const item = { ...schema };
             delete item._id;
             delete item.id;
             delete item.status;
             delete item.readonly;
-            zip.file(`schemas/${schema.iri}.json`, JSON.stringify(schema));
+            item.id = schema.id.toString();
+            zip.file(`schemas/${item.iri}.json`, JSON.stringify(item));
+        }
+
+        zip.folder('tags');
+        const tags = await exportTag(tagTargets)
+        for (let index = 0; index < tags.length; index++) {
+            const tag = tags[index];
+            zip.file(`tags/${index}.json`, JSON.stringify(tag));
         }
 
         zip.file(PolicyImportExportHelper.policyFileName, JSON.stringify(policyObject));
@@ -134,10 +155,17 @@ export class PolicyImportExportHelper {
                 }
             })) : artifactsMetaDataFile;
 
+        const tagsStringArray = await Promise.all(Object.entries(content.files)
+            .filter(file => !file[1].dir)
+            .filter(file => /^tags\/.+/.test(file[0]))
+            .map(file => file[1].async('string')));
+
         const policy = JSON.parse(policyString);
         const tokens = tokensStringArray.map(item => JSON.parse(item));
         const schemas = schemasStringArray.map(item => JSON.parse(item));
-        return { policy, tokens, schemas, artifacts };
+        const tags = tagsStringArray.map(item => JSON.parse(item));
+
+        return { policy, tokens, schemas, artifacts, tags };
     }
 
     /**
@@ -192,7 +220,14 @@ export class PolicyImportExportHelper {
          */
         errors: any[]
     }> {
-        const { policy, tokens, schemas, artifacts } = policyToImport;
+        const {
+            policy,
+            tokens,
+            schemas,
+            artifacts,
+            tags
+        } = policyToImport;
+
         delete policy._id;
         delete policy.id;
         delete policy.messageId;
@@ -257,85 +292,33 @@ export class PolicyImportExportHelper {
         notifier.completed();
 
         // Import Tokens
+        const tokenMap = new Map<string, string>();
         if (tokens) {
             notifier.start('Import tokens');
             const tokenRepository = new DataBaseHelper(Token);
             for (const token of tokens) {
-                const workers = new Workers();
-                const tokenData = await workers.addRetryableTask({
-                    type: WorkerTaskType.CREATE_TOKEN,
-                    data: {
-                        operatorId: root.hederaAccountId,
-                        operatorKey: root.hederaAccountKey,
-                        tokenName: token.tokenName,
-                        tokenSymbol: token.tokenSymbol,
-                        tokenType: token.tokenType,
-                        initialSupply: token.initialSupply,
-                        decimals: token.decimals,
-                        changeSupply: true,
-                        enableAdmin: !!(token.enableAdmin || token.adminKey),
-                        enableFreeze: !!(token.enableFreeze || token.freezeKey),
-                        enableKYC: !!(token.enableKYC || token.kycKey),
-                        enableWipe: !!(token.enableWipe || token.wipeKey),
-                    }
-                }, 1);
-                const wallet = new Wallet();
-                await Promise.all([
-                    wallet.setUserKey(
-                        root.did,
-                        KeyType.TOKEN_TREASURY_KEY,
-                        tokenData.tokenId,
-                        tokenData.treasuryKey
-                    ),
-                    wallet.setUserKey(
-                        root.did,
-                        KeyType.TOKEN_ADMIN_KEY,
-                        tokenData.tokenId,
-                        tokenData.adminKey
-                    ),
-                    wallet.setUserKey(
-                        root.did,
-                        KeyType.TOKEN_FREEZE_KEY,
-                        tokenData.tokenId,
-                        tokenData.freezeKey
-                    ),
-                    wallet.setUserKey(
-                        root.did,
-                        KeyType.TOKEN_KYC_KEY,
-                        tokenData.tokenId,
-                        tokenData.kycKey
-                    ),
-                    wallet.setUserKey(
-                        root.did,
-                        KeyType.TOKEN_SUPPLY_KEY,
-                        tokenData.tokenId,
-                        tokenData.supplyKey
-                    ),
-                    wallet.setUserKey(
-                        root.did,
-                        KeyType.TOKEN_WIPE_KEY,
-                        tokenData.tokenId,
-                        tokenData.wipeKey
-                    )
-                ]);
                 const tokenObject = tokenRepository.create({
-                    tokenId: tokenData.tokenId,
-                    tokenName: tokenData.tokenName,
-                    tokenSymbol: tokenData.tokenSymbol,
-                    tokenType: tokenData.tokenType,
-                    decimals: tokenData.decimals,
-                    initialSupply: tokenData.initialSupply,
-                    adminId: tokenData.treasuryId,
-                    changeSupply: !!tokenData.supplyKey,
-                    enableAdmin: !!tokenData.adminKey,
-                    enableKYC: !!tokenData.kycKey,
-                    enableFreeze: !!tokenData.freezeKey,
-                    enableWipe: !!tokenData.wipeKey,
+                    tokenId: GenerateUUIDv4(),
+                    tokenName: token.tokenName,
+                    tokenSymbol: token.tokenSymbol,
+                    tokenType: token.tokenType,
+                    decimals: token.decimals,
+                    initialSupply: token.initialSupply,
+                    adminId: null,
+                    changeSupply: !!(token.changeSupply || token.supplyKey),
+                    enableAdmin: !!(token.enableAdmin || token.adminKey),
+                    enableFreeze: !!(token.enableFreeze || token.freezeKey),
+                    enableKYC: !!(token.enableKYC || token.kycKey),
+                    enableWipe: !!(token.enableWipe || token.wipeKey),
                     owner: root.did,
-                    policyId: null
+                    policyId: null,
+                    draftToken: true
                 });
                 await tokenRepository.save(tokenObject);
-                replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenData.tokenId);
+                replaceAllEntities(policy.config, ['tokenId'], token.tokenId, tokenObject.tokenId);
+                replaceAllVariables(policy.config, 'Token', token.tokenId, tokenObject.tokenId);
+
+                tokenMap.set(token.id, tokenObject.id.toString());
             }
             notifier.completed();
         }
@@ -367,6 +350,24 @@ export class PolicyImportExportHelper {
         const model = new DataBaseHelper(Policy).create(policy as Policy);
         const result = await new DataBaseHelper(Policy).save(model);
 
+        if (tags) {
+            notifier.start('Import tags');
+            const policyTags = tags.filter((t: any) => t.entity === TagType.Policy);
+            const tokenTags = tags.filter((t: any) => t.entity === TagType.Token);
+            const schemaTags = tags.filter((t: any) => t.entity === TagType.Schema);
+
+            await importTag(policyTags, result.id.toString());
+
+            await importTag(tokenTags, tokenMap);
+
+            const map3: Map<string, string> = new Map();
+            for (const item of schemasMap) {
+                map3.set(item.oldID, item.newID);
+            }
+            await importTag(schemaTags, map3);
+            notifier.completed();
+        }
+
         const _topicRow = await new DataBaseHelper(Topic).findOne({ topicId: topicRow.topicId })
         _topicRow.policyId = result.id.toString();
         _topicRow.policyUUID = result.uuid;
@@ -393,6 +394,7 @@ export class PolicyImportExportHelper {
 
         for (const item of schemasMap) {
             replaceAllEntities(policy.config, SchemaFields, item.oldIRI, item.newIRI);
+            replaceAllVariables(policy.config, 'Schema', item.oldIRI, item.newIRI);
         }
 
         // compatibility with older versions

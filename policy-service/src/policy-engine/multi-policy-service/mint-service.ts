@@ -1,4 +1,3 @@
-import { Token } from '@entity/token';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import {
     ExternalMessageEvents,
@@ -6,15 +5,24 @@ import {
     IRootConfig,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { ExternalEventChannel, Logger } from '@guardian/common';
+import {
+    ExternalEventChannel,
+    Logger,
+    Token,
+    MultiPolicy,
+    KeyType,
+    Wallet,
+    DatabaseServer,
+    MessageAction,
+    MessageServer,
+    SynchronizationMessage,
+    TopicConfig,
+    VcDocumentDefinition as VcDocument,
+    Workers,
+} from '@guardian/common';
 import { PrivateKey } from '@hashgraph/sdk';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Workers } from '@helpers/workers';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { DatabaseServer } from '@database-modules';
-import { MultiPolicy } from '@entity/multi-policy';
-import { MessageAction, MessageServer, SynchronizationMessage, TopicConfig, VcDocument } from '@hedera-modules';
 
 /**
  * Token Config
@@ -208,8 +216,8 @@ export class MintService {
      */
     private static async getTokenConfig(ref: AnyBlockType, token: Token): Promise<TokenConfig> {
         const tokenConfig: TokenConfig = {
-            treasuryId: token.adminId,
-            tokenId: token.tokenId,
+            treasuryId: token.draftToken ? '0.0.0' : token.adminId,
+            tokenId: token.draftToken ? '0.0.0' : token.tokenId,
             supplyKey: null,
             treasuryKey: null
         }

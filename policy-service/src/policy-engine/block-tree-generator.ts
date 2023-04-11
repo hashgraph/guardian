@@ -1,30 +1,47 @@
-import { Policy } from '@entity/policy';
 import {
     IPolicyBlock,
+    IPolicyInstance,
     IPolicyInterfaceBlock
 } from './policy-engine.interface';
 import { PolicyComponentsUtils } from './policy-components-utils';
-import { Singleton } from '@helpers/decorators/singleton';
+import { GenerateUUIDv4, IUser, PolicyEvents, UserRole } from '@guardian/interfaces';
 import {
-    ISerializedErrors,
-    PolicyValidationResultsContainer
-} from '@policy-engine/policy-validation-results-container';
-import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
-import { Logger, MessageResponse } from '@guardian/common';
-import { DatabaseServer } from '@database-modules';
-import { PolicyEngine } from '@policy-engine/policy-engine';
-import { ServiceRequestsBase } from '@helpers/service-requests-base';
+    Logger,
+    MessageError,
+    MessageResponse,
+    NatsService,
+    Policy,
+    Singleton,
+    DatabaseServer,
+    Users,
+} from '@guardian/common';
+import { IPolicyUser, PolicyUser } from './policy-user';
+import { ISerializedErrors, PolicyValidator } from '@policy-engine/block-validators';
+import { headers } from 'nats';
+import { Inject } from '@helpers/decorators/inject';
 
 /**
  * Block tree generator
  */
 @Singleton
-export class BlockTreeGenerator extends ServiceRequestsBase {
+export class BlockTreeGenerator extends NatsService {
+    /**
+     * Users helper
+     * @private
+     */
+    @Inject()
+    private readonly users: Users;
 
     /**
-     * Target
+     * Message queue name
      */
-    public target = 'guardians';
+    public messageQueueName = 'block-tree-generator-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'block-tree-generator-reply-' + GenerateUUIDv4();
 
     /**
      * Policy models map
@@ -33,16 +50,76 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
     private readonly models: Map<string, IPolicyBlock> = new Map();
 
     /**
+     * Get user
+     * @param policy
+     * @param user
+     */
+    public async getUser(policy: IPolicyInstance, user: IUser): Promise<IPolicyUser> {
+        const regUser = await this.users.getUser(user.username);
+        if (!regUser || !regUser.did) {
+            throw new Error(`Forbidden`);
+        }
+        const userFull = new PolicyUser(regUser.did);
+        if (policy.dryRun) {
+            if (user.role === UserRole.STANDARD_REGISTRY) {
+                const virtualUser = await DatabaseServer.getVirtualUser(policy.policyId);
+                userFull.setVirtualUser(virtualUser);
+            } else {
+                throw new Error(`Forbidden`);
+            }
+        } else {
+            userFull.setUsername(regUser.username);
+        }
+        const groups = await policy.databaseServer.getGroupsByUser(policy.policyId, userFull.did);
+        for (const group of groups) {
+            if (group.active !== false) {
+                return userFull.setGroup(group);
+            }
+        }
+        return userFull;
+    }
+
+    /**
+     * Get messages
+     * @param subject
+     * @param cb
+     */
+    public getPolicyMessages<T, A>(subject: string, policyId, cb: Function) {
+        this.connection.subscribe([policyId, subject].join('-'), {
+            queue: this.messageQueueName,
+            callback: async (error, msg) => {
+                try {
+                    const pId = msg.headers.get('policyId');
+                    if (pId === policyId) {
+                        const messageId = msg.headers.get('messageId');
+                        const head = headers();
+                        head.append('messageId', messageId);
+                        const respond = await cb(await this.codec.decode(msg.data), msg.headers);
+                        msg.respond(await this.codec.encode(respond), {headers: head});
+                    }
+                } catch (error) {
+                    const messageId = msg.headers.get('messageId');
+                    const head = headers();
+                    head.append('messageId', messageId);
+                    msg.respond(await this.codec.encode(new MessageError(error.message)), {headers: head});
+                }
+            }
+        });
+    }
+
+    /**
      * Init policy events
      */
     async initPolicyEvents(policyId: string, policyInstance: any): Promise<void> {
-        this.channel.response(PolicyEvents.GET_ROOT_BLOCK_DATA, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.CHECK_IF_ALIVE, policyId,async (msg: any) => {
+            return new MessageResponse(true);
+        });
+
+        this.getPolicyMessages(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId,async (msg: any) => {
 
             const { user } = msg;
 
-            const policyEngine = new PolicyEngine();
-
-            const userFull = await policyEngine.getUser(policyInstance, user);
+            const userFull = await this.getUser(policyInstance, user);
 
             if (policyInstance && (await policyInstance.isAvailable(userFull))) {
                 const data = await policyInstance.getData(userFull, policyInstance.uuid);
@@ -52,14 +129,13 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             }
         });
 
-        this.channel.response(PolicyEvents.GET_POLICY_GROUPS, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_POLICY_GROUPS, policyId,async (msg: any) => {
 
             const { user } = msg;
 
-            const policyEngine = new PolicyEngine();
-            const userFull = await policyEngine.getUser(policyInstance, user);
+            const userFull = await this.getUser(policyInstance, user);
 
-            if (!policyInstance.isMultipleGroup) {
+            if (!policyInstance.isMultipleGroups) {
                 return new MessageResponse([]);
             }
 
@@ -67,14 +143,13 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             return new MessageResponse(groups);
         });
 
-        this.channel.response(PolicyEvents.SELECT_POLICY_GROUP, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.SELECT_POLICY_GROUP, policyId,async (msg: any) => {
 
             const { user, uuid } = msg;
 
-            const policyEngine = new PolicyEngine();
-            const userFull = await policyEngine.getUser(policyInstance, user);
+            const userFull = await this.getUser(policyInstance, user);
 
-            if (!policyInstance.isMultipleGroup) {
+            if (!policyInstance.isMultipleGroups) {
                 return new MessageResponse([] as any);
             }
 
@@ -82,12 +157,11 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             return new MessageResponse(true as any);
         });
 
-        this.channel.response(PolicyEvents.GET_BLOCK_DATA, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA, policyId,async (msg: any) => {
 
             const { user, blockId } = msg;
 
-            const policyEngine = new PolicyEngine();
-            const userFull = await policyEngine.getUser(policyInstance, user);
+            const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
             if (block && (await block.isAvailable(userFull))) {
@@ -98,11 +172,10 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             }
         });
 
-        this.channel.response(PolicyEvents.GET_BLOCK_DATA_BY_TAG, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId,async (msg: any) => {
             const { user, tag } = msg;
 
-            const policyEngine = new PolicyEngine();
-            const userFull = await policyEngine.getUser(policyInstance, user);
+            const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
 
             if (block && (await block.isAvailable(userFull))) {
@@ -113,12 +186,11 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             }
         });
 
-        this.channel.response(PolicyEvents.SET_BLOCK_DATA, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA, policyId,async (msg: any) => {
 
             const { user, blockId, data } = msg;
 
-            const policyEngine = new PolicyEngine();
-            const userFull = await policyEngine.getUser(policyInstance, user);
+            const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
             if (block && (await block.isAvailable(userFull))) {
@@ -129,11 +201,10 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             }
         });
 
-        this.channel.response(PolicyEvents.SET_BLOCK_DATA_BY_TAG, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId,async (msg: any) => {
             const { user, tag, data } = msg;
 
-            const policyEngine = new PolicyEngine();
-            const userFull = await policyEngine.getUser(policyInstance, user);
+            const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
 
             if (block && (await block.isAvailable(userFull))) {
@@ -144,13 +215,13 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             }
         });
 
-        this.channel.response(PolicyEvents.BLOCK_BY_TAG, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.BLOCK_BY_TAG, policyId,async (msg: any) => {
             const { tag } = msg;
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(policyId, tag);
             return new MessageResponse({ id: block.uuid });
         });
 
-        this.channel.response(PolicyEvents.GET_BLOCK_PARENTS, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.GET_BLOCK_PARENTS, policyId,async (msg: any) => {
             const { blockId } = msg;
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
             let tmpBlock: IPolicyBlock = block;
@@ -162,7 +233,7 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             return new MessageResponse(parents);
         });
 
-        this.channel.response(PolicyEvents.MRV_DATA, async (msg: any) => {
+        this.getPolicyMessages(PolicyEvents.MRV_DATA, policyId,async (msg: any) => {
             const { data } = msg;
 
             for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
@@ -179,32 +250,17 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
      * Generate policy instance from config
      * @param policy
      * @param skipRegistration
-     * @param resultsContainer
+     * @param policyValidator
      */
     public async generate(
-        policy: Policy | string,
+        policy: Policy,
         skipRegistration?: boolean,
-        resultsContainer?: PolicyValidationResultsContainer
-    ): Promise<IPolicyBlock>;
-
-    public async generate(
-        arg: any,
-        skipRegistration?: boolean,
-        resultsContainer?: PolicyValidationResultsContainer
+        policyValidator?: PolicyValidator
     ): Promise<IPolicyBlock> {
-        let policy: Policy;
-        let policyId: string;
-        if (typeof arg === 'string') {
-            policy = await DatabaseServer.getPolicyById(arg);
-            policyId = arg;
-        } else {
-            policy = arg;
-            policyId = arg.id || PolicyComponentsUtils.GenerateNewUUID();
-        }
-
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
         }
+        const policyId: string = policy.id || PolicyComponentsUtils.GenerateNewUUID();
 
         try {
             const instancesArray: IPolicyBlock[] = [];
@@ -215,17 +271,15 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
                 await PolicyComponentsUtils.RegisterBlockTree(instancesArray);
                 this.models.set(policy.id.toString(), model as any);
             }
-
             await this.initPolicyEvents(policyId, model);
 
-            resultsContainer.addPermissions(policy.policyRoles);
-            await this.tagFinder(policy.config, resultsContainer);
-            await model.validate(resultsContainer);
+            await this.validate(policy, policyValidator);
+
             return model as IPolicyInterfaceBlock;
         } catch (error) {
             new Logger().error(`Error build policy ${error}`, ['GUARDIAN_SERVICE', policy.name, policyId.toString()]);
-            if (resultsContainer) {
-                resultsContainer.addError(typeof error === 'string' ? error : error.message)
+            if (policyValidator) {
+                policyValidator.addError(typeof error === 'string' ? error : error.message)
             }
             return null;
         }
@@ -236,34 +290,20 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
      * @private
      * @param policy
      */
-    public async validate(policy: Policy | string): Promise<ISerializedErrors>;
-
-    public async validate(arg: any) {
-        const resultsContainer = new PolicyValidationResultsContainer();
-
-        let policy: Policy;
-        let policyConfig: any;
-        if (typeof arg === 'string') {
-            policy = await DatabaseServer.getPolicyById(arg);
-            policyConfig = policy.config;
-        } else {
-            policy = arg;
-            policyConfig = policy.config;
-        }
-
+    public async validate(
+        policy: Policy,
+        policyValidator?: PolicyValidator
+    ): Promise<ISerializedErrors> {
+        policyValidator = policyValidator || new PolicyValidator(policy);
         if (!policy || (typeof policy !== 'object')) {
-            return {
-                isBadPolicy: true
-            };
+            policyValidator.addError('Invalid policy config');
+            return policyValidator.getSerializedErrors();
         }
-
-        const policyInstance = await this.generate(arg, true, resultsContainer);
-        this.tagFinder(policyConfig, resultsContainer);
-        resultsContainer.addPermissions(policy.policyRoles);
-        if (policyInstance) {
-            await policyInstance.validate(resultsContainer);
-        }
-        return resultsContainer.getSerializedErrors();
+        const policyConfig = policy.config;
+        policyValidator.registerBlock(policyConfig);
+        policyValidator.addPermissions(policy.policyRoles);
+        await policyValidator.validate();
+        return policyValidator.getSerializedErrors();
     }
 
     /**
@@ -310,22 +350,5 @@ export class BlockTreeGenerator extends ServiceRequestsBase {
             throw new Error('Unexisting policy');
         }
         return model;
-    }
-
-    /**
-     * Tag finder
-     * @param instance
-     * @param resultsContainer
-     * @private
-     */
-    private async tagFinder(instance: any, resultsContainer: PolicyValidationResultsContainer) {
-        if (instance.tag) {
-            resultsContainer.addTag(instance.tag);
-        }
-        if (Array.isArray(instance.children)) {
-            for (const child of instance.children) {
-                this.tagFinder(child, resultsContainer);
-            }
-        }
     }
 }

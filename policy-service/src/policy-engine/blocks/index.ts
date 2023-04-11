@@ -38,3 +38,5 @@ export { TokenOperationAddon } from './impact-addon';
 export { HttpRequestBlock } from './http-request-block';
 export { HistoryAddon } from './history-addon';
 export { SelectiveAttributes } from './selective-attributes-addon';
+export { ModuleBlock } from './module';
+export { TagsManagerBlock } from './tag-manager';

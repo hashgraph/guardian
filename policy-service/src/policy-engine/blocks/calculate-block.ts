@@ -1,13 +1,12 @@
-import { Schema, SchemaHelper } from '@guardian/interfaces';
+import { SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '@policy-engine/helpers/decorators';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { BlockActionError } from '@policy-engine/errors';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument } from '@hedera-modules';
-import { VcHelper } from '@helpers/vc-helper';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/common';
+// tslint:disable-next-line:no-duplicate-imports
+import { VcDocument as VcDocumentCollection } from '@guardian/common';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
@@ -36,7 +35,10 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: [
+        { path: 'options.outputSchema', alias: 'schema', type: 'Schema' }
+    ]
 })
 export class CalculateContainerBlock {
     /**
@@ -199,80 +201,5 @@ export class CalculateContainerBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             documents: ExternalDocuments(event.data?.data)
         }));
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
-        try {
-            // Test schema options
-            if (!ref.options.inputSchema) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "inputSchema" does not set');
-                return;
-            }
-            if (typeof ref.options.inputSchema !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "inputSchema" must be a string');
-                return;
-            }
-            const inputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.inputSchema, ref.topicId);
-            if (!inputSchema) {
-                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.inputSchema}" does not exist`);
-                return;
-            }
-
-            // Test schema options
-            if (!ref.options.outputSchema) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "outputSchema" does not set');
-                return;
-            }
-            if (typeof ref.options.outputSchema !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "outputSchema" must be a string');
-                return;
-            }
-            const outputSchema = await ref.databaseServer.getSchemaByIRI(ref.options.outputSchema, ref.topicId);
-            if (!outputSchema) {
-                resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.outputSchema}" does not exist`);
-                return;
-            }
-
-            let variables: any = {};
-            if (ref.options.inputFields) {
-                for (const field of ref.options.inputFields) {
-                    variables[field.value] = field.name;
-                }
-            }
-
-            const addons = ref.getAddons();
-            for (const addon of addons) {
-                variables = await addon.getVariables(variables);
-            }
-
-            const map = {};
-            if (ref.options.outputFields) {
-                for (const field of ref.options.outputFields) {
-                    if (!field.value) {
-                        continue;
-                    }
-                    if (!variables.hasOwnProperty(field.value)) {
-                        resultsContainer.addBlockError(ref.uuid, `Variable ${field.value} not defined`);
-                        return;
-                    }
-                    map[field.name] = true;
-                }
-            }
-
-            const schema = new Schema(outputSchema);
-            for (const field of schema.fields) {
-                if (field.required && !map[field.name]) {
-                    resultsContainer.addBlockError(ref.uuid, `${field.description} is required`);
-                    return
-                }
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

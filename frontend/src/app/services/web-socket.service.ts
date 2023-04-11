@@ -180,10 +180,12 @@ export class WebSocketService {
                 case MessageAPI.GET_STATUS:
                 case MessageAPI.UPDATE_STATUS:
                     this.updateStatus(event.data);
-                    const allStatesReady = !this.serviesStates.find((item: any) => item.state !== ApplicationStates.READY)
+                    const allStatesReady = !this.serviesStates.find((item: any) => !item.states.includes(ApplicationStates.READY));
                     if (!allStatesReady) {
-                        const last = location.pathname === '/status' ? null : btoa(location.href);
-                        this.router.navigate(['/status'], { queryParams: { last } });
+                        if (!['/status', '/admin/settings', '/admin/logs'].includes(location.pathname)) {
+                            const last = location.pathname === '/status' ? null : btoa(location.href);
+                            this.router.navigate(['/status'], { queryParams: { last } });
+                        }
                     }
                     this.servicesReady.next(allStatesReady);
                     break;
@@ -301,11 +303,11 @@ export class WebSocketService {
             if (!existsService) {
                 this.serviesStates.push({
                     serviceName,
-                    state: serviceStatus[serviceName]
+                    states: serviceStatus[serviceName]
                 });
                 continue;
             }
-            existsService.state = serviceStatus[serviceName]
+            existsService.states = serviceStatus[serviceName]
         }
     }
 

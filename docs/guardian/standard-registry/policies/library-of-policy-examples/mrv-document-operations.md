@@ -12,7 +12,7 @@ There are two roles: ‘**User**_**’**_ and _**‘**_**Approver**_**’**_. _U
 
 (See [example 1](creating-and-using-roles.md) for the more detailed description of how to work with roles)
 
-![Creating 2 roles](../../../../.gitbook/assets/0.png)
+![Creating 2 roles](<../../../../.gitbook/assets/0 (4).png>)
 
 2. Create all needed document schemas:
 
@@ -24,7 +24,7 @@ There are two roles: ‘**User**_**’**_ and _**‘**_**Approver**_**’**_. _U
 
 In order to mint tokens into another account (not into the account of the minting user) setup the required field
 
-![Setting up new account](<../../../../.gitbook/assets/1 (1).png>)
+![Setting up new account](<../../../../.gitbook/assets/1 (1) (2).png>)
 
 2.4 Schema for ’**Report**’ containing the following fields: **Start Date, End Date, Amount**
 
@@ -38,11 +38,11 @@ In order to mint tokens into another account (not into the account of the mintin
 
 4. Add simplified grids for displaying Projects, Reports and Tokens
 
-![Adding grids](../../../../.gitbook/assets/3.png)
+![Adding grids](<../../../../.gitbook/assets/3 (1).png>)
 
 5. Create the token
 
-![image5.png](<../../../../.gitbook/assets/4 (1).png>)
+![image5.png](<../../../../.gitbook/assets/4 (1) (1).png>)
 
 ## **Document Operations**
 
@@ -60,7 +60,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 1.3.1 Since another (not current user) account is used for minted tokens ’**tokenActionBlock**’ cannot be used, instead we will use ‘**tokenConfirmationBlock**_**’**_
 
-![Adding tokenConfirmationBlock](../../../../.gitbook/assets/7.png)
+![Adding tokenConfirmationBlock](<../../../../.gitbook/assets/7 (2).png>)
 
 1.3.2 To configure the target account for mixed tokens select ‘_Custom_’ value for ‘_Type_’ and the filed in the document from which to take the value for the Account ID (this field must have type: ‘**Account**’)
 
@@ -68,13 +68,13 @@ In order to mint tokens into another account (not into the account of the mintin
 
 1.3.3 By default ’**tokenConfirmationBlock**’ does not have a link to the next block, thus it needs to be manually added
 
-![Manually adding tokenConfirmationBlock to next Block](../../../../.gitbook/assets/9.png)
+![Manually adding tokenConfirmationBlock to next Block](<../../../../.gitbook/assets/9 (1).png>)
 
 1.4 Add an approver as after the creation the project is not assigned to anyone
 
 1.4.1 Add ’**interfaceActionBlock**’ wrapped into a container.
 
-![Adding interfaceActionBlock](<../../../../.gitbook/assets/10 (1).png>)
+![Adding interfaceActionBlock](<../../../../.gitbook/assets/10 (1) (2).png>)
 
 1.4.2 Select **Dropdown **_**** value **** for ****_** Type**
 

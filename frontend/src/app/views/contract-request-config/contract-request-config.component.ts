@@ -1,9 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ProfileService } from 'src/app/services/profile.service';
-import { ContractService } from 'src/app/services/contract.service';
+import { ProfileService } from '../../services/profile.service';
+import { ContractService } from '../../services/contract.service';
 import { forkJoin } from 'rxjs';
-import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
+import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
 /**

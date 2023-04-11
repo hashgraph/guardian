@@ -120,6 +120,8 @@ function Accounts() {
         delete result.data.id;
         delete result.data.password;
         delete result.data.walletToken;
+        delete result.data.createDate;
+        delete result.data.updateDate;
         assert.deepEqual(result.data, {
             role: 'STANDARD_REGISTRY',
             username: 'StandardRegistry',
@@ -141,6 +143,8 @@ function Accounts() {
         delete result.data.id;
         delete result.data.password;
         delete result.data.walletToken;
+        delete result.data.createDate;
+        delete result.data.updateDate;
         assert.deepEqual(result.data, { username: 'Installer', role: 'USER' });
     });
 
@@ -161,6 +165,8 @@ function Accounts() {
         delete result.data._id;
         delete result.data.parent;
         delete result.data.walletToken
+        delete result.data.createDate;
+        delete result.data.updateDate;
         assert.deepEqual(result.data, {
             username: 'apiTest',
             did: null,

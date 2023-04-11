@@ -3,16 +3,21 @@ import {
     PolicyType,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { Workers } from '@helpers/workers';
-import { DatabaseServer } from '@database-modules';
-import { MessageAction, MessageServer, SynchronizationMessage, TopicConfig } from '@hedera-modules';
 import { CronJob } from 'cron';
-import { Policy } from '@entity/policy';
 import { MintService } from './mint-service';
-import { Users } from '@helpers/users';
-import { MultiPolicyTransaction } from '@entity/multi-policy-transaction';
-import { Token } from '@entity/token';
-import { Logger } from '@guardian/common';
+import {
+    Logger,
+    Token,
+    DatabaseServer,
+    MultiPolicyTransaction,
+    Policy,
+    Users,
+    MessageAction,
+    MessageServer,
+    SynchronizationMessage,
+    TopicConfig,
+    Workers,
+} from '@guardian/common';
 
 /**
  * Synchronization Service
@@ -221,7 +226,7 @@ export class SynchronizationService {
         const transactions = await DatabaseServer.getMultiPolicyTransactions(policy.id, user);
         for (const transaction of transactions) {
             if (transaction.amount <= min) {
-                const token = await DatabaseServer.getTokenById(transaction.tokenId);
+                const token = await DatabaseServer.getToken(transaction.tokenId);
                 const status = await SynchronizationService.completeTransaction(
                     messageServer, root, token, transaction, policies, vpMap
                 );

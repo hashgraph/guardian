@@ -4,11 +4,10 @@ import { User } from '@entity/user';
 import * as util from 'util';
 import crypto from 'crypto';
 import {
-    MessageBrokerChannel,
     MessageResponse,
     MessageError,
     Logger,
-    DataBaseHelper,
+    DataBaseHelper, NatsService, Singleton,
     SecretManager
 } from '@guardian/common';
 import {
@@ -27,24 +26,31 @@ import {
     IGetUsersByIRoleMessage,
     IUser,
     IStandardRegistryUserResponse,
-    IGetUsersByAccountMessage
+    IGetUsersByAccountMessage, GenerateUUIDv4
 } from '@guardian/interfaces';
 
 /**
  * Account service
  */
-export class AccountService {
-    constructor(
-        private readonly channel: MessageBrokerChannel
-    ) {
-        // this.registerListeners();
-    }
+@Singleton
+export class AccountService extends NatsService{
+
+    /**
+     * Message queue name
+     */
+    public messageQueueName = 'auth-users-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'auth-users-queue-reply-' + GenerateUUIDv4();
 
     /**
      * Register listeners
      */
     registerListeners(): void {
-        this.channel.response<IGetUserByTokenMessage, User>(AuthEvents.GET_USER_BY_TOKEN, async (msg) => {
+        this.getMessages<IGetUserByTokenMessage, User>(AuthEvents.GET_USER_BY_TOKEN, async (msg) => {
             const { token } = msg;
 
             try {
@@ -62,7 +68,7 @@ export class AccountService {
             }
         });
 
-        this.channel.response<IRegisterNewUserMessage, User>(AuthEvents.REGISTER_NEW_USER, async (msg) => {
+        this.getMessages<IRegisterNewUserMessage, User>(AuthEvents.REGISTER_NEW_USER, async (msg) => {
             try {
                 const userRepository = new DataBaseHelper(User);
 
@@ -90,7 +96,7 @@ export class AccountService {
             }
         });
 
-        this.channel.response<IGenerateTokenMessage, IGenerateTokenResponse>(AuthEvents.GENERATE_NEW_TOKEN, async (msg) => {
+        this.getMessages<IGenerateTokenMessage, IGenerateTokenResponse>(AuthEvents.GENERATE_NEW_TOKEN, async (msg) => {
             try {
                 /**
                  * this code block retreives `ACCESS_TOKEN_SECRET` from Vault instead of environment variable
@@ -124,7 +130,7 @@ export class AccountService {
             }
         });
 
-        this.channel.response<any, IGetAllUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS, async (_) => {
+        this.getMessages<any, IGetAllUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS, async (_) => {
             try {
                 const userAccounts = (await new DataBaseHelper(User).find({ role: UserRole.USER })).map((e) => ({
                     username: e.username,
@@ -138,7 +144,7 @@ export class AccountService {
             }
         });
 
-        this.channel.response<any, IStandardRegistryUserResponse[]>(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS, async (_) => {
+        this.getMessages<any, IStandardRegistryUserResponse[]>(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS, async (_) => {
             try {
                 const userAccounts = (await new DataBaseHelper(User).find({ role: UserRole.STANDARD_REGISTRY })).map((e) => ({
                     username: e.username,
@@ -151,7 +157,7 @@ export class AccountService {
             }
         });
 
-        this.channel.response<any, IGetDemoUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO, async (_) => {
+        this.getMessages<any, IGetDemoUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO, async (_) => {
             try {
                 const userAccounts = (await new DataBaseHelper(User).findAll()).map((e) => ({
                     parent: e.parent,
@@ -166,7 +172,7 @@ export class AccountService {
             }
         });
 
-        this.channel.response<IGetUserMessage, User>(AuthEvents.GET_USER, async (msg) => {
+        this.getMessages<IGetUserMessage, User>(AuthEvents.GET_USER, async (msg) => {
             const { username } = msg;
 
             try {
@@ -177,7 +183,7 @@ export class AccountService {
             }
         });
 
-        this.channel.response<IGetUserByIdMessage, IUser>(AuthEvents.GET_USER_BY_ID, async (msg) => {
+        this.getMessages<IGetUserByIdMessage, IUser>(AuthEvents.GET_USER_BY_ID, async (msg) => {
             const { did } = msg;
 
             try {
@@ -188,7 +194,7 @@ export class AccountService {
             }
         });
 
-        this.channel.response<IGetUsersByAccountMessage, IUser>(AuthEvents.GET_USER_BY_ACCOUNT, async (msg) => {
+        this.getMessages<IGetUsersByAccountMessage, IUser>(AuthEvents.GET_USER_BY_ACCOUNT, async (msg) => {
             const { account } = msg;
 
             try {
@@ -199,7 +205,7 @@ export class AccountService {
             }
         });
 
-        this.channel.response<IGetUsersByIdMessage, IUser[]>(AuthEvents.GET_USERS_BY_ID, async (msg) => {
+        this.getMessages<IGetUsersByIdMessage, IUser[]>(AuthEvents.GET_USERS_BY_ID, async (msg) => {
             const { dids } = msg;
 
             try {
@@ -214,7 +220,7 @@ export class AccountService {
             }
         });
 
-        this.channel.response<IGetUsersByIRoleMessage, IUser[]>(AuthEvents.GET_USERS_BY_ROLE, async (msg) => {
+        this.getMessages<IGetUsersByIRoleMessage, IUser[]>(AuthEvents.GET_USERS_BY_ROLE, async (msg) => {
             const { role } = msg;
 
             try {
@@ -225,7 +231,7 @@ export class AccountService {
             }
         });
 
-        this.channel.response<IUpdateUserMessage, any>(AuthEvents.UPDATE_USER, async (msg) => {
+        this.getMessages<IUpdateUserMessage, any>(AuthEvents.UPDATE_USER, async (msg) => {
             const { username, item } = msg;
 
             try {
@@ -236,7 +242,7 @@ export class AccountService {
             }
         });
 
-        this.channel.response<ISaveUserMessage, IUser>(AuthEvents.SAVE_USER, async (msg) => {
+        this.getMessages<ISaveUserMessage, IUser>(AuthEvents.SAVE_USER, async (msg) => {
             const { user } = msg;
 
             try {

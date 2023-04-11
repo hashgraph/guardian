@@ -1,6 +1,7 @@
 import { ISchema, ISchemaDocument, SchemaCondition, SchemaField } from '..';
 import { SchemaDataTypes } from '../interface/schema-document.interface';
 import { Schema } from '../models/schema';
+import geoJson from './geojson-schema/geo-json';
 import { ModelHelper } from './model-helper';
 
 /**
@@ -30,7 +31,8 @@ export class SchemaHelper {
             conditions: null,
             context: null,
             customType: null,
-            comment: null
+            comment: null,
+            isPrivate: null,
         };
         let _property = property;
         const readonly = _property.readOnly;
@@ -75,7 +77,8 @@ export class SchemaHelper {
             textColor,
             textSize,
             textBold,
-            orderPosition
+            orderPosition,
+            isPrivate,
         } = SchemaHelper.parseFieldComment(field.comment);
         if (field.isRef) {
             const { type } = SchemaHelper.parseRef(field.type);
@@ -86,11 +89,12 @@ export class SchemaHelper {
         } else {
             field.unit = unit ? String(unit) : null;
             field.unitSystem = unitSystem ? String(unitSystem) : null;
-            field.customType = customType ? String(customType) : null;
             field.textColor = textColor;
             field.textSize = textSize;
             field.textBold = textBold;
         }
+        field.customType = customType ? String(customType) : null;
+        field.isPrivate = isPrivate;
         field.required = required;
         return [field, orderPosition];
     }
@@ -621,7 +625,9 @@ export class SchemaHelper {
      */
     public static findRefs(target: Schema, schemas: Schema[]) {
         const map = {};
-        const schemaMap = {};
+        const schemaMap = {
+            '#GeoJSON': geoJson
+        };
         for (const element of schemas) {
             schemaMap[element.iri] = element.document;
         }
@@ -796,6 +802,9 @@ export class SchemaHelper {
         comment['@id'] = field.isRef ?
             SchemaHelper.buildUrl(url, field.type) :
             'https://www.schema.org/text';
+        if (![null, undefined].includes(field.isPrivate)) {
+            comment.isPrivate = field.isPrivate;
+        }
         if (field.unit) {
             comment.unit = field.unit;
         }

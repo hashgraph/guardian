@@ -1,12 +1,9 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { BlockActionError } from '@policy-engine/errors';
 import { DocumentSignature, GenerateUUIDv4, IRootConfig, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, MessageServer, VCMessage, MessageAction, VPMessage } from '@hedera-modules';
-import { VcHelper } from '@helpers/vc-helper';
-import { Token as TokenCollection } from '@entity/token';
+import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage } from '@guardian/common';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -37,7 +34,10 @@ import { MintService } from '@policy-engine/multi-policy-service/mint-service';
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: [
+        { path: 'options.tokenId', alias: 'token', type: 'Token' }
+    ]
 })
 export class RetirementBlock {
     /**
@@ -164,7 +164,7 @@ export class RetirementBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        const token = await ref.databaseServer.getTokenById(ref.options.tokenI);
+        const token = await ref.databaseServer.getToken(ref.options.tokenId);
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
@@ -215,7 +215,7 @@ export class RetirementBlock {
             targetAccountId = await PolicyUtils.getHederaAccountId(ref, docs[0].owner);
         }
         if (!targetAccountId) {
-            throw new BlockActionError('Token recipient not set', ref.blockType, ref.uuid);
+            throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
         }
 
         const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
@@ -241,38 +241,5 @@ export class RetirementBlock {
             documents: ExternalDocuments(docs),
             result: ExternalDocuments(vp),
         }));
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (!ref.options.tokenId) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
-            } else if (typeof ref.options.tokenId !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-            } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
-                resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
-            }
-
-            if (!ref.options.rule) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "rule" does not set');
-            } else if (typeof ref.options.rule !== 'string') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "rule" must be a string');
-            }
-
-            const accountType = ['default', 'custom'];
-            if (accountType.indexOf(ref.options.accountType) === -1) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "accountType" must be one of ' + accountType.join(','));
-            }
-            if (ref.options.accountType === 'custom' && !ref.options.accountId) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "accountId" does not set');
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

@@ -1,8 +1,6 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { AggregateVC } from '@entity/aggregate-documents';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { AggregateVC, VcDocumentDefinition as VcDocument } from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { VcDocument } from '@hedera-modules';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
@@ -35,6 +33,12 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
         ],
         defaultEvent: true,
         properties: [{
+            name: 'disableUserGrouping',
+            label: 'Disable user grouping',
+            title: 'Disable user grouping',
+            type: PropertyType.Checkbox,
+            default: false
+        }, {
             name: 'groupByFields',
             label: 'Group By Fields',
             title: 'Group By Fields',
@@ -50,9 +54,25 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
                 }]
             }
         }]
-    }
+    },
+    variables: []
 })
 export class AggregateBlock {
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        ref.options?.groupByFields
+            ?.filter((field) => field.fieldPath?.startsWith('document.'))
+            .forEach((field) => {
+                documentCacheFields.add(field.fieldPath.replace('document.', ''));
+            });
+    }
+
     /**
      * Tick cron
      * @event PolicyEventType.PopEvent
@@ -94,7 +114,8 @@ export class AggregateBlock {
     })
     public async tickCron(event: IPolicyEvent<string[]>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        if (ref.options.aggregateType !== 'period') {
+        const { aggregateType, groupByFields, disableUserGrouping } = ref.options;
+        if (aggregateType !== 'period') {
             return;
         }
         const ids = event.data || [];
@@ -102,42 +123,35 @@ export class AggregateBlock {
         ref.log(`tick scheduler, ${ids.length}`);
 
         const rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid);
-        const usingFieldsGroup =
-            ref.options.groupByFields && ref.options.groupByFields.length > 0;
+        const groupByUser = !disableUserGrouping;
 
-        const map = new Map<
-            string,
-            AggregateVC[] | Map<string, AggregateVC[]>
-        >();
+        const map = new Map<string, AggregateVC[]>();
         const removeMsp: AggregateVC[] = [];
-        for (const id of ids) {
-            map.set(
-                id,
-                usingFieldsGroup ? new Map<string, AggregateVC[]>() : []
-            );
-        }
 
         for (const element of rawEntities) {
             const id = PolicyUtils.getScopeId(element);
-            if (map.has(id)) {
-                if (usingFieldsGroup) {
-                    const groupedDocuments = map.get(id) as Map<string, AggregateVC[]>;
-                    const documentKey = ref.options.groupByFields
-                        .map((item) =>
-                            JSON.stringify(ObjGet(element, item.fieldPath))
-                        )
-                        .join(':');
-                    if (groupedDocuments.has(documentKey)) {
-                        groupedDocuments.get(documentKey).push(element);
-                    } else {
-                        groupedDocuments.set(documentKey, [element]);
-                    }
+            if (groupByUser && !ids.includes(id)) {
+                removeMsp.push(element);
+                continue;
+            }
+            if (!groupByUser || groupByFields?.length > 0) {
+                const documentKey = groupByFields
+                    .map((item) =>
+                        JSON.stringify(ObjGet(element, item.fieldPath))
+                    )
+                    .join('|');
+                const key = groupByUser ? `${id}|${documentKey}` : documentKey;
+                if (map.has(key)) {
+                    map.get(key).push(element);
                 } else {
-                    const userDocuments = map.get(id) as AggregateVC[];
-                    userDocuments.push(element);
+                    map.set(key, [element]);
                 }
             } else {
-                removeMsp.push(element);
+                if (map.has(id)) {
+                    map.get(id).push(element);
+                } else {
+                    map.set(id, [element]);
+                }
             }
         }
 
@@ -145,19 +159,12 @@ export class AggregateBlock {
             await ref.databaseServer.removeAggregateDocuments(removeMsp);
         }
 
-        for (const id of ids) {
-            if (usingFieldsGroup) {
-                const groupedDocuments = map.get(id) as Map<
-                    string,
-                    AggregateVC[]
-                >;
-                for (const [, documents] of groupedDocuments) {
-                    await this.sendCronDocuments(ref, id, documents);
-                }
-            } else {
-                const documents = map.get(id) as AggregateVC[];
-                await this.sendCronDocuments(ref, id, documents);
-            }
+        for (const [key, documents] of map) {
+            await this.sendCronDocuments(
+                ref,
+                groupByUser ? key.split('|')[0] : ref.policyOwner,
+                documents
+            );
         }
     }
     /**
@@ -239,10 +246,11 @@ export class AggregateBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     private async tickAggregate(ref: AnyBlockType, document: any) {
-        const { expressions, condition } = ref.options;
+        const { expressions, condition, disableUserGrouping, groupByFields } = ref.options;
+        const groupByUser = !disableUserGrouping;
 
         const filters: any = {};
-        if (document.owner) {
+        if (document.owner && groupByUser) {
             if (document.group) {
                 filters.owner = document.owner;
                 filters.group = document.group;
@@ -250,8 +258,8 @@ export class AggregateBlock {
                 filters.owner = document.owner;
             }
         }
-        if (ref.options.groupByFields) {
-            for (const groupByField of ref.options.groupByFields) {
+        if (groupByFields) {
+            for (const groupByField of groupByFields) {
                 filters[groupByField.fieldPath] = ObjGet(document, groupByField.fieldPath);
             }
         }
@@ -320,50 +328,5 @@ export class AggregateBlock {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event.user, {
             documents: ExternalDocuments(docs)
         }));
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (ref.options.aggregateType === 'cumulative') {
-                const variables: any = {};
-                if (ref.options.expressions) {
-                    for (const expression of ref.options.expressions) {
-                        variables[expression.name] = true;
-                    }
-                }
-                if (!ref.options.condition) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "condition" does not set');
-                } else if (typeof ref.options.condition !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "condition" must be a string');
-                } else {
-                    const vars = PolicyUtils.variables(ref.options.condition);
-                    for (const varName of vars) {
-                        if (!variables[varName]) {
-                            resultsContainer.addBlockError(ref.uuid, `Variable '${varName}' not defined`);
-                        }
-                    }
-                }
-            } else if(ref.options.aggregateType !== 'period') {
-                resultsContainer.addBlockError(ref.uuid, 'Option "aggregateType" must be one of period, cumulative');
-            }
-            if (
-                ref.options.groupByFields &&
-                ref.options.groupByFields.length > 0
-            ) {
-                if (ref.options.groupByFields.find((item) => !item.fieldPath)) {
-                    resultsContainer.addBlockError(
-                        ref.uuid,
-                        'Field path in group fields can not be empty'
-                    );
-                }
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

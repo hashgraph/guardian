@@ -1,5 +1,4 @@
 import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -7,13 +6,18 @@ import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfac
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { BlockActionError } from '@policy-engine/errors';
-import { VcHelper } from '@helpers/vc-helper';
-import { Inject } from '@helpers/decorators/inject';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { MessageAction, MessageServer, VcDocument, VPMessage } from '@hedera-modules';
-import { PolicyRoles } from '@entity/policy-roles';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import {
+    PolicyRoles,
+    VcDocument as VcDocumentCollection,
+    MessageAction,
+    MessageServer,
+    VcHelper,
+    VcDocumentDefinition as VcDocument,
+    VPMessage,
+} from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { Inject } from '@helpers/decorators/inject';
 
 /**
  * Sign Status
@@ -53,7 +57,8 @@ enum DocumentStatus {
             type: PropertyType.Input,
             default: '50'
         }]
-    }
+    },
+    variables: []
 })
 export class MultiSignBlock {
     /**
@@ -332,29 +337,5 @@ export class MultiSignBlock {
     })
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         return;
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (!ref.options.threshold) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "threshold" does not set');
-            } else {
-                try {
-                    const t = parseFloat(ref.options.threshold);
-                    if (t < 0 || t > 100) {
-                        resultsContainer.addBlockError(ref.uuid, '"threshold" value must be between 0 and 100');
-                    }
-                } catch (error) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "threshold" must be a number');
-                }
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

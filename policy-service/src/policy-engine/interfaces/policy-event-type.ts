@@ -10,7 +10,8 @@ export enum PolicyInputEventType {
     ReleaseEvent = 'ReleaseEvent',
     PopEvent = 'PopEvent',
     RestoreEvent = 'RestoreEvent',
-    AdditionalMintEvent = 'AdditionalMintEvent'
+    AdditionalMintEvent = 'AdditionalMintEvent',
+    ModuleEvent = 'ModuleEvent'
 }
 
 /**
@@ -24,8 +25,8 @@ export enum PolicyOutputEventType {
     Confirm = 'Confirm',
     CreateGroup = 'CreateGroup',
     JoinGroup = 'JoinGroup',
-    SignatureQuorumReachedEvent= 'SignatureQuorumReachedEvent',
-    SignatureSetInsufficientEvent= 'SignatureSetInsufficientEvent',
+    SignatureQuorumReachedEvent = 'SignatureQuorumReachedEvent',
+    SignatureSetInsufficientEvent = 'SignatureSetInsufficientEvent',
     ErrorEvent = 'ErrorEvent',
     ReleaseEvent = 'ReleaseEvent'
 }

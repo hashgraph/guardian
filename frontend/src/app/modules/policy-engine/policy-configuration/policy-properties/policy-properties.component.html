@@ -1,0 +1,381 @@
+<div class="grid-setting policy-properties" [attr.readonly]="readonly">
+    <div class="table">
+        <div class="table-body" #body>
+            <table class="properties">
+                <ng-container *ngIf="type == 'Main'">
+                    <tr class="propHeader">
+                        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'metaData')"
+                            [attr.collapse]="propHidden.metaData">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </td>
+                        <td class="propHeaderCell cellName">Policy</td>
+                        <td class="propHeaderCell"></td>
+                    </tr>
+                    <!-- Meta Data  -->
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">ID</td>
+                        <td class="propRowCell">
+                            <span class="readonly-prop">{{policy.id}}</span>
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Status</td>
+                        <td class="propRowCell">
+                            <span class="readonly-prop">{{policy.status}}</span>
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Name</td>
+                        <td class="propRowCell">
+                            <input class="prop-input" [(ngModel)]="policy.name" [readonly]="readonly">
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Policy Tag</td>
+                        <td class="propRowCell">
+                            <input class="prop-input" [(ngModel)]="policy.policyTag" [readonly]="readonly">
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Previous Version</td>
+                        <td class="propRowCell">
+                            <input class="prop-input" [ngModel]="policy.previousVersion" readonly>
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Version</td>
+                        <td class="propRowCell">
+                            <input class="prop-input" [ngModel]="policy.version" readonly>
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Topic Description</td>
+                        <td class="propRowCell">
+                            <input class="prop-input" [(ngModel)]="policy.topicDescription" [readonly]="readonly" maxlength="50">
+                        </td>
+                    </tr>
+                    <tr class="propRow" [attr.collapse]="propHidden.metaData">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName">Description</td>
+                        <td class="propRowCell">
+                            <textarea [(ngModel)]="policy.description" [readonly]="readonly"></textarea>
+                        </td>
+                    </tr>
+                </ng-container>
+
+                <ng-container *ngIf="type == 'Role'">
+                    <!-- Roles  -->
+                    <tr class="propHeader">
+                        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'rolesGroup')"
+                            [attr.collapse]="propHidden.rolesGroup">
+                            <mat-icon *ngIf="policy.policyRoles && policy.policyRoles.length">arrow_drop_down</mat-icon>
+                        </td>
+                        <td class="propHeaderCell cellName">Roles</td>
+                        <td class="propHeaderCell">
+                            <div class="propAdd" (click)="addRoles()">
+                                <mat-icon>add</mat-icon>
+                                <span>Add Role</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <ng-container *ngFor="let item of roles; let i=index">
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.rolesGroup">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Role {{i}}</td>
+                            <td class="propRowCell remove-cell">
+                                <input class="prop-input" [(ngModel)]="item.name" [readonly]="readonly" (input)="onEditRole(item)">
+                                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveRole(item)">
+                                    <mat-icon>delete</mat-icon>
+                                </span>
+                            </td>
+                        </tr>
+                    </ng-container>
+                </ng-container>
+                <ng-container *ngIf="type == 'Groups'">
+                    <!-- Groups  -->
+                    <ng-container *ngFor="let item of policyGroups; let i=index">
+                        <tr class="propHeader">
+                            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.groupsGroup, i)"
+                                [attr.collapse]="propHidden.groupsGroup[i]">
+                                <mat-icon>arrow_drop_down</mat-icon>
+                            </td>
+                            <td class="propHeaderCell cellName">Group</td>
+                            <td class="propHeaderCell">
+                                <div>{{item.name}}</div>
+                                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveGroup(item)">
+                                    <mat-icon>delete</mat-icon>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Name</td>
+                            <td class="propRowCell">
+                                <input class="prop-input" [(ngModel)]="item.name" [readonly]="readonly" (input)="onEditGroup(item)">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Creator role</td>
+                            <td class="propRowCell">
+                                <mat-select [(ngModel)]="item.creator" [disabled]="readonly" (selectionChange)="onEditGroup(item)">
+                                    <mat-option *ngFor="let item of policy.policyRoles" [value]="item.name">{{item.name}}
+                                    </mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Members roles</td>
+                            <td class="propRowCell">
+                                <mat-select [(ngModel)]="item.members" multiple [disabled]="readonly" (selectionChange)="onEditGroup(item)">
+                                    <mat-option *ngFor="let item of policy.policyRoles" [value]="item.name">{{item.name}}
+                                    </mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Relationship Type</td>
+                            <td class="propRowCell">
+                                <mat-select [(ngModel)]="item.groupRelationshipType" [disabled]="readonly" (valueChange)="onEditGroup(item)">
+                                    <mat-option value="Single">Single</mat-option>
+                                    <mat-option value="Multiple">Multiple</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Access Type</td>
+                            <td class="propRowCell">
+                                <mat-select [(ngModel)]="item.groupAccessType" [disabled]="readonly" (valueChange)="onEditGroup(item)">
+                                    <mat-option value="Private">Private</mat-option>
+                                    <mat-option value="Global">Global</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <tr class="propRow propRowBottom">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName"></td>
+                        <td class="propRowCell"></td>
+                    </tr>
+                    <div class="propBottom">
+                        <div class="propAdd" (click)="addGroup()">
+                            <mat-icon>add</mat-icon>
+                            <span>Add Group</span>
+                        </div>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="type == 'Topics'">
+                    <!-- Topics  -->
+                    <ng-container *ngFor="let item of topics; let i=index">
+                        <tr class="propHeader">
+                            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.topicsGroup, i)"
+                                [attr.collapse]="propHidden.topicsGroup[i]">
+                                <mat-icon>arrow_drop_down</mat-icon>
+                            </td>
+                            <td class="propHeaderCell cellName">Topic</td>
+                            <td class="propHeaderCell">
+                                <div>{{item.name}}</div>
+                                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveTopic(item)">
+                                    <mat-icon>delete</mat-icon>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Name</td>
+                            <td class="propRowCell">
+                                <input class="prop-input" [(ngModel)]="item.name" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Description</td>
+                            <td class="propRowCell">
+                                <input class="prop-input" [(ngModel)]="item.description" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Type</td>
+                            <td class="propRowCell">
+                                <mat-select [(ngModel)]="item.type" [disabled]="readonly">
+                                    <mat-option value="any">Any</mat-option>
+                                    <mat-option value="vc">VC</mat-option>
+                                    <mat-option value="vp">VP</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Static</td>
+                            <td class="propRowCell">
+                                <input class="prop-input" type="checkbox" [(ngModel)]="item.static" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Memo Parameters Object</td>
+                            <td class="propRowCell">
+                                <mat-select [(ngModel)]="item.memoObj" [disabled]="readonly">
+                                    <mat-option value="topic">Topic Config</mat-option>
+                                    <mat-option value="doc">Document</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Memo</td>
+                            <td class="propRowCell">
+                                <input class="prop-input" [(ngModel)]="item.memo" [readonly]="readonly">
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <tr class="propRow propRowBottom">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName"></td>
+                        <td class="propRowCell"></td>
+                    </tr>
+                    <div class="propBottom">
+                        <div class="propAdd" (click)="addTopic()">
+                            <mat-icon>add</mat-icon>
+                            <span>Add Topic</span>
+                        </div>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="type == 'Tokens'">
+                    <!-- Tokens  -->
+                    <ng-container *ngFor="let item of tokens; let i=index">
+                        <tr class="propHeader">
+                            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.tokensGroup, i)"
+                                [attr.collapse]="propHidden.tokensGroup[i]">
+                                <mat-icon>arrow_drop_down</mat-icon>
+                            </td>
+                            <td class="propHeaderCell cellName">Token</td>
+                            <td class="propHeaderCell">
+                                <div>{{item.templateTokenTag}}</div>
+                                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveToken(item)">
+                                    <mat-icon>delete</mat-icon>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Template Token Tag</td>
+                            <td class="propRowCell">
+                                <input class="prop-input" [(ngModel)]="item.templateTokenTag" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Token Name</td>
+                            <td class="propRowCell">
+                                <input placeholder="To be specified by user" class="prop-input" [(ngModel)]="item.tokenName" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Token Symbol</td>
+                            <td class="propRowCell">
+                                <input placeholder="To be specified by user" class="prop-input" [(ngModel)]="item.tokenSymbol" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Token Type</td>
+                            <td class="propRowCell">
+                                <mat-select placeholder="To be specified by user" (selectionChange)="onTokenTypeChange(item)" [(ngModel)]="item.tokenType" [disabled]="readonly">
+                                    <mat-option>To be specified by user</mat-option>
+                                    <mat-option value="non-fungible">Non Fungible</mat-option>
+                                    <mat-option value="fungible">Fungible</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" *ngIf="item.tokenType==='fungible'" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Decimals</td>
+                            <td class="propRowCell">
+                                <input placeholder="To be specified by user" type="number" class="prop-input" [(ngModel)]="item.decimals" [readonly]="readonly">
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Enable Admin</td>
+                            <td class="propRowCell">
+                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableAdmin" [disabled]="readonly">
+                                    <mat-option>To be specified by user</mat-option>
+                                    <mat-option [value]="true">Yes</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Change Supply</td>
+                            <td class="propRowCell">
+                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.changeSupply" [disabled]="readonly">
+                                    <mat-option>To be specified by user</mat-option>
+                                    <mat-option [value]="true">Yes</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Enable Freeze</td>
+                            <td class="propRowCell">
+                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableFreeze" [disabled]="readonly">
+                                    <mat-option>To be specified by user</mat-option>
+                                    <mat-option [value]="true">Yes</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Enable KYC</td>
+                            <td class="propRowCell">
+                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableKYC" [disabled]="readonly">
+                                    <mat-option>To be specified by user</mat-option>
+                                    <mat-option [value]="true">Yes</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Enable Wipe</td>
+                            <td class="propRowCell">
+                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableWipe" [disabled]="readonly">
+                                    <mat-option>To be specified by user</mat-option>
+                                    <mat-option [value]="true">Yes</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <tr class="propRow propRowBottom">
+                        <td class="propRowCol"></td>
+                        <td class="propRowCell cellName"></td>
+                        <td class="propRowCell"></td>
+                    </tr>
+                    <div class="propBottom">
+                        <div class="propAdd" (click)="addToken()">
+                            <mat-icon>add</mat-icon>
+                            <span>Add Token</span>
+                        </div>
+                    </div>
+                </ng-container>
+            </table>
+        </div>
+    </div>
+</div>

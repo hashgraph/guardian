@@ -1,0 +1,194 @@
+<div *ngIf="!readonly" class="custom-field" [formGroup]="form">
+    <ng-template [ngIf]="field.controlKey.invalid && field.controlKey.errors">
+        <small class="error-message"
+            *ngIf="field.controlKey.hasError('key')">
+            Key contains invalid characters.
+        </small>
+        <small class="error-message"
+            *ngIf="field.controlKey.hasError('systemName')">
+            Key has a system name.
+        </small>
+    </ng-template>
+    <div class="extended-config" [attr.extended]="extended">
+        <div class="custom-field-name f1">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>* Key</mat-label>
+                <input matInput placeholder="Field name" [formControl]="field.controlKey">
+            </mat-form-field>
+        </div>
+
+        <div class="custom-field-name f2">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>Title</mat-label>
+                <input matInput placeholder="Field name" [formControl]="field.controlTitle">
+            </mat-form-field>
+        </div>
+
+        <div *ngIf="!helpText" class="custom-field-name f3">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>* Description</mat-label>
+                <input matInput placeholder="Field name" [formControl]="field.controlDescription">
+            </mat-form-field>
+        </div>
+        <div *ngIf="helpText" class="custom-field-name f3 custom-field-help-text">
+            <mat-form-field appearance="outline">
+                <mat-label>* Help Text</mat-label>
+                <textarea
+                    [ngStyle]="{ 'height': '20px', 'color': field.color, 'font-size': field.size  + 'px', 'font-weight': field.bold ? 'bold' : ''}"
+                    matInput [formControl]="field.controlDescription"></textarea>
+            </mat-form-field>
+        </div>
+
+        <div class="custom-field-remove f4">
+            <div class="custom-fields-remove" (click)="onRemove(field)">
+                <mat-icon>delete</mat-icon>
+            </div>
+        </div>
+
+        <div *ngIf="isString" class="custom-field-name f5">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>Pattern</mat-label>
+                <input matInput placeholder="[0-9]" [formControl]="field.controlPattern">
+            </mat-form-field>
+        </div>
+    </div>
+
+    <div class="custom-field-type">
+        <mat-form-field appearance="outline">
+            <mat-label>Field type</mat-label>
+            <mat-select [formControl]="field.controlType" #controlType (valueChange)="onTypeChange($event)">
+                <mat-optgroup label="Simple Types">
+                    <mat-option *ngFor="let type of types" [value]="type.value">
+                        {{type.name}}
+                    </mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Units of measure">
+                    <mat-option value="prefix">Prefix</mat-option>
+                    <mat-option value="postfix">Postfix</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Hedera">
+                    <mat-option value="hederaAccount">Account</mat-option>
+                </mat-optgroup>
+                <mat-optgroup *ngIf="schemaTypes" label="Schema defined">
+                    <mat-option *ngFor="let type of schemaTypes" [value]="type.value">
+                        {{type.name}}
+                    </mat-option>
+                </mat-optgroup>
+            </mat-select>
+        </mat-form-field>
+    </div>
+    <div *ngIf="unit" class="custom-field-unit">
+        <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>Unit</mat-label>
+            <input matInput placeholder="Unit" [formControl]="field.controlUnit">
+        </mat-form-field>
+    </div>
+
+    <ng-container *ngIf="helpText; else notHelpText">
+        <div class="custom-field-bold">
+            <mat-checkbox color="primary" [formControl]="field.controlBold">
+                Bold
+            </mat-checkbox>
+        </div>
+        <div class="custom-field-color">
+            <mat-form-field appearance="outline">
+                <mat-label>Color</mat-label>
+                <input matInput type="color" [formControl]="field.controlColor">
+                <mat-icon matPrefix>brush</mat-icon>
+            </mat-form-field>
+        </div>
+        <div class="custom-field-font-size">
+            <mat-form-field appearance="outline" floatLabel="never">
+                <mat-label>Font</mat-label>
+                <input matInput type="number" min="1" [formControl]="field.controlSize">
+                <div matSuffix>px</div>
+                <mat-icon matPrefix>format_size</mat-icon>
+            </mat-form-field>
+        </div>
+        <div class="reset-btn"
+            (click)="onHepTextReset()">
+            <mat-icon>restart_alt</mat-icon>
+            <span class="reset-btn-label">Reset</span>
+        </div>
+    </ng-container>
+    <ng-template #notHelpText>
+        <div class="custom-field-required">
+            <mat-checkbox color="primary" [formControl]="field.controlRequired">
+                Required Field
+            </mat-checkbox>
+        </div>
+        <div class="custom-field-isArray">
+            <mat-checkbox color="primary" [formControl]="field.controlArray">
+                Allow multiple answers
+            </mat-checkbox>
+        </div>
+        <div class="custom-field-private" *ngIf="canBePrivate">
+            <mat-checkbox color="primary" [formControl]="field.controlPrivate">
+                Private
+            </mat-checkbox>
+        </div>
+    </ng-template>
+    <div *ngIf="enum && !loading" class="enum-options-container">
+        <mat-form-field *ngIf="this.field.controlEnum.value.length" appearance="outline" class="enum-form-field">
+            <mat-label>Enum data</mat-label>
+            <mat-chip-list #chipList aria-label="Enum values">
+                <mat-chip *ngFor="let keyword of keywords" class="mat-chip-value">
+                    <div class="mat-chip-value-label">{{keyword}}</div>
+                </mat-chip>
+                <mat-chip *ngIf="keywords.length < field.enum.length">
+                    ...
+                </mat-chip>
+            </mat-chip-list>
+        </mat-form-field>
+        <div class="enum-edit-button" [ngClass]="{ 'enum-edit-button-only': !field.enum.length }"
+            (click)="onEditEnum()">
+            <mat-icon>edit</mat-icon>
+            <span class="enum-edit-button-label">Edit values</span>
+        </div>
+    </div>
+    <div *ngIf="loading" class="loading">
+        <mat-spinner [diameter]="65"></mat-spinner>
+    </div>
+</div>
+
+<div *ngIf="readonly" class="custom-field">
+    <div class="readonly-extended-config" [attr.extended]="extended">
+        <div class="custom-field-name f1">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>* Key</mat-label>
+                <input matInput placeholder="Field name" [disabled]="readonly" [value]="value?.name">
+            </mat-form-field>
+        </div>
+
+        <div class="custom-field-name f2">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>Title</mat-label>
+                <input matInput placeholder="Field name" [disabled]="readonly" [value]="value?.title">
+            </mat-form-field>
+        </div>
+
+        <div class="custom-field-name f3">
+            <mat-form-field class="example-full-width" appearance="outline">
+                <mat-label>* Description</mat-label>
+                <input matInput placeholder="Field name" [disabled]="readonly" [value]="value?.description">
+            </mat-form-field>
+        </div>
+    </div>
+
+    <div class="custom-field-type">
+        <mat-form-field appearance="outline">
+            <mat-label>Field type</mat-label>
+            <input matInput placeholder="Field name" [disabled]="readonly" [value]="value?.type">
+        </mat-form-field>
+    </div>
+    <div class="custom-field-required">
+        <mat-checkbox color="primary" [disabled]="readonly" [checked]="value?.required">
+            Required Field
+        </mat-checkbox>
+    </div>
+    <div class="custom-field-isArray">
+        <mat-checkbox color="primary" [disabled]="readonly" [checked]="value?.isArray">
+            Allow multiple answers
+        </mat-checkbox>
+    </div>
+</div>

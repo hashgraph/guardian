@@ -1,20 +1,24 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
+import { IUser, Token, SchemaEntity, Schema, TagType, SchemaHelper } from '@guardian/interfaces';
+import { ActivatedRoute, Router } from '@angular/router';
+//services
 import { AuthService } from '../../services/auth.service';
-import { ProfileService } from "../../services/profile.service";
+import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../services/token.service';
-import { IUser, Token, SchemaEntity, Schema } from '@guardian/interfaces';
-import { DemoService } from 'src/app/services/demo.service';
-import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
-import { SchemaService } from 'src/app/services/schema.service';
-import { HeaderPropsService } from 'src/app/services/header-props.service';
-import { InformService } from 'src/app/services/inform.service';
-import { TasksService } from 'src/app/services/tasks.service';
-import { WebSocketService } from 'src/app/services/web-socket.service';
+import { DemoService } from '../../services/demo.service';
+import { SchemaService } from '../../services/schema.service';
+import { HeaderPropsService } from '../../services/header-props.service';
+import { InformService } from '../../services/inform.service';
+import { TasksService } from '../../services/tasks.service';
+import { WebSocketService } from '../../services/web-socket.service';
+import { TagsService } from '../../services/tag.service';
+import { ContractService } from '../../services/contract.service';
+//modules
+import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { RetireTokenDialogComponent } from 'src/app/components/retire-token-dialog/retire-token-dialog.component';
-import { ContractService } from 'src/app/services/contract.service';
 
 enum OperationMode {
     None, Generate, SetProfile, Associate
@@ -47,6 +51,9 @@ export class UserProfileComponent implements OnInit {
     didDocument?: any;
     vcDocument?: any;
     standardRegistries?: IUser[];
+    selectedIndex: number = 0;
+    tagEntity = TagType.Token;
+    owner: any;
 
     hederaForm = this.fb.group({
         standardRegistry: ['', Validators.required],
@@ -61,7 +68,8 @@ export class UserProfileComponent implements OnInit {
         'tokenBalance',
         'frozen',
         'kyc',
-        'policies'
+        'policies',
+        'tags'
     ];
 
     displayedColumnsContractRequests: string[] = [
@@ -83,8 +91,13 @@ export class UserProfileComponent implements OnInit {
     operationMode: OperationMode = OperationMode.None;
     taskId: string | undefined = undefined;
     expectedTaskMessages: number = 0;
+    tagSchemas: Schema[] = [];
+
+    private subscription = new Subscription();
+    private tabs = ['account', 'tokens', 'retire'];
 
     constructor(
+        public tagsService: TagsService,
         private auth: AuthService,
         private profileService: ProfileService,
         private tokenService: TokenService,
@@ -94,9 +107,12 @@ export class UserProfileComponent implements OnInit {
         private taskService: TasksService,
         private webSocketService: WebSocketService,
         private contractService: ContractService,
+        private route: ActivatedRoute,
+        private router: Router,
         private fb: FormBuilder,
         public dialog: MatDialog,
-        private headerProps: HeaderPropsService) {
+        private headerProps: HeaderPropsService
+    ) {
         this.standardRegistries = [];
         this.hideVC = {
             id: true
@@ -108,9 +124,21 @@ export class UserProfileComponent implements OnInit {
         this.loading = true;
         this.loadDate();
         this.update();
+        this.subscription.add(
+            this.route.queryParams.subscribe(params => {
+                const tab = this.route.snapshot.queryParams['tab'] || '';
+                this.selectedIndex = 0;
+                for (let index = 0; index < this.tabs.length; index++) {
+                    if (tab === this.tabs[index]) {
+                        this.selectedIndex = index;
+                    }
+                }
+            })
+        );
     }
 
     ngOnDestroy(): void {
+        this.subscription.unsubscribe();
         clearInterval(this.interval)
     }
 
@@ -122,21 +150,24 @@ export class UserProfileComponent implements OnInit {
         }, 15000);
     }
 
-    loadDate() {
-        this.balance = null;
-        this.tokens = null;
+    private loadAccountData() {
+        setTimeout(() => {
+            this.loading = false;
+            this.headerProps.setLoading(false);
+        }, 200);
+    }
+
+    private loadTokenData() {
         this.loading = true;
+
         forkJoin([
-            this.profileService.getProfile(),
-            this.profileService.getBalance(),
             this.tokenService.getTokens(),
-            this.auth.getStandardRegistries(),
-            this.schemaService.getSystemSchemasByEntity(SchemaEntity.USER),
-            this.contractService.getRetireRequestsAll()
+            this.tagsService.getPublishedSchemas()
         ]).subscribe((value) => {
-            this.profile = value[0] as IUser;
-            this.balance = value[1] as string;
-            this.tokens = value[2].map((e: any) => {
+            const tokens: any[] = value[0];
+            const tagSchemas: any[] = value[1] || [];
+
+            this.tokens = tokens.map((e: any) => {
                 return {
                     ...new Token(e),
                     policies: e.policies,
@@ -144,21 +175,76 @@ export class UserProfileComponent implements OnInit {
                     decimals: e.decimals
                 }
             });
-            this.standardRegistries = value[3] || [];
-            this.standardRegistries = this.standardRegistries.filter(sr => !!sr.did);
+            this.tagSchemas = SchemaHelper.map(tagSchemas);
+
+            const ids = this.tokens.map(e => e.id);
+            this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
+                if (this.tokens) {
+                    for (const token of this.tokens) {
+                        (token as any)._tags = data[token.id];
+                    }
+                }
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
+
+
+            setTimeout(() => {
+                this.loading = false;
+                this.headerProps.setLoading(false);
+            }, 200)
+        }, (error) => {
+            this.loading = false;
+            this.headerProps.setLoading(false);
+            console.error(error);
+        });
+    }
+
+    private loadRetireData() {
+        this.loading = true;
+        this.contractService.getRetireRequestsAll().subscribe((contracts) => {
+            this.contractRequests = contracts;
+            setTimeout(() => {
+                this.loading = false;
+                this.headerProps.setLoading(false);
+            }, 200)
+        }, (error) => {
+            this.loading = false;
+            this.headerProps.setLoading(false);
+            console.error(error);
+        });
+    }
+
+    private loadDate() {
+        this.balance = null;
+        this.didDocument = null;
+        this.vcDocument = null;
+        this.loading = true;
+        forkJoin([
+            this.profileService.getProfile(),
+            this.profileService.getBalance(),
+            this.auth.getStandardRegistries(),
+            this.schemaService.getSystemSchemasByEntity(SchemaEntity.USER),
+        ]).subscribe((value) => {
+            this.profile = value[0] as IUser;
+            this.balance = value[1] as string;
+            this.standardRegistries = value[2] || [];
+            const schema = value[3];
 
             this.isConfirmed = !!this.profile.confirmed;
             this.isFailed = !!this.profile.failed;
             this.isNewAccount = !this.profile.didDocument;
-
-            this.didDocument = null;
-            this.vcDocument = null;
             if (this.isConfirmed) {
                 this.didDocument = this.profile?.didDocument;
                 this.vcDocument = this.profile?.vcDocument;
             }
+            this.owner = this.profile?.did;
 
-            const schema = value[4];
+            this.standardRegistries = this.standardRegistries.filter(sr => !!sr.did);
             if (schema) {
                 this.schema = new Schema(schema);
                 this.hederaForm.addControl('vc', this.vcForm);
@@ -166,11 +252,18 @@ export class UserProfileComponent implements OnInit {
                 this.schema = null;
             }
 
-            this.contractRequests = value[5] as any[];
-            setTimeout(() => {
-                this.loading = false;
-                this.headerProps.setLoading(false);
-            }, 200)
+            if (this.selectedIndex === 0) {
+                this.loadAccountData();
+            } else if (this.selectedIndex === 1) {
+                this.loadTokenData();
+            } else if (this.selectedIndex === 2) {
+                this.loadRetireData();
+            } else {
+                setTimeout(() => {
+                    this.loading = false;
+                    this.headerProps.setLoading(false);
+                }, 200);
+            }
         }, (error) => {
             this.loading = false;
             this.headerProps.setLoading(false);
@@ -233,14 +326,14 @@ export class UserProfileComponent implements OnInit {
     }
 
     getColor(status: string, reverseLogic: boolean) {
-        if (status === "n/a") return "grey";
-        else if (status === "Yes") return reverseLogic ? "red" : "green";
-        else return reverseLogic ? "green" : "red";
+        if (status === 'n/a') return 'grey';
+        else if (status === 'Yes') return reverseLogic ? 'red' : 'green';
+        else return reverseLogic ? 'green' : 'red';
     }
 
     associate(token: Token) {
         this.loading = true;
-        this.tokenService.pushAssociate(token.tokenId, token.associated != "Yes").subscribe((result) => {
+        this.tokenService.pushAssociate(token.tokenId, token.associated != 'Yes').subscribe((result) => {
             const { taskId, expectation } = result;
             this.taskId = taskId;
             this.expectedTaskMessages = expectation;
@@ -287,7 +380,7 @@ export class UserProfileComponent implements OnInit {
 
     getPoliciesInfo(policies: string[]): string {
         if (!policies || !policies.length) {
-            return "";
+            return '';
         }
         return policies.length === 1
             ? policies[0]
@@ -389,6 +482,25 @@ export class UserProfileComponent implements OnInit {
                     console.log('Not supported mode');
                     break;
             }
+        }
+    }
+
+    onChange(event: any) {
+        this.selectedIndex = event;
+        this.router.navigate(['/user-profile'], {
+            queryParams: { tab: this.tabs[this.selectedIndex] }
+        });
+        if (this.selectedIndex === 0) {
+            this.loadAccountData();
+        } else if (this.selectedIndex === 1) {
+            this.loadTokenData();
+        } else if (this.selectedIndex === 2) {
+            this.loadRetireData();
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+                this.headerProps.setLoading(false);
+            }, 200);
         }
     }
 }

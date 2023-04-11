@@ -1,18 +1,22 @@
 import { Singleton } from '../decorators/singleton';
-import { MessageBrokerChannel } from '../mq';
-import { ApplicationStates, MessageAPI } from '@guardian/interfaces';
-import { MessageResponse, MessageError } from '../models/message-response';
+import { NatsService } from '../mq';
+import { ApplicationStates, GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
 
 /**
  * Application state container
  */
 @Singleton
-export class ApplicationState {
+export class ApplicationState extends NatsService {
     /**
-     * Message broker channel
+     * Message queue name
+     */
+    public messageQueueName = 'application-state-service-queue';
+
+    /**
+     * Reply subject
      * @private
      */
-    private channel: MessageBrokerChannel;
+    public replySubject = 'application-state-queue-reply-' + GenerateUUIDv4();
     /**
      * Current state
      * @private
@@ -22,33 +26,28 @@ export class ApplicationState {
      * Service name
      * @private
      */
-    private readonly serviceName: string;
+    private serviceName: string;
 
     /**
-     * Register channel
-     * @param channel: MessageBrokerChannel
+     * Init
      */
-    public async setChannel(channel: MessageBrokerChannel): Promise<any> {
-        this.channel = channel;
-        await this.channel.response(MessageAPI.GET_STATUS, async () => {
-            try {
-                return new MessageResponse(this.state);
-            }
-            catch (error) {
-                return new MessageError(error);
-            }
+    public async init(): Promise<void> {
+        await super.init();
+        await this.subscribe(MessageAPI.GET_STATUS, async () => {
+            this.publish(MessageAPI.SEND_STATUS, {
+                name: this.serviceName,
+                state: this.state
+            })
         });
     }
 
     /**
-     * Get channel
+     * Set service name
+     * @param serviceName
      */
-    public getChannel(): MessageBrokerChannel {
-        return this.channel;
-    }
-
-    constructor(serviceName?: string) {
-        this.serviceName = serviceName;
+    setServiceName(serviceName: string): ApplicationState {
+        this.serviceName = serviceName
+        return this;
     }
 
     /**
@@ -56,6 +55,7 @@ export class ApplicationState {
      */
     public getState(): ApplicationStates {
         return this.state;
+        return ApplicationStates.READY;
     }
 
     /**
@@ -67,7 +67,7 @@ export class ApplicationState {
         if (this.serviceName) {
             const res = {};
             res[this.serviceName] = state;
-            this.channel.request(['api-gateway', MessageAPI.UPDATE_STATUS].join('.'), res);
+            this.publish(MessageAPI.UPDATE_STATUS, res);
         }
     }
 }

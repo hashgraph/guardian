@@ -1,12 +1,11 @@
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyComponentsUtils } from '../policy-components-utils';
-import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/decorators';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
+import { ActionCallback, EventBlock, StateField } from '@policy-engine/helpers/decorators';
 import { IPolicyBlock, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { Token as TokenCollection } from '@entity/token';
+import { Token as TokenCollection } from '@guardian/common';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
@@ -14,7 +13,7 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
 /**
  * Information block
  */
-@BasicBlock({
+@EventBlock({
     blockType: 'tokenConfirmationBlock',
     commonBlock: false,
     about: {
@@ -33,7 +32,10 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: false
-    }
+    },
+    variables: [
+        { path: 'options.tokenId', alias: 'token', type: 'Token' }
+    ]
 })
 export class TokenConfirmationBlock {
     /**
@@ -55,7 +57,7 @@ export class TokenConfirmationBlock {
     async getToken(): Promise<TokenCollection> {
         if (!this.token) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-            this.token = await ref.databaseServer.getTokenById(ref.options.tokenId);
+            this.token = await ref.databaseServer.getToken(ref.options.tokenId);
         }
         return this.token;
     }
@@ -124,10 +126,10 @@ export class TokenConfirmationBlock {
             hederaAccountKey: data.hederaAccountKey
         }
 
-        let token;
+        let token:any;
         if (ref.options.useTemplate) {
             if (state.tokenId) {
-                token = await ref.databaseServer.getTokenById(state.tokenId, ref.dryRun);
+                token = await ref.databaseServer.getToken(state.tokenId, ref.dryRun);
             }
         } else {
             token = await this.getToken();
@@ -232,47 +234,6 @@ export class TokenConfirmationBlock {
                 tokenId
             };
             await ref.saveState();
-        }
-    }
-
-    /**
-     * Validate block data
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            const accountType = ['default', 'custom'];
-            if (accountType.indexOf(ref.options.accountType) === -1) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "accountType" must be one of ' + accountType.join(','));
-            }
-            const types = ['associate', 'dissociate'];
-            if (types.indexOf(ref.options.action) === -1) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "action" must be one of ' + types.join(','));
-            }
-            if (ref.options.useTemplate) {
-                if (!ref.options.template) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "template" does not set');
-                }
-                const policyTokens = ref.policyInstance.policyTokens || [];
-                const tokenConfig = policyTokens.find(e => e.templateTokenTag === ref.options.template);
-                if (!tokenConfig) {
-                    resultsContainer.addBlockError(ref.uuid, `Token "${ref.options.template}" does not exist`);
-                }
-            } else {
-                if (!ref.options.tokenId) {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" does not set');
-                } else if (typeof ref.options.tokenId !== 'string') {
-                    resultsContainer.addBlockError(ref.uuid, 'Option "tokenId" must be a string');
-                } else if (!(await ref.databaseServer.getTokenById(ref.options.tokenId))) {
-                    resultsContainer.addBlockError(ref.uuid, `Token with id ${ref.options.tokenId} does not exist`);
-                }
-            }
-            if (ref.options.accountType === 'custom' && !ref.options.accountId) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "accountId" does not set');
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
         }
     }
 }

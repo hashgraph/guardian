@@ -1,0 +1,31 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onNoClick()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div class="g-dialog-title">
+            New Module
+        </div>
+        <div class="g-dialog-actions">
+            <div class="g-dialog-actions-btn" (click)="onSubmit()" [attr.disabled]="!dataForm.valid">
+                Create
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="context">
+            <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>* NAME:</mat-label>
+                    <input matInput type="text" placeholder="Policy name" formControlName="name">
+                </mat-form-field>
+                <mat-form-field class="example-full-width" appearance="outline">
+                    <mat-label>DESCRIPTION:</mat-label>
+                    <textarea matInput type="text" placeholder="Description" formControlName="description"></textarea>
+                </mat-form-field>
+            </form>
+        </div>
+    </div>
+</div>

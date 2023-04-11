@@ -4,7 +4,6 @@ import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@poli
 import { ActionCallback } from '@policy-engine/helpers/decorators';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import {
-    IPolicyBlock,
     IPolicyCalculateBlock,
     IPolicyDocument,
     IPolicyEventState
@@ -12,11 +11,8 @@ import {
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { Workers } from '@helpers/workers';
+import { Workers, VcHelper, VcDocumentDefinition as VcDocument } from '@guardian/common';
 import { WorkerTaskType } from '@guardian/interfaces';
-import { VcHelper } from '@helpers/vc-helper';
-import { VcDocument } from '@hedera-modules';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 
 /**
  * Http request block
@@ -40,7 +36,8 @@ import { PolicyValidationResultsContainer } from '@policy-engine/policy-validati
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: []
 })
 export class HttpRequestBlock {
 
@@ -183,21 +180,4 @@ export class HttpRequestBlock {
             ref.error(PolicyUtils.getErrorMessage(error));
         }
     }
-
-    /**
-     * Validate block data
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-
-        if (!ref.options.url?.trim()) {
-            resultsContainer.addBlockError(ref.uuid, 'Option "url" must be set');
-        }
-
-        if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].find(item => item === ref.options.method?.toUpperCase())) {
-            resultsContainer.addBlockError(ref.uuid, `Option "method" must be "GET", "POST", "PUT", "PATCH" or "DELETE"`);
-        }
-    }
-
 }

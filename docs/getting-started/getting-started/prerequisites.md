@@ -1,7 +1,7 @@
 # 🗒 Prerequisites
 
 * [Docker](https://www.docker.com/) (To build with one command)
-* [MongoDB](https://www.mongodb.com/) , [NodeJS](https://nodejs.org/) and [Nats](https://nats.io/) (If you build with docker these components will be installed automatically)
+* [MongoDB](https://www.mongodb.com/)[ V6](https://www.mongodb.com/) , [NodeJS](https://nodejs.org/)[ v16](https://nodejs.org/en) and [Nats](https://nats.io/)[ 1.12.2](https://nats.io/) (If you build with docker these components will be installed automatically)
 * [Hedera Testnet Account](https://portal.hedera.com/)
 * [Web3.Storage Account](https://web3.storage/)
 

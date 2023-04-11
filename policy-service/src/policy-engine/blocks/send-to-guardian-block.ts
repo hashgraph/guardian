@@ -2,21 +2,20 @@ import { BlockActionError } from '@policy-engine/errors';
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { DocumentStatus } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import {
     MessageAction,
     MessageServer,
-    VcDocument,
-    VpDocument,
+    VcDocumentDefinition as VcDocument,
+    VpDocumentDefinition as VpDocument,
     DIDDocument,
     VCMessage,
     MessageMemo,
     VPMessage,
     DIDMessage,
     Message
-} from '@hedera-modules';
+} from '@guardian/common';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
@@ -56,7 +55,10 @@ enum Operation {
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true
-    }
+    },
+    variables: [
+        { path: 'options.topic', alias: 'topic', type: 'Topic' }
+    ]
 })
 export class SendToGuardianBlock {
     /**
@@ -382,6 +384,9 @@ export class SendToGuardianBlock {
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
         const operation: Operation = Operation.auto;
+        document.documentFields = Array.from(
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
+        );
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
         } else if (type === DocumentType.VerifiableCredential) {
@@ -519,10 +524,6 @@ export class SendToGuardianBlock {
         } else {
             throw new BlockActionError(`dataSource "${ref.options.dataSource}" is unknown`, ref.blockType, ref.uuid);
         }
-
-        console.log(' -- end', ref.uuid);
-        console.log(' ');
-
         return document;
     }
 
@@ -562,39 +563,5 @@ export class SendToGuardianBlock {
             type: (ref.options.dataSource || ref.options.dataType),
             documents: ExternalDocuments(event.data?.data),
         }));
-    }
-
-    /**
-     * Validate block data
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (ref.options.dataType) {
-                const t = ['vc-documents', 'did-documents', 'approve', 'hedera'];
-                if (t.indexOf(ref.options.dataType) === -1) {
-                    resultsContainer.addBlockError(ref.uuid, `Option "dataType" must be one of ${t.join('|')}`);
-                }
-            } else if (ref.options.dataSource === 'auto') {
-                return;
-            } else if (ref.options.dataSource === 'database') {
-                return;
-            } else if (ref.options.dataSource === 'hedera') {
-                if (ref.options.topic && ref.options.topic !== 'root') {
-                    const policyTopics = ref.policyInstance.policyTopics || [];
-                    const config = policyTopics.find(e => e.name === ref.options.topic);
-                    if (!config) {
-                        resultsContainer.addBlockError(ref.uuid, `Topic "${ref.options.topic}" does not exist`);
-                    }
-                }
-            } else if (!ref.options.dataSource) {
-                return;
-            } else {
-                resultsContainer.addBlockError(ref.uuid, 'Option "dataSource" must be one of auto|database|hedera');
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

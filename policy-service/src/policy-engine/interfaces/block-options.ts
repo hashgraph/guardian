@@ -20,6 +20,23 @@ export interface PolicyBlockDecoratorOptions {
      * Block about
      */
     about?: BlockAbout;
+    /**
+     * Block variables
+     */
+    variables?: {
+        /**
+         * Variable path
+         */
+        path: string,
+        /**
+         * Variable alias
+         */
+        alias?: string,
+        /**
+         * Variable type
+         */
+        type?: 'Schema' | 'Token' | 'Role' | 'Group' | 'TokenTemplate' | 'Topic' | 'String'
+    }[];
 }
 
 /**

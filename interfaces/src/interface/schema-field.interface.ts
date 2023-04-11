@@ -111,4 +111,9 @@ export interface SchemaField {
      * Text bold
      */
     textBold?: boolean;
+
+    /**
+     * Is field private
+     */
+    isPrivate?: boolean;
 }

@@ -1,15 +1,12 @@
 import { TokenAddon } from '@policy-engine/helpers/decorators';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyCalculateAddon } from '@policy-engine/policy-engine.interface';
+import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
 import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
-import { VcDocument } from '@hedera-modules';
-import { VcHelper } from '@helpers/vc-helper';
+import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/common';
 import { BlockActionError } from '@policy-engine/errors';
-import { PropertyValidator } from '@policy-engine/helpers/property-validator';
 
 /**
  * Calculate math addon
@@ -63,7 +60,8 @@ import { PropertyValidator } from '@policy-engine/helpers/property-validator';
             title: 'Unit',
             type: PropertyType.Input
         }]
-    }
+    },
+    variables: []
 })
 export class TokenOperationAddon {
     /**
@@ -113,23 +111,5 @@ export class TokenOperationAddon {
         }
         const vc = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
         return vc;
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
-        try {
-            resultsContainer.checkBlockError(ref.uuid,
-                PropertyValidator.inputValidator('amount', ref.options.amount, 'string')
-            );
-            resultsContainer.checkBlockError(ref.uuid,
-                PropertyValidator.selectValidator('impactType', ref.options.impactType, ['Primary Impacts', 'Secondary Impacts'])
-            );
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }

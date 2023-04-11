@@ -22,13 +22,13 @@
             "production": {
               "budgets": [
                 {
-                  "maximumError": "10mb",
-                  "maximumWarning": "5mb",
+                  "maximumError": "30mb",
+                  "maximumWarning": "15mb",
                   "type": "initial"
                 },
                 {
-                  "maximumError": "10kb",
-                  "maximumWarning": "5kb",
+                  "maximumError": "30kb",
+                  "maximumWarning": "15kb",
                   "type": "anyComponentStyle"
                 }
               ],
@@ -43,13 +43,13 @@
             "demo": {
                 "budgets": [
                 {
-                  "maximumError": "10mb",
-                  "maximumWarning": "5mb",
+                  "maximumError": "30mb",
+                  "maximumWarning": "15mb",
                   "type": "initial"
                 },
                 {
-                  "maximumError": "10kb",
-                  "maximumWarning": "5kb",
+                  "maximumError": "30kb",
+                  "maximumWarning": "15kb",
                   "type": "anyComponentStyle"
                 }
               ],

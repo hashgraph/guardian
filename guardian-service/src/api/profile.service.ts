@@ -8,10 +8,18 @@ import {
     TopicType,
     UserRole, WorkerTaskType
 } from '@guardian/interfaces';
-import { VcHelper } from '@helpers/vc-helper';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
+import { ApiResponse } from '@api/helpers/api-response';
 import {
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper,
+    IAuthUser, RunFunctionAsync,
+    Topic,
+    DidDocument as DidDocumentCollection,
+    VcDocument as VcDocumentCollection,
+    Schema as SchemaCollection,
+    Settings,
     DIDDocument,
     DIDMessage,
     MessageAction,
@@ -19,26 +27,16 @@ import {
     RegistrationMessage,
     TopicConfig,
     TopicHelper,
-    VCMessage
-} from '@hedera-modules';
-import { Topic } from '@entity/topic';
-import { DidDocument as DidDocumentCollection } from '@entity/did-document';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { Schema as SchemaCollection } from '@entity/schema';
-import { ApiResponse } from '@api/api-response';
-import {
-    MessageBrokerChannel,
-    MessageResponse,
-    MessageError,
-    Logger,
-    DataBaseHelper,
-    IAuthUser, RunFunctionAsync
+    VCMessage,
+    Users,
+    KeyType,
+    Wallet,
+    VcHelper,
+    Workers
 } from '@guardian/common';
-import { publishSystemSchema } from './schema.service';
-import { Settings } from '@entity/settings';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { Workers } from '@helpers/workers';
 import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
+import { publishSystemSchema } from './helpers/schema-publish-helper';
 
 /**
  * Get global topic
@@ -153,7 +151,7 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
     // ------------------------
     notifier.completedAndStart('Publish DID Document');
     logger.info('Create DID Document', ['GUARDIAN_SERVICE']);
-    const didObject = DIDDocument.create(hederaAccountKey, topicConfig.topicId);
+    const didObject = await DIDDocument.create(hederaAccountKey, topicConfig.topicId);
     const userDID = didObject.getDid();
     const didMessage = new DIDMessage(MessageAction.CreateDID);
     didMessage.setDocument(didObject);
@@ -315,12 +313,9 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
 
 /**
  * Connect to the message broker methods of working with Address books.
- *
- * @param channel - channel
- *
  */
-export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: MessageBrokerChannel) {
-    ApiResponse(channel, MessageAPI.GET_BALANCE, async (msg) => {
+export function profileAPI() {
+    ApiResponse(MessageAPI.GET_BALANCE, async (msg) => {
         try {
             const { username } = msg;
             const wallet = new Wallet();
@@ -359,7 +354,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
         }
     });
 
-    ApiResponse(channel, MessageAPI.GET_USER_BALANCE, async (msg) => {
+    ApiResponse(MessageAPI.GET_USER_BALANCE, async (msg) => {
         try {
             const { username } = msg;
 
@@ -397,7 +392,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
     /**
      * @deprecated 2022-07-27
      */
-    ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE, async (msg) => {
+    ApiResponse(MessageAPI.CREATE_USER_PROFILE, async (msg) => {
         try {
             const userDID = await createUserProfile(msg, emptyNotifier());
 
@@ -409,7 +404,7 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
         }
     });
 
-    ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE_COMMON, async (msg) => {
+    ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON, async (msg) => {
         try {
             const { username, profile } = msg;
 
@@ -429,9 +424,9 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
         }
     });
 
-    ApiResponse(channel, MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
         const { username, profile, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {
@@ -453,9 +448,9 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
         return new MessageResponse({ taskId });
     });
 
-    ApiResponse(channel, MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.RESTORE_USER_PROFILE_COMMON_ASYNC, async (msg) => {
         const { username, profile, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {
@@ -479,9 +474,9 @@ export function profileAPI(channel: MessageBrokerChannel, apiGatewayChannel: Mes
         return new MessageResponse({ taskId });
     });
 
-    ApiResponse(channel, MessageAPI.GET_ALL_USER_TOPICS_ASYNC, async (msg) => {
+    ApiResponse(MessageAPI.GET_ALL_USER_TOPICS_ASYNC, async (msg) => {
         const { username, profile, taskId } = msg;
-        const notifier = initNotifier(apiGatewayChannel, taskId);
+        const notifier = initNotifier(taskId);
 
         RunFunctionAsync(async () => {
             if (!profile.hederaAccountId) {

@@ -1,10 +1,7 @@
 import { EventBlock } from '@policy-engine/helpers/decorators';
-import { KeyType } from '@helpers/wallet';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { UserType, Schema } from '@guardian/interfaces';
 import { findOptions } from '@policy-engine/helpers/find-options';
 import { IPolicyAddonBlock, IPolicyDocument, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
-import { DidDocumentBase } from '@hedera-modules';
 import { PrivateKey } from '@hashgraph/sdk';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -12,6 +9,7 @@ import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { DidDocumentBase, KeyType } from '@guardian/common';
 
 /**
  * Document action clock with UI
@@ -32,7 +30,10 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
         ],
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: [
+        { path: 'options.schema', alias: 'schema', type: 'Schema' }
+    ]
 })
 export class InterfaceDocumentActionBlock {
     /**
@@ -108,7 +109,7 @@ export class InterfaceDocumentActionBlock {
             const hederaAccountKey = hederaAccount.hederaAccountKey;
             const schemaObject = await ref.databaseServer.getSchemaByIRI(ref.options.schema);
             const schema = new Schema(schemaObject);
-            const didDocument = DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));
+            const didDocument = await DidDocumentBase.createByPrivateKey(sensorDid, PrivateKey.fromString(sensorKey));
             result = {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,
                 body: {
@@ -125,7 +126,7 @@ export class InterfaceDocumentActionBlock {
                         'type': schema.type,
                         '@context': [schema.contextURL]
                     },
-                    'didDocument': didDocument.getPrivateDidDocument(),
+                    'didDocument': await didDocument.getPrivateDidDocument(),
                     'policyId': ref.policyId,
                     'policyTag': policy.policyTag,
                     'ref': sensorDid
@@ -139,87 +140,6 @@ export class InterfaceDocumentActionBlock {
         }));
 
         return result;
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (!ref.options.type) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "type" does not set');
-            } else {
-                switch (ref.options.type) {
-                    case 'selector':
-                        if (!ref.options.uiMetaData || (typeof ref.options.uiMetaData !== 'object')) {
-                            resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData" does not set');
-                        } else {
-                            if (!ref.options.field) {
-                                resultsContainer.addBlockError(ref.uuid, 'Option "field" does not set');
-                            }
-                            if (!ref.options.uiMetaData.options) {
-                                resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData.options" does not set');
-                            }
-                            if (Array.isArray(ref.options.uiMetaData.options)) {
-                                const tagMap = {};
-                                for (const option of ref.options.uiMetaData.options) {
-                                    if (!option.tag) {
-                                        resultsContainer.addBlockError(ref.uuid, `Option "tag" does not set`);
-                                    }
-
-                                    if (tagMap[option.tag]) {
-                                        resultsContainer.addBlockError(ref.uuid, `Option Tag ${option.tag} already exist`);
-                                    }
-
-                                    tagMap[option.tag] = true;
-                                }
-                            } else {
-                                resultsContainer.addBlockError(ref.uuid, 'Option "uiMetaData.options" must be an array');
-                            }
-                        }
-                        break;
-
-                    case 'download':
-                        if (!ref.options.targetUrl) {
-                            resultsContainer.addBlockError(ref.uuid, 'Option "targetUrl" does not set');
-                        }
-
-                        if (!ref.options.schema) {
-                            resultsContainer.addBlockError(ref.uuid, 'Option "schema" does not set');
-                            break;
-                        }
-                        if (typeof ref.options.schema !== 'string') {
-                            resultsContainer.addBlockError(ref.uuid, 'Option "schema" must be a string');
-                            break;
-                        }
-
-                        const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema);
-                        if (!schema) {
-                            resultsContainer.addBlockError(ref.uuid, `Schema with id "${ref.options.schema}" does not exist`);
-                            break;
-                        }
-                        break;
-
-                    case 'dropdown':
-                        if (!ref.options.name) {
-                            resultsContainer.addBlockError(ref.uuid, 'Option "name" does not set');
-                            break;
-                        }
-                        if (!ref.options.value) {
-                            resultsContainer.addBlockError(ref.uuid, 'Option "value" does not set');
-                            break;
-                        }
-                        break;
-
-                    default:
-                        resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "selector|download|dropdown"');
-                }
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 
     /**

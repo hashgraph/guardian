@@ -45,6 +45,7 @@ import { Environment } from './environment';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger';
+import process from 'process';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
@@ -88,6 +89,16 @@ export class NetworkOptions {
      * Local node protocol
      */
     public localNodeProtocol: string = '';
+
+    /**
+     * Hedera nodes
+     */
+    public nodes: any = {};
+
+    /**
+     * Hedera mirror nodes
+     */
+    public mirrorNodes: string[] = [];
 }
 
 /**
@@ -116,7 +127,7 @@ export class HederaSDKHelper {
     /**
      * Max timeout
      */
-    public static readonly MAX_TIMEOUT: number = 120000;
+    public static readonly MAX_TIMEOUT: number = (process.env.MAX_HEDERA_TIMEOUT) ? parseInt(process.env.MAX_HEDERA_TIMEOUT, 10) * 1000 : 10 * 60 * 1000;
     /**
      * Callback
      * @private
@@ -138,6 +149,8 @@ export class HederaSDKHelper {
         Environment.setNetwork(networkOptions.network);
         Environment.setLocalNodeAddress(networkOptions.localNodeAddress);
         Environment.setLocalNodeProtocol(networkOptions.localNodeProtocol);
+        Environment.setNodes(networkOptions.nodes);
+        Environment.setMirrorNodes(networkOptions.mirrorNodes);
         this.dryRun = dryRun || null;
         this.client = Environment.createClient();
         if (operatorId && operatorKey) {
@@ -1102,19 +1115,22 @@ export class HederaSDKHelper {
      *
      * @param {string | FileId} bytecodeFileId - Code File Id
      * @param {ContractFunctionParameters} parameters - Contract Parameters
+     * @param {string} contractMemo - Memo
      *
      * @returns {string} - Contract Id
      */
     @timeout(HederaSDKHelper.MAX_TIMEOUT)
     public async createContract(
         bytecodeFileId: string | FileId,
-        parameters: ContractFunctionParameters
+        parameters: ContractFunctionParameters,
+        contractMemo: string
     ): Promise<string> {
         const client = this.client;
         const contractInstantiateTx = new ContractCreateTransaction()
             .setBytecodeFileId(bytecodeFileId)
             .setGas(1000000)
             .setConstructorParameters(parameters)
+            .setContractMemo(contractMemo)
             .setMaxTransactionFee(MAX_FEE);
         const contractInstantiateSubmit = await contractInstantiateTx.execute(
             client
@@ -1145,7 +1161,6 @@ export class HederaSDKHelper {
             .setContractId(contractId)
             .setGas(100000)
             .setFunction(functionName, parameters)
-            .setQueryPayment(new Hbar(0.05));
         const contractQueryResult = await contractQueryTx.execute(client);
         return contractQueryResult;
     }
@@ -1281,5 +1296,24 @@ export class HederaSDKHelper {
             id: newAccountId,
             key: newPrivateKey
         };
+    }
+
+    /**
+     * Get Contract Info
+     *
+     * @param {string | ContractId} contractId - Contract Id
+     *
+     * @returns {any} - Contract Info
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public async getContractInfoRest(contractId: string): Promise<any> {
+        const res = await axios.get(
+            `${Environment.HEDERA_CONTRACT_API}/${contractId}`,
+            { responseType: 'json' }
+        );
+        if (!res || !res.data) {
+            throw new Error(`Invalid contract '${contractId}'`);
+        }
+        return res.data;
     }
 }

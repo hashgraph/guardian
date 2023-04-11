@@ -37,7 +37,7 @@ export class ServiceStatusComponent implements OnInit {
     }
 
     getStoppedServices() {
-        return this.servicesStates.filter(item => item.state === ApplicationStates.STOPPED);
+        return this.servicesStates.filter(item => [ApplicationStates.STOPPED, ApplicationStates.BAD_CONFIGURATION].includes(item.state));
     }
 
     getServiceNames(serviceStates: any) {

@@ -1,5 +1,11 @@
 name: Guardian CI API Tests
-on: [push]
+on:
+  workflow_dispatch:
+    description: 'Manual run'
+  push:
+    branches-ignore:
+      - 'dependabot/**'
+
 jobs:
   buildAndTest:
     runs-on: ubuntu-latest

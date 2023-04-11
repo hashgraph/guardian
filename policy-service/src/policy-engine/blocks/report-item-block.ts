@@ -1,4 +1,4 @@
-import { findOptions, getVCIssuer } from '@helpers/utils';
+import { findOptions, getVCIssuer } from '@guardian/common';
 import { ReportItem } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';
@@ -23,15 +23,42 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
         input: null,
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class ReportItemBlock {
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref =
+            PolicyComponentsUtils.GetBlockRef<IPolicyReportItemBlock>(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        ref.options?.filters
+            ?.filter((filter) => filter.field?.startsWith('document.'))
+            .forEach((filter) => {
+                documentCacheFields.add(filter.field.replace('document.', ''));
+            });
+        ref.options?.variables
+            ?.filter((variable) => variable.value?.startsWith('document.'))
+            .forEach((variable) => {
+                documentCacheFields.add(
+                    variable.value.replace('document.', '')
+                );
+            });
+    }
+
     /**
      * Run logic
      * @param resultFields
      * @param variables
      */
-    public async run(resultFields: IReportItem[], variables: any): Promise<any> {
+    public async run(
+        resultFields: IReportItem[],
+        variables: any
+    ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportItemBlock>(this);
         const icon = ref.options.icon;
         const title = ref.options.title;
@@ -98,6 +125,8 @@ export class ReportItemBlock {
         const vcDocuments: any = multiple
             ? await ref.databaseServer.getVcDocuments(filtersToVc)
             : [await ref.databaseServer.getVcDocument(filtersToVc)];
+        const notFoundDocuments = vcDocuments.filter((vc) => vc).length < 1;
+        item.notFoundDocuments = notFoundDocuments;
 
         for (const vcDocument of vcDocuments) {
             if (vcDocument) {
@@ -145,6 +174,6 @@ export class ReportItemBlock {
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, null, null));
 
-        return resultFields;
+        return [notFoundDocuments, resultFields];
     }
 }

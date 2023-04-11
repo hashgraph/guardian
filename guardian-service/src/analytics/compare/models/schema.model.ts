@@ -1,9 +1,8 @@
-import { Schema as SchemaCollection } from '@entity/schema';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { FieldModel } from './field.model';
 import { SubSchemaModel } from './sub-schema-model';
 import MurmurHash3 from 'imurmurhash';
-import { Policy } from '@entity/policy';
+import { Policy, Schema as SchemaCollection } from '@guardian/common';
 
 /**
  * Schema Model

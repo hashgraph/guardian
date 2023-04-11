@@ -17,6 +17,10 @@ export class Environment {
      */
     public static readonly HEDERA_MAINNET_ACCOUNT_API: string = 'https://mainnet-public.mirrornode.hedera.com/api/v1/accounts/';
     /**
+     * Mainnet contract API
+     */
+    public static readonly HEDERA_MAINNET_CONTRACT_API: string = 'https://mainnet-public.mirrornode.hedera.com/api/v1/contracts/';
+    /**
      * Testnet message API
      */
     public static readonly HEDERA_TESTNET_MESSAGE_API: string = 'https://testnet.mirrornode.hedera.com/api/v1/topics/messages';
@@ -28,6 +32,10 @@ export class Environment {
      * Testnet account API
      */
     public static readonly HEDERA_TESTNET_ACCOUNT_API: string = 'https://testnet.mirrornode.hedera.com/api/v1/accounts/';
+    /**
+     * Testnet contract API
+     */
+    public static readonly HEDERA_TESTNET_CONTRACT_API: string = 'https://testnet.mirrornode.hedera.com/api/v1/contracts/';
     /**
      * Preview message API
      */
@@ -41,6 +49,10 @@ export class Environment {
      */
     public static readonly HEDERA_PREVIEW_ACCOUNT_API: string = 'https://preview.mirrornode.hedera.com/api/v1/accounts/';
     /**
+     * Preview contract API
+     */
+    public static readonly HEDERA_PREVIEW_CONTRACT_API: string = 'https://preview.mirrornode.hedera.com/api/v1/contracts/';
+    /**
      * Localnode message API
      */
     public static HEDERA_LOCALNODE_MESSAGE_API: string = `https://localhost:5551/api/v1/topics/messages`;
@@ -49,9 +61,13 @@ export class Environment {
      */
     public static HEDERA_LOCALNODE_TOPIC_API: string = `https://localhost:5551/api/v1/topics/`;
     /**
-     * Localnode topic API
+     * Localnode account API
      */
     public static HEDERA_LOCALNODE_ACCOUNT_API: string = `https://localhost:5551/api/v1/accounts/`;
+    /**
+     * Localnode contract API
+     */
+    public static HEDERA_LOCALNODE_CONTRACT_API: string = `https://localhost:5551/api/v1/contracts/`;
     /**
      * Localnode protocol
      */
@@ -81,6 +97,23 @@ export class Environment {
      * @private
      */
     private static _accountsApi: string = Environment.HEDERA_TESTNET_ACCOUNT_API;
+    /**
+     * Contract API
+     * @private
+     */
+    private static _contractsApi: string = Environment.HEDERA_TESTNET_CONTRACT_API;
+
+    /**
+     * Hedera nodes
+     * @private
+     */
+    private static _nodes: any = {};
+
+    /**
+     * Hedera mirror nodes
+     * @private
+     */
+    private static _mirrorNodes: string[] = [];
 
     /**
      * Set network
@@ -94,6 +127,7 @@ export class Environment {
                 Environment._messagesApi = Environment.HEDERA_MAINNET_MESSAGE_API;
                 Environment._topicsApi = Environment.HEDERA_MAINNET_TOPIC_API;
                 Environment._accountsApi = Environment.HEDERA_MAINNET_ACCOUNT_API;
+                Environment._contractsApi = Environment.HEDERA_MAINNET_CONTRACT_API;
                 break;
 
             case 'testnet':
@@ -101,6 +135,7 @@ export class Environment {
                 Environment._messagesApi = Environment.HEDERA_TESTNET_MESSAGE_API;
                 Environment._topicsApi = Environment.HEDERA_TESTNET_TOPIC_API;
                 Environment._accountsApi = Environment.HEDERA_TESTNET_ACCOUNT_API;
+                Environment._contractsApi = Environment.HEDERA_TESTNET_CONTRACT_API;
                 break;
 
             case 'previewnet':
@@ -108,6 +143,7 @@ export class Environment {
                 Environment._messagesApi = Environment.HEDERA_TESTNET_MESSAGE_API;
                 Environment._topicsApi = Environment.HEDERA_TESTNET_TOPIC_API;
                 Environment._accountsApi = Environment.HEDERA_TESTNET_ACCOUNT_API;
+                Environment._contractsApi = Environment.HEDERA_TESTNET_CONTRACT_API;
                 break;
 
             case 'localnode':
@@ -115,6 +151,7 @@ export class Environment {
                 Environment._messagesApi = Environment.HEDERA_LOCALNODE_MESSAGE_API;
                 Environment._topicsApi = Environment.HEDERA_LOCALNODE_TOPIC_API;
                 Environment._accountsApi = Environment.HEDERA_LOCALNODE_ACCOUNT_API;
+                Environment._contractsApi = Environment.HEDERA_LOCALNODE_CONTRACT_API;
                 break;
 
             default:
@@ -125,6 +162,7 @@ export class Environment {
             Environment._messagesApi = `${mirrornode}/api/v1/topics/messages`;
             Environment._topicsApi = `${mirrornode}/api/v1/topics/`;
             Environment._accountsApi = `${mirrornode}/api/v1/accounts/`;
+            Environment._contractsApi = `${mirrornode}/api/v1/contracts/`;
         }
     }
 
@@ -136,6 +174,7 @@ export class Environment {
         Environment.HEDERA_LOCALNODE_MESSAGE_API = `${Environment._localnodeprotocol}://${Environment._localnodeaddress}:5551/api/v1/topics/messages`;
         Environment.HEDERA_LOCALNODE_TOPIC_API = `${Environment._localnodeprotocol}://${Environment._localnodeaddress}:5551/api/v1/topics/`;
         Environment.HEDERA_LOCALNODE_ACCOUNT_API = `${Environment._localnodeprotocol}://${Environment._localnodeaddress}:5551/api/v1/accounts/`;
+        Environment.HEDERA_LOCALNODE_CONTRACT_API = `${Environment._localnodeprotocol}://${Environment._localnodeaddress}:5551/api/v1/contracts/`;
     }
 
     /**
@@ -146,27 +185,54 @@ export class Environment {
     }
 
     /**
+     * Set hedera nodes
+     * @param nodes Hedera nodes
+     */
+    public static setNodes(nodes: any) {
+        Environment._nodes = nodes;
+    }
+
+    /**
+     * Set hedera mirror nodes
+     * @param mirrorNodes Hedera mirror nodes
+     */
+    public static setMirrorNodes(mirrorNodes: string[]) {
+        Environment._mirrorNodes = mirrorNodes;
+    }
+
+    /**
      * Create client
      */
     public static createClient(): Client {
+        let client: Client;
+
         switch (Environment._network) {
             case 'mainnet':
-                return Client.forMainnet();
-
+                client = Client.forMainnet();
+                break;
             case 'testnet':
-                return Client.forTestnet();
-
+                client =  Client.forTestnet();
+                break;
             case 'previewnet':
-                return Client.forPreviewnet();
-
+                client =  Client.forPreviewnet();
+                break;
             case 'localnode':
                 const node = {} as any;
                 node[`${Environment._localnodeaddress}:50211`] = new AccountId(3)
-                return Client.forNetwork(node).setMirrorNetwork(`${Environment._localnodeaddress}:5600`);
-
+                client = Client.forNetwork(node).setMirrorNetwork(`${Environment._localnodeaddress}:5600`);
+                break;
             default:
                 throw new Error(`Unknown network: ${Environment._network}`)
         }
+
+        if (Environment._nodes && Object.keys(Environment._nodes).length) {
+            client.setNetwork(Environment._nodes);
+        }
+        if (Environment._mirrorNodes?.length) {
+            client.setMirrorNetwork(Environment._mirrorNodes);
+        }
+
+        return client;
     }
 
     /**
@@ -198,5 +264,27 @@ export class Environment {
      */
     public static get HEDERA_ACCOUNT_API(): string {
         return Environment._accountsApi;
+    }
+
+    /**
+     * Hedera contract API
+     * @constructor
+     */
+    public static get HEDERA_CONTRACT_API(): string {
+        return Environment._contractsApi;
+    }
+
+    /**
+     * Nodes
+     */
+    public static get nodes(): any {
+        return Environment._nodes;
+    }
+
+    /**
+     * Mirror nodes
+     */
+    public static get mirrorNodes(): string[] {
+        return Environment._mirrorNodes;
     }
 }

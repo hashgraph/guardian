@@ -106,7 +106,7 @@ form {
     min-width: 300px;
 }
 
-a {
+:host ::ng-deep a {
     color: rgb(0, 0, 238);
     cursor: pointer;
     text-decoration: underline;
@@ -311,4 +311,12 @@ a[disabled="true"]{
 
 .approved-request {
     background-color: #d1f1c8;
+}
+
+.token-table .mat-column-tags {
+    max-width: 175px;
+    min-width: 175px;
+    width: 175px;
+    border-left: 1px solid #dddddd;
+    padding-left: 10px;
 }

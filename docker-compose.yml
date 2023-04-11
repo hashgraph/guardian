@@ -19,7 +19,7 @@ services:
       - mongo
 
   ipfs-node:
-    image: ipfs/kubo:v0.17.0
+    image: ipfs/kubo:v0.18.1
     ports:
       - "5001:5001"
       - "5002:5002"
@@ -27,6 +27,9 @@ services:
       - "4002:4002"
       - "8080:8080"
       - "8081:8081"
+    volumes:
+      - ./runtime-data/ipfs/staging:/export:rw
+      - ./runtime-data/ipfs/data:/data/ipfs:rw
 
   api-docs:
     build:
@@ -52,7 +55,7 @@ services:
       - ./vault/hashicorp/certs/consul/tls:/consul/tls
     ports:
       - 8500:8500
-    entrypoint: 
+    entrypoint:
       - sh
       - -ca
       - |
@@ -94,15 +97,19 @@ services:
       - consul
 
   logger-service:
+    env_file:
+      - ./logger-service/.env.docker
     build:
       context: .
       dockerfile: ./logger-service/Dockerfile
-    env_file:
-      - ./logger-service/.env.docker
     depends_on:
       - message-broker
+    environment:
+      - ENV=${GUARDIAN_ENV}
 
   worker-service-1:
+    env_file:
+      - ./worker-service/.env.docker
     build:
       context: .
       dockerfile: ./worker-service/Dockerfile
@@ -114,10 +121,13 @@ services:
       - ./worker-service/.env.docker
     environment:
       - SERVICE_CHANNEL="worker.1"
+      - ENV=${GUARDIAN_ENV}
     volumes:
       - ./worker-service/tls:/usr/local/worker-service/tls:ro
 
   worker-service-2:
+    env_file:
+      - ./worker-service/.env.docker
     build:
       context: .
       dockerfile: ./worker-service/Dockerfile
@@ -129,15 +139,16 @@ services:
       - ./worker-service/.env.docker
     environment:
       - SERVICE_CHANNEL="worker.2"
+      - ENV=${GUARDIAN_ENV}
     volumes:
       - ./worker-service/tls:/usr/local/worker-service/tls:ro
 
   auth-service:
+    env_file:
+      - ./auth-service/.env.docker
     build:
       context: .
       dockerfile: ./auth-service/Dockerfile
-    env_file:
-      - ./auth-service/.env.docker
     volumes:
       - ./auth-service/tls:/usr/local/auth-service/tls:ro
     depends_on:
@@ -145,28 +156,32 @@ services:
       - vault
       - message-broker
       - logger-service
+    environment:
+      - ENV=${GUARDIAN_ENV}
 
   api-gateway:
+    env_file:
+      - ./api-gateway/.env.docker
     build:
       context: .
       dockerfile: ./api-gateway/Dockerfile
     expose:
       - 3002
-    env_file:
-      - ./api-gateway/.env.docker
     depends_on:
       - mongo
       - message-broker
       - guardian-service
       - auth-service
       - logger-service
+    environment:
+      - ENV=${GUARDIAN_ENV}
 
   policy-service:
+    env_file:
+      - ./policy-service/.env.docker
     build:
       context: .
       dockerfile: ./policy-service/Dockerfile
-    env_file:
-      - ./policy-service/.env.docker
     volumes:
       - ./policy-service/tls:/usr/local/policy-service/tls:ro
     depends_on:
@@ -175,13 +190,15 @@ services:
       - message-broker
       - auth-service
       - logger-service
+    environment:
+      - ENV=${GUARDIAN_ENV}
 
   guardian-service:
+    env_file:
+      - ./guardian-service/.env.docker
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
-    env_file:
-      - ./guardian-service/.env.docker
     volumes:
       - ./guardian-service/tls:/usr/local/guardian-service/tls:ro
     depends_on:
@@ -193,6 +210,8 @@ services:
       - worker-service-1
       - worker-service-2
       - policy-service
+    environment:
+      - ENV=${GUARDIAN_ENV}
 
   mrv-sender:
     build:

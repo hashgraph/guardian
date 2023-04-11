@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuditService } from 'src/app/services/audit.service';
+import { AuditService } from '../../services/audit.service';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
-import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
+import { PolicyEngineService } from '../../services/policy-engine.service';
 import { HttpResponse } from '@angular/common/http';
 
 /**

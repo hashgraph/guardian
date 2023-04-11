@@ -14,8 +14,16 @@
     padding: 0 10px;
 }
 
+.flex-line {
+    display: flex;
+}
+
 .ready-status {
     color: green;
+}
+
+.bad-configuration-status {
+    color: red;
 }
 
 .stopped-status {

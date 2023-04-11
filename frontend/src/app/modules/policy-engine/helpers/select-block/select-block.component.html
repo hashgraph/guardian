@@ -1,0 +1,25 @@
+<mat-select [(value)]="value" [disabled]="readonly" (selectionChange)="onChange()">
+    <mat-select-trigger>
+        <span class="custom">{{text}}</span>
+    </mat-select-trigger>
+    <div class="components-search">
+        <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
+        <mat-icon class="components-search-icon">search</mat-icon>
+    </div>
+    <mat-option *ngFor="let item of searchData" [value]="item.value">
+        <div class="block-name" [attr.root]="item.root">
+            <div *ngIf="item.root" class="block-icon">
+                <svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                    version="1.1">
+                    <path style="fill:#e1933c" d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />
+                    <path style="fill:#24bfe1" d="m 21.673828,7.25 -8.96289,5.169922 V 22.75 l 8.96289,-5.199219 z" />
+                    <path style="fill:#9e57f5" d="M 2.3261719,7.25 V 17.550781 L 11.279297,22.75 V 12.419922 Z" />
+                </svg>
+            </div>
+            <div *ngIf="!item.root" class="block-icon">
+                <mat-icon>{{item.icon}}</mat-icon>
+            </div>
+            {{item.name}}
+        </div>
+    </mat-option>
+</mat-select>

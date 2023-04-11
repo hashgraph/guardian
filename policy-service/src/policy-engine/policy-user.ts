@@ -1,4 +1,4 @@
-import { PolicyRoles } from '@entity/policy-roles';
+import { PolicyRoles } from '@guardian/common';
 import { PolicyRole } from '@guardian/interfaces';
 
 /**

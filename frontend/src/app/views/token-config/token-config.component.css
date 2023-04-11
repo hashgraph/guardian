@@ -87,7 +87,7 @@ a {
     border-left: 1px solid currentColor;
     padding-left: 10px;
 }
- 
+
 
 .item-color {
     width: 42px;
@@ -300,6 +300,7 @@ a {
 .btn-settings.btn-settings-des {
     color: #b5b5b5;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
 .table-container .mat-column-delete {
@@ -317,5 +318,14 @@ a {
 .table-container .mat-column-users {
     width: 40px;
     max-width: 40px;
+    padding-left: 10px;
+}
+
+.table-container .mat-column-tags {
+    max-width: 175px;
+    min-width: 175px;
+    width: 175px;
+    border-left: 1px solid #dddddd;
+    border-right: 1px solid #dddddd;
     padding-left: 10px;
 }

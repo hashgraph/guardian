@@ -25,9 +25,11 @@ This folder contains a sample file that is referenced in the Demo Usage Guide
 REDD 1.1.0 = 1674823276.261149647
 REDD 2.2.2 = 1674823441.956296415
 Verra REDD Policy 3 groups = 1674823642.126585003
+Verra REDD 4 = 1677110652.603453479
+Verra REDD 5 = 1679441780.655736003
 ```
 
-<figure><img src="../../../.gitbook/assets/image (1) (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once Policy is imported successfully, you get two options : Publish and Dry Run mode.
 

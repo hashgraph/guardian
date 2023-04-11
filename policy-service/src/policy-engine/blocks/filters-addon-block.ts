@@ -1,12 +1,10 @@
 import { DataSourceAddon } from '@policy-engine/helpers/decorators/data-source-addon';
-import { PolicyValidationResultsContainer } from '@policy-engine/policy-validation-results-container';
 import { BlockActionError } from '@policy-engine/errors';
 import { findOptions } from '@policy-engine/helpers/find-options';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyAddonBlock } from '@policy-engine/policy-engine.interface';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
@@ -24,9 +22,23 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
         input: null,
         output: null,
         defaultEvent: false
-    }
+    },
+    variables: []
 })
 export class FiltersAddonBlock {
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        if (ref.options?.field?.startsWith('document.')) {
+            documentCacheFields.add(ref.options.field.replace('document.', ''));
+        }
+    }
+
     /**
      * Block state
      * @private
@@ -123,27 +135,5 @@ export class FiltersAddonBlock {
         }
         ref.setFilters(filter, user);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, data));
-    }
-
-    /**
-     * Validate block options
-     * @param resultsContainer
-     */
-    public async validate(resultsContainer: PolicyValidationResultsContainer): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        try {
-            if (!ref.options.type) {
-                resultsContainer.addBlockError(ref.uuid, 'Option "type" does not set');
-            } else {
-                switch (ref.options.type) {
-                    case 'dropdown':
-                        break;
-                    default:
-                        resultsContainer.addBlockError(ref.uuid, 'Option "type" must be a "dropdown"');
-                }
-            }
-        } catch (error) {
-            resultsContainer.addBlockError(ref.uuid, `Unhandled exception ${PolicyUtils.getErrorMessage(error)}`);
-        }
     }
 }
