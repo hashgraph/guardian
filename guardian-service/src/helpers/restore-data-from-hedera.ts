@@ -109,7 +109,7 @@ export class RestoreDataFromHedera {
                     topic: topicId,
                 },
             },
-            1
+            10
         );
         const result = [];
         let errors = 0;

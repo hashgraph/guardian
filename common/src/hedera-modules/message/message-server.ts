@@ -239,7 +239,7 @@ export class MessageServer {
                 localNodeProtocol: Environment.localNodeProtocol,
                 memo: memo || MessageMemo.getMessageMemo(message)
             }
-        }, 0);
+        }, 10);
         await this.messageEndLog(time, 'Hedera');
         message.setId(id);
         message.setTopicId(this.topicId);
@@ -332,7 +332,7 @@ export class MessageServer {
                 dryRun,
                 timeStamp
             }
-        }, 1);
+        }, 10);
 
         new Logger().info(`getTopicMessage, ${timeStamp}, ${topicId}, ${message}`, ['GUARDIAN_SERVICE']);
         const result = MessageServer.fromMessage<T>(message, type);
@@ -365,7 +365,7 @@ export class MessageServer {
                 dryRun,
                 topic
             }
-        }, 1);
+        }, 10);
 
         new Logger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE']);
         const result: Message[] = [];
@@ -488,7 +488,7 @@ export class MessageServer {
                         dryRun,
                         timeStamp: messageId
                     }
-                }, 1);
+                }, 10);
                 return topicId;
             }
             return null;

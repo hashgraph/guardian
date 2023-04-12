@@ -199,7 +199,7 @@ export class MintService {
                     tokenValue,
                     transactionMemo
                 }
-            }, 1);
+            }, 10);
             await workers.addRetryableTask({
                 type: WorkerTaskType.TRANSFER_FT,
                 data: {
@@ -213,7 +213,7 @@ export class MintService {
                     tokenValue,
                     transactionMemo
                 }
-            }, 1);
+            }, 10);
         } catch (error) {
             MintService.error(`Mint FT(${mintId}): Mint/Transfer Error (${MintService.getErrorMessage(error)})`);
         }

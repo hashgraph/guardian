@@ -480,7 +480,7 @@ export class PolicyUtils {
                     userKey: user.hederaAccountKey,
                     hederaAccountId
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -503,7 +503,7 @@ export class PolicyUtils {
                     associate: true,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -526,7 +526,7 @@ export class PolicyUtils {
                     associate: false,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -557,7 +557,7 @@ export class PolicyUtils {
                     freeze: true,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -588,7 +588,7 @@ export class PolicyUtils {
                     freeze: false,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -620,7 +620,7 @@ export class PolicyUtils {
                     grant: true,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -652,7 +652,7 @@ export class PolicyUtils {
                     grant: false,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -681,7 +681,7 @@ export class PolicyUtils {
                     operatorKey: user.hederaAccountKey,
                     ...tokenTemplate
                 }
-            }, 1);
+            }, 20);
             tokenId = createdToken.tokenId;
 
             const wallet = new Wallet();
@@ -747,7 +747,7 @@ export class PolicyUtils {
             data: {
                 hederaAccountId: account.hederaAccountId,
             }
-        }, 1);
+        }, 20);
     }
 
     /**
