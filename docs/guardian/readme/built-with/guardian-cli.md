@@ -1,4 +1,4 @@
-# Guardian CLI
+# 💻 Guardian CLI
 
 The Guardian-CLI is a useful command-line application developed for simplifying management of Guardian project from cloning the repository to checkout to a specific release version, start/stop the project by docker and PM2 as well as cleaning the project and more features. The Guardian-CLI is supposed to be pushed into the npm registry in order that users can install it as a global package and use CLI commands entire their machine or servers.
 
