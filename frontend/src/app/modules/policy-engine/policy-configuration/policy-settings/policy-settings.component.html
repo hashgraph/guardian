@@ -24,79 +24,157 @@
         </div>
         <div class="settings-container" [attr.active]="settingsTab===0">
 
-
-
-
-            <div class="role-color" *ngFor="let role of theme.roles; let i=index">
-                <div class="role-color-number">#{{i+1}}</div>
-                <div class="role-color-container">
-                    <div class="role-color-filter">
-
-                        <div>Condition</div>
-                        <div>
-                            <mat-select placeholder="Type" [(ngModel)]="role.filterType">
-                                <mat-option value="all">All</mat-option>
-                                <mat-option value="type">Types</mat-option>
-                                <mat-option value="role">Roles</mat-option>
-                                <mat-option value="prop">Properties</mat-option>
-                            </mat-select>
-                        </div>
-                        <div>
-                            <mat-select placeholder="Operation" [(ngModel)]="role.filterOperation">
-                                <mat-option value="eq">Equal</mat-option>
-                                <mat-option value="in">In</mat-option>
-                            </mat-select>
-                        </div>
-                        <div>
-                            <input [(ngModel)]="role.filterValue">
-                        </div>
-
-                        
-
-                        
-
-
-
-                    </div>
-                    <div class="role-color-prev">
-                        <div class="block-color-prev" [style]="blockStyle(role)" theme-block theme-all>Block Name</div>
-                        <div class="role-color-prop">
-                            <div class="role-color-prop-value">
-                                <ngx-colors ngx-colors-trigger [(ngModel)]="role.text"></ngx-colors>
-                            </div>
-                            <div class="role-color-prop-name">Text</div>
-                        </div>
-                        <div class="role-color-prop">
-                            <div class="role-color-prop-value">
-                                <ngx-colors ngx-colors-trigger [(ngModel)]="role.background"></ngx-colors>
-                            </div>
-                            <div class="role-color-prop-name">Background</div>
-                        </div>
-                        <div class="role-color-prop">
-                            <div class="role-color-prop-value">
-                                <ngx-colors ngx-colors-trigger [(ngModel)]="role.border"></ngx-colors>
-                            </div>
-                            <div class="role-color-prop-name">Border</div>
-                        </div>
-                    </div>
+            <div class="theme-container">
+                <div class="settings-select">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Theme</mat-label>
+                        <mat-select [(value)]="theme" (selectionChange)="onSelectTheme()">
+                            <mat-option *ngFor="let t of themes" [value]="t">
+                                <span>{{t.name}}</span>
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
                 </div>
-                <div class="role-color-delete">
-                    <div class="delete-btn" (click)="onDeleteRole(role)">
-                        <mat-icon>delete</mat-icon>
-                    </div>
+                <div class="settings-header-button save icon" (click)="newTheme()">
+                    <mat-icon>add</mat-icon>
+                    <span>Create New</span>
+                </div>
+                <div class="settings-header-button save icon" (click)="importTheme()">
+                    <mat-icon>file_open</mat-icon>
+                    <span>Import</span>
+                </div>
+                <div class="settings-header-button save icon" (click)="exportTheme(theme)">
+                    <mat-icon>import_export</mat-icon>
+                    <span>Export</span>
+                </div>
+                <div *ngIf="!theme?.readonly" class="settings-header-button del icon" (click)="deleteTheme(theme)">
+                    <mat-icon>delete</mat-icon>
+                    <span>Delete</span>
                 </div>
             </div>
 
-            <div>
-                <div class="new-role" (click)="onAddRole()">
-                    <mat-icon class="new-icon">add</mat-icon>
-                    <div class="new-role-name">
-                        Create Role
+
+
+            <div class="roles-container">
+                <div class="roles-header">
+                    Roles
+                </div>
+
+                <div class="role-color" *ngFor="let role of theme.roles; let i=index">
+                    <div class="role-color-number">
+                        <div>
+                            <mat-icon>arrow_drop_up</mat-icon>
+                        </div>
+                        <div>#{{i+1}}</div>
+                        <div>
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
+                    </div>
+
+
+
+                    <div class="role-color-container">
+                        <div class="role-color-filter">
+
+                            <div class="role-condition-header">Condition</div>
+                            <div class="role-condition-select">
+                                <mat-select placeholder="Type" [(ngModel)]="role.type">
+                                    <mat-option value="all">All</mat-option>
+                                    <mat-option value="type">Types</mat-option>
+                                    <mat-option value="role">Roles</mat-option>
+                                    <mat-option value="prop">Properties</mat-option>
+                                </mat-select>
+                            </div>
+                            <div *ngIf="role.type !== 'all'" class="role-condition-label">
+                                Equal
+                            </div>
+
+                            <div *ngIf="role.type === 'type'" class="role-condition-select">
+                                <mat-select placeholder="Blocks" [(ngModel)]="role.value" multiple>
+                                    <mat-option *ngFor="let block of allBlocks" [value]="block.type">
+                                        {{block.name}}
+                                    </mat-option>
+                                </mat-select>
+                            </div>
+                            <div *ngIf="role.type === 'role'" class="role-condition-select">
+                                <input [(ngModel)]="role.value">
+                            </div>
+                            <div *ngIf="role.type === 'prop'" class="role-condition-select">
+                                <input [(ngModel)]="role.value">
+                            </div>
+
+                        </div>
+                        <div class="role-color-prev">
+                            <div class="role-color-label">
+                                Style
+                            </div>
+                            <div class="block-color-prev" [style]="blockStyle(role)" theme-block theme-all>
+                                Block Name
+                            </div>
+                            <div class="role-color-prop">
+                                <div class="role-color-prop-value">
+                                    <ngx-colors ngx-colors-trigger [(ngModel)]="role.text"></ngx-colors>
+                                </div>
+                                <div class="role-color-prop-name">Text</div>
+                            </div>
+                            <div class="role-color-prop">
+                                <div class="role-color-prop-value">
+                                    <ngx-colors ngx-colors-trigger [(ngModel)]="role.background"></ngx-colors>
+                                </div>
+                                <div class="role-color-prop-name">Background</div>
+                            </div>
+                            <div class="role-color-prop">
+                                <div class="role-color-prop-value">
+                                    <ngx-colors ngx-colors-trigger [(ngModel)]="role.border"></ngx-colors>
+                                </div>
+                                <div class="role-color-prop-name">Border</div>
+                            </div>
+
+                            <div class="role-color-prop">
+                                <div class="role-color-prop-select">
+                                    <mat-select placeholder="Type" [(ngModel)]="role.shape">
+                                        <mat-option value="0">0</mat-option>
+                                        <mat-option value="1">1</mat-option>
+                                        <mat-option value="2">2</mat-option>
+                                        <mat-option value="3">3</mat-option>
+                                    </mat-select>
+                                </div>
+                                <div class="role-color-prop-name">Shape</div>
+                            </div>
+                            <div class="role-color-prop">
+                                <div class="role-color-prop-select">
+                                    <mat-select placeholder="Type" [(ngModel)]="role.borderWidth">
+                                        <mat-option value="0px">0px</mat-option>
+                                        <mat-option value="1px">1px</mat-option>
+                                        <mat-option value="2px">2px</mat-option>
+                                        <mat-option value="3px">3px</mat-option>
+                                        <mat-option value="4px">4px</mat-option>
+                                        <mat-option value="5px">5px</mat-option>
+                                        <mat-option value="6px">6px</mat-option>
+                                        <mat-option value="7px">7px</mat-option>
+                                    </mat-select>
+                                </div>
+                                <div class="role-color-prop-name">Border Width</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="role-color-delete">
+                        <div class="delete-btn" (click)="onDeleteRole(role)">
+                            <mat-icon>delete</mat-icon>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="new-role" (click)="onAddRole()">
+                        <mat-icon class="new-icon">add</mat-icon>
+                        <div class="new-role-name">
+                            Create Role
+                        </div>
                     </div>
                 </div>
 
             </div>
-
 
         </div>
     </div>

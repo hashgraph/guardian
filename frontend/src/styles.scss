@@ -233,17 +233,20 @@ button.mat-button {
 }
 
 *[theme-block][theme-text],
+*[theme-all] *[theme-text],
 *[theme-block] *[theme-text] {
     color: var(--theme-color) !important;
 }
 
 *[theme-block][theme-border],
+*[theme-all] *[theme-border],
 *[theme-block] *[theme-border] {
     border-color: var(--theme-border-color) !important;
     border-radius: var(--theme-border-radius) !important;
 }
 
 *[theme-block][theme-background],
+*[theme-all] *[theme-background],
 *[theme-block] *[theme-background] {
     background-color: var(--theme-background-color) !important;
 }

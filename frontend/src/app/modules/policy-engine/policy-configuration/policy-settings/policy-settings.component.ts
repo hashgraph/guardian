@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ThemeService } from '../../services/theme.service';
 import { Theme } from "../../services/theme";
 import { ThemeRole } from "../../services/theme-role";
+import { RegisteredService } from '../../services/registered.service';
 
 /**
  * Settings.
@@ -17,14 +18,19 @@ export class PolicySettingsComponent implements OnInit {
     public settingsTab: number = 0;
     public themes!: Theme[];
     public theme!: Theme;
+    public allBlocks!: any[];
 
-    constructor(private themeService: ThemeService) {
+    constructor(
+        private registeredService: RegisteredService,
+        private themeService: ThemeService
+    ) {
         this.themes = this.themeService.load();
-        this.theme = this.themes[0];
+        this.theme = this.themeService.current();
     }
 
     ngOnInit(): void {
         this.settingsTab = 0;
+        this.allBlocks = this.registeredService.getAll();
     }
 
     public onSettingsSave() {
@@ -48,6 +54,28 @@ export class PolicySettingsComponent implements OnInit {
 
     public blockStyle(role: ThemeRole) {
         return this.themeService.getStyleByRole(role)
+    }
+
+    public onSelectTheme() {
+        this.themeService.setTheme(this.theme);
+    }
+
+    public newTheme() {
+        this.themes = this.themeService.create();
+        this.theme = this.themeService.current();
+    }
+
+    public deleteTheme(theme: Theme) {
+        this.themes = this.themeService.delete(theme);
+        this.theme = this.themeService.current();
+    }
+
+    public importTheme() {
+        throw new Error('Method not implemented.');
+    }
+
+    public exportTheme(theme: Theme) {
+        throw new Error('Method not implemented.');
     }
 }
 

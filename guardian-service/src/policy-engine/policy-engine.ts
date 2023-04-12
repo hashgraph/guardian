@@ -563,15 +563,15 @@ export class PolicyEngine extends NatsService {
             const vcHelper = new VcHelper();
             let credentialSubject: any = {
                 id: messageId,
-                name: model.name,
-                description: model.description,
-                topicDescription: model.topicDescription,
-                version: model.version,
-                policyTag: model.policyTag,
-                owner: model.owner,
-                cid: url.cid,
-                url: url.url,
-                uuid: model.uuid,
+                name: model.name || '',
+                description: model.description || '',
+                topicDescription: model.topicDescription || '',
+                version: model.version || '',
+                policyTag: model.policyTag || '',
+                owner: model.owner || '',
+                cid: url.cid || '',
+                url: url.url || '',
+                uuid: model.uuid || '',
                 operation: 'PUBLISH'
             }
             if (policySchema) {
@@ -667,15 +667,15 @@ export class PolicyEngine extends NatsService {
         const vcHelper = new VcHelper();
         let credentialSubject: any = {
             id: messageId,
-            name: model.name,
-            description: model.description,
-            topicDescription: model.topicDescription,
-            version: model.version,
-            policyTag: model.policyTag,
-            owner: model.owner,
-            cid: url.cid,
-            url: url.url,
-            uuid: model.uuid,
+            name: model.name || '',
+            description: model.description || '',
+            topicDescription: model.topicDescription || '',
+            version: model.version || '',
+            policyTag: model.policyTag || '',
+            owner: model.owner || '',
+            cid: url.cid || '',
+            url: url.url || '',
+            uuid: model.uuid || '',
             operation: 'PUBLISH'
         }
 

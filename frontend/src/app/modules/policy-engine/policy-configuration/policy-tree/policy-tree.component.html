@@ -52,9 +52,9 @@
                 <div *ngIf="!item.isModule && !item.root" class="block-body" [style]="blockStyle(item)">
                     <div class="block-item" (click)="onSelect($event, item)" theme-all>
                         <div class="block-item-icon">
-                            <mat-icon>{{item.icon}}</mat-icon>
+                            <mat-icon theme-text>{{item.icon}}</mat-icon>
                         </div>
-                        <div class="block-item-name">
+                        <div class="block-item-name" theme-text>
                             {{item.node.localTag}}
                         </div>
                     </div>

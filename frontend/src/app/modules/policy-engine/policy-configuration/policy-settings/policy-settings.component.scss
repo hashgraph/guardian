@@ -88,6 +88,8 @@
         box-sizing: border-box;
         text-align: center;
         border: 1px solid var(--pc-active-icon-color);
+        display: inline-block;
+        position: relative;
 
         &.save {
             background: var(--pc-active-icon-color);
@@ -99,8 +101,28 @@
             background: #fff;
         }
 
+        &.del {
+            color: var(--pc-del-color);
+            border: 1px solid var(--pc-del-color);
+            background: #fff;
+        }
+
         &:hover {
             filter: brightness(0.95);
+        }
+
+        &.icon {
+            padding-left: 40px;
+            padding-right: 20px;
+
+            mat-icon {
+                position: absolute;
+                left: 11px;
+                top: 9px;
+                font-size: 24px;
+                width: 24px;
+                height: 24px;
+            }
         }
     }
 
@@ -175,15 +197,16 @@
         }
 
         .role-color {
-            height: 130px;
+            height: 126px;
             display: grid;
-            grid-template-columns: 50px auto 30px;
+            grid-template-columns: 65px auto 40px;
             margin: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            padding: 10px;
+            padding: 10px 10px 10px 5px;
             box-sizing: border-box;
             box-shadow: 3px 3px 6px 0px #00000020;
+            overflow: hidden;
         }
 
         .role-color-container {
@@ -194,9 +217,32 @@
             height: 50px;
             width: 100%;
             display: grid;
-            grid-template-columns: 100px 150px 100px auto;
+            grid-template-columns: 100px 170px 70px auto 50px;
+            align-items: center;
         }
 
+        .role-condition-header {
+            color: var(--pc-active-icon-color);
+            font-weight: 500;
+        }
+    
+        .role-condition-select {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 8px 10px;
+            height: 38px;
+            box-sizing: border-box;
+            margin-right: 10px;
+            max-width: 350px;
+        }
+    
+        .role-condition-label {
+            padding: 8px 10px;
+            height: 38px;
+            box-sizing: border-box;
+            margin-right: 10px;
+        }
+    
         .role-color-prev {
             margin-top: 8px;
             height: 50px;
@@ -206,6 +252,13 @@
         .role-color-prev {
             display: flex;
             flex-direction: row;
+        }
+
+        .role-color-label {
+            color: var(--pc-active-icon-color);
+            font-weight: 500;
+            width: 100px;
+            padding-top: 12px;
         }
 
         .settings-block-prev {
@@ -249,6 +302,16 @@
             margin-right: 12px;
         }
 
+        .role-color-prop-select {
+            width: 60px;
+            height: 34px;
+            margin-right: 12px;
+        }
+    
+        .role-color-delete {
+            margin-top: 35px;
+        }
+
         .new-role {
             position: relative;
             height: 34px;
@@ -268,12 +331,14 @@
             &:hover {
                 background: #f1f1f1;
             }
+
             & .new-icon {
                 position: absolute;
                 left: 8px;
                 top: 4px;
                 color: #1274fb;
             }
+
             & .new-role-name {
                 color: #1274fb;
             }
@@ -281,7 +346,7 @@
 
         .delete-btn {
             cursor: pointer;
-            color: #eb0303;
+            color: var(--pc-del-color);
             border-radius: 6px;
             user-select: none;
             width: 30px;
@@ -301,6 +366,48 @@
             font-size: 16px;
             color: #444;
             font-weight: 500;
+            display: grid;
+            grid-template-rows: 24px 18px 24px auto;
+            text-align: center;
+            margin-right: 14px;
+            margin-top: 14px;
         }
     }
+
+    .theme-container {
+        margin: 20px 10px 20px 10px;
+        border-bottom: 1px solid #000;
+        height: 51px;
+        overflow: hidden;
+        align-items: end;
+        display: flex;
+        padding-bottom: 20px;
+    }
+
+    .settings-select {
+        min-width: 120px;
+        cursor: pointer;
+        user-select: none;
+        height: 51px;
+        box-sizing: border-box;
+        display: inline-block;
+        position: relative;
+        overflow: visible;
+        line-height: 51px;
+    }
+
+    .roles-container {
+        margin: 10px;
+
+        .roles-header {
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--pc-header-color);
+        }
+    }
+}
+
+.settings::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
+    padding: 12px 0;
 }

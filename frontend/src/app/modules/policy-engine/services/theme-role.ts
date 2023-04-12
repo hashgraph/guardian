@@ -8,10 +8,13 @@ export class ThemeRole {
     private _border: string;
     private _style: any;
     private _shape: string;
+    private _borderStyle: string;
+    private _borderWidth: string;
 
-    public _filterType: string;
-    public _filterOperation: string;
+    public _type: string;
+    public _value: any;
     public _filterValue: any;
+    public _filterOperation: any;
 
     constructor(theme: Theme) {
         this.theme = theme;
@@ -19,12 +22,14 @@ export class ThemeRole {
         this._background = '#fff';
         this._border = '#000';
         this._shape = '0';
+        this._borderStyle = 'solid';
+        this._borderWidth = '2px';
+    
+        this._type = 'all';
+        this._value = '';
 
-        this._filterType = 'all';
-        this._filterOperation = 'eq';
-        this._filterValue = '';
-
-        this._update();
+        this._updateCondition();
+        this._updateStyle();
     }
 
     public get text(): string {
@@ -71,41 +76,69 @@ export class ThemeRole {
         }
     }
 
+    public get borderWidth(): string {
+        return this._borderWidth;
+    }
+
+    public set borderWidth(v: string) {
+        if (this._borderWidth !== v) {
+            this._borderWidth = v;
+            this.update();
+        }
+    }
+
+    public get borderStyle(): string {
+        return this._borderStyle;
+    }
+
+    public set borderStyle(v: string) {
+        if (this._borderStyle !== v) {
+            this._borderStyle = v;
+            this.update();
+        }
+    }
+
     public get style(): any {
         return this._style;
     }
 
-    public get filterOperation(): string {
-        return this._filterOperation;
+    public get type(): string {
+        return this._type;
     }
 
-    public set filterOperation(v: string) {
-        if (this._filterOperation !== v) {
-            this._filterOperation = v;
+    public set type(v: string) {
+        if (this._type !== v) {
+            this._type = v;
         }
     }
 
-    public get filterType(): string {
-        return this._filterType;
+    public get value(): any {
+        return this._value;
     }
 
-    public set filterType(v: string) {
-        if (this._filterType !== v) {
-            this._filterType = v;
+    public set value(v: any) {
+        if (this._value !== v) {
+            this._value = v;
+            this._updateCondition();
         }
     }
 
-    public get filterValue(): any {
-        return this._filterValue;
-    }
-
-    public set filterValue(v: any) {
-        if (this._filterValue !== v) {
-            this._filterValue = v;
+    public _updateCondition(): void {
+        if (Array.isArray(this._value)) {
+            if (this._value.length > 1) {
+                this._filterValue = this._value;
+                this._filterOperation = 'in';
+            } else {
+                this._filterValue = this._value[0];
+                this._filterOperation = 'eq';
+            }
+        } else {
+            this._filterValue = this._value;
+            this._filterOperation = 'eq';
         }
     }
 
-    public _update(): void {
+    public _updateStyle(): void {
         this._style = {
             '--theme-color': this._text,
             '--theme-border-color': this._border,
@@ -126,7 +159,8 @@ export class ThemeRole {
     }
 
     public update(): void {
-        this._update();
+        this._updateCondition();
+        this._updateStyle();
         this.theme.update();
     }
 
@@ -136,17 +170,17 @@ export class ThemeRole {
     }
 
     public check(item: PolicyBlockModel): boolean {
-        if (this._filterType === 'type') {
+        if (this._type === 'type') {
             if (this._filterOperation === 'eq') {
                 return item.blockType === this._filterValue;
-            } else if (this._filterOperation === 'in' && this._filterValue.includes) {
+            } else if (this._filterOperation === 'in') {
                 return this._filterValue.includes(item.blockType);
             }
-        } else if (this._filterType === 'role') {
+        } else if (this._type === 'role') {
 
-        } else if (this._filterType === 'prop') {
+        } else if (this._type === 'prop') {
 
-        } else if (this._filterType === 'all') {
+        } else if (this._type === 'all') {
             return true;
         }
         return false;
@@ -158,10 +192,11 @@ export class ThemeRole {
         role._background = json.background;
         role._border = json.border;
         role._shape = json.shape;
-        role._filterType = json.filterType;
+        role._type = json.filterType;
         role._filterOperation = json.filterOperation;
-        role._filterValue = json.filterValue;
-        role._update();
+        role._value = json.filterValue;
+        role._updateCondition();
+        role._updateStyle();
         return role;
     }
 }

@@ -12,7 +12,14 @@ export class BooleanProperty {
 
     public load(): boolean {
         try {
-            this._value = localStorage.getItem(this.name) === 'true';
+            const value = localStorage.getItem(this.name);
+            if (value === 'true') {
+                this._value = true;
+            } else if (value === 'false') {
+                this._value = false;
+            } else {
+                this._value = this.defaultValue;
+            }
         } catch (error) {
             console.error(error);
             this._value = this.defaultValue;

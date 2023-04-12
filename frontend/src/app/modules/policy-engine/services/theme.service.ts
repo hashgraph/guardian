@@ -27,12 +27,15 @@ export class ThemeService {
 
     public create(): Theme[] {
         const theme = new Theme();
+        theme.name = 'New Theme';
         this.themes.push(theme);
+        this.currentTheme = theme;
         return this.themes;
     }
 
     public delete(theme: Theme): Theme[] {
         this.themes = this.themes.filter(t => t !== theme);
+        this.currentTheme = this.themes[0];
         return this.themes;
     }
 
@@ -54,5 +57,9 @@ export class ThemeService {
 
     public getStyleByRole(item: ThemeRole): any {
         return item.style;
+    }
+
+    public current(): Theme {
+        return this.currentTheme;
     }
 }
