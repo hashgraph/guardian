@@ -2,7 +2,6 @@
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.264.0",
-    "node-vault": "^0.9.22",
     "@guardian/interfaces": "^2.11.0",
     "@hashgraph/sdk": "^2.22.0",
     "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
@@ -28,6 +27,7 @@
     "moment": "^2.29.2",
     "mongodb": "4.8.1",
     "nats": "^2.6.1",
+    "node-vault": "^0.9.22",
     "reflect-metadata": "^0.1.13",
     "winston": "^3.8.1",
     "ws": "^8.2.1",
