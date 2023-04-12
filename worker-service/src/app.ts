@@ -44,7 +44,6 @@ Promise.all([
 
     const validator = new ValidateConfiguration();
 
-
     let timer = null;
     validator.setValidator(async () => {
         if (timer) {
