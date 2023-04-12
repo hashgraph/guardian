@@ -18,3 +18,4 @@ The ‘insides’ of modules are isolated from the rest of Policy it may be embe
 
 ![image](https://user-images.githubusercontent.com/79293833/231545271-dac962dc-0e46-49b0-8df6-833f8a95a586.png)
 
+To get complete documentation on Modules, please visit : https://docs.hedera.com/guardian/guardian/standard-registry/policies/modules-using-ui
