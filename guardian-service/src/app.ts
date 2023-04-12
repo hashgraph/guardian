@@ -93,7 +93,16 @@ Promise.all([
     await state.setServiceName('GUARDIAN_SERVICE').setConnection(cn).init();
     const secretManager = SecretManager.New();
     await new OldSecretManager().setConnection(cn).init();
-    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
+    let { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
+    if (!OPERATOR_ID) {
+        OPERATOR_ID = process.env.OPERATOR_ID;
+        OPERATOR_KEY = process.env.OPERATOR_KEY;
+        await secretManager.setSecrets('keys/operator', {
+            OPERATOR_ID,
+            OPERATOR_KEY
+        })
+
+    }
 
     await state.updateState(ApplicationStates.STARTED);
 
