@@ -39,7 +39,10 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
 
             default:
                 const wallet = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_KEY, addition);
-                return wallet.key
+                console.log(wallet, addition);
+                return {
+                    privateKey: wallet.key
+                }
         }
     }
 
@@ -47,12 +50,13 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
      * Update secrets in Vault
      * @param path secret path
      * @param data secret data
+     * @param addition
      * @returns void
      * @throws Error if any error occurs
      * @async
      * @public
      */
-    async setSecrets(path: string, data: any): Promise<void> {
+    async setSecrets(path: string, data: any, addition?: any): Promise<void> {
         switch (path) {
             case 'keys/operator':
                 await this.sendMessage<IGetKeyResponse>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, { type: 'OPERATOR_ID', key: data.OPERATOR_ID });
@@ -66,7 +70,8 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
                 return;
 
             default:
-                await this.sendMessage<any>(WalletEvents.SET_KEY, data);
+                console.log(data);
+                await this.sendMessage<any>(WalletEvents.SET_KEY, addition);
                 return;
         }
     }

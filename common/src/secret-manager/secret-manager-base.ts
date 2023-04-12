@@ -13,7 +13,8 @@ export interface SecretManagerBase {
    * Set secrets to secret manager
    * @param path secret path
    * @param data secret data
+   * @param addition
    * @returns void
    */
-  setSecrets(path: string, data: any): Promise<void>
+  setSecrets(path: string, data: any, addition?: any): Promise<void>
 }

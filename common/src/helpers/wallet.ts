@@ -68,6 +68,7 @@ export class Wallet extends NatsService {
     /**
      * Return key
      * @param did
+     * @param type
      * @param key
      */
     public async getUserKey(did: string, type: KeyType, key: string): Promise<any> {
