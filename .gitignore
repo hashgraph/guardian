@@ -21,17 +21,3 @@ runtime-data/
 # OSX related metadata removal and IDE nonsense
 .DS_store
 .idea
-
-# tls
-vault/hashicorp/certs/
-
-# vault artificats
-vault/hashicorp/vault
-vault/hashicorp/consul
-vault/hashicorp/configs/vault/secrets/secrets.json
-vault/aws/configs/secrets/secrets.json
-*/tls
-
-# .env files
-*/.env
-*/.env.docker

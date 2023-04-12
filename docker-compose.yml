@@ -46,55 +46,20 @@ services:
       - '8222:8222'
     command: '--http_port 8222'
 
-  consul:
-    image: consul:1.12.4
-    container_name: consul
-    restart: "on-failure"
-    volumes:
-      - ./vault/hashicorp/consul/config/consul.json:/consul/config/consul.json:ro
-      - ./vault/hashicorp/certs/consul/tls:/consul/tls
-    ports:
-      - 8500:8500
-    entrypoint:
-      - sh
-      - -ca
-      - |
-        chown consul:consul /consul/tls
-        consul agent -config-file=/consul/config/consul.json
-
   vault:
     image: vault:1.12.2
-    container_name: vault
-    restart: "on-failure"
-    tty: true
-    volumes:
-      - ./vault/hashicorp/vault/config/vault.json:/vault/config/vault.json
-      - ./vault/hashicorp/vault/repository/policies:/vault/policies
-      - ./vault/hashicorp/vault/repository/data:/vault/data
-      - ./vault/hashicorp/vault/repository/logs:/vault/logs
-      - ./vault/hashicorp/certs/vault/tls:/vault/tls:ro
-      - ./vault/hashicorp/certs/vault/client:/vault/client/tls
-    environment:
-      ROOT_TOKEN_PATH: /vault/.root
-      VAULT_ADDR: https://vault:8200
-      VAULT_CACERT: /vault/tls/ca.crt
-      VAULT_CLIENT_CERT: /vault/client/tls/tls.crt
-      VAULT_CLIENT_KEY: /vault/client/tls/tls.key
-    entrypoint:
-      - sh
-      - -c
-      - |
-        vault server -config=/vault/config/vault.json
+    expose:
+      - 8200
     ports:
-      - 8200:8200
-    healthcheck:
-      test: [ "CMD", "curl", "-i", "https://127.0.0.1:8200/v1/sys/health?drsecondarycode=200" ]
-      interval: 10s
-      timeout: 3s
-      retries: 10
-      start_period: 5s
-    depends_on:
-      - consul
+      - '8200:8200'
+    environment:
+      VAULT_SERVER: "http://0.0.0.0:8200"
+      VAULT_DEV_ROOT_TOKEN_ID: "1234"
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - ./file:/vault/file:rw
+      - ./config:/vault/config:rw
 
   logger-service:
     env_file:
@@ -106,7 +71,7 @@ services:
       - message-broker
     environment:
       - ENV=${GUARDIAN_ENV}
-
+      
   worker-service-1:
     env_file:
       - ./worker-service/.env.docker
@@ -114,17 +79,12 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - vault
       - ipfs-node
       - auth-service
-    env_file:
-      - ./worker-service/.env.docker
     environment:
       - SERVICE_CHANNEL="worker.1"
       - ENV=${GUARDIAN_ENV}
-    volumes:
-      - ./worker-service/tls:/usr/local/worker-service/tls:ro
-
+      
   worker-service-2:
     env_file:
       - ./worker-service/.env.docker
@@ -132,25 +92,18 @@ services:
       context: .
       dockerfile: ./worker-service/Dockerfile
     depends_on:
-      - vault
       - ipfs-node
       - auth-service
-    env_file:
-      - ./worker-service/.env.docker
     environment:
       - SERVICE_CHANNEL="worker.2"
       - ENV=${GUARDIAN_ENV}
-    volumes:
-      - ./worker-service/tls:/usr/local/worker-service/tls:ro
-
+      
   auth-service:
     env_file:
       - ./auth-service/.env.docker
     build:
       context: .
       dockerfile: ./auth-service/Dockerfile
-    volumes:
-      - ./auth-service/tls:/usr/local/auth-service/tls:ro
     depends_on:
       - mongo
       - vault
@@ -158,7 +111,7 @@ services:
       - logger-service
     environment:
       - ENV=${GUARDIAN_ENV}
-
+      
   api-gateway:
     env_file:
       - ./api-gateway/.env.docker
@@ -175,35 +128,29 @@ services:
       - logger-service
     environment:
       - ENV=${GUARDIAN_ENV}
-
+      
   policy-service:
     env_file:
       - ./policy-service/.env.docker
     build:
       context: .
       dockerfile: ./policy-service/Dockerfile
-    volumes:
-      - ./policy-service/tls:/usr/local/policy-service/tls:ro
     depends_on:
       - mongo
-      - vault
       - message-broker
       - auth-service
       - logger-service
     environment:
       - ENV=${GUARDIAN_ENV}
-
+      
   guardian-service:
     env_file:
       - ./guardian-service/.env.docker
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
-    volumes:
-      - ./guardian-service/tls:/usr/local/guardian-service/tls:ro
     depends_on:
       - mongo
-      - vault
       - message-broker
       - auth-service
       - logger-service
@@ -212,7 +159,7 @@ services:
       - policy-service
     environment:
       - ENV=${GUARDIAN_ENV}
-
+      
   mrv-sender:
     build:
       context: .

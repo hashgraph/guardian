@@ -4,6 +4,7 @@ import { SecretManagerBase } from './secret-manager-base';
 import { AwsSecretManager } from './aws/aws-secret-manager';
 import { IHcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs';
 import { IAwsSecretManagerConfigs } from './aws/aws-secret-manager-configs';
+import { OldSecretManager } from './old-style/old-secret-manager';
 
 /**
  * Class to get secret manager
@@ -18,7 +19,7 @@ export class SecretManager {
     if (typeFromEnv && Object.values(SecretManagerType).includes(typeFromEnv)) {
       return typeFromEnv
     } else {
-      return SecretManagerType.HCP_VAULT
+      return SecretManagerType.OLD_STYLE
     }
   }
 
@@ -59,6 +60,8 @@ export class SecretManager {
         return /* new GcpSecretManager(config) */
       case SecretManagerType.AZURE:
         return /* new AzureSecretManager(config) */
+      case SecretManagerType.OLD_STYLE:
+        return new OldSecretManager()
       default:
         throw new Error('Invalid Secret Manager Type')
     }

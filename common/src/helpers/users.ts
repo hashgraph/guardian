@@ -1,7 +1,3 @@
-import { Singleton } from '@helpers/decorators/singleton';
-import { ServiceRequestsBase } from '@helpers/service-requests-base';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { AuthenticatedRequest, IAuthUser } from '@guardian/common';
 
 import { AuthEvents, GenerateUUIDv4, IRootConfig, UserRole } from '@guardian/interfaces';
 import { Singleton } from '../decorators/singleton';

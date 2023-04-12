@@ -357,6 +357,9 @@ export class SendToGuardianBlock {
         document: IPolicyDocument,
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
+        document.documentFields = Array.from(
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
+        );
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 return await this.updateVCRecord(document, Operation.auto, ref);

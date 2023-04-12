@@ -14,7 +14,7 @@ import {
     DataBaseHelper,
     Migration,
     COMMON_CONNECTION_CONFIG,
-    SettingsContainer, ValidateConfiguration,
+    ValidateConfiguration,
     Topic,
     VpDocument,
     VcDocument,
@@ -29,10 +29,6 @@ import {
     IPFS,
     Wallet,
     Users,
-    SecretManager
-} from '@guardian/common';
-import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
-import {
     Environment,
     MessageServer,
     TopicMemo,
@@ -59,6 +55,8 @@ import { GridFSBucket } from 'mongodb';
 import { tagsAPI } from '@api/tag.service';
 import { setDefaultSchema } from '@api/helpers/schema-helper';
 import { demoAPI } from '@api/demo.service';
+import { SecretManager } from '@guardian/common/dist/secret-manager';
+import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
 
 export const obj = {};
 
@@ -94,20 +92,10 @@ Promise.all([
     await new Logger().setConnection(cn);
     const state = new ApplicationState();
     await state.setServiceName('GUARDIAN_SERVICE').setConnection(cn).init();
-    const settingsContainer = new SettingsContainer();
-    settingsContainer.setConnection(cn);
-    await settingsContainer.init('OPERATOR_ID', 'OPERATOR_KEY');
-
-    /**
-     * this block gets OPERATOR from Auth service utilising SettingsContainer,
-     * instead by Secretmanager services can get/set secrets t Vault direectly.
-     * const settingsContainer = new SettingsContainer();
-     * settingsContainer.setChannel(channel);
-     * await settingsContainer.init('OPERATOR_ID', 'OPERATOR_KEY');
-     * const { OPERATOR_ID, OPERATOR_KEY } = settingsContainer.settings;
-     */
     const secretManager = SecretManager.New();
+    await new OldSecretManager().setConnection(cn).init();
     const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
+
     await state.updateState(ApplicationStates.STARTED);
 
     const didDocumentRepository = new DataBaseHelper(DidDocument);
@@ -175,7 +163,6 @@ Promise.all([
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
 
-    await new Wallet().setConnection(cn).init();
     await new Users().setConnection(cn).init();
     const workersHelper = new Workers();
     await workersHelper.setConnection(cn).init();
@@ -188,26 +175,26 @@ Promise.all([
             clearInterval(timer);
         }
         try {
-            if (!/^\d+\.\d+\.\d+/.test(settingsContainer.settings.OPERATOR_ID)) {
-                throw new Error(settingsContainer.settings.OPERATOR_ID + 'is wrong');
+            if (!/^\d+\.\d+\.\d+/.test(OPERATOR_ID)) {
+                throw new Error(OPERATOR_ID + 'is wrong');
             }
-            AccountId.fromString(settingsContainer.settings.OPERATOR_ID);
+            AccountId.fromString(OPERATOR_ID);
         } catch (error) {
             await new Logger().error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
             return false;
             // process.exit(0);
         }
         try {
-            PrivateKey.fromString(settingsContainer.settings.OPERATOR_KEY);
+            PrivateKey.fromString(OPERATOR_KEY);
         } catch (error) {
             await new Logger().error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
             return false;
         }
         try {
             if (process.env.INITIALIZATION_TOPIC_KEY) {
-                if (!/^\d+\.\d+\.\d+/.test(settingsContainer.settings.INITIALIZATION_TOPIC_ID)) {
-                    throw new Error(settingsContainer.settings.INITIALIZATION_TOPIC_ID + 'is wrong');
-                }
+                // if (!/^\d+\.\d+\.\d+/.test(settingsContainer.settings.INITIALIZATION_TOPIC_ID)) {
+                //     throw new Error(settingsContainer.settings.INITIALIZATION_TOPIC_ID + 'is wrong');
+                // }
                 TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
             }
         } catch (error) {

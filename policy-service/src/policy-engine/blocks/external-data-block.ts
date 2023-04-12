@@ -43,6 +43,16 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
 export class ExternalDataBlock {
 
     /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        documentCacheFields.add('credentialSubject.0.id');
+    }
+
+    /**
      * Schema
      * @private
      */

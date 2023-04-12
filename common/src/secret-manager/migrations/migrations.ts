@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { DataBaseHelper, DB_DI } from '../../helpers';
+import { DataBaseHelper } from '../../helpers';
 import { DataBaseNamingStrategy } from '../../helpers/db-naming-strategy';
 import { WalletAccount } from './vault-account';
 import * as dotenv from 'dotenv';
@@ -79,7 +79,7 @@ async function writeIpfsApiKey(apiKey: string) {
 async function writeOperator(operatorId, operatorKey: string) {
   setGuardianConfig()
   const secretManager = SecretManager.New(process.env.SECRET_MANAGER as SecretManagerType)
-  await secretManager.setSecrets('keys/operator', { 
+  await secretManager.setSecrets('keys/operator', {
     OPERATOR_ID: operatorId,
     OPERATOR_KEY: operatorKey,
   })
@@ -91,7 +91,7 @@ async function writeWallet(token, type, key, value) {
   await wallet.setKey(token, type, key, value)
 }
 
-async function migrate() {  
+async function migrate() {
   const db = await MikroORM.init<MongoDriver>({
     type: 'mongo',
     namingStrategy: DataBaseNamingStrategy,
@@ -106,7 +106,7 @@ async function migrate() {
     ensureIndexes: true
   })
 
-  DB_DI.orm = db;
+  DataBaseHelper.orm = db;
   const dbSecret = new DataBaseHelper(WalletAccount)
 
   // write IPFS API KEY to Vault
@@ -129,7 +129,7 @@ async function migrate() {
       await writeWallet(wallet.token, type, key, wallet.key)
     }
   }
-  
+
   exit(0)
 }
 

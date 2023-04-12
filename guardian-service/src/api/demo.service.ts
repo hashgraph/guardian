@@ -4,15 +4,14 @@ import {
     Logger,
     MessageError,
     MessageResponse, RunFunctionAsync,
-    SettingsContainer,
     Policy,
     Settings,
     DatabaseServer,
-    Workers,
-    SecretManager,
+    Workers
 } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
+import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 /**
  * Demo key
@@ -39,7 +38,6 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
 
     const secretManager = SecretManager.New();
     const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
-
     let initialBalance: number = null;
     try {
         if (role === 'STANDARD_REGISTRY') {

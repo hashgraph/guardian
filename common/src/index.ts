@@ -5,8 +5,6 @@ export * from './decorators/singleton';
 export * from './helpers';
 export * from './mq';
 export * from './interfaces';
-export * from './secret-manager';
-export * from './wallet';
 export * from './entity';
 export * from './document-loader';
 export * from './hedera-modules';

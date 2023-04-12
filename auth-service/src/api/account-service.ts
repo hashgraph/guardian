@@ -7,8 +7,7 @@ import {
     MessageResponse,
     MessageError,
     Logger,
-    DataBaseHelper, NatsService, Singleton,
-    SecretManager
+    DataBaseHelper, NatsService, Singleton
 } from '@guardian/common';
 import {
     AuthEvents, UserRole,
@@ -54,13 +53,7 @@ export class AccountService extends NatsService{
             const { token } = msg;
 
             try {
-                /**
-                 * this code block retreives `ACCESS_TOKEN_SECRET` from Vault instead of environment variable
-                 */
-                const secretManager = SecretManager.New();
-                const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
-
-                const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, ACCESS_TOKEN_SECRET, {});
+                const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, process.env.ACCESS_TOKEN_SECRET, {});
                 const user = await new DataBaseHelper(User).findOne({ username: decryptedToken.username });
                 return new MessageResponse(user);
             } catch (error) {
@@ -98,12 +91,6 @@ export class AccountService extends NatsService{
 
         this.getMessages<IGenerateTokenMessage, IGenerateTokenResponse>(AuthEvents.GENERATE_NEW_TOKEN, async (msg) => {
             try {
-                /**
-                 * this code block retreives `ACCESS_TOKEN_SECRET` from Vault instead of environment variable
-                 */
-                const secretManager = SecretManager.New();
-                const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
-
                 const { username, password } = msg;
                 const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
@@ -113,7 +100,7 @@ export class AccountService extends NatsService{
                         username: user.username,
                         did: user.did,
                         role: user.role
-                    }, ACCESS_TOKEN_SECRET);
+                    }, process.env.ACCESS_TOKEN_SECRET);
                     return new MessageResponse({
                         username: user.username,
                         did: user.did,

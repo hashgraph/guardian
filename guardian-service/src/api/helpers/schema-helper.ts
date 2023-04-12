@@ -190,8 +190,8 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
     const schemaDefs = schema.document.$defs;
     delete schemaDocument.$defs;
 
-    const filters = {};
-    filters[`document.$defs.${oldSchemaId || schemaId}`] = { $exists: true };
+    const filters: any = {};
+    filters.defs = { $elemMatch: { $eq: oldSchemaId || schemaId } };
     const relatedSchemas = await DatabaseServer.getSchemas(filters);
     for (const rSchema of relatedSchemas) {
         if (oldSchemaId) {

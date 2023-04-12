@@ -163,6 +163,12 @@ export class Schema extends BaseEntity implements ISchema {
     codeVersion?: string;
 
     /**
+     * Definitions
+     */
+    @Property({ nullable: true })
+    defs?: string[]
+
+    /**
      * Schema defaults
      */
     @BeforeCreate()
@@ -205,6 +211,9 @@ export class Schema extends BaseEntity implements ISchema {
         await new Promise<void>((resolve, reject) => {
             try {
                 if (this.document) {
+                    if (this.document.$defs) {
+                        this.defs = Object.keys(this.document.$defs);
+                    }
                     const fileStream = DataBaseHelper.gridFS.openUploadStream(
                         GenerateUUIDv4()
                     );
@@ -226,6 +235,9 @@ export class Schema extends BaseEntity implements ISchema {
     @BeforeUpdate()
     async updateDocument() {
         if (this.document) {
+            if (this.document.$defs) {
+                this.defs = Object.keys(this.document.$defs);
+            }
             if (this.documentFileId) {
                 DataBaseHelper.gridFS
                     .delete(this.documentFileId)
@@ -295,7 +307,9 @@ export class Schema extends BaseEntity implements ISchema {
     async updateContext() {
         if (this.context) {
             if (this.contextFileId) {
-                DataBaseHelper.gridFS.delete(this.contextFileId).catch();
+                DataBaseHelper.gridFS
+                    .delete(this.contextFileId)
+                    .catch(console.error);
             }
             await this.createContext();
         }

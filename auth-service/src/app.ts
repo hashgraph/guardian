@@ -1,6 +1,5 @@
 import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/account-service';
-import { ApplicationState, MessageBrokerChannel, Logger, DB_DI, Migration, COMMON_CONNECTION_CONFIG } from '@guardian/common';
 import { WalletService } from '@api/wallet-service';
 import { ApplicationState, MessageBrokerChannel, Logger, DataBaseHelper, Migration, COMMON_CONNECTION_CONFIG } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
@@ -30,17 +29,10 @@ Promise.all([
     DataBaseHelper.orm = db;
     const state = new ApplicationState();
     await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
-    MessageBrokerChannel.connect('LOGGER_SERVICE'),
-    const state = new ApplicationState('AUTH_SERVICE');
-    const channel = new MessageBrokerChannel(cn, 'auth-service');
-
-    state.setChannel(channel);
     state.updateState(ApplicationStates.INITIALIZING);
     try {
         await fixtures();
 
-        new Logger().setChannel(channel);
-        new AccountService(channel).registerListeners();
         new Logger().setConnection(cn);
         await new AccountService().setConnection(cn).init();
         new AccountService().registerListeners();

@@ -1,12 +1,13 @@
 import {Guardians} from '../guardians';
 import {Users} from '../users';
+import {Wallet} from '../wallet';
 
 /**
  * Service injector
  */
 export function Inject(): any {
     return (target: any, key: string, value) => {
-        const _RegisteredInjections = [Users, Guardians];
+        const _RegisteredInjections = [Wallet, Users, Guardians];
 
         const injClass = _RegisteredInjections.find(item => {
             return new item() instanceof Reflect.getMetadata('design:type', target, key);

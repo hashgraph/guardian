@@ -21,7 +21,11 @@ export enum SecretManagerType {
   /**
    * Azure Secrets Manager
    */
-  AZURE = 'azure'
+  AZURE = 'azure',
+  /**
+   * Old style secrets
+   */
+  OLD_STYLE = 'oldstyle'
 }
 
 /**
@@ -46,6 +50,8 @@ export class SecretManagerConfigs {
         return /* GoogleSecretManagerConfigs.getConfigs() */
       case SecretManagerType.AZURE:
         return /* AzureSecretsManagerConfig.getConfigs() */
+      case SecretManagerType.OLD_STYLE:
+        return
       default:
         throw new Error('Invalid Secret Manager Type')
     }

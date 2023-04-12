@@ -1,7 +1,7 @@
 import { Singleton } from '../decorators/singleton';
-import { WalletEvents, IGetKeyResponse, GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { Wallet as WalletManager} from '../wallet'
 import { NatsService } from '../mq';
-import { Wallet as WalletManager} from '@guardian/common'
 import { Users } from './users';
 
 /**
@@ -42,9 +42,13 @@ export class Wallet extends NatsService {
      * @param type
      * @param key
      */
+    /**
+     * Return key
+     * @param token
+     * @param type
+     * @param key
+     */
     public async getKey(token: string, type: KeyType, key: string): Promise<string> {
-        const wallet = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_KEY, { token, type, key });
-        return wallet.key;
         const wallet = new WalletManager();
         return await wallet.getKey(token, type, key);
     }
@@ -57,7 +61,6 @@ export class Wallet extends NatsService {
      * @param value
      */
     public async setKey(token: string, type: string, key: string, value: string) {
-        await this.sendMessage<any>(WalletEvents.SET_KEY, { token, type, key, value });
         const wallet = new WalletManager();
         await wallet.setKey(token, type, key, value);
     }
@@ -65,12 +68,9 @@ export class Wallet extends NatsService {
     /**
      * Return key
      * @param did
-     * @param type
      * @param key
      */
-     public async getUserKey(did: string, type: KeyType, key: string): Promise<any> {
-        const wallet = await this.sendMessage<any>(WalletEvents.GET_USER_KEY, { did, type, key });
-        return wallet.key;
+    public async getUserKey(did: string, type: KeyType, key: string): Promise<any> {
         const user = new Users();
         const { walletToken } = await user.getUserById(did);
 
@@ -80,13 +80,12 @@ export class Wallet extends NatsService {
 
     /**
      * Set key
-     * @param did
+     * @param token
      * @param type
      * @param key
      * @param value
      */
     public async setUserKey(did: string, type: KeyType, key: string, value: any) {
-        await this.sendMessage<any>(WalletEvents.SET_USER_KEY, { did, type, key, value });
         const user = new Users();
         const { walletToken } = await user.getUserById(did);
 
