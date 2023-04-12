@@ -76,13 +76,13 @@ In order to mint tokens into another account (not into the account of the mintin
 
 ![Adding interfaceActionBlock](<../../../../.gitbook/assets/10 (1) (2).png>)
 
-1.4.2 Select **Dropdown **_**** value **** for ****_** Type**
+1.4.2 Select **Dropdown** _value_ _for_ **Type**
 
 ![Selecting Dropdown value](<../../../../.gitbook/assets/11 (4).png>)
 
 1.4.3 Use system field **assignedTo** to filter documents based on users they are assigned to.
 
-Record value from **assignedTo **_**** into_ **Field** (This field will be changing our block)
+Record value from **assignedTo** _into_ **Field** (This field will be changing our block)
 
 ![Using system Field assignedTo](<../../../../.gitbook/assets/12 (3).png>)
 
