@@ -1,0 +1,182 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo:6.0.3
+    command: "--setParameter allowDiskUseByDefault=true"
+    restart: always
+    expose:
+      - 27017
+
+  mongo-express:
+    image: mongo-express:1.0.0-alpha.4
+    expose:
+      - 8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_SITE_BASEURL: /mongo-admin
+    depends_on:
+      - mongo
+
+  ipfs-node:
+    image: ipfs/kubo:v0.17.0
+    ports:
+      - "5001:5001"
+      - "5002:5002"
+      - "4001:4001"
+      - "4002:4002"
+      - "8080:8080"
+      - "8081:8081"
+
+  api-docs:
+    build:
+      context: .
+      dockerfile: ./api-docs/Dockerfile
+    expose:
+      - 3001
+
+  message-broker:
+    image: nats:2.9.8
+    expose:
+      - 4222
+    ports:
+      - '8222:8222'
+    command: '--http_port 8222'
+
+  logger-service:
+    build:
+      context: .
+      dockerfile: ./logger-service/Dockerfile
+    env_file:
+      - ./logger-service/.env.docker
+    depends_on:
+      - message-broker
+
+  worker-service-1:
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    depends_on:
+      - ipfs-node
+      - auth-service
+    env_file:
+      - ./worker-service/.env.docker
+    environment:
+      - SERVICE_CHANNEL="worker.1"
+      - SECRET_MANAGER=${SECRET_MANAGER}
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+
+  worker-service-2:
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    depends_on:
+      - ipfs-node
+      - auth-service
+    env_file:
+      - ./worker-service/.env.docker
+    environment:
+      - SERVICE_CHANNEL="worker.2"
+      - SECRET_MANAGER=${SECRET_MANAGER}
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: ./auth-service/Dockerfile
+    environment:
+      - SECRET_MANAGER=${SECRET_MANAGER}
+    env_file:
+      - ./auth-service/.env.docker
+    volumes:
+      - ./auth-service/tls:/usr/local/auth-service/tls:ro
+    depends_on:
+      - mongo
+      - message-broker
+      - logger-service
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+    expose:
+      - 3002
+    env_file:
+      - ./api-gateway/.env.docker
+    depends_on:
+      - mongo
+      - message-broker
+      - guardian-service
+      - auth-service
+      - logger-service
+
+  policy-service:
+    build:
+      context: .
+      dockerfile: ./policy-service/Dockerfile
+    environment:
+      - SECRET_MANAGER=${SECRET_MANAGER}
+    env_file:
+      - ./policy-service/.env.docker
+    volumes:
+      - ./policy-service/tls:/usr/local/policy-service/tls:ro
+    depends_on:
+      - mongo
+      - message-broker
+      - auth-service
+      - logger-service
+
+  guardian-service:
+    build:
+      context: .
+      dockerfile: ./guardian-service/Dockerfile
+    environment:
+      - SECRET_MANAGER=${SECRET_MANAGER}
+    env_file:
+      - ./guardian-service/.env.docker
+    volumes:
+      - ./guardian-service/tls:/usr/local/guardian-service/tls:ro
+    depends_on:
+      - mongo
+      - message-broker
+      - auth-service
+      - logger-service
+      - worker-service-1
+      - worker-service-2
+      - policy-service
+
+  mrv-sender:
+    build:
+      context: .
+      dockerfile: ./mrv-sender/Dockerfile
+    expose:
+      - 3005
+
+  topic-viewer:
+    build:
+      context: .
+      dockerfile: ./topic-viewer/Dockerfile
+    expose:
+      - 3006
+
+  web-proxy:
+    build:
+      context: .
+      dockerfile: ./web-proxy/Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - guardian-service
+      - auth-service
+      - api-gateway
+      - api-docs
+      - mrv-sender
+      - mongo-express
+volumes:
+  mongo:
+  # volume-guardian-service:
+  # volume-ui-service:
+  # volume-mrv-sender:
+  #  volume-message-broker:

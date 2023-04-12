@@ -1,9 +1,10 @@
 import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
 import { DatabaseServer } from '../database-modules';
-import { Logger, RunFunctionAsync, SettingsContainer, Workers } from '../helpers';
+import { Logger, RunFunctionAsync, Workers } from '../helpers';
 import { MessageResponse } from '../models';
 import { Singleton } from '../decorators/singleton';
 import { NatsService } from '../mq';
+import { SecretManager } from '../secret-manager';
 
 /**
  * Transaction log level
@@ -161,8 +162,8 @@ export class TransactionLogger extends NatsService {
 
             if (this.logLvl === TransactionLogLvl.DEBUG) {
                 try {
-                    const settingsContainer = new SettingsContainer();
-                    const { OPERATOR_ID, OPERATOR_KEY } = settingsContainer.settings;
+                    const secretManager = SecretManager.New();
+                    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
                     const workers = new Workers();
                     const balance = await workers.addNonRetryableTask({
                         type: WorkerTaskType.GET_USER_BALANCE,

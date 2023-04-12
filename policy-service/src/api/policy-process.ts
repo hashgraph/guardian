@@ -8,7 +8,6 @@ import {
     entities,
     Environment,
     MessageServer,
-    Wallet,
     Users,
     Workers,
     IPFS,
@@ -22,6 +21,7 @@ import process from 'process';
 import { CommonVariables } from '@helpers/common-variables';
 import { PolicyEvents } from '@guardian/interfaces';
 import { GridFSBucket } from 'mongodb';
+import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
 
 const {
     policy,
@@ -87,7 +87,7 @@ Promise.all([
     new BlockTreeGenerator().setConnection(cn);
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
-    await new Wallet().setConnection(cn).init();
+    await new OldSecretManager().setConnection(cn).init();
     await new Users().setConnection(cn).init();
     const workersHelper = new Workers();
     await workersHelper.setConnection(cn).init();;

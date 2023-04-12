@@ -4,7 +4,6 @@ import {
     Logger,
     MessageError,
     MessageResponse, RunFunctionAsync,
-    SettingsContainer,
     Policy,
     Settings,
     DatabaseServer,
@@ -12,6 +11,7 @@ import {
 } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
+import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 /**
  * Demo key
@@ -36,8 +36,8 @@ interface DemoKey {
 async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier): Promise<DemoKey> {
     notifier.start('Resolve settings');
 
-    const settingsContainer = new SettingsContainer();
-    const {OPERATOR_ID, OPERATOR_KEY} = settingsContainer.settings;
+    const secretManager = SecretManager.New();
+    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
     let initialBalance: number = null;
     try {
         if (role === 'STANDARD_REGISTRY') {
