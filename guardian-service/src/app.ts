@@ -27,7 +27,6 @@ import {
     RetireRequest,
     entities,
     IPFS,
-    Wallet,
     Users,
     Environment,
     MessageServer,

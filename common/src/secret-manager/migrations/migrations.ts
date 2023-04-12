@@ -1,7 +1,6 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { DataBaseHelper } from '../../helpers';
-import { DataBaseNamingStrategy } from '../../helpers/db-naming-strategy';
+import { DataBaseHelper, DataBaseNamingStrategy } from '../../helpers';
 import { WalletAccount } from './vault-account';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
@@ -11,11 +10,11 @@ import { SecretManagerType } from '../secret-manager-config';
 import { exit } from 'process';
 
 const globalEnvPath = path.join(process.cwd(), '../.env')
-const authEnvPath = path.join(process.cwd(), '../auth-service/.env')
+// const authEnvPath = path.join(process.cwd(), '../auth-service/.env')
 const guardianEnvPath = path.join(process.cwd(), '../guardian-service/.env')
 const workerEnvPath = path.join(process.cwd(), '../worker-service/.env')
 
-const authCertsPath = path.join('../auth-service/tls/vault/client')
+// const authCertsPath = path.join('../auth-service/tls/vault/client')
 const guardianCertsPath = path.join('../guardian-service/tls/vault/client')
 const workerCertsPath = path.join('../worker-service/tls/vault/client')
 
@@ -37,17 +36,23 @@ function setCertsPath(certsPath: string) {
   process.env.VAULT_CLIENT_KEY = `${certsPath}/tls.key`
 }
 
-function setAuthConfig() {
-  dotenv.config({path: globalEnvPath, override: true})
-  if (process.env.SECRET_MANAGER === 'hcp') {
-    setVaultCommonConfig()
-    dotenv.config({path: authEnvPath, override: true})
-    setCertsPath(authCertsPath)
-  } else if (process.env.SECRET_MANAGER === 'aws') {
-    dotenv.config({path: globalEnvPath, override: true})
-  }
-}
+/**
+ * setAuthConfig
+ */
+// function setAuthConfig() {
+//   dotenv.config({path: globalEnvPath, override: true})
+//   if (process.env.SECRET_MANAGER === 'hcp') {
+//     setVaultCommonConfig()
+//     dotenv.config({path: authEnvPath, override: true})
+//     setCertsPath(authCertsPath)
+//   } else if (process.env.SECRET_MANAGER === 'aws') {
+//     dotenv.config({path: globalEnvPath, override: true})
+//   }
+// }
 
+/**
+ * setWorkerConfig
+ */
 function setWorkerConfig() {
   dotenv.config({path: globalEnvPath, override: true})
   if (process.env.SECRET_MANAGER === 'hcp') {
@@ -59,6 +64,9 @@ function setWorkerConfig() {
   }
 }
 
+/**
+ * setGuardianConfig
+ */
 function setGuardianConfig() {
   dotenv.config({path: globalEnvPath, override: true})
   if (process.env.SECRET_MANAGER === 'hcp') {
@@ -70,12 +78,21 @@ function setGuardianConfig() {
   }
 }
 
+/**
+ * writeIpfsApiKey
+ * @param apiKey
+ */
 async function writeIpfsApiKey(apiKey: string) {
   setWorkerConfig()
   const secretManager = SecretManager.New(process.env.SECRET_MANAGER as SecretManagerType)
   await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: apiKey })
 }
 
+/**
+ * writeOperator
+ * @param operatorId
+ * @param operatorKey
+ */
 async function writeOperator(operatorId, operatorKey: string) {
   setGuardianConfig()
   const secretManager = SecretManager.New(process.env.SECRET_MANAGER as SecretManagerType)
@@ -85,17 +102,27 @@ async function writeOperator(operatorId, operatorKey: string) {
   })
 }
 
+/**
+ * writeWallet
+ * @param token
+ * @param type
+ * @param key
+ * @param value
+ */
 async function writeWallet(token, type, key, value) {
   setGuardianConfig()
   const wallet = new Wallet(process.env.SECRET_MANAGER as SecretManagerType)
   await wallet.setKey(token, type, key, value)
 }
 
+/**
+ * migrate
+ */
 async function migrate() {
   const db = await MikroORM.init<MongoDriver>({
     type: 'mongo',
     namingStrategy: DataBaseNamingStrategy,
-    dbName: "auth_db",
+    dbName: 'auth_db',
     clientUrl:`mongodb://localhost:27017`,
     entities: [
       'dist/secret-manager/migrations/vault-account.js'
@@ -110,8 +137,8 @@ async function migrate() {
   const dbSecret = new DataBaseHelper(WalletAccount)
 
   // write IPFS API KEY to Vault
-  const ipfs_api_key = await dbSecret.findOne({type: 'IPFS_STORAGE_API_KEY'})
-  await writeIpfsApiKey(ipfs_api_key.key)
+  const ipfsApiKey = await dbSecret.findOne({type: 'IPFS_STORAGE_API_KEY'})
+  await writeIpfsApiKey(ipfsApiKey.key)
 
   // write Auth Service Secretkey to Vault
   // const authSecretKey = await dbSecret.find({type: 'AUTH_SERVICE_SECRET_KEY'})

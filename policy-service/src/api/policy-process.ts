@@ -8,7 +8,6 @@ import {
     entities,
     Environment,
     MessageServer,
-    Wallet,
     Users,
     Workers,
     IPFS,
