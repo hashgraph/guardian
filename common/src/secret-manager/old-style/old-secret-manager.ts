@@ -38,9 +38,9 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
                 return { IPFS_STORAGE_API_KEY: IPFS_STORAGE_API_KEY.key };
 
             default:
-                return;
+                const wallet = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_KEY, addition);
+                return wallet.key
         }
-        return
     }
 
     /**
@@ -66,8 +66,8 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
                 return;
 
             default:
+                await this.sendMessage<any>(WalletEvents.SET_KEY, data);
                 return;
         }
-        return
     }
 }
