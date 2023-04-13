@@ -259,7 +259,7 @@ export class DataBaseHelper<T extends BaseEntity> {
             DataBaseHelper._systemFileFields.forEach(systemFileField => {
                 entity[systemFileField] = entityToUpdateOrCreate[systemFileField];
             });
-            wrap(entityToUpdateOrCreate).assign({ ...entity, updateDate: new Date() });
+            wrap(entityToUpdateOrCreate).assign({ ...entity, updateDate: new Date() }, { mergeObjects: false });
         } else {
             entityToUpdateOrCreate = repository.create({ ...entity });
             await repository.persist(entityToUpdateOrCreate);
@@ -303,7 +303,7 @@ export class DataBaseHelper<T extends BaseEntity> {
             DataBaseHelper._systemFileFields.forEach(systemFileField => {
                 entity[systemFileField] = entityToUpdate[systemFileField];
             });
-            wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() });
+            wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() }, { mergeObjects: false });
         }
         await repository.flush();
         return entitiesToUpdate.length === 1
