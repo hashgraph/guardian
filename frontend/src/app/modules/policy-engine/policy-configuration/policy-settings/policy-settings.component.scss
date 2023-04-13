@@ -261,19 +261,6 @@
             padding-top: 12px;
         }
 
-        .settings-block-prev {
-            height: 34px;
-            position: relative;
-            width: 150px;
-            background: #fff;
-            border: 2px solid #000;
-            box-sizing: border-box;
-            padding: 6px 12px;
-            user-select: none;
-            margin: 4px 8px 4px 0px;
-            box-shadow: 4px 4px 6px 0px #00000040;
-        }
-
         .block-color-prev {
             height: 34px;
             position: relative;
@@ -281,7 +268,9 @@
             background: #fff;
             border: 2px solid #000;
             box-sizing: border-box;
-            padding: 6px 12px;
+            padding: 0px 12px;
+            align-items: center;
+            display: flex;
             user-select: none;
             margin: 4px 38px 4px 0px;
             box-shadow: 4px 4px 6px 0px #00000040;
@@ -303,9 +292,13 @@
         }
 
         .role-color-prop-select {
-            width: 60px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 7px 10px;
             height: 34px;
-            margin-right: 12px;
+            box-sizing: border-box;
+            margin-right: 10px;
+            width: 90px;
         }
     
         .role-color-delete {
@@ -410,4 +403,51 @@
 
 .settings::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
     padding: 12px 0;
+}
+
+
+.shape-0 {
+    width: 42px;
+    height: 20px;
+    border: 3px solid #000;
+    box-sizing: border-box;
+}
+
+.shape-1 {
+    width: 42px;
+    height: 20px;
+    border: 3px solid #000;
+    box-sizing: border-box;
+    border-radius: 6px;
+}
+
+.shape-2 {
+    width: 42px;
+    height: 20px;
+    border: 3px solid #000;
+    box-sizing: border-box;
+    border-radius: 10px;
+}
+
+.shape-3 {
+    width: 42px;
+    height: 20px;
+    border: 3px dashed #000;
+    box-sizing: border-box;
+}
+
+.shape-4 {
+    width: 42px;
+    height: 20px;
+    border: 3px dashed #000;
+    box-sizing: border-box;
+    border-radius: 6px;
+}
+
+.shape-5 {
+    width: 42px;
+    height: 20px;
+    border: 3px dashed #000;
+    box-sizing: border-box;
+    border-radius: 10px;
 }

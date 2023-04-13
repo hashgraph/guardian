@@ -38,7 +38,7 @@ export class ThemeSettings {
             }
 
             for (const theme of this._customThemes) {
-                this._all.push(Theme.from(theme));
+                this._all.push(theme);
             }
 
             this._currentTheme = localStorage.getItem('POLICY_SETTINGS_THEME') || '0';

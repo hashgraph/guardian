@@ -1,13 +1,16 @@
+import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyBlockModel } from '..';
 import { ThemeRole } from './theme-role';
 
 export class Theme {
+    public readonly id: string;
     public readonly: boolean;
 
     private _name: string;
     private _roles: ThemeRole[];
 
     constructor() {
+        this.id = GenerateUUIDv4();
         this.readonly = false;
         this._name = '';
         this._roles = [];

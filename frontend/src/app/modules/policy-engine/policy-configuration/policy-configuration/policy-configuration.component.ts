@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GenerateUUIDv4, Schema, SchemaHelper, Token } from '@guardian/interfaces';
+import { Schema, SchemaHelper, Token } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { forkJoin, Observable } from 'rxjs';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
@@ -19,7 +19,7 @@ import { NewModuleDialog } from '../../helpers/new-module-dialog/new-module-dial
 import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
 import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
 import { RegisteredService } from '../../services/registered.service';
-import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, TemplateModel } from '../../structures';
+import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, TemplateModel, Theme } from '../../structures';
 import { Options } from '../../structures/storage/config-options';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import { ThemeService } from '../../services/theme.service';
@@ -70,6 +70,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public rootType: 'Policy' | 'Module' = 'Policy';
     public selectType: 'Block' | 'Module' = 'Block';
     public openSettings: boolean = false;
+    public themes!: Theme[];
 
     readonly codeMirrorOptions = {
         theme: 'default',
@@ -194,7 +195,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public ngOnInit() {
         this.loading = true;
         this.options.load();
-        this.themeService.load();
+        this.themes = this.themeService.load();
         this.route.queryParams.subscribe(queryParams => {
             this.loadData();
         });
@@ -1144,5 +1145,10 @@ export class PolicyConfigurationComponent implements OnInit {
         } else {
             this.themeService.load();
         }
+        this.themes = this.themeService.load();
+    }
+
+    public setTheme(theme: Theme) {
+        this.themeService.setTheme(theme);
     }
 }

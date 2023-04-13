@@ -143,7 +143,8 @@ export class ThemeRole {
             '--theme-color': this._text,
             '--theme-border-color': this._border,
             '--theme-background-color': this._background,
-            '--theme-border-radius': ''
+            '--theme-border-radius': '',
+            '--theme-border-width': this._borderWidth,
         };
         switch (this._shape) {
             case '0':
@@ -192,6 +193,7 @@ export class ThemeRole {
         role._background = json.background;
         role._border = json.border;
         role._shape = json.shape;
+        role._borderWidth = json.borderWidth;
         role._type = json.filterType;
         role._filterOperation = json.filterOperation;
         role._value = json.filterValue;
@@ -206,6 +208,7 @@ export class ThemeRole {
             background: this._background,
             border: this._border,
             shape: this._shape,
+            borderWidth: this._borderWidth,
             filterType: this._type,
             filterOperation: this._filterOperation,
             filterValue: this._value

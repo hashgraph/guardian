@@ -133,10 +133,27 @@
                             <div class="role-color-prop">
                                 <div class="role-color-prop-select">
                                     <mat-select placeholder="Type" [(ngModel)]="role.shape">
-                                        <mat-option value="0">0</mat-option>
-                                        <mat-option value="1">1</mat-option>
-                                        <mat-option value="2">2</mat-option>
-                                        <mat-option value="3">3</mat-option>
+                                        <mat-select-trigger>
+                                            <div class="shape-{{role.shape}}"></div>
+                                        </mat-select-trigger>
+                                        <mat-option value="0">
+                                            <div class="shape-0"></div>
+                                        </mat-option>
+                                        <mat-option value="1">
+                                            <div class="shape-1"></div>
+                                        </mat-option>
+                                        <mat-option value="2">
+                                            <div class="shape-2"></div>
+                                        </mat-option>
+                                        <mat-option value="3">
+                                            <div class="shape-3"></div>
+                                        </mat-option>
+                                        <mat-option value="4">
+                                            <div class="shape-4"></div>
+                                        </mat-option>
+                                        <mat-option value="5">
+                                            <div class="shape-5"></div>
+                                        </mat-option>
                                     </mat-select>
                                 </div>
                                 <div class="role-color-prop-name">Shape</div>

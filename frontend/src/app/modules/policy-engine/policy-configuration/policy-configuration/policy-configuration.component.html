@@ -208,6 +208,15 @@
                 <div class="delimiter"></div>
             </ng-container>
 
+
+            <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="themesMenu" style="width: 60px">
+                <mat-icon>palette</mat-icon>
+                <span>Themes</span>
+                <div class="expand-group">
+                    <mat-icon>arrow_drop_down</mat-icon>
+                </div>
+            </div>
+
             <div class="top-toolbar-btn all-status" (click)="onSettings()" title="Settings">
                 <mat-icon>settings</mat-icon>
                 <span>Settings</span>
@@ -764,5 +773,12 @@
     <div class="toolbar-menu all-status event-color" (click)="onView('yaml')">
         <mat-icon class="action-color">segment</mat-icon>
         <span class="action-color">YAML</span>
+    </div>
+</mat-menu>
+
+<mat-menu #themesMenu="matMenu">
+    <div class="toolbar-menu all-status" *ngFor="let theme of themes" (click)="setTheme(theme)">
+        <mat-icon class="action-color">palette</mat-icon>
+        <span class="action-color">{{theme.name}}</span>
     </div>
 </mat-menu>
