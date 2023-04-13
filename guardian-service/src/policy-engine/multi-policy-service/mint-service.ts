@@ -31,6 +31,12 @@ interface TokenConfig {
  */
 export class MintService {
     /**
+     * Size of mint NFT batch
+     */
+    public static readonly BATCH_NFT_MINT_SIZE =
+        Math.floor(Math.abs(+process.env.BATCH_NFT_MINT_SIZE)) || 10;
+
+    /**
      * Wallet service
      */
     private static readonly wallet = new Wallet();
@@ -91,6 +97,44 @@ export class MintService {
         uuid: string,
         transactionMemo: string
     ) {
+        const mintNFT = (metaData) =>
+            workers.addRetryableTask(
+                {
+                    type: WorkerTaskType.MINT_NFT,
+                    data: {
+                        hederaAccountId: root.hederaAccountId,
+                        hederaAccountKey: root.hederaAccountKey,
+                        dryRun: false,
+                        tokenId: token.tokenId,
+                        supplyKey: token.supplyKey,
+                        metaData,
+                        transactionMemo,
+                    },
+                },
+                1, 10
+            );
+        const transferNFT = (serials) =>
+            workers.addRetryableTask(
+                {
+                    type: WorkerTaskType.TRANSFER_NFT,
+                    data: {
+                        hederaAccountId:
+                            root.hederaAccountId,
+                        hederaAccountKey:
+                            root.hederaAccountKey,
+                        dryRun: false,
+                        tokenId: token.tokenId,
+                        targetAccount,
+                        treasuryId: token.treasuryId,
+                        treasuryKey: token.treasuryKey,
+                        element: serials,
+                        transactionMemo,
+                    },
+                },
+                1, 10
+            );
+        const mintAndTransferNFT = (metaData) =>
+            mintNFT(metaData).then(transferNFT);
         const mintId = Date.now();
         MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`);
 
@@ -98,56 +142,19 @@ export class MintService {
         const data = new Array<string>(Math.floor(tokenValue));
         data.fill(uuid);
         const dataChunks = MintService.splitChunk(data, 10);
-        const tasks = MintService.splitChunk(dataChunks, 100);
+        const tasks = MintService.splitChunk(
+            dataChunks,
+            MintService.BATCH_NFT_MINT_SIZE
+        );
         for (let i = 0; i < tasks.length; i++) {
             const dataChunk = tasks[i];
             MintService.log(
-                `Mint(${mintId}): Minting and transferring (Chunk: ${i + 1}/${
-                    tasks.length
-                })`
+                `Mint(${mintId}): Minting and transferring (Chunk: ${
+                    i * MintService.BATCH_NFT_MINT_SIZE + 1
+                }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`
             );
             try {
-                await Promise.all(
-                    dataChunk.map((metaData) =>
-                        workers
-                            .addRetryableTask(
-                                {
-                                    type: WorkerTaskType.MINT_NFT,
-                                    data: {
-                                        hederaAccountId: root.hederaAccountId,
-                                        hederaAccountKey: root.hederaAccountKey,
-                                        dryRun: false,
-                                        tokenId: token.tokenId,
-                                        supplyKey: token.supplyKey,
-                                        metaData,
-                                        transactionMemo,
-                                    },
-                                },
-                                1
-                            )
-                            .then((serials) =>
-                                workers.addRetryableTask(
-                                    {
-                                        type: WorkerTaskType.TRANSFER_NFT,
-                                        data: {
-                                            hederaAccountId:
-                                                root.hederaAccountId,
-                                            hederaAccountKey:
-                                                root.hederaAccountKey,
-                                            dryRun: false,
-                                            tokenId: token.tokenId,
-                                            targetAccount,
-                                            treasuryId: token.treasuryId,
-                                            treasuryKey: token.treasuryKey,
-                                            element: serials,
-                                            transactionMemo,
-                                        },
-                                    },
-                                    1
-                                )
-                            )
-                    )
-                );
+                await Promise.all(dataChunk.map(mintAndTransferNFT));
             } catch (error) {
                 MintService.error(
                     `Mint(${mintId}): Error (${MintService.getErrorMessage(error)})`,
