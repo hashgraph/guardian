@@ -31,7 +31,7 @@ export class DataBaseHelper<T extends BaseEntity> {
     /**
      * System fields
      */
-    private static readonly _systemFields: string[] = [
+    private static readonly _systemFileFields: string[] = [
         'documentFileId',
         'contextFileId',
         'configFileId',
@@ -143,7 +143,28 @@ export class DataBaseHelper<T extends BaseEntity> {
      */
     @UseRequestContext(() => DataBaseHelper.orm)
     public async aggregate(pipeline: any[]): Promise<any[]> {
-        return await this._em.aggregate(this.entityClass, pipeline);
+        const aggregateEntities = await this._em.aggregate(
+            this.entityClass,
+            pipeline
+        );
+        for (const entity of aggregateEntities) {
+            for (const systemFileField of DataBaseHelper._systemFileFields) {
+                if (Object.keys(entity).includes(systemFileField)) {
+                    const fileStream = DataBaseHelper.gridFS.openDownloadStream(
+                        entity[systemFileField]
+                    );
+                    const bufferArray = [];
+                    for await (const data of fileStream) {
+                        bufferArray.push(data);
+                    }
+                    const buffer = Buffer.concat(bufferArray);
+                    entity[systemFileField.replace('FileId', '')] = JSON.parse(
+                        buffer.toString()
+                    );
+                }
+            }
+        }
+        return aggregateEntities;
     }
 
     /**
@@ -235,8 +256,8 @@ export class DataBaseHelper<T extends BaseEntity> {
 
         let entityToUpdateOrCreate: any = await repository.findOne(filter?.where || filter || entity.id || entity._id);
         if (entityToUpdateOrCreate) {
-            DataBaseHelper._systemFields.forEach(systemFields => {
-                delete entity[systemFields];
+            DataBaseHelper._systemFileFields.forEach(systemFileField => {
+                entity[systemFileField] = entityToUpdateOrCreate[systemFileField];
             });
             wrap(entityToUpdateOrCreate).assign({ ...entity, updateDate: new Date() });
         } else {
@@ -279,8 +300,8 @@ export class DataBaseHelper<T extends BaseEntity> {
         const repository = this._em.getRepository(this.entityClass);
         const entitiesToUpdate: any = await repository.find(filter?.where || filter || entity.id || entity._id);
         for (const entityToUpdate of entitiesToUpdate) {
-            DataBaseHelper._systemFields.forEach(systemFields => {
-                delete entity[systemFields];
+            DataBaseHelper._systemFileFields.forEach(systemFileField => {
+                entity[systemFileField] = entityToUpdate[systemFileField];
             });
             wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() });
         }

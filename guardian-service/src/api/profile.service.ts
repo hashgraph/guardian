@@ -338,7 +338,7 @@ export function profileAPI() {
                     hederaAccountId: user.hederaAccountId,
                     hederaAccountKey: key
                 }
-            }, 1);
+            }, 20);
             return new MessageResponse({
                 balance,
                 unit: 'Hbar',
@@ -379,7 +379,7 @@ export function profileAPI() {
                     hederaAccountId: user.hederaAccountId,
                     hederaAccountKey: key
                 }
-            }, 1);
+            }, 20);
 
             return new MessageResponse(balance);
         } catch (error) {

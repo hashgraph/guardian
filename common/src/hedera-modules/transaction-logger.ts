@@ -171,7 +171,7 @@ export class TransactionLogger extends NatsService {
                             hederaAccountId: OPERATOR_ID,
                             hederaAccountKey: OPERATOR_KEY
                         }
-                    }, 1);
+                    }, 20);
                     attr.push(balance);
                 } catch (error) {
                     attr.push(null);

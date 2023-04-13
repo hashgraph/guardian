@@ -402,16 +402,26 @@ export class UserProfileComponent implements OnInit {
     }
 
     createRetireRequest() {
+        this.loading = true;
+        this.tokenService
+            .getTokens()
+            .subscribe(this.openRetireDialog.bind(this), (error) => {
+                console.error(error);
+                this.loading = false;
+            });
+    }
+
+    openRetireDialog(tokens: any) {
         const dialogRef = this.dialog.open(RetireTokenDialogComponent, {
             width: '800px',
             panelClass: 'g-dialog',
             disableClose: true,
             autoFocus: false,
             data: {
-                tokens: this.tokens,
+                tokens,
             },
         });
-        this.loading = false;
+        dialogRef.afterOpened().subscribe(() => (this.loading = false));
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
                 this.loading = true;

@@ -105,7 +105,7 @@ export class TopicHelper {
                 topicMemo: TopicMemo.parseMemo(true, config.memo, config.memoObj) || TopicMemo.getTopicMemo(config),
                 keys
             }
-        }, 1);
+        }, 10);
         let adminKey: any = null;
         let submitKey: any = null;
         if (keys) {

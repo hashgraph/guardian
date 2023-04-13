@@ -58,7 +58,7 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
             operatorKey: OPERATOR_KEY,
             initialBalance
         }
-    }, 1);
+    }, 20);
 
     notifier.completed();
     return result;

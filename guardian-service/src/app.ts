@@ -233,7 +233,7 @@ Promise.all([
                     dryRun: false,
                     topicMemo: TopicMemo.getGlobalTopicMemo()
                 }
-            }, 1);
+            }, 10);
         }
 
         state.updateState(ApplicationStates.INITIALIZING);

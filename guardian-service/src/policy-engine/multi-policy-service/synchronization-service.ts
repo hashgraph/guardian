@@ -134,7 +134,7 @@ export class SynchronizationService {
                     dryRun: false,
                     topic: policy.synchronizationTopicId
                 }
-            }, 1);
+            }, 10);
 
             const policyMap: { [x: string]: SynchronizationMessage[] } = {};
             const vpMap: { [x: string]: Map<string, SynchronizationMessage> } = {};
