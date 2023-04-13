@@ -67,4 +67,4 @@ Groups are separate sets of documents access , which can be limited to users who
 
 When a policy contains multiple groups, users have an option to switch between those they are included in. The selection menu also allows to switch to the ‘no group’ default state, i.e. the state in which the user is not acting as a member of any group.
 
-<figure><img src="../.gitbook/assets/image (32).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (32) (1).png" alt=""><figcaption></figcaption></figure>
