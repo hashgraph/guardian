@@ -6,7 +6,7 @@ description: Demonstrating Split functionality
 
 Following are the steps to run iREC 7 Policy.
 
-1. We need to import the policy by using two steps : Either by importing the `IRec Policy 7 split documents (1666798058.496271367).policy` **** or through IPFS by entering the timestamp of the policy : 1674822624.800179003.
+1. We need to import the policy by using two steps : Either by importing the `IRec Policy 7 split documents (1666798058.496271367).policy` or through IPFS by entering the timestamp of the policy : 1674822624.800179003.
 
 <figure><img src="../../../.gitbook/assets/iREC_7_1.png" alt=""><figcaption></figcaption></figure>
 

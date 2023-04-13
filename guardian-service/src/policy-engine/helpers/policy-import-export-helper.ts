@@ -1,28 +1,33 @@
-import { Policy } from '@entity/policy';
+import JSZip from 'jszip';
+import { SchemaEntity, TopicType, GenerateUUIDv4, TagType } from '@guardian/interfaces';
+import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
+import { importSchemaByFiles } from '@api/helpers/schema-import-export-helper';
+import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
+import { INotifier } from '@helpers/notifier';
 import {
+    DataBaseHelper,
+    Artifact,
+    Topic,
+    Schema,
+    Token,
+    Policy,
     findAllEntities,
     getArtifactType,
     regenerateIds,
     replaceAllEntities,
     replaceAllVariables,
     replaceArtifactProperties,
-    SchemaFields
-} from '@helpers/utils';
-import JSZip from 'jszip';
-import { Token } from '@entity/token';
-import { Schema } from '@entity/schema';
-import { SchemaEntity, TopicType, GenerateUUIDv4, TagType } from '@guardian/interfaces';
-import { Users } from '@helpers/users';
-import { MessageAction, MessageServer, MessageType, PolicyMessage, TopicConfig, TopicHelper } from '@hedera-modules';
-import { Topic } from '@entity/topic';
-import { PolicyConverterUtils } from '@policy-engine/policy-converter-utils';
-import { INotifier } from '@helpers/notifier';
-import { DatabaseServer } from '@database-modules';
-import { DataBaseHelper } from '@guardian/common';
-import { Artifact } from '@entity/artifact';
+    SchemaFields,
+    DatabaseServer,
+    Users,
+    MessageAction,
+    MessageServer,
+    MessageType,
+    PolicyMessage,
+    TopicConfig,
+    TopicHelper,
+} from '@guardian/common';
 import { exportTag, importTag } from '@api/tag.service';
-import { publishSystemSchemas } from '@api/helpers/schema-publish-helper';
-import { importSchemaByFiles } from '@api/helpers/schema-import-export-helper';
 
 /**
  * Policy import export helper

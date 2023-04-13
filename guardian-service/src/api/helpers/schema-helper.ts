@@ -8,18 +8,18 @@ import {
 } from '@guardian/interfaces';
 import path from 'path';
 import { readJSON } from 'fs-extra';
-import { DatabaseServer } from '@database-modules';
-import { Schema as SchemaCollection } from '@entity/schema';
 import {
     MessageAction,
     MessageServer,
     SchemaMessage,
     TopicConfig,
     TopicHelper,
-} from '@hedera-modules';
+    Schema as SchemaCollection,
+    DatabaseServer,
+    Users,
+    SchemaConverterUtils,
+} from '@guardian/common';
 import { INotifier } from '@helpers/notifier';
-import { Users } from '@helpers/users';
-import { SchemaConverterUtils } from '@helpers/schema-converter-utils';
 
 /**
  * Import Result
@@ -177,7 +177,7 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
         return;
     }
 
-    const schema = await DatabaseServer.getSchema({ 'document.$id': schemaId });
+    const schema = await DatabaseServer.getSchema({ iri: schemaId });
     if (!schema) {
         throw new Error(`Can not find schema ${schemaId}`);
     }
@@ -190,8 +190,8 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
     const schemaDefs = schema.document.$defs;
     delete schemaDocument.$defs;
 
-    const filters = {};
-    filters[`document.$defs.${oldSchemaId || schemaId}`] = { $exists: true };
+    const filters: any = {};
+    filters.defs = { $elemMatch: { $eq: oldSchemaId || schemaId } };
     const relatedSchemas = await DatabaseServer.getSchemas(filters);
     for (const rSchema of relatedSchemas) {
         if (oldSchemaId) {

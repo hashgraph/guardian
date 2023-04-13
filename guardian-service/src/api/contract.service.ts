@@ -4,6 +4,22 @@ import {
     MessageError,
     Logger,
     DataBaseHelper,
+    Contract,
+    RetireRequest,
+    Schema as SchemaCollection,
+    Topic,
+    VcDocument as VcDocumentCollection,
+    Workers,
+    Users,
+    KeyType,
+    Wallet,
+    MessageAction,
+    MessageServer,
+    TopicConfig,
+    TopicHelper,
+    VCMessage,
+    DatabaseServer,
+    VcHelper
 } from '@guardian/common';
 import {
     ContractStatus,
@@ -14,23 +30,6 @@ import {
     TopicType,
     WorkerTaskType,
 } from '@guardian/interfaces';
-import { Contract } from '@entity/contract';
-import { Workers } from '@helpers/workers';
-import { Users } from '@helpers/users';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { DatabaseServer } from '@database-modules';
-import { RetireRequest } from '@entity/retire-request';
-import { Schema as SchemaCollection } from '@entity/schema';
-import {
-    MessageAction,
-    MessageServer,
-    TopicConfig,
-    TopicHelper,
-    VCMessage,
-} from '@hedera-modules';
-import { Topic } from '@entity/topic';
-import { VcHelper } from '@helpers/vc-helper';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
 import { publishSystemSchema } from './helpers/schema-publish-helper';
 
 /**
@@ -178,7 +177,7 @@ export async function contractAPI(
                     topicKey: rootKey,
                     memo: topic.topicId
                 }
-            }, 1);
+            }, 20);
             const contract = await contractRepository.save({
                 contractId,
                 status: ContractStatus.APPROVED,
@@ -225,7 +224,7 @@ export async function contractAPI(
                         hederaAccountKey: rootKey,
                     },
                 },
-                1
+                20
             );
 
             if (checkStatusResult) {
@@ -282,7 +281,7 @@ export async function contractAPI(
                             userId,
                         },
                     },
-                    1
+                    20
                 )
             );
         } catch (error) {
@@ -361,7 +360,7 @@ export async function contractAPI(
                             grantKycKeys
                         },
                     },
-                    1
+                    20
                 )
             );
         } catch (error) {
@@ -394,7 +393,7 @@ export async function contractAPI(
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: rootKey,
                 },
-            }, 1);
+            }, 20);
             const isOwnerCreator = owner === root.hederaAccountId;
             const contract = await contractRepository.save(
                 {
@@ -457,7 +456,7 @@ export async function contractAPI(
                             oppositeTokenId,
                         },
                     },
-                    1
+                    20
                 );
                 contractPairs.push({
                     baseTokenRate: baseToken?.decimals
@@ -534,7 +533,7 @@ export async function contractAPI(
                         oppositeTokenSerials,
                     },
                 },
-                1
+                20
             );
 
             const contractRequest = await workers.addNonRetryableTask(
@@ -549,7 +548,7 @@ export async function contractAPI(
                         userId: root.hederaAccountId,
                     },
                 },
-                1
+                20
             );
 
             await retireRequestRepository.save(
@@ -632,7 +631,7 @@ export async function contractAPI(
                         oppositeTokenId: retireRequest.oppositeTokenId,
                     },
                 },
-                1
+                20
             );
 
             if (cancelResult) {
@@ -702,7 +701,7 @@ export async function contractAPI(
                         wipeKeys,
                     },
                 },
-                1
+                20
             );
 
             let topicConfig = await TopicConfig.fromObject(

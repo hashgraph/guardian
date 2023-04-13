@@ -1,12 +1,22 @@
 import { ApiResponse } from '@api/helpers/api-response';
-import { MessageResponse, MessageError, Logger, BinaryMessageResponse } from '@guardian/common';
-import { GenerateUUIDv4, MessageAPI, ModuleStatus, TagType, TopicType } from '@guardian/interfaces';
-import { DatabaseServer } from '@database-modules';
-import { PolicyModule } from '@entity/module';
+import {
+    MessageResponse,
+    MessageError,
+    Logger,
+    BinaryMessageResponse,
+    PolicyModule,
+    DatabaseServer,
+    Users,
+    MessageAction,
+    MessageServer,
+    MessageType,
+    ModuleMessage,
+    TopicConfig,
+    TopicHelper,
+} from '@guardian/common';
+import { GenerateUUIDv4, MessageAPI, ModuleStatus, TopicType, TagType } from '@guardian/interfaces';
 import JSZip from 'jszip';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
-import { MessageAction, MessageServer, MessageType, ModuleMessage, TopicConfig, TopicHelper } from '@hedera-modules';
-import { Users } from '@helpers/users';
 import { ISerializedErrors } from '@policy-engine/policy-validation-results-container';
 import { ModuleValidator } from '@policy-engine/block-validators/module-validator';
 import { exportTag, importTag } from './tag.service';

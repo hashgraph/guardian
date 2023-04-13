@@ -3,16 +3,21 @@ import {
     PolicyType,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { Workers } from '@helpers/workers';
-import { DatabaseServer } from '@database-modules';
-import { MessageAction, MessageServer, SynchronizationMessage, TopicConfig } from '@hedera-modules';
 import { CronJob } from 'cron';
-import { Policy } from '@entity/policy';
 import { MintService } from './mint-service';
-import { Users } from '@helpers/users';
-import { MultiPolicyTransaction } from '@entity/multi-policy-transaction';
-import { Token } from '@entity/token';
-import { Logger } from '@guardian/common';
+import {
+    Logger,
+    Token,
+    DatabaseServer,
+    MultiPolicyTransaction,
+    Policy,
+    Users,
+    MessageAction,
+    MessageServer,
+    SynchronizationMessage,
+    TopicConfig,
+    Workers,
+} from '@guardian/common';
 
 /**
  * Synchronization Service
@@ -129,7 +134,7 @@ export class SynchronizationService {
                     dryRun: false,
                     topic: policy.synchronizationTopicId
                 }
-            }, 1);
+            }, 10);
 
             const policyMap: { [x: string]: SynchronizationMessage[] } = {};
             const vpMap: { [x: string]: Map<string, SynchronizationMessage> } = {};

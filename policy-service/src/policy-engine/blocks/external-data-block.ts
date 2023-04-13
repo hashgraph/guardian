@@ -1,8 +1,6 @@
 import { ActionCallback, ExternalData } from '@policy-engine/helpers/decorators';
 import { DocumentSignature, Schema } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { VcDocument } from '@hedera-modules';
-import { VcHelper } from '@helpers/vc-helper';
 import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
 import { PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
@@ -10,7 +8,11 @@ import { AnyBlockType, IPolicyDocument, IPolicyValidatorBlock } from '@policy-en
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import {
+    VcDocument as VcDocumentCollection,
+    VcDocumentDefinition as VcDocument,
+    VcHelper,
+} from '@guardian/common';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
@@ -39,6 +41,16 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
     ]
 })
 export class ExternalDataBlock {
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        documentCacheFields.add('credentialSubject.0.id');
+    }
 
     /**
      * Schema

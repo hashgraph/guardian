@@ -36,7 +36,7 @@ COPY --from=interfacesModuleBuilder /usr/local/interfaces/guardian-interfaces-*.
 COPY --from=commonModuleBuilder /usr/local/common/guardian-common-*.tgz /tmp/common.tgz
 COPY --from=guardianServiceBuilder  /usr/local/guardian-service/yarn.lock ./
 COPY ./guardian-service/package.json ./
-COPY ./guardian-service/.env.docker ./.env
+# COPY ./guardian-service/.env.docker ./.env
 COPY ./guardian-service/system-schemas ./system-schemas/.
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"

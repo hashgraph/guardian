@@ -1,0 +1,1 @@
+"# Read-only permission on secrets stored at 'secret/data/keys/operator'\npath\"secret/data/keys/operator\" {\n  capabilities = [ \"create\", \"read\", \"update\", \"list\" ]\n}"

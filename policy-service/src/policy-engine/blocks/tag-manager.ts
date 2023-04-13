@@ -5,11 +5,17 @@ import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.inte
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { BlockActionError } from '@policy-engine/errors';
 import { GenerateUUIDv4, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
-import { MessageAction, MessageServer, MessageType, TagMessage, TopicConfig } from '@hedera-modules';
-import { Tag } from '@entity/tag';
+import {
+    Tag,
+    MessageAction,
+    MessageServer,
+    MessageType,
+    TagMessage,
+    TopicConfig,
+    VcHelper,
+    DatabaseServer,
+} from '@guardian/common';
 import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
-import { VcHelper } from '@helpers/vc-helper';
-import { DatabaseServer } from '@database-modules';
 
 /**
  * Tag Manager

@@ -6,15 +6,15 @@ import {
     SchemaCategory,
     TopicType
 } from '@guardian/interfaces';
-import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/helpers/api-response';
 import {
     MessageResponse,
     MessageError,
     Logger,
-    RunFunctionAsync
+    RunFunctionAsync,
+    DatabaseServer,
+    Users
 } from '@guardian/common';
-import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier } from '@helpers/notifier';
 import {
     checkForCircularDependency,
@@ -101,7 +101,7 @@ export async function schemaAPI(): Promise<void> {
                 SchemaHelper.setVersion(item, null, item.version);
                 SchemaHelper.updateIRI(item);
                 await DatabaseServer.updateSchema(item.id, item);
-                await updateSchemaDefs(item.document.$id);
+                await updateSchemaDefs(item.iri);
             }
             const schemas = await DatabaseServer.getSchemas(null, { limit: 100 });
             return new MessageResponse(schemas);

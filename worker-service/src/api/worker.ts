@@ -3,7 +3,6 @@ import {
     MessageBrokerChannel,
     MessageResponse,
     NatsService,
-    SettingsContainer,
     ValidateConfiguration
 } from '@guardian/common';
 import {
@@ -20,6 +19,7 @@ import { AccountId, ContractFunctionParameters, PrivateKey, TokenId } from '@has
 import { HederaUtils } from './helpers/utils';
 import axios from 'axios';
 import process from 'process';
+import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 /**
  * Sleep helper
@@ -113,10 +113,14 @@ export class Worker extends NatsService {
     constructor(
     ) {
         super();
-        const { IPFS_STORAGE_API_KEY } = new SettingsContainer().settings;
+        const secretManager = SecretManager.New()
+        secretManager.getSecrets('apikey/ipfs').
+        then(secrets => {
+            const { IPFS_STORAGE_API_KEY } = secrets;
+            this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
+        });
 
         this.logger = new Logger();
-        this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
 
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
@@ -195,7 +199,10 @@ export class Worker extends NatsService {
         })
 
         this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
-            await new SettingsContainer().updateSetting('IPFS_STORAGE_API_KEY', msg.ipfsStorageApiKey);
+            const secretManager = SecretManager.New();
+            await secretManager.setSecrets('apikey/ipfs', {
+                IPFS_STORAGE_API_KEY: msg.ipfsStorageApiKey
+            });
             try {
                 this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
                 const validator = new ValidateConfiguration();

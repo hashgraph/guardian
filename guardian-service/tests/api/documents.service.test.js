@@ -17,10 +17,12 @@ moduleAlias.addAliases({
 const { expect, assert } = require('chai');
 const rewire = require("rewire");
 
-const { ApplicationState } = require("@guardian/common");
-const { DidDocument } = require("../../dist/entity/did-document");
-const { VcDocument } = require("../../dist/entity/vc-document");
-const { VpDocument } = require("../../dist/entity/vp-document");
+const {
+    ApplicationState,
+    DidDocument,
+    VcDocument,
+    VpDocument,
+} = require('@guardian/common');
 const state = new ApplicationState();
 state.updateState('READY');
 

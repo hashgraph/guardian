@@ -2,7 +2,6 @@ import {
     ApplicationState,
     Logger,
     MessageBrokerChannel,
-    SettingsContainer,
     ValidateConfiguration
 } from '@guardian/common';
 import { Worker } from './api/worker';
@@ -10,6 +9,8 @@ import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
 import { ApplicationStates } from '@guardian/interfaces';
 import { decode } from 'jsonwebtoken';
 import * as process from 'process';
+import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
+import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 Promise.all([
     MessageBrokerChannel.connect('WORKERS_SERVICE')
@@ -24,13 +25,18 @@ Promise.all([
     await state.setServiceName('WORKER').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);
 
+    await new OldSecretManager().setConnection(cn).init();
+
     HederaSDKHelper.setTransactionLogSender(async (data) => {
         await channel.publish(`guardians.transaction-log-event`, data);
     });
 
-    const settingsContainer = new SettingsContainer();
-    settingsContainer.setConnection(cn);
-    await settingsContainer.init('IPFS_STORAGE_API_KEY');
+    const secretManager = SecretManager.New();
+    let {IPFS_STORAGE_API_KEY} = await secretManager.getSecrets('apikey/ipfs');
+    if (!IPFS_STORAGE_API_KEY) {
+        IPFS_STORAGE_API_KEY= process.env.IPFS_STORAGE_API_KEY
+        await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY });
+    }
 
     await state.updateState(ApplicationStates.INITIALIZING);
     const w = new Worker();
@@ -44,12 +50,12 @@ Promise.all([
             clearInterval(timer);
         }
         if (process.env.IPFS_PROVIDER === 'web3storage') {
-            if (!settingsContainer.settings.IPFS_STORAGE_API_KEY) {
+            if (!process.env.IPFS_STORAGE_API_KEY) {
                 return false;
             }
 
             try {
-                const decoded = decode(settingsContainer.settings.IPFS_STORAGE_API_KEY);
+                const decoded = decode(process.env.IPFS_STORAGE_API_KEY);
                 if (!decoded) {
                     return false
                 }

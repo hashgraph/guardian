@@ -1,6 +1,3 @@
-import { Token } from '@entity/token';
-import { Topic } from '@entity/topic';
-import { VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument, TopicConfig, DIDDocument } from '@hedera-modules';
 import * as mathjs from 'mathjs';
 import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
 import {
@@ -13,14 +10,24 @@ import {
     TopicType,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { IAuthUser } from '@guardian/common';
-import { Schema as SchemaCollection } from '@entity/schema';
+import {
+    IAuthUser,
+    Token,
+    Topic,
+    Schema as SchemaCollection,
+    VcDocument as VcDocumentCollection,
+    VcDocumentDefinition as VcDocument,
+    VcDocumentDefinition as HVcDocument,
+    TopicHelper,
+    VpDocumentDefinition as VpDocument,
+    TopicConfig,
+    DIDDocument,
+    KeyType, Wallet,
+    Users,
+    Workers,
+} from '@guardian/common';
 import { TokenId, TopicId } from '@hashgraph/sdk';
 import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { Workers } from '@helpers/workers';
 import { DocumentType } from '@policy-engine/interfaces/document.type';
 
 /**
@@ -473,7 +480,7 @@ export class PolicyUtils {
                     userKey: user.hederaAccountKey,
                     hederaAccountId
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -496,7 +503,7 @@ export class PolicyUtils {
                     associate: true,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -519,7 +526,7 @@ export class PolicyUtils {
                     associate: false,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -550,7 +557,7 @@ export class PolicyUtils {
                     freeze: true,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -581,7 +588,7 @@ export class PolicyUtils {
                     freeze: false,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -613,7 +620,7 @@ export class PolicyUtils {
                     grant: true,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -645,7 +652,7 @@ export class PolicyUtils {
                     grant: false,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -674,7 +681,7 @@ export class PolicyUtils {
                     operatorKey: user.hederaAccountKey,
                     ...tokenTemplate
                 }
-            }, 1);
+            }, 20);
             tokenId = createdToken.tokenId;
 
             const wallet = new Wallet();
@@ -740,7 +747,7 @@ export class PolicyUtils {
             data: {
                 hederaAccountId: account.hederaAccountId,
             }
-        }, 1);
+        }, 20);
     }
 
     /**

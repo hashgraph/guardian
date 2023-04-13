@@ -89,6 +89,12 @@ jobs:
           CI: true
       - name: Test
         run: |
+          pushd common
+          npm run test
+          popd
+          pushd policy-service
+          npm run test
+          popd
           pushd guardian-service
           npm run test
           popd

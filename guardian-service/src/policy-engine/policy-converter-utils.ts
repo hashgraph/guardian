@@ -1,4 +1,4 @@
-import { Policy } from '@entity/policy';
+import { Policy } from '@guardian/common';
 import { GenerateUUIDv4, UserType } from '@guardian/interfaces';
 import { EventConfig, PolicyInputEventType, PolicyOutputEventType, EventActor } from './interfaces';
 

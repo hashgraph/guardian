@@ -42,6 +42,7 @@
         "mathjs": "^10.1.0",
         "module-alias": "^2.2.2",
         "moment": "^2.29.2",
+        "mongodb": "4.8.1",
         "reflect-metadata": "^0.1.13"
     },
     "description": "",
@@ -74,7 +75,7 @@
         "dev": "tsc -w",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/guardian-service.xml",
+        "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/policy-service.xml",
         "test:local": "mocha tests/**/*.test.js",
         "test:stability": "mocha tests/stability.test.js"
     },

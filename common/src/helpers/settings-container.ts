@@ -7,7 +7,7 @@ import { NatsService } from '../mq';
  * Application settings container
  */
 @Singleton
-export class SettingsContainer extends NatsService {
+export class SettingsContainerOLD extends NatsService {
     /**
      * Message queue name
      */

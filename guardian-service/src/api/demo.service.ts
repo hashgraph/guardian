@@ -1,17 +1,17 @@
-import { Settings } from '@entity/settings';
 import { ApiResponse } from '@api/helpers/api-response';
-import { Policy } from '@entity/policy';
 import {
     DataBaseHelper,
     Logger,
     MessageError,
     MessageResponse, RunFunctionAsync,
-    SettingsContainer
+    Policy,
+    Settings,
+    DatabaseServer,
+    Workers
 } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
-import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { Workers } from '@helpers/workers';
+import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 /**
  * Demo key
@@ -36,8 +36,8 @@ interface DemoKey {
 async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier): Promise<DemoKey> {
     notifier.start('Resolve settings');
 
-    const settingsContainer = new SettingsContainer();
-    const {OPERATOR_ID, OPERATOR_KEY} = settingsContainer.settings;
+    const secretManager = SecretManager.New();
+    const { OPERATOR_ID, OPERATOR_KEY } = await secretManager.getSecrets('keys/operator');
     let initialBalance: number = null;
     try {
         if (role === 'STANDARD_REGISTRY') {
@@ -58,7 +58,7 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
             operatorKey: OPERATOR_KEY,
             initialBalance
         }
-    }, 1);
+    }, 20);
 
     notifier.completed();
     return result;

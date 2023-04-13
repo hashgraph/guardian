@@ -1,13 +1,17 @@
-import { Token } from '@entity/token';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
 import { ApiResponse } from '@api/helpers/api-response';
 import {
     MessageResponse,
     MessageError,
     Logger,
     DataBaseHelper,
-    RunFunctionAsync
+    RunFunctionAsync,
+    Token,
+    KeyType,
+    Wallet,
+    Users,
+    Workers,
+    TopicHelper,
+    DatabaseServer,
 } from '@guardian/common';
 import {
     MessageAPI,
@@ -18,9 +22,6 @@ import {
     TopicType
 } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { Workers } from '@helpers/workers';
-import { DatabaseServer } from '@database-modules';
-import { TopicHelper } from '@hedera-modules';
 import { publishTokenTags } from './tag.service';
 
 /**
@@ -53,7 +54,7 @@ export async function createHederaToken(token: any, user: IRootConfig) {
             memo: topic.topicId,
             ...token
         }
-    }, 1);
+    }, 20);
 
     const wallet = new Wallet();
     await Promise.all([
@@ -296,7 +297,7 @@ async function updateToken(
                 adminKey,
                 changes
             }
-        }, 1);
+        }, 20);
 
         notifier.completedAndStart('Save token in DB');
 
@@ -367,7 +368,7 @@ async function deleteToken(token: Token, tokenRepository: DataBaseHelper<Token>,
                 operatorKey: root.hederaAccountKey,
                 adminKey
             }
-        }, 1);
+        }, 20);
         notifier.completedAndStart('Save token in DB');
 
         if (tokenData) {
@@ -424,7 +425,7 @@ async function associateToken(tokenId: any, did: any, associate: any, tokenRepos
             userKey,
             associate
         }
-    }, 1);
+    }, 20);
 
     notifier.completed();
     return status;
@@ -482,7 +483,7 @@ async function grantKycToken(
             kycKey,
             grant
         }
-    }, 10);
+    }, 20);
 
     const info = await workers.addNonRetryableTask({
         type: WorkerTaskType.GET_ACCOUNT_INFO,
@@ -491,7 +492,7 @@ async function grantKycToken(
             userKey: root.hederaAccountKey,
             hederaAccountId: user.hederaAccountId,
         }
-    }, 10);
+    }, 20);
 
     const result = getTokenInfo(info, token);
     notifier.completed();
@@ -550,7 +551,7 @@ async function freezeToken(
             tokenId,
             freeze
         }
-    }, 1);
+    }, 20);
 
     const info = await workers.addNonRetryableTask({
         type: WorkerTaskType.GET_ACCOUNT_INFO,
@@ -559,7 +560,7 @@ async function freezeToken(
             userKey: root.hederaAccountKey,
             hederaAccountId: user.hederaAccountId,
         }
-    }, 10);
+    }, 20);
 
     const result = getTokenInfo(info, token);
     notifier.completed();
@@ -762,7 +763,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                     userKey: root.hederaAccountKey,
                     hederaAccountId: user.hederaAccountId
                 }
-            }, 1);
+            }, 20);
 
             const result = getTokenInfo(info, token);
 
@@ -800,7 +801,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                     userKey,
                     hederaAccountId: user.hederaAccountId
                 }
-            }, 1);
+            }, 20);
 
             const tokens: any = await tokenRepository.find(user.parent
                 ? {
@@ -823,7 +824,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>): Promise<
                             operatorKey: userKey,
                         },
                     },
-                    1
+                    20
                 )) || {};
 
             const result: any[] = [];

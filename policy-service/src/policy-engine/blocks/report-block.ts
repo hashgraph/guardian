@@ -1,4 +1,3 @@
-import { getVCField } from '@helpers/utils';
 import { Report } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyReportBlock } from '@policy-engine/policy-engine.interface';
@@ -16,8 +15,7 @@ import { PolicyInputEventType } from '@policy-engine/interfaces';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { VpDocument } from '@entity/vp-document';
-import { VcDocument } from '@entity/vc-document';
+import { VpDocument, VcDocument, getVCField } from '@guardian/common';
 
 /**
  * Report block

@@ -1,7 +1,7 @@
 import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/account-service';
 import { WalletService } from '@api/wallet-service';
-import { ApplicationState, MessageBrokerChannel, Logger, DB_DI, Migration, COMMON_CONNECTION_CONFIG } from '@guardian/common';
+import { ApplicationState, MessageBrokerChannel, Logger, DataBaseHelper, Migration, COMMON_CONNECTION_CONFIG } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -26,7 +26,7 @@ Promise.all([
     MessageBrokerChannel.connect('AUTH_SERVICE'),
     InitializeVault(process.env.VAULT_PROVIDER)
 ]).then(async ([_, db, cn, vault]) => {
-    DB_DI.orm = db;
+    DataBaseHelper.orm = db;
     const state = new ApplicationState();
     await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
     state.updateState(ApplicationStates.INITIALIZING);

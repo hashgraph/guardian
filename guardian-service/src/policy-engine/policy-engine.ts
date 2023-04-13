@@ -10,8 +10,17 @@ import {
     GenerateUUIDv4,
     PolicyEvents
 } from '@guardian/interfaces';
-import { DataBaseHelper, IAuthUser, Logger, NatsService, Singleton } from '@guardian/common';
 import {
+    DataBaseHelper,
+    IAuthUser,
+    Logger,
+    NatsService,
+    Singleton,
+    Token,
+    MultiPolicy,
+    Artifact,
+    Topic,
+    Policy,
     MessageAction,
     MessageServer,
     MessageType,
@@ -19,34 +28,27 @@ import {
     SynchronizationMessage,
     TokenMessage,
     TopicConfig,
-    TopicHelper
-} from '@hedera-modules'
-import {
+    TopicHelper,
+    VcHelper,
+    Users,
+    DatabaseServer,
     findAllEntities,
     getArtifactType,
     replaceAllEntities,
     replaceAllVariables,
     replaceArtifactProperties,
-    SchemaFields
-} from '@helpers/utils';
+    SchemaFields,
+} from '@guardian/common';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper';
-import { VcHelper } from '@helpers/vc-helper';
-import { Users } from '@helpers/users';
-import { Inject } from '@helpers/decorators/inject';
-import { Policy } from '@entity/policy';
-import { Topic } from '@entity/topic';
 import { PolicyConverterUtils } from './policy-converter-utils';
-import { DatabaseServer } from '@database-modules';
 import { emptyNotifier, INotifier } from '@helpers/notifier';
 import { ISerializedErrors } from './policy-validation-results-container';
-import { Artifact } from '@entity/artifact';
-import { MultiPolicy } from '@entity/multi-policy';
 import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
-import { Token } from '@entity/token';
 import { PolicyValidator } from '@policy-engine/block-validators';
 import { publishPolicyTags } from '@api/tag.service';
 import { createHederaToken } from '@api/token.service';
 import { GuardiansService } from '@helpers/guardians';
+import { Inject } from '@helpers/decorators/inject';
 import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '@api/helpers/schema-publish-helper';
 import { deleteSchema, incrementSchemaVersion } from '@api/helpers/schema-helper';
 

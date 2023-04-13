@@ -1,7 +1,6 @@
 import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { AggregateVC } from '@entity/aggregate-documents';
+import { AggregateVC, VcDocumentDefinition as VcDocument } from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { VcDocument } from '@hedera-modules';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
@@ -59,6 +58,21 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
     variables: []
 })
 export class AggregateBlock {
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        ref.options?.groupByFields
+            ?.filter((field) => field.fieldPath?.startsWith('document.'))
+            .forEach((field) => {
+                documentCacheFields.add(field.fieldPath.replace('document.', ''));
+            });
+    }
+
     /**
      * Tick cron
      * @event PolicyEventType.PopEvent
