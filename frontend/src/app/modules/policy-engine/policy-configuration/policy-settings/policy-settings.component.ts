@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ThemeService } from '../../services/theme.service';
-import { Theme } from "../../services/theme";
-import { ThemeRole } from "../../services/theme-role";
+import { Theme } from "../../structures/storage/theme";
+import { ThemeRole } from "../../structures/storage/theme-role";
 import { RegisteredService } from '../../services/registered.service';
 
 /**

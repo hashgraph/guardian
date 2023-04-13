@@ -1,4 +1,4 @@
-import { PolicyBlockModel } from '../structures';
+import { PolicyBlockModel } from '..';
 import { Theme } from './theme';
 
 export class ThemeRole {
@@ -24,7 +24,7 @@ export class ThemeRole {
         this._shape = '0';
         this._borderStyle = 'solid';
         this._borderWidth = '2px';
-    
+
         this._type = 'all';
         this._value = '';
 
@@ -198,5 +198,17 @@ export class ThemeRole {
         role._updateCondition();
         role._updateStyle();
         return role;
+    }
+
+    public toJson(): any {
+        return {
+            text: this._text,
+            background: this._background,
+            border: this._border,
+            shape: this._shape,
+            filterType: this._type,
+            filterOperation: this._filterOperation,
+            filterValue: this._value
+        }
     }
 }

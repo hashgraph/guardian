@@ -1,8 +1,8 @@
-import { PolicyBlockModel } from '../structures';
+import { PolicyBlockModel } from '..';
 import { ThemeRole } from './theme-role';
 
 export class Theme {
-    public readonly:boolean;
+    public readonly: boolean;
 
     private _name: string;
     private _roles: ThemeRole[];
@@ -54,11 +54,22 @@ export class Theme {
     public static from(json: any): Theme {
         const theme = new Theme();
         theme._name = json.name || '';
-        if(Array.isArray(json.roles)) {
+        if (Array.isArray(json.roles)) {
             for (const role of json.roles) {
                 theme._roles.push(ThemeRole.from(theme, role))
             }
         }
         return theme;
+    }
+
+    public clone(): Theme {
+        return Theme.from(this.toJson());
+    }
+
+    public toJson(): any {
+        return {
+            name: this._name,
+            roles: this._roles.map(r => r.toJson())
+        }
     }
 }

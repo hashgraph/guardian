@@ -1,58 +1,50 @@
 import { Injectable } from '@angular/core';
 import { defaultTheme } from '../themes/default';
-import { ThemeRole } from './theme-role';
-import { Theme } from './theme';
-import { PolicyBlockModel } from '../structures';
+import { PolicyBlockModel, Theme, ThemeRole, ThemeSettings } from '../structures';
 
 @Injectable({
     providedIn: 'root',
 })
 export class ThemeService {
-    public themes: Theme[];
-    public currentTheme: Theme;
+    private storage: ThemeSettings;
 
     constructor() {
-        this.themes = [];
-        this.themes.push(Theme.from(defaultTheme))
-        this.themes.forEach(t => t.readonly = true);
-        this.currentTheme = this.themes[0];
+        this.storage = new ThemeSettings([defaultTheme]);
+        this.load();
     }
 
     public load(): Theme[] {
-        return this.themes;
+        return this.storage.load();
     }
 
     public save(): void {
+        this.storage.save();
     }
 
     public create(): Theme[] {
         const theme = new Theme();
         theme.name = 'New Theme';
-        this.themes.push(theme);
-        this.currentTheme = theme;
-        return this.themes;
+        return this.storage.add(theme);
     }
 
     public delete(theme: Theme): Theme[] {
-        this.themes = this.themes.filter(t => t !== theme);
-        this.currentTheme = this.themes[0];
-        return this.themes;
+        return this.storage.delete(theme);
     }
 
     public getThemes(): Theme[] {
-        return this.themes;
+        return this.storage.themes;
     }
 
     public setTheme(theme: Theme) {
-        this.currentTheme = theme;
+        this.storage.currentTheme = theme;
     }
 
     public getStyle(item: PolicyBlockModel): any {
-        return this.currentTheme.getStyle(item);
+        return this.storage.currentTheme.getStyle(item);
     }
 
     public getStyleByIndex(index: number): any {
-        return this.currentTheme.getStyleByIndex(index);
+        return this.storage.currentTheme.getStyleByIndex(index);
     }
 
     public getStyleByRole(item: ThemeRole): any {
@@ -60,6 +52,6 @@ export class ThemeService {
     }
 
     public current(): Theme {
-        return this.currentTheme;
+        return this.storage.currentTheme;
     }
 }

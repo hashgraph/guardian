@@ -22,7 +22,6 @@ import { RegisteredService } from '../../services/registered.service';
 import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, TemplateModel } from '../../structures';
 import { Options } from '../../structures/storage/config-options';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
-import { PolicySettings } from '../../structures/storage/config-settings';
 import { ThemeService } from '../../services/theme.service';
 
 enum OperationMode {
