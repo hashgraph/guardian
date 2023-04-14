@@ -1,7 +1,75 @@
 import { Singleton } from '../decorators/singleton';
-import { GenerateUUIDv4, IActiveTask, ITask, WorkerEvents } from '@guardian/interfaces';
+import {
+    GenerateUUIDv4,
+    HederaResponseCode,
+    IActiveTask,
+    ITask,
+    WorkerEvents,
+} from '@guardian/interfaces';
 import { Environment } from '../hedera-modules';
 import { NatsService } from '../mq';
+
+export const NON_RETRYABLE_HEDERA_ERRORS = [
+    // Insufficient type errors
+    HederaResponseCode.INSUFFICIENT_ACCOUNT_BALANCE,
+    HederaResponseCode.INSUFFICIENT_GAS,
+    HederaResponseCode.INSUFFICIENT_LOCAL_CALL_GAS,
+    HederaResponseCode.INSUFFICIENT_PAYER_BALANCE,
+    HederaResponseCode.INSUFFICIENT_PAYER_BALANCE_FOR_CUSTOM_FEE,
+    HederaResponseCode.INSUFFICIENT_SENDER_ACCOUNT_BALANCE_FOR_CUSTOM_FEE,
+    HederaResponseCode.INSUFFICIENT_TOKEN_BALANCE,
+    HederaResponseCode.INSUFFICIENT_TX_FEE,
+
+    // Token type errors
+    HederaResponseCode.MISSING_TOKEN_SYMBOL,
+    HederaResponseCode.MISSING_TOKEN_NAME,
+    HederaResponseCode.INVALID_TOKEN_ID,
+    HederaResponseCode.TOKEN_WAS_DELETED,
+    HederaResponseCode.INVALID_ADMIN_KEY,
+
+    // Associate type errors
+    HederaResponseCode.TOKEN_NOT_ASSOCIATED_TO_FEE_COLLECTOR,
+    HederaResponseCode.TOKEN_NOT_ASSOCIATED_TO_ACCOUNT,
+    HederaResponseCode.TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT,
+
+    // KYC type errors
+    HederaResponseCode.ACCOUNT_KYC_NOT_GRANTED_FOR_TOKEN,
+    HederaResponseCode.INVALID_KYC_KEY,
+    HederaResponseCode.TOKEN_HAS_NO_KYC_KEY,
+
+    // Freeze type errors
+    HederaResponseCode.INVALID_FREEZE_KEY,
+    HederaResponseCode.TOKEN_HAS_NO_FREEZE_KEY,
+
+    // Mint type errors
+    HederaResponseCode.INVALID_TOKEN_MINT_AMOUNT,
+    HederaResponseCode.INVALID_TOKEN_MINT_METADATA,
+    HederaResponseCode.SENDER_DOES_NOT_OWN_NFT_SERIAL_NO,
+
+    // Wipe type errors
+    HederaResponseCode.CANNOT_WIPE_TOKEN_TREASURY_ACCOUNT,
+    HederaResponseCode.TOKEN_HAS_NO_WIPE_KEY,
+    HederaResponseCode.INVALID_WIPE_KEY,
+
+    // Burn type errors
+    HederaResponseCode.INVALID_TOKEN_BURN_AMOUNT,
+    HederaResponseCode.INVALID_TOKEN_BURN_METADATA,
+
+    // Pause type errors
+    HederaResponseCode.INVALID_PAUSE_KEY,
+    HederaResponseCode.TOKEN_HAS_NO_PAUSE_KEY,
+    HederaResponseCode.TOKEN_IS_PAUSED,
+
+    // Account type errors
+    HederaResponseCode.ACCOUNT_FROZEN_FOR_TOKEN,
+    HederaResponseCode.ACCOUNT_IS_TREASURY,
+    HederaResponseCode.INVALID_ACCOUNT_ID,
+    HederaResponseCode.ACCOUNT_DELETED,
+    HederaResponseCode.INVALID_SIGNATURE,
+
+    // Contract type errors
+    HederaResponseCode.CONTRACT_REVERT_EXECUTED
+];
 
 /**
  * Workers helper
@@ -36,6 +104,16 @@ export class Workers extends NatsService {
      * @private
      */
     private readonly maxRepetitions = 25;
+
+    /**
+     * Check error message for retryable
+     * @param error Error
+     * @returns Is not retryable
+     */
+    public static isNotRetryableError(error: any) {
+        return typeof error === 'string'
+            && NON_RETRYABLE_HEDERA_ERRORS.some(code => error.indexOf(code) !== -1);
+    }
 
     /**
      * Add non retryable task
@@ -96,7 +174,7 @@ export class Workers extends NatsService {
                     number: 0,
                     callback: (data, error) => {
                         if (error) {
-                            if (isRetryableTask) {
+                            if (isRetryableTask && !Workers.isNotRetryableError(error)) {
                                 if (this.tasksCallbacks.has(taskId)) {
                                     const callback = this.tasksCallbacks.get(taskId);
                                     callback.number++;
