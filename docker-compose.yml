@@ -160,6 +160,21 @@ services:
     environment:
       - ENV=${GUARDIAN_ENV}
       
+  application-events:
+    build:
+      context: .
+      dockerfile: application-events/Dockerfile
+    expose:
+      - 3012
+    ports:
+      - "3012:3012"
+    depends_on:
+      - mongo
+      - message-broker
+      - guardian-service
+      - auth-service
+      - logger-service
+    
   mrv-sender:
     build:
       context: .

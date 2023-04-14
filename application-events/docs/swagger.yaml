@@ -1,0 +1,113 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Webhook API"
+  description: "API for managing webhooks"
+basePath: "/api"
+schemes:
+  - "http"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+
+# Define the Webhook schema
+definitions:
+  Webhook:
+    type: "object"
+    properties:
+      _id:
+        type: "string"
+        description: "Unique identifier of the webhook."
+      url:
+        type: "string"
+        description: "URL where the webhook will receive notifications."
+        format: "url"
+      events:
+        type: "array"
+        description: "array with events name"
+        format: "array"
+        items:
+          type: "string"
+
+# Define the endpoints for CRUD operations on Webhooks
+paths:
+  /webhooks:
+    get:
+      summary: "Get all webhooks"
+      tags:
+        - "Webhooks"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Webhook"
+    post:
+      summary: "Create a new webhook"
+      tags:
+        - "Webhooks"
+      parameters:
+        - name: "webhook"
+          in: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/Webhook"
+      responses:
+        201:
+          description: "A webhook id"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The webhook ID.
+  /webhooks/{id}:
+    parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+    get:
+      summary: "Get a webhook by id"
+      tags:
+        - "Webhooks"
+      responses:
+        200:
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Webhook"
+    delete:
+      summary: "Delete a webhook by id"
+      tags:
+        - "Webhooks"
+      responses:
+        204:
+          description: "Success"
+    put:
+      summary: "Update a webhook by id"
+      tags:
+        - "Webhooks"
+      responses:
+        204:
+          description: "Success"
+  /events:
+    get:
+      summary: "List of available events"
+      tags:
+        - "Application events"
+      responses:
+        200:
+          description: "List of available events"
+  /events/subscribe:
+    get:
+      summary: "Listen events - streaming endpoint"
+      tags:
+        - "Application events"
+      responses:
+        200:
+          description: "List of available events"
+
