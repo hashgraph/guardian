@@ -78,6 +78,7 @@
                                     <mat-option value="all">All</mat-option>
                                     <mat-option value="type">Types</mat-option>
                                     <mat-option value="role">Roles</mat-option>
+                                    <mat-option value="api">API</mat-option>
                                     <mat-option value="prop">Properties</mat-option>
                                 </mat-select>
                             </div>
@@ -92,6 +93,15 @@
                                     </mat-option>
                                 </mat-select>
                             </div>
+
+                            <div *ngIf="rule.type === 'api'" class="rule-condition-select">
+                                <mat-select placeholder="Type" [(ngModel)]="rule.value">
+                                    <mat-option value="post">GET & POST</mat-option>
+                                    <mat-option value="get">Only GET</mat-option>
+                                    <mat-option value="">Not Available</mat-option>
+                                </mat-select>
+                            </div>
+
                             <div *ngIf="rule.type === 'role'" class="rule-condition-select">
                                 <mat-select placeholder="Type" [(ngModel)]="rule.value">
                                     <mat-option value="OWNER">Owner</mat-option>

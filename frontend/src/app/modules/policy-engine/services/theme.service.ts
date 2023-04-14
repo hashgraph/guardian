@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { PolicyBlockModel, Theme, ThemeRule, ThemeSettings } from '../structures';
 import { byRolesTheme } from '../themes/by-roles';
 import { defaultTheme } from '../themes/default';
+import { byApiTheme } from '../themes/by-api';
 
 @Injectable({
     providedIn: 'root',
@@ -12,7 +13,8 @@ export class ThemeService {
     constructor() {
         this.storage = new ThemeSettings([
             defaultTheme,
-            byRolesTheme
+            byRolesTheme,
+            byApiTheme
         ]);
         this.load();
     }

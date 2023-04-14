@@ -26,6 +26,8 @@ export class PolicyBlockModel {
     protected _localTag: string;
     protected _lastPrefix: string;
     protected _permissionsNumber: string[];
+    protected _post: boolean;
+    protected _get: boolean;
 
     constructor(config: IBlockConfig, parent: PolicyBlockModel | null) {
         this._changed = false;
@@ -59,6 +61,8 @@ export class PolicyBlockModel {
         this._artifacts = config.artifacts || [];
         this._children = [];
         this._permissionsNumber = [];
+        this._post = false;
+        this._get = false;
     }
 
     public setModule(module: PolicyModel | PolicyModuleModel | TemplateModel | undefined): void {
@@ -195,6 +199,14 @@ export class PolicyBlockModel {
 
     public get permissionsNumber(): string[] {
         return this._permissionsNumber;
+    }
+
+    public get getApi(): boolean {
+        return this._get;
+    }
+
+    public get postApi(): boolean {
+        return this._post;
     }
 
     public remove() {
@@ -490,6 +502,10 @@ export class PolicyBlockModel {
     }
 
     public setAbout(about: any): void {
+        if(about) {
+            this._post = about.post;
+            this._get = about.get;
+        }
         if (about && about.defaultEvent) {
             this._defaultEvent = new PolicyEventModel({
                 actor: '',

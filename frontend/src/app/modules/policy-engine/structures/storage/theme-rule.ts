@@ -218,6 +218,14 @@ export class ThemeRule {
                 }
                 return false;
             }
+        } else if (this._type === 'api') {
+            if (this._filterValue === 'post') {
+                return item.postApi && item.getApi;
+            }
+            if (this._filterValue === 'get') {
+                return !item.postApi && item.getApi;
+            }
+            return !item.postApi && !item.getApi;
         } else if (this._type === 'prop') {
             return false;
         } else if (this._type === 'all') {
