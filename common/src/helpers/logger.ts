@@ -165,15 +165,26 @@ export class Logger {
     private readonly messageTransport: LoggerServiceTransport;
 
     constructor() {
-        this.messageTransport = new LoggerServiceTransport({ format: format.json() });
+        this.messageTransport = new LoggerServiceTransport({
+            format: format.json(),
+        });
+        const levelTypeMapping = [
+            'error',
+            'warn',
+            'info',
+            'http',
+            'verbose',
+            'debug',
+            'silly',
+        ];
         this.loggerInstance = createLogger({
-            level: 'info',
+            level: levelTypeMapping[process.env.LOG_LEVEL] || 'info',
             format: format.json(),
             transports: [
                 new ConsoleTransport({ format: format.json() }),
-                this.messageTransport
-            ]
-        })
+                this.messageTransport,
+            ],
+        });
     }
 
     /**
@@ -182,6 +193,21 @@ export class Logger {
      */
     public setConnection(cn): any {
         this.messageTransport.setConnection(cn);
+    }
+
+    /**
+     * Create debug log message
+     * @param message
+     * @param attr
+     * @param lvl
+     */
+    public async debug(message: string, attr?: string[], lvl: number = 1): Promise<void> {
+        this.loggerInstance.debug({
+            message,
+            type: LogType.INFO,
+            attributes: attr,
+            level: lvl
+        } as ILog);
     }
 
     /**
