@@ -82,8 +82,15 @@
                                     <mat-option value="prop">Properties</mat-option>
                                 </mat-select>
                             </div>
-                            <div *ngIf="rule.type !== 'all'" class="rule-condition-label">
+
+                            <div *ngIf="rule.type === 'type' || rule.type === 'api'" class="rule-condition-label">
                                 Equal
+                            </div>
+                            <div *ngIf="rule.type === 'role'" class="rule-condition-select">
+                                <mat-select placeholder="Operation">
+                                    <mat-option value="post">Or</mat-option>
+                                    <mat-option value="get">And</mat-option>
+                                </mat-select>
                             </div>
 
                             <div *ngIf="rule.type === 'type'" class="rule-condition-select">
@@ -98,12 +105,12 @@
                                 <mat-select placeholder="Type" [(ngModel)]="rule.value">
                                     <mat-option value="post">GET & POST</mat-option>
                                     <mat-option value="get">Only GET</mat-option>
-                                    <mat-option value="">Not Available</mat-option>
+                                    <mat-option value="">Not Accessible</mat-option>
                                 </mat-select>
                             </div>
 
                             <div *ngIf="rule.type === 'role'" class="rule-condition-select">
-                                <mat-select placeholder="Type" [(ngModel)]="rule.value">
+                                <mat-select placeholder="Type" multiple [(ngModel)]="rule.value">
                                     <mat-option value="OWNER">Owner</mat-option>
                                     <mat-option value="NO_ROLE">No Role</mat-option>
                                     <mat-option value="ANY_ROLE">Any Role</mat-option>

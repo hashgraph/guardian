@@ -1,6 +1,6 @@
 export const byApiTheme = {
     readonly: true,
-    name: "By API",
+    name: "By API Access",
     rules: [
         {
             description: "",
