@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ThemeService } from '../../services/theme.service';
 import { Theme } from "../../structures/storage/theme";
-import { ThemeRole } from "../../structures/storage/theme-role";
+import { ThemeRule } from "../../structures/storage/theme-rule";
 import { RegisteredService } from '../../services/registered.service';
 
 /**
@@ -19,11 +19,16 @@ export class PolicySettingsComponent implements OnInit {
     public themes!: Theme[];
     public theme!: Theme;
     public allBlocks!: any[];
+    public roles: string[];
 
     constructor(
         private registeredService: RegisteredService,
         private themeService: ThemeService
     ) {
+        this.roles = [];
+        for (let i = 0; i < 20; i++) {
+            this.roles.push(String(i));
+        }
         this.themes = this.themeService.load();
         this.theme = this.themeService.current();
     }
@@ -45,15 +50,15 @@ export class PolicySettingsComponent implements OnInit {
         this.settingsTab = index;
     }
 
-    public onAddRole() {
-        this.theme.addRole();
+    public onAddRule() {
+        this.theme.addRule();
     }
-    public onDeleteRole(role: ThemeRole) {
-        this.theme.deleteRole(role);
+    public onDeleteRule(rule: ThemeRule) {
+        this.theme.deleteRule(rule);
     }
 
-    public blockStyle(role: ThemeRole) {
-        return this.themeService.getStyleByRole(role)
+    public blockStyle(rule: ThemeRule) {
+        return this.themeService.getStyleByRule(rule)
     }
 
     public onSelectTheme() {
@@ -76,6 +81,14 @@ export class PolicySettingsComponent implements OnInit {
 
     public exportTheme(theme: Theme) {
         throw new Error('Method not implemented.');
+    }
+
+    public ruleUp(rule: ThemeRule) {
+        this.theme.upRule(rule);
+    }
+
+    public ruleDown(rule: ThemeRule) {
+        this.theme.downRule(rule);
     }
 }
 

@@ -1,11 +1,14 @@
 export const defaultTheme = {
+    readonly: true,
     name: 'Default',
-    roles: [
+    rules: [
         {
+            description: 'UI Components',
             text: '#000',
             background: '#efe5fc',
             border: '#c396fa',
             shape: '0',
+            borderWidth: '2px',
             filterType: 'type',
             filterOperation: 'in',
             filterValue: [
@@ -26,10 +29,12 @@ export const defaultTheme = {
             ]
         },
         {
+            description: 'Server Components',
             text: '#000',
             background: '#e2f9fe',
             border: '#7bd0e3',
             shape: '2',
+            borderWidth: '2px',
             filterType: 'type',
             filterOperation: 'in',
             filterValue: [
@@ -50,10 +55,12 @@ export const defaultTheme = {
             ]
         },
         {
+            description: 'Addons',
             text: '#000',
             background: '#ffeeda',
             border: '#f9b465',
             shape: '1',
+            borderWidth: '2px',
             filterType: 'type',
             filterOperation: 'in',
             filterValue: [

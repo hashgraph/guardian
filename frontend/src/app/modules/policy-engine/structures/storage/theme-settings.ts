@@ -14,7 +14,6 @@ export class ThemeSettings {
         this._all = [];
         if (Array.isArray(defaultThemes)) {
             this._defaultThemes = defaultThemes.map(t => Theme.from(t));
-            this._defaultThemes.forEach(t => t.readonly = true);
         }
         this._current = this._defaultThemes[0];
     }
@@ -58,6 +57,14 @@ export class ThemeSettings {
             const array = this._customThemes.map(t => t.toJson());
             localStorage.setItem('POLICY_SETTINGS_THEME', String(this._currentTheme));
             localStorage.setItem('POLICY_SETTINGS_THEMES', JSON.stringify(array));
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    public saveTheme() {
+        try {
+            localStorage.setItem('POLICY_SETTINGS_THEME', String(this._currentTheme));
         } catch (error) {
             console.error(error);
         }

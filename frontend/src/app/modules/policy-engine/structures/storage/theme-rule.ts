@@ -1,8 +1,9 @@
 import { PolicyBlockModel } from '..';
 import { Theme } from './theme';
 
-export class ThemeRole {
+export class ThemeRule {
     public readonly theme: Theme;
+    private _description: string;
     private _text: string;
     private _background: string;
     private _border: string;
@@ -18,6 +19,7 @@ export class ThemeRole {
 
     constructor(theme: Theme) {
         this.theme = theme;
+        this._description = '';
         this._text = '#000';
         this._background = '#fff';
         this._border = '#000';
@@ -30,6 +32,16 @@ export class ThemeRole {
 
         this._updateCondition();
         this._updateStyle();
+    }
+
+    public get description(): string {
+        return this._description;
+    }
+
+    public set description(v: string) {
+        if (this._description !== v) {
+            this._description = v;
+        }
     }
 
     public get text(): string {
@@ -126,7 +138,10 @@ export class ThemeRole {
     public _updateCondition(): void {
         if (Array.isArray(this._value)) {
             if (this._value.length > 1) {
-                this._filterValue = this._value;
+                this._filterValue = {}
+                for (const v of this._value) {
+                    this._filterValue[v] = true;
+                }
                 this._filterOperation = 'in';
             } else {
                 this._filterValue = this._value[0];
@@ -149,12 +164,27 @@ export class ThemeRole {
         switch (this._shape) {
             case '0':
                 this._style['--theme-border-radius'] = '0px';
+                this._style['--theme-border-style'] = 'solid';
                 break;
             case '1':
                 this._style['--theme-border-radius'] = '6px';
+                this._style['--theme-border-style'] = 'solid';
                 break;
             case '2':
                 this._style['--theme-border-radius'] = '20px';
+                this._style['--theme-border-style'] = 'solid';
+                break;
+            case '3':
+                this._style['--theme-border-radius'] = '0px';
+                this._style['--theme-border-style'] = 'dashed';
+                break;
+            case '4':
+                this._style['--theme-border-radius'] = '6px';
+                this._style['--theme-border-style'] = 'dashed';
+                break;
+            case '5':
+                this._style['--theme-border-radius'] = '20px';
+                this._style['--theme-border-style'] = 'dashed';
                 break;
         }
     }
@@ -166,7 +196,7 @@ export class ThemeRole {
     }
 
     public delete(): void {
-        this.theme.deleteRole(this);
+        this.theme.deleteRule(this);
         this.theme.update();
     }
 
@@ -175,35 +205,46 @@ export class ThemeRole {
             if (this._filterOperation === 'eq') {
                 return item.blockType === this._filterValue;
             } else if (this._filterOperation === 'in') {
-                return this._filterValue.includes(item.blockType);
+                return this._filterValue[item.blockType] === true;
             }
         } else if (this._type === 'role') {
-
+            if (this._filterOperation === 'eq') {
+                return item.permissionsNumber.includes(this._filterValue);
+            } else if (this._filterOperation === 'in') {
+                for (const r of item.permissionsNumber) {
+                    if (this._filterValue[r] === true) {
+                        return true;
+                    }
+                }
+                return false;
+            }
         } else if (this._type === 'prop') {
-
+            return false;
         } else if (this._type === 'all') {
             return true;
         }
         return false;
     }
 
-    public static from(theme: Theme, json: any): ThemeRole {
-        const role = new ThemeRole(theme);
-        role._text = json.text;
-        role._background = json.background;
-        role._border = json.border;
-        role._shape = json.shape;
-        role._borderWidth = json.borderWidth;
-        role._type = json.filterType;
-        role._filterOperation = json.filterOperation;
-        role._value = json.filterValue;
-        role._updateCondition();
-        role._updateStyle();
-        return role;
+    public static from(theme: Theme, json: any): ThemeRule {
+        const rule = new ThemeRule(theme);
+        rule._description = json.description;
+        rule._text = json.text;
+        rule._background = json.background;
+        rule._border = json.border;
+        rule._shape = json.shape;
+        rule._borderWidth = json.borderWidth;
+        rule._type = json.filterType;
+        rule._filterOperation = json.filterOperation;
+        rule._value = json.filterValue;
+        rule._updateCondition();
+        rule._updateStyle();
+        return rule;
     }
 
     public toJson(): any {
         return {
+            description: this._description,
             text: this._text,
             background: this._background,
             border: this._border,

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
+import { PolicyBlockModel, Theme, ThemeRule, ThemeSettings } from '../structures';
+import { byRolesTheme } from '../themes/by-roles';
 import { defaultTheme } from '../themes/default';
-import { PolicyBlockModel, Theme, ThemeRole, ThemeSettings } from '../structures';
 
 @Injectable({
     providedIn: 'root',
@@ -9,7 +10,10 @@ export class ThemeService {
     private storage: ThemeSettings;
 
     constructor() {
-        this.storage = new ThemeSettings([defaultTheme]);
+        this.storage = new ThemeSettings([
+            defaultTheme,
+            byRolesTheme
+        ]);
         this.load();
     }
 
@@ -39,6 +43,10 @@ export class ThemeService {
         this.storage.currentTheme = theme;
     }
 
+    public saveTheme() {
+        this.storage.saveTheme();
+    }
+
     public getStyle(item: PolicyBlockModel): any {
         return this.storage.currentTheme.getStyle(item);
     }
@@ -47,7 +55,7 @@ export class ThemeService {
         return this.storage.currentTheme.getStyleByIndex(index);
     }
 
-    public getStyleByRole(item: ThemeRole): any {
+    public getStyleByRule(item: ThemeRule): any {
         return item.style;
     }
 

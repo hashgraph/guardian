@@ -204,4 +204,8 @@ export class TemplateModel {
     public getModule(module: any): PolicyModuleModel | undefined {
         return this._config;
     }
+
+    public getPermissionsNumber(permission: string): number {
+        return -1;
+    }
 }

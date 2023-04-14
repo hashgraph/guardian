@@ -191,12 +191,13 @@
         background: #fff;
         display: none;
         margin: 0px 0px 0px 0px;
+        overflow: hidden;
 
         &[active="true"] {
             display: block !important;
         }
 
-        .role-color {
+        .rule-color {
             height: 126px;
             display: grid;
             grid-template-columns: 65px auto 40px;
@@ -209,11 +210,11 @@
             overflow: hidden;
         }
 
-        .role-color-container {
+        .rule-color-container {
             height: 108px;
         }
 
-        .role-color-filter {
+        .rule-color-filter {
             height: 50px;
             width: 100%;
             display: grid;
@@ -221,12 +222,12 @@
             align-items: center;
         }
 
-        .role-condition-header {
+        .rule-condition-header {
             color: var(--pc-active-icon-color);
             font-weight: 500;
         }
     
-        .role-condition-select {
+        .rule-condition-select {
             border: 1px solid #e0e0e0;
             border-radius: 6px;
             padding: 8px 10px;
@@ -236,25 +237,25 @@
             max-width: 350px;
         }
     
-        .role-condition-label {
+        .rule-condition-label {
             padding: 8px 10px;
             height: 38px;
             box-sizing: border-box;
             margin-right: 10px;
         }
     
-        .role-color-prev {
+        .rule-color-prev {
             margin-top: 8px;
             height: 50px;
             width: 100%;
         }
 
-        .role-color-prev {
+        .rule-color-prev {
             display: flex;
             flex-direction: row;
         }
 
-        .role-color-label {
+        .rule-color-label {
             color: var(--pc-active-icon-color);
             font-weight: 500;
             width: 100px;
@@ -276,7 +277,7 @@
             box-shadow: 4px 4px 6px 0px #00000040;
         }
 
-        .role-color-prop {
+        .rule-color-prop {
             display: flex;
             height: 34px;
             box-sizing: border-box;
@@ -285,13 +286,13 @@
             align-items: center;
         }
 
-        .role-color-prop-value {
+        .rule-color-prop-value {
             width: 30px;
             height: 34px;
             margin-right: 12px;
         }
 
-        .role-color-prop-select {
+        .rule-color-prop-select {
             border: 1px solid #e0e0e0;
             border-radius: 6px;
             padding: 7px 10px;
@@ -301,11 +302,11 @@
             width: 90px;
         }
     
-        .role-color-delete {
+        .rule-color-delete {
             margin-top: 35px;
         }
 
-        .new-role {
+        .new-rule {
             position: relative;
             height: 34px;
             box-sizing: border-box;
@@ -332,7 +333,7 @@
                 color: #1274fb;
             }
 
-            & .new-role-name {
+            & .new-rule-name {
                 color: #1274fb;
             }
         }
@@ -352,7 +353,7 @@
             }
         }
 
-        .role-color-number {
+        .rule-color-number {
             user-select: none;
             padding: 3px;
             box-sizing: border-box;
@@ -364,6 +365,14 @@
             text-align: center;
             margin-right: 14px;
             margin-top: 14px;
+        }
+
+        .rule-up {
+            cursor: pointer;
+        }
+
+        .rule-down {
+            cursor: pointer;
         }
     }
 
@@ -389,14 +398,33 @@
         line-height: 51px;
     }
 
-    .roles-container {
+    .rules-container {
         margin: 10px;
+        overflow: auto;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 102px;
+        bottom: 0px;
 
-        .roles-header {
+        .rules-header {
             margin-bottom: 20px;
             font-size: 18px;
             font-weight: 500;
             color: var(--pc-header-color);
+        }
+
+        
+        &[readonly="true"] {
+            pointer-events: none !important;
+
+            .new-rule {
+                display: none !important;
+            }
+
+            .delete-btn {
+                display: none !important;
+            }
         }
     }
 }

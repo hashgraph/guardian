@@ -416,10 +416,10 @@ export class PolicyModuleModel extends PolicyBlockModel {
             this._idMap[block.id] = block;
         }
         for (const event of this._allEvents) {
-            if(event.sourceTag) {
+            if (event.sourceTag) {
                 event.source = this._tagMap[event.sourceTag];
             }
-            if(event.targetTag) {
+            if (event.targetTag) {
                 event.target = this._tagMap[event.targetTag];
             }
         }
@@ -466,5 +466,20 @@ export class PolicyModuleModel extends PolicyBlockModel {
             }
         }
         return events;
+    }
+
+    public getPermissionsNumber(permission: string): number {
+        if (this._variables) {
+            let index = -1;
+            for (const variable of this._variables) {
+                if (variable.type === 'Role') {
+                    index++;
+                    if (variable.name === permission) {
+                        return index;
+                    }
+                }
+            }
+        }
+        return -1;
     }
 }

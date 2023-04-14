@@ -38,6 +38,6 @@ export { RoleVariables } from './policy-models/variables/role-variables';
 export { GroupVariables } from './policy-models/variables/group-variables';
 export { TopicVariables } from './policy-models/variables/topic-variables';
 export { TemplateModel } from './policy-models/template.model';
-export { ThemeRole } from './storage/theme-role';
+export { ThemeRule } from './storage/theme-rule';
 export { Theme } from './storage/theme';
 export { ThemeSettings } from './storage/theme-settings';

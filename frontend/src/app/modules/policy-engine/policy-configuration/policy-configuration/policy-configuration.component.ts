@@ -1150,5 +1150,6 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public setTheme(theme: Theme) {
         this.themeService.setTheme(theme);
+        this.themeService.saveTheme();
     }
 }

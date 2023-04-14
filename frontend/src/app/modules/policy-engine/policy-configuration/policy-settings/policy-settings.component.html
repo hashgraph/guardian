@@ -53,88 +53,91 @@
                 </div>
             </div>
 
-
-
-            <div class="roles-container">
-                <div class="roles-header">
-                    Roles
+            <div class="rules-container" [attr.readonly]="theme.readonly">
+                <div class="rules-header">
+                    Rules
                 </div>
 
-                <div class="role-color" *ngFor="let role of theme.roles; let i=index">
-                    <div class="role-color-number">
-                        <div>
+                <div class="rule-color" *ngFor="let rule of theme.rules; let i=index">
+                    <div class="rule-color-number">
+                        <div class="rule-up" (click)="ruleUp(rule)">
                             <mat-icon>arrow_drop_up</mat-icon>
                         </div>
                         <div>#{{i+1}}</div>
-                        <div>
+                        <div class="rule-down" (click)="ruleDown(rule)">
                             <mat-icon>arrow_drop_down</mat-icon>
                         </div>
                     </div>
 
+                    <div class="rule-color-container">
+                        <div class="rule-color-filter">
 
-
-                    <div class="role-color-container">
-                        <div class="role-color-filter">
-
-                            <div class="role-condition-header">Condition</div>
-                            <div class="role-condition-select">
-                                <mat-select placeholder="Type" [(ngModel)]="role.type">
+                            <div class="rule-condition-header">Condition</div>
+                            <div class="rule-condition-select">
+                                <mat-select placeholder="Type" [(ngModel)]="rule.type">
                                     <mat-option value="all">All</mat-option>
                                     <mat-option value="type">Types</mat-option>
                                     <mat-option value="role">Roles</mat-option>
                                     <mat-option value="prop">Properties</mat-option>
                                 </mat-select>
                             </div>
-                            <div *ngIf="role.type !== 'all'" class="role-condition-label">
+                            <div *ngIf="rule.type !== 'all'" class="rule-condition-label">
                                 Equal
                             </div>
 
-                            <div *ngIf="role.type === 'type'" class="role-condition-select">
-                                <mat-select placeholder="Blocks" [(ngModel)]="role.value" multiple>
+                            <div *ngIf="rule.type === 'type'" class="rule-condition-select">
+                                <mat-select placeholder="Blocks" [(ngModel)]="rule.value" multiple>
                                     <mat-option *ngFor="let block of allBlocks" [value]="block.type">
                                         {{block.name}}
                                     </mat-option>
                                 </mat-select>
                             </div>
-                            <div *ngIf="role.type === 'role'" class="role-condition-select">
-                                <input [(ngModel)]="role.value">
+                            <div *ngIf="rule.type === 'role'" class="rule-condition-select">
+                                <mat-select placeholder="Type" [(ngModel)]="rule.value">
+                                    <mat-option value="OWNER">Owner</mat-option>
+                                    <mat-option value="NO_ROLE">No Role</mat-option>
+                                    <mat-option value="ANY_ROLE">Any Role</mat-option>
+                                    <mat-option *ngFor="let role of roles" [value]="role">
+                                        Role {{role}}
+                                    </mat-option>
+                                </mat-select>
                             </div>
-                            <div *ngIf="role.type === 'prop'" class="role-condition-select">
-                                <input [(ngModel)]="role.value">
+                            <div *ngIf="rule.type === 'prop'" class="rule-condition-select">
+                                <input [(ngModel)]="rule.value">
                             </div>
 
                         </div>
-                        <div class="role-color-prev">
-                            <div class="role-color-label">
+                        <div class="rule-color-prev">
+                            <div class="rule-color-label">
                                 Style
                             </div>
-                            <div class="block-color-prev" [style]="blockStyle(role)" theme-block theme-all>
+                            <div class="block-color-prev" [style]="blockStyle(rule)" theme-block theme-all>
                                 Block Name
                             </div>
-                            <div class="role-color-prop">
-                                <div class="role-color-prop-value">
-                                    <ngx-colors ngx-colors-trigger [(ngModel)]="role.text"></ngx-colors>
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-value">
+                                    <ngx-colors ngx-colors-trigger [(ngModel)]="rule.text"></ngx-colors>
                                 </div>
-                                <div class="role-color-prop-name">Text</div>
+                                <div class="rule-color-prop-name">Text</div>
                             </div>
-                            <div class="role-color-prop">
-                                <div class="role-color-prop-value">
-                                    <ngx-colors ngx-colors-trigger [(ngModel)]="role.background"></ngx-colors>
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-value">
+                                    <ngx-colors ngx-colors-trigger [(ngModel)]="rule.background"></ngx-colors>
                                 </div>
-                                <div class="role-color-prop-name">Background</div>
+                                <div class="rule-color-prop-name">Background</div>
                             </div>
-                            <div class="role-color-prop">
-                                <div class="role-color-prop-value">
-                                    <ngx-colors ngx-colors-trigger [(ngModel)]="role.border"></ngx-colors>
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-value">
+                                    <ngx-colors ngx-colors-trigger [(ngModel)]="rule.border"></ngx-colors>
                                 </div>
-                                <div class="role-color-prop-name">Border</div>
+                                <div class="rule-color-prop-name">Border</div>
                             </div>
 
-                            <div class="role-color-prop">
-                                <div class="role-color-prop-select">
-                                    <mat-select placeholder="Type" [(ngModel)]="role.shape">
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-select">
+                                    <mat-select placeholder="Type" [(ngModel)]="rule.shape">
                                         <mat-select-trigger>
-                                            <div class="shape-{{role.shape}}"></div>
+                                            <div class="shape-{{rule.shape}}"></div>
                                         </mat-select-trigger>
                                         <mat-option value="0">
                                             <div class="shape-0"></div>
@@ -156,11 +159,11 @@
                                         </mat-option>
                                     </mat-select>
                                 </div>
-                                <div class="role-color-prop-name">Shape</div>
+                                <div class="rule-color-prop-name">Shape</div>
                             </div>
-                            <div class="role-color-prop">
-                                <div class="role-color-prop-select">
-                                    <mat-select placeholder="Type" [(ngModel)]="role.borderWidth">
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-select">
+                                    <mat-select placeholder="Type" [(ngModel)]="rule.borderWidth">
                                         <mat-option value="0px">0px</mat-option>
                                         <mat-option value="1px">1px</mat-option>
                                         <mat-option value="2px">2px</mat-option>
@@ -171,22 +174,22 @@
                                         <mat-option value="7px">7px</mat-option>
                                     </mat-select>
                                 </div>
-                                <div class="role-color-prop-name">Border Width</div>
+                                <div class="rule-color-prop-name">Border Width</div>
                             </div>
                         </div>
                     </div>
-                    <div class="role-color-delete">
-                        <div class="delete-btn" (click)="onDeleteRole(role)">
+                    <div class="rule-color-delete">
+                        <div class="delete-btn" (click)="onDeleteRule(rule)">
                             <mat-icon>delete</mat-icon>
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <div class="new-role" (click)="onAddRole()">
+                    <div class="new-rule" (click)="onAddRule()">
                         <mat-icon class="new-icon">add</mat-icon>
-                        <div class="new-role-name">
-                            Create Role
+                        <div class="new-rule-name">
+                            Create Rule
                         </div>
                     </div>
                 </div>

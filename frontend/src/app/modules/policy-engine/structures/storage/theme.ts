@@ -1,19 +1,19 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyBlockModel } from '..';
-import { ThemeRole } from './theme-role';
+import { ThemeRule } from './theme-rule';
 
 export class Theme {
     public readonly id: string;
     public readonly: boolean;
 
     private _name: string;
-    private _roles: ThemeRole[];
+    private _rules: ThemeRule[];
 
     constructor() {
         this.id = GenerateUUIDv4();
         this.readonly = false;
         this._name = '';
-        this._roles = [];
+        this._rules = [];
     }
 
     public get name(): string {
@@ -24,42 +24,48 @@ export class Theme {
         this._name = v;
     }
 
-    public get roles(): ThemeRole[] {
-        return this._roles;
+    public get rules(): ThemeRule[] {
+        return this._rules;
     }
 
     public update(): void {
     }
 
-    public addRole(): ThemeRole {
-        const role = new ThemeRole(this);
-        this._roles.push(role);
-        return role;
+    public addRule(): ThemeRule {
+        const rule = new ThemeRule(this);
+        this._rules.push(rule);
+        return rule;
     }
 
-    public deleteRole(role: ThemeRole): void {
-        this._roles = this._roles.filter(r => r != role);
+    public deleteRule(rule: ThemeRule): void {
+        this._rules = this._rules.filter(r => r != rule);
     }
 
     public getStyle(item: PolicyBlockModel): any {
-        for (const role of this._roles) {
-            if (role.check(item)) {
-                return role.style;
+        try {
+            for (const rule of this._rules) {
+                if (rule.check(item)) {
+                    return rule.style;
+                }
             }
+            return null;
+        } catch (error) {
+            console.error(error);
+            return null;
         }
-        return null;
     }
 
     public getStyleByIndex(index: number): any {
-        return this._roles[index]?.style;
+        return this._rules[index]?.style;
     }
 
     public static from(json: any): Theme {
         const theme = new Theme();
         theme._name = json.name || '';
-        if (Array.isArray(json.roles)) {
-            for (const role of json.roles) {
-                theme._roles.push(ThemeRole.from(theme, role))
+        theme.readonly = json.readonly || false;
+        if (Array.isArray(json.rules)) {
+            for (const rule of json.rules) {
+                theme._rules.push(ThemeRule.from(theme, rule))
             }
         }
         return theme;
@@ -71,8 +77,17 @@ export class Theme {
 
     public toJson(): any {
         return {
+            readonly: this.readonly,
             name: this._name,
-            roles: this._roles.map(r => r.toJson())
+            rules: this._rules.map(r => r.toJson())
         }
+    }
+
+    public downRule(rule: ThemeRule) {
+        throw new Error('Method not implemented.');
+    }
+
+    public upRule(rule: ThemeRule) {
+        throw new Error('Method not implemented.');
     }
 }

@@ -401,10 +401,10 @@ export class PolicyModel {
         }
 
         for (const event of this._allEvents) {
-            if(event.sourceTag) {
+            if (event.sourceTag) {
                 event.source = this._tagMap[event.sourceTag];
             }
-            if(event.targetTag) {
+            if (event.targetTag) {
                 event.target = this._tagMap[event.targetTag];
             }
         }
@@ -616,5 +616,16 @@ export class PolicyModel {
 
     public refresh(): void {
         this.refreshData();
+    }
+
+    public getPermissionsNumber(permission: string): number {
+        if (this._policyRoles) {
+            for (let index = 0; index < this._policyRoles.length; index++) {
+                if (this._policyRoles[index].name === permission) {
+                    return index;
+                }
+            }
+        }
+        return -1;
     }
 }

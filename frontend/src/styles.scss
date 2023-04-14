@@ -224,6 +224,7 @@ button.mat-button {
     background-color: var(--theme-background-color);
     border-radius: var(--theme-border-radius);
     border-width: var(--theme-border-width);
+    border-style: var(--theme-border-style);
 }
 
 *[theme-all] {
@@ -232,6 +233,7 @@ button.mat-button {
     background-color: var(--theme-background-color) !important;
     border-radius: var(--theme-border-radius) !important;
     border-width: var(--theme-border-width) !important;
+    border-style: var(--theme-border-style) !important;
 }
 
 *[theme-block][theme-text],
@@ -246,6 +248,7 @@ button.mat-button {
     border-color: var(--theme-border-color) !important;
     border-radius: var(--theme-border-radius) !important;
     border-width: var(--theme-border-width) !important;
+    border-style: var(--theme-border-style) !important;
 }
 
 *[theme-block][theme-background],
