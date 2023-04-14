@@ -101,25 +101,31 @@ export class MintService {
                 1, 10
             );
         const transferNFT = (serials) =>
-            workers.addRetryableTask(
-                {
-                    type: WorkerTaskType.TRANSFER_NFT,
-                    data: {
-                        hederaAccountId:
-                            root.hederaAccountId,
-                        hederaAccountKey:
-                            root.hederaAccountKey,
-                        dryRun: ref && ref.dryRun,
-                        tokenId: token.tokenId,
-                        targetAccount,
-                        treasuryId: token.treasuryId,
-                        treasuryKey: token.treasuryKey,
-                        element: serials,
-                        transactionMemo,
+            {
+                MintService.logger.debug(
+                    `Transfer ${token?.tokenId} serials: ${JSON.stringify(serials)}`,
+                    ['POLICY_SERVICE', mintId.toString()]
+                );
+                return workers.addRetryableTask(
+                    {
+                        type: WorkerTaskType.TRANSFER_NFT,
+                        data: {
+                            hederaAccountId:
+                                root.hederaAccountId,
+                            hederaAccountKey:
+                                root.hederaAccountKey,
+                            dryRun: ref && ref.dryRun,
+                            tokenId: token.tokenId,
+                            targetAccount,
+                            treasuryId: token.treasuryId,
+                            treasuryKey: token.treasuryKey,
+                            element: serials,
+                            transactionMemo,
+                        },
                     },
-                },
-                1, 10
-            );
+                    1, 10
+                );
+            };
         const mintAndTransferNFT = (metaData) =>
             mintNFT(metaData).then(transferNFT);
         const mintId = Date.now();
