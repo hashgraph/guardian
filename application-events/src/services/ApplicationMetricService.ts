@@ -44,7 +44,7 @@ export default class ApplicationMetricService {
     };
     for (const webhook of webhooks) {
       try {
-        const { data } = await axios.post(webhook, payload, { headers })
+        const { data } = await axios.post(webhook, payload, { headers });
         console.log('Webhook response:', JSON.stringify(data));
       } catch (e: any) {
         console.error('Webhook response:', e.message);
@@ -56,10 +56,13 @@ export default class ApplicationMetricService {
     const subscriptions: any[] = [];
 
     for (const subject of externalMessageEvents) {
-      console.log('Subject:', subject);
       const sub = this.pubSub.subscribe(subject, (data: any) => {
-        console.log(`Received message on "${subject}" subject:`, JSON.stringify(data));
-        this.sendEvents(subject, data);
+        try {
+          console.log(`Received message on "${subject}" subject:`, JSON.stringify(data));
+          this.sendEvents(subject, data);
+        } catch (e: any) {
+          console.error('Error:', e.stack, data);
+        }
       });
       subscriptions.push(sub);
     }

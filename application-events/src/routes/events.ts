@@ -18,8 +18,13 @@ eventRoutes.get('/api/events/subscribe', async (req: Request, res: Response) => 
     for (const subject of externalMessageEvents) {
       await natsPubSubAdapter.subscribe(subject, (data: any) => {
         if (data) {
-          console.log('data.received.stringify', JSON.stringify(data))
-          res.write(`${JSON.stringify({subject, payload: data})},\n`);
+          try {
+            console.log('data.received.stringify', JSON.stringify(data));
+            res.write(`${JSON.stringify({subject, payload: data})},\n`);
+          } catch (e: any) {
+            console.log(e);
+            res.write(`${JSON.stringify({subject, payload: {}})},\n`);
+          }
         }
       });
     }

@@ -16,7 +16,7 @@ export default class NatsPubSubAdapter implements PubSub {
     return this.natsServer.publish(subject, JSON.stringify(event))
   }
 
-  async subscribe (subject: string, cb: (payload: JSON) => void) {
+  async subscribe (subject: string, cb: (payload: any) => void) {
     await this.initServer()
     return this.natsServer.subscribe(subject, (data: any) => {
       console.log(`Received message on "${subject}" subject:`, data)
