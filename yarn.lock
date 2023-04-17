@@ -78,13 +78,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-secrets-manager@npm:^3.264.0":
-  version: 3.310.0
-  resolution: "@aws-sdk/client-secrets-manager@npm:3.310.0"
+"@aws-sdk/client-secrets-manager@npm:^3.312.0":
+  version: 3.312.0
+  resolution: "@aws-sdk/client-secrets-manager@npm:3.312.0"
   dependencies:
     "@aws-crypto/sha256-browser": 3.0.0
     "@aws-crypto/sha256-js": 3.0.0
-    "@aws-sdk/client-sts": 3.310.0
+    "@aws-sdk/client-sts": 3.312.0
     "@aws-sdk/config-resolver": 3.310.0
     "@aws-sdk/credential-provider-node": 3.310.0
     "@aws-sdk/fetch-http-handler": 3.310.0
@@ -118,7 +118,7 @@ __metadata:
     "@aws-sdk/util-utf8": 3.310.0
     tslib: ^2.5.0
     uuid: ^8.3.2
-  checksum: 7f659b27f7995a2b398d8650ec742ffd487b2200307ce443651747b161cef0088b953a7737cebd76344f33d802434e189113ce39cd3e32276c3cac7e33b1cb54
+  checksum: 037bc3364b1ca9e772d72109853c636e4d9f60bab577e9d604f91c0836b185c01378afff55f4389624d5e03f7afcef770b4bd02c19089f26cdd40905af0d6078
   languageName: node
   linkType: hard
 
@@ -202,9 +202,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-sts@npm:3.310.0":
-  version: 3.310.0
-  resolution: "@aws-sdk/client-sts@npm:3.310.0"
+"@aws-sdk/client-sts@npm:3.312.0":
+  version: 3.312.0
+  resolution: "@aws-sdk/client-sts@npm:3.312.0"
   dependencies:
     "@aws-crypto/sha256-browser": 3.0.0
     "@aws-crypto/sha256-js": 3.0.0
@@ -242,7 +242,7 @@ __metadata:
     "@aws-sdk/util-utf8": 3.310.0
     fast-xml-parser: 4.1.2
     tslib: ^2.5.0
-  checksum: 45097c36e79e9fe7844321331e37181e4a448209cd5263ddb4d162da24a68dd8655a335f373ff1b121beba43b333937bec14727bc984543923f9b817f5ff7fa0
+  checksum: ad0b444605cbb53caf7ef2c637a79923adeca133d8fc74ee45208828bc8546ae69a2738ce77f6aae376c53d41e2f59ec7703d4a3c364066cacef06427a746e8c
   languageName: node
   linkType: hard
 
@@ -1055,7 +1055,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
-    "@aws-sdk/client-secrets-manager": ^3.264.0
+    "@aws-sdk/client-secrets-manager": ^3.312.0
     "@guardian/interfaces": ^2.11.0
     "@hashgraph/sdk": ^2.22.0
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
