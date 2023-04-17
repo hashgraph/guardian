@@ -1136,7 +1136,7 @@ paths:
             schema:
               $ref: "#/components/schemas/User"
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -1365,7 +1365,7 @@ paths:
             schema:
               $ref: "#/components/schemas/Schema"
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -1453,7 +1453,7 @@ paths:
                 version:
                   type: string
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -1620,7 +1620,7 @@ paths:
               summary: Example of a Topic ID
               value: 0.0.00000001
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -1716,7 +1716,7 @@ paths:
               summary: Example of a Topic ID
               value: 0.0.00000001
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -1790,7 +1790,7 @@ paths:
                 messageId:
                   type: string
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -2284,7 +2284,7 @@ paths:
             schema:
               $ref: "#/components/schemas/Token"
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -2390,7 +2390,7 @@ paths:
           required: true
           description: Token ID.
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -2423,7 +2423,7 @@ paths:
         - bearerAuth: []
       summary: Associate the user with the provided Hedera token.
       responses:
-        200:
+        202:
           description: Successful operation.
         401:
           description: Unauthorized.
@@ -2452,7 +2452,7 @@ paths:
           required: true
           description: Token ID.
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -2536,7 +2536,7 @@ paths:
           required: true
           description: Username.
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -2620,7 +2620,7 @@ paths:
           required: true
           description: Username.
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -2704,7 +2704,7 @@ paths:
           required: true
           description: Username.
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -2788,7 +2788,7 @@ paths:
           required: true
           description: Username.
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -3002,7 +3002,7 @@ paths:
             schema:
               $ref: "#/components/schemas/PolicyConfig"
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -3166,7 +3166,7 @@ paths:
                 policyVersion:
                   type: string
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -3588,7 +3588,7 @@ paths:
                 messageId:
                   type: string
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -3668,7 +3668,7 @@ paths:
               type: string
               format: binary
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -3740,7 +3740,7 @@ paths:
                 messageId:
                   type: string
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:
@@ -4394,8 +4394,60 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+                
+  /demo/random-key:
+    get:
+      tags:
+        - demo
+      description: Generates a new Hedera account with a random private key.
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HederaAccount"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /demo/push/randomKey:
+    get:
+      tags:
+        - demo
+      deprecated: true
+      description: Generates a new Hedera account with a random private key.
+      security:
+        - bearerAuth: []
+      summary: Generates a new Hedera account with a random private key.
+      responses:
+        202:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+                
+  /demo/push/random-key:
     get:
       tags:
         - demo
@@ -4404,7 +4456,7 @@ paths:
         - bearerAuth: []
       summary: Generates a new Hedera account with a random private key.
       responses:
-        200:
+        202:
           description: Successful operation.
           content:
             application/json:

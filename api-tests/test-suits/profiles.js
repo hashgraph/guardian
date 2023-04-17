@@ -3,10 +3,10 @@ const { GetURL, GetToken } = require("../helpers");
 const assert = require("assert");
 
 function Profiles() {
-    it('/profiles/:username/balance', async function () {
+    it('/profiles/balance', async function () {
         this.timeout(60000);
         const result = await axios.get(
-            GetURL('profiles', 'Installer', 'balance'),
+            GetURL('profiles',  'balance'),
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -22,7 +22,7 @@ function Profiles() {
         let result;
 
         result = await axios.get(
-            GetURL('profiles', 'Installer'),
+            GetURL('profiles', ''),
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -34,6 +34,15 @@ function Profiles() {
 
         result = await axios.get(
             GetURL('demo', 'push', 'randomKey'),
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }
+        );
+
+        result = await axios.get(
+            GetURL('demo', 'randomKey'),
             {
                 headers: {
                     'Content-Type': 'application/json',

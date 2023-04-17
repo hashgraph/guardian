@@ -42,49 +42,43 @@ export class TokenService {
     public associate(tokenId: string, associate: boolean): Observable<void> {
         if (associate) {
             return this.http.put<void>(`${this.url}/${tokenId}/associate`, null);
-        } else {
-            return this.http.put<void>(`${this.url}/${tokenId}/dissociate`, null);
         }
+        return this.http.put<void>(`${this.url}/${tokenId}/dissociate`, null);
     }
 
     public pushAssociate(tokenId: string, associate: boolean): Observable<{ taskId: string, expectation: number }> {
         if (associate) {
             return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/associate`, null);
-        } else {
-            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/dissociate`, null);
         }
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/dissociate`, null);
     }
 
     public kyc(tokenId: string, username: string, kyc: boolean): Observable<void> {
         if (kyc) {
-            return this.http.put<void>(`${this.url}/${tokenId}/${username}/grantKyc`, null);
-        } else {
-            return this.http.put<void>(`${this.url}/${tokenId}/${username}/revokeKyc`, null);
+            return this.http.put<void>(`${this.url}/${tokenId}/${username}/grant-kyc`, null);
         }
+        return this.http.put<void>(`${this.url}/${tokenId}/${username}/revoke-kyc`, null);
     }
 
     public pushKyc(tokenId: string, username: string, kyc: boolean): Observable<{ taskId: string, expectation: number }> {
         if (kyc) {
-            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/grantKyc`, null);
-        } else {
-            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/revokeKyc`, null);
+            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/grant-kyc`, null);
         }
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/revoke-kyc`, null);
     };
 
     public freeze(tokenId: string, username: string, freeze: boolean): Observable<void> {
         if (freeze) {
             return this.http.put<void>(`${this.url}/${tokenId}/${username}/freeze`, null);
-        } else {
-            return this.http.put<void>(`${this.url}/${tokenId}/${username}/unfreeze`, null);
         }
+        return this.http.put<void>(`${this.url}/${tokenId}/${username}/unfreeze`, null);
     }
 
     public pushFreeze(tokenId: string, username: string, freeze: boolean): Observable<{ taskId: string, expectation: number }> {
         if (freeze) {
             return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/freeze`, null);
-        } else {
-            return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/unfreeze`, null);
         }
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${tokenId}/${username}/unfreeze`, null);
     };
 
     public info(tokenId: string, username: string): Observable<ITokenInfo> {

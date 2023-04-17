@@ -1,5 +1,5 @@
 import { Guardians } from '@helpers/guardians';
-import { Response, Router } from 'express';
+import { Response, Router, NextFunction } from 'express';
 import { AuthenticatedRequest, Logger } from '@guardian/common';
 
 /**
@@ -7,7 +7,7 @@ import { AuthenticatedRequest, Logger } from '@guardian/common';
  */
 export const analyticsAPI = Router();
 
-analyticsAPI.post('/compare/policies', async (req: AuthenticatedRequest, res: Response) => {
+analyticsAPI.post('/compare/policies', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const guardians = new Guardians();
     const policyId1 = req.body ? req.body.policyId1 : null;
     const policyId2 = req.body ? req.body.policyId2 : null;
@@ -30,11 +30,11 @@ analyticsAPI.post('/compare/policies', async (req: AuthenticatedRequest, res: Re
         res.send(result);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-analyticsAPI.post('/compare/schemas', async (req: AuthenticatedRequest, res: Response) => {
+analyticsAPI.post('/compare/schemas', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const guardians = new Guardians();
     const schemaId1 = req.body ? req.body.schemaId1 : null;
     const schemaId2 = req.body ? req.body.schemaId2 : null;
@@ -42,14 +42,14 @@ analyticsAPI.post('/compare/schemas', async (req: AuthenticatedRequest, res: Res
     const user = req.user;
     try {
         const result = await guardians.compareSchemas(user, null, schemaId1, schemaId2, idLvl);
-        res.send(result);
+        return res.send(result);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-analyticsAPI.post('/compare/policies/export', async (req: AuthenticatedRequest, res: Response) => {
+analyticsAPI.post('/compare/policies/export', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const guardians = new Guardians();
     const type = req.query ? req.query.type : null;
     const policyId1 = req.body ? req.body.policyId1 : null;
@@ -70,14 +70,14 @@ analyticsAPI.post('/compare/policies/export', async (req: AuthenticatedRequest, 
             childrenLvl,
             idLvl
         );
-        res.send(result);
+        return res.send(result);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-analyticsAPI.post('/compare/schemas/export', async (req: AuthenticatedRequest, res: Response) => {
+analyticsAPI.post('/compare/schemas/export', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const guardians = new Guardians();
     const type = req.query ? req.query.type : null;
     const schemaId1 = req.body ? req.body.schemaId1 : null;
@@ -86,9 +86,9 @@ analyticsAPI.post('/compare/schemas/export', async (req: AuthenticatedRequest, r
     const user = req.user;
     try {
         const result = await guardians.compareSchemas(user, type, schemaId1, schemaId2, idLvl);
-        res.send(result);
+        return res.send(result);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: error.message });
+        return next(error);
     }
 });
