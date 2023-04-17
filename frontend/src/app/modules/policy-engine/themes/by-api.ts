@@ -3,36 +3,33 @@ export const byApiTheme = {
     name: "By API Access",
     rules: [
         {
-            description: "",
+            description: "POST & GET",
             text: "#031d00",
             background: "#3dff46",
             border: "#00a316",
             shape: "0",
             borderWidth: "2px",
             filterType: "api",
-            filterOperation: "eq",
             filterValue: "post"
         },
         {
-            description: "",
+            description: "Only GET",
             text: "#1e1f00",
             background: "#fff67a",
             border: "#c2a800",
             shape: "0",
             borderWidth: "2px",
             filterType: "api",
-            filterOperation: "eq",
             filterValue: "get"
         },
         {
-            description: "",
+            description: "Not Accessible",
             text: "#6a6a6a",
             background: "#ffecec",
             border: "#e26868",
             shape: "3",
             borderWidth: "2px",
             filterType: "api",
-            filterOperation: "eq",
             filterValue: ""
         }
     ]

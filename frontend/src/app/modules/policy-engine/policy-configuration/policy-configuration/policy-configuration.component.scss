@@ -2,6 +2,7 @@
     --pc-main-grid-border: #b4c4cb;
     --pc-border-color: #bdbdbd;
     --pc-active-icon-color: #3f51b5;
+    --pc-no-active-color: #555;
     --pc-active-background-color: #eff0f9;
     --pc-header-color: #555555;
     --pc-favorite-color: #f3ac0e;
@@ -41,6 +42,10 @@
 
 .action-color {
     color: var(--pc-active-icon-color);
+}
+
+.no-action-color {
+    color: var(--pc-no-active-color);
 }
 
 .edit-color {
@@ -775,6 +780,87 @@
                 &.tab-header-icon {
                     padding: 6px 16px 6px 32px;
                 }
+            }
+        }
+    }
+
+    .pc-tabs-headers.right-menu {
+        padding-right: 30px;
+    }
+}
+
+.policy-configuration::ng-deep {
+    .theme-legends {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 30px;
+        height: 30px;
+        overflow: visible;
+
+        .theme-legends-icon {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 30px;
+            height: 30px;
+            overflow: hidden;
+            cursor: pointer;
+            box-sizing: border-box;
+            padding: 2px;
+            border: 1px solid var(--pc-border-color);
+            color: #555;
+
+            &:hover {
+                background: var(--pc-tabs-hover-color);
+            }
+        }
+
+        .theme-legends-container {
+            display: none;
+            position: absolute;
+            top: 30px;
+            right: 0px;
+            background: #fff;
+            z-index: 5;
+            border: 1px solid var(--pc-border-color);
+            border-bottom-left-radius: 6px;
+            padding: 6px;
+            box-shadow: 4px 4px 6px 0px #00000040;
+        }
+
+        .theme-rule {
+            width: 200px;
+            height: auto;
+            min-height: 20px;
+            display: grid;
+            grid-template-columns: 50px auto;
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+
+        .theme-rule-prev {
+            width: 32px;
+            height: 18px;
+            box-sizing: border-box;
+            margin: 2px;
+            align-items: center;
+            display: flex;
+        }
+
+        .theme-rule-description {
+            align-items: center;
+            display: flex;
+        }
+
+        &[active="true"] {
+            .theme-legends-container {
+                display: block;
+            }
+
+            .theme-legends-icon {
+                background: #fff;
+                color: var(--pc-active-icon-color);
             }
         }
     }

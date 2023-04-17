@@ -498,7 +498,7 @@
                 </div>
 
                 <div *ngIf="isTree" class="pc-tabs minimized-tabs">
-                    <div class="pc-tabs-headers">
+                    <div class="pc-tabs-headers right-menu">
                         <div *ngIf="rootType ==='Policy'" class="tab-header tab-header-icon"
                             [attr.selected]="openModule===policyModel" (click)="onOpenRoot(policyModel)"
                             style="width: 100px;margin-right: 6px">
@@ -517,6 +517,22 @@
                                 {{item.localTag}}
                             </div>
                         </ng-container>
+                        <div class="theme-legends" [attr.active]="options.legendActive">
+                            <div class="theme-legends-icon" (click)="change('legendActive')">
+                                <mat-icon>palette</mat-icon>
+                            </div>
+                            <div class="theme-legends-container">
+                                <div *ngFor="let rule of theme.rules" class="theme-rule">
+                                    <div class="theme-rule-prev" [style]="blockStyle(rule)" theme-block theme-all></div>
+                                    <div class="theme-rule-description">{{rule.description || '-'}}</div>
+                                </div>
+                                <div *ngIf="theme.default" class="theme-rule">
+                                    <div class="theme-rule-prev" [style]="blockStyle(theme.default)" theme-block
+                                        theme-all></div>
+                                    <div class="theme-rule-description">{{theme.default.description || '-'}}</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="pc-tabs-content tree-container">
                         <policy-tree [module]="openModule" [blocks]="openModule.dataSource" [errors]="errorsMap"
@@ -777,8 +793,9 @@
 </mat-menu>
 
 <mat-menu #themesMenu="matMenu">
-    <div class="toolbar-menu all-status" *ngFor="let theme of themes" (click)="setTheme(theme)">
-        <mat-icon class="action-color">palette</mat-icon>
-        <span class="action-color">{{theme.name}}</span>
+    <div class="toolbar-menu all-status" 
+        *ngFor="let t of themes" (click)="setTheme(t)">
+        <mat-icon [class]="t === theme ? 'action-color' : 'no-action-color'">palette</mat-icon>
+        <span [class]="t === theme ? 'action-color' : 'no-action-color'">{{t.name}}</span>
     </div>
 </mat-menu>

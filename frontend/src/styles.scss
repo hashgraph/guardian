@@ -221,7 +221,7 @@ button.mat-button {
 *[theme-block] {
     color: var(--theme-color);
     border-color: var(--theme-border-color);
-    background-color: var(--theme-background-color);
+    background: var(--theme-background);
     border-radius: var(--theme-border-radius);
     border-width: var(--theme-border-width);
     border-style: var(--theme-border-style);
@@ -230,7 +230,7 @@ button.mat-button {
 *[theme-all] {
     color: var(--theme-color) !important;
     border-color: var(--theme-border-color) !important;
-    background-color: var(--theme-background-color) !important;
+    background: var(--theme-background) !important;
     border-radius: var(--theme-border-radius) !important;
     border-width: var(--theme-border-width) !important;
     border-style: var(--theme-border-style) !important;
@@ -254,5 +254,5 @@ button.mat-button {
 *[theme-block][theme-background],
 *[theme-all] *[theme-background],
 *[theme-block] *[theme-background] {
-    background-color: var(--theme-background-color) !important;
+    background: var(--theme-background) !important;
 }

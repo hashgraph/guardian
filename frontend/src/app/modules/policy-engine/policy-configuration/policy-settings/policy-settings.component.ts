@@ -51,7 +51,7 @@ export class PolicySettingsComponent implements OnInit {
     }
 
     public onAddRule() {
-        this.theme.addRule();
+        this.theme.createRule();
     }
     public onDeleteRule(rule: ThemeRule) {
         this.theme.deleteRule(rule);

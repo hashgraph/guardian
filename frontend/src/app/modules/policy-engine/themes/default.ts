@@ -10,7 +10,6 @@ export const defaultTheme = {
             shape: '0',
             borderWidth: '2px',
             filterType: 'type',
-            filterOperation: 'in',
             filterValue: [
                 'interfaceActionBlock',
                 'buttonBlock',
@@ -36,7 +35,6 @@ export const defaultTheme = {
             shape: '2',
             borderWidth: '2px',
             filterType: 'type',
-            filterOperation: 'in',
             filterValue: [
                 'aggregateDocumentBlock',
                 'calculateContainerBlock',
@@ -62,7 +60,6 @@ export const defaultTheme = {
             shape: '1',
             borderWidth: '2px',
             filterType: 'type',
-            filterOperation: 'in',
             filterValue: [
                 'filtersAddon',
                 'historyAddon',

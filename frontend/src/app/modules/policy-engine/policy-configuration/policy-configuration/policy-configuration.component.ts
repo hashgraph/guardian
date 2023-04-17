@@ -19,7 +19,7 @@ import { NewModuleDialog } from '../../helpers/new-module-dialog/new-module-dial
 import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
 import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
 import { RegisteredService } from '../../services/registered.service';
-import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, TemplateModel, Theme } from '../../structures';
+import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, TemplateModel, Theme, ThemeRule } from '../../structures';
 import { Options } from '../../structures/storage/config-options';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
 import { ThemeService } from '../../services/theme.service';
@@ -71,6 +71,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public selectType: 'Block' | 'Module' = 'Block';
     public openSettings: boolean = false;
     public themes!: Theme[];
+    public theme!: Theme;
 
     readonly codeMirrorOptions = {
         theme: 'default',
@@ -196,6 +197,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         this.options.load();
         this.themes = this.themeService.load();
+        this.theme = this.themeService.current();
         this.route.queryParams.subscribe(queryParams => {
             this.loadData();
         });
@@ -208,6 +210,11 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public collapse(name: string) {
         this.options.collapse(name);
+        this.options.save();
+    }
+
+    public change(name: string) {
+        this.options.change(name);
         this.options.save();
     }
 
@@ -1146,10 +1153,16 @@ export class PolicyConfigurationComponent implements OnInit {
             this.themeService.load();
         }
         this.themes = this.themeService.load();
+        this.theme = this.themeService.current();
     }
 
     public setTheme(theme: Theme) {
         this.themeService.setTheme(theme);
         this.themeService.saveTheme();
+        this.theme = this.themeService.current();
+    }
+
+    public blockStyle(rule: ThemeRule) {
+        return this.themeService.getStyleByRule(rule)
     }
 }

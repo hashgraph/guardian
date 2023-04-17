@@ -11,11 +11,12 @@ export class ThemeRule {
     private _shape: string;
     private _borderStyle: string;
     private _borderWidth: string;
-
-    public _type: string;
-    public _value: any;
-    public _filterValue: any;
-    public _filterOperation: any;
+    private _type: string;
+    private _singleValue: string;
+    private _multipleValue: string[];
+    private _filterValue: any;
+    private _filterOperation: any;
+    private _default: boolean;
 
     constructor(theme: Theme) {
         this.theme = theme;
@@ -26,10 +27,10 @@ export class ThemeRule {
         this._shape = '0';
         this._borderStyle = 'solid';
         this._borderWidth = '2px';
-
-        this._type = 'all';
-        this._value = '';
-
+        this._default = false;
+        this._type = 'type';
+        this._singleValue = '';
+        this._multipleValue = [];
         this._updateCondition();
         this._updateStyle();
     }
@@ -124,32 +125,106 @@ export class ThemeRule {
         }
     }
 
-    public get value(): any {
-        return this._value;
+    public get singleValue(): string {
+        return this._singleValue;
     }
 
-    public set value(v: any) {
-        if (this._value !== v) {
-            this._value = v;
+    public get multipleValue(): string[] {
+        return this._multipleValue;
+    }
+
+    public set singleValue(v: string) {
+        this._singleValue = v;
+        this._updateCondition();
+    }
+
+    public set multipleValue(v: string[]) {
+        this._multipleValue = v;
+        this._updateCondition();
+    }
+
+    public get default(): boolean {
+        return this._default;
+    }
+
+    public set default(v: boolean) {
+        if (this._default !== v) {
+            this._default = v;
             this._updateCondition();
         }
     }
 
-    public _updateCondition(): void {
-        if (Array.isArray(this._value)) {
-            if (this._value.length > 1) {
-                this._filterValue = {}
-                for (const v of this._value) {
-                    this._filterValue[v] = true;
-                }
-                this._filterOperation = 'in';
+    public getValue(): null | string | string[] {
+        if (this._type === 'all' || this._default) {
+            return null;
+        }
+        if (this._type === 'type' || this._type === 'role') {
+            return this._multipleValue;
+        }
+        if (this._type === 'api' || this._type === 'custom') {
+            return this._singleValue;
+        }
+        return null;
+    }
+
+    public setValue(value: null | string | string[]) {
+        if (this._type === 'all' || this._default) {
+            this._singleValue = '';
+            this._multipleValue = [];
+        }
+        if (this._type === 'type' || this._type === 'role') {
+            this._singleValue = '';
+            if (typeof value === 'string') {
+                this._multipleValue = [value];
+            } else if (Array.isArray(value)) {
+                this._multipleValue = value;
             } else {
-                this._filterValue = this._value[0];
-                this._filterOperation = 'eq';
+                this._multipleValue = [];
             }
-        } else {
-            this._filterValue = this._value;
+            return;
+        }
+        if (this._type === 'api' || this._type === 'custom') {
+            if (typeof value === 'string') {
+                this._singleValue = value;
+            } else {
+                this._singleValue = '';
+            }
+            this._multipleValue = [];
+            return;
+        }
+        return;
+    }
+
+    public _updateCondition(): void {
+        if (this._type === 'all' || this._default) {
+            this._type = 'all';
             this._filterOperation = 'eq';
+            this._filterValue = '';
+            return;
+        }
+        if (this._type === 'type' || this._type === 'role') {
+            if (Array.isArray(this._multipleValue)) {
+                if (this._multipleValue.length > 1) {
+                    this._filterOperation = 'in';
+                    this._filterValue = {};
+                    for (const v of this._multipleValue) {
+                        this._filterValue[v] = true;
+                    }
+                } else {
+                    this._filterOperation = 'eq';
+                    this._filterValue = this._multipleValue[0];
+
+                }
+            } else {
+                this._filterOperation = 'eq';
+                this._filterValue = this._multipleValue;
+            }
+            return;
+        }
+        if (this._type === 'api' || this._type === 'custom') {
+            this._filterOperation = 'eq';
+            this._filterValue = this._singleValue;
+            return;
         }
     }
 
@@ -157,7 +232,7 @@ export class ThemeRule {
         this._style = {
             '--theme-color': this._text,
             '--theme-border-color': this._border,
-            '--theme-background-color': this._background,
+            '--theme-background': this._background,
             '--theme-border-radius': '',
             '--theme-border-width': this._borderWidth,
         };
@@ -202,23 +277,25 @@ export class ThemeRule {
 
     public check(item: PolicyBlockModel): boolean {
         if (this._type === 'type') {
-            if (this._filterOperation === 'eq') {
-                return item.blockType === this._filterValue;
-            } else if (this._filterOperation === 'in') {
+            if (this._filterOperation === 'in') {
                 return this._filterValue[item.blockType] === true;
+            } else {
+                return item.blockType === this._filterValue;
             }
-        } else if (this._type === 'role') {
-            if (this._filterOperation === 'eq') {
-                return item.permissionsNumber.includes(this._filterValue);
-            } else if (this._filterOperation === 'in') {
+        }
+        if (this._type === 'role') {
+            if (this._filterOperation === 'in') {
                 for (const r of item.permissionsNumber) {
                     if (this._filterValue[r] === true) {
                         return true;
                     }
                 }
                 return false;
+            } else {
+                return item.permissionsNumber.includes(this._filterValue);
             }
-        } else if (this._type === 'api') {
+        }
+        if (this._type === 'api') {
             if (this._filterValue === 'post') {
                 return item.postApi && item.getApi;
             }
@@ -226,9 +303,11 @@ export class ThemeRule {
                 return !item.postApi && item.getApi;
             }
             return !item.postApi && !item.getApi;
-        } else if (this._type === 'prop') {
-            return false;
-        } else if (this._type === 'all') {
+        }
+        if (this._type === 'custom') {
+            return true;
+        }
+        if (this._type === 'all') {
             return true;
         }
         return false;
@@ -242,9 +321,9 @@ export class ThemeRule {
         rule._border = json.border;
         rule._shape = json.shape;
         rule._borderWidth = json.borderWidth;
+        rule._default = json.default;
         rule._type = json.filterType;
-        rule._filterOperation = json.filterOperation;
-        rule._value = json.filterValue;
+        rule.setValue(json.filterValue);
         rule._updateCondition();
         rule._updateStyle();
         return rule;
@@ -259,8 +338,8 @@ export class ThemeRule {
             shape: this._shape,
             borderWidth: this._borderWidth,
             filterType: this._type,
-            filterOperation: this._filterOperation,
-            filterValue: this._value
+            filterValue: this.getValue(),
+            default: this._default
         }
     }
 }

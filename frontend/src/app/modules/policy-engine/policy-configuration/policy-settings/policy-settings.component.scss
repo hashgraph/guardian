@@ -198,7 +198,6 @@
         }
 
         .rule-color {
-            height: 126px;
             display: grid;
             grid-template-columns: 65px auto 40px;
             margin: 10px;
@@ -210,8 +209,27 @@
             overflow: hidden;
         }
 
-        .rule-color-container {
-            height: 108px;
+        .rule-description {
+            margin-top: 8px;
+            height: 50px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 100px auto 50px;
+            align-items: center;
+
+            .rule-description-label {
+                color: var(--pc-active-icon-color);
+                font-weight: 500;
+            }
+
+            .rule-description-text textarea {
+                width: 100%;
+                height: 100%;
+                resize: none;
+                border: 1px solid #e0e0e0;
+                border-radius: 6px;
+                padding: 6px;
+            }
         }
 
         .rule-color-filter {
@@ -416,7 +434,9 @@
 
         
         &[readonly="true"] {
-            pointer-events: none !important;
+            .rule-color {
+                pointer-events: none !important;
+            }
 
             .new-rule {
                 display: none !important;
@@ -425,6 +445,19 @@
             .delete-btn {
                 display: none !important;
             }
+        }
+    }
+
+    .prop-condition {
+        grid-column: 3 / 5 !important;
+        padding: 0 !important;
+
+        input {
+            width: 326px;
+            margin: 5px;
+            padding: 4px;
+            border: none;
+            outline: none;
         }
     }
 }

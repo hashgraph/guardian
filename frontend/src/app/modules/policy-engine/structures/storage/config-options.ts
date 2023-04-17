@@ -29,6 +29,7 @@ export class Options {
     private readonly _variablesModule: BooleanProperty;
     private readonly _favorites: ObjectProperty<boolean>;
     private readonly _favoritesModules: ObjectProperty<boolean>;
+    private readonly _legendActive: BooleanProperty;
 
     constructor() {
         const prefix = 'POLICY_CONFIG_';
@@ -59,6 +60,7 @@ export class Options {
         this._variablesModule = new BooleanProperty(prefix + 'VARIABLES_MODULE', false);
         this._favorites = new ObjectProperty(prefix + 'FAVORITES', {});
         this._favoritesModules = new ObjectProperty(prefix + 'FAVORITES_MODULES', {});
+        this._legendActive = new BooleanProperty(prefix + 'LEGEND', true);
     }
 
     public load() {
@@ -88,6 +90,7 @@ export class Options {
             this.inputsModule = this._inputsModule.load();
             this.outputsModule = this._outputsModule.load();
             this.variablesModule = this._variablesModule.load();
+            this.legendActive = this._legendActive.load();
             this._favorites.load();
             this._favoritesModules.load();
         } catch (error) {
@@ -124,6 +127,7 @@ export class Options {
             this._inputsModule.save();
             this._outputsModule.save();
             this._variablesModule.save();
+            this._legendActive.save();
         } catch (error) {
             console.error(error);
         }
@@ -227,6 +231,10 @@ export class Options {
 
     public get variablesModule(): boolean {
         return this._variablesModule.value;
+    }
+
+    public get legendActive(): boolean {
+        return this._legendActive.value;
     }
 
     public set components(value: boolean) {
@@ -402,6 +410,10 @@ export class Options {
         this._customModulesGroup.value = value;
     }
 
+    public set legendActive(value: boolean) {
+        this._legendActive.value = value;
+    }
+
     public getFavorite(name: string): boolean {
         return !!this._favorites.get(name);
     }
@@ -497,6 +509,15 @@ export class Options {
             this.favoritesModulesGroup = !this.favoritesModulesGroup;
         } else {
             return;
+        }
+    }
+    public change(name: string) {
+        switch (name) {
+            case 'legendActive':
+                this.legendActive = !this.legendActive;
+                break;
+            default:
+                return;
         }
     }
 }

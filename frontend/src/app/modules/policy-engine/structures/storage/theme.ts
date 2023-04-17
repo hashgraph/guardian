@@ -8,12 +8,19 @@ export class Theme {
 
     private _name: string;
     private _rules: ThemeRule[];
+    private _defaultRole: ThemeRule;
+
+    private _colorMap: Map<number, any>;
 
     constructor() {
         this.id = GenerateUUIDv4();
         this.readonly = false;
         this._name = '';
         this._rules = [];
+        this._defaultRole = new ThemeRule(this);
+        this._defaultRole.default = true;
+        this._defaultRole.description = 'Default';
+        this._colorMap = new Map();
     }
 
     public get name(): string {
@@ -28,10 +35,26 @@ export class Theme {
         return this._rules;
     }
 
-    public update(): void {
+    public get default(): ThemeRule {
+        return this._defaultRole;
     }
 
-    public addRule(): ThemeRule {
+    public update(): void {
+        this._colorMap.clear();
+        for (let i = 0; i < this._rules.length; i++) {
+            this._colorMap.set(1 << i, this._rules[i]);
+        }
+    }
+
+    public addRule(rule: ThemeRule): void {
+        if (rule.default) {
+            this._defaultRole = rule;
+        } else {
+            this._rules.push(rule);
+        }
+    }
+
+    public createRule(): ThemeRule {
         const rule = new ThemeRule(this);
         this._rules.push(rule);
         return rule;
@@ -43,15 +66,52 @@ export class Theme {
 
     public getStyle(item: PolicyBlockModel): any {
         try {
-            for (const rule of this._rules) {
-                if (rule.check(item)) {
-                    return rule.style;
+            let styleNumber = 0;
+            for (let i = 0; i < this._rules.length; i++) {
+                if (this._rules[i].check(item)) {
+                    styleNumber = (styleNumber) | (1 << i);
                 }
             }
-            return null;
+            if (this._colorMap.has(styleNumber)) {
+                return this._colorMap.get(styleNumber);
+            } else {
+                return this.mergeStyle(styleNumber);
+            }
         } catch (error) {
-            console.error(error);
             return null;
+        }
+    }
+
+    private mergeStyle(styleNumber: number): any {
+        if (styleNumber) {
+            const styles = [];
+            for (let i = 0; i < this._rules.length; i++) {
+                if ((styleNumber) & (1 << i)) {
+                    styles.push(this._rules[i].style);
+                }
+            }
+            if (styles.length > 1) {
+                const style = Object.assign({}, styles[0]);
+                let delta = 100 / styles.length;
+                let percent = 0;
+                let gradient = 'linear-gradient(135deg';
+                for (const s of styles) {
+                    gradient += ', ' + s['--theme-background'] + ' ' + percent + '%';
+                    percent += delta;
+                    gradient += ', ' + s['--theme-background'] + ' ' + percent + '%';
+                }
+                gradient += ')';
+                style['--theme-background'] = gradient;
+                this._colorMap.set(styleNumber, style);
+                return style;
+            } else {
+                const style = styles[0];
+                this._colorMap.set(styleNumber, style);
+                return style;
+            }
+        } else {
+            this._colorMap.set(styleNumber, this._defaultRole.style);
+            return this._defaultRole.style;
         }
     }
 
@@ -65,7 +125,7 @@ export class Theme {
         theme.readonly = json.readonly || false;
         if (Array.isArray(json.rules)) {
             for (const rule of json.rules) {
-                theme._rules.push(ThemeRule.from(theme, rule))
+                theme.addRule(ThemeRule.from(theme, rule))
             }
         }
         return theme;
@@ -84,10 +144,20 @@ export class Theme {
     }
 
     public downRule(rule: ThemeRule) {
-        throw new Error('Method not implemented.');
+        const index = this._rules.findIndex(r => r === rule);
+        if (index > -1 && index < this._rules.length - 1) {
+            this._rules[index] = this._rules[index + 1];
+            this._rules[index + 1] = rule;
+        }
+        this._rules = this._rules.slice();
     }
 
     public upRule(rule: ThemeRule) {
-        throw new Error('Method not implemented.');
+        const index = this._rules.findIndex(r => r === rule);
+        if (index > 0 && index < this._rules.length) {
+            this._rules[index] = this._rules[index - 1];
+            this._rules[index - 1] = rule;
+        }
+        this._rules = this._rules.slice();
     }
 }
