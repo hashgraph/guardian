@@ -71,7 +71,7 @@ services:
       - message-broker
     environment:
       - ENV=${GUARDIAN_ENV}
-      
+
   worker-service-1:
     env_file:
       - ./worker-service/.env.docker
@@ -84,7 +84,10 @@ services:
     environment:
       - SERVICE_CHANNEL="worker.1"
       - ENV=${GUARDIAN_ENV}
-      
+      - DIRECT_MESSAGE_PORT=6555
+    expose:
+      - 6555
+
   worker-service-2:
     env_file:
       - ./worker-service/.env.docker
@@ -97,7 +100,10 @@ services:
     environment:
       - SERVICE_CHANNEL="worker.2"
       - ENV=${GUARDIAN_ENV}
-      
+      - DIRECT_MESSAGE_PORT=6555
+    expose:
+      - 6555
+
   auth-service:
     env_file:
       - ./auth-service/.env.docker
@@ -111,7 +117,10 @@ services:
       - logger-service
     environment:
       - ENV=${GUARDIAN_ENV}
-      
+      - DIRECT_MESSAGE_PORT=6555
+    expose:
+      - 6555
+
   api-gateway:
     env_file:
       - ./api-gateway/.env.docker
@@ -120,6 +129,7 @@ services:
       dockerfile: ./api-gateway/Dockerfile
     expose:
       - 3002
+      - 6555
     depends_on:
       - mongo
       - message-broker
@@ -128,7 +138,8 @@ services:
       - logger-service
     environment:
       - ENV=${GUARDIAN_ENV}
-      
+      - DIRECT_MESSAGE_PORT=6555
+
   policy-service:
     env_file:
       - ./policy-service/.env.docker
@@ -142,7 +153,11 @@ services:
       - logger-service
     environment:
       - ENV=${GUARDIAN_ENV}
-      
+      - DIRECT_MESSAGE_PORT=6555
+    expose:
+      - 6555
+
+
   guardian-service:
     env_file:
       - ./guardian-service/.env.docker
@@ -159,7 +174,10 @@ services:
       - policy-service
     environment:
       - ENV=${GUARDIAN_ENV}
-      
+      - DIRECT_MESSAGE_PORT=6555
+    expose:
+      - 6555
+
   application-events:
     build:
       context: .
@@ -174,7 +192,7 @@ services:
       - guardian-service
       - auth-service
       - logger-service
-    
+
   mrv-sender:
     build:
       context: .
