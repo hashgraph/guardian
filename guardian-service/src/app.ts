@@ -84,7 +84,10 @@ Promise.all([
         db.em.getDriver().getConnection().getDb()
     );
     new PolicyServiceChannelsContainer().setConnection(cn);
-    new TransactionLogger().initialization(cn, process.env.LOG_LEVEL as TransactionLogLvl);
+    new TransactionLogger().initialization(
+        cn,
+        process.env.TRANSACTION_LOG_LEVEL as TransactionLogLvl
+    );
     new GuardiansService().setConnection(cn).init();
     const channel = new MessageBrokerChannel(cn, 'guardians');
 

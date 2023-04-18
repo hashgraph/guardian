@@ -7,7 +7,7 @@ import { API_BASE_URL } from './api';
  */
 @Injectable()
 export class ArtifactService {
-    private readonly url: string = `${API_BASE_URL}/artifact`;
+    private readonly url: string = `${API_BASE_URL}/artifacts`;
     constructor(
         private http: HttpClient
     ) { }

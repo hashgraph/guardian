@@ -1,48 +1,49 @@
-import { Response, Router } from 'express';
+import { Response, Router, NextFunction } from 'express';
 import { AuthenticatedRequest, Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
 import { permissionHelper } from '@auth/authorization-helper';
 import { SchemaCategory, SchemaHelper, UserRole } from '@guardian/interfaces';
 import { SchemaUtils } from '@helpers/schema-utils';
+import createError from 'http-errors';
 
 /**
  * Tags route
  */
 export const tagsAPI = Router();
 
-tagsAPI.post('/', async (req: AuthenticatedRequest, res: Response) => {
+tagsAPI.post('/', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardian = new Guardians();
         const item = await guardian.createTag(req.body, req.user.did);
         res.status(201).json(item);
     } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: error.code || 500, message: error.message });
+        await (new Logger()).error(error, ['API_GATEWAY']);
+        return next(error);
     }
 });
 
-tagsAPI.post('/search', async (req: AuthenticatedRequest, res: Response) => {
+tagsAPI.post('/search', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
         const { entity, target, targets } = req.body;
         let _targets: string[];
         if (!entity) {
-            throw new Error('Invalid entity');
+            return next(createError(422, 'Invalid entity'));
         }
         if (target) {
             if (typeof target !== 'string') {
-                throw new Error('Invalid target');
+                return next(createError(422, 'Invalid target'));
             } else {
                 _targets = [target];
             }
         } else if (targets) {
             if (!Array.isArray(targets)) {
-                throw new Error('Invalid target');
+                return next(createError(422, 'Invalid target'));
             } else {
                 _targets = targets;
             }
         } else {
-            throw new Error('Invalid target');
+            return next(createError(422, 'Invalid target'));
         }
 
         const items = await guardians.getTags(entity, _targets);
@@ -66,38 +67,38 @@ tagsAPI.post('/search', async (req: AuthenticatedRequest, res: Response) => {
                 }
             }
         }
-        res.status(200).json(tagMap);
+        return res.json(tagMap);
     } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: error.code || 500, message: error.message });
+        await (new Logger()).error(error, ['API_GATEWAY']);
+        return next(error);
     }
 });
 
-tagsAPI.delete('/:uuid', async (req: AuthenticatedRequest, res: Response) => {
+tagsAPI.delete('/:uuid', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardian = new Guardians();
         if (!req.params.uuid) {
-            throw new Error('Invalid uuid');
+            return next(createError(422, 'Invalid uuid'));
         }
         const result = await guardian.deleteTag(req.params.uuid, req.user.did);
-        res.status(201).json(result);
+        res.json(result);
     } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: error.code || 500, message: error.message });
+        await (new Logger()).error(error, ['API_GATEWAY']);
+        return next(error);
     }
 });
 
-tagsAPI.post('/synchronization', async (req: AuthenticatedRequest, res: Response) => {
+tagsAPI.post('/synchronization', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
         const { entity, target } = req.body;
 
         if (!entity) {
-            throw new Error('Invalid entity');
+            return next(createError(422, 'Invalid entity'));
         }
 
         if (typeof target !== 'string') {
-            throw new Error('Invalid target');
+            return next(createError(422, 'Invalid target'));
         }
 
         const tags = await guardians.synchronizationTags(entity, target);
@@ -108,14 +109,14 @@ tagsAPI.post('/synchronization', async (req: AuthenticatedRequest, res: Response
             tags,
             refreshDate: (new Date()).toISOString(),
         }
-        res.status(200).json(result);
+        return res.json(result);
     } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: error.code || 500, message: error.message });
+        await (new Logger()).error(error, ['API_GATEWAY']);
+        return next(error);
     }
 });
 
-tagsAPI.get('/schemas', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+tagsAPI.get('/schemas', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
@@ -128,24 +129,22 @@ tagsAPI.get('/schemas', permissionHelper(UserRole.STANDARD_REGISTRY), async (req
         }
         const { items, count } = await guardians.getTagSchemas(owner, pageIndex, pageSize);
         items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner });
-        res.status(200)
+        return res
             .setHeader('X-Total-Count', count)
             .json(SchemaUtils.toOld(items));
     } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500)
-            .json({ code: error.code, message: error.message });
+        await (new Logger()).error(error, ['API_GATEWAY']);
+        return next(error);
     }
 });
 
-tagsAPI.post('/schemas', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+tagsAPI.post('/schemas', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const newSchema = req.body;
 
         if (!newSchema) {
-            res.status(500).json({ code: 500, message: 'Schema does not exist.' });
-            return;
+            return next(createError(422, 'Schema does not exist.'));
         }
 
         const guardians = new Guardians();
@@ -163,12 +162,12 @@ tagsAPI.post('/schemas', permissionHelper(UserRole.STANDARD_REGISTRY), async (re
 
         res.status(201).json(SchemaUtils.toOld(schema));
     } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        await (new Logger()).error(error, ['API_GATEWAY']);
+        return next(error);
     }
 });
 
-tagsAPI.delete('/schemas/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+tagsAPI.delete('/schemas/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
@@ -176,18 +175,17 @@ tagsAPI.delete('/schemas/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY
         const schema = await guardians.getSchemaById(schemaId);
         const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
         if (error) {
-            res.status(500).json({ code: 500, message: error });
-            return;
+            return next(createError(403, error));
         }
         await guardians.deleteSchema(schemaId);
-        res.status(200).json(true);
+        return res.json(true);
     } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        await (new Logger()).error(error, ['API_GATEWAY']);
+        return next(error);
     }
 });
 
-tagsAPI.put('/schemas/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+tagsAPI.put('/schemas/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const newSchema = req.body;
@@ -196,21 +194,20 @@ tagsAPI.put('/schemas/:schemaId', permissionHelper(UserRole.STANDARD_REGISTRY), 
         const schema = await guardians.getSchemaById(newSchema.id);
         const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
         if (error) {
-            res.status(500).json({ code: 500, message: error });
-            return;
+            return next(createError(403, error));
         }
         SchemaUtils.fromOld(newSchema);
         SchemaHelper.checkSchemaKey(newSchema);
         SchemaHelper.updateOwner(newSchema, owner);
         await guardians.updateSchema(newSchema);
-        res.status(200).json(newSchema);
+        return res.json(newSchema);
     } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        await (new Logger()).error(error, ['API_GATEWAY']);
+        return next(error);
     }
 });
 
-tagsAPI.put('/schemas/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+tagsAPI.put('/schemas/:schemaId/publish', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const guardians = new Guardians();
@@ -219,24 +216,23 @@ tagsAPI.put('/schemas/:schemaId/publish', permissionHelper(UserRole.STANDARD_REG
         const version = '1.0.0';
         const error = SchemaUtils.checkPermission(schema, user, SchemaCategory.TAG);
         if (error) {
-            res.status(500).json({ code: 500, message: error });
-            return;
+            return next(createError(403, error));
         }
         const result = await guardians.publishTagSchema(schemaId, version, user.did);
-        res.status(200).json(result);
+        return res.json(result);
     } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        await (new Logger()).error(error, ['API_GATEWAY']);
+        return next(error);
     }
 });
 
-tagsAPI.get('/schemas/published', async (req: AuthenticatedRequest, res: Response) => {
+tagsAPI.get('/schemas/published', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
         const schemas = await guardians.getPublishedTagSchemas();
-        res.status(200).send(schemas);
+        return res.send(schemas);
     } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: error.code || 500, message: error.message });
+        await (new Logger()).error(error, ['API_GATEWAY']);
+        return next(error);
     }
 });
