@@ -11,7 +11,7 @@
         Policy doesn't exist
     </div>
 
-    <policy-settings *ngIf="openSettings" (change)="onChangeSettings($event)"></policy-settings>
+    <policy-settings *ngIf="openSettings" (update)="onChangeSettings($event)"></policy-settings>
 
     <div *ngIf="isModuleValid" class="policy-configuration" [attr.readonly]="readonly">
         <div class="top-toolbar">

@@ -93,7 +93,6 @@ import { PoliciesComponent } from './policies/policies.component';
 import { AppRoutingModule } from 'src/app/app-routing.module';
 import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.component';
 import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
-import { ThemeService } from './services/theme.service';
 import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialog.component';
 import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
 
@@ -191,8 +190,7 @@ import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.comp
     exports: [
     ],
     providers: [
-        RegisteredService,
-        ThemeService
+        RegisteredService
     ]
 })
 export class PolicyEngineModule { }

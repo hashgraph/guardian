@@ -12,3 +12,4 @@ export { settingsAPI } from '@api/service/settings';
 export { analyticsAPI } from '@api/service/analytics';
 export { moduleAPI } from '@api/service/module';
 export { tagsAPI } from '@api/service/tags';
+export { themesAPI } from '@api/service/themes';

@@ -1,4 +1,6 @@
 export const byRolesTheme = {
+    id: 3,
+    uuid: '00000000-0000-0000-0000-000000000003',
     readonly: true,
     name: 'By Roles',
     rules: [

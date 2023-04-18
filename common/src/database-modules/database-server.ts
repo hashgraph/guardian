@@ -2327,8 +2327,8 @@ export class DatabaseServer {
      * Get Themes
      * @param filters
      */
-    public static async getThemes(filters: any): Promise<Theme> {
-        return await new DataBaseHelper(Theme).findOne(filters);
+    public static async getThemes(filters: any): Promise<Theme[]> {
+        return await new DataBaseHelper(Theme).find(filters);
     }
 
     /**

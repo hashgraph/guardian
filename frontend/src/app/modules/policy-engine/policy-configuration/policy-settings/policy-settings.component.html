@@ -1,4 +1,7 @@
 <div class="settings">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
     <div class="settings-header">
         <div class="settings-header-icon">
             <mat-icon>settings</mat-icon>

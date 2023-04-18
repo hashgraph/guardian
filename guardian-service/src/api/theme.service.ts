@@ -55,10 +55,10 @@ export async function themeAPI(): Promise<void> {
             if (!msg) {
                 throw new Error('Invalid create theme parameters');
             }
-            const { module, owner } = msg;
-            module.owner = owner;
+            const { theme, owner } = msg;
+            theme.owner = owner;
 
-            const item = await DatabaseServer.createTheme(module);
+            const item = await DatabaseServer.createTheme(theme);
             return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
@@ -114,8 +114,31 @@ export async function themeAPI(): Promise<void> {
                 return new MessageError('Invalid get theme parameters');
             }
             const { owner } = msg;
+            console.log('1')
             const items = await DatabaseServer.getThemes({ owner });
+            console.log('2')
             return new MessageResponse(items);
+        } catch (error) {
+            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    /**
+     * Get theme by Id
+     *
+     * @param {any} msg - Get themes parameters
+     *
+     * @returns {any} theme
+     */
+    ApiResponse(MessageAPI.GET_THEME, async (msg) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid get theme parameters');
+            }
+            const { themeId } = msg;
+            const item = await DatabaseServer.getTheme({ id: themeId });
+            return new MessageResponse(item);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
@@ -131,13 +154,11 @@ export async function themeAPI(): Promise<void> {
      */
     ApiResponse(MessageAPI.DELETE_THEME, async (msg) => {
         try {
-            if (!msg || !msg.themeId || !msg.owner) {
+            if (!msg) {
                 return new MessageError('Invalid delete theme parameters');
             }
-            const item = await DatabaseServer.getTheme({
-                id: msg.themeId,
-                owner: msg.owner
-            });
+            const { themeId, owner } = msg;
+            const item = await DatabaseServer.getTheme({ id: themeId, owner });
             await DatabaseServer.removeTheme(item);
             return new MessageResponse(true);
         } catch (error) {
@@ -155,15 +176,11 @@ export async function themeAPI(): Promise<void> {
      */
     ApiResponse(MessageAPI.THEME_EXPORT_FILE, async (msg) => {
         try {
-            if (!msg.themeId || !msg.owner) {
+            if (!msg) {
                 return new MessageError('Invalid export theme parameters');
             }
-
-            const item = await DatabaseServer.getTheme({
-                id: msg.themeId,
-                owner: msg.owner
-            });
-
+            const { themeId, owner } = msg;
+            const item = await DatabaseServer.getTheme({ id: themeId, owner });
             const zip = await generateZipFile(item);
             const file = await zip.generateAsync({
                 type: 'arraybuffer',

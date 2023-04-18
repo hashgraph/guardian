@@ -1,4 +1,6 @@
 export const defaultTheme = {
+    id: 1,
+    uuid: '00000000-0000-0000-0000-000000000001',
     readonly: true,
     name: 'Default',
     rules: [

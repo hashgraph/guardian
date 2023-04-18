@@ -3,7 +3,7 @@ import { FlatBlockNode } from '../../structures/tree-model/block-node';
 import { CdkDropList } from '@angular/cdk/drag-drop';
 import { PolicyBlockModel, BlocLine, BlockRect, EventCanvas, PolicyModel, PolicyModuleModel } from '../../structures';
 import { RegisteredService } from '../../services/registered.service';
-import { ThemeService } from '../../services/theme.service';
+import { ThemeService } from '../../../../services/theme.service';
 
 /**
  * Settings for all blocks.

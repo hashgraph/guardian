@@ -3,7 +3,8 @@ import { PolicyBlockModel } from '..';
 import { ThemeRule } from './theme-rule';
 
 export class Theme {
-    public readonly id: string;
+    public id: string;
+    public uuid: string;
     public readonly: boolean;
 
     private _name: string;
@@ -13,7 +14,8 @@ export class Theme {
     private _colorMap: Map<number, any>;
 
     constructor() {
-        this.id = GenerateUUIDv4();
+        this.id = '';
+        this.uuid = GenerateUUIDv4();
         this.readonly = false;
         this._name = '';
         this._rules = [];
@@ -119,24 +121,14 @@ export class Theme {
         return this._rules[index]?.style;
     }
 
-    public static from(json: any): Theme {
-        const theme = new Theme();
-        theme._name = json.name || '';
-        theme.readonly = json.readonly || false;
-        if (Array.isArray(json.rules)) {
-            for (const rule of json.rules) {
-                theme.addRule(ThemeRule.from(theme, rule))
-            }
-        }
-        return theme;
-    }
-
     public clone(): Theme {
         return Theme.from(this.toJson());
     }
 
     public toJson(): any {
         return {
+            id: this.id,
+            uuid: this.uuid,
             readonly: this.readonly,
             name: this._name,
             rules: this._rules.map(r => r.toJson())
@@ -159,5 +151,41 @@ export class Theme {
             this._rules[index - 1] = rule;
         }
         this._rules = this._rules.slice();
+    }
+
+    public toString(): string {
+        return JSON.stringify(this.toJson());
+    }
+
+    public static from(json: any): Theme {
+        const theme = new Theme();
+        theme.id = json.id || theme.id;
+        theme.uuid = json.uuid || theme.uuid;
+        theme._name = json.name || '';
+        theme.readonly = json.readonly || false;
+        if (Array.isArray(json.rules)) {
+            for (const rule of json.rules) {
+                theme.addRule(ThemeRule.from(theme, rule))
+            }
+        }
+        return theme;
+    }
+
+    public static fromString(item: string): Theme | null {
+        try {
+            const json = JSON.parse(item);
+            if (
+                typeof json === 'object' &&
+                json.name &&
+                json.uuid &&
+                Array.isArray(json.rules)
+            ) {
+                return Theme.from(json);
+            } else {
+                return null;
+            }
+        } catch (error) {
+            return null;
+        }
     }
 }

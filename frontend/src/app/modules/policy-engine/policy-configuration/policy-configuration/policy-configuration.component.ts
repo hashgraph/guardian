@@ -22,7 +22,7 @@ import { RegisteredService } from '../../services/registered.service';
 import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, TemplateModel, Theme, ThemeRule } from '../../structures';
 import { Options } from '../../structures/storage/config-options';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
-import { ThemeService } from '../../services/theme.service';
+import { ThemeService } from '../../../../services/theme.service';
 
 enum OperationMode {
     none,
@@ -196,10 +196,17 @@ export class PolicyConfigurationComponent implements OnInit {
     public ngOnInit() {
         this.loading = true;
         this.options.load();
-        this.themes = this.themeService.load();
-        this.theme = this.themeService.current();
+        this.theme = this.themeService.getCurrent();
         this.route.queryParams.subscribe(queryParams => {
             this.loadData();
+        });
+
+        this.themeService.load().subscribe((themes: any) => {
+            this.themeService.setThemes(themes);
+            this.themes = this.themeService.getThemes();
+            this.theme = this.themeService.getCurrent();
+        }, (error) => {
+            console.error(error);
         });
     }
 
@@ -1147,19 +1154,14 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public onChangeSettings(event: boolean) {
         this.openSettings = false;
-        if (event) {
-            this.themeService.save();
-        } else {
-            this.themeService.load();
-        }
-        this.themes = this.themeService.load();
-        this.theme = this.themeService.current();
+        this.themes = this.themeService.getThemes();
+        this.theme = this.themeService.getCurrent();
     }
 
     public setTheme(theme: Theme) {
-        this.themeService.setTheme(theme);
+        this.themeService.setCurrent(theme);
         this.themeService.saveTheme();
-        this.theme = this.themeService.current();
+        this.theme = this.themeService.getCurrent();
     }
 
     public blockStyle(rule: ThemeRule) {
