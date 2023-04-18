@@ -1,7 +1,15 @@
 import { fixtures } from '@helpers/fixtures';
 import { AccountService } from '@api/account-service';
 import { WalletService } from '@api/wallet-service';
-import { ApplicationState, MessageBrokerChannel, Logger, DataBaseHelper, Migration, COMMON_CONNECTION_CONFIG } from '@guardian/common';
+import {
+    ApplicationState,
+    MessageBrokerChannel,
+    Logger,
+    DataBaseHelper,
+    Migration,
+    COMMON_CONNECTION_CONFIG,
+    LargePayloadContainer
+} from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -45,6 +53,10 @@ Promise.all([
         }
 
         state.updateState(ApplicationStates.READY);
+        const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+        if (Number.isInteger(maxPayload)) {
+            new LargePayloadContainer().runServer();
+        }
         new Logger().info('auth service started', ['AUTH_SERVICE']);
     } catch (error) {
         console.error(error.message);

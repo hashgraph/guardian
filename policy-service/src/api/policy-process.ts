@@ -11,7 +11,7 @@ import {
     Users,
     Workers,
     IPFS,
-    DatabaseServer,
+    DatabaseServer, LargePayloadContainer,
 } from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -109,5 +109,9 @@ Promise.all([
         policyId: policyId.toString(),
         data: policyValidator.getSerializedErrors()
     });
+    const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+    if (Number.isInteger(maxPayload)) {
+        new LargePayloadContainer().runServer();
+    }
     new Logger().info('Start policy', ['POLICY', policy.name, policyId.toString()]);
 });
