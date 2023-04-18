@@ -101,7 +101,13 @@ export class HeaderComponent implements OnInit {
         this.auth.balance().subscribe((balance: any) => {
             if (balance && balance.balance) {
                 const b = parseFloat(balance.balance);
-                this.balance = `${b.toFixed(3)} ${balance.unit}`;
+                if(b > 999) {
+                    this.balance = `${b.toFixed(0)} ${balance.unit}`;
+                } else if(b > 99) {
+                    this.balance = `${b.toFixed(2)} ${balance.unit}`;
+                } else if(b > 9) {
+                    this.balance = `${b.toFixed(3)} ${balance.unit}`;
+                }
                 if (b > 100) {
                     this.balanceType = 'normal';
                 } else if (b > 20) {

@@ -94,6 +94,8 @@ import { AppRoutingModule } from 'src/app/app-routing.module';
 import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.component';
 import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
 import { ThemeService } from './services/theme.service';
+import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialog.component';
+import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
 
 @NgModule({
     declarations: [
@@ -170,7 +172,9 @@ import { ThemeService } from './services/theme.service';
         NewModuleDialog,
         TagsManagerBlockComponent,
         NewPolicyDialog,
-        PolicySettingsComponent
+        PolicySettingsComponent,
+        ImportFileDialog,
+        NewThemeDialog
     ],
     imports: [
         CommonModule,
@@ -185,55 +189,6 @@ import { ThemeService } from './services/theme.service';
         AppRoutingModule
     ],
     exports: [
-        // PoliciesComponent,
-        // ButtonBlockComponent,
-        // ButtonConfigComponent,
-        // RevokeConfigComponent,
-        // PolicyConfigurationComponent,
-        // DocumentSourceComponent,
-        // CommonPropertiesComponent,
-        // ActionConfigComponent,
-        // ContainerConfigComponent,
-        // RequestConfigComponent,
-        // PolicyPropertiesComponent,
-        // MintConfigComponent,
-        // SendConfigComponent,
-        // ExternalDataConfigComponent,
-        // AggregateConfigComponent,
-        // InformationConfigComponent,
-        // RolesConfigComponent,
-        // FiltersAddonConfigComponent,
-        // SourceAddonConfigComponent,
-        // ActionBlockComponent,
-        // RequestDocumentBlockComponent,
-        // ContainerBlockComponent,
-        // DocumentsSourceBlockComponent,
-        // PolicyViewerComponent,
-        // RenderBlockComponent,
-        // DialogBlock,
-        // DocumentDialogBlock,
-        // InformationBlockComponent,
-        // StepBlockComponent,
-        // RolesBlockComponent,
-        // FiltersAddonBlockComponent,
-        // HelpIcon,
-        // SavePolicyDialog,
-        // SchemaEngineModule,
-        // PreviewPolicyDialog,
-        // ExportPolicyDialog,
-        // CalculateConfigComponent,
-        // CalculateMathConfigComponent,
-        // JsonPropertiesComponent,
-        // ReassigningConfigComponent,
-        // CronConfigDialog,
-        // TokenActionConfigComponent,
-        // DocumentValidatorConfigComponent,
-        // TokenConfirmationConfigComponent,
-        // TokenConfirmationBlockComponent,
-        // GroupManagerConfigComponent,
-        // GroupManagerBlockComponent,
-        // InviteDialogComponent,
-        // ModulesListComponent
     ],
     providers: [
         RegisteredService,

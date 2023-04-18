@@ -6,7 +6,7 @@
             </div>
         </div>
         <div class="g-dialog-title">
-            New Module
+            {{title}}
         </div>
         <div class="g-dialog-actions">
             <div class="g-dialog-actions-btn" (click)="onSubmit()" [attr.disabled]="!dataForm.valid">
@@ -19,11 +19,7 @@
             <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
                 <mat-form-field class="example-full-width" appearance="outline">
                     <mat-label>* NAME:</mat-label>
-                    <input matInput type="text" placeholder="Module name" formControlName="name">
-                </mat-form-field>
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>DESCRIPTION:</mat-label>
-                    <textarea matInput type="text" placeholder="Description" formControlName="description"></textarea>
+                    <input matInput type="text" placeholder="Theme name" formControlName="name">
                 </mat-form-field>
             </form>
         </div>

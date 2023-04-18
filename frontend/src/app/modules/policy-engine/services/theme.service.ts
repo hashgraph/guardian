@@ -27,14 +27,15 @@ export class ThemeService {
         this.storage.save();
     }
 
-    public create(): Theme[] {
+    public create(name?: string): Theme {
         const theme = new Theme();
-        theme.name = 'New Theme';
-        return this.storage.add(theme);
+        theme.name = name || 'New Theme';
+        this.storage.add(theme);
+        return theme;
     }
 
-    public delete(theme: Theme): Theme[] {
-        return this.storage.delete(theme);
+    public delete(theme: Theme): void {
+        this.storage.delete(theme);
     }
 
     public getThemes(): Theme[] {
@@ -63,5 +64,12 @@ export class ThemeService {
 
     public current(): Theme {
         return this.storage.currentTheme;
+    }
+
+    public import(json: any): Theme {
+        const theme = Theme.from(json);
+        theme.readonly = false;
+        this.storage.add(theme);
+        return theme;
     }
 }

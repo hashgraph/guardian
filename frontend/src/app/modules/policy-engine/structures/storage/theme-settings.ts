@@ -96,9 +96,18 @@ export class ThemeSettings {
 
 
     public add(theme: Theme): Theme[] {
+        this.checkName(theme);
         this._current = theme;
         this._all.push(theme);
         this._customThemes.push(theme);
         return this._all;
+    }
+
+    public checkName(theme: Theme) {
+        for (const t of this._all) {
+            if (theme.name === t.name) {
+                theme.name = theme.name + `_${Date.now()}`;
+            }
+        }
     }
 }

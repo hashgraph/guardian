@@ -35,15 +35,19 @@
                         </mat-select>
                     </mat-form-field>
                 </div>
-                <div class="settings-header-button save icon" (click)="newTheme()">
+                <div class="settings-header-button sub icon" (click)="newTheme()">
                     <mat-icon>add</mat-icon>
                     <span>Create New</span>
                 </div>
-                <div class="settings-header-button save icon" (click)="importTheme()">
+                <div *ngIf="!theme?.readonly" class="settings-header-button sub icon" (click)="editTheme(theme)">
+                    <mat-icon>edit</mat-icon>
+                    <span>Edit</span>
+                </div>
+                <div class="settings-header-button sub icon" (click)="importTheme()">
                     <mat-icon>file_open</mat-icon>
                     <span>Import</span>
                 </div>
-                <div class="settings-header-button save icon" (click)="exportTheme(theme)">
+                <div class="settings-header-button sub icon" (click)="exportTheme(theme)">
                     <mat-icon>import_export</mat-icon>
                     <span>Export</span>
                 </div>
@@ -78,7 +82,7 @@
                                     <mat-option value="type">Types</mat-option>
                                     <mat-option value="role">Roles</mat-option>
                                     <mat-option value="api">API</mat-option>
-                                    <mat-option value="custom">Custom</mat-option>
+                                    <!-- <mat-option value="custom">Custom</mat-option> -->
                                 </mat-select>
                             </div>
 

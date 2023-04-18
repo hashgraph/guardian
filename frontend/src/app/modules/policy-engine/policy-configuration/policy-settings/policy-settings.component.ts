@@ -3,6 +3,9 @@ import { ThemeService } from '../../services/theme.service';
 import { Theme } from "../../structures/storage/theme";
 import { ThemeRule } from "../../structures/storage/theme-rule";
 import { RegisteredService } from '../../services/registered.service';
+import { ImportFileDialog } from '../../helpers/import-file-dialog/import-file-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+import { NewThemeDialog } from '../../helpers/new-theme-dialog/new-theme-dialog.component';
 
 /**
  * Settings.
@@ -23,7 +26,8 @@ export class PolicySettingsComponent implements OnInit {
 
     constructor(
         private registeredService: RegisteredService,
-        private themeService: ThemeService
+        private themeService: ThemeService,
+        private dialog: MatDialog
     ) {
         this.roles = [];
         for (let i = 0; i < 20; i++) {
@@ -66,21 +70,49 @@ export class PolicySettingsComponent implements OnInit {
     }
 
     public newTheme() {
-        this.themes = this.themeService.create();
-        this.theme = this.themeService.current();
+        const dialogRef = this.dialog.open(NewThemeDialog, {
+            width: '650px',
+            panelClass: 'g-dialog',
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.theme = this.themeService.create(result.name);
+                this.themes = this.themeService.getThemes();
+                this.themeService.setTheme(this.theme);
+            }
+        });
     }
 
     public deleteTheme(theme: Theme) {
-        this.themes = this.themeService.delete(theme);
+        this.themeService.delete(theme);
         this.theme = this.themeService.current();
+        this.themes = this.themeService.getThemes();
     }
 
     public importTheme() {
-        throw new Error('Method not implemented.');
+        const dialogRef = this.dialog.open(ImportFileDialog, {
+            width: '500px',
+            autoFocus: false,
+            data: {}
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                this.theme = this.themeService.import(result);
+                this.themes = this.themeService.getThemes();
+                this.themeService.setTheme(this.theme);
+            }
+        });
     }
 
     public exportTheme(theme: Theme) {
-        throw new Error('Method not implemented.');
+        const json = theme.toJson();
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(json));
+        const downloadLink = document.createElement('a');
+        downloadLink.href = dataStr;
+        downloadLink.setAttribute('download', `${theme.name}_${Date.now()}.theme`);
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        downloadLink.remove();
     }
 
     public ruleUp(rule: ThemeRule) {
@@ -89,6 +121,21 @@ export class PolicySettingsComponent implements OnInit {
 
     public ruleDown(rule: ThemeRule) {
         this.theme.downRule(rule);
+    }
+
+    public editTheme(theme: Theme) {
+        const dialogRef = this.dialog.open(NewThemeDialog, {
+            width: '750px',
+            panelClass: 'g-dialog',
+            data: {
+                theme: theme
+            }
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (result) {
+                theme.name = result.name;
+            }
+        });
     }
 }
 
