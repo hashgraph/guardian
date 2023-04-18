@@ -153,9 +153,8 @@ services:
       - logger-service
     environment:
       - ENV=${GUARDIAN_ENV}
-      - DIRECT_MESSAGE_PORT=6555
     expose:
-      - 6555
+      - 50000-60000
 
 
   guardian-service:
