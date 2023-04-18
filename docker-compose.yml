@@ -82,7 +82,7 @@ services:
       - ipfs-node
       - auth-service
     environment:
-      - SERVICE_CHANNEL="worker.1"
+      - SERVICE_CHANNEL=worker.1
       - ENV=${GUARDIAN_ENV}
       - DIRECT_MESSAGE_PORT=6555
     expose:
@@ -98,7 +98,7 @@ services:
       - ipfs-node
       - auth-service
     environment:
-      - SERVICE_CHANNEL="worker.2"
+      - SERVICE_CHANNEL=worker.2
       - ENV=${GUARDIAN_ENV}
       - DIRECT_MESSAGE_PORT=6555
     expose:
