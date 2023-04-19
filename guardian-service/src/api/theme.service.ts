@@ -18,6 +18,14 @@ import { GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
  */
 export async function generateZipFile(theme: Theme): Promise<JSZip> {
     const object = { ...theme };
+    delete object.id;
+    delete object._id;
+    delete object.owner;
+    delete object.createDate;
+    delete object.updateDate;
+    if (!Array.isArray(object.rules)) {
+        object.rules = [];
+    }
     const zip = new JSZip();
     zip.file('theme.json', JSON.stringify(object));
     return zip;

@@ -40,6 +40,20 @@ export class ThemeService {
         return this.http.put<any>(`${this.url}/`, theme.toJson());
     }
 
+    public export(id: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${id}/export/file`, {
+            responseType: 'arraybuffer'
+        });
+    }
+
+    public import(file: any): Observable<any> {
+        return this.http.post<any[]>(`${this.url}/import/file`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
     public getThemes(): Theme[] {
         return this.storage.themes;
     }

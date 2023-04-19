@@ -24,11 +24,10 @@ export class ImportFileDialog {
 
     importFromFile(file: any) {
         const reader = new FileReader()
-        reader.readAsText(file);
+        reader.readAsArrayBuffer(file);
         reader.addEventListener('load', (e: any) => {
-            const buffer = e.target.result;
-            const json = JSON.parse(buffer);
-            this.dialogRef.close(json);
+            const arrayBuffer = e.target.result;
+            this.dialogRef.close(arrayBuffer);
         });
     }
 }

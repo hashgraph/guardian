@@ -111,18 +111,28 @@ export class PolicySettingsComponent implements OnInit {
         this.themeService.setCurrent(this.theme);
     }
 
-    public newTheme() {
+    public newTheme(row?: Theme) {
         const dialogRef = this.dialog.open(NewThemeDialog, {
             width: '650px',
             panelClass: 'g-dialog',
+            data: {
+                type: !row ? 'new' : 'copy',
+                theme: row
+            }
         });
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
-                const theme = new Theme();
-                theme.name = result.name || 'New Theme';
+                let newTheme: Theme;
+                if (row) {
+                    newTheme = row.clone();
+                } else {
+                    newTheme = new Theme();
+                }
+                newTheme.name = result.name || 'New Theme';
+
                 this.loading = true;
-                this.themeService.create(theme).subscribe((newTheme: any) => {
-                    this.themeService.addTheme(newTheme);
+                this.themeService.create(newTheme).subscribe((result: any) => {
+                    this.themeService.addTheme(result);
                     this.themes = this.themeService.getThemes();
                     this.theme = this.themeService.getCurrent();
                     this.loading = false;
@@ -148,29 +158,46 @@ export class PolicySettingsComponent implements OnInit {
     }
 
     public importTheme() {
-        // const dialogRef = this.dialog.open(ImportFileDialog, {
-        //     width: '500px',
-        //     autoFocus: false,
-        //     data: {}
-        // });
-        // dialogRef.afterClosed().subscribe(async (result) => {
-        //     if (result) {
-        //         this.theme = this.themeService.import(result);
-        //         this.themes = this.themeService.getThemes();
-        //         this.themeService.setCurrent(this.theme);
-        //     }
-        // });
+        const dialogRef = this.dialog.open(ImportFileDialog, {
+            width: '500px',
+            autoFocus: false,
+            data: {}
+        });
+        dialogRef.afterClosed().subscribe(async (arrayBuffer) => {
+            if (arrayBuffer) {
+                this.loading = true;
+                this.themeService.import(arrayBuffer).subscribe((result) => {
+                    this.themeService.addTheme(result);
+                    this.themes = this.themeService.getThemes();
+                    this.theme = this.themeService.getCurrent();
+                    this.loading = false;
+                }, (e) => {
+                    this.loading = false;
+                });
+            }
+        });
     }
 
     public exportTheme(theme: Theme) {
-        // const json = theme.toJson();
-        // const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(json));
-        // const downloadLink = document.createElement('a');
-        // downloadLink.href = dataStr;
-        // downloadLink.setAttribute('download', `${theme.name}_${Date.now()}.theme`);
-        // document.body.appendChild(downloadLink);
-        // downloadLink.click();
-        // downloadLink.remove();
+        this.loading = true;
+        this.themeService.export(theme.id)
+            .subscribe((fileBuffer) => {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-theme'
+                    })
+                );
+                downloadLink.setAttribute('download', `${theme.name}_${Date.now()}.theme`);
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                downloadLink.remove();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (error) => {
+                this.loading = false;
+            });
     }
 
     public ruleUp(rule: ThemeRule) {
@@ -186,6 +213,7 @@ export class PolicySettingsComponent implements OnInit {
             width: '750px',
             panelClass: 'g-dialog',
             data: {
+                type: 'edit',
                 theme: theme
             }
         });

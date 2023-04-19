@@ -22,12 +22,17 @@ export class NewThemeDialog {
         public dialogRef: MatDialogRef<NewThemeDialog>,
         private fb: FormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
+
         if (data && data.theme) {
             this.theme = data.theme;
-            this.title = 'Edit Theme';
             this.dataForm.setValue({
                 name: this.theme.name || ''
             });
+            if(data.type === 'copy') {
+                this.title = 'Copy Theme';
+            } else {
+                this.title = 'Edit Theme';
+            }
         } else {
             this.theme = null;
             this.title = 'New Theme';

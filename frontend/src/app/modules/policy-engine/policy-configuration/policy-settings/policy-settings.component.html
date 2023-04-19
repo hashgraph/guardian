@@ -38,26 +38,34 @@
                         </mat-select>
                     </mat-form-field>
                 </div>
-                <div class="settings-header-button sub icon" (click)="newTheme()">
-                    <mat-icon>add</mat-icon>
-                    <span>Create New</span>
-                </div>
-                <div *ngIf="!theme?.readonly" class="settings-header-button sub icon" (click)="editTheme(theme)">
-                    <mat-icon>edit</mat-icon>
-                    <span>Edit</span>
-                </div>
-                <div class="settings-header-button sub icon" (click)="importTheme()">
-                    <mat-icon>file_open</mat-icon>
-                    <span>Import</span>
-                </div>
-                <div class="settings-header-button sub icon" (click)="exportTheme(theme)">
-                    <mat-icon>import_export</mat-icon>
-                    <span>Export</span>
-                </div>
-                <div *ngIf="!theme?.readonly" class="settings-header-button del icon" (click)="deleteTheme(theme)">
-                    <mat-icon>delete</mat-icon>
-                    <span>Delete</span>
-                </div>
+                <ng-container *ngIf="theme">
+                    <div class="settings-sub-button" (click)="newTheme()">
+                        <mat-icon>add</mat-icon>
+                        <span>New</span>
+                    </div>
+                    <div class="settings-sub-button" (click)="newTheme(theme)">
+                        <mat-icon>content_copy</mat-icon>
+                        <span>Copy</span>
+                    </div>
+                    <div *ngIf="!theme.readonly" class="settings-sub-button" (click)="editTheme(theme)">
+                        <mat-icon>edit</mat-icon>
+                        <span>Edit</span>
+                    </div>
+                    <div class="settings-button-delimiter"></div>
+                    <div class="settings-sub-button" (click)="importTheme()">
+                        <mat-icon>file_open</mat-icon>
+                        <span>Import</span>
+                    </div>
+                    <div *ngIf="!theme.readonly" class="settings-sub-button" (click)="exportTheme(theme)">
+                        <mat-icon>import_export</mat-icon>
+                        <span>Export</span>
+                    </div>
+                    <div *ngIf="!theme.readonly" class="settings-button-delimiter"></div>
+                    <div *ngIf="!theme.readonly" class="settings-sub-button del" (click)="deleteTheme(theme)">
+                        <mat-icon>delete</mat-icon>
+                        <span>Delete</span>
+                    </div>
+                </ng-container>
             </div>
 
             <div class="rules-container" [attr.readonly]="theme.readonly">

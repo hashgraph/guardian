@@ -70,12 +70,40 @@ themesAPI.get('/', async (req: AuthenticatedRequest, res: Response, next: NextFu
         const user = req.user;
         const guardians = new Guardians();
         if (user.did) {
-            console.log('1');
             const themes = await guardians.getThemes(user.did);
-            console.log('2', JSON.stringify(themes));
             return res.send(themes);
         }
         return res.send([]);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        return next(error);
+    }
+});
+
+/**
+ * Import Theme
+ */
+themesAPI.post('/import/file', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const guardian = new Guardians();
+    try {
+        const theme = await guardian.importThemeFile(req.body, req.user.did);
+        return res.status(201).send(theme);
+    } catch (error) {
+        new Logger().error(error, ['API_GATEWAY']);
+        return next(error);
+    }
+});
+
+/**
+ * Export Theme
+ */
+themesAPI.get('/:themeId/export/file', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const guardian = new Guardians();
+    try {
+        const file: any = await guardian.exportThemeFile(req.params.themeId, req.user.did);
+        res.setHeader('Content-disposition', `attachment; filename=theme_${Date.now()}`);
+        res.setHeader('Content-type', 'application/zip');
+        return res.send(file);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
         return next(error);

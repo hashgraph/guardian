@@ -126,7 +126,7 @@
         }
 
         &.sub {
-            min-width: 110px;
+            min-width: 100px;
             text-align: left;
             font-size: 14px;
             border-color: #afb5df;
@@ -139,8 +139,8 @@
         }
 
         &.icon {
-            padding-left: 48px;
-            padding-right: 18px;
+            padding-left: 44px;
+            padding-right: 16px;
 
             mat-icon {
                 position: absolute;
@@ -151,6 +151,56 @@
                 height: 24px;
             }
         }
+    }
+
+    .settings-sub-button {
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        height: 46px;
+        margin-left: 16px;
+        box-sizing: border-box;
+        text-align: center;
+        display: inline-block;
+        width: 48px;
+        min-width: 48px;
+        max-width: 48px;
+        padding: 0;
+        background: #fff;
+        color: var(--pc-active-icon-color);
+        border-radius: 6px;
+
+        mat-icon {
+            position: absolute;
+            left: 12px;
+            top: 4px;
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+        }
+
+        span {
+            position: absolute;
+            font-size: 11px;
+            width: 48px;
+            left: 0;
+            bottom: -1px;
+        }
+
+        &.del {
+            color: var(--pc-del-color);
+        }
+
+        &:hover {
+            filter: brightness(0.95);
+        }
+    }
+
+    .settings-button-delimiter {
+        height: 30px;
+        width: 16px;
+        border-right: 1px solid var(--pc-main-grid-border);
+        margin: 8px 0px;
     }
 
     .settings-body {
@@ -348,7 +398,7 @@
         }
 
         .rule-color-delete {
-            margin-top: 35px;
+            margin-top: 14px;
         }
 
         .new-rule {
@@ -542,4 +592,18 @@
     border: 3px dashed #000;
     box-sizing: border-box;
     border-radius: 10px;
+}
+
+@media screen and (max-width: 1300px) {
+    .settings-header-button.icon {
+        width: 48px !important;
+        min-width: 48px !important;
+        max-width: 48px !important;
+        padding: 0 !important;
+        border: none !important;
+
+        span {
+            display: none !important;
+        }
+    }
 }
