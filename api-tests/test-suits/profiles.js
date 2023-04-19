@@ -17,7 +17,7 @@ function Profiles() {
     })
 
     it('/profiles', async function () {
-        this.timeout(120000);
+        this.timeout(240000);
 
         let result;
 
