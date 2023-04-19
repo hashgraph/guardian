@@ -60,6 +60,7 @@ function Profiles() {
             {
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
@@ -69,6 +70,7 @@ function Profiles() {
             {
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
                 }
             }
         );
