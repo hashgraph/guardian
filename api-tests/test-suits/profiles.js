@@ -22,7 +22,7 @@ function Profiles() {
         let result;
 
         result = await axios.get(
-            GetURL('profiles', ''),
+            GetURL('profiles', 'Installer'),
             {
                 headers: {
                     'Content-Type': 'application/json',
