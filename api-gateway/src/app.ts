@@ -89,7 +89,7 @@ Promise.all([
         app.use('/contracts', authorizationHelper, contractAPI);
         app.use('/modules', authorizationHelper, moduleAPI);
         app.use('/tags', authorizationHelper, tagsAPI);
-        app.use('/map', authorizationHelper, mapAPI);
+        app.use('/map', mapAPI);
 
         /**
          * @deprecated 2023-03-01
