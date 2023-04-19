@@ -1316,4 +1316,11 @@ export class HederaSDKHelper {
         }
         return res.data;
     }
+
+    /**
+     * Destroy client
+     */
+    public destroy() {
+        this.client.close();
+    }
 }

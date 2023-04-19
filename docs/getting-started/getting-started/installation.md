@@ -26,7 +26,9 @@ in `guardian-service/.env.docker`:
 ```
 
 {% hint style="info" %}
-**Note:** You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
+**Note:**&#x20;
+
+1. You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 {% endhint %}
 
 3\. Now, we have two options to setup IPFS node : 1. Local node 2. IPFS Web3Storage node.
@@ -554,6 +556,12 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 | MAP\_API\_KEY                          | Defines api to integrate Map schema type                                           | ALZ\_X.....                        |
 | DOCUMENT\_CACHE\_FIELD\_LIMIT          | Defines document field symbols limit for caching.                                  | 500                                |
 | BATCH\_NFT\_MINT\_SIZE                 | Defines size of batch of mint NFT transaction                                      | 10                                 |
+
+{% hint style="info" %}
+**Important Note:**
+
+Values from .env file need to be set up only on first start (when db or vault are empty). Then later if you want it to be changed, you can change it through Settings from admin Panel or through API.
+{% endhint %}
 
 ### .env / .env.docker Parameters in api-gateway
 

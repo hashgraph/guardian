@@ -1,5 +1,5 @@
 import {
-    ApplicationState,
+    ApplicationState, LargePayloadContainer,
     Logger,
     MessageBrokerChannel,
     ValidateConfiguration
@@ -73,6 +73,10 @@ Promise.all([
     });
 
     validator.setValidAction(async () => {
+        const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+        if (Number.isInteger(maxPayload)) {
+            new LargePayloadContainer().runServer();
+        }
         await state.updateState(ApplicationStates.READY);
         logger.info('Worker started', [channelName]);
     });

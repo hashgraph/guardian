@@ -27,7 +27,7 @@ import { Users } from '@helpers/users';
 import { Wallet } from '@helpers/wallet';
 import { settingsAPI } from '@api/service/settings';
 import { loggerAPI } from '@api/service/logger';
-import { MessageBrokerChannel, Logger } from '@guardian/common';
+import { MessageBrokerChannel, Logger, LargePayloadContainer } from '@guardian/common';
 import { taskAPI } from '@api/service/task';
 import { TaskManager } from '@helpers/task-manager';
 import { singleSchemaRoute } from '@api/service/schema';
@@ -90,7 +90,7 @@ Promise.all([
         app.use('/contracts', authorizationHelper, contractAPI);
         app.use('/modules', authorizationHelper, moduleAPI);
         app.use('/tags', authorizationHelper, tagsAPI);
-        app.use('/map', authorizationHelper, mapAPI);
+        app.use('/map', mapAPI);
         app.use('/themes', authorizationHelper, themesAPI);
 
         /**
@@ -105,7 +105,11 @@ Promise.all([
             return res.status(err?.status || 500).json({ code: err?.status || 500, message: err.message })
         });
 
-        server.setTimeout()
+        server.setTimeout();
+        const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+        if (Number.isInteger(maxPayload)) {
+            new LargePayloadContainer().runServer();
+        }
         server.setTimeout(12000000).listen(PORT, () => {
             new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);
         });

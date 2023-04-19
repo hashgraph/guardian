@@ -33,7 +33,7 @@ import {
     TopicMemo,
     TransactionLogger,
     TransactionLogLvl,
-    Workers
+    Workers, LargePayloadContainer
 } from '@guardian/common';
 import { ApplicationStates, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
@@ -267,6 +267,11 @@ Promise.all([
             await ipfsAPI();
         } catch (error) {
             console.error(error.message);
+        }
+
+        const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+        if (Number.isInteger(maxPayload)) {
+            new LargePayloadContainer().runServer();
         }
 
         await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
