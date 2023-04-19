@@ -476,7 +476,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 **Note**: Restore Data can be restored from Hedera if data is available for setting up the Registry.
 
-<figure><img src="../../.gitbook/assets/image (2) (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (21) (3).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Limitations on restoring the data:**\
@@ -487,7 +487,7 @@ Once you generated Operator ID and Operator Key, we can either click on Next or 
 
 If Next is clicked, we need to manually setup the Registry or if Restore Data is clicked, it is filled automatically.
 
-![](<../../.gitbook/assets/image (23) (1).png>)
+![](<../../.gitbook/assets/image (14) (3).png>)
 
 **Note:** The above fields in UI are mandatory only for this default Schema.
 
@@ -531,31 +531,35 @@ Where the list of `attributes` is extendable, and all attributes in it are **opt
 
 ### .env / .env.docker Parameters in `guardian-service`
 
-| Parameter                              | Purpose                                                                            | Example                            |
-| -------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------- |
-| MQ\_ADDRESS                            | Web Socket Address                                                                 | localhost                          |
-| SERVICE\_CHANNEL                       | Version of the Guardian                                                            | guardian.1                         |
-| DB\_HOST                               | Hostname of the Database                                                           | localhost                          |
-| DB\_DATABASE                           | Database Name                                                                      | guardian\_db                       |
-| INITIAL\_BALANCE                       | Initial Balance Value                                                              | 500                                |
-| INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                          | 500                                |
-| OPERATOR\_ID                           | The ID of the operation                                                            | -                                  |
-| OPERATOR\_KEY                          | Private key of the operator                                                        | -                                  |
-| LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name   | 1.1.1.1                            |
-| LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https. | http/https                         |
-| HEDERA\_NET                            | Type of the Hedera node to transact with                                           | testnet, localnode, mainnet        |
-| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialization topic.                                                | 0.0.2030                           |
-| MESSAGE\_LANG                          | Language of the message text of all messages                                       | en-US                              |
-| LOG\_LEVEL                             | Level of the Logs                                                                  | 2                                  |
-| SEND\_KEYS\_TO\_VAULT                  | Checked if keys to be sent to vault                                                | True/False                         |
-| MULTI\_POLICY\_SCHEDULER               | to set custom cron mask (timer mask) for sync job                                  | 0 0 \* \* \*                       |
-| CONTRACT\_FILE\_ID                     | Defines the file identifier in hedera to create smart-contract.                    | 0.0.6276                           |
-| MQ\_MESSAGE\_CHUNK                     | To set up the message chunk size                                                   | 500000                             |
-| HEDERA\_CUSTOM\_NODES                  | Define hedera nodes to execute and pay transaction fee                             | 0.testnet.hedera.com:50211":"0.0.3 |
-| HEDERA\_CUSTOM\_MIRROR\_NODES          | Define hedera mirror nodes                                                         | testnet.mirrornode.hedera.com:443" |
-| MAP\_API\_KEY                          | Defines api to integrate Map schema type                                           | ALZ\_X.....                        |
-| DOCUMENT\_CACHE\_FIELD\_LIMIT          | Defines document field symbols limit for caching.                                  | 500                                |
-| BATCH\_NFT\_MINT\_SIZE                 | Defines size of batch of mint NFT transaction                                      | 10                                 |
+| Parameter                              | Purpose                                                                                                                             | Example                            |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| MQ\_ADDRESS                            | Web Socket Address                                                                                                                  | localhost                          |
+| SERVICE\_CHANNEL                       | Version of the Guardian                                                                                                             | guardian.1                         |
+| DB\_HOST                               | Hostname of the Database                                                                                                            | localhost                          |
+| DB\_DATABASE                           | Database Name                                                                                                                       | guardian\_db                       |
+| INITIAL\_BALANCE                       | Initial Balance Value                                                                                                               | 500                                |
+| INITIAL\__STANDARD\_REGISTRY\_BALANCE_ | Setting Initial Standard Registry Balance                                                                                           | 500                                |
+| OPERATOR\_ID                           | The ID of the operation                                                                                                             | -                                  |
+| OPERATOR\_KEY                          | Private key of the operator                                                                                                         | -                                  |
+| LOCALNODE\_ADDRESS                     | The address of the localnode server. This can be its IP address or a domain name                                                    | 1.1.1.1                            |
+| LOCALNODE\_PROTOCOL                    | Communication protocol for interactions with the local node, can be http or https.                                                  | http/https                         |
+| HEDERA\_NET                            | Type of the Hedera node to transact with                                                                                            | testnet, localnode, mainnet        |
+| INITIALIZATION\__TOPIC\_ID_            | The ID of the initialization topic.                                                                                                 | 0.0.2030                           |
+| MESSAGE\_LANG                          | Language of the message text of all messages                                                                                        | en-US                              |
+| LOG\_LEVEL                             | Level of the Logs                                                                                                                   | 2                                  |
+| SEND\_KEYS\_TO\_VAULT                  | Checked if keys to be sent to vault                                                                                                 | True/False                         |
+| MULTI\_POLICY\_SCHEDULER               | to set custom cron mask (timer mask) for sync job                                                                                   | 0 0 \* \* \*                       |
+| CONTRACT\_FILE\_ID                     | Defines the file identifier in hedera to create smart-contract.                                                                     | 0.0.6276                           |
+| MQ\_MESSAGE\_CHUNK                     | To set up the message chunk size                                                                                                    | 500000                             |
+| HEDERA\_CUSTOM\_NODES                  | Define hedera nodes to execute and pay transaction fee                                                                              | 0.testnet.hedera.com:50211":"0.0.3 |
+| HEDERA\_CUSTOM\_MIRROR\_NODES          | Define hedera mirror nodes                                                                                                          | testnet.mirrornode.hedera.com:443" |
+| MAP\_API\_KEY                          | Defines api to integrate Map schema type                                                                                            | ALZ\_X.....                        |
+| DOCUMENT\_CACHE\_FIELD\_LIMIT          | Defines document field symbols limit for caching.                                                                                   | 500                                |
+| BATCH\_NFT\_MINT\_SIZE                 | Defines size of batch of mint NFT transaction                                                                                       | 10                                 |
+| DIRECT\_MESSAGE\_PORT                  | Port for direct messages (if not set generate random port)                                                                          | 300                                |
+| DIRECT\_MESSAGE\_HOST                  | Host for direct messages (if not set get hostname)                                                                                  | localhost                          |
+| DIRECT\_MESSAGE\_PROTOCOL              | Protocol https or http (http by default, https need additional server like nginx)                                                   | http                               |
+| MQ\_MAX\_PAYLOAD                       | Max message size for send via message-broker (otherwise create direct message) if not set always send messages using message broker | 35                                 |
 
 {% hint style="info" %}
 **Important Note:**
@@ -565,14 +569,18 @@ Values from .env file need to be set up only on first start (when db or vault ar
 
 ### .env / .env.docker Parameters in api-gateway
 
-| Parameter            | Purpose                              | Example                   |
-| -------------------- | ------------------------------------ | ------------------------- |
-| MQ\_ADDRESS          | Web Socket Address                   | message-broker            |
-| SERVICE\_CHANNEL     | Channel of the service               | api-gateway               |
-| MRV\_ADDRESS         | MRV Address location                 | http://message-broker/mrv |
-| MQ\_MESSAGE\_CHUNK   | To set up the message chunk size     | 500000                    |
-| RAW\_REQUEST\_LIMIT  | Define request limit                 | 1 gb                      |
-| JSON\_REQUEST\_LIMIT | Define limit for body in Json format | 1 gb                      |
+| Parameter                 | Purpose                                                                                                                             | Example                   |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| MQ\_ADDRESS               | Web Socket Address                                                                                                                  | message-broker            |
+| SERVICE\_CHANNEL          | Channel of the service                                                                                                              | api-gateway               |
+| MRV\_ADDRESS              | MRV Address location                                                                                                                | http://message-broker/mrv |
+| MQ\_MESSAGE\_CHUNK        | To set up the message chunk size                                                                                                    | 500000                    |
+| RAW\_REQUEST\_LIMIT       | Define request limit                                                                                                                | 1 gb                      |
+| JSON\_REQUEST\_LIMIT      | Define limit for body in Json format                                                                                                | 1 gb                      |
+| DIRECT\_MESSAGE\_PORT     | Port for direct messages (if not set generate random port)                                                                          | 300                       |
+| DIRECT\_MESSAGE\_HOST     | Host for direct messages (if not set get hostname)                                                                                  | localhost                 |
+| DIRECT\_MESSAGE\_PROTOCOL | Protocol https or http (http by default, https need additional server like nginx)                                                   | http                      |
+| MQ\_MAX\_PAYLOAD          | Max message size for send via message-broker (otherwise create direct message) if not set always send messages using message broker | 35                        |
 
 ### Restoring account from Database/Hashicorp vault during Setup.
 
