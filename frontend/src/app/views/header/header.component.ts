@@ -30,6 +30,7 @@ export class HeaderComponent implements OnInit {
     testUsers$: Observable<any[]>;
     balance: string;
     balanceType: string;
+    balanceInit: boolean = false;
     ws!: any;
     authSubscription!: any;
     displayDemoAccounts: boolean = environment.displayDemoAccounts;
@@ -99,6 +100,10 @@ export class HeaderComponent implements OnInit {
     }
 
     getBallance() {
+        if(!this.isLogin) {
+            return;
+        }
+        this.balanceInit = true;
         this.auth.balance().subscribe((balance: any) => {
             if (balance && balance.balance) {
                 const b = parseFloat(balance.balance);
@@ -138,6 +143,9 @@ export class HeaderComponent implements OnInit {
             const username = user ? user.username : null;
             this.setStatus(isLogin, role, username);
             this.authState.updateState(isLogin);
+            if(!this.balanceInit) {
+                this.getBallance();
+            }
         }, () => {
             this.setStatus(false, null, null);
         });
