@@ -10,7 +10,7 @@ export default class MongodbConnection {
 
   constructor () {
     this.connection = MikroORM.init({
-      clientUrl: process.env.MONGODB_SERVER_URL || 'mongodb://host.docker.internal:27017',
+      clientUrl: process.env.MONGODB_SERVER_URL || 'mongodb://mongo:27017',
       dbName: 'application_events',
       driver: MongoDriver,
       entities: [ Webhook ],

@@ -4,7 +4,7 @@ export default class WebhookStore {
   private static instance: WebhookStore;
   private webhooks: { [eventName: string]: string[] } = {};
 
-  public async initEvents(webhooks: Webhook[]) {
+  public async initEvents (webhooks: Webhook[]) {
     for (const webhook of webhooks) {
       this.seedWebhookEvents(webhook);
     }
@@ -14,7 +14,7 @@ export default class WebhookStore {
    * Seed webhooks
    * @param webhook
    */
-  public seedWebhookEvents(webhook: Webhook) {
+  public seedWebhookEvents (webhook: Webhook) {
     if (webhook.events.length) {
       for (const event of webhook.events) {
         this.addWebhook(event, webhook.url);
@@ -26,7 +26,7 @@ export default class WebhookStore {
    * Unregister webhook for all events
    * @param webhook
    */
-  public removeWebhookEvents(webhook: Webhook) {
+  public removeWebhookEvents (webhook: Webhook) {
     if (this.webhooks.length) {
       for (const event of webhook.events) {
         const index = this.webhooks[event].indexOf(webhook.url)
@@ -40,7 +40,7 @@ export default class WebhookStore {
   /**
    * Get class instance
    */
-  public static getInstance(): WebhookStore {
+  public static getInstance (): WebhookStore {
     if (!WebhookStore.instance) {
       WebhookStore.instance = new WebhookStore();
     }
@@ -52,7 +52,7 @@ export default class WebhookStore {
    * @param eventName
    * @param url
    */
-  public addWebhook(eventName: string, url: string): void {
+  public addWebhook (eventName: string, url: string): void {
     if (!this.webhooks[eventName]) {
       this.webhooks[eventName] = [];
     }
@@ -65,7 +65,7 @@ export default class WebhookStore {
    * Get webhooks of an event
    * @param eventName
    */
-  public getWebhooks(eventName: string): string[] {
+  public getWebhooks (eventName: string): string[] {
     return this.webhooks[eventName] || [];
   }
 }
