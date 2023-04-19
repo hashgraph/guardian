@@ -30,25 +30,6 @@ function Profiles() {
                 }
             }
         );
-        const profile = result.data;
-
-        result = await axios.get(
-            GetURL('demo', 'push', 'randomKey'),
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            }
-        );
-
-        result = await axios.get(
-            GetURL('demo', 'randomKey'),
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            }
-        );
 
         result = await axios.put(
             GetURL('profiles', 'push', 'StandardRegistry'),
@@ -67,6 +48,27 @@ function Profiles() {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
+                }
+            }
+        );
+
+    });
+    it('/demo', async function () {
+        let result;
+        result = await axios.get(
+            GetURL('demo', 'push', 'randomKey'),
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }
+        );
+
+        result = await axios.get(
+            GetURL('demo', 'randomKey'),
+            {
+                headers: {
+                    'Content-Type': 'application/json',
                 }
             }
         );
