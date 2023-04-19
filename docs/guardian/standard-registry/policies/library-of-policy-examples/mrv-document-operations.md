@@ -12,7 +12,7 @@ There are two roles: ‘**User**_**’**_ and _**‘**_**Approver**_**’**_. _U
 
 (See [example 1](creating-and-using-roles.md) for the more detailed description of how to work with roles)
 
-![Creating 2 roles](<../../../../.gitbook/assets/0 (1).png>)
+![Creating 2 roles](<../../../../.gitbook/assets/0 (1) (1).png>)
 
 2. Create all needed document schemas:
 
@@ -24,7 +24,7 @@ There are two roles: ‘**User**_**’**_ and _**‘**_**Approver**_**’**_. _U
 
 In order to mint tokens into another account (not into the account of the minting user) setup the required field
 
-![Setting up new account](<../../../../.gitbook/assets/1 (1).png>)
+![Setting up new account](<../../../../.gitbook/assets/1 (1) (3).png>)
 
 2.4 Schema for ’**Report**’ containing the following fields: **Start Date, End Date, Amount**
 
@@ -64,7 +64,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 1.3.2 To configure the target account for mixed tokens select ‘_Custom_’ value for ‘_Type_’ and the filed in the document from which to take the value for the Account ID (this field must have type: ‘**Account**’)
 
-![Selecting Account Type and Id](<../../../../.gitbook/assets/8 (1).png>)
+![Selecting Account Type and Id](<../../../../.gitbook/assets/8 (1) (2).png>)
 
 1.3.3 By default ’**tokenConfirmationBlock**’ does not have a link to the next block, thus it needs to be manually added
 
