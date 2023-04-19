@@ -4,10 +4,7 @@ import WebhookService from './WebhookService';
 
 import {
   PolicyEvents,
-  AuthEvents,
   PolicyEngineEvents,
-  WalletEvents,
-  MessageAPI,
   ExternalMessageEvents
 } from '@guardian/interfaces';
 import WebhookStore from '../singletons/WebhookStore';
@@ -22,15 +19,14 @@ const avoidEvents = [
   'GET_BALANCE',
   'GENERATE_NEW_TOKEN',
   'GET_STATUS',
+  'get-setting-key',
+  'GET_MAP_API_KEY',
 ];
 
 export const externalMessageEvents = [
-  ...(Object.values(AuthEvents)),
   ...(Object.values(ExternalMessageEvents)),
   ...(Object.values(PolicyEvents)),
   ...(Object.values(PolicyEngineEvents)),
-  ...(Object.values(WalletEvents)),
-  ...(Object.values(MessageAPI)),
 ].filter((event) => !avoidEvents.includes(event));
 
 export default class ApplicationMetricService {
