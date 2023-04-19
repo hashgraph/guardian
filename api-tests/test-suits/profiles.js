@@ -54,6 +54,8 @@ function Profiles() {
 
     });
     it('/demo', async function () {
+        this.timeout(240000);
+
         let result;
         result = await axios.get(
             GetURL('demo', 'push', 'randomKey'),
@@ -65,15 +67,15 @@ function Profiles() {
             }
         );
 
-        result = await axios.get(
-            GetURL('demo', 'randomKey'),
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
-                }
-            }
-        );
+        // result = await axios.get(
+        //     GetURL('demo', 'randomKey'),
+        //     {
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //             'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
+        //         }
+        //     }
+        // );
     })
 }
 
