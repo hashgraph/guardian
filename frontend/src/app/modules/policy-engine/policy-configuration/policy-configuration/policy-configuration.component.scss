@@ -803,12 +803,12 @@
             top: 0;
             right: 0;
             width: 30px;
-            height: 30px;
+            height: 31px;
             overflow: hidden;
             cursor: pointer;
             box-sizing: border-box;
-            padding: 2px;
-            border: 1px solid var(--pc-border-color);
+            padding: 3px;
+            border-left: 1px solid var(--pc-border-color);
             color: #555;
 
             &:hover {
@@ -819,14 +819,14 @@
         .theme-legends-container {
             display: none;
             position: absolute;
-            top: 30px;
-            right: 0px;
-            background: #fff;
+            top: 32px;
+            right: 1px;
             z-index: 5;
-            border: 1px solid var(--pc-border-color);
             border-bottom-left-radius: 6px;
-            padding: 6px;
-            box-shadow: 4px 4px 6px 0px #00000040;
+            box-shadow: -2px 2px 4px 0px #00000020;
+            background: transparent;
+            pointer-events: none;
+            overflow: hidden;
         }
 
         .theme-rule {
@@ -835,8 +835,10 @@
             min-height: 20px;
             display: grid;
             grid-template-columns: 50px auto;
-            margin-top: 4px;
-            margin-bottom: 4px;
+            margin-right: 8px;
+            background: #fff;
+            padding: 4px 6px;
+            pointer-events: all;
         }
 
         .theme-rule-prev {
