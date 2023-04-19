@@ -115,10 +115,10 @@ export class Worker extends NatsService {
         super();
         const secretManager = SecretManager.New()
         secretManager.getSecrets('apikey/ipfs').
-        then(secrets => {
-            const { IPFS_STORAGE_API_KEY } = secrets;
-            this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
-        });
+            then(secrets => {
+                const { IPFS_STORAGE_API_KEY } = secrets;
+                this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
+            });
 
         this.logger = new Logger();
 
@@ -212,13 +212,13 @@ export class Worker extends NatsService {
             }
         });
 
-        HederaSDKHelper.setTransactionResponseCallback(async (client: any) => {
+        HederaSDKHelper.setTransactionResponseCallback(async (operatorAccountId: string) => {
             try {
-                const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
+                const balance = await HederaSDKHelper.balanceRest(operatorAccountId);
                 await this.sendMessage('update-user-balance', {
                     balance,
                     unit: 'Hbar',
-                    operatorAccountId: client.operatorAccountId.toString()
+                    operatorAccountId: operatorAccountId
                 });
             } catch (error) {
                 throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
