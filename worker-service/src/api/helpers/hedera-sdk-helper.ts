@@ -992,7 +992,10 @@ export class HederaSDKHelper {
      * @private
      */
     private async executeAndReceipt(
-        client: Client, transaction: Transaction, type: string, metadata?: any
+        client: Client,
+        transaction: Transaction,
+        type: string,
+        metadata?: any
     ): Promise<TransactionReceipt> {
         if (this.dryRun) {
             await this.virtualTransactionLog(this.dryRun, type);
@@ -1006,11 +1009,12 @@ export class HederaSDKHelper {
         } else {
             const id = GenerateUUIDv4();
             try {
+                const account = client.operatorAccountId.toString();
                 await this.transactionStartLog(id, type);
                 const result = await transaction.execute(client);
                 const receipt = await result.getReceipt(client);
                 await this.transactionEndLog(id, type, transaction, metadata);
-                HederaSDKHelper.transactionResponse(client);
+                HederaSDKHelper.transactionResponse(account);
                 return receipt;
             } catch (error) {
                 await this.transactionErrorLog(id, type, transaction, error);
@@ -1028,7 +1032,10 @@ export class HederaSDKHelper {
      * @private
      */
     private async executeAndRecord(
-        client: Client, transaction: Transaction, type: string, metadata?: any
+        client: Client,
+        transaction: Transaction,
+        type: string,
+        metadata?: any
     ): Promise<TransactionRecord> {
         if (this.dryRun) {
             await this.virtualTransactionLog(this.dryRun, type);
@@ -1038,11 +1045,12 @@ export class HederaSDKHelper {
         } else {
             const id = GenerateUUIDv4();
             try {
+                const account = client.operatorAccountId.toString();
                 await this.transactionStartLog(id, type);
                 const result = await transaction.execute(client);
                 const record = await result.getRecord(client);
                 await this.transactionEndLog(id, type, transaction, metadata);
-                HederaSDKHelper.transactionResponse(client);
+                HederaSDKHelper.transactionResponse(account);
                 return record;
             } catch (error) {
                 await this.transactionErrorLog(id, type, transaction, error);
@@ -1061,13 +1069,13 @@ export class HederaSDKHelper {
 
     /**
      * Transaction response
-     * @param client
+     * @param account
      * @private
      */
-    private static transactionResponse(client: Client) {
+    private static transactionResponse(account: string) {
         if (HederaSDKHelper.fn) {
             try {
-                const result = HederaSDKHelper.fn(client);
+                const result = HederaSDKHelper.fn(account);
                 if (typeof result.then === 'function') {
                     result.then(null, (error) => {
                         console.error(error);
@@ -1322,5 +1330,26 @@ export class HederaSDKHelper {
      */
     public destroy() {
         this.client.close();
+    }
+
+    /**
+     * Get balance account (Rest API)
+     *
+     * @param {string} accountId - Account Id
+     *
+     * @returns {string} - balance
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT)
+    public static async balanceRest(accountId: string): Promise<string> {
+        const res = await axios.get(
+            `${Environment.HEDERA_BALANCES_API}?account.id=${accountId}`,
+            { responseType: 'json' }
+        );
+        if (!res || !res.data || !res.data.balances || !res.data.balances.length) {
+            throw new Error(`Invalid balance '${accountId}'`);
+        }
+        const balances = res.data.balances[0];
+        const hbars = new Hbar(balances.balance, HbarUnit.Tinybar);
+        return hbars.toString();
     }
 }
