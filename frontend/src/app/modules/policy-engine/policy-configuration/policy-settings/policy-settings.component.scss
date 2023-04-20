@@ -594,16 +594,49 @@
     border-radius: 10px;
 }
 
-@media screen and (max-width: 1300px) {
-    .settings-header-button.icon {
-        width: 48px !important;
-        min-width: 48px !important;
-        max-width: 48px !important;
-        padding: 0 !important;
-        border: none !important;
+@media screen and (max-width: 980px) {
+    .settings-menu {
+        width: 150px !important;
+    }
 
-        span {
-            display: none !important;
+    .settings-container {
+        left: 150px !important;
+    }
+
+    .theme-container {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        height: 108px !important;
+
+        .settings-select {
+            width: 100% !important;
+            margin-bottom: 8px !important;
         }
+    }
+
+    .rules-container {
+        top: 158px !important;
+    }
+
+    .rule-color-filter {
+        grid-template-columns: auto !important;
+        grid-template-rows: 38px 50px 30px 50px !important;
+        height: 170px !important;
+    }
+
+    .rule-color-prev {
+        grid-template-columns: auto !important;
+        grid-template-rows: 44px 50px 40px 40px 40px 44px 44px !important;
+        height: 310px !important;
+        display: grid !important;
+    }
+
+    .rule-description {
+        grid-template-columns: auto !important;
+        grid-template-rows: 44px 50px !important;
+        height: 100px !important;
+        display: grid !important;
+        padding-right: 38px !important;
     }
 }

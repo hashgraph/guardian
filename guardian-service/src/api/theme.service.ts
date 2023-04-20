@@ -122,9 +122,7 @@ export async function themeAPI(): Promise<void> {
                 return new MessageError('Invalid get theme parameters');
             }
             const { owner } = msg;
-            console.log('1')
             const items = await DatabaseServer.getThemes({ owner });
-            console.log('2')
             return new MessageResponse(items);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
