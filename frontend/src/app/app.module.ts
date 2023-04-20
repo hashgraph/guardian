@@ -69,6 +69,7 @@ import { CommonComponentsModule } from './modules/common/common-components.modul
 import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module';
 import { ThemeService } from './services/theme.service';
+import { UserOnboardingWizardComponent } from './components/user-onboarding-wizard/user-onboarding-wizard.component';
 
 @NgModule({
     declarations: [
@@ -93,7 +94,8 @@ import { ThemeService } from './services/theme.service';
         AddPairDialogComponent,
         RetireTokenDialogComponent,
         DataInputDialogComponent,
-        SchemaConfigComponent
+        SchemaConfigComponent,
+        UserOnboardingWizardComponent,
     ],
     imports: [
         BrowserModule,
