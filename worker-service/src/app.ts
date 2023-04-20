@@ -50,12 +50,12 @@ Promise.all([
             clearInterval(timer);
         }
         if (process.env.IPFS_PROVIDER === 'web3storage') {
-            if (!process.env.IPFS_STORAGE_API_KEY) {
+            if (!IPFS_STORAGE_API_KEY) {
                 return false;
             }
 
             try {
-                const decoded = decode(process.env.IPFS_STORAGE_API_KEY);
+                const decoded = decode(IPFS_STORAGE_API_KEY);
                 if (!decoded) {
                     return false
                 }
