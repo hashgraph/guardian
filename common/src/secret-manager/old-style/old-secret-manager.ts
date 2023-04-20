@@ -24,7 +24,6 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
      * @param addition
      */
     async getSecrets(path: string, addition: any): Promise<any> {
-        console.log('get-secret', path, addition);
         switch (path) {
             case 'keys/operator':
                 const OPERATOR_ID = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_GLOBAL_APPLICATION_KEY, { type: 'OPERATOR_ID' });
@@ -37,9 +36,13 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
 
                 return { IPFS_STORAGE_API_KEY: IPFS_STORAGE_API_KEY.key };
 
+            case 'secretkey/auth':
+                const ACCESS_TOKEN_SECRET = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_GLOBAL_APPLICATION_KEY, { type: 'ACCESS_TOKEN_SECRET' });
+
+                return { ACCESS_TOKEN_SECRET: ACCESS_TOKEN_SECRET.key };
+
             default:
                 const wallet = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_KEY, addition);
-                console.log(wallet, addition);
                 return {
                     privateKey: wallet.key
                 }
@@ -66,6 +69,11 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
 
             case 'apikey/ipfs':
                 await this.sendMessage<IGetKeyResponse>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, { type: 'IPFS_STORAGE_API_KEY',  key: data.IPFS_STORAGE_API_KEY });
+
+                return;
+
+            case 'secretkey/auth':
+                await this.sendMessage<IGetKeyResponse>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, { type: 'ACCESS_TOKEN_SECRET',  key: data.ACCESS_TOKEN_SECRET });
 
                 return;
 
