@@ -10,13 +10,13 @@ Policy Modules are large-scale components of the policy containing multiple bloc
 
 Modules are managed via the corresponding page in the Policies section.
 
-![image1.png](../../../.gitbook/assets/0.png)
+![image1.png](<../../../.gitbook/assets/0 (1).png>)
 
 #### **1.1 Creating Modules**
 
 Modules can be created via the Modules management page in the Guardian UI by clicking on **Create New** button as shown below:
 
-![image2.png](../../../.gitbook/assets/1.png)
+![image2.png](<../../../.gitbook/assets/1 (1).png>)
 
 Modules can also be created via the Policy editor UI in two ways: 1. By clicking on Create New Module button, 2. Converting policy to Module.
 
@@ -38,7 +38,7 @@ Modules can be exported as files or/and ‘published’ into IPFS. For published
 
 ![image7.png](../../../.gitbook/assets/6.png)
 
-![image8.png](../../../.gitbook/assets/7.png)
+![image8.png](<../../../.gitbook/assets/7 (1).png>)
 
 #### 1.4 Deleting Module
 

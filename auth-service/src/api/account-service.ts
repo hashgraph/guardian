@@ -27,6 +27,7 @@ import {
     IStandardRegistryUserResponse,
     IGetUsersByAccountMessage, GenerateUUIDv4
 } from '@guardian/interfaces';
+import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 /**
  * Account service
@@ -51,9 +52,11 @@ export class AccountService extends NatsService{
     registerListeners(): void {
         this.getMessages<IGetUserByTokenMessage, User>(AuthEvents.GET_USER_BY_TOKEN, async (msg) => {
             const { token } = msg;
+            const secretManager = SecretManager.New();
+            const {ACCESS_TOKEN_SECRET} = await secretManager.getSecrets('secretkey/auth')
 
             try {
-                const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, process.env.ACCESS_TOKEN_SECRET, {});
+                const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, ACCESS_TOKEN_SECRET, {});
                 const user = await new DataBaseHelper(User).findOne({ username: decryptedToken.username });
                 return new MessageResponse(user);
             } catch (error) {
@@ -94,13 +97,16 @@ export class AccountService extends NatsService{
                 const { username, password } = msg;
                 const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
 
+                const secretManager = SecretManager.New();
+                const {ACCESS_TOKEN_SECRET} = await secretManager.getSecrets('secretkey/auth')
+
                 const user = await new DataBaseHelper(User).findOne({ username });
                 if (user && passwordDigest === user.password) {
                     const accessToken = sign({
                         username: user.username,
                         did: user.did,
                         role: user.role
-                    }, process.env.ACCESS_TOKEN_SECRET);
+                    }, ACCESS_TOKEN_SECRET);
                     return new MessageResponse({
                         username: user.username,
                         did: user.did,

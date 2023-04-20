@@ -15,6 +15,7 @@
     - [Project Proponent Flow](#project-proponent-flow)
     - [VVB Flow](#vvb-flow)
 - [Futureproofing(Automated credit issuance)](#futureproofingautomated-credit-issuance)
+- [TODO](#todo)
 - [Existing Cookstove Policy Comparison](#existing-cookstove-policy-comparison)
 
 <!-- /TOC -->
@@ -56,7 +57,8 @@ This approach is more precise than traditional methodologies, which rely on more
 
 This policy is published to Hedera network and can either be imported via Github(.policy file) or IPSF timestamp.
 
-<img width="717" alt="image" src="https://user-images.githubusercontent.com/9518151/229341068-fb33b357-712e-4f52-ac6e-8eb46fbc2dab.png">
+Latest Version - 0.0.3
+Hedera Topic - [0.0.3972127](https://explore.lworks.io/testnet/topics/0.0.3972127)
 
 
 ### Available Roles 
@@ -186,6 +188,15 @@ This workflow includes a bonus flow which is a major distinction from other exis
    <img width="578" alt="image" src="https://user-images.githubusercontent.com/9518151/229299665-623d859b-1ba9-401c-8f4a-70543e1a6316.png">
 
 4. After an approval from VVB for the automated monitoring report, VER mint will be initiated in owner account. This will help in faster crediting cycles along with a transparent process for tracking all the intermediate steps. It'll be a huge boost to scaling up the supply of credits in VCM(Voluntary carbon markets).
+
+## TODO
+This policy was created during a hackathon so there may be couple of bugs here and there and it may not be foolproof. Here are some todos to make it production ready. You can reach out to the policy [author/contributor](https://github.com/gautamp8) for reviewing or reporting issues relevant to this specific policy.
+
+[ ] Improve and document list column names for each of the roles, some review IDs are coming as null
+[ ] Improve all the schemas(especially PID, PDD). Add support for dynamically selecting fields on basis of fossil fuel or electric device
+[ ] Automate emissions calculations on basis of incoming parameters of equations from schemas
+[ ] Add Guardian support for list data type in schemas. Helpful for usecases where we're sending device usage data regularly via an API   
+[ ] Thoroughly test and improve the futureproofing IOT device workflow, there are dummy checks and thresholds currently. Schemas need to be updated to accept list of usage parameters.
 
 ## Existing Cookstove Policy Comparison
 

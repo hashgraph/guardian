@@ -4,22 +4,30 @@ import WebhookService from './WebhookService';
 
 import {
   PolicyEvents,
-  AuthEvents,
   PolicyEngineEvents,
-  WalletEvents,
-  MessageAPI,
   ExternalMessageEvents
 } from '@guardian/interfaces';
 import WebhookStore from '../singletons/WebhookStore';
 
+const avoidEvents = [
+  'WRITE_LOG',
+  'GET_LOGS',
+  'GET_ALL_USER_ACCOUNTS_DEMO',
+  'GET_USER_BY_TOKEN',
+  'SEND_STATUS',
+  'GET_USER',
+  'GET_BALANCE',
+  'GENERATE_NEW_TOKEN',
+  'GET_STATUS',
+  'get-setting-key',
+  'GET_MAP_API_KEY',
+];
+
 export const externalMessageEvents = [
-  ...(Object.values(AuthEvents)),
   ...(Object.values(ExternalMessageEvents)),
   ...(Object.values(PolicyEvents)),
   ...(Object.values(PolicyEngineEvents)),
-  ...(Object.values(WalletEvents)),
-  ...(Object.values(MessageAPI)),
-];
+].filter((event) => !avoidEvents.includes(event));
 
 export default class ApplicationMetricService {
   private webhookStore: WebhookStore;
@@ -33,7 +41,7 @@ export default class ApplicationMetricService {
     await this.webhookStore.initEvents(await this.webhookService.getWebhooks())
   }
 
-  async sendEvents (eventName: string, payload: JSON) {
+  async sendEvents (eventName: string, payload: unknown) {
     const webhooks = this.webhookStore.getWebhooks(eventName);
     if (!webhooks || !webhooks?.length) {
       return;
@@ -57,11 +65,15 @@ export default class ApplicationMetricService {
 
     for (const subject of externalMessageEvents) {
       console.log('Subject:', subject);
-      const sub = this.pubSub.subscribe(subject, (data: any) => {
-        console.log(`Received message on "${subject}" subject:`, JSON.stringify(data));
-        this.sendEvents(subject, data);
-      });
-      subscriptions.push(sub);
+      try {
+        const sub = this.pubSub.subscribe(subject, (data: unknown) => {
+            console.log(`Received message on "${subject}" subject:`, JSON.stringify(data));
+            this.sendEvents(subject, data);
+        });
+        subscriptions.push(sub);
+      } catch (e: any) {
+        console.error('Unable to parse:', e.message, e.stack);
+      }
     }
 
     process.on('SIGTERM', async () => {

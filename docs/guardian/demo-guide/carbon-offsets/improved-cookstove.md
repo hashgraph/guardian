@@ -40,7 +40,7 @@ We need to first import the policy from open source repository.
 
 Once imported, there will be 2 additional users with different roles (aside from the Standard Registry) that need to be created. Create a user account for the Project Developer. Once created and entered into the Policy, select the Project Developer role from the drop-down.
 
-<figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
 
 Fill out the Agent Application and wait for the approval.
 
@@ -90,7 +90,7 @@ After that, the Verifer can select a Review ID and "Finalise review."
 
 <figure><img src="../../../.gitbook/assets/image (29).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (9) (2).png" alt=""><figcaption></figcaption></figure>
 
 Once the PDD has been verified, the Project Developer can "Request registration."
 
@@ -106,7 +106,7 @@ Once the Standard Registry approved the Project Developer's Project Registration
 
 <figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once the Monitoring Report has been submitted to the Verifier, the Verifier can log into their Policy screen, review it, and fill out the review form.
 

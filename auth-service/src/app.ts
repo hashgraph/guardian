@@ -15,6 +15,9 @@ import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { InitializeVault } from './vaults';
 import { ImportKeysFromDatabase } from '@helpers/import-keys-from-database';
+import process from 'process';
+import { SecretManager } from '@guardian/common/dist/secret-manager';
+import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
 
 Promise.all([
     Migration({
@@ -50,6 +53,15 @@ Promise.all([
 
         if (process.env.IMPORT_KEYS_FROM_DB) {
             await ImportKeysFromDatabase(vault);
+        }
+
+        await new OldSecretManager().setConnection(cn).init();
+
+        const secretManager = SecretManager.New();
+        let {ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
+        if (!ACCESS_TOKEN_SECRET) {
+            ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET
+            await secretManager.setSecrets('secretkey/auth', { ACCESS_TOKEN_SECRET  });
         }
 
         state.updateState(ApplicationStates.READY);
