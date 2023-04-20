@@ -1,30 +1,31 @@
 import { permissionHelper } from '@auth/authorization-helper';
-import { Response, Router } from 'express';
+import { Response, Router, NextFunction } from 'express';
 import { UserRole } from '@guardian/interfaces';
 import { AuthenticatedRequest, Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
+import createError from 'http-errors';
 
 /**
  * Module route
  */
 export const moduleAPI = Router();
 
-moduleAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardian = new Guardians();
         const module = req.body;
         if (!module.config || module.config.blockType !== 'module') {
-            throw new Error('Invalid module config');
+            return next(createError(422, 'Invalid module config'));
         }
         const item = await guardian.createModule(module, req.user.did);
         res.status(201).json(item);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: error.code || 500, message: error.message });
+        return next(error);
     }
 });
 
-moduleAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
 
@@ -39,71 +40,71 @@ moduleAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Aut
             pageIndex,
             pageSize
         });
-        res.status(200).setHeader('X-Total-Count', count).json(items);
+        res.setHeader('X-Total-Count', count).json(items);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: error.code || 500, message: error.message });
+        return next(error);
     }
 });
 
-moduleAPI.delete('/:uuid', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.delete('/:uuid', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardian = new Guardians();
         if (!req.params.uuid) {
-            throw new Error('Invalid uuid');
+            return next(createError(422, 'Invalid uuid'));
         }
         const result = await guardian.deleteModule(req.params.uuid, req.user.did);
         res.status(201).json(result);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: error.code || 500, message: error.message });
+        return next(error);
     }
 });
 
-moduleAPI.get('/menu', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.get('/menu', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardians = new Guardians();
         const items = await guardians.getMenuModule(req.user.did);
-        res.status(200).json(items);
+        res.json(items);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: error.code || 500, message: error.message });
+        return next(error);
     }
 });
 
-moduleAPI.get('/:uuid', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.get('/:uuid', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardian = new Guardians();
         if (!req.params.uuid) {
-            throw new Error('Invalid uuid');
+            return next(createError(422, 'Invalid uuid'));
         }
         const item = await guardian.getModuleById(req.params.uuid, req.user.did);
-        res.status(200).json(item);
+        res.json(item);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: error.code || 500, message: error.message });
+        return next(error);
     }
 });
 
-moduleAPI.put('/:uuid', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.put('/:uuid', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const guardian = new Guardians();
         if (!req.params.uuid) {
-            throw new Error('Invalid uuid');
+            return next(createError(422, 'Invalid uuid'));
         }
         const module = req.body;
         if (!module.config || module.config.blockType !== 'module') {
-            throw new Error('Invalid module config');
+            return next(createError(422, 'Invalid module config'));
         }
         const result = await guardian.updateModule(req.params.uuid, module, req.user.did);
         res.status(201).json(result);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: error.code || 500, message: error.message });
+        return next(error);
     }
 });
 
-moduleAPI.get('/:uuid/export/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.get('/:uuid/export/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const guardian = new Guardians();
     try {
         const file: any = await guardian.exportModuleFile(req.params.uuid, req.user.did);
@@ -112,81 +113,81 @@ moduleAPI.get('/:uuid/export/file', permissionHelper(UserRole.STANDARD_REGISTRY)
         res.send(file);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-moduleAPI.get('/:uuid/export/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.get('/:uuid/export/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const guardian = new Guardians();
     try {
         res.send(await guardian.exportModuleMessage(req.params.uuid, req.user.did));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+        return next(error);
     }
 });
 
-moduleAPI.post('/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.post('/import/message', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const guardian = new Guardians();
     try {
         const module = await guardian.importModuleMessage(req.body.messageId, req.user.did);
         res.status(201).send(module);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+        return next(error);
     }
 });
 
-moduleAPI.post('/import/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.post('/import/file', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const guardian = new Guardians();
     try {
         const module = await guardian.importModuleFile(req.body, req.user.did);
         res.status(201).send(module);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+        return next(error);
     }
 });
 
-moduleAPI.post('/import/message/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.post('/import/message/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const guardian = new Guardians();
     try {
         const module = await guardian.previewModuleMessage(req.body.messageId, req.user.did);
         res.send(module);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+        return next(error);
     }
 });
 
-moduleAPI.post('/import/file/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.post('/import/file/preview', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const guardian = new Guardians();
     try {
         const module = await guardian.previewModuleFile(req.body, req.user.did);
         res.send(module);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: 'Unknown error: ' + error.message });
+        return next(error);
     }
 });
 
-moduleAPI.put('/:uuid/publish', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.put('/:uuid/publish', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const guardian = new Guardians();
     try {
         const module = await guardian.publishModule(req.params.uuid, req.user.did, req.body);
         res.json(module);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: error.message || error });
+        return next(error);
     }
 });
 
-moduleAPI.post('/validate', async (req: AuthenticatedRequest, res: Response) => {
+moduleAPI.post('/validate', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const guardian = new Guardians();
     try {
         res.send(await guardian.validateModule(req.user.did, req.body));
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).send({ code: 500, message: error.message });
+        return next(error);
     }
 });
