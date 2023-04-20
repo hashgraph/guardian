@@ -377,7 +377,7 @@ export class HeaderComponent implements OnInit {
 
     openSubMenu(subMenuID: string) {
         let content = document.getElementById('subMenu' + subMenuID)!;
-        let userInfo = document.getElementById("user-info")!;
+        let userInfo = document.getElementById("user-info");
         for (let i = 1; i < 4; i++) {
             if (i == parseInt(subMenuID)) {
                 continue
@@ -397,15 +397,19 @@ export class HeaderComponent implements OnInit {
                 content.style.margin = "0";
             }, 200);
             content.style.overflow = "hidden";
-            userInfo.style.display = "block";
-            userInfo.style.maxHeight = '';
+            if (userInfo) {
+                userInfo.style.display = "block";
+                userInfo.style.maxHeight = '';
+            }
         } else {
             // Submenu is closed
             content.style.maxHeight = content.scrollHeight + "px";
             content.style.margin = "0 auto 20px 35px";
             content.style.overflow = "visible";
-            userInfo.style.display = "none";
-            userInfo.style.maxHeight = content.scrollHeight + "px";
+            if (userInfo) {
+                userInfo.style.display = "none";
+                userInfo.style.maxHeight = content.scrollHeight + "px";
+            }
         } 
     }
 }
