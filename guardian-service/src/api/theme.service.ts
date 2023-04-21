@@ -64,6 +64,8 @@ export async function themeAPI(): Promise<void> {
                 throw new Error('Invalid create theme parameters');
             }
             const { theme, owner } = msg;
+            delete theme._id;
+            delete theme.id;
             theme.owner = owner;
 
             const item = await DatabaseServer.createTheme(theme);

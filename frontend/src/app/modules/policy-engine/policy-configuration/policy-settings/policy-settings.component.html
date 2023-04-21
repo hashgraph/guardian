@@ -31,7 +31,7 @@
                 <div class="settings-select">
                     <mat-form-field appearance="outline">
                         <mat-label>Theme</mat-label>
-                        <mat-select [(value)]="theme" (selectionChange)="onSelectTheme()">
+                        <mat-select [(value)]="theme" (selectionChange)="onSelectTheme()" disableOptionCentering="true">
                             <mat-option *ngFor="let t of themes" [value]="t">
                                 <span>{{t.name}}</span>
                             </mat-option>
@@ -143,19 +143,22 @@
                             </div>
                             <div class="rule-color-prop">
                                 <div class="rule-color-prop-value">
-                                    <ngx-colors ngx-colors-trigger [(ngModel)]="rule.text"></ngx-colors>
+                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                                        [palette]="colorPalette" [(ngModel)]="rule.text"></ngx-colors>
                                 </div>
                                 <div class="rule-color-prop-name">Text</div>
                             </div>
                             <div class="rule-color-prop">
                                 <div class="rule-color-prop-value">
-                                    <ngx-colors ngx-colors-trigger [(ngModel)]="rule.background"></ngx-colors>
+                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                                        [palette]="colorPalette" [(ngModel)]="rule.background"></ngx-colors>
                                 </div>
                                 <div class="rule-color-prop-name">Background</div>
                             </div>
                             <div class="rule-color-prop">
                                 <div class="rule-color-prop-value">
-                                    <ngx-colors ngx-colors-trigger [(ngModel)]="rule.border"></ngx-colors>
+                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                                        [palette]="colorPalette" [(ngModel)]="rule.border"></ngx-colors>
                                 </div>
                                 <div class="rule-color-prop-name">Border</div>
                             </div>
@@ -236,19 +239,22 @@
                             </div>
                             <div class="rule-color-prop">
                                 <div class="rule-color-prop-value">
-                                    <ngx-colors ngx-colors-trigger [(ngModel)]="theme.default.text"></ngx-colors>
+                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                                        [palette]="colorPalette" [(ngModel)]="theme.default.text"></ngx-colors>
                                 </div>
                                 <div class="rule-color-prop-name">Text</div>
                             </div>
                             <div class="rule-color-prop">
                                 <div class="rule-color-prop-value">
-                                    <ngx-colors ngx-colors-trigger [(ngModel)]="theme.default.background"></ngx-colors>
+                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                                        [palette]="colorPalette" [(ngModel)]="theme.default.background"></ngx-colors>
                                 </div>
                                 <div class="rule-color-prop-name">Background</div>
                             </div>
                             <div class="rule-color-prop">
                                 <div class="rule-color-prop-value">
-                                    <ngx-colors ngx-colors-trigger [(ngModel)]="theme.default.border"></ngx-colors>
+                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                                        [palette]="colorPalette" [(ngModel)]="theme.default.border"></ngx-colors>
                                 </div>
                                 <div class="rule-color-prop-name">Border</div>
                             </div>

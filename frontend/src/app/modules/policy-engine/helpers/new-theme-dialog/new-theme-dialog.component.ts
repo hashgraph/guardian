@@ -16,6 +16,7 @@ export class NewThemeDialog {
         name: ['', Validators.required]
     });
     title: string;
+    button: string;
     theme: any;
 
     constructor(
@@ -30,12 +31,15 @@ export class NewThemeDialog {
             });
             if(data.type === 'copy') {
                 this.title = 'Copy Theme';
+                this.button = 'Copy';
             } else {
                 this.title = 'Edit Theme';
+                this.button = 'Save';
             }
         } else {
             this.theme = null;
             this.title = 'New Theme';
+            this.button = 'Create';
             this.dataForm.setValue({
                 name: 'New Theme'
             });

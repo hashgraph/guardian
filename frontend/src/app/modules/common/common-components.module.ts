@@ -16,6 +16,7 @@ import { TokenDialog } from './token-dialog/token-dialog.component';
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { FileExplorer } from './file-explorer/file-explorer.component';
 import { NgxColorsModule } from 'ngx-colors';
+import { ConfirmDialog } from './confirm-dialog/confirm-dialog.component';
 
 @NgModule({
     declarations: [
@@ -29,7 +30,8 @@ import { NgxColorsModule } from 'ngx-colors';
         IconPreviewDialog,
         TokenConfigurationComponent,
         TokenDialog,
-        FileExplorer
+        FileExplorer,
+        ConfirmDialog
     ],
     imports: [
         CommonModule,
@@ -51,6 +53,7 @@ import { NgxColorsModule } from 'ngx-colors';
         TokenConfigurationComponent,
         TokenDialog,
         FileExplorer,
+        ConfirmDialog,
         NgxColorsModule
     ]
 })

@@ -125,16 +125,6 @@ export class Theme {
         return Theme.from(this.toJson());
     }
 
-    public toJson(): any {
-        return {
-            id: this.id,
-            uuid: this.uuid,
-            readonly: this.readonly,
-            name: this._name,
-            rules: this._rules.map(r => r.toJson())
-        }
-    }
-
     public downRule(rule: ThemeRule) {
         const index = this._rules.findIndex(r => r === rule);
         if (index > -1 && index < this._rules.length - 1) {
@@ -151,6 +141,18 @@ export class Theme {
             this._rules[index - 1] = rule;
         }
         this._rules = this._rules.slice();
+    }
+
+    public toJson(): any {
+        const rules = this._rules.map(r => r.toJson());
+        rules.push(this._defaultRole.toJson());
+        return {
+            id: this.id,
+            uuid: this.uuid,
+            readonly: this.readonly,
+            name: this._name,
+            rules
+        }
     }
 
     public toString(): string {

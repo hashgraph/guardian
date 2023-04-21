@@ -820,13 +820,13 @@
             display: none;
             position: absolute;
             top: 32px;
-            right: 1px;
+            right: 10px;
             z-index: 5;
             border-bottom-left-radius: 6px;
             box-shadow: -2px 2px 4px 0px #00000020;
-            background: transparent;
-            pointer-events: none;
-            overflow: hidden;
+            background: #fff;
+            overflow: auto;
+            max-height: calc(100vh - 260px);
         }
 
         .theme-rule {
@@ -835,7 +835,7 @@
             min-height: 20px;
             display: grid;
             grid-template-columns: 50px auto;
-            margin-right: 8px;
+            margin-right: 0px;
             background: #fff;
             padding: 4px 6px;
             pointer-events: all;
@@ -1437,22 +1437,22 @@
         }
     }
 
-    &[block-type="UI Components"] .drag-component {
-        background: var(--pc-ui-block-background-color);
-        border-color: var(--pc-ui-block-border-color);
-    }
+    // &[block-type="UI Components"] .drag-component {
+    //     background: var(--pc-ui-block-background-color);
+    //     border-color: var(--pc-ui-block-border-color);
+    // }
 
-    &[block-type="Server Blocks"] .drag-component {
-        background: var(--pc-server-block-background-color);
-        border-color: var(--pc-server-block-border-color);
-        border-radius: 20px;
-    }
+    // &[block-type="Server Blocks"] .drag-component {
+    //     background: var(--pc-server-block-background-color);
+    //     border-color: var(--pc-server-block-border-color);
+    //     border-radius: 20px;
+    // }
 
-    &[block-type="Addons"] .drag-component {
-        background: var(--pc-addon-block-background-color);
-        border-color: var(--pc-addon-block-border-color);
-        border-radius: 6px;
-    }
+    // &[block-type="Addons"] .drag-component {
+    //     background: var(--pc-addon-block-background-color);
+    //     border-color: var(--pc-addon-block-border-color);
+    //     border-radius: 6px;
+    // }
 }
 
 .right-bottom-toolbar .tab-header {
