@@ -365,6 +365,7 @@ export class ThemeRule {
         rule._borderWidth = json.borderWidth;
         rule._default = json.default;
         rule._type = json.filterType;
+        rule._legend = rule._description || '-';
         rule.setValue(json.filterValue);
         rule._updateCondition();
         rule._updateStyle();
