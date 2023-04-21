@@ -1,4 +1,4 @@
-import { PolicyBlockModel } from '..';
+import { PolicyBlockModel, PolicyModel, PolicyModuleModel } from '..';
 import { Theme } from './theme';
 
 export class ThemeRule {
@@ -17,6 +17,8 @@ export class ThemeRule {
     private _filterValue: any;
     private _filterOperation: any;
     private _default: boolean;
+    private _legend: string;
+    private _model: PolicyModel | PolicyModuleModel | null;
 
     constructor(theme: Theme) {
         this.theme = theme;
@@ -28,6 +30,8 @@ export class ThemeRule {
         this._borderStyle = 'solid';
         this._borderWidth = '2px';
         this._default = false;
+        this._legend = '';
+        this._model = null;
         this._type = 'type';
         this._singleValue = '';
         this._multipleValue = [];
@@ -42,6 +46,7 @@ export class ThemeRule {
     public set description(v: string) {
         if (this._description !== v) {
             this._description = v;
+            this._legend = v || '-';
         }
     }
 
@@ -151,6 +156,33 @@ export class ThemeRule {
         if (this._default !== v) {
             this._default = v;
             this._updateCondition();
+        }
+    }
+
+    public get legend(): string {
+        return this._legend;
+    }
+
+    public updateLegend(model: PolicyModel | PolicyModuleModel) {
+        this._model = model;
+        if (this.type === 'role') {
+            let names = '';
+            for (const role of this.getMultipleValue()) {
+                const name = this._model?.getPermissionsName(role);
+                if (name) {
+                    if (names) {
+                        names = names + ', ' + name;
+                    } else {
+                        names = name;
+                    }
+                }
+            }
+            this._legend = this.description || '-';
+            if (names) {
+                this._legend = this._legend + ' (' + names + ')';
+            } else {
+                this._legend = this._legend + ' (-)';
+            }
         }
     }
 
