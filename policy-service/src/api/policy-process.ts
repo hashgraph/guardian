@@ -22,6 +22,7 @@ import { CommonVariables } from '@helpers/common-variables';
 import { PolicyEvents } from '@guardian/interfaces';
 import { GridFSBucket } from 'mongodb';
 import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
+import { SynchronizationService } from '@policy-engine/multi-policy-service';
 
 const {
     policy,
@@ -72,7 +73,7 @@ Promise.all([
         } catch (error) {
             await new Logger().warn(
                 'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
-                    error.message,
+                error.message,
                 ['POLICY', policy.name, policyId.toString()]
             );
             console.warn(error);
@@ -101,7 +102,11 @@ Promise.all([
 
     await generator.generate(policyConfig, skipRegistration, policyValidator);
 
+    const synchronizationService = new SynchronizationService(policyConfig);
+    synchronizationService.start();
+
     generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, () => {
+        synchronizationService.stop();
         process.exit(0);
     });
 
@@ -109,9 +114,11 @@ Promise.all([
         policyId: policyId.toString(),
         data: policyValidator.getSerializedErrors()
     });
+
     const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
     if (Number.isInteger(maxPayload)) {
         new LargePayloadContainer().runServer();
     }
+
     new Logger().info('Start policy', ['POLICY', policy.name, policyId.toString()]);
 });

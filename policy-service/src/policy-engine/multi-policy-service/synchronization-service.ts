@@ -27,47 +27,63 @@ export class SynchronizationService {
      * Cron job
      * @private
      */
-    private static job: CronJob;
+    private job: CronJob;
     /**
      * Cron Mask
      * @private
      */
-    private static readonly cronMask = `0 0 * * *`;
+    private readonly cronMask = `0 0 * * *`;
     /**
      * Task Status
      * @private
      */
-    private static taskStatus: boolean = false;
+    private taskStatus: boolean = false;
     /**
      * Users service
      * @private
      */
-    private static readonly users = new Users();
+    private readonly users = new Users();
+    /**
+     * Policy
+     * @private
+     */
+    private readonly policy: Policy;
+
+    constructor(policy: Policy) {
+        this.policy = policy;
+    }
 
     /**
      * Start scheduler
      */
-    public static start() {
-        if (SynchronizationService.job) {
-            return;
+    public start(): boolean {
+        if (
+            this.policy.status !== PolicyType.PUBLISH ||
+            !this.policy.synchronizationTopicId
+        ) {
+            return false;
         }
-        const cronMask = process.env.MULTI_POLICY_SCHEDULER || SynchronizationService.cronMask;
-        SynchronizationService.taskStatus = false;
-        SynchronizationService.job = new CronJob(cronMask, () => {
-            SynchronizationService.task().then();
+        if (this.job) {
+            return true;
+        }
+        const cronMask = process.env.MULTI_POLICY_SCHEDULER || this.cronMask;
+        this.taskStatus = false;
+        this.job = new CronJob(cronMask, () => {
+            this.task().then();
         }, null, false, 'UTC');
-        SynchronizationService.job.start();
+        this.job.start();
         new Logger().info(`Start synchronization: ${cronMask}`, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+        return true;
     }
 
     /**
      * Stop scheduler
      */
-    public static stop() {
-        if (SynchronizationService.job) {
-            SynchronizationService.job.stop();
-            SynchronizationService.job = null;
-            SynchronizationService.taskStatus = false;
+    public stop() {
+        if (this.job) {
+            this.job.stop();
+            this.job = null;
+            this.taskStatus = false;
         }
     }
 
@@ -75,35 +91,20 @@ export class SynchronizationService {
      * Tick
      * @private
      */
-    private static async task() {
+    private async task() {
         try {
-            if (SynchronizationService.taskStatus) {
+            if (this.taskStatus) {
                 return;
             }
             new Logger().info('Start synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
 
-            SynchronizationService.taskStatus = true;
-
-            const policies = await DatabaseServer.getPolicies({
-                where: {
-                    status: PolicyType.PUBLISH,
-                    synchronizationTopicId: { $exists: true }
-                }
-            }, {
-                fields: ['id', 'owner', 'instanceTopicId', 'synchronizationTopicId']
-            });
-
-            const tasks: any[] = [];
-            for (const policy of policies) {
-                tasks.push(SynchronizationService.taskByPolicy(policy));
-            }
-            await Promise.all<any[][]>(tasks);
-
-            SynchronizationService.taskStatus = false;
+            this.taskStatus = true;
+            await this.taskByPolicy(this.policy);
+            this.taskStatus = false;
 
             new Logger().info('Complete synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         } catch (error) {
-            SynchronizationService.taskStatus = false;
+            this.taskStatus = false;
             console.error(error);
             new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         }
@@ -114,10 +115,11 @@ export class SynchronizationService {
      * @param policy
      * @private
      */
-    private static async taskByPolicy(policy: Policy) {
+    private async taskByPolicy(policy: Policy) {
         try {
-            const root = await SynchronizationService.users.getHederaAccount(policy.owner);
+            const root = await this.users.getHederaAccount(policy.owner);
             const count = await DatabaseServer.countMultiPolicyTransactions(policy.id);
+
             if (!count) {
                 return;
             }
@@ -168,14 +170,17 @@ export class SynchronizationService {
                     console.log(`${message?.id}: ${error}`);
                 }
             }
+
             const users = Object.keys(policyMap);
-            const tasks: any[] = [];
-            for (const user of users) {
-                tasks.push(SynchronizationService.taskByUser(
-                    messageServer, root, policy, user, policyMap[user], vpMap[user])
-                );
+            const chunkSize = 10;
+            for (let i = 0; i < users.length; i += chunkSize) {
+                const chunk = users.slice(i, i + chunkSize);
+                const tasks: any[] = [];
+                for (const user of chunk) {
+                    tasks.push(this.taskByUser(messageServer, root, policy, user, policyMap[user], vpMap[user]));
+                }
+                await Promise.all<any[][]>(tasks);
             }
-            await Promise.all<any[][]>(tasks);
         } catch (error) {
             console.error(error);
             new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
@@ -192,7 +197,7 @@ export class SynchronizationService {
      * @param vps
      * @private
      */
-    private static async taskByUser(
+    private async taskByUser(
         messageServer: MessageServer,
         root: IRootConfig,
         policy: Policy,
@@ -227,7 +232,7 @@ export class SynchronizationService {
         for (const transaction of transactions) {
             if (transaction.amount <= min) {
                 const token = await DatabaseServer.getToken(transaction.tokenId);
-                const status = await SynchronizationService.completeTransaction(
+                const status = await this.completeTransaction(
                     messageServer, root, token, transaction, policies, vpMap
                 );
                 if (status) {
@@ -247,7 +252,7 @@ export class SynchronizationService {
      * @param vpMap
      * @private
      */
-    private static async completeTransaction(
+    private async completeTransaction(
         messageServer: MessageServer,
         root: IRootConfig,
         token: Token,
@@ -283,7 +288,7 @@ export class SynchronizationService {
                     i++;
                 }
             }
-            await SynchronizationService.updateMessages(messageServer, updateMessages);
+            await this.updateMessages(messageServer, updateMessages);
             await MintService.multiMint(
                 root,
                 token,
@@ -296,6 +301,8 @@ export class SynchronizationService {
             return true;
         } catch (error) {
             transaction.status = 'Failed';
+            console.error(error);
+            new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
             await DatabaseServer.updateMultiPolicyTransactions(transaction);
             return false;
         }
@@ -307,7 +314,7 @@ export class SynchronizationService {
      * @param updateMessages
      * @private
      */
-    private static async updateMessages(
+    private async updateMessages(
         messageServer: MessageServer,
         updateMessages: SynchronizationMessage[]
     ): Promise<boolean> {
