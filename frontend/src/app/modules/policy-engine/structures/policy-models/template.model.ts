@@ -208,4 +208,9 @@ export class TemplateModel {
     public getPermissionsNumber(permission: string): number {
         return -1;
     }
+
+
+    public getPermissionsName(permission: string): string | null {
+        return null;
+    }
 }

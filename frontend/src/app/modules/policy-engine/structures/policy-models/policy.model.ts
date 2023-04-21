@@ -628,4 +628,16 @@ export class PolicyModel {
         }
         return -1;
     }
+
+    public getPermissionsName(permission: any): any {
+        if (permission === 'OWNER') {
+            return 'Owner';
+        } else if (permission === 'NO_ROLE') {
+            return 'No Role';
+        } else if (permission === 'ANY_ROLE') {
+            return 'Any Role';
+        } else {
+            return this._policyRoles[permission]?.name;
+        }
+    }
 }

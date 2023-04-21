@@ -1167,4 +1167,27 @@ export class PolicyConfigurationComponent implements OnInit {
     public blockStyle(rule: ThemeRule) {
         return this.themeService.getStyleByRule(rule)
     }
+
+    public getLegendText(rule: ThemeRule): string {
+        if (rule.type === 'role') {
+            let names = '';
+            for (const role of rule.getMultipleValue()) {
+                const name = this.openModule?.getPermissionsName(role);
+                if (name) {
+                    if (names) {
+                        names = names + ', ' + name;
+                    } else {
+                        names = name;
+                    }
+                }
+            }
+            if (names) {
+                return rule.description + '(' + names + ')';
+            } else {
+                return rule.description + '(-)';
+            }
+        } else {
+            return rule.description || '-';
+        }
+    }
 }

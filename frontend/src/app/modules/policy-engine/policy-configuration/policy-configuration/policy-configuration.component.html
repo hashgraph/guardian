@@ -524,7 +524,9 @@
                             <div class="theme-legends-container">
                                 <div *ngFor="let rule of theme.rules" class="theme-rule">
                                     <div class="theme-rule-prev" [style]="blockStyle(rule)" theme-block theme-all></div>
-                                    <div class="theme-rule-description">{{rule.description || '-'}}</div>
+                                    <div class="theme-rule-description">
+                                        {{getLegendText(rule)}}
+                                    </div>
                                 </div>
                                 <div *ngIf="theme.default" class="theme-rule">
                                     <div class="theme-rule-prev" [style]="blockStyle(theme.default)" theme-block
@@ -793,8 +795,7 @@
 </mat-menu>
 
 <mat-menu #themesMenu="matMenu">
-    <div class="toolbar-menu all-status" 
-        *ngFor="let t of themes" (click)="setTheme(t)">
+    <div class="toolbar-menu all-status" *ngFor="let t of themes" (click)="setTheme(t)">
         <mat-icon [class]="t === theme ? 'action-color' : 'no-action-color'">palette</mat-icon>
         <span [class]="t === theme ? 'action-color' : 'no-action-color'">{{t.name}}</span>
     </div>

@@ -7,7 +7,7 @@ export const byRolesTheme = {
         {
             'description': 'Role 1',
             'text': '#000',
-            'background': '#d6f2ff',
+            'background': '#C5E9FF',
             'border': '#0288d1',
             'shape': '0',
             'borderWidth': '2px',
@@ -19,8 +19,8 @@ export const byRolesTheme = {
         {
             'description': 'Role 2',
             'text': '#000',
-            'background': '#d0fffd',
-            'border': '#00796b',
+            'background': '#EFD7FF',
+            'border': '#7b1fa2',
             'shape': '0',
             'borderWidth': '2px',
             'filterType': 'role',
@@ -31,8 +31,8 @@ export const byRolesTheme = {
         {
             'description': 'Role 3',
             'text': '#000',
-            'background': '#fbe2ff',
-            'border': '#7b1fa2',
+            'background': '#F9FFC6',
+            'border': '#afb42b',
             'shape': '0',
             'borderWidth': '2px',
             'filterType': 'role',
@@ -43,8 +43,8 @@ export const byRolesTheme = {
         {
             'description': 'Role 4',
             'text': '#000',
-            'background': '#fbffce',
-            'border': '#afb42b',
+            'background': '#FFCBC5',
+            'border': '#ff4785',
             'shape': '0',
             'borderWidth': '2px',
             'filterType': 'role',
@@ -55,8 +55,8 @@ export const byRolesTheme = {
         {
             'description': 'Role 5',
             'text': '#000',
-            'background': '#ffead3',
-            'border': '#ff8622',
+            'background': '#A3FFCA',
+            'border': '#1dd267',
             'shape': '0',
             'borderWidth': '2px',
             'filterType': 'role',
@@ -66,9 +66,9 @@ export const byRolesTheme = {
         },
         {
             'description': 'Role 6',
-            'text': '#000',
-            'background': '#ffcadf',
-            'border': '#ff4785',
+            'text': '#ffffff',
+            'background': '#0074DC',
+            'border': '#1565c0',
             'shape': '0',
             'borderWidth': '2px',
             'filterType': 'role',
@@ -78,9 +78,9 @@ export const byRolesTheme = {
         },
         {
             'description': 'Role 7',
-            'text': '#000',
-            'background': '#bcffd9',
-            'border': '#1dd267',
+            'text': '#ffffff',
+            'background': '#d020ff',
+            'border': '#b11eef',
             'shape': '0',
             'borderWidth': '2px',
             'filterType': 'role',
@@ -91,8 +91,8 @@ export const byRolesTheme = {
         {
             'description': 'Role 8',
             'text': '#ffffff',
-            'background': '#0288d1',
-            'border': '#1565c0',
+            'background': '#D2CC00',
+            'border': '#93870C',
             'shape': '0',
             'borderWidth': '2px',
             'filterType': 'role',
@@ -103,8 +103,8 @@ export const byRolesTheme = {
         {
             'description': 'Role 9',
             'text': '#ffffff',
-            'background': '#00acc1',
-            'border': '#0097a7',
+            'background': '#CE2900',
+            'border': '#7b1fa2',
             'shape': '0',
             'borderWidth': '2px',
             'filterType': 'role',
@@ -115,8 +115,8 @@ export const byRolesTheme = {
         {
             'description': 'Role 10',
             'text': '#ffffff',
-            'background': '#d020ff',
-            'border': '#b11eef',
+            'background': '#007E02',
+            'border': '#053700',
             'shape': '0',
             'borderWidth': '2px',
             'filterType': 'role',
@@ -125,129 +125,9 @@ export const byRolesTheme = {
             ]
         },
         {
-            'description': 'Role 11',
-            'text': '#ffffff',
-            'background': '#8f9500',
-            'border': '#9e9d24',
-            'shape': '0',
-            'borderWidth': '2px',
-            'filterType': 'role',
-            'filterValue': [
-                '10'
-            ]
-        },
-        {
-            'description': 'Role 12',
-            'text': '#ffffff',
-            'background': '#b36400',
-            'border': '#814200',
-            'shape': '0',
-            'borderWidth': '2px',
-            'filterType': 'role',
-            'filterValue': [
-                '11'
-            ]
-        },
-        {
-            'description': 'Role 13',
-            'text': '#ffffff',
-            'background': '#b4006f',
-            'border': '#490042',
-            'shape': '0',
-            'borderWidth': '2px',
-            'filterType': 'role',
-            'filterValue': [
-                '12'
-            ]
-        },
-        {
-            'description': 'Role 14',
-            'text': '#ffffff',
-            'background': '#7400ce',
-            'border': '#7b1fa2',
-            'shape': '0',
-            'borderWidth': '2px',
-            'filterType': 'role',
-            'filterValue': [
-                '13'
-            ]
-        },
-        {
-            'description': 'Role 15',
-            'text': '#ffffff',
-            'background': '#008502',
-            'border': '#053700',
-            'shape': '0',
-            'borderWidth': '2px',
-            'filterType': 'role',
-            'filterValue': [
-                '14'
-            ]
-        },
-        {
-            'description': 'Role 16',
-            'text': '#ffffff',
-            'background': '#8ed600',
-            'border': '#768100',
-            'shape': '0',
-            'borderWidth': '2px',
-            'filterType': 'role',
-            'filterValue': [
-                '15'
-            ]
-        },
-        {
-            'description': 'Role 17',
-            'text': '#ffffff',
-            'background': '#1c00ff',
-            'border': '#7b1fa2',
-            'shape': '0',
-            'borderWidth': '2px',
-            'filterType': 'role',
-            'filterValue': [
-                '16'
-            ]
-        },
-        {
-            'description': 'Role 18',
-            'text': '#ff0000',
-            'background': '#ffffff',
-            'border': '#ff0000',
-            'shape': '0',
-            'borderWidth': '2px',
-            'filterType': 'role',
-            'filterValue': [
-                '17'
-            ]
-        },
-        {
-            'description': 'Role 19',
-            'text': '#1e00da',
-            'background': '#ffffff',
-            'border': '#001dd0',
-            'shape': '0',
-            'borderWidth': '2px',
-            'filterType': 'role',
-            'filterValue': [
-                '18'
-            ]
-        },
-        {
-            'description': 'Role 20',
-            'text': '#008d13',
-            'background': '#ffffff',
-            'border': '#008b00',
-            'shape': '0',
-            'borderWidth': '2px',
-            'filterType': 'role',
-            'filterValue': [
-                '19'
-            ]
-        },
-        {
             'description': 'Owner',
             'text': '#000000',
-            'background': '#d6f9af',
+            'background': '#CCFDA5',
             'border': '#388e3c',
             'shape': '1',
             'borderWidth': '2px',
@@ -259,7 +139,7 @@ export const byRolesTheme = {
         {
             'description': 'Any Role',
             'text': '#000',
-            'background': '#ffecb3',
+            'background': '#FFE4A6',
             'border': '#c47b00',
             'shape': '2',
             'borderWidth': '2px',

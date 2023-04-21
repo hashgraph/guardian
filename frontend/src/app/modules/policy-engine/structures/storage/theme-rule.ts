@@ -167,6 +167,16 @@ export class ThemeRule {
         return null;
     }
 
+    public getMultipleValue(): string[] {
+        if ((this._type === 'type' || this._type === 'role') && this._multipleValue) {
+            return this._multipleValue;
+        }
+        if ((this._type === 'api' || this._type === 'custom') && this._singleValue) {
+            return [this._singleValue];
+        }
+        return [];
+    }
+
     public setValue(value: null | string | string[]) {
         if (this._type === 'all' || this._default) {
             this._singleValue = '';

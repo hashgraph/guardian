@@ -482,4 +482,27 @@ export class PolicyModuleModel extends PolicyBlockModel {
         }
         return -1;
     }
+
+    public getPermissionsName(permission: any): any {
+        if (permission === 'OWNER') {
+            return 'Owner';
+        } else if (permission === 'NO_ROLE') {
+            return 'No Role';
+        } else if (permission === 'ANY_ROLE') {
+            return 'Any Role';
+        } else {
+            if (this._variables) {
+                let index = -1;
+                for (const variable of this._variables) {
+                    if (variable.type === 'Role') {
+                        index++;
+                        if (index == permission) {
+                            return variable.name;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+    }
 }
