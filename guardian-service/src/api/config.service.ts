@@ -34,9 +34,8 @@ export async function configAPI(
     ApiResponse(MessageAPI.UPDATE_SETTINGS, async (settings: CommonSettings) => {
         try {
             const secretManager = SecretManager.New();
-            const { OPERATOR_ID } = await secretManager.getSecrets('keys/operator');
             try {
-                AccountId.fromString(OPERATOR_ID);
+                AccountId.fromString(settings.operatorId);
             } catch (error) {
                 await new Logger().error('OPERATOR_ID: ' + error.message, ['GUARDIAN_SERVICE']);
                 throw new Error('OPERATOR_ID: ' + error.message);
