@@ -1,0 +1,333 @@
+<div class="settings">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+    <div class="settings-header">
+        <div class="settings-header-icon">
+            <mat-icon>settings</mat-icon>
+        </div>
+        <div class="settings-header-path">
+            <span>Settings</span>
+        </div>
+        <div class="settings-header-buttons">
+            <div class="settings-header-button cancel" (click)="onSettingsCancel()">
+                Cancel
+            </div>
+            <div class="settings-header-button save" (click)="onSettingsSave()">
+                Save
+            </div>
+        </div>
+    </div>
+    <div class="settings-body">
+        <div class="settings-menu">
+            <div class="settings-menu-item" [attr.active]="settingsTab===0" (click)="onSettingsTab(0)">
+                <mat-icon>palette</mat-icon>
+                <span>Themes</span>
+            </div>
+        </div>
+        <div class="settings-container" [attr.active]="settingsTab===0">
+
+            <div class="theme-container">
+                <div class="settings-select">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Theme</mat-label>
+                        <mat-select [(value)]="theme" (selectionChange)="onSelectTheme()" disableOptionCentering="true">
+                            <mat-option *ngFor="let t of themes" [value]="t">
+                                <span>{{t.name}}</span>
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <ng-container *ngIf="theme">
+                    <div class="settings-sub-button" (click)="newTheme()">
+                        <mat-icon>add</mat-icon>
+                        <span>New</span>
+                    </div>
+                    <div class="settings-sub-button" (click)="newTheme(theme)">
+                        <mat-icon>content_copy</mat-icon>
+                        <span>Copy</span>
+                    </div>
+                    <div *ngIf="!theme.readonly" class="settings-sub-button" (click)="editTheme(theme)">
+                        <mat-icon>edit</mat-icon>
+                        <span>Edit</span>
+                    </div>
+                    <div class="settings-button-delimiter"></div>
+                    <div class="settings-sub-button" (click)="importTheme()">
+                        <mat-icon>file_open</mat-icon>
+                        <span>Import</span>
+                    </div>
+                    <div *ngIf="!theme.readonly" class="settings-sub-button" (click)="exportTheme(theme)">
+                        <mat-icon>import_export</mat-icon>
+                        <span>Export</span>
+                    </div>
+                    <div *ngIf="!theme.readonly" class="settings-button-delimiter"></div>
+                    <div *ngIf="!theme.readonly" class="settings-sub-button del" (click)="deleteTheme(theme)">
+                        <mat-icon>delete</mat-icon>
+                        <span>Delete</span>
+                    </div>
+                </ng-container>
+            </div>
+
+            <div class="rules-container" [attr.readonly]="theme.readonly">
+                <div class="rules-header">
+                    Rules
+                </div>
+
+                <div class="rule-color" *ngFor="let rule of theme.rules; let i=index">
+                    <div class="rule-color-number">
+                        <div class="rule-up" (click)="ruleUp(rule)">
+                            <mat-icon>arrow_drop_up</mat-icon>
+                        </div>
+                        <div>#{{i+1}}</div>
+                        <div class="rule-down" (click)="ruleDown(rule)">
+                            <mat-icon>arrow_drop_down</mat-icon>
+                        </div>
+                    </div>
+
+                    <div class="rule-color-container">
+                        <div class="rule-color-filter">
+
+                            <div class="rule-condition-header">Condition</div>
+                            <div class="rule-condition-select">
+                                <mat-select placeholder="Type" [(ngModel)]="rule.type">
+                                    <mat-option value="type">Types</mat-option>
+                                    <mat-option value="role">Roles</mat-option>
+                                    <mat-option value="api">API</mat-option>
+                                    <!-- <mat-option value="custom">Custom</mat-option> -->
+                                </mat-select>
+                            </div>
+
+                            <div *ngIf="rule.type === 'type' || rule.type === 'api' || rule.type === 'role'"
+                                class="rule-condition-label">
+                                Equal
+                            </div>
+
+                            <div *ngIf="rule.type === 'type'" class="rule-condition-select">
+                                <mat-select placeholder="Blocks" [(ngModel)]="rule.multipleValue" multiple>
+                                    <mat-option *ngFor="let block of allBlocks" [value]="block.type">
+                                        {{block.name}}
+                                    </mat-option>
+                                </mat-select>
+                            </div>
+
+                            <div *ngIf="rule.type === 'api'" class="rule-condition-select">
+                                <mat-select placeholder="Type" [(ngModel)]="rule.singleValue">
+                                    <mat-option value="post">GET & POST</mat-option>
+                                    <mat-option value="get">Only GET</mat-option>
+                                    <mat-option value="">Not Accessible</mat-option>
+                                </mat-select>
+                            </div>
+
+                            <div *ngIf="rule.type === 'role'" class="rule-condition-select">
+                                <mat-select placeholder="Type" multiple [(ngModel)]="rule.multipleValue">
+                                    <mat-option value="OWNER">Owner</mat-option>
+                                    <mat-option value="NO_ROLE">No Role</mat-option>
+                                    <mat-option value="ANY_ROLE">Any Role</mat-option>
+                                    <mat-option *ngFor="let role of roles" [value]="role">
+                                        Role {{role}}
+                                    </mat-option>
+                                </mat-select>
+                            </div>
+
+                            <div *ngIf="rule.type === 'custom'" class="rule-condition-select prop-condition">
+                                <input [(ngModel)]="rule.singleValue">
+                            </div>
+
+                        </div>
+                        <div class="rule-color-prev">
+                            <div class="rule-color-label">
+                                Style
+                            </div>
+                            <div class="block-color-prev" [style]="blockStyle(rule)" theme-block theme-all>
+                                Block Name
+                            </div>
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-value">
+                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                                        [palette]="colorPalette" [(ngModel)]="rule.text"></ngx-colors>
+                                </div>
+                                <div class="rule-color-prop-name">Text</div>
+                            </div>
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-value">
+                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                                        [palette]="colorPalette" [(ngModel)]="rule.background"></ngx-colors>
+                                </div>
+                                <div class="rule-color-prop-name">Background</div>
+                            </div>
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-value">
+                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                                        [palette]="colorPalette" [(ngModel)]="rule.border"></ngx-colors>
+                                </div>
+                                <div class="rule-color-prop-name">Border</div>
+                            </div>
+
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-select">
+                                    <mat-select placeholder="Type" [(ngModel)]="rule.shape">
+                                        <mat-select-trigger>
+                                            <div class="shape-{{rule.shape}}"></div>
+                                        </mat-select-trigger>
+                                        <mat-option value="0">
+                                            <div class="shape-0"></div>
+                                        </mat-option>
+                                        <mat-option value="1">
+                                            <div class="shape-1"></div>
+                                        </mat-option>
+                                        <mat-option value="2">
+                                            <div class="shape-2"></div>
+                                        </mat-option>
+                                        <mat-option value="3">
+                                            <div class="shape-3"></div>
+                                        </mat-option>
+                                        <mat-option value="4">
+                                            <div class="shape-4"></div>
+                                        </mat-option>
+                                        <mat-option value="5">
+                                            <div class="shape-5"></div>
+                                        </mat-option>
+                                    </mat-select>
+                                </div>
+                                <div class="rule-color-prop-name">Shape</div>
+                            </div>
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-select">
+                                    <mat-select placeholder="Type" [(ngModel)]="rule.borderWidth">
+                                        <mat-option value="0px">0px</mat-option>
+                                        <mat-option value="1px">1px</mat-option>
+                                        <mat-option value="2px">2px</mat-option>
+                                        <mat-option value="3px">3px</mat-option>
+                                        <mat-option value="4px">4px</mat-option>
+                                        <mat-option value="5px">5px</mat-option>
+                                        <mat-option value="6px">6px</mat-option>
+                                        <mat-option value="7px">7px</mat-option>
+                                    </mat-select>
+                                </div>
+                                <div class="rule-color-prop-name">Border Width</div>
+                            </div>
+                        </div>
+
+                        <div class="rule-description">
+                            <div class="rule-description-label">
+                                Description
+                            </div>
+                            <div class="rule-description-text">
+                                <textarea [(ngModel)]="rule.description"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rule-color-delete">
+                        <div class="delete-btn" (click)="onDeleteRule(rule)">
+                            <mat-icon>delete</mat-icon>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="rule-color" *ngIf="theme.default">
+                    <div class="rule-color-number">
+                    </div>
+
+                    <div class="rule-color-container">
+                        <div class="rule-color-prev">
+                            <div class="rule-color-label">
+                                Default Style
+                            </div>
+                            <div class="block-color-prev" [style]="blockStyle(theme.default)" theme-block theme-all>
+                                Block Name
+                            </div>
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-value">
+                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                                        [palette]="colorPalette" [(ngModel)]="theme.default.text"></ngx-colors>
+                                </div>
+                                <div class="rule-color-prop-name">Text</div>
+                            </div>
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-value">
+                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                                        [palette]="colorPalette" [(ngModel)]="theme.default.background"></ngx-colors>
+                                </div>
+                                <div class="rule-color-prop-name">Background</div>
+                            </div>
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-value">
+                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                                        [palette]="colorPalette" [(ngModel)]="theme.default.border"></ngx-colors>
+                                </div>
+                                <div class="rule-color-prop-name">Border</div>
+                            </div>
+
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-select">
+                                    <mat-select placeholder="Type" [(ngModel)]="theme.default.shape">
+                                        <mat-select-trigger>
+                                            <div class="shape-{{theme.default.shape}}"></div>
+                                        </mat-select-trigger>
+                                        <mat-option value="0">
+                                            <div class="shape-0"></div>
+                                        </mat-option>
+                                        <mat-option value="1">
+                                            <div class="shape-1"></div>
+                                        </mat-option>
+                                        <mat-option value="2">
+                                            <div class="shape-2"></div>
+                                        </mat-option>
+                                        <mat-option value="3">
+                                            <div class="shape-3"></div>
+                                        </mat-option>
+                                        <mat-option value="4">
+                                            <div class="shape-4"></div>
+                                        </mat-option>
+                                        <mat-option value="5">
+                                            <div class="shape-5"></div>
+                                        </mat-option>
+                                    </mat-select>
+                                </div>
+                                <div class="rule-color-prop-name">Shape</div>
+                            </div>
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-select">
+                                    <mat-select placeholder="Type" [(ngModel)]="theme.default.borderWidth">
+                                        <mat-option value="0px">0px</mat-option>
+                                        <mat-option value="1px">1px</mat-option>
+                                        <mat-option value="2px">2px</mat-option>
+                                        <mat-option value="3px">3px</mat-option>
+                                        <mat-option value="4px">4px</mat-option>
+                                        <mat-option value="5px">5px</mat-option>
+                                        <mat-option value="6px">6px</mat-option>
+                                        <mat-option value="7px">7px</mat-option>
+                                    </mat-select>
+                                </div>
+                                <div class="rule-color-prop-name">Border Width</div>
+                            </div>
+                        </div>
+
+                        <div class="rule-description">
+                            <div class="rule-description-label">
+                                Description
+                            </div>
+                            <div class="rule-description-text">
+                                <textarea [(ngModel)]="theme.default.description"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rule-color-delete">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="new-rule" (click)="onAddRule()">
+                        <mat-icon class="new-icon">add</mat-icon>
+                        <div class="new-rule-name">
+                            Create Rule
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -13,7 +13,8 @@ import {
     analyticsAPI,
     brandingAPI,
     moduleAPI,
-    tagsAPI
+    tagsAPI,
+    themesAPI
 } from '@api/service';
 import { Guardians } from '@helpers/guardians';
 import express from 'express';
@@ -92,6 +93,7 @@ Promise.all([
         app.use('/modules', authorizationHelper, moduleAPI);
         app.use('/tags', authorizationHelper, tagsAPI);
         app.use('/map', mapAPI);
+        app.use('/themes', authorizationHelper, themesAPI);
 
         /**
          * @deprecated 2023-03-01

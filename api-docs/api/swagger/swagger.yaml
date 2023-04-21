@@ -785,6 +785,69 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Tag"
+    Theme:
+      type: object
+      required:
+        - uuid
+        - name
+        - rules
+      properties:
+        id:
+          type: string
+          example: db id
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          example: Theme name
+        rules:
+          type: array
+          items:
+            type: object
+            required:
+              - text
+              - background
+              - border
+              - shape
+              - borderWidth
+              - filterType
+              - filterValue
+            properties:
+              description:
+                type: string
+                example: description
+              text:
+                type: string
+                pattern: '(^#[0-9a-f]{3}$)|(^#[0-9a-f]{6}$)|(^#[0-9a-f]{8}$)'
+                example: "#000000"
+              background:
+                type: string
+                pattern: '(^#[0-9a-f]{3}$)|(^#[0-9a-f]{6}$)|(^#[0-9a-f]{8}$)'
+                example: "#000000"
+              border:
+                type: string
+                pattern: '(^#[0-9a-f]{3}$)|(^#[0-9a-f]{6}$)|(^#[0-9a-f]{8}$)'
+                example: "#000000"
+              shape:
+                type: string
+                enum: ["0", "1", "2", "3", "4", "5"]
+                example: "0"
+              borderWidth:
+                type: string
+                enum: ["0px", "1px", "2px", "3px", "4px", "5px", "6px", "7px"]
+                example: "2px"
+              filterType:
+                type: string
+                enum: ["type", "api", "role"]
+                example: "type"
+              filterValue:
+                oneOf:
+                  - type: string
+                  - type: array
+                    items:
+                      type: string
+                example: ["type"]
 tags:
   - name: "accounts"
     description: "Operations related to Guardian users"
@@ -821,7 +884,9 @@ tags:
   - name: "maps"
     description: "Map operations"
   - name: "tags"
-    description: "Operations with tags"
+    description: "Operations with Tags"
+  - name: "themes"
+    description: "Operations with Themes"
 paths:
   /accounts:
     get:
@@ -4394,7 +4459,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-                
+
   /demo/random-key:
     get:
       tags:
@@ -4446,7 +4511,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-                
+
   /demo/push/random-key:
     get:
       tags:
@@ -5917,7 +5982,15 @@ paths:
                   properties:
                     entity:
                       type: string
-                      enum: [Schema, Policy, Token, Module, Contract, PolicyDocument]
+                      enum:
+                        [
+                          Schema,
+                          Policy,
+                          Token,
+                          Module,
+                          Contract,
+                          PolicyDocument,
+                        ]
                     target:
                       type: string
                 - type: object
@@ -5927,7 +6000,15 @@ paths:
                   properties:
                     entity:
                       type: string
-                      enum: [Schema, Policy, Token, Module, Contract, PolicyDocument]
+                      enum:
+                        [
+                          Schema,
+                          Policy,
+                          Token,
+                          Module,
+                          Contract,
+                          PolicyDocument,
+                        ]
                     targets:
                       type: array
                       items:
@@ -6017,7 +6098,8 @@ paths:
               properties:
                 entity:
                   type: string
-                  enum: [Schema, Policy, Token, Module, Contract, PolicyDocument]
+                  enum:
+                    [Schema, Policy, Token, Module, Contract, PolicyDocument]
                   example: PolicyDocument
                 target:
                   type: string
@@ -6245,6 +6327,195 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Schema"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /themes:
+    get:
+      tags:
+        - themes
+      description: Returns all themes.
+      security:
+        - bearerAuth: []
+      summary: Return a list of all themes.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Theme"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - themes
+      description: Creates a new theme.
+      security:
+        - bearerAuth: []
+      summary: Creates a new theme.
+      requestBody:
+        description: Object that contains theme configuration.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Theme"
+      responses:
+        201:
+          description: Successful operation.
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /themes/{themeId}:
+    put:
+      tags:
+        - themes
+      description: Updates theme configuration for the specified theme ID.
+      summary: Updates theme configuration.
+      parameters:
+        - in: path
+          name: themeId
+          description: Selected theme ID.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Object that contains theme configuration.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Theme"
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Theme"
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - themes
+      description: Deletes the theme with the provided theme ID.
+      parameters:
+        - in: path
+          name: themeId
+          schema:
+            type: string
+          required: true
+          description: Theme ID.
+      security:
+        - bearerAuth: []
+      summary: Deletes the theme.
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /themes/{themeId}/export/file:
+    get:
+      tags:
+        - themes
+      description: Returns a zip file containing the theme.
+      parameters:
+        - in: path
+          name: themeId
+          schema:
+            type: string
+          required: true
+          description: Selected theme ID.
+      security:
+        - bearerAuth: []
+      summary: Returns a zip file containing the theme.
+      responses:
+        200:
+          description: Successful operation. Response zip file
+        401:
+          description: Unauthorized.
+        403:
+          description: Forbidden.
+        500:
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /themes/import/file:
+    post:
+      tags:
+        - themes
+      description: Imports new theme from the provided zip file into the local DB.
+      security:
+        - bearerAuth: []
+      summary: Imports new theme from a zip file.
+      requestBody:
+        description: A zip file that contains the theme to be imported.
+        required: true
+        content:
+          binary/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        201:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Theme"
         401:
           description: Unauthorized.
         403:

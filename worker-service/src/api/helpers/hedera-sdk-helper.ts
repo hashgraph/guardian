@@ -35,14 +35,17 @@ import {
     TopicId,
     TopicMessageSubmitTransaction,
     Transaction,
+    TransactionId,
     TransactionReceipt,
+    TransactionReceiptQuery,
     TransactionRecord,
+    TransactionRecordQuery,
     TransferTransaction
 } from '@hashgraph/sdk';
 import { HederaUtils, timeout } from './utils';
 import axios from 'axios';
 import { Environment } from './environment';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, HederaResponseCode } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger';
 import process from 'process';
@@ -1011,8 +1014,26 @@ export class HederaSDKHelper {
             try {
                 const account = client.operatorAccountId.toString();
                 await this.transactionStartLog(id, type);
-                const result = await transaction.execute(client);
-                const receipt = await result.getReceipt(client);
+                let receipt;
+                try {
+                    const result = await transaction.execute(client);
+                    receipt = await result.getReceipt(client);
+                } catch (error) {
+                    const errorMessage =
+                        typeof error === 'string' ? error : error?.message;
+                    if (
+                        !errorMessage ||
+                        errorMessage.indexOf(
+                            HederaResponseCode.DUPLICATE_TRANSACTION
+                        ) === -1
+                    ) {
+                        throw error;
+                    }
+                    receipt = await this.receiptQuery(
+                        client,
+                        transaction.transactionId
+                    );
+                }
                 await this.transactionEndLog(id, type, transaction, metadata);
                 HederaSDKHelper.transactionResponse(account);
                 return receipt;
@@ -1020,6 +1041,42 @@ export class HederaSDKHelper {
                 await this.transactionErrorLog(id, type, transaction, error);
                 throw error;
             }
+        }
+    }
+
+    /**
+     * Receipt query
+     * @param client Client
+     * @param transacationId Transaction identifier
+     * @returns Transaction result
+     */
+    private async receiptQuery(
+        client: Client,
+        transactionId: string | TransactionId,
+        count = 0
+    ): Promise<TransactionReceipt> {
+        try {
+            let receiptQuery = new TransactionReceiptQuery()
+                .setMaxQueryPayment(new Hbar(MAX_FEE))
+                .setTransactionId(transactionId);
+            const transactionCost = await receiptQuery.getCost(client);
+            const newCost = transactionCost.toTinybars().multiply(2);
+            receiptQuery = receiptQuery.setQueryPayment(
+                Hbar.fromTinybars(newCost)
+            );
+            return await receiptQuery.execute(client);
+        } catch (error) {
+            const errorMessage =
+                typeof error === 'string' ? error : error?.message;
+            if (
+                count < 10 &&
+                errorMessage &&
+                errorMessage.indexOf(HederaResponseCode.DUPLICATE_TRANSACTION) >
+                    -1
+            ) {
+                return await this.receiptQuery(client, transactionId, count++);
+            }
+            throw error;
         }
     }
 
@@ -1047,8 +1104,26 @@ export class HederaSDKHelper {
             try {
                 const account = client.operatorAccountId.toString();
                 await this.transactionStartLog(id, type);
-                const result = await transaction.execute(client);
-                const record = await result.getRecord(client);
+                let record;
+                try {
+                    const result = await transaction.execute(client);
+                    record = await result.getRecord(client);
+                } catch (error) {
+                    const errorMessage =
+                        typeof error === 'string' ? error : error?.message;
+                    if (
+                        !errorMessage ||
+                        errorMessage.indexOf(
+                            HederaResponseCode.DUPLICATE_TRANSACTION
+                        ) === -1
+                    ) {
+                        throw error;
+                    }
+                    record = await this.recordQuery(
+                        client,
+                        transaction.transactionId
+                    );
+                }
                 await this.transactionEndLog(id, type, transaction, metadata);
                 HederaSDKHelper.transactionResponse(account);
                 return record;
@@ -1056,6 +1131,42 @@ export class HederaSDKHelper {
                 await this.transactionErrorLog(id, type, transaction, error);
                 throw error;
             }
+        }
+    }
+
+    /**
+     * Record query
+     * @param client Client
+     * @param transacationId Transaction identifier
+     * @returns Transaction result
+     */
+    private async recordQuery(
+        client: Client,
+        transactionId: string | TransactionId,
+        count = 0
+    ): Promise<TransactionRecord> {
+        try {
+            let recordQuery = new TransactionRecordQuery()
+                .setMaxQueryPayment(new Hbar(MAX_FEE))
+                .setTransactionId(transactionId);
+            const transactionCost = await recordQuery.getCost(client);
+            const newCost = transactionCost.toTinybars().multiply(2);
+            recordQuery = recordQuery.setQueryPayment(
+                Hbar.fromTinybars(newCost)
+            );
+            return await recordQuery.execute(client);
+        } catch (error) {
+            const errorMessage =
+                typeof error === 'string' ? error : error?.message;
+            if (
+                count < 10 &&
+                errorMessage &&
+                errorMessage.indexOf(HederaResponseCode.DUPLICATE_TRANSACTION) >
+                    -1
+            ) {
+                return await this.recordQuery(client, transactionId, count++);
+            }
+            throw error;
         }
     }
 

@@ -69,6 +69,7 @@ import { CompareModule } from './modules/analytics/analytics.module';
 import { CommonComponentsModule } from './modules/common/common-components.module';
 import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module';
+import { ThemeService } from './services/theme.service';
 
 @NgModule({
     declarations: [
@@ -137,6 +138,7 @@ import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module
         ModulesService,
         MapService,
         TagsService,
+        ThemeService,
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,

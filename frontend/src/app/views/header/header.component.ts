@@ -31,6 +31,7 @@ export class HeaderComponent implements OnInit {
     testUsers$: Observable<any[]>;
     balance: string;
     balanceType: string;
+    balanceInit: boolean = false;
     ws!: any;
     authSubscription!: any;
     displayDemoAccounts: boolean = environment.displayDemoAccounts;
@@ -110,10 +111,20 @@ export class HeaderComponent implements OnInit {
     }
 
     getBallance() {
+        if(!this.isLogin) {
+            return;
+        }
+        this.balanceInit = true;
         this.auth.balance().subscribe((balance: any) => {
             if (balance && balance.balance) {
                 const b = parseFloat(balance.balance);
-                this.balance = `${b.toFixed(3)} ${balance.unit}`;
+                if(b > 999) {
+                    this.balance = `${b.toFixed(0)} ${balance.unit}`;
+                } else if(b > 99) {
+                    this.balance = `${b.toFixed(2)} ${balance.unit}`;
+                } else if(b > 9) {
+                    this.balance = `${b.toFixed(3)} ${balance.unit}`;
+                }
                 if (b > 100) {
                     this.balanceType = 'normal';
                 } else if (b > 20) {
@@ -143,6 +154,9 @@ export class HeaderComponent implements OnInit {
             const username = user ? user.username : null;
             this.setStatus(isLogin, role, username);
             this.authState.updateState(isLogin);
+            if(!this.balanceInit) {
+                this.getBallance();
+            }
         }, () => {
             this.setStatus(false, null, null);
         });

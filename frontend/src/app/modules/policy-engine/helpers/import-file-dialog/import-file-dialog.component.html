@@ -1,0 +1,8 @@
+<div class="content">
+    <app-file-drag-n-drop fileExtension="theme" (onFileLoaded)="importFromFile($event)"
+        dropZoneLabel="Import Theme .theme file"></app-file-drag-n-drop>
+
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+    </div>
+</div>

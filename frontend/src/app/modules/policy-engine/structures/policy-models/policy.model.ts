@@ -401,10 +401,10 @@ export class PolicyModel {
         }
 
         for (const event of this._allEvents) {
-            if(event.sourceTag) {
+            if (event.sourceTag) {
                 event.source = this._tagMap[event.sourceTag];
             }
-            if(event.targetTag) {
+            if (event.targetTag) {
                 event.target = this._tagMap[event.targetTag];
             }
         }
@@ -616,5 +616,28 @@ export class PolicyModel {
 
     public refresh(): void {
         this.refreshData();
+    }
+
+    public getPermissionsNumber(permission: string): number {
+        if (this._policyRoles) {
+            for (let index = 0; index < this._policyRoles.length; index++) {
+                if (this._policyRoles[index].name === permission) {
+                    return index;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public getPermissionsName(permission: any): any {
+        if (permission === 'OWNER') {
+            return 'Owner';
+        } else if (permission === 'NO_ROLE') {
+            return 'No Role';
+        } else if (permission === 'ANY_ROLE') {
+            return 'Any Role';
+        } else {
+            return this._policyRoles[permission]?.name;
+        }
     }
 }

@@ -25,6 +25,9 @@ export class PolicyBlockModel {
     protected _tag: string;
     protected _localTag: string;
     protected _lastPrefix: string;
+    protected _permissionsNumber: string[];
+    protected _post: boolean;
+    protected _get: boolean;
 
     constructor(config: IBlockConfig, parent: PolicyBlockModel | null) {
         this._changed = false;
@@ -57,11 +60,15 @@ export class PolicyBlockModel {
 
         this._artifacts = config.artifacts || [];
         this._children = [];
+        this._permissionsNumber = [];
+        this._post = false;
+        this._get = false;
     }
 
     public setModule(module: PolicyModel | PolicyModuleModel | TemplateModel | undefined): void {
         this._module = module;
         if (this._module) {
+            this._updatePermissions();
             this._lastPrefix = this._module.tagPrefix;
             if (this._lastPrefix && this._localTag.startsWith(this._lastPrefix)) {
                 this._localTag = this._localTag.replace(this._lastPrefix, '');
@@ -110,6 +117,7 @@ export class PolicyBlockModel {
 
     public set permissions(value: string[]) {
         this.silentlySetPermissions(value);
+        this._updatePermissions();
         this.changed = true;
     }
 
@@ -189,6 +197,18 @@ export class PolicyBlockModel {
         }
     }
 
+    public get permissionsNumber(): string[] {
+        return this._permissionsNumber;
+    }
+
+    public get getApi(): boolean {
+        return this._get;
+    }
+
+    public get postApi(): boolean {
+        return this._post;
+    }
+
     public remove() {
         if (this._parent) {
             this._parent._removeChild(this);
@@ -219,6 +239,25 @@ export class PolicyBlockModel {
     public addChild(child: PolicyBlockModel, index?: number) {
         this._addChild(child, index);
         this.refresh();
+    }
+
+    protected _updatePermissions(): void {
+        this._permissionsNumber = [];
+        if (Array.isArray(this.properties.permissions)) {
+            for (const p of this.properties.permissions) {
+                if (p === 'OWNER') {
+                    this._permissionsNumber.push('OWNER');
+                } else if (p === 'NO_ROLE') {
+                    this._permissionsNumber.push('NO_ROLE');
+                } else if (p === 'ANY_ROLE') {
+                    this._permissionsNumber.push('ANY_ROLE');
+                } else if (this._module) {
+                    this._permissionsNumber.push(
+                        String(this._module.getPermissionsNumber(p))
+                    );
+                }
+            }
+        }
     }
 
     protected _createChild(block: IBlockConfig, module: any, index?: number) {
@@ -463,6 +502,10 @@ export class PolicyBlockModel {
     }
 
     public setAbout(about: any): void {
+        if(about) {
+            this._post = about.post;
+            this._get = about.get;
+        }
         if (about && about.defaultEvent) {
             this._defaultEvent = new PolicyEventModel({
                 actor: '',

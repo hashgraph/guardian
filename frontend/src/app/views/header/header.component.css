@@ -195,6 +195,7 @@ a[hidden="true"] {
     color: #818181;
     border: 2px solid #aeaeae;
     box-shadow: inset 0px 0px 6px 0px #aeaeae;
+    font-size: 16px;
 }
 
 .user-balance[balance-type='error'] {

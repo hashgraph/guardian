@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GenerateUUIDv4, Schema, SchemaHelper, Token } from '@guardian/interfaces';
+import { Schema, SchemaHelper, Token } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { forkJoin, Observable } from 'rxjs';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
@@ -18,10 +18,11 @@ import { TokenService } from 'src/app/services/token.service';
 import { NewModuleDialog } from '../../helpers/new-module-dialog/new-module-dialog.component';
 import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
 import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
-import { RegisteredService } from '../../registered-service/registered.service';
-import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, TemplateModel } from '../../structures';
+import { RegisteredService } from '../../services/registered.service';
+import { PolicyBlockModel, PolicyModel, PolicyModuleModel, PolicyStorage, TemplateModel, Theme, ThemeRule } from '../../structures';
 import { Options } from '../../structures/storage/config-options';
 import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
+import { ThemeService } from '../../../../services/theme.service';
 
 enum OperationMode {
     none,
@@ -68,6 +69,9 @@ export class PolicyConfigurationComponent implements OnInit {
     public openType: 'Root' | 'Sub' = 'Root';
     public rootType: 'Policy' | 'Module' = 'Policy';
     public selectType: 'Block' | 'Module' = 'Block';
+    public openSettings: boolean = false;
+    public themes!: Theme[];
+    public theme!: Theme;
 
     readonly codeMirrorOptions = {
         theme: 'default',
@@ -173,7 +177,8 @@ export class PolicyConfigurationComponent implements OnInit {
         private matIconRegistry: MatIconRegistry,
         private domSanitizer: DomSanitizer,
         private registeredService: RegisteredService,
-        private modulesService: ModulesService
+        private modulesService: ModulesService,
+        private themeService: ThemeService
     ) {
         this.options = new Options();
         this.policyModel = new PolicyModel();
@@ -191,8 +196,17 @@ export class PolicyConfigurationComponent implements OnInit {
     public ngOnInit() {
         this.loading = true;
         this.options.load();
+        this.theme = this.themeService.getCurrent();
         this.route.queryParams.subscribe(queryParams => {
             this.loadData();
+        });
+
+        this.themeService.load().subscribe((themes: any) => {
+            this.themeService.setThemes(themes);
+            this.themes = this.themeService.getThemes();
+            this.theme = this.themeService.getCurrent();
+        }, (error) => {
+            console.error(error);
         });
     }
 
@@ -203,6 +217,11 @@ export class PolicyConfigurationComponent implements OnInit {
 
     public collapse(name: string) {
         this.options.collapse(name);
+        this.options.save();
+    }
+
+    public change(name: string) {
+        this.options.change(name);
         this.options.save();
     }
 
@@ -596,7 +615,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public onConvertToModule() {
         this.currentBlock = this.policyModel.getBlock(this.currentBlock);
         if (this.currentBlock) {
-            if(this.currentBlock.search('module')) {
+            if (this.currentBlock.search('module')) {
                 this.informService.errorShortMessage(
                     `Block cannot be converted to module as we have a module in it.`,
                     'Invalid operation.'
@@ -1127,5 +1146,30 @@ export class PolicyConfigurationComponent implements OnInit {
         }, (e) => {
             this.loading = false;
         });
+    }
+
+    public onSettings() {
+        this.openSettings = true;
+    }
+
+    public onChangeSettings(event: boolean) {
+        this.openSettings = false;
+        this.themes = this.themeService.getThemes();
+        this.theme = this.themeService.getCurrent();
+    }
+
+    public setTheme(theme: Theme) {
+        this.themeService.setCurrent(theme);
+        this.themeService.saveTheme();
+        this.theme = this.themeService.getCurrent();
+    }
+
+    public blockStyle(rule: ThemeRule) {
+        return this.themeService.getStyleByRule(rule)
+    }
+
+    public getLegendText(rule: ThemeRule): string {
+        rule.updateLegend(this.openModule);
+        return rule.legend;
     }
 }
