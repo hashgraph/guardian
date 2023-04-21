@@ -27,7 +27,10 @@ const fieldsValidation = {
     .required('The password_confirmation field is required')
     .oneOf([yup.ref('password'), null], 'Passwords must match'),
   role: yup.mixed<UserRole | 'ROOT_AUTHORITY'>().oneOf([...Object.values(UserRole), 'ROOT_AUTHORITY'])
-    .required('The role field is required')
+    .required('The role field is required'),
+  ipfsStorageApiKey: yup.string().required('ipfsStorageApiKey field is required'),
+  operatorId: yup.string().required('operatorId field is required'),
+  operatorKey: yup.string().required('operatorKey field is required')
 };
 
 export default fieldsValidation;
