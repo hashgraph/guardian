@@ -8,7 +8,7 @@ import {
     ViewChild,
     ViewContainerRef
 } from '@angular/core';
-import { RegisteredService } from '../../registered-service/registered.service';
+import { RegisteredService } from '../../services/registered.service';
 import { IBlock } from '../../structures';
 
 /**

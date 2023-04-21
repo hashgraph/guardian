@@ -2,7 +2,9 @@
     --pc-main-grid-border: #b4c4cb;
     --pc-border-color: #bdbdbd;
     --pc-active-icon-color: #3f51b5;
-    --pc-header-color: #646464;
+    --pc-no-active-color: #555;
+    --pc-active-background-color: #eff0f9;
+    --pc-header-color: #555555;
     --pc-favorite-color: #f3ac0e;
     --pc-un-favorite-color: #f0f0f0;
     --pc-favorite-focus-color: #d0d0d0;
@@ -21,6 +23,7 @@
     --pc-tabs-background-color: #d0d0d0;
     --pc-tabs-hover-color: #f0f0f0;
     --pc-prop-btn-color: #6166ff;
+    --pc-del-color: #eb0303;
 
     --pc-ui-block-background-color: #efe5fc;
     --pc-server-block-background-color: #e2f9fe;
@@ -39,6 +42,10 @@
 
 .action-color {
     color: var(--pc-active-icon-color);
+}
+
+.no-action-color {
+    color: var(--pc-no-active-color);
 }
 
 .edit-color {
@@ -159,7 +166,7 @@
     width: 100%;
     margin: 0px;
     border: none;
-    padding: 0; 
+    padding: 0;
 }
 
 .right-toolbar {
@@ -526,7 +533,7 @@
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
-            
+
             .component-btn-icon {
                 position: absolute;
                 top: 3px;
@@ -773,6 +780,89 @@
                 &.tab-header-icon {
                     padding: 6px 16px 6px 32px;
                 }
+            }
+        }
+    }
+
+    .pc-tabs-headers.right-menu {
+        padding-right: 30px;
+    }
+}
+
+.policy-configuration::ng-deep {
+    .theme-legends {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 30px;
+        height: 30px;
+        overflow: visible;
+
+        .theme-legends-icon {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 30px;
+            height: 31px;
+            overflow: hidden;
+            cursor: pointer;
+            box-sizing: border-box;
+            padding: 3px;
+            border-left: 1px solid var(--pc-border-color);
+            color: #555;
+
+            &:hover {
+                background: var(--pc-tabs-hover-color);
+            }
+        }
+
+        .theme-legends-container {
+            display: none;
+            position: absolute;
+            top: 32px;
+            right: 10px;
+            z-index: 5;
+            border-bottom-left-radius: 6px;
+            box-shadow: -2px 2px 4px 0px #00000020;
+            background: #fff;
+            overflow: auto;
+            max-height: calc(100vh - 260px);
+        }
+
+        .theme-rule {
+            width: 200px;
+            height: auto;
+            min-height: 20px;
+            display: grid;
+            grid-template-columns: 50px auto;
+            margin-right: 0px;
+            background: #fff;
+            padding: 4px 6px;
+            pointer-events: all;
+        }
+
+        .theme-rule-prev {
+            width: 32px;
+            height: 18px;
+            box-sizing: border-box;
+            margin: 2px;
+            align-items: center;
+            display: flex;
+        }
+
+        .theme-rule-description {
+            align-items: center;
+            display: flex;
+        }
+
+        &[active="true"] {
+            .theme-legends-container {
+                display: block;
+            }
+
+            .theme-legends-icon {
+                background: #fff;
+                color: var(--pc-active-icon-color);
             }
         }
     }
@@ -1347,22 +1437,22 @@
         }
     }
 
-    &[block-type="UI Components"] .drag-component {
-        background: var(--pc-ui-block-background-color);
-        border-color: var(--pc-ui-block-border-color);
-    }
+    // &[block-type="UI Components"] .drag-component {
+    //     background: var(--pc-ui-block-background-color);
+    //     border-color: var(--pc-ui-block-border-color);
+    // }
 
-    &[block-type="Server Blocks"] .drag-component {
-        background: var(--pc-server-block-background-color);
-        border-color: var(--pc-server-block-border-color);
-        border-radius: 20px;
-    }
+    // &[block-type="Server Blocks"] .drag-component {
+    //     background: var(--pc-server-block-background-color);
+    //     border-color: var(--pc-server-block-border-color);
+    //     border-radius: 20px;
+    // }
 
-    &[block-type="Addons"] .drag-component {
-        background: var(--pc-addon-block-background-color);
-        border-color: var(--pc-addon-block-border-color);
-        border-radius: 6px;
-    }
+    // &[block-type="Addons"] .drag-component {
+    //     background: var(--pc-addon-block-background-color);
+    //     border-color: var(--pc-addon-block-border-color);
+    //     border-radius: 6px;
+    // }
 }
 
 .right-bottom-toolbar .tab-header {
@@ -1376,7 +1466,7 @@
     top: 4px !important;
 }
 
-.errors-properties  {
+.errors-properties {
     max-height: 200px;
     overflow: auto;
 }

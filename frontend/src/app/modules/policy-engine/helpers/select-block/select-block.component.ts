@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@angular/core';
-import { RegisteredService } from '../../registered-service/registered.service';
+import { RegisteredService } from '../../services/registered.service';
 import { PolicyBlockModel } from '../../structures';
 
 /**

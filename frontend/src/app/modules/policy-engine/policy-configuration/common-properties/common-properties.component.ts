@@ -1,6 +1,6 @@
 import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
 import { BlockErrorActions, GenerateUUIDv4, Schema, Token } from '@guardian/interfaces';
-import { RegisteredService } from '../../registered-service/registered.service';
+import { RegisteredService } from '../../services/registered.service';
 import {
     IBlockAbout,
     PolicyModel,
