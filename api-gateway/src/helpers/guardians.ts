@@ -1248,7 +1248,7 @@ export class Guardians extends NatsService {
      * @param owner
      */
     public async exportModuleFile(uuid: string, owner: string) {
-        const file =  await this.sendMessage(MessageAPI.MODULE_EXPORT_FILE, { uuid, owner }) as any;
+        const file = await this.sendMessage(MessageAPI.MODULE_EXPORT_FILE, { uuid, owner }) as any;
         return Buffer.from(file, 'base64');
     }
 
@@ -1434,5 +1434,77 @@ export class Guardians extends NatsService {
      */
     public async getPublishedTagSchemas(): Promise<ISchema> {
         return await this.sendMessage(MessageAPI.GET_PUBLISHED_TAG_SCHEMAS);
+    }
+
+    /**
+     * Create Theme
+     * @param theme
+     * @param owner
+     * @returns theme
+     */
+    public async createTheme(theme: any, owner: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.CREATE_THEME, { theme, owner });
+    }
+
+    /**
+     * Update Theme
+     * @param themeId
+     * @param theme
+     * @param owner
+     * @returns theme
+     */
+    public async updateTheme(
+        themeId: string,
+        theme: any,
+        owner: string
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.UPDATE_THEME, { themeId, theme, owner });
+    }
+
+    /**
+     * Get themes
+     * @param owner
+     * @returns themes
+     */
+    public async getThemes(owner: string): Promise<any[]> {
+        return await this.sendMessage(MessageAPI.GET_THEMES, { owner });
+    }
+
+    /**
+     * Get theme by id
+     * @param themeId
+     * @returns theme
+     */
+    public async getThemeById(themeId: string): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_THEME, { themeId });
+    }
+
+    /**
+     * Delete theme
+     * @param themeId
+     * @param owner
+     * @returns Operation Success
+     */
+    public async deleteTheme(themeId: string, owner: string): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_THEME, { themeId, owner });
+    }
+
+    /**
+     * Load theme file for import
+     * @param zip
+     * @param owner
+     */
+    public async importThemeFile(zip: any, owner: string) {
+        return await this.sendMessage(MessageAPI.THEME_IMPORT_FILE, { zip, owner });
+    }
+
+    /**
+     * Get theme export file
+     * @param uuid
+     * @param owner
+     */
+    public async exportThemeFile(themeId: string, owner: string) {
+        const file = await this.sendMessage(MessageAPI.THEME_EXPORT_FILE, { themeId, owner }) as any;
+        return Buffer.from(file, 'base64');
     }
 }

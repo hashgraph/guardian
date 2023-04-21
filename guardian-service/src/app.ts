@@ -55,6 +55,7 @@ import { setDefaultSchema } from '@api/helpers/schema-helper';
 import { demoAPI } from '@api/demo.service';
 import { SecretManager } from '@guardian/common/dist/secret-manager';
 import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
+import { themeAPI } from '@api/theme.service';
 
 export const obj = {};
 
@@ -134,6 +135,7 @@ Promise.all([
         await tagsAPI();
         await analyticsAPI();
         await mapAPI();
+        await themeAPI();
     } catch (error) {
         console.error(error.message);
         process.exit(0);

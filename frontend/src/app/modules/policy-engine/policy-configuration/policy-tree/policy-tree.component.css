@@ -63,12 +63,14 @@
     background: #fff;
     border: 2px solid #000;
     box-sizing: border-box;
-    padding: 4px 12px;
     cursor: pointer;
     -webkit-user-select: none;
     user-select: none;
     margin: 4px 8px 4px 0px;
     box-shadow: 4px 4px 6px 0px #00000040;
+    padding: 0px 12px;
+    align-items: center;
+    display: flex;
 }
 
 .block-item * {
@@ -147,9 +149,12 @@
 
 .block-item-icon {
     position: absolute;
-    top: 6px;
+    top: 50%;
     left: 9px;
     color: #404040;
+    transform: translate(0px, -50%);
+    width: 18px;
+    height: 18px;
 }
 
 .module-item-icon mat-icon {
@@ -255,7 +260,7 @@
     height: 40px;
     background: #fff !important;
     border-color: #838383 !important;
-    padding: 2px 12px 4px 12px;
+    padding: 2px 12px 2px 12px;
     margin: 8px 8px 3px 0px;
 }
 

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { BlockAbout, BlockType, ChildrenDisplaySettings, ChildrenType, ControlType, IBlockAbout, IBlockDynamicAboutConfig, IBlockSetting, PolicyBlockModel, PolicyModel, PolicyModuleModel } from '../structures';
-import blocks from './blocks-information'
-import modules from './module-information'
+import { BlockAbout, BlockType, ChildrenType, ControlType, IBlockAbout, IBlockSetting, PolicyBlockModel, PolicyModel, PolicyModuleModel } from '../structures';
+import blocks from './blocks-information';
+import modules from './module-information';
 
 @Injectable()
 export class RegisteredService {

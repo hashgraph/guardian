@@ -33,6 +33,7 @@ import {
 } from '@guardian/interfaces';
 import { BaseEntity } from '../models';
 import { DataBaseHelper } from '../helpers';
+import { Theme } from '../entity/theme';
 
 /**
  * Database server
@@ -2303,5 +2304,46 @@ export class DatabaseServer {
      */
     public static async updateTagCache(row: TagCache): Promise<TagCache> {
         return await new DataBaseHelper(TagCache).update(row);
+    }
+
+    /**
+     * Create Theme
+     * @param theme
+     */
+    public static async createTheme(theme: any): Promise<Theme> {
+        const item = new DataBaseHelper(Theme).create(theme);
+        return await new DataBaseHelper(Theme).save(item);
+    }
+
+    /**
+     * Get Theme
+     * @param filters
+     */
+    public static async getTheme(filters: any): Promise<Theme> {
+        return await new DataBaseHelper(Theme).findOne(filters);
+    }
+
+    /**
+     * Get Themes
+     * @param filters
+     */
+    public static async getThemes(filters: any): Promise<Theme[]> {
+        return await new DataBaseHelper(Theme).find(filters);
+    }
+
+    /**
+     * Delete Theme
+     * @param theme
+     */
+    public static async removeTheme(theme: Theme): Promise<void> {
+        return await new DataBaseHelper(Theme).remove(theme);
+    }
+
+    /**
+     * Update Theme
+     * @param row
+     */
+    public static async updateTheme(row: Theme): Promise<Theme> {
+        return await new DataBaseHelper(Theme).update(row);
     }
 }

@@ -21,6 +21,7 @@ const avoidEvents = [
   'GET_STATUS',
   'get-setting-key',
   'GET_MAP_API_KEY',
+  'external-events.ipfs_before_upload_content'
 ];
 
 export const externalMessageEvents = [

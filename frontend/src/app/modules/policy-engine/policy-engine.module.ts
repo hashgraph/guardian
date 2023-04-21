@@ -86,12 +86,15 @@ import { NewModuleDialog } from './helpers/new-module-dialog/new-module-dialog.c
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 //Registered Service
-import { RegisteredService } from './registered-service/registered.service';
+import { RegisteredService } from './services/registered.service';
 //Policies Grid
 import { PoliciesComponent } from './policies/policies.component';
 //Routing
 import { AppRoutingModule } from 'src/app/app-routing.module';
 import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.component';
+import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
+import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialog.component';
+import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
 
 @NgModule({
     declarations: [
@@ -167,7 +170,10 @@ import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.c
         ModulesListComponent,
         NewModuleDialog,
         TagsManagerBlockComponent,
-        NewPolicyDialog
+        NewPolicyDialog,
+        PolicySettingsComponent,
+        ImportFileDialog,
+        NewThemeDialog
     ],
     imports: [
         CommonModule,
@@ -182,55 +188,6 @@ import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.c
         AppRoutingModule
     ],
     exports: [
-        // PoliciesComponent,
-        // ButtonBlockComponent,
-        // ButtonConfigComponent,
-        // RevokeConfigComponent,
-        // PolicyConfigurationComponent,
-        // DocumentSourceComponent,
-        // CommonPropertiesComponent,
-        // ActionConfigComponent,
-        // ContainerConfigComponent,
-        // RequestConfigComponent,
-        // PolicyPropertiesComponent,
-        // MintConfigComponent,
-        // SendConfigComponent,
-        // ExternalDataConfigComponent,
-        // AggregateConfigComponent,
-        // InformationConfigComponent,
-        // RolesConfigComponent,
-        // FiltersAddonConfigComponent,
-        // SourceAddonConfigComponent,
-        // ActionBlockComponent,
-        // RequestDocumentBlockComponent,
-        // ContainerBlockComponent,
-        // DocumentsSourceBlockComponent,
-        // PolicyViewerComponent,
-        // RenderBlockComponent,
-        // DialogBlock,
-        // DocumentDialogBlock,
-        // InformationBlockComponent,
-        // StepBlockComponent,
-        // RolesBlockComponent,
-        // FiltersAddonBlockComponent,
-        // HelpIcon,
-        // SavePolicyDialog,
-        // SchemaEngineModule,
-        // PreviewPolicyDialog,
-        // ExportPolicyDialog,
-        // CalculateConfigComponent,
-        // CalculateMathConfigComponent,
-        // JsonPropertiesComponent,
-        // ReassigningConfigComponent,
-        // CronConfigDialog,
-        // TokenActionConfigComponent,
-        // DocumentValidatorConfigComponent,
-        // TokenConfirmationConfigComponent,
-        // TokenConfirmationBlockComponent,
-        // GroupManagerConfigComponent,
-        // GroupManagerBlockComponent,
-        // InviteDialogComponent,
-        // ModulesListComponent
     ],
     providers: [
         RegisteredService
