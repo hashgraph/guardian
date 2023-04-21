@@ -136,6 +136,7 @@ export class PolicySettingsComponent implements OnInit {
 
     public onSelectTheme() {
         this.themeService.setCurrent(this.theme);
+        this.themeService.saveTheme();
     }
 
     public newTheme(row?: Theme) {
