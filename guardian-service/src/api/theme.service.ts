@@ -167,6 +167,9 @@ export async function themeAPI(): Promise<void> {
             }
             const { themeId, owner } = msg;
             const item = await DatabaseServer.getTheme({ id: themeId, owner });
+            if (!item || item.owner !== owner) {
+                throw new Error('Invalid theme');
+            }
             await DatabaseServer.removeTheme(item);
             return new MessageResponse(true);
         } catch (error) {
@@ -189,6 +192,9 @@ export async function themeAPI(): Promise<void> {
             }
             const { themeId, owner } = msg;
             const item = await DatabaseServer.getTheme({ id: themeId, owner });
+            if (!item || item.owner !== owner) {
+                throw new Error('Invalid theme');
+            }
             const zip = await generateZipFile(item);
             const file = await zip.generateAsync({
                 type: 'arraybuffer',
