@@ -172,13 +172,15 @@ export class SynchronizationService {
             }
 
             const users = Object.keys(policyMap);
-            const tasks: any[] = [];
-            for (const user of users) {
-                tasks.push(this.taskByUser(
-                    messageServer, root, policy, user, policyMap[user], vpMap[user])
-                );
+            const chunkSize = 10;
+            for (let i = 0; i < users.length; i += chunkSize) {
+                const chunk = users.slice(i, i + chunkSize);
+                const tasks: any[] = [];
+                for (const user of chunk) {
+                    tasks.push(this.taskByUser(messageServer, root, policy, user, policyMap[user], vpMap[user]));
+                }
+                await Promise.all<any[][]>(tasks);
             }
-            await Promise.all<any[][]>(tasks);
         } catch (error) {
             console.error(error);
             new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
