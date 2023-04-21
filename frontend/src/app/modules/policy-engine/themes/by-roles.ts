@@ -269,7 +269,7 @@ export const byRolesTheme = {
             ]
         },
         {
-            'description': '',
+            'description': 'No Role',
             'text': '#000',
             'background': '#fff',
             'border': '#7e7e7e',
