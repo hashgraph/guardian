@@ -3,14 +3,15 @@ import { Guardians } from '@helpers/guardians';
 import { Request, Response, Router, NextFunction } from 'express';
 import { CommonSettings, UserRole } from '@guardian/interfaces';
 import { Logger } from '@guardian/common';
-import { prepareValidationResponse } from '@middlewares/validation';
+import validate, { prepareValidationResponse } from '@middlewares/validation';
+import { updateSettings } from '@middlewares/validation/schemas/settings';
 
 /**
  * Settings route
  */
 export const settingsAPI = Router();
 
-settingsAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY),
+settingsAPI.post('/', validate(updateSettings()), permissionHelper(UserRole.STANDARD_REGISTRY),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
         const settings = req.body as CommonSettings;
