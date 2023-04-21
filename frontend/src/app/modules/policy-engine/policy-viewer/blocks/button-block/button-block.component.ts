@@ -133,10 +133,10 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
                     result = result && (fieldValue != filter.value);
                     break;
                 case 'in':
-                    filter.value.split(',').foreach((val: any) => result = result && (val == fieldValue));
+                    filter.value.split(',').forEach((val: any) => result = result && (val == fieldValue));
                     break;
                 case 'not_in':
-                    filter.value.split(',').foreach((val: any) => result = result && (val != fieldValue));
+                    filter.value.split(',').forEach((val: any) => result = result && (val != fieldValue));
                     break;
             }
         }
