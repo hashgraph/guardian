@@ -14,7 +14,7 @@ Second step of policy execution is data input and document submission. To enable
 
 To enable document submission we will use document input block (**requestVcDocumentBlock**) and document persistence block (**sendToGuardianBlock**)
 
-![creating new\_user\_registration Block](<../../../../.gitbook/assets/0 (1) (1).png>)
+![creating new\_user\_registration Block](<../../../../.gitbook/assets/0 (1) (1) (1).png>)
 
 **Please see** [**example 2**](data-input-via-forms-using-roles-to-partition-user-activities..md) **for the more in-depth guide of working with documents in Guardian Policies.**
 
@@ -36,7 +36,7 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 2.1.2 Select token and action type
 
-![Selecting Token and Token Action Type](<../../../../.gitbook/assets/3 (1) (1).png>)
+![Selecting Token and Token Action Type](<../../../../.gitbook/assets/3 (1) (1) (1).png>)
 
 2.2 Set user KYC
 
@@ -52,7 +52,7 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 3.1 Add ‘**mintDocumentBlock**_**’**_ immediately after saving the new document (**save\_new\_documents**)
 
-![Adding mintDocumentBlock](<../../../../.gitbook/assets/6 (1).png>)
+![Adding mintDocumentBlock](<../../../../.gitbook/assets/6 (1) (2).png>)
 
 3.2 Select token which will be minted
 

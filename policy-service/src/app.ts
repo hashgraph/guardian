@@ -1,7 +1,7 @@
 import {
     MessageBrokerChannel,
     ApplicationState,
-    Logger
+    Logger, LargePayloadContainer
 } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from '@helpers/policy-container';
@@ -24,6 +24,10 @@ Promise.all([
 
     await new PolicyContainer().setConnection(cn).init();
 
+    const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+    if (Number.isInteger(maxPayload)) {
+        new LargePayloadContainer().runServer();
+    }
     await new Logger().info('Policy service started', ['GUARDIAN_SERVICE']);
 
     await state.updateState(ApplicationStates.READY);

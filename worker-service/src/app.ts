@@ -1,5 +1,5 @@
 import {
-    ApplicationState,
+    ApplicationState, LargePayloadContainer,
     Logger,
     MessageBrokerChannel,
     ValidateConfiguration
@@ -50,12 +50,12 @@ Promise.all([
             clearInterval(timer);
         }
         if (process.env.IPFS_PROVIDER === 'web3storage') {
-            if (!process.env.IPFS_STORAGE_API_KEY) {
+            if (!IPFS_STORAGE_API_KEY) {
                 return false;
             }
 
             try {
-                const decoded = decode(process.env.IPFS_STORAGE_API_KEY);
+                const decoded = decode(IPFS_STORAGE_API_KEY);
                 if (!decoded) {
                     return false
                 }
@@ -73,6 +73,10 @@ Promise.all([
     });
 
     validator.setValidAction(async () => {
+        const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+        if (Number.isInteger(maxPayload)) {
+            new LargePayloadContainer().runServer();
+        }
         await state.updateState(ApplicationStates.READY);
         logger.info('Worker started', [channelName]);
     });

@@ -156,28 +156,24 @@ export class HttpRequestBlock {
             variablesObj.document = inputObject = (event?.data?.data as IPolicyDocument)?.document;
         }
 
-        try {
-            const method = ref.options.method;
-            const url = this.replaceVariablesInString(ref.options.url, variablesObj);
-            const headers = {};
-            if (Array.isArray(ref.options.headers)) {
-                for (const header of ref.options.headers) {
-                    headers[header.name] = this.replaceVariablesInString(header.value, variablesObj)
-                }
+        const method = ref.options.method;
+        const url = this.replaceVariablesInString(ref.options.url, variablesObj);
+        const headers = {};
+        if (Array.isArray(ref.options.headers)) {
+            for (const header of ref.options.headers) {
+                headers[header.name] = this.replaceVariablesInString(header.value, variablesObj)
             }
-            const requestBody = this.replaceVariablesInString(JSON.stringify(inputObject), variablesObj);
-
-            const doc = await this.requestDocument(method, url, headers, JSON.parse(requestBody));
-            const item = PolicyUtils.createVC(ref, event.user, doc);
-
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, {data: item});
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, {data: item});
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
-                documents: ExternalDocuments({data: item})
-            }));
-        } catch (error) {
-            ref.error(PolicyUtils.getErrorMessage(error));
         }
+        const requestBody = this.replaceVariablesInString(JSON.stringify(inputObject), variablesObj);
+
+        const doc = await this.requestDocument(method, url, headers, JSON.parse(requestBody));
+        const item = PolicyUtils.createVC(ref, event.user, doc);
+
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, {data: item});
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, {data: item});
+        PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+            documents: ExternalDocuments({data: item})
+        }));
     }
 }

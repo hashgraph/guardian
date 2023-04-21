@@ -153,7 +153,7 @@ function Accounts() {
 
         result = await axios.post(
             GetURL('accounts', 'register'),
-            {username: 'apiTest', password: 'apiTest'},
+            {username: 'apiTest', password: 'apiTest', password_confirmation: 'apiTest', role: 'USER'},
             {
                 headers: {
                     'Content-Type': 'application/json'
