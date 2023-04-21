@@ -56,7 +56,6 @@ import { ServiceStatusComponent } from './views/admin/service-status/service-sta
 import { ContractConfigComponent } from './views/contract-config/contract-config.component';
 import { ContractRequestConfigComponent } from './views/contract-request-config/contract-request-config.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
-import { BrandingComponent } from './views/branding/branding.component';
 //Components
 import { InfoComponent } from './components/info/info/info.component';
 import { AddPairDialogComponent } from './components/add-pair-dialog/add-pair-dialog.component';
@@ -94,7 +93,6 @@ import { ThemeService } from './services/theme.service';
         AddPairDialogComponent,
         RetireTokenDialogComponent,
         DataInputDialogComponent,
-        BrandingComponent,
         SchemaConfigComponent
     ],
     imports: [

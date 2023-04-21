@@ -205,10 +205,6 @@ export class HeaderComponent implements OnInit {
         }).join('\r\n');
     }
 
-    doBranding() {
-        this.router.navigate(['/branding']);
-    }
-
     public isActiveLink(type: string): boolean {
         switch (type) {
             case 'SR_UP':
