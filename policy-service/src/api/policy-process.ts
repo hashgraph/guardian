@@ -19,7 +19,7 @@ import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
 import { PolicyValidator } from '@policy-engine/block-validators';
 import process from 'process';
 import { CommonVariables } from '@helpers/common-variables';
-import { PolicyEvents, PolicyType } from '@guardian/interfaces';
+import { PolicyEvents } from '@guardian/interfaces';
 import { GridFSBucket } from 'mongodb';
 import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
 import { SynchronizationService } from '@policy-engine/multi-policy-service';
