@@ -140,14 +140,14 @@ import { ThemeService } from './services/theme.service';
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,
-            multi: true
+            multi: true,
         },
         {
             provide: HTTP_INTERCEPTORS,
             useClass: AuthInterceptor,
-            multi: true
-        }
+            multi: true,
+        },
     ],
-    bootstrap: [AppComponent]
+    bootstrap: [AppComponent],
 })
 export class AppModule { }

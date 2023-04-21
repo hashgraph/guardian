@@ -60,6 +60,9 @@ export class TokenConfigComponent implements OnInit {
     owner: any;
     tagSchemas: any[] = [];
 
+    public innerWidth: any;
+    public innerHeight: any;
+
     constructor(
         public tagsService: TagsService,
         private auth: AuthService,
@@ -75,6 +78,8 @@ export class TokenConfigComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
         this.tokenId = "";
         this.loading = true;
         this.currentPolicy = this.route.snapshot.queryParams['policy'];
@@ -171,11 +176,31 @@ export class TokenConfigComponent implements OnInit {
     }
 
     newToken() {
-        const dialogRef = this.dialog.open(TokenDialog, {
-            width: '750px',
-            panelClass: 'g-dialog',
-            disableClose: true
-        });
+
+        let dialogRef;
+        if (this.innerWidth <= 810) {
+            const bodyStyles = window.getComputedStyle(document.body);
+            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
+            dialogRef = this.dialog.open(TokenDialog, {
+                width: `${this.innerWidth.toString()}px`,
+                maxWidth: '100vw',
+                height: `${this.innerHeight - headerHeight}px`,
+                position: {
+                    'bottom': '0'
+                },
+                panelClass: 'g-dialog',
+                hasBackdrop: true, // Shadows beyond the dialog
+                closeOnNavigation: true,
+                autoFocus: false,
+                data: this
+            });
+        } else {
+            dialogRef = this.dialog.open(TokenDialog, {
+                width: '750px',
+                panelClass: 'g-dialog',
+                disableClose: true
+            });
+        }
 
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {
@@ -345,14 +370,36 @@ export class TokenConfigComponent implements OnInit {
     }
 
     editToken(element: any) {
-        const dialogRef = this.dialog.open(TokenDialog, {
-            width: '750px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            data: {
-                token: element
-            }
-        });
+
+        let dialogRef;
+        if (this.innerWidth <= 810) {
+            const bodyStyles = window.getComputedStyle(document.body);
+            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
+            dialogRef = this.dialog.open(TokenDialog, {
+                width: `${this.innerWidth.toString()}px`,
+                maxWidth: '100vw',
+                height: `${this.innerHeight - headerHeight}px`,
+                position: {
+                    'bottom': '0'
+                },
+                panelClass: 'g-dialog',
+                hasBackdrop: true, // Shadows beyond the dialog
+                closeOnNavigation: true,
+                autoFocus: false,
+                data: {
+                    token: element
+                }
+            });
+        } else {
+            dialogRef = this.dialog.open(TokenDialog, {
+                width: '750px',
+                panelClass: 'g-dialog',
+                disableClose: true,
+                data: {
+                    token: element
+                }
+            });
+        }
 
         dialogRef.afterClosed().subscribe(async (result) => {
             if (result) {

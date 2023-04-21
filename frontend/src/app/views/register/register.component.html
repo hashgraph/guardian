@@ -1,6 +1,6 @@
 <div class="content login">
-    <div class="overlay"></div>
-    <form [formGroup]="loginForm" (ngSubmit)="signup()" *ngIf="isRoleSelected$ | async; else selectRoleTemplate">
+    <div class="overlay" (click)="goBack()"></div>
+    <form class="credential-creation" [formGroup]="loginForm" (ngSubmit)="signup()" *ngIf="isRoleSelected$ | async; else selectRoleTemplate">
         <div class="login-header" (click)="setRole('')">
             <mat-icon>chevron_left</mat-icon> Create Account
         </div>

@@ -286,11 +286,6 @@ a {
     top: 10px;
 }
 
-.toolbar-btn.add mat-icon {
-    font-size: 30px;
-    left: 10px;
-    top: 7px;
-}
 
 .schemas-table .mat-column-tags {
     max-width: 175px;

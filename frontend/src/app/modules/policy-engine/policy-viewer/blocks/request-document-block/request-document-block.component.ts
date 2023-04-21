@@ -47,6 +47,9 @@ export class RequestDocumentBlockComponent implements OnInit {
     user!: IUser;
     restoreData: any;
 
+    public innerWidth: any;
+    public innerHeight: any;
+
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
@@ -60,6 +63,8 @@ export class RequestDocumentBlockComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.innerWidth = window.innerWidth;
+        this.innerHeight = window.innerHeight;
         if (!this.static) {
             this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
@@ -258,11 +263,30 @@ export class RequestDocumentBlockComponent implements OnInit {
         } else {
             this.presetDocument = null;
         }
-        this.dialogRef = this.dialog.open(this.dialogTemplate, {
-            width: '850px',
-            disableClose: true,
-            data: this
-        });
+
+        if (this.innerWidth <= 810) {
+            const bodyStyles = window.getComputedStyle(document.body);
+            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
+            this.dialogRef = this.dialog.open(this.dialogTemplate, {
+                width: `100vw`,
+                maxWidth: '100vw',
+                height: `${this.innerHeight - headerHeight}px`,
+                position: {
+                    'bottom': '0'
+                },
+                panelClass: 'g-dialog',
+                hasBackdrop: true, // Shadows beyond the dialog
+                closeOnNavigation: true,
+                autoFocus: false,
+                data: this
+            });
+        } else {
+            this.dialogRef = this.dialog.open(this.dialogTemplate, {
+                width: '850px',
+                disableClose: true,
+                data: this
+            });
+        }
     }
 
     onRestoreClick() {
@@ -273,5 +297,15 @@ export class RequestDocumentBlockComponent implements OnInit {
             this.preset(presetDocument);
         }
         this.restoreData = null;
+    }
+
+    handleCancelBtnEvent(value: boolean, data: any) {
+        data.onCancel()
+    }
+
+    handleSubmitBtnEvent(value: boolean, data: any) {
+        if (data.dataForm.valid || !this.loading || !this.dialogLoading) {
+            data.onSubmit();
+        }
     }
 }

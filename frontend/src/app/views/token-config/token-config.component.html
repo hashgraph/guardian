@@ -2,19 +2,17 @@
     <ng-container *ngIf="isConfirmed; else elseTemplate">
         <div *ngIf="!tokenId">
             <div class="actions">
-                <div>
-                    <mat-form-field appearance="outline">
-                        <mat-label>Policy</mat-label>
-                        <mat-select [(value)]="currentPolicy" (selectionChange)="onFilter()">
-                            <mat-option value="">All policies</mat-option>
-                            <mat-option *ngFor="let policy of policies" [value]="policy.id">
-                                <span>{{policy.name}}</span>
-                                <span> ({{policy.id}})</span>
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
-                </div>
-                <div style="text-align: end">
+                <mat-form-field appearance="outline">
+                    <mat-label>Policy</mat-label>
+                    <mat-select [(value)]="currentPolicy" (selectionChange)="onFilter()">
+                        <mat-option value="">All policies</mat-option>
+                        <mat-option *ngFor="let policy of policies" [value]="policy.id">
+                            <span>{{policy.name}}</span>
+                            <span> ({{policy.id}})</span>
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <div class="new-token-button" style="text-align: end">
                     <button mat-raised-button color="primary" (click)="newToken()"
                         style="margin: 6px 15px 15px 15px; min-width: 100px;">
                         Create Token

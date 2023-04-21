@@ -430,3 +430,17 @@ a.go-back-link mat-icon {
     font-weight: 500;
     color: #464646;
 }
+
+
+@media (max-width: 810px) {
+    .policy-header {
+        position: sticky;
+        top: 0 /*var(--header-height)*/;
+        box-shadow: none;
+        border: none;
+    }
+
+    .dry-run-content {
+        top: var(--header-height);
+    }
+}

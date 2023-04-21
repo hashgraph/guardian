@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { AuthStateService } from './services/auth-state.service';
 import { MapService } from './services/map.service';
 import { WebSocketService } from './services/web-socket.service';
@@ -13,10 +13,10 @@ export class AppComponent {
     title = 'guardian';
 
     constructor(
-        public authState: AuthStateService,
-        public wsService: WebSocketService,
-        mapService: MapService,
-        httpClient: HttpClient
+      public authState: AuthStateService,
+      public wsService: WebSocketService,
+      mapService: MapService,
+      httpClient: HttpClient
     ) {
         const mapRequest = (value?: string) => {
             httpClient
@@ -30,4 +30,11 @@ export class AppComponent {
         };
         mapService.getApiKey().subscribe(mapRequest, () => mapRequest());
     }
+
+  @HostListener('window:resize')
+  onResize() {
+    // update the --vh variable with the new viewport height
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
 }

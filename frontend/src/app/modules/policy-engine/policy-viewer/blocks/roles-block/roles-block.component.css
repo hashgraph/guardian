@@ -82,3 +82,44 @@ form {
     flex-direction: column;
     padding: 10px 0px 15px 0px;
 }
+
+@media (max-width: 810px) {
+    .title {
+        display: block;
+        margin-top: 20px;
+        text-align: left;
+
+        font-size: 40px;
+        font-family: 'Roboto';
+        font-style: normal;
+        font-weight: 600;
+        line-height: 28px;
+
+        padding-bottom: 30px;
+        font-weight: bold;
+
+        flex: none;
+        order: 0;
+        flex-grow: 1;
+    }
+
+    .description {
+        text-align: left;
+    }
+
+    form {
+        width: 90%;
+        height: calc(1vh - var(--header-height));
+        margin: 20px auto;
+        border: none;
+        position: relative;
+    }
+
+    .btn-form {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        width: 90%;
+        margin: 20px 5% !important;
+    }
+}

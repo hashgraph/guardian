@@ -217,7 +217,6 @@ button.mat-button {
     text-decoration: underline !important;
 }
 
-
 *[theme-block] {
     color: var(--theme-color);
     border-color: var(--theme-border-color);
@@ -255,4 +254,41 @@ button.mat-button {
 *[theme-all] *[theme-background],
 *[theme-block] *[theme-background] {
     background: var(--theme-background) !important;
+}
+
+@media (max-width: 810px) {
+
+    body { 
+        overflow-x: hidden;
+        overscroll-behavior: none;
+        width: 100vw;
+        height: calc(var(--vh, 1vh) * 100);
+    }
+
+    html {
+        height: 100%
+    }
+
+    .cdk-overlay-pane {
+        .mat-dialog-container {
+            border-radius: 5px;
+    
+            .mat-dialog-content {
+                max-height: unset;
+            }
+        }
+    
+        .mat-menu-panel {
+            max-width: unset;
+            max-height: unset;
+        }
+    }
+
+    button {
+        box-shadow: none !important;
+    }
+
+    .loading {
+        overflow-y: auto;
+    }
 }
