@@ -1061,7 +1061,7 @@ __metadata:
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.3.0
-    "@mikro-orm/migrations-mongodb": ~5.3.0
+    "@mikro-orm/migrations-mongodb": ~5.7.0
     "@mikro-orm/mongodb": ~5.3.0
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
@@ -1403,21 +1403,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/migrations-mongodb@npm:~5.3.0":
-  version: 5.3.1
-  resolution: "@mikro-orm/migrations-mongodb@npm:5.3.1"
+"@mikro-orm/migrations-mongodb@npm:~5.7.0":
+  version: 5.7.0
+  resolution: "@mikro-orm/migrations-mongodb@npm:5.7.0"
   dependencies:
-    "@mikro-orm/mongodb": ^5.3.1
-    fs-extra: 10.1.0
-    mongodb: ^4.8.1
-    umzug: 3.1.1
+    "@mikro-orm/mongodb": ~5.7.0
+    fs-extra: 11.1.1
+    mongodb: 5.3.0
+    umzug: 3.2.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
-  checksum: 4312fa330694886336382b5fed0359a426401687b47784dd551568392b6af801ae669e8c250f92a6efcb770b8bae5b04ad30dd5f4ea0592fc580f687358c7ba8
+  checksum: 5f3f2b4b7b049fae68356fd735a71ec9e322d69ec78efc1f24246969c7f5f6958987f4521538bdeb5c136299fef4fc33b4d9183a0d0b258341de27e2315cebb1
   languageName: node
   linkType: hard
 
-"@mikro-orm/mongodb@npm:^5.3.1, @mikro-orm/mongodb@npm:~5.3.0":
+"@mikro-orm/mongodb@npm:~5.3.0":
   version: 5.3.1
   resolution: "@mikro-orm/mongodb@npm:5.3.1"
   dependencies:
@@ -1439,6 +1439,31 @@ __metadata:
     "@mikro-orm/seeder":
       optional: true
   checksum: 0dc24cf80debafd1ce5fb1ec037c4d7702516f6b42b4e1ee6f6af453ec18db6198813a676aa7a9ba87689fd5402f3e5a37641902295675946029eaf369732f93
+  languageName: node
+  linkType: hard
+
+"@mikro-orm/mongodb@npm:~5.7.0":
+  version: 5.7.0
+  resolution: "@mikro-orm/mongodb@npm:5.7.0"
+  dependencies:
+    bson: ^5.2.0
+    mongodb: 5.3.0
+  peerDependencies:
+    "@mikro-orm/core": ^5.0.0
+    "@mikro-orm/entity-generator": ^5.0.0
+    "@mikro-orm/migrations": ^5.0.0
+    "@mikro-orm/migrations-mongodb": ^5.0.0
+    "@mikro-orm/seeder": ^5.0.0
+  peerDependenciesMeta:
+    "@mikro-orm/entity-generator":
+      optional: true
+    "@mikro-orm/migrations":
+      optional: true
+    "@mikro-orm/migrations-mongodb":
+      optional: true
+    "@mikro-orm/seeder":
+      optional: true
+  checksum: 9ef359b10f1167042f60ea535202cd58110989f24b2f8cd21a02c521b62c49f07d6d50bec55921e8302e640a5436b2d9959991f2f401be2402c217e413dba4dd
   languageName: node
   linkType: hard
 
@@ -1619,15 +1644,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rushstack/ts-command-line@npm:^4.7.7":
-  version: 4.12.2
-  resolution: "@rushstack/ts-command-line@npm:4.12.2"
+"@rushstack/ts-command-line@npm:^4.12.2":
+  version: 4.13.2
+  resolution: "@rushstack/ts-command-line@npm:4.13.2"
   dependencies:
     "@types/argparse": 1.0.38
     argparse: ~1.0.9
     colors: ~1.2.1
     string-argv: ~0.3.1
-  checksum: 6ee016c7dcdc9c55cfaea5b71d8b34d942404764de72a51f2f4d50d4db51f1cc5e0df496de6b96eb9f086ab500f366f63afc33699adecf601f02bfe9a4d157f6
+  checksum: 3938e533e08d5cf4007a651d1aab658a7a60d6136a56414e2370b64434657a5d5a9eff442da4ddc260d5e6dc90f82428de64dbcfa1285e9ae176629f7fcd821d
   languageName: node
   linkType: hard
 
@@ -3320,6 +3345,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bson@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "bson@npm:5.2.0"
+  checksum: 1297f8776a05fe3c03b5a1c73210389bc3e596ee6f1e772b76c021fff5537d0c91e523462ba196a8a839246613a87cffbd6486d387a849c7de7cde64d1af7812
+  languageName: node
+  linkType: hard
+
 "buffer-equal-constant-time@npm:1.0.1":
   version: 1.0.1
   resolution: "buffer-equal-constant-time@npm:1.0.1"
@@ -4247,7 +4279,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"delayed-stream@npm:~1.0.0":
+"delayed-stream@npm:^1.0.0, delayed-stream@npm:~1.0.0":
   version: 1.0.0
   resolution: "delayed-stream@npm:1.0.0"
   checksum: 46fe6e83e2cb1d85ba50bd52803c68be9bd953282fa7096f51fc29edd5d67ff84ff753c51966061e5ba7cb5e47ef6d36a91924eddb7f3f3483b1c560f77a0020
@@ -4438,10 +4470,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"emittery@npm:^0.10.2":
-  version: 0.10.2
-  resolution: "emittery@npm:0.10.2"
-  checksum: ee3e21788b043b90885b18ea756ec3105c1cedc50b29709c92b01e239c7e55345d4bb6d3aef4ddbaf528eef448a40b3bb831bad9ee0fc9c25cbf1367ab1ab5ac
+"emittery@npm:^0.12.1":
+  version: 0.12.1
+  resolution: "emittery@npm:0.12.1"
+  checksum: 64ad8f2c498be09449b232730d07044976ef2662aa891e9ecfb956d70fc1c39a46aa66adb70f2d2a097059c5f923408723f2ec1778b86360268591b403348c1c
   languageName: node
   linkType: hard
 
@@ -5237,7 +5269,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-jetpack@npm:^4.1.0":
+"fs-extra@npm:11.1.1":
+  version: 11.1.1
+  resolution: "fs-extra@npm:11.1.1"
+  dependencies:
+    graceful-fs: ^4.2.0
+    jsonfile: ^6.0.1
+    universalify: ^2.0.0
+  checksum: fb883c68245b2d777fbc1f2082c9efb084eaa2bbf9fddaa366130d196c03608eebef7fb490541276429ee1ca99f317e2d73e96f5ca0999eefedf5a624ae1edfd
+  languageName: node
+  linkType: hard
+
+"fs-jetpack@npm:^4.3.1":
   version: 4.3.1
   resolution: "fs-jetpack@npm:4.3.1"
   dependencies:
@@ -5481,7 +5524,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^7.1.1, glob@npm:^7.1.3, glob@npm:^7.1.6":
+"glob@npm:^7.1.1, glob@npm:^7.1.3":
   version: 7.1.6
   resolution: "glob@npm:7.1.6"
   dependencies:
@@ -5509,7 +5552,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^8.0.0":
+"glob@npm:^8.0.0, glob@npm:^8.0.3":
   version: 8.1.0
   resolution: "glob@npm:8.1.0"
   dependencies:
@@ -5654,6 +5697,8 @@ __metadata:
 "guardian@workspace:.":
   version: 0.0.0-use.local
   resolution: "guardian@workspace:."
+  dependencies:
+    delayed-stream: ^1.0.0
   languageName: unknown
   linkType: soft
 
@@ -6162,6 +6207,13 @@ __metadata:
   version: 1.1.8
   resolution: "ip@npm:1.1.8"
   checksum: a2ade53eb339fb0cbe9e69a44caab10d6e3784662285eb5d2677117ee4facc33a64679051c35e0dfdb1a3983a51ce2f5d2cb36446d52e10d01881789b76e28fb
+  languageName: node
+  linkType: hard
+
+"ip@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "ip@npm:2.0.0"
+  checksum: cfcfac6b873b701996d71ec82a7dd27ba92450afdb421e356f44044ed688df04567344c36cbacea7d01b1c39a4c732dc012570ebe9bebfb06f27314bca625349
   languageName: node
   linkType: hard
 
@@ -8257,7 +8309,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:4.8.1, mongodb@npm:^4.8.1":
+"mongodb-connection-string-url@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "mongodb-connection-string-url@npm:2.6.0"
+  dependencies:
+    "@types/whatwg-url": ^8.2.1
+    whatwg-url: ^11.0.0
+  checksum: 1d662f0ecfe96f7a400f625c244b2e52914c98f3562ee7d19941127578b5f8237624433bdcea285a654041b945b518803512989690c74548aec5860c5541c605
+  languageName: node
+  linkType: hard
+
+"mongodb@npm:4.8.1":
   version: 4.8.1
   resolution: "mongodb@npm:4.8.1"
   dependencies:
@@ -8270,6 +8332,32 @@ __metadata:
     saslprep:
       optional: true
   checksum: 97ff4ebe3fde7b3b5b133d8f7a2e4d6e372c44f8223a6d40b13bb3a705bbbb48ed50958a0fc6b3a33161605723479fced8e0eb83cf7fd5271f7530e6e2d67a2d
+  languageName: node
+  linkType: hard
+
+"mongodb@npm:5.3.0":
+  version: 5.3.0
+  resolution: "mongodb@npm:5.3.0"
+  dependencies:
+    bson: ^5.2.0
+    mongodb-connection-string-url: ^2.6.0
+    saslprep: ^1.0.3
+    socks: ^2.7.1
+  peerDependencies:
+    "@aws-sdk/credential-providers": ^3.201.0
+    mongodb-client-encryption: ">=2.3.0 <3"
+    snappy: ^7.2.2
+  dependenciesMeta:
+    saslprep:
+      optional: true
+  peerDependenciesMeta:
+    "@aws-sdk/credential-providers":
+      optional: true
+    mongodb-client-encryption:
+      optional: true
+    snappy:
+      optional: true
+  checksum: da86069555f3f700a0ef338a4676de2254ef64f7700427c0e23ccd5bd9ca9cd5f08651f2eb5083edfdc1e7eed1b40c60041b16e6d4851f353a26d9469d274299
   languageName: node
   linkType: hard
 
@@ -9305,10 +9393,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"pony-cause@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "pony-cause@npm:1.1.1"
-  checksum: 5ff8878b808be48db801d52246a99d7e4789e52d20575ba504ede30c818fd85d38a033915e02c15fa9b6dce72448836dc1a47094acf8f1c21c4f04a4603b0cfb
+"pony-cause@npm:^2.1.2":
+  version: 2.1.9
+  resolution: "pony-cause@npm:2.1.9"
+  checksum: 9e549dd126145bfed472b07e9d3eb24231033878c105813b3512d1cc99be16b84dfe4694e49b869e236a0e89c33a3b5244fdfde36355ad0c0c1a8c2b19b28f45
   languageName: node
   linkType: hard
 
@@ -10412,6 +10500,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"socks@npm:^2.7.1":
+  version: 2.7.1
+  resolution: "socks@npm:2.7.1"
+  dependencies:
+    ip: ^2.0.0
+    smart-buffer: ^4.2.0
+  checksum: 259d9e3e8e1c9809a7f5c32238c3d4d2a36b39b83851d0f573bfde5f21c4b1288417ce1af06af1452569cd1eb0841169afd4998f0e04ba04656f6b7f0e46d748
+  languageName: node
+  linkType: hard
+
 "sodium-native@npm:^3.2.0":
   version: 3.4.1
   resolution: "sodium-native@npm:3.4.1"
@@ -11158,10 +11256,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-fest@npm:^2.0.0":
-  version: 2.18.0
-  resolution: "type-fest@npm:2.18.0"
-  checksum: 0737128d9d77b93793c6ee443e304462a792f5b723a6be035d6cb488c5610a8baa00522805421341c04324c80efba9849885bbfbc5a9623d0672fe8712969f62
+"type-fest@npm:^2.18.0":
+  version: 2.19.0
+  resolution: "type-fest@npm:2.19.0"
+  checksum: a4ef07ece297c9fba78fc1bd6d85dff4472fe043ede98bd4710d2615d15776902b595abf62bd78339ed6278f021235fb28a96361f8be86ed754f778973a0d278
   languageName: node
   linkType: hard
 
@@ -11259,17 +11357,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"umzug@npm:3.1.1":
-  version: 3.1.1
-  resolution: "umzug@npm:3.1.1"
+"umzug@npm:3.2.1":
+  version: 3.2.1
+  resolution: "umzug@npm:3.2.1"
   dependencies:
-    "@rushstack/ts-command-line": ^4.7.7
-    emittery: ^0.10.2
-    fs-jetpack: ^4.1.0
-    glob: ^7.1.6
-    pony-cause: ^1.1.1
-    type-fest: ^2.0.0
-  checksum: 5ade702c7621c0d1b4ec31d7edc93c39bdf309d8e02f07224d0601d87d5e239679c832b32fad6331716407ada89da9effc0515faf1890ed203b8521c9023fd3d
+    "@rushstack/ts-command-line": ^4.12.2
+    emittery: ^0.12.1
+    fs-jetpack: ^4.3.1
+    glob: ^8.0.3
+    pony-cause: ^2.1.2
+    type-fest: ^2.18.0
+  checksum: 8b118345cf4a9faedfaf2d169deb9a630ff630719c684070d02d0f55b8eb4b8f4b03648d6ff7ff03de03ce2650f05b7dde88c2b4f564b279af153c92e1739f38
   languageName: node
   linkType: hard
 
