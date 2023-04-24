@@ -82,7 +82,7 @@
                     </mat-form-field>
 
                     <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
-                    
+
                     <div *ngIf="fields && innerWidth <= 810 && showButtons" class="page-btns" [style.z-index]="i === fields.length - 1 ? 100 : 206">
                         <button *ngIf="currentIndex === 0 && !buttonOnceRaised" mat-raised-button color="primary" id="cancel-btn" (click)="onCancelBtnClick()">Cancel</button>
                         <button *ngIf="currentIndex !== 0" mat-raised-button color="primary" id="previous-btn" [style.z-index]="i === 1 ? 200 : 100" (click)="getPrevShownFields(fields)">Previous</button>
@@ -147,7 +147,6 @@
                     </span>
                 </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
-                <div class="label-field">{{item.description}}</div>
                 <div class="label-field" id="detail-section">
                     <div *ngIf="fields && innerWidth <= 810" class="page-number">{{i}}/{{fields.length - 1}}</div>
                     {{item.description}}
