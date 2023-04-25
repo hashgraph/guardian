@@ -1062,7 +1062,7 @@ __metadata:
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.3.0
     "@mikro-orm/migrations-mongodb": ~5.3.0
-    "@mikro-orm/mongodb": ~5.3.0
+    "@mikro-orm/mongodb": ~5.7.1
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
@@ -1417,7 +1417,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/mongodb@npm:^5.3.1, @mikro-orm/mongodb@npm:~5.3.0":
+"@mikro-orm/mongodb@npm:^5.3.1":
   version: 5.3.1
   resolution: "@mikro-orm/mongodb@npm:5.3.1"
   dependencies:
@@ -1439,6 +1439,31 @@ __metadata:
     "@mikro-orm/seeder":
       optional: true
   checksum: 0dc24cf80debafd1ce5fb1ec037c4d7702516f6b42b4e1ee6f6af453ec18db6198813a676aa7a9ba87689fd5402f3e5a37641902295675946029eaf369732f93
+  languageName: node
+  linkType: hard
+
+"@mikro-orm/mongodb@npm:~5.7.1":
+  version: 5.7.1
+  resolution: "@mikro-orm/mongodb@npm:5.7.1"
+  dependencies:
+    bson: ^5.2.0
+    mongodb: 5.3.0
+  peerDependencies:
+    "@mikro-orm/core": ^5.0.0
+    "@mikro-orm/entity-generator": ^5.0.0
+    "@mikro-orm/migrations": ^5.0.0
+    "@mikro-orm/migrations-mongodb": ^5.0.0
+    "@mikro-orm/seeder": ^5.0.0
+  peerDependenciesMeta:
+    "@mikro-orm/entity-generator":
+      optional: true
+    "@mikro-orm/migrations":
+      optional: true
+    "@mikro-orm/migrations-mongodb":
+      optional: true
+    "@mikro-orm/seeder":
+      optional: true
+  checksum: da95b68737e13090dcdd7d6b91a0c785d85cb868fbf5e2355179aa221ee7b7945074f19e830c7d4247c2698c5dea153b28d0f3f0734541ee25d097443b693e40
   languageName: node
   linkType: hard
 
@@ -2989,7 +3014,7 @@ __metadata:
     "@guardian/common": ^2.12.0-prerelease
     "@guardian/interfaces": ^2.12.0-prerelease
     "@mikro-orm/core": ~5.3.0
-    "@mikro-orm/mongodb": ~5.3.0
+    "@mikro-orm/mongodb": ~5.7.1
     "@types/jsonwebtoken": ^8.5.4
     "@types/node": ^18.11.9
     "@types/node-vault": ^0
@@ -3317,6 +3342,13 @@ __metadata:
   dependencies:
     buffer: ^5.6.0
   checksum: b9d4856241e76f6bacf6825b5280f993a867b74fa47bb62b3a20d835d9f02979e1a10a6c38536ac86cb485dc96aabdacb0c6922fca7a784603a781a00e23c336
+  languageName: node
+  linkType: hard
+
+"bson@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "bson@npm:5.2.0"
+  checksum: 1297f8776a05fe3c03b5a1c73210389bc3e596ee6f1e772b76c021fff5537d0c91e523462ba196a8a839246613a87cffbd6486d387a849c7de7cde64d1af7812
   languageName: node
   linkType: hard
 
@@ -5610,7 +5642,7 @@ __metadata:
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.3.0
-    "@mikro-orm/mongodb": ~5.3.0
+    "@mikro-orm/mongodb": ~5.7.1
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
@@ -6162,6 +6194,13 @@ __metadata:
   version: 1.1.8
   resolution: "ip@npm:1.1.8"
   checksum: a2ade53eb339fb0cbe9e69a44caab10d6e3784662285eb5d2677117ee4facc33a64679051c35e0dfdb1a3983a51ce2f5d2cb36446d52e10d01881789b76e28fb
+  languageName: node
+  linkType: hard
+
+"ip@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "ip@npm:2.0.0"
+  checksum: cfcfac6b873b701996d71ec82a7dd27ba92450afdb421e356f44044ed688df04567344c36cbacea7d01b1c39a4c732dc012570ebe9bebfb06f27314bca625349
   languageName: node
   linkType: hard
 
@@ -7660,7 +7699,7 @@ __metadata:
     "@guardian/common": ^2.12.0-prerelease
     "@guardian/interfaces": ^2.12.0-prerelease
     "@mikro-orm/core": ~5.3.0
-    "@mikro-orm/mongodb": ~5.3.0
+    "@mikro-orm/mongodb": ~5.7.1
     "@types/fs-extra": ^9.0.12
     "@types/node": ^18.11.9
     "@web-std/fetch": 3.0.0
@@ -8257,6 +8296,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mongodb-connection-string-url@npm:^2.6.0":
+  version: 2.6.0
+  resolution: "mongodb-connection-string-url@npm:2.6.0"
+  dependencies:
+    "@types/whatwg-url": ^8.2.1
+    whatwg-url: ^11.0.0
+  checksum: 1d662f0ecfe96f7a400f625c244b2e52914c98f3562ee7d19941127578b5f8237624433bdcea285a654041b945b518803512989690c74548aec5860c5541c605
+  languageName: node
+  linkType: hard
+
 "mongodb@npm:4.8.1, mongodb@npm:^4.8.1":
   version: 4.8.1
   resolution: "mongodb@npm:4.8.1"
@@ -8270,6 +8319,32 @@ __metadata:
     saslprep:
       optional: true
   checksum: 97ff4ebe3fde7b3b5b133d8f7a2e4d6e372c44f8223a6d40b13bb3a705bbbb48ed50958a0fc6b3a33161605723479fced8e0eb83cf7fd5271f7530e6e2d67a2d
+  languageName: node
+  linkType: hard
+
+"mongodb@npm:5.3.0":
+  version: 5.3.0
+  resolution: "mongodb@npm:5.3.0"
+  dependencies:
+    bson: ^5.2.0
+    mongodb-connection-string-url: ^2.6.0
+    saslprep: ^1.0.3
+    socks: ^2.7.1
+  peerDependencies:
+    "@aws-sdk/credential-providers": ^3.201.0
+    mongodb-client-encryption: ">=2.3.0 <3"
+    snappy: ^7.2.2
+  dependenciesMeta:
+    saslprep:
+      optional: true
+  peerDependenciesMeta:
+    "@aws-sdk/credential-providers":
+      optional: true
+    mongodb-client-encryption:
+      optional: true
+    snappy:
+      optional: true
+  checksum: da86069555f3f700a0ef338a4676de2254ef64f7700427c0e23ccd5bd9ca9cd5f08651f2eb5083edfdc1e7eed1b40c60041b16e6d4851f353a26d9469d274299
   languageName: node
   linkType: hard
 
@@ -9263,7 +9338,7 @@ __metadata:
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.3.0
-    "@mikro-orm/mongodb": ~5.3.0
+    "@mikro-orm/mongodb": ~5.7.1
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
@@ -10409,6 +10484,16 @@ __metadata:
     ip: ^1.1.5
     smart-buffer: ^4.2.0
   checksum: dd9194293059d737759d5c69273850ad4149f448426249325c4bea0e340d1cf3d266c3b022694b0dcf5d31f759de23657244c481fc1e8322add80b7985c36b5e
+  languageName: node
+  linkType: hard
+
+"socks@npm:^2.7.1":
+  version: 2.7.1
+  resolution: "socks@npm:2.7.1"
+  dependencies:
+    ip: ^2.0.0
+    smart-buffer: ^4.2.0
+  checksum: 259d9e3e8e1c9809a7f5c32238c3d4d2a36b39b83851d0f573bfde5f21c4b1288417ce1af06af1452569cd1eb0841169afd4998f0e04ba04656f6b7f0e46d748
   languageName: node
   linkType: hard
 
