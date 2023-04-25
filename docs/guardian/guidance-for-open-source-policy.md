@@ -5,8 +5,7 @@ There are items to be submitted to process open source policies and add it to op
 * [Policy Description](guidance-for-open-source-policy.md#policy-description)
 * [User Guide](guidance-for-open-source-policy.md#user-guide)
 * [Automated policy workflow, with valid sample MRV data or MRV data generator/simulator](guidance-for-open-source-policy.md#automated-policy-workflow)
-* [IPFS timestamps, .policy files](guidance-for-open-source-policy.md#timestamps-and-files)
-* [Requirement to run tests before sending Guardian the policy, including backward compatibility tests](guidance-for-open-source-policy.md#run-tests)
+* [IPFS timestamps, files](guidance-for-open-source-policy.md#timestamps-and-files)
 
 ## Policy Description
 
@@ -33,6 +32,12 @@ The workflow begins with the Registrant, generally the owner of an energy produc
 
 <figure><img src="../.gitbook/assets/image (67).png" alt=""><figcaption></figcaption></figure>
 
+### Youtube Link:&#x20;
+
+Youtube video can also be recorded, which would explain the policy in detail including the workflow and policy execution.
+
+Please visit this [link](https://www.youtube.com/watch?v=nOQpLmbW0hA) to get an idea for creating a detailed youtube video for the open source policy.&#x20;
+
 ## User Guide
 
 Second step is to provide a detailed User Guide of the policy, meaning, a step by step process of running the policy with proper and clear screenshots of the policy steps. The steps should start from importing the policy to TrustChain execution.
@@ -51,4 +56,17 @@ Please check a example MRV Data of iREC 4 in JSON format:
 
 ## Timestamps and files
 
-## Run Tests
+We would also need all the IPFS Policy timestamps of all the versions of the policy, which would be added to the open source repo.
+
+In addition to the IPFS timestamps, we would also need all kinds of files such as:
+
+1. .policy
+2. .schema
+3. .module (if any)
+4. .JSON (if any)
+
+Please check sample example for iREC 4 policy:\
+**IPFS timestamp: 1674821702.668883536**\
+**Policy file:**
+
+{% file src="../.gitbook/assets/IRec Policy 4.policy" %}
