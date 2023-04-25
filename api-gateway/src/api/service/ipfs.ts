@@ -1,53 +1,48 @@
-import { Response, Router } from 'express';
+import { Response, Router, NextFunction} from 'express';
 import { AuthenticatedRequest, Logger } from '@guardian/common';
 import { Guardians } from '@helpers/guardians';
+import createError from 'http-errors';
+import { prepareValidationResponse } from '@middlewares/validation';
 
 /**
  * IPFS route
  */
 export const ipfsAPI = Router();
 
-ipfsAPI.post('/file', async (req: AuthenticatedRequest, res: Response) => {
+ipfsAPI.post('/file', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-        if (!req.body) {
-            throw new Error('Body content in request is empty');
+        if (!Object.values(req.body).length) {
+            return res.status(422).json(prepareValidationResponse('Body content in request is empty'));
         }
 
         const guardians = new Guardians();
         const { cid } = await guardians.addFileIpfs(req.body);
         if (!cid) {
-            throw new Error('File is not uploaded');
+            return next(createError(400, 'File is not uploaded'));
         }
 
-        res.status(201).json(cid);
+        return res.status(201).json(cid);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });
 
-ipfsAPI.get('/file/:cid', async (req: AuthenticatedRequest, res: Response) => {
+ipfsAPI.get('/file/:cid', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-        if (!req.body) {
-            throw new Error('Body content in request is empty');
-        }
-        if (!req.params.cid) {
-            throw new Error('Invalid file CID');
-        }
-
         const guardians = new Guardians();
         const result = await guardians.getFileIpfs(req.params.cid, 'raw');
         const resultBuffer = Buffer.from(result);
         if (!result) {
-            throw new Error('File is not uploaded');
+            return next(createError(404, 'File is not uploaded'));
         }
         res.writeHead(200, {
             'Content-Type': 'binary/octet-stream',
             'Content-Length': resultBuffer.length,
         });
-        res.end(resultBuffer, 'binary');
+        return res.end(resultBuffer, 'binary');
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+        return next(error);
     }
 });

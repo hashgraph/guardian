@@ -1,14 +1,18 @@
-import { Schema } from '@entity/schema';
-import { DidDocument } from '@entity/did-document';
-import { DidRootKey } from '@hedera-modules';
-import { ApiResponse } from '@api/api-response';
-import { MessageResponse, MessageError, Logger, DataBaseHelper } from '@guardian/common';
+import { ApiResponse } from '@api/helpers/api-response';
+import {
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper,
+    Schema,
+    DidDocument,
+    DidRootKey,
+} from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
 /**
  * Connect to the message broker methods of working with Documents Loader.
  *
- * @param channel - channel
  * @param didDocumentLoader - DID Documents Loader
  * @param schemaDocumentLoader - Schema Documents Loader
  */

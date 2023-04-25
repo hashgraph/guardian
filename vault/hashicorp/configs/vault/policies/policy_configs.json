@@ -1,0 +1,26 @@
+[
+  {
+    "policy_name": "secretkey_auth",
+    "policies": [
+      "vault/hashicorp/configs/vault/policies/policies/secretkey_auth_policy"
+    ]
+  },
+  {
+    "policy_name": "wallet",
+    "policies": [
+      "vault/hashicorp/configs/vault/policies/policies/wallet_policy"
+    ]
+  },
+  {
+    "policy_name": "operator",
+    "policies": [
+      "vault/hashicorp/configs/vault/policies/policies/operator_policy"
+    ]
+  },
+  {
+    "policy_name": "apikey_ipfs",
+    "policies": [
+      "vault/hashicorp/configs/vault/policies/policies/apikey_ipfs_policy"
+    ]
+  }
+]

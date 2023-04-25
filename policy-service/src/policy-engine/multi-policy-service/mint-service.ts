@@ -1,4 +1,3 @@
-import { Token } from '@entity/token';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import {
     ExternalMessageEvents,
@@ -6,15 +5,24 @@ import {
     IRootConfig,
     WorkerTaskType
 } from '@guardian/interfaces';
-import { ExternalEventChannel, Logger } from '@guardian/common';
+import {
+    ExternalEventChannel,
+    Logger,
+    Token,
+    MultiPolicy,
+    KeyType,
+    Wallet,
+    DatabaseServer,
+    MessageAction,
+    MessageServer,
+    SynchronizationMessage,
+    TopicConfig,
+    VcDocumentDefinition as VcDocument,
+    Workers,
+} from '@guardian/common';
 import { PrivateKey } from '@hashgraph/sdk';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Workers } from '@helpers/workers';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { DatabaseServer } from '@database-modules';
-import { MultiPolicy } from '@entity/multi-policy';
-import { MessageAction, MessageServer, SynchronizationMessage, TopicConfig, VcDocument } from '@hedera-modules';
 
 /**
  * Token Config
@@ -43,6 +51,12 @@ interface TokenConfig {
  */
 export class MintService {
     /**
+     * Size of mint NFT batch
+     */
+    public static readonly BATCH_NFT_MINT_SIZE =
+        Math.floor(Math.abs(+process.env.BATCH_NFT_MINT_SIZE)) || 10;
+
+    /**
      * Wallet service
      */
     private static readonly wallet = new Wallet();
@@ -68,79 +82,92 @@ export class MintService {
         targetAccount: string,
         uuid: string,
         transactionMemo: string,
-        ref?: AnyBlockType,
+        ref?: AnyBlockType
     ) {
+        const mintNFT = (metaData) =>
+            workers.addRetryableTask(
+                {
+                    type: WorkerTaskType.MINT_NFT,
+                    data: {
+                        hederaAccountId: root.hederaAccountId,
+                        hederaAccountKey: root.hederaAccountKey,
+                        dryRun: ref && ref.dryRun,
+                        tokenId: token.tokenId,
+                        supplyKey: token.supplyKey,
+                        metaData,
+                        transactionMemo,
+                    },
+                },
+                1, 10
+            );
+        const transferNFT = (serials) =>
+            {
+                MintService.logger.debug(
+                    `Transfer ${token?.tokenId} serials: ${JSON.stringify(serials)}`,
+                    ['POLICY_SERVICE', mintId.toString()]
+                );
+                return workers.addRetryableTask(
+                    {
+                        type: WorkerTaskType.TRANSFER_NFT,
+                        data: {
+                            hederaAccountId:
+                                root.hederaAccountId,
+                            hederaAccountKey:
+                                root.hederaAccountKey,
+                            dryRun: ref && ref.dryRun,
+                            tokenId: token.tokenId,
+                            targetAccount,
+                            treasuryId: token.treasuryId,
+                            treasuryKey: token.treasuryKey,
+                            element: serials,
+                            transactionMemo,
+                        },
+                    },
+                    1, 10
+                );
+            };
+        const mintAndTransferNFT = (metaData) =>
+            mintNFT(metaData).then(transferNFT);
         const mintId = Date.now();
         MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref);
 
         const workers = new Workers();
         const data = new Array<string>(Math.floor(tokenValue));
         data.fill(uuid);
-        const serials: number[] = [];
-        const dataChunk = PolicyUtils.splitChunk(data, 10);
-        const mintPromiseArray: Promise<any>[] = [];
-        for (let i = 0; i < dataChunk.length; i++) {
-            const metaData = dataChunk[i];
-            if (i % 100 === 0) {
-                MintService.log(`Mint(${mintId}): Minting (Chunk: ${i + 1}/${dataChunk.length})`, ref);
+        const dataChunks = PolicyUtils.splitChunk(data, 10);
+        const tasks = PolicyUtils.splitChunk(
+            dataChunks,
+            MintService.BATCH_NFT_MINT_SIZE
+        );
+        for (let i = 0; i < tasks.length; i++) {
+            const dataChunk = tasks[i];
+            MintService.log(
+                `Mint(${mintId}): Minting and transferring (Chunk: ${
+                    i * MintService.BATCH_NFT_MINT_SIZE + 1
+                }/${tasks.length * MintService.BATCH_NFT_MINT_SIZE})`,
+                ref
+            );
+            try {
+                await Promise.all(dataChunk.map(mintAndTransferNFT));
+            } catch (error) {
+                MintService.error(
+                    `Mint(${mintId}): Error (${PolicyUtils.getErrorMessage(
+                        error
+                    )})`,
+                    ref
+                );
+                throw error;
             }
-
-            mintPromiseArray.push(workers.addRetryableTask({
-                type: WorkerTaskType.MINT_NFT,
-                data: {
-                    hederaAccountId: root.hederaAccountId,
-                    hederaAccountKey: root.hederaAccountKey,
-                    dryRun: ref && ref.dryRun,
-                    tokenId: token.tokenId,
-                    supplyKey: token.supplyKey,
-                    metaData,
-                    transactionMemo
-                }
-            }, 1));
-
-        }
-        try {
-            for (const newSerials of await Promise.all(mintPromiseArray)) {
-                for (const serial of newSerials) {
-                    serials.push(serial)
-                }
-            }
-        } catch (error) {
-            MintService.error(`Mint(${mintId}): Mint Error (${PolicyUtils.getErrorMessage(error)})`, ref);
         }
 
-        MintService.log(`Mint(${mintId}): Minted (Count: ${serials.length})`, ref);
-        MintService.log(`Mint(${mintId}): Transfer ${token.treasuryId} -> ${targetAccount} `, ref);
-
-        const serialsChunk = PolicyUtils.splitChunk(serials, 10);
-        const transferPromiseArray: Promise<any>[] = [];
-        for (let i = 0; i < serialsChunk.length; i++) {
-            const element = serialsChunk[i];
-            if (i % 100 === 0) {
-                MintService.log(`Mint(${mintId}): Transfer (Chunk: ${i + 1}/${serialsChunk.length})`, ref);
-            }
-            transferPromiseArray.push(workers.addRetryableTask({
-                type: WorkerTaskType.TRANSFER_NFT,
-                data: {
-                    hederaAccountId: root.hederaAccountId,
-                    hederaAccountKey: root.hederaAccountKey,
-                    dryRun: ref && ref.dryRun,
-                    tokenId: token.tokenId,
-                    targetAccount,
-                    treasuryId: token.treasuryId,
-                    treasuryKey: token.treasuryKey,
-                    element,
-                    transactionMemo
-                }
-            }, 1));
-
-        }
-        try {
-            await Promise.all(transferPromiseArray);
-        } catch (error) {
-            MintService.error(`Mint(${mintId}): Transfer Error (${PolicyUtils.getErrorMessage(error)})`, ref);
-        }
-
+        MintService.log(
+            `Mint(${mintId}): Minted (Count: ${Math.floor(tokenValue)})`,
+            ref
+        );
+        MintService.log(
+            `Mint(${mintId}): Transferred ${token.treasuryId} -> ${targetAccount} `,
+            ref
+        );
         MintService.log(`Mint(${mintId}): End`, ref);
     }
 
@@ -179,7 +206,7 @@ export class MintService {
                     tokenValue,
                     transactionMemo
                 }
-            }, 1);
+            }, 10);
             await workers.addRetryableTask({
                 type: WorkerTaskType.TRANSFER_FT,
                 data: {
@@ -193,7 +220,7 @@ export class MintService {
                     tokenValue,
                     transactionMemo
                 }
-            }, 1);
+            }, 10);
         } catch (error) {
             MintService.error(`Mint FT(${mintId}): Mint/Transfer Error (${PolicyUtils.getErrorMessage(error)})`, ref);
         }
@@ -425,7 +452,7 @@ export class MintService {
                 tokenValue,
                 uuid
             }
-        }, 1);
+        }, 10);
     }
 
     /**

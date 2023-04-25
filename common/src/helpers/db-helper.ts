@@ -6,6 +6,7 @@ import {
 import { MongoDriver, MongoEntityManager, ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models/base-entity';
 import { DataBaseNamingStrategy } from './db-naming-strategy';
+import { GridFSBucket } from 'mongodb';
 
 /**
  * Common connection config
@@ -13,7 +14,9 @@ import { DataBaseNamingStrategy } from './db-naming-strategy';
 export const COMMON_CONNECTION_CONFIG: any = {
     type: 'mongo',
     namingStrategy: DataBaseNamingStrategy,
-    dbName: process.env.DB_DATABASE,
+    dbName: (process.env.ENV||(process.env.HEDERA_NET!==process.env.PREUSED_HEDERA_NET))?
+        `${process.env.ENV}_${process.env.HEDERA_NET}_${process.env.DB_DATABASE}`:
+        process.env.DB_DATABASE,
     clientUrl:`mongodb://${process.env.DB_HOST}`,
     entities: [
         'dist/entity/*.js'
@@ -21,19 +24,28 @@ export const COMMON_CONNECTION_CONFIG: any = {
 };
 
 /**
- * Dependency injection of database
- */
-export const DB_DI: {
-    /**
-     * ORM
-     */
-    orm?: MikroORM<MongoDriver>
-} = {};
-
-/**
  * Database helper
  */
 export class DataBaseHelper<T extends BaseEntity> {
+
+    /**
+     * System fields
+     */
+    private static readonly _systemFileFields: string[] = [
+        'documentFileId',
+        'contextFileId',
+        'configFileId',
+    ];
+
+    /**
+     * ORM
+     */
+    private static _orm?: MikroORM<MongoDriver>;
+
+    /**
+     * Grid FS
+     */
+    private static _gridFS?: GridFSBucket;
 
     /**
      * Entity manager
@@ -41,10 +53,38 @@ export class DataBaseHelper<T extends BaseEntity> {
     private readonly _em: MongoEntityManager;
 
     public constructor(private readonly entityClass: new() => T) {
-        if (!DB_DI.orm) {
-            throw new Error('ORM is not initialized to DB_DI');
+        if (!DataBaseHelper.orm) {
+            throw new Error('ORM is not initialized');
         }
-        this._em = DB_DI.orm.em;
+        this._em = DataBaseHelper.orm.em;
+    }
+
+    /**
+     * Set ORM
+     */
+    public static set orm(orm: MikroORM<MongoDriver>) {
+        DataBaseHelper._orm = orm;
+    }
+
+    /**
+     * Get ORM
+     */
+    public static get orm() {
+        return DataBaseHelper._orm;
+    }
+
+    /**
+     * Set GridFS
+     */
+    public static set gridFS(gridFS: GridFSBucket) {
+        DataBaseHelper._gridFS = gridFS;
+    }
+
+    /**
+     * Get GridFS
+     */
+    public static get gridFS() {
+        return DataBaseHelper._gridFS;
     }
 
     /**
@@ -52,7 +92,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param filters filters
      * @returns Count
      */
-    @UseRequestContext(() => DB_DI.orm)
+    @UseRequestContext(() => DataBaseHelper.orm)
     public async delete(filters: any | string | ObjectId): Promise<number> {
         return await this._em.nativeDelete(this.entityClass, filters);
     }
@@ -61,7 +101,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * Remove entities or entity
      * @param entity Entities or entity
      */
-    @UseRequestContext(() => DB_DI.orm)
+    @UseRequestContext(() => DataBaseHelper.orm)
     public async remove(entity: T | T[]): Promise<void> {
         if(Array.isArray(entity)) {
             for (const element of entity) {
@@ -101,9 +141,30 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param pipeline Pipeline
      * @returns Result
      */
-    @UseRequestContext(() => DB_DI.orm)
+    @UseRequestContext(() => DataBaseHelper.orm)
     public async aggregate(pipeline: any[]): Promise<any[]> {
-        return await this._em.aggregate(this.entityClass, pipeline);
+        const aggregateEntities = await this._em.aggregate(
+            this.entityClass,
+            pipeline
+        );
+        for (const entity of aggregateEntities) {
+            for (const systemFileField of DataBaseHelper._systemFileFields) {
+                if (Object.keys(entity).includes(systemFileField)) {
+                    const fileStream = DataBaseHelper.gridFS.openDownloadStream(
+                        entity[systemFileField]
+                    );
+                    const bufferArray = [];
+                    for await (const data of fileStream) {
+                        bufferArray.push(data);
+                    }
+                    const buffer = Buffer.concat(bufferArray);
+                    entity[systemFileField.replace('FileId', '')] = JSON.parse(
+                        buffer.toString()
+                    );
+                }
+            }
+        }
+        return aggregateEntities;
     }
 
     /**
@@ -112,7 +173,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param options Options
      * @returns Entities and count
      */
-    @UseRequestContext(() => DB_DI.orm)
+    @UseRequestContext(() => DataBaseHelper.orm)
     public async findAndCount(filters: any | string | ObjectId, options?: any): Promise<[T[],number]> {
         return await this._em.findAndCount(this.entityClass, filters?.where || filters, options);
     }
@@ -123,7 +184,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param options Options
      * @returns Count
      */
-    @UseRequestContext(() => DB_DI.orm)
+    @UseRequestContext(() => DataBaseHelper.orm)
     public async count(filters?: any | string | ObjectId, options?: any): Promise<number> {
         return await this._em.count(this.entityClass, filters?.where || filters, options);
     }
@@ -134,7 +195,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param options Options
      * @returns Entities
      */
-    @UseRequestContext(() => DB_DI.orm)
+    @UseRequestContext(() => DataBaseHelper.orm)
     public async find(filters?: any | string | ObjectId, options?: any): Promise<T[]> {
         return await this._em.getRepository<T>(this.entityClass).find(filters?.where || filters || {}, options);
     }
@@ -144,7 +205,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param options Options
      * @returns Entities
      */
-    @UseRequestContext(() => DB_DI.orm)
+    @UseRequestContext(() => DataBaseHelper.orm)
     public async findAll(options?: any): Promise<T[]> {
         return await this._em.getRepository<T>(this.entityClass).findAll(options);
     }
@@ -155,7 +216,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param options Options
      * @returns Entity
      */
-    @UseRequestContext(() => DB_DI.orm)
+    @UseRequestContext(() => DataBaseHelper.orm)
     public async findOne(filter: any | string | ObjectId, options: any = {}): Promise<T> {
         return await this._em.getRepository<T>(this.entityClass).findOne(filter?.where || filter, options);
     }
@@ -173,7 +234,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Entities
      */
     public async save(entites: any[]): Promise<T[]>;
-    @UseRequestContext(() => DB_DI.orm)
+    @UseRequestContext(() => DataBaseHelper.orm)
     public async save(
         entity: any,
         filter?: any
@@ -195,7 +256,10 @@ export class DataBaseHelper<T extends BaseEntity> {
 
         let entityToUpdateOrCreate: any = await repository.findOne(filter?.where || filter || entity.id || entity._id);
         if (entityToUpdateOrCreate) {
-            wrap(entityToUpdateOrCreate).assign(entity, { mergeObjects: false });
+            DataBaseHelper._systemFileFields.forEach(systemFileField => {
+                entity[systemFileField] = entityToUpdateOrCreate[systemFileField];
+            });
+            wrap(entityToUpdateOrCreate).assign({ ...entity, updateDate: new Date() }, { mergeObjects: false });
         } else {
             entityToUpdateOrCreate = repository.create({ ...entity });
             await repository.persist(entityToUpdateOrCreate);
@@ -216,7 +280,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param entities Entities
      */
     public async update(entities: any[]): Promise<T[]>;
-    @UseRequestContext(() => DB_DI.orm)
+    @UseRequestContext(() => DataBaseHelper.orm)
     public async update(
         entity: any | any[],
         filter?: any
@@ -235,17 +299,15 @@ export class DataBaseHelper<T extends BaseEntity> {
 
         const repository = this._em.getRepository(this.entityClass);
         const entitiesToUpdate: any = await repository.find(filter?.where || filter || entity.id || entity._id);
-        if (entitiesToUpdate.length > 1) {
-            for (const entityToUpdate of entitiesToUpdate) {
-                wrap(entityToUpdate).assign(entity, { mergeObjects: false });
-            }
-            await repository.flush();
-            return entitiesToUpdate;
-        } else if (entitiesToUpdate.length === 1) {
-            const entityToUpdate = entitiesToUpdate[0];
-            wrap(entityToUpdate).assign(entity, { mergeObjects: false });
-            await repository.flush();
-            return entityToUpdate;
+        for (const entityToUpdate of entitiesToUpdate) {
+            DataBaseHelper._systemFileFields.forEach(systemFileField => {
+                entity[systemFileField] = entityToUpdate[systemFileField];
+            });
+            wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() }, { mergeObjects: false });
         }
+        await repository.flush();
+        return entitiesToUpdate.length === 1
+            ? entitiesToUpdate[0]
+            : entitiesToUpdate;
     }
 }

@@ -1,4 +1,4 @@
-import { Policy } from '@entity/policy';
+import { Policy } from '@guardian/common';
 import { BlockModel } from './block.model';
 import { ICompareOptions } from '../interfaces/compare-options.interface';
 import { IArtifacts } from '../interfaces/artifacts.interface';

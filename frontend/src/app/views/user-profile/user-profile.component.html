@@ -27,8 +27,7 @@
                     <div *ngIf="profile.topicId" class="profile-item">
                         <div class="profile-item-name"> USER TOPIC:</div>
                         <div class="profile-item-value">
-                            <hedera-explorer type="topics"
-                                [params]="profile.topicId">{{profile.topicId}}
+                            <hedera-explorer type="topics" [params]="profile.topicId">{{profile.topicId}}
                             </hedera-explorer>
                         </div>
                     </div>
@@ -106,6 +105,14 @@
                                     <div class="policies-info">{{getPoliciesInfo(element.policies)}}</div>
                                 </td>
                             </ng-container>
+                            <ng-container matColumnDef="tags">
+                                <th mat-header-cell *matHeaderCellDef> Tags </th>
+                                <td mat-cell *matCellDef="let element">
+                                    <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id"
+                                        [schemas]="tagSchemas" [entity]="tagEntity"
+                                        [service]="tagsService"></tags-explorer>
+                                </td>
+                            </ng-container>
                             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
                         </table>
@@ -116,38 +123,51 @@
                         <table mat-table [dataSource]="contractRequests" class="retire-table">
                             <ng-container matColumnDef="contractId">
                                 <th mat-header-cell *matHeaderCellDef> Contract Id </th>
-                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }">
-                                   <hedera-explorer type="accounts" [params]="element.contractId">{{element.contractId}}</hedera-explorer>
+                                <td mat-cell *matCellDef="let element"
+                                    [ngClass]="{ 'approved-request': element.vcDocument }">
+                                    <hedera-explorer type="accounts"
+                                        [params]="element.contractId">{{element.contractId}}</hedera-explorer>
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="baseTokenId">
                                 <th mat-header-cell *matHeaderCellDef> Base Token Id </th>
-                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }">
-                                    <hedera-explorer type="tokens" [params]="element.baseTokenId">{{element.baseTokenId}}</hedera-explorer>
+                                <td mat-cell *matCellDef="let element"
+                                    [ngClass]="{ 'approved-request': element.vcDocument }">
+                                    <hedera-explorer type="tokens"
+                                        [params]="element.baseTokenId">{{element.baseTokenId}}</hedera-explorer>
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="oppositeTokenId">
                                 <th mat-header-cell *matHeaderCellDef> Opposite Token Id </th>
-                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }">
-                                    <hedera-explorer type="tokens" [params]="element.oppositeTokenId">{{element.oppositeTokenId}}</hedera-explorer>
+                                <td mat-cell *matCellDef="let element"
+                                    [ngClass]="{ 'approved-request': element.vcDocument }">
+                                    <hedera-explorer type="tokens"
+                                        [params]="element.oppositeTokenId">{{element.oppositeTokenId}}</hedera-explorer>
                                 </td>
                             </ng-container>
                             <ng-container matColumnDef="baseTokenCount">
                                 <th mat-header-cell *matHeaderCellDef> Base Token Count </th>
-                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }"> {{element.baseTokenCount}} </td>
+                                <td mat-cell *matCellDef="let element"
+                                    [ngClass]="{ 'approved-request': element.vcDocument }"> {{element.baseTokenCount}}
+                                </td>
                             </ng-container>
                             <ng-container matColumnDef="oppositeTokenCount">
                                 <th mat-header-cell *matHeaderCellDef> Opposite Token Count </th>
-                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }"> {{element.oppositeTokenCount}} </td>
+                                <td mat-cell *matCellDef="let element"
+                                    [ngClass]="{ 'approved-request': element.vcDocument }">
+                                    {{element.oppositeTokenCount}} </td>
                             </ng-container>
                             <ng-container matColumnDef="cancel">
                                 <th mat-header-cell *matHeaderCellDef> Operations </th>
-                                <td mat-cell *matCellDef="let element" [ngClass]="{ 'approved-request': element.vcDocument }">
-                                    <div *ngIf="!element.vcDocument" class="cancel-action-btn" (click)="cancelContractRequest(element.id)">
+                                <td mat-cell *matCellDef="let element"
+                                    [ngClass]="{ 'approved-request': element.vcDocument }">
+                                    <div *ngIf="!element.vcDocument" class="cancel-action-btn"
+                                        (click)="cancelContractRequest(element.id)">
                                         <span>Cancel Request</span>
                                         <mat-icon>cancel</mat-icon>
                                     </div>
-                                    <div *ngIf="element.vcDocument" class="view-action-btn" (click)="viewRetireRequest(element.vcDocument)">
+                                    <div *ngIf="element.vcDocument" class="view-action-btn"
+                                        (click)="viewRetireRequest(element.vcDocument)">
                                         <span>View Details</span>
                                         <mat-icon>visibility</mat-icon>
                                     </div>
@@ -156,7 +176,8 @@
                             <tr mat-header-row *matHeaderRowDef="displayedColumnsContractRequests"></tr>
                             <tr mat-row *matRowDef="let row; columns: displayedColumnsContractRequests;"></tr>
                         </table>
-                        <button (click)="createRetireRequest()" mat-raised-button color="primary" style="margin: 10px;">Create Retire Request</button>
+                        <button (click)="createRetireRequest()" mat-raised-button color="primary"
+                            style="margin: 10px;">Create Retire Request</button>
                     </ng-container>
                 </mat-tab>
             </mat-tab-group>
@@ -196,9 +217,13 @@
                     </mat-form-field>
                 </div>
 
-                <button mat-raised-button type="button" color="primary" class="generate-btn"
+                <button *ngIf="innerWidth > 810" mat-raised-button type="button" color="primary" class="generate-btn"
                     (click)="randomKey()">Generate</button>
-                <button mat-raised-button type="submit" [disabled]="!hederaForm.valid">Submit</button>
+                <button *ngIf="innerWidth > 810" mat-raised-button type="submit" [disabled]="!hederaForm.valid">Submit</button>
+
+                <button *ngIf="innerWidth <= 810" mat-raised-button type="button" class="generate-btn"
+                    (click)="randomKey()">Generate</button>
+                <button *ngIf="innerWidth <= 810" mat-raised-button type="submit" color="primary" [disabled]="!hederaForm.valid">Submit</button>
             </form>
         </div>
         <div *ngIf="!isNewAccount && !isFailed" class="clock-list">

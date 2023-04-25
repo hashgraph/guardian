@@ -1,5 +1,4 @@
-import { DatabaseServer } from '@database-modules';
-import { Policy } from '@entity/policy';
+import { Policy, DatabaseServer } from '@guardian/common';
 import { PolicyType } from '@guardian/interfaces';
 import { BlockValidator } from './block-validator';
 import { ModuleValidator } from './module-validator';
@@ -276,7 +275,7 @@ export class PolicyValidator {
      * @param tokenId
      */
     public async getToken(tokenId: string): Promise<any> {
-        return await this.databaseServer.getTokenById(tokenId);
+        return await this.databaseServer.getToken(tokenId);
     }
 
     /**

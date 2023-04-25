@@ -7,8 +7,7 @@ import { GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity, S
 import { BlockActionError } from '@policy-engine/errors';
 import { AnyBlockType } from '@policy-engine/policy-engine.interface';
 import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
-import { VcHelper } from '@helpers/vc-helper';
-import { MessageAction, MessageServer, VCMessage } from '@hedera-modules';
+import { VcHelper, MessageAction, MessageServer, VCMessage } from '@guardian/common';
 import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
 
 /**
@@ -426,10 +425,7 @@ export class PolicyRolesBlock {
             ref.triggerEvents(PolicyOutputEventType.CreateGroup, newUser, null);
         }
 
-        await Promise.all([
-            PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag),
-            PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance)
-        ]);
+        await PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance);
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             group: group.uuid,

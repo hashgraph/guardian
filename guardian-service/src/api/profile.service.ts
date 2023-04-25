@@ -8,10 +8,18 @@ import {
     TopicType,
     UserRole, WorkerTaskType
 } from '@guardian/interfaces';
-import { VcHelper } from '@helpers/vc-helper';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
+import { ApiResponse } from '@api/helpers/api-response';
 import {
+    MessageResponse,
+    MessageError,
+    Logger,
+    DataBaseHelper,
+    IAuthUser, RunFunctionAsync,
+    Topic,
+    DidDocument as DidDocumentCollection,
+    VcDocument as VcDocumentCollection,
+    Schema as SchemaCollection,
+    Settings,
     DIDDocument,
     DIDMessage,
     MessageAction,
@@ -19,25 +27,16 @@ import {
     RegistrationMessage,
     TopicConfig,
     TopicHelper,
-    VCMessage
-} from '@hedera-modules';
-import { Topic } from '@entity/topic';
-import { DidDocument as DidDocumentCollection } from '@entity/did-document';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { Schema as SchemaCollection } from '@entity/schema';
-import { ApiResponse } from '@api/api-response';
-import {
-    MessageResponse,
-    MessageError,
-    Logger,
-    DataBaseHelper,
-    IAuthUser, RunFunctionAsync
+    VCMessage,
+    Users,
+    KeyType,
+    Wallet,
+    VcHelper,
+    Workers
 } from '@guardian/common';
-import { publishSystemSchema } from './schema.service';
-import { Settings } from '@entity/settings';
 import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
-import { Workers } from '@helpers/workers';
 import { RestoreDataFromHedera } from '@helpers/restore-data-from-hedera';
+import { publishSystemSchema } from './helpers/schema-publish-helper';
 
 /**
  * Get global topic
@@ -314,9 +313,6 @@ async function createUserProfile(profile: any, notifier: INotifier, user?: IAuth
 
 /**
  * Connect to the message broker methods of working with Address books.
- *
- * @param channel - channel
- *
  */
 export function profileAPI() {
     ApiResponse(MessageAPI.GET_BALANCE, async (msg) => {
@@ -342,7 +338,7 @@ export function profileAPI() {
                     hederaAccountId: user.hederaAccountId,
                     hederaAccountKey: key
                 }
-            }, 1);
+            }, 20);
             return new MessageResponse({
                 balance,
                 unit: 'Hbar',
@@ -383,7 +379,7 @@ export function profileAPI() {
                     hederaAccountId: user.hederaAccountId,
                     hederaAccountKey: key
                 }
-            }, 1);
+            }, 20);
 
             return new MessageResponse(balance);
         } catch (error) {

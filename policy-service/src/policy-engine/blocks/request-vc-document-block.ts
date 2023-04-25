@@ -1,4 +1,3 @@
-import { KeyType } from '@helpers/wallet';
 import { GenerateUUIDv4, Schema } from '@guardian/interfaces';
 import { PolicyUtils } from '@policy-engine/helpers/utils';
 import { BlockActionError } from '@policy-engine/errors';
@@ -7,9 +6,15 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, 
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
 import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
 import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
-import { DIDDocument, DIDMessage, MessageAction, MessageServer } from '@hedera-modules';
-import { VcHelper } from '@helpers/vc-helper';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import {
+    VcDocument as VcDocumentCollection,
+    DIDDocument,
+    DIDMessage,
+    MessageAction,
+    MessageServer,
+    KeyType,
+    VcHelper,
+} from '@guardian/common';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyUser } from '@policy-engine/policy-user';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
@@ -98,47 +103,6 @@ export class RequestVcDocumentBlock {
     }
 
     /**
-     * Change active
-     * @param user
-     * @param active
-     */
-    @ActionCallback({
-        output: PolicyOutputEventType.RefreshEvent
-    })
-    async changeActive(user: IPolicyUser, active: boolean) {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        let blockState: any;
-        if (!this.state.hasOwnProperty(user.id)) {
-            blockState = {};
-            this.state[user.id] = blockState;
-        } else {
-            blockState = this.state[user.id];
-        }
-        blockState.active = active;
-
-        ref.updateBlock(blockState, user);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
-    }
-
-    /**
-     * Get active
-     * @param user
-     */
-    getActive(user: IPolicyUser) {
-        let blockState: any;
-        if (!this.state.hasOwnProperty(user.id)) {
-            blockState = {};
-            this.state[user.id] = blockState;
-        } else {
-            blockState = this.state[user.id];
-        }
-        if (blockState.active === undefined) {
-            blockState.active = true;
-        }
-        return blockState.active;
-    }
-
-    /**
      * Get Schema
      */
     async getSchema(): Promise<Schema> {
@@ -173,7 +137,6 @@ export class RequestVcDocumentBlock {
             presetFields: options.presetFields,
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || [],
-            active: this.getActive(user),
             data: sources && sources.length && sources[0] || null,
             restoreData
         };
@@ -213,14 +176,7 @@ export class RequestVcDocumentBlock {
             throw new BlockActionError('User have no any did', ref.blockType, ref.uuid);
         }
 
-        const active = this.getActive(user);
-        if (!active) {
-            throw new BlockActionError('Block not available', ref.blockType, ref.uuid);
-        }
-
         try {
-            await this.changeActive(user, false);
-
             const hederaAccount = await PolicyUtils.getHederaAccount(ref, user.did);
 
             const document = _data.document;
@@ -279,8 +235,6 @@ export class RequestVcDocumentBlock {
             if (error) {
                 throw new BlockActionError(error, ref.blockType, ref.uuid);
             }
-
-            await this.changeActive(user, true);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
@@ -288,9 +242,10 @@ export class RequestVcDocumentBlock {
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
                 documents: ExternalDocuments(item)
             }));
+
+            return item;
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
-            await this.changeActive(user, true);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
 

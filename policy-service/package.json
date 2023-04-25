@@ -11,8 +11,8 @@
     },
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@guardian/common": "^2.11.0",
-        "@guardian/interfaces": "^2.11.0",
+        "@guardian/common": "^2.12.0-prerelease",
+        "@guardian/interfaces": "^2.12.0-prerelease",
         "@hashgraph/sdk": "^2.22.0",
         "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
         "@meeco/cryppo": "^2.0.2",
@@ -42,6 +42,7 @@
         "mathjs": "^10.1.0",
         "module-alias": "^2.2.2",
         "moment": "^2.29.2",
+        "mongodb": "4.8.1",
         "reflect-metadata": "^0.1.13"
     },
     "description": "",
@@ -74,9 +75,10 @@
         "dev": "tsc -w",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/guardian-service.xml",
+        "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/policy-service.xml",
         "test:local": "mocha tests/**/*.test.js",
         "test:stability": "mocha tests/stability.test.js"
     },
-    "version": "2.11.0"
+    "version": "2.12.0-prerelease",
+    "stableVersion": "2.11.0"
 }

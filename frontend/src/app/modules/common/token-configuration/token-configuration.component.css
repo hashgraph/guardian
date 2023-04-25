@@ -1,0 +1,67 @@
+form {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+}
+
+.switch-btn {
+    width: 180px;
+    height: 32px;
+}
+
+.keys-config {
+    display: grid;
+    grid-template-rows: auto;
+}
+
+.key-value {
+    display: grid;
+    grid-template-columns: 200px 100px auto;
+    padding-bottom: 20px;
+    align-content: center;
+    align-items: center;
+}
+
+.key-name {
+    font-weight: 500;
+}
+
+.delimiter {
+    width: 100%;
+    height: 40px;
+}
+
+*[immutable="true"] .immutable {
+    pointer-events: none;
+    filter: grayscale(1);
+    opacity: 0.7;
+}
+
+@media (max-width: 810px) {
+
+    mat-form-field {
+        margin-bottom: 10px;
+    }
+
+    input, mat-select {
+        font-size: 16px;
+    }
+
+    .delimiter {
+        height: 20px;
+    }
+
+    .key-value {
+        display: grid;
+        grid-template-columns: 200px auto;
+        grid-template-rows: 2;
+        grid-row-gap: 15px;
+        padding-bottom: 30px;
+        align-content: center;
+        align-items: center;
+    }
+
+    .key-description {
+        grid-column: 1 / span 2;
+    }
+}

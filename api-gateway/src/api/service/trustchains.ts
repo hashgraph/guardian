@@ -10,6 +10,9 @@ import { AuthenticatedRequest, IAuthUser, Logger } from '@guardian/common';
  */
 export const trustchainsAPI = Router();
 
+/**
+ * @deprecated
+ */
 trustchainsAPI.get('/', permissionHelper(UserRole.AUDITOR), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();
@@ -43,6 +46,9 @@ trustchainsAPI.get('/', permissionHelper(UserRole.AUDITOR), async (req: Authenti
     }
 });
 
+/**
+ * @deprecated
+ */
 trustchainsAPI.get('/:hash', permissionHelper(UserRole.AUDITOR), async (req: AuthenticatedRequest, res: Response) => {
     try {
         const guardians = new Guardians();

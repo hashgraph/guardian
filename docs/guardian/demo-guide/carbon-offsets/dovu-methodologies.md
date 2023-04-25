@@ -2,7 +2,7 @@
 description: AgreCalc and Cool Farm Tool develop by Dovu
 ---
 
-# 🧑🌾 Dovu Methodologies
+# 🧑🌾 🧑🌾 Dovu Methodologies
 
 On this page you'll find:​
 
@@ -62,7 +62,7 @@ For testing purpose, we will approve the farm project.
 
 10. Once SR approves, we login back as Registrant and submit AgreCalc Document by filling out the form:
 
-<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (4).png" alt=""><figcaption></figcaption></figure>
 
 For Cool Farm Tool methodology, you will see the below request form:
 

@@ -129,3 +129,75 @@ mat-form-field {
     bottom: -28px;
     left: 0;
 }
+
+
+@media (max-width: 810px) {
+
+    /* Role Select Menu */
+    
+    .role-select-step {
+        width: 90%;
+        height: 70vh;
+        padding: 40px;
+    }
+      
+    .role-select-step button:not(.close-button) {
+        width: 81vw !important;
+        padding: 0 !important;
+        border: 1px solid #2C78F6;
+        border-radius: 5px;
+        background: none !important;
+    }
+      
+    .role-select-step ::ng-deep.mat-button-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 10px;
+        align-items: start;
+        width: 100%;
+    }
+
+    .role-select-step ::ng-deep.mat-button-wrapper .role-name {
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+        display: grid;
+        grid-column: 1;
+        justify-content: center;
+        align-content: center;
+        font-size: 18px;
+        font-weight: 500;
+        line-height: normal;
+        white-space: normal;
+        overflow-wrap: break-word;
+        max-width: 100px;
+    }
+      
+    .role-select-step ::ng-deep.mat-button-wrapper .role-description {
+        grid-column: 2;
+        font-size: 13px;
+        line-height: normal;
+        white-space: normal;
+        overflow-wrap: break-word;
+        color: #999;
+        text-align: start;
+    }
+      
+
+    /* Credential Creation */
+    .credential-creation {
+        width: 90vw;
+        padding: 40px;
+        top: 50%;
+    }
+
+    .credential-creation .example-full-width {
+        width: 81vw;
+        margin: 18px 0 0;
+    }
+
+    .credential-creation button {
+        margin-top: 36px;
+        width: 81vw;
+    }
+}

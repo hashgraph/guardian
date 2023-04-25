@@ -14,7 +14,7 @@ For a demo example of following steps, here is the policy timestamp: **167516453
 
 ![Add Role button](<../../../../.gitbook/assets/1 (1) (1).png>)
 
-![Creating two roles](<../../../../.gitbook/assets/2 (1).png>)
+![Creating two roles](<../../../../.gitbook/assets/2 (1) (1).png>)
 
 3. In the root container create 4 more ’**interfaceContainerBlock**_’_ container called ‘**no\_role**_’_, ‘**owner**_’_, ‘**role\_1**_’ and ‘_**role\_2**_’_
 
@@ -31,9 +31,9 @@ For a demo example of following steps, here is the policy timestamp: **167516453
 * role\_1: Example role 1
 * role\_2: Example role 2
 
-![No Role](<../../../../.gitbook/assets/4 (1).png>) ![Owner](<../../../../.gitbook/assets/5 (1) (2).png>)
+![No Role](<../../../../.gitbook/assets/4 (1) (2).png>) ![Owner](<../../../../.gitbook/assets/5 (1) (2).png>)
 
-![Example role 1](<../../../../.gitbook/assets/6 (1) (1) (1).png>) ![Example role 2](<../../../../.gitbook/assets/7 (1).png>)
+![Example role 1](<../../../../.gitbook/assets/6 (1) (1) (1).png>) ![Example role 2](<../../../../.gitbook/assets/7 (1) (2).png>)
 
 This would result in the following visibility of containers:
 
@@ -56,7 +56,7 @@ Select ‘**Example role 1**_’ and_ ‘**Example role 2**_’_
 
 7. Add ‘**informationBlock**’ to other containers just to display results
 
-![InformationBlock to other containers](<../../../../.gitbook/assets/10 (1).png>)
+![InformationBlock to other containers](<../../../../.gitbook/assets/10 (1) (3).png>)
 
 ### **Results**:
 

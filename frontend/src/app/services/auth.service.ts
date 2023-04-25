@@ -22,8 +22,10 @@ export class AuthService {
         return this.http.post<string>(`${this.url}/login`, { username, password });
     }
 
-    public createUser(username: string, password: string, role: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/register`, { username, password, role })
+    public createUser(username: string, password: string, confirmPassword: string, role: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/register`, {
+            username, password, password_confirmation: confirmPassword, role
+        })
     }
 
     public sessions(): Observable<ISession | null> {

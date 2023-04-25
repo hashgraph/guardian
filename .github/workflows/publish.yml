@@ -46,6 +46,24 @@ jobs:
           username: 'oauth2accesstoken'
           password: '${{ steps.auth.outputs.access_token }}'
 
+      - name: application-events-latest
+        if: ${{ steps.latestTag.outputs.value == 'latest'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./application-events/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/application-events:${{ steps.package-version.outputs.current-version}}, gcr.io/hedera-registry/application-events:latest'
+
+      - name: application-events
+        if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./application-events/Dockerfile
+          push: true
+          tags: 'gcr.io/hedera-registry/application-events:${{ steps.package-version.outputs.current-version}}'
+
       - name: logger-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
         uses: docker/build-push-action@v2

@@ -1,9 +1,25 @@
-import { ApiResponse } from '@api/api-response';
+import { ApiResponse } from '@api/helpers/api-response';
 import {
     MessageResponse,
     MessageError,
     Logger,
     DataBaseHelper,
+    Contract,
+    RetireRequest,
+    Schema as SchemaCollection,
+    Topic,
+    VcDocument as VcDocumentCollection,
+    Workers,
+    Users,
+    KeyType,
+    Wallet,
+    MessageAction,
+    MessageServer,
+    TopicConfig,
+    TopicHelper,
+    VCMessage,
+    DatabaseServer,
+    VcHelper
 } from '@guardian/common';
 import {
     ContractStatus,
@@ -14,29 +30,10 @@ import {
     TopicType,
     WorkerTaskType,
 } from '@guardian/interfaces';
-import { Contract } from '@entity/contract';
-import { Workers } from '@helpers/workers';
-import { Users } from '@helpers/users';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { DatabaseServer } from '@database-modules';
-import { RetireRequest } from '@entity/retire-request';
-import { Schema as SchemaCollection } from '@entity/schema';
-import {
-    MessageAction,
-    MessageServer,
-    TopicConfig,
-    TopicHelper,
-    VCMessage,
-} from '@hedera-modules';
-import { Topic } from '@entity/topic';
-import { publishSystemSchema } from './schema.service';
-import { VcHelper } from '@helpers/vc-helper';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
+import { publishSystemSchema } from './helpers/schema-publish-helper';
 
 /**
  * Connect to the message broker methods of working with contracts.
- *
- * @param channel - channel
  */
 export async function contractAPI(
     contractRepository: DataBaseHelper<Contract>,
@@ -156,28 +153,40 @@ export async function contractAPI(
                 did
             );
 
-            const contractId = await workers.addNonRetryableTask(
-                {
-                    type: WorkerTaskType.CREATE_CONTRACT,
-                    data: {
-                        bytecodeFileId: process.env.CONTRACT_FILE_ID,
-                        hederaAccountId: root.hederaAccountId,
-                        hederaAccountKey: rootKey,
-                        topicKey: rootKey,
-                    },
-                },
-                1
-            );
+            const topicHelper = new TopicHelper(root.hederaAccountId, rootKey);
+            const topic = await topicHelper.create({
+                type: TopicType.ContractTopic,
+                name: TopicType.ContractTopic,
+                description: TopicType.ContractTopic,
+                owner: did,
+                policyId: null,
+                policyUUID: null
+            }, {
+                admin: true,
+                submit: false
+            });
+            await topic.saveKeys();
+            await DatabaseServer.saveTopic(topic.toObject());
 
-            return new MessageResponse(
-                await contractRepository.save({
-                    contractId,
-                    status: ContractStatus.APPROVED,
-                    owner: did,
-                    isOwnerCreator: true,
-                    description,
-                })
-            );
+            const contractId = await workers.addNonRetryableTask({
+                type: WorkerTaskType.CREATE_CONTRACT,
+                data: {
+                    bytecodeFileId: process.env.CONTRACT_FILE_ID,
+                    hederaAccountId: root.hederaAccountId,
+                    hederaAccountKey: rootKey,
+                    topicKey: rootKey,
+                    memo: topic.topicId
+                }
+            }, 20);
+            const contract = await contractRepository.save({
+                contractId,
+                status: ContractStatus.APPROVED,
+                owner: did,
+                isOwnerCreator: true,
+                description,
+                topicId: topic.topicId
+            })
+            return new MessageResponse(contract);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
@@ -215,7 +224,7 @@ export async function contractAPI(
                         hederaAccountKey: rootKey,
                     },
                 },
-                1
+                20
             );
 
             if (checkStatusResult) {
@@ -272,7 +281,7 @@ export async function contractAPI(
                             userId,
                         },
                     },
-                    1
+                    20
                 )
             );
         } catch (error) {
@@ -306,10 +315,10 @@ export async function contractAPI(
                 did
             );
 
-            const baseToken = await new DatabaseServer().getTokenById(
+            const baseToken = await new DatabaseServer().getToken(
                 baseTokenId
             );
-            const oppositeToken = await new DatabaseServer().getTokenById(
+            const oppositeToken = await new DatabaseServer().getToken(
                 oppositeTokenId
             );
 
@@ -342,16 +351,16 @@ export async function contractAPI(
                             oppositeTokenId,
                             baseTokenCount: baseToken?.decimals
                                 ? Math.pow(10, baseToken.decimals) *
-                                  baseTokenCount
+                                baseTokenCount
                                 : baseTokenCount,
                             oppositeTokenCount: oppositeToken?.decimals
                                 ? Math.pow(10, oppositeToken.decimals) *
-                                  oppositeTokenCount
+                                oppositeTokenCount
                                 : oppositeTokenCount,
                             grantKycKeys
                         },
                     },
-                    1
+                    20
                 )
             );
         } catch (error) {
@@ -377,36 +386,31 @@ export async function contractAPI(
                 did
             );
 
-            const contractOwner = await workers.addNonRetryableTask(
-                {
-                    type: WorkerTaskType.GET_CONTRACT_INFO,
-                    data: {
-                        contractId,
-                        hederaAccountId: root.hederaAccountId,
-                        hederaAccountKey: rootKey,
-                    },
+            const { owner, memo } = await workers.addNonRetryableTask({
+                type: WorkerTaskType.GET_CONTRACT_INFO,
+                data: {
+                    contractId,
+                    hederaAccountId: root.hederaAccountId,
+                    hederaAccountKey: rootKey,
                 },
-                1
-            );
+            }, 20);
+            const isOwnerCreator = owner === root.hederaAccountId;
+            const contract = await contractRepository.save(
+                {
+                    contractId,
+                    owner: did,
+                    isOwnerCreator,
+                    description,
+                    status: isOwnerCreator ? ContractStatus.APPROVED : ContractStatus.WAIT,
+                    topicId: memo
+                },
+                {
+                    contractId,
+                    owner: did,
+                }
+            )
 
-            return new MessageResponse(
-                await contractRepository.save(
-                    {
-                        contractId,
-                        owner: did,
-                        isOwnerCreator: contractOwner === root.hederaAccountId,
-                        description,
-                        status:
-                            contractOwner === root.hederaAccountId
-                                ? ContractStatus.APPROVED
-                                : ContractStatus.WAIT,
-                    },
-                    {
-                        contractId,
-                        owner: did,
-                    }
-                )
-            );
+            return new MessageResponse(contract);
         } catch (error) {
             new Logger().error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
@@ -430,10 +434,10 @@ export async function contractAPI(
                 KeyType.KEY,
                 did
             );
-            const baseToken = await new DatabaseServer().getTokenById(
+            const baseToken = await new DatabaseServer().getToken(
                 baseTokenId
             );
-            const oppositeToken = await new DatabaseServer().getTokenById(
+            const oppositeToken = await new DatabaseServer().getToken(
                 oppositeTokenId
             );
             const contracts = await contractRepository.find({
@@ -452,16 +456,16 @@ export async function contractAPI(
                             oppositeTokenId,
                         },
                     },
-                    1
+                    20
                 );
                 contractPairs.push({
                     baseTokenRate: baseToken?.decimals
                         ? contractPair.baseTokenRate /
-                          Math.pow(10, baseToken.decimals)
+                        Math.pow(10, baseToken.decimals)
                         : contractPair.baseTokenRate,
                     oppositeTokenRate: oppositeToken?.decimals
                         ? contractPair.oppositeTokenRate /
-                          Math.pow(10, oppositeToken.decimals)
+                        Math.pow(10, oppositeToken.decimals)
                         : contractPair.oppositeTokenRate,
                     contractId: contractPair.contractId,
                     description: contract.description,
@@ -502,10 +506,10 @@ export async function contractAPI(
                 did
             );
 
-            const baseToken = await new DatabaseServer().getTokenById(
+            const baseToken = await new DatabaseServer().getToken(
                 baseTokenId
             );
-            const oppositeToken = await new DatabaseServer().getTokenById(
+            const oppositeToken = await new DatabaseServer().getToken(
                 oppositeTokenId
             );
 
@@ -523,13 +527,13 @@ export async function contractAPI(
                             : baseTokenCount,
                         oppositeTokenCount: oppositeToken?.decimals
                             ? Math.pow(10, oppositeToken.decimals) *
-                              oppositeTokenCount
+                            oppositeTokenCount
                             : oppositeTokenCount,
                         baseTokenSerials,
                         oppositeTokenSerials,
                     },
                 },
-                1
+                20
             );
 
             const contractRequest = await workers.addNonRetryableTask(
@@ -544,7 +548,7 @@ export async function contractAPI(
                         userId: root.hederaAccountId,
                     },
                 },
-                1
+                20
             );
 
             await retireRequestRepository.save(
@@ -555,11 +559,11 @@ export async function contractAPI(
                     owner: did,
                     baseTokenCount: baseToken?.decimals
                         ? contractRequest.baseTokenCount /
-                          Math.pow(10, baseToken.decimals)
+                        Math.pow(10, baseToken.decimals)
                         : contractRequest.baseTokenCount,
                     oppositeTokenCount: oppositeToken?.decimals
                         ? contractRequest.oppositeTokenCount /
-                          Math.pow(10, oppositeToken.decimals)
+                        Math.pow(10, oppositeToken.decimals)
                         : contractRequest.oppositeTokenCount,
                     baseTokenSerials,
                     oppositeTokenSerials,
@@ -627,7 +631,7 @@ export async function contractAPI(
                         oppositeTokenId: retireRequest.oppositeTokenId,
                     },
                 },
-                1
+                20
             );
 
             if (cancelResult) {
@@ -697,7 +701,7 @@ export async function contractAPI(
                         wipeKeys,
                     },
                 },
-                1
+                20
             );
 
             let topicConfig = await TopicConfig.fromObject(

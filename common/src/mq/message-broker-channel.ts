@@ -1,7 +1,8 @@
 import assert from 'assert';
-import { Subscription, NatsConnection, StringCodec, connect, JSONCodec, headers } from 'nats';
+import { Subscription, NatsConnection, StringCodec, connect, headers } from 'nats';
 import { IMessageResponse, MessageError } from '../models/message-response';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { ZipCodec } from './zip-codec';
 
 const MQ_TIMEOUT = 300000;
 /**
@@ -258,15 +259,15 @@ export class MessageBrokerChannel {
      * @param data
      * @param allowError
      */
-    public publish<T>(eventType: string, data: T, allowError = true) {
+    public async publish<T>(eventType: string, data: T, allowError = true) {
         try {
             console.log('MQ publish: %s', eventType);
             const messageId = GenerateUUIDv4();
             const head = headers();
             head.append('messageId', messageId);
 
-            const sc = JSONCodec();
-            this.channel.publish(eventType, sc.encode(data), { headers: head });
+            const zc = ZipCodec();
+            this.channel.publish(eventType, await zc.encode(data), { headers: head });
         } catch (e) {
 
             console.error(e.message, e.stack, e);

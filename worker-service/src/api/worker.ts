@@ -3,7 +3,6 @@ import {
     MessageBrokerChannel,
     MessageResponse,
     NatsService,
-    SettingsContainer,
     ValidateConfiguration
 } from '@guardian/common';
 import {
@@ -20,6 +19,7 @@ import { AccountId, ContractFunctionParameters, PrivateKey, TokenId } from '@has
 import { HederaUtils } from './helpers/utils';
 import axios from 'axios';
 import process from 'process';
+import { SecretManager } from '@guardian/common/dist/secret-manager';
 
 /**
  * Sleep helper
@@ -36,7 +36,7 @@ function rejectTimeout(t: number): Promise<void> {
 /**
  * Worker class
  */
-export class Worker extends NatsService{
+export class Worker extends NatsService {
     /**
      * Logger instance
      * @private
@@ -113,10 +113,14 @@ export class Worker extends NatsService{
     constructor(
     ) {
         super();
-        const { IPFS_STORAGE_API_KEY } = new SettingsContainer().settings;
+        const secretManager = SecretManager.New()
+        secretManager.getSecrets('apikey/ipfs').
+            then(secrets => {
+                const { IPFS_STORAGE_API_KEY } = secrets;
+                this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
+            });
 
         this.logger = new Logger();
-        this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
 
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
@@ -195,7 +199,10 @@ export class Worker extends NatsService{
         })
 
         this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
-            await new SettingsContainer().updateSetting('IPFS_STORAGE_API_KEY', msg.ipfsStorageApiKey);
+            const secretManager = SecretManager.New();
+            await secretManager.setSecrets('apikey/ipfs', {
+                IPFS_STORAGE_API_KEY: msg.ipfsStorageApiKey
+            });
             try {
                 this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
                 const validator = new ValidateConfiguration();
@@ -205,13 +212,13 @@ export class Worker extends NatsService{
             }
         });
 
-        HederaSDKHelper.setTransactionResponseCallback(async (client: any) => {
+        HederaSDKHelper.setTransactionResponseCallback(async (operatorAccountId: string) => {
             try {
-                const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
+                const balance = await HederaSDKHelper.balanceRest(operatorAccountId);
                 await this.sendMessage('update-user-balance', {
                     balance,
                     unit: 'Hbar',
-                    operatorAccountId: client.operatorAccountId.toString()
+                    operatorAccountId
                 });
             } catch (error) {
                 throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
@@ -307,6 +314,7 @@ export class Worker extends NatsService{
                     const client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
                     const { topicId, buffer, submitKey, memo } = task.data;
                     result.data = await client.submitMessage(topicId, buffer, submitKey, memo);
+                    client.destroy();
                     break;
                 }
 
@@ -318,6 +326,7 @@ export class Worker extends NatsService{
                         id: treasury.id.toString(),
                         key: treasury.key.toString()
                     };
+                    client.destroy();
                     break;
                 }
 
@@ -325,6 +334,7 @@ export class Worker extends NatsService{
                     const { hederaAccountId, hederaAccountKey } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, null, networkOptions);
                     result.data = await client.balance(hederaAccountId);
+                    client.destroy();
 
                     break;
                 }
@@ -333,6 +343,7 @@ export class Worker extends NatsService{
                     const { userID, userKey, hederaAccountId } = task.data;
                     const client = new HederaSDKHelper(userID, userKey, null, networkOptions);
                     result.data = await client.accountInfo(hederaAccountId);
+                    client.destroy();
 
                     break;
                 }
@@ -341,6 +352,7 @@ export class Worker extends NatsService{
                     const {
                         operatorId,
                         operatorKey,
+                        memo,
                         decimals,
                         enableAdmin,
                         enableFreeze,
@@ -362,7 +374,7 @@ export class Worker extends NatsService{
                     const freezeKey = enableFreeze ? PrivateKey.generate() : null;
                     const kycKey = enableKYC ? PrivateKey.generate() : null;
                     const wipeKey = enableWipe ? PrivateKey.generate() : null;
-                    const tokenMemo = '';
+                    const tokenMemo = memo || '';
                     const tokenId = await client.newToken(
                         tokenName,
                         tokenSymbol,
@@ -393,6 +405,8 @@ export class Worker extends NatsService{
                         kycKey: kycKey ? kycKey.toString() : null,
                         wipeKey: wipeKey ? wipeKey.toString() : null
                     }
+                    client.destroy();
+
                     break;
                 }
 
@@ -427,6 +441,7 @@ export class Worker extends NatsService{
                         kycKey: changes.kycKey ? changes.kycKey.toString() : null,
                         wipeKey: changes.wipeKey ? changes.wipeKey.toString() : null
                     }
+                    client.destroy();
 
                     break;
                 }
@@ -444,6 +459,7 @@ export class Worker extends NatsService{
                         TokenId.fromString(tokenId),
                         HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key')
                     )
+                    client.destroy();
 
                     break;
                 }
@@ -456,6 +472,7 @@ export class Worker extends NatsService{
                     } else {
                         result.data = await client.dissociate(tokenId, userID, userKey);
                     }
+                    client.destroy();
 
                     break;
                 }
@@ -477,6 +494,7 @@ export class Worker extends NatsService{
                     } else {
                         result.data = await client.revokeKyc(tokenId, userHederaAccountId, kycKey);
                     }
+                    client.destroy();
 
                     break;
                 }
@@ -497,6 +515,7 @@ export class Worker extends NatsService{
                     } else {
                         result.data = await client.unfreeze(tokenId, userHederaAccountId, freezeKey);
                     }
+                    client.destroy();
 
                     break;
                 }
@@ -514,6 +533,8 @@ export class Worker extends NatsService{
                         data = [new Uint8Array(Buffer.from(metaData))];
                     }
                     result.data = await client.mintNFT(tokenId, supplyKey, data, transactionMemo);
+                    client.destroy();
+
                     break;
                 }
 
@@ -531,6 +552,8 @@ export class Worker extends NatsService{
                     } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     result.data = await client.transferNFT(tokenId, targetAccount, treasuryId, treasuryKey, element, transactionMemo);
+                    client.destroy();
+
                     break;
                 }
 
@@ -538,6 +561,8 @@ export class Worker extends NatsService{
                     const { hederaAccountId, hederaAccountKey, dryRun, tokenId, supplyKey, tokenValue, transactionMemo } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     result.data = await client.mint(tokenId, supplyKey, tokenValue, transactionMemo);
+                    client.destroy();
+
                     break;
                 }
 
@@ -555,6 +580,8 @@ export class Worker extends NatsService{
                     } = task.data;
                     const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     result.data = await client.transfer(tokenId, targetAccount, treasuryId, treasuryKey, tokenValue, transactionMemo);
+                    client.destroy();
+
                     break;
                 }
 
@@ -576,6 +603,8 @@ export class Worker extends NatsService{
                         await client.wipe(token.tokenId, targetAccount, wipeKey, tokenValue, uuid);
                         result.data = {}
                     }
+                    client.destroy();
+
                     break;
                 }
 
@@ -600,6 +629,7 @@ export class Worker extends NatsService{
                         submitKey,
                         topicMemo
                     );
+                    client.destroy();
 
                     break;
                 }
@@ -613,6 +643,7 @@ export class Worker extends NatsService{
                     } = task.data;
                     const client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
                     result.data = await client.getTopicMessage(timeStamp);
+                    client.destroy();
 
                     break;
                 }
@@ -626,6 +657,7 @@ export class Worker extends NatsService{
                     } = task.data;
                     const client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
                     result.data = await client.getTopicMessages(topic);
+                    client.destroy();
 
                     break;
                 }
@@ -643,7 +675,9 @@ export class Worker extends NatsService{
                         hederaAccountKey,
                         topicKey,
                         bytecodeFileId,
+                        memo
                     } = task.data;
+                    const contractMemo = memo || '';
                     const client = new HederaSDKHelper(
                         hederaAccountId,
                         hederaAccountKey,
@@ -652,8 +686,11 @@ export class Worker extends NatsService{
                     );
                     result.data = await client.createContract(
                         bytecodeFileId,
-                        new ContractFunctionParameters().addString(topicKey)
+                        new ContractFunctionParameters().addString(topicKey),
+                        contractMemo
                     );
+                    client.destroy();
+
                     break;
                 }
 
@@ -674,6 +711,8 @@ export class Worker extends NatsService{
                         contractId, 'addUser',
                         new ContractFunctionParameters().addAddress(AccountId.fromString(userId).toSolidityAddress())
                     );
+                    client.destroy();
+
                     break;
                 }
 
@@ -701,21 +740,23 @@ export class Worker extends NatsService{
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addUint32(Math.floor(baseTokenCount || 0))
                             .addUint32(Math.floor(oppositeTokenCount || 0)),
                         grantKycKeys
                     );
+                    client.destroy();
+
                     break;
                 }
 
@@ -731,15 +772,19 @@ export class Worker extends NatsService{
                         null,
                         networkOptions
                     );
-                    result.data = AccountId.fromSolidityAddress(
-                        (
-                            await client.contractQuery(
-                                contractId,
-                                'getOwner',
-                                new ContractFunctionParameters()
-                            )
-                        ).getAddress()
-                    ).toString();
+                    const address = await client.contractQuery(
+                        contractId,
+                        'getOwner',
+                        new ContractFunctionParameters()
+                    );
+                    const owner = AccountId.fromSolidityAddress(address.getAddress()).toString();
+                    const info = await client.getContractInfo(contractId);
+                    result.data = {
+                        owner,
+                        memo: info.contractMemo
+                    };
+                    client.destroy();
+
                     break;
                 }
 
@@ -759,6 +804,8 @@ export class Worker extends NatsService{
                         contractId, 'checkStatus',
                         new ContractFunctionParameters()
                     )).getBool();
+                    client.destroy();
+
                     break;
                 }
 
@@ -788,19 +835,21 @@ export class Worker extends NatsService{
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             ),
                         wipeKeys
                     );
+                    client.destroy();
+
                     break;
                 }
 
@@ -825,18 +874,20 @@ export class Worker extends NatsService{
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                     );
+                    client.destroy();
+
                     break;
                 }
 
@@ -861,15 +912,15 @@ export class Worker extends NatsService{
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                     );
@@ -878,6 +929,8 @@ export class Worker extends NatsService{
                         oppositeTokenRate: contractQueryResult.getUint32(1),
                         contractId
                     };
+                    client.destroy();
+
                     break;
                 }
 
@@ -906,15 +959,15 @@ export class Worker extends NatsService{
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addUint32(baseTokenCount)
@@ -931,6 +984,8 @@ export class Worker extends NatsService{
                                     : [0]
                             )
                     );
+                    client.destroy();
+
                     break;
                 }
 
@@ -959,15 +1014,15 @@ export class Worker extends NatsService{
                             .addAddress(
                                 baseTokenId
                                     ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
+                                        baseTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                             .addAddress(
                                 oppositeTokenId
                                     ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
+                                        oppositeTokenId
+                                    ).toSolidityAddress()
                                     : new TokenId(0).toSolidityAddress()
                             )
                     );
@@ -975,6 +1030,8 @@ export class Worker extends NatsService{
                         baseTokenCount: contractQueryResult.getUint32(0) || contractQueryResult.getUint32(2),
                         oppositeTokenCount: contractQueryResult.getUint32(1) || contractQueryResult.getUint32(3)
                     }
+                    client.destroy();
+
                     break;
                 }
 
@@ -995,6 +1052,8 @@ export class Worker extends NatsService{
                         }
                     });
                     result.data = serials;
+                    client.destroy();
+
                     break;
                 }
 
