@@ -4,7 +4,7 @@ There are items to be submitted to process open source policies and add it to op
 
 * [Policy Description](guidance-for-open-source-policy.md#policy-description)
 * [User Guide](guidance-for-open-source-policy.md#user-guide)
-* [Automated policy workflow, with valid sample MRV data or MRV data generator/simulator](guidance-for-open-source-policy.md#automated-policy-workflow)
+* [Automated policy workflow, with valid sample input data](guidance-for-open-source-policy.md#automated-policy-workflow-with-valid-sample-input-data)
 * [IPFS timestamps, files](guidance-for-open-source-policy.md#timestamps-and-files)
 
 ## Policy Description
