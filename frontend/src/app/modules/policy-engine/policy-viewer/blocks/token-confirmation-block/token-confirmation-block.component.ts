@@ -111,7 +111,7 @@ export class TokenConfirmationBlockComponent implements OnInit {
                     action: 'confirm',
                 })
                 .subscribe(
-                    () => undefined,
+                    () => {},
                     (e) => {
                         console.error(e.error);
                         this.loading = false;

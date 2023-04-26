@@ -147,7 +147,7 @@ export class RolesBlockComponent implements OnInit {
             this.policyEngineService
                 .setBlockData(this.id, this.policyId, data)
                 .subscribe(
-                    () => undefined,
+                    () => {},
                     (e) => {
                         console.error(e.error);
                         this.loading = false;

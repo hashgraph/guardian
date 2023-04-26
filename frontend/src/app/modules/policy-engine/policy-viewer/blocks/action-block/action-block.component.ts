@@ -138,12 +138,15 @@ export class ActionBlockComponent implements OnInit {
         this.setObjectValue(this.data, this.field, value);
         this.value = this.getObjectValue(this.data, this.field);
         this.visible = this.options.findIndex((o: any) => o.value == this.value) == -1;
-        this.policyEngineService.setBlockData(this.id, this.policyId, this.data).subscribe(() => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, this.data)
+            .subscribe(
+                () => {},
+                (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                }
+            );
     }
 
     setStatus(row: any, status: string) {
@@ -185,11 +188,14 @@ export class ActionBlockComponent implements OnInit {
             return;
         }
         this.setObjectValue(this.data, this.field, this.currentValue);
-        this.policyEngineService.setBlockData(this.id, this.policyId, this.data).subscribe(() => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, this.data)
+            .subscribe(
+                () => {},
+                (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                }
+            );
     }
 }

@@ -181,12 +181,18 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
     onSelect(button: any) {
         this.setObjectValue(this.data, button.field, button.value);
         this.commonVisible = false;
-        this.policyEngineService.setBlockData(this.id, this.policyId, { document: this.data, tag: button.tag }).subscribe(() => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, {
+                document: this.data,
+                tag: button.tag,
+            })
+            .subscribe(
+                () => {},
+                (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                }
+            );
     }
 
     onSelectDialog(button: any) {

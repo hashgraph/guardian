@@ -1,4 +1,4 @@
-import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
+import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
 import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 import { IPolicyDocument, IPolicyEventState, IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
@@ -8,7 +8,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
 /**
  * Set document relationships action
  */
-@EventBlock({
+@BasicBlock({
     blockType: 'setRelationshipsBlock',
     commonBlock: false,
     about: {
