@@ -67,6 +67,7 @@
     padding-bottom: 70px;
     max-height: calc(70 * var(--vh)) !important;
     position: relative;
+    overflow: visible;
 }
 
 .description {
@@ -208,7 +209,7 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         column-gap: 10px;
-        
+
         background-color: white;
         margin-bottom: 0;
         padding: 20px 0;
