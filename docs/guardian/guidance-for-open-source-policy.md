@@ -44,13 +44,13 @@ Second step is to provide a detailed User Guide of the policy, meaning, a step b
 
 For reference, please check [iREC 7 Demo UI Guide.](demo-guide/renewable-energy-credits/irec-7-demo-guide.md)
 
-## Automated Policy Workflow with valid sample MRV data or MRV data generator/simulator
+## Automated Policy Workflow with valid sample Input data&#x20;
 
-To run the submitted policy, it would be good to have all the valid sample MRV data, so that we can test it with that data and validate the policy with expected Trustchain and no. of tokens minted.
+To run the submitted policy, it would be good to have all the valid sample input data, which is required to run the policy from start to end such as data required for all the forms present in the policy, etc. , so that we can test it with that data and validate the policy with an expected Trustchain and no. of tokens minted.
 
 The data can be submitted in formats such as Excel or JSON.
 
-Please check a example MRV Data of iREC 4 in JSON format:
+Please check a sample input data for running iREC 4 policy:
 
 {% file src="../.gitbook/assets/registrant data.json" %}
 
