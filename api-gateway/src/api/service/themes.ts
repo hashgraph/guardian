@@ -25,19 +25,19 @@ themesAPI.post('/', async (req: AuthenticatedRequest, res: Response, next: NextF
 /**
  * Update Theme
  */
-themesAPI.put('/', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+themesAPI.put('/:themeId', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const newTheme = req.body;
         const guardians = new Guardians();
-        if (!newTheme?.id) {
-            return next(createError(404, 'Theme not found.'));
+        if (!req.params.themeId) {
+            return next(createError(422, 'Invalid theme id'));
         }
-        const oldTheme = await guardians.getThemeById(newTheme.id);
+        const oldTheme = await guardians.getThemeById(req.params.themeId);
         if (!oldTheme) {
             return next(createError(404, 'Theme not found.'));
         }
-        const theme = await guardians.updateTheme(newTheme.id, newTheme, user.did);
+        const theme = await guardians.updateTheme(req.params.themeId, newTheme, user.did);
         return res.json(theme);
     } catch (error) {
         new Logger().error(error, ['API_GATEWAY']);

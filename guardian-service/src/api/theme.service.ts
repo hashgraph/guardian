@@ -67,6 +67,7 @@ export async function themeAPI(): Promise<void> {
             delete theme._id;
             delete theme.id;
             theme.owner = owner;
+            theme.uuid = GenerateUUIDv4();
 
             const item = await DatabaseServer.createTheme(theme);
             return new MessageResponse(item);

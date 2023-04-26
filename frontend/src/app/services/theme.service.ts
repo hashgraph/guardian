@@ -37,7 +37,7 @@ export class ThemeService {
     }
 
     public update(theme: Theme): Observable<any> {
-        return this.http.put<any>(`${this.url}/`, theme.toJson());
+        return this.http.put<any>(`${this.url}/${theme.id}`, theme.toJson());
     }
 
     public export(id: string): Observable<ArrayBuffer> {
