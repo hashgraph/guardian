@@ -29,7 +29,7 @@ export type PolicyActionMap = Map<string, Map<PolicyInputEventType, EventCallbac
  * @param type
  * @param args
  */
-export function blockUpdate(type: string, args: any[]) {
+export function blockUpdate(type: string, ...args) {
     new BlockTreeGenerator().sendMessage(PolicyEvents.BLOCK_UPDATE_BROADCAST, { type, args });
 }
 
@@ -38,34 +38,125 @@ export function blockUpdate(type: string, args: any[]) {
  */
 export class PolicyComponentsUtils {
     /**
+     * Block update timeout
+     */
+    private static _blockUpdateTimeout: any;
+
+    /**
+     * Update block map
+     */
+    private static readonly _updateBlockMap: Map<string, Set<string>> = new Map<
+        string,
+        Set<string>
+    >();
+
+    /**
      * Block update function
      */
-    public static BlockUpdateFn: (uuid: string, state: any, user: IPolicyUser, tag?: string) => Promise<void> = async (...args) => { blockUpdate('update', args); };
+    public static BlockUpdateFn = (
+        block: IPolicyBlock,
+        state: any,
+        user: IPolicyUser,
+        tag?: string
+    ) => {
+        let blocksToUpdate = PolicyComponentsUtils._updateBlockMap.get(
+            user?.did
+        );
+        if (!blocksToUpdate) {
+            blocksToUpdate = new Set<string>();
+            PolicyComponentsUtils._updateBlockMap.set(
+                user?.did,
+                blocksToUpdate
+            );
+        }
+        blocksToUpdate.add(block?.uuid);
+        if (!PolicyComponentsUtils._blockUpdateTimeout) {
+            PolicyComponentsUtils._blockUpdateTimeout = setTimeout(() => {
+                const commonBlocksToUpdate =
+                    PolicyComponentsUtils.getCommonBlocksToUpdate(
+                        block?.policyInstance?.config,
+                        blocksToUpdate
+                    );
+                blockUpdate(
+                    'update',
+                    Array.from(commonBlocksToUpdate),
+                    state,
+                    user,
+                    tag
+                );
+                PolicyComponentsUtils._blockUpdateTimeout = null;
+                blocksToUpdate.clear();
+            }, 2000);
+        }
+    };
+    /**
+     * Returns blocks to update
+     * @param root Root
+     * @param blocksToUpdate Blocks to update
+     * @param result Result
+     * @returns
+     */
+    private static getCommonBlocksToUpdate(
+        root: any,
+        blocksToUpdate: Set<string>,
+        result = new Set<string>()
+    ) {
+        if (!blocksToUpdate.has(root?.id)) {
+            root?.children?.forEach((child) => {
+                PolicyComponentsUtils.getCommonBlocksToUpdate(
+                    child,
+                    blocksToUpdate,
+                    result
+                );
+            });
+        } else {
+            result.add(root?.id);
+        }
+        return result;
+    }
+
     /**
      * Block error function
      */
-    public static BlockErrorFn: (blockType: string, message: any, user: IPolicyUser) => Promise<void> = async (...args) => { blockUpdate('error', args); };
+    public static BlockErrorFn: (
+        blockType: string,
+        message: any,
+        user: IPolicyUser
+    ) => Promise<void> = async (...args) => {
+        blockUpdate('error', args);
+    };
     /**
      * Update user info function
      */
-    public static UpdateUserInfoFn: (user: IPolicyUser, policy: Policy) => Promise<void> = async (...args) => { blockUpdate('update-user', args); };
+    public static UpdateUserInfoFn: (
+        user: IPolicyUser,
+        policy: Policy
+    ) => Promise<void> = async (...args) => {
+        blockUpdate('update-user', args);
+    };
     /**
      * External Event function
      */
-    public static ExternalEventFn: (event: ExternalEvent<any>) => Promise<void> = async (...args) => { blockUpdate('external', args); };
+    public static ExternalEventFn: (
+        event: ExternalEvent<any>
+    ) => Promise<void> = async (...args) => {
+        blockUpdate('external', args);
+    };
 
     /**
      * Block ID list
      * policyId -> Blocks
      * @private
      */
-    private static readonly BlockIdListByPolicyId: Map<string, string[]> = new Map();
+    private static readonly BlockIdListByPolicyId: Map<string, string[]> =
+        new Map();
     /**
      * External data blocks map
      * Block UUID -> Block component
      * @private
      */
-    public static readonly ExternalDataBlocks: Map<string, IPolicyBlock> = new Map();
+    public static readonly ExternalDataBlocks: Map<string, IPolicyBlock> =
+        new Map();
     /**
      * Block map
      * Block UUID -> Block component
@@ -77,34 +168,41 @@ export class PolicyComponentsUtils {
      * policyId -> Block tag -> Block UUID
      * @private
      */
-    private static readonly TagMapByPolicyId: Map<string, PolicyTagMap> = new Map();
+    private static readonly TagMapByPolicyId: Map<string, PolicyTagMap> =
+        new Map();
     /**
      * Policy actions map
      * policyId -> blockId -> EventName -> Function
      * @private
      */
-    private static readonly ActionMapByPolicyId: Map<string, PolicyActionMap> = new Map();
+    private static readonly ActionMapByPolicyId: Map<string, PolicyActionMap> =
+        new Map();
 
     /**
      * Policy Instance map
      * policyId -> PolicyInstance
      * @private
      */
-    private static readonly PolicyById: Map<string, IPolicyInstance> = new Map();
+    private static readonly PolicyById: Map<string, IPolicyInstance> =
+        new Map();
 
     /**
      * Document cache fieldsmap
      * policyId -> fields
      * @private
      */
-    private static readonly DocumentCacheFieldsMap: Map<string, Set<string>> = new Map();
+    private static readonly DocumentCacheFieldsMap: Map<string, Set<string>> =
+        new Map();
 
     /**
      * Policy Internal Events
      * policyId -> eventType -> callback
      * @private
      */
-    private static readonly InternalListeners: Map<string, Map<string, Function[]>> = new Map();
+    private static readonly InternalListeners: Map<
+        string,
+        Map<string, Function[]>
+    > = new Map();
 
     /**
      * Get document cache fields
@@ -138,7 +236,11 @@ export class PolicyComponentsUtils {
      * @param fn
      * @constructor
      */
-    public static RegisterAction(target: IPolicyBlock, eventType: PolicyInputEventType, fn: EventCallback<any>): void {
+    public static RegisterAction(
+        target: IPolicyBlock,
+        eventType: PolicyInputEventType,
+        fn: EventCallback<any>
+    ): void {
         const policyId = target.policyId;
         const blockUUID = target.uuid;
 
@@ -180,20 +282,40 @@ export class PolicyComponentsUtils {
         if (!sourceBlock || !targetBlock) {
             return null;
         }
-        if (PolicyComponentsUtils.ActionMapByPolicyId.has(targetBlock.policyId)) {
-            const policyMap = PolicyComponentsUtils.ActionMapByPolicyId.get(targetBlock.policyId);
+        if (
+            PolicyComponentsUtils.ActionMapByPolicyId.has(targetBlock.policyId)
+        ) {
+            const policyMap = PolicyComponentsUtils.ActionMapByPolicyId.get(
+                targetBlock.policyId
+            );
             if (policyMap.has(targetBlock.uuid)) {
                 const blockMap = policyMap.get(targetBlock.uuid);
 
                 if (targetBlock.blockType === 'module') {
                     if (blockMap.has(PolicyInputEventType.ModuleEvent)) {
-                        const fn = blockMap.get(PolicyInputEventType.ModuleEvent);
-                        return new PolicyLink(inputName, outputName, sourceBlock, targetBlock, actor, fn);
+                        const fn = blockMap.get(
+                            PolicyInputEventType.ModuleEvent
+                        );
+                        return new PolicyLink(
+                            inputName,
+                            outputName,
+                            sourceBlock,
+                            targetBlock,
+                            actor,
+                            fn
+                        );
                     }
                 } else {
                     if (blockMap.has(inputName)) {
                         const fn = blockMap.get(inputName);
-                        return new PolicyLink(inputName, outputName, sourceBlock, targetBlock, actor, fn);
+                        return new PolicyLink(
+                            inputName,
+                            outputName,
+                            sourceBlock,
+                            targetBlock,
+                            actor,
+                            fn
+                        );
                     }
                 }
             }
@@ -218,16 +340,28 @@ export class PolicyComponentsUtils {
         actor: EventActor
     ): void {
         if (!source || !target) {
-            PolicyComponentsUtils.logEvents(`link error: ${source?.uuid}(${source?.tag})(${output}) -> ${target?.uuid}(${target?.tag})(${input})`);
+            PolicyComponentsUtils.logEvents(
+                `link error: ${source?.uuid}(${source?.tag})(${output}) -> ${target?.uuid}(${target?.tag})(${input})`
+            );
             return;
         }
-        const link = PolicyComponentsUtils.CreateLink(source, output, target, input, actor);
+        const link = PolicyComponentsUtils.CreateLink(
+            source,
+            output,
+            target,
+            input,
+            actor
+        );
         if (link) {
             link.source.addSourceLink(link);
             link.target.addTargetLink(link);
-            PolicyComponentsUtils.logEvents(`link registered: ${source?.uuid}(${source?.tag})(${output}) -> ${target?.uuid}(${target?.tag})(${input})`);
+            PolicyComponentsUtils.logEvents(
+                `link registered: ${source?.uuid}(${source?.tag})(${output}) -> ${target?.uuid}(${target?.tag})(${input})`
+            );
         } else {
-            PolicyComponentsUtils.logEvents(`link error: ${source?.uuid}(${source?.tag})(${output}) -> ${target?.uuid}(${target?.tag})(${input})`);
+            PolicyComponentsUtils.logEvents(
+                `link error: ${source?.uuid}(${source?.tag})(${output}) -> ${target?.uuid}(${target?.tag})(${input})`
+            );
         }
     }
 
@@ -248,7 +382,10 @@ export class PolicyComponentsUtils {
      * @param component
      * @constructor
      */
-    private static RegisterComponent(policyId: string, component: IPolicyBlock): void {
+    private static RegisterComponent(
+        policyId: string,
+        component: IPolicyBlock
+    ): void {
         PolicyComponentsUtils.BlockByBlockId.set(component.uuid, component);
         let tagMap: PolicyTagMap;
         if (!PolicyComponentsUtils.TagMapByPolicyId.has(policyId)) {
@@ -261,20 +398,29 @@ export class PolicyComponentsUtils {
         let blockList: string[];
         if (!PolicyComponentsUtils.BlockIdListByPolicyId.has(policyId)) {
             blockList = [];
-            PolicyComponentsUtils.BlockIdListByPolicyId.set(policyId, blockList);
+            PolicyComponentsUtils.BlockIdListByPolicyId.set(
+                policyId,
+                blockList
+            );
         } else {
-            blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+            blockList =
+                PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
         }
         blockList.push(component.uuid);
 
         if (component.tag) {
             if (tagMap.has(component.tag)) {
-                throw new Error(`Block with tag ${component.tag} already exist`);
+                throw new Error(
+                    `Block with tag ${component.tag} already exist`
+                );
             }
             tagMap.set(component.tag, component.uuid);
         }
         if (component.blockClassName === 'ExternalData') {
-            PolicyComponentsUtils.ExternalDataBlocks.set(component.uuid, component);
+            PolicyComponentsUtils.ExternalDataBlocks.set(
+                component.uuid,
+                component
+            );
         }
     }
 
@@ -294,7 +440,8 @@ export class PolicyComponentsUtils {
         parent: IPolicyBlock,
         allInstances: IPolicyBlock[]
     ): IPolicyBlock {
-        const { blockType, children, ...params }: ISerializedBlockExtend = block;
+        const { blockType, children, ...params }: ISerializedBlockExtend =
+            block;
 
         if (parent) {
             params._parent = parent;
@@ -323,7 +470,11 @@ export class PolicyComponentsUtils {
         if (children && children.length) {
             for (const child of children) {
                 PolicyComponentsUtils.BuildInstance(
-                    policy, policyId, child, blockInstance, allInstances
+                    policy,
+                    policyId,
+                    child,
+                    blockInstance,
+                    allInstances
                 );
             }
         }
@@ -342,11 +493,14 @@ export class PolicyComponentsUtils {
         policy: Policy,
         policyId: string,
         allInstances: IPolicyBlock[]
-
     ): IPolicyInterfaceBlock {
         const configObject = policy.config as ISerializedBlock;
         const model = PolicyComponentsUtils.BuildInstance(
-            policy, policyId, configObject, null, allInstances
+            policy,
+            policyId,
+            configObject,
+            null,
+            allInstances
         );
 
         return model as any;
@@ -359,18 +513,21 @@ export class PolicyComponentsUtils {
      * @param policy
      * @constructor
      */
-    public static async RegisterPolicyInstance(policyId: string, policy: Policy) {
+    public static async RegisterPolicyInstance(
+        policyId: string,
+        policy: Policy
+    ) {
         const dryRun = policy.status === PolicyType.DRY_RUN ? policyId : null;
         const databaseServer = new DatabaseServer(dryRun);
         const policyInstance: IPolicyInstance = {
             policyId,
             dryRun,
             databaseServer,
-            isMultipleGroup: !!(policy.policyGroups?.length),
+            isMultipleGroup: !!policy.policyGroups?.length,
             instanceTopicId: policy.instanceTopicId,
             synchronizationTopicId: policy.synchronizationTopicId,
             owner: policy.owner,
-        }
+        };
         PolicyComponentsUtils.PolicyById.set(policyId, policyInstance);
     }
 
@@ -381,10 +538,17 @@ export class PolicyComponentsUtils {
      */
     public static async RegisterBlockTree(allInstances: IPolicyBlock[]) {
         for (const instance of allInstances) {
-            PolicyComponentsUtils.RegisterComponent(instance.policyId, instance);
+            PolicyComponentsUtils.RegisterComponent(
+                instance.policyId,
+                instance
+            );
 
             for (const event of instance.actions) {
-                PolicyComponentsUtils.RegisterAction(instance, event[0], event[1]);
+                PolicyComponentsUtils.RegisterAction(
+                    instance,
+                    event[0],
+                    event[1]
+                );
             }
 
             await instance.beforeInit();
@@ -403,7 +567,8 @@ export class PolicyComponentsUtils {
      * @constructor
      */
     public static async UnregisterBlocks(policyId: string) {
-        const blockList = PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
+        const blockList =
+            PolicyComponentsUtils.BlockIdListByPolicyId.get(policyId);
         for (const uuid of blockList) {
             const component = PolicyComponentsUtils.BlockByBlockId.get(uuid);
             if (component) {
@@ -435,23 +600,29 @@ export class PolicyComponentsUtils {
     private static async RegisterDefaultEvent(instance: IPolicyBlock) {
         if (!instance.options.stopPropagation) {
             PolicyComponentsUtils.RegisterLink(
-                instance, PolicyOutputEventType.RunEvent,
-                instance.next, PolicyInputEventType.RunEvent,
+                instance,
+                PolicyOutputEventType.RunEvent,
+                instance.next,
+                PolicyInputEventType.RunEvent,
                 EventActor.EventInitiator
             );
         }
         if (instance.parent?.blockClassName === 'ContainerBlock') {
             const parent = instance.parent as IPolicyContainerBlock;
             PolicyComponentsUtils.RegisterLink(
-                instance, PolicyOutputEventType.RefreshEvent,
-                parent, PolicyInputEventType.RefreshEvent,
+                instance,
+                PolicyOutputEventType.RefreshEvent,
+                parent,
+                PolicyInputEventType.RefreshEvent,
                 EventActor.EventInitiator
             );
         }
         if (instance.parent?.blockType === 'interfaceStepBlock') {
             PolicyComponentsUtils.RegisterLink(
-                instance, PolicyOutputEventType.ReleaseEvent,
-                instance.parent, PolicyInputEventType.ReleaseEvent,
+                instance,
+                PolicyOutputEventType.ReleaseEvent,
+                instance.parent,
+                PolicyInputEventType.ReleaseEvent,
                 EventActor.EventInitiator
             );
         }
@@ -467,15 +638,49 @@ export class PolicyComponentsUtils {
         for (const event of instance.events) {
             if (!event.disabled) {
                 if (event.source === instance.tag) {
-                    const target = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.target);
-                    PolicyComponentsUtils.RegisterLink(instance, event.output, target, event.input, event.actor);
+                    const target =
+                        PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(
+                            instance.policyId,
+                            event.target
+                        );
+                    PolicyComponentsUtils.RegisterLink(
+                        instance,
+                        event.output,
+                        target,
+                        event.input,
+                        event.actor
+                    );
                 } else if (event.target === instance.tag) {
-                    const source = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.source);
-                    PolicyComponentsUtils.RegisterLink(source, event.output, instance, event.input, event.actor);
+                    const source =
+                        PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(
+                            instance.policyId,
+                            event.source
+                        );
+                    PolicyComponentsUtils.RegisterLink(
+                        source,
+                        event.output,
+                        instance,
+                        event.input,
+                        event.actor
+                    );
                 } else {
-                    const target = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.target);
-                    const source = PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(instance.policyId, event.source);
-                    PolicyComponentsUtils.RegisterLink(source, event.output, target, event.input, event.actor);
+                    const target =
+                        PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(
+                            instance.policyId,
+                            event.target
+                        );
+                    const source =
+                        PolicyComponentsUtils.GetBlockByTag<IPolicyBlock>(
+                            instance.policyId,
+                            event.source
+                        );
+                    PolicyComponentsUtils.RegisterLink(
+                        source,
+                        event.output,
+                        target,
+                        event.input,
+                        event.actor
+                    );
                 }
             }
         }
@@ -511,7 +716,9 @@ export class PolicyComponentsUtils {
      * Get block instance by uuid
      * @param uuid
      */
-    public static GetBlockByUUID<T extends (IPolicyInterfaceBlock | IPolicyBlock)>(uuid: string): T {
+    public static GetBlockByUUID<
+        T extends IPolicyInterfaceBlock | IPolicyBlock
+    >(uuid: string): T {
         return PolicyComponentsUtils.BlockByBlockId.get(uuid) as T;
     }
 
@@ -520,8 +727,12 @@ export class PolicyComponentsUtils {
      * @param policyId
      * @param tag
      */
-    public static GetBlockByTag<T extends (IPolicyInterfaceBlock | IPolicyBlock)>(policyId: string, tag: string): T {
-        const uuid = PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(tag);
+    public static GetBlockByTag<T extends IPolicyInterfaceBlock | IPolicyBlock>(
+        policyId: string,
+        tag: string
+    ): T {
+        const uuid =
+            PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(tag);
         return PolicyComponentsUtils.BlockByBlockId.get(uuid) as T;
     }
 
@@ -556,7 +767,9 @@ export class PolicyComponentsUtils {
      * Return block options object
      * @param obj
      */
-    public static GetBlockUniqueOptionsObject(obj: any): { [key: string]: any } {
+    public static GetBlockUniqueOptionsObject(obj: any): {
+        [key: string]: any;
+    } {
         return obj.options;
     }
 
@@ -572,10 +785,17 @@ export class PolicyComponentsUtils {
      * @param policy
      * @param user
      */
-    public static async GetGroups(policy: IPolicyInstance, user: IPolicyUser): Promise<any[]> {
-        return await policy.databaseServer.getGroupsByUser(policy.policyId, user.did, {
-            fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active']
-        });
+    public static async GetGroups(
+        policy: IPolicyInstance,
+        user: IPolicyUser
+    ): Promise<any[]> {
+        return await policy.databaseServer.getGroupsByUser(
+            policy.policyId,
+            user.did,
+            {
+                fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active'],
+            }
+        );
     }
 
     /**
@@ -584,8 +804,16 @@ export class PolicyComponentsUtils {
      * @param user
      * @param uuid
      */
-    public static async SelectGroup(policy: IPolicyInstance, user: IPolicyUser, uuid: string): Promise<void> {
-        await policy.databaseServer.setActiveGroup(policy.policyId, user.did, uuid);
+    public static async SelectGroup(
+        policy: IPolicyInstance,
+        user: IPolicyUser,
+        uuid: string
+    ): Promise<void> {
+        await policy.databaseServer.setActiveGroup(
+            policy.policyId,
+            user.did,
+            uuid
+        );
     }
 
     /**
@@ -593,7 +821,10 @@ export class PolicyComponentsUtils {
      * @param policy
      * @param did
      */
-    public static async GetPolicyInfo(policy: Policy, did: string): Promise<Policy> {
+    public static async GetPolicyInfo(
+        policy: Policy,
+        did: string
+    ): Promise<Policy> {
         const result: any = policy;
         if (policy && did) {
             result.userRoles = [];
@@ -603,7 +834,9 @@ export class PolicyComponentsUtils {
 
             const policyId = policy.id.toString();
             if (policy.status === PolicyType.DRY_RUN) {
-                const activeUser = await DatabaseServer.getVirtualUser(policyId);
+                const activeUser = await DatabaseServer.getVirtualUser(
+                    policyId
+                );
                 if (activeUser) {
                     did = activeUser.did;
                 }
@@ -614,10 +847,11 @@ export class PolicyComponentsUtils {
                 result.userRole = 'Administrator';
             }
 
-            const dryRun = policy.status === PolicyType.DRY_RUN ? policyId : null;
+            const dryRun =
+                policy.status === PolicyType.DRY_RUN ? policyId : null;
             const db = new DatabaseServer(dryRun);
             const groups = await db.getGroupsByUser(policyId, did, {
-                fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active']
+                fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active'],
             });
             for (const group of groups) {
                 if (group.active !== false) {
@@ -629,7 +863,10 @@ export class PolicyComponentsUtils {
 
             result.userGroups = groups;
             if (policy.status === PolicyType.PUBLISH) {
-                const multiPolicy = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, did);
+                const multiPolicy = await DatabaseServer.getMultiPolicy(
+                    policy.instanceTopicId,
+                    did
+                );
                 result.multiPolicyStatus = multiPolicy?.type;
             }
         } else {
@@ -651,7 +888,11 @@ export class PolicyComponentsUtils {
      * Add Internal Event Listener
      * @param type
      */
-    public static AddInternalListener(type: string, policyId: string, callback: Function) {
+    public static AddInternalListener(
+        type: string,
+        policyId: string,
+        callback: Function
+    ) {
         let policyMap = PolicyComponentsUtils.InternalListeners.get(policyId);
         if (!policyMap) {
             policyMap = new Map();
@@ -670,7 +911,11 @@ export class PolicyComponentsUtils {
      * @param type
      * @param data
      */
-    public static async TriggerInternalEvent(type: string, policyId: string, data: any): Promise<void> {
+    public static async TriggerInternalEvent(
+        type: string,
+        policyId: string,
+        data: any
+    ): Promise<void> {
         const policyMap = PolicyComponentsUtils.InternalListeners.get(policyId);
         if (policyMap) {
             const listeners = policyMap.get(type);
@@ -702,7 +947,11 @@ export class PolicyComponentsUtils {
      * @param path
      * @param newValue
      */
-    public static ReplaceObjectValue(data: any, path: string, newValue: Function): void {
+    public static ReplaceObjectValue(
+        data: any,
+        path: string,
+        newValue: Function
+    ): void {
         try {
             const keys = path.split('.');
             let value = data;

@@ -107,13 +107,13 @@ export class PolicyEngineService {
      * @param uuid {string} - id of block
      * @param user {IPolicyUser} - short user object
      */
-    private async stateChangeCb(uuid: string, state: any, user: IPolicyUser) {
+    private async stateChangeCb(blocks: string[], state: any, user: IPolicyUser) {
         if (!user || !user.did) {
             return;
         }
 
         await this.channel.publish('update-block', {
-            uuid,
+            blocks,
             state,
             user
         });

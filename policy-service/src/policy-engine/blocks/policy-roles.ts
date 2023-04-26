@@ -427,7 +427,7 @@ export class PolicyRolesBlock {
 
         await PolicyComponentsUtils.UpdateUserInfoFn(user, ref.policyInstance);
 
-        PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag);
+        PolicyComponentsUtils.BlockUpdateFn(ref.parent, {}, user, ref.tag);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             group: group.uuid,
             role: group.role

@@ -67,7 +67,7 @@ export class DocumentsSourceAddon {
         this.state = oldState;
 
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag);
+        PolicyComponentsUtils.BlockUpdateFn(ref.parent, {}, user, ref.tag);
     }
 
     /**
