@@ -1075,7 +1075,7 @@ __metadata:
     "@types/winston": ^2.4.4
     ajv: ^8.10.0
     ajv-formats: ^2.1.1
-    axios: ^0.25.0
+    axios: ^1.3.6
     bs58: ^4.0.1
     express: ^4.17.1
     js-base64: ^3.6.1
@@ -2823,7 +2823,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api-tests@workspace:api-tests"
   dependencies:
-    axios: ^0.25.0
+    axios: ^1.3.6
     chai: ^4.3.5
     dotenv: ^16.0.1
     mocha: ^9.2.0
@@ -3039,24 +3039,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^0.25.0":
-  version: 0.25.0
-  resolution: "axios@npm:0.25.0"
-  dependencies:
-    follow-redirects: ^1.14.7
-  checksum: 2a8a3787c05f2a0c9c3878f49782357e2a9f38945b93018fb0c4fd788171c43dceefbb577988628e09fea53952744d1ecebde234b561f1e703aa43e0a598a3ad
-  languageName: node
-  linkType: hard
-
-"axios@npm:^0.26.1":
-  version: 0.26.1
-  resolution: "axios@npm:0.26.1"
-  dependencies:
-    follow-redirects: ^1.14.8
-  checksum: d9eb58ff4bc0b36a04783fc9ff760e9245c829a5a1052ee7ca6013410d427036b1d10d04e7380c02f3508c5eaf3485b1ae67bd2adbfec3683704745c8d7a6e1a
-  languageName: node
-  linkType: hard
-
 "axios@npm:^1.3.1":
   version: 1.3.4
   resolution: "axios@npm:1.3.4"
@@ -3065,6 +3047,17 @@ __metadata:
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
   checksum: 7440edefcf8498bc3cdf39de00443e8101f249972c83b739c6e880d9d669fea9486372dbe8739e88b3bf8bb1ad15f6106693f206f078f4516fe8fd47b1c3093c
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.3.6":
+  version: 1.3.6
+  resolution: "axios@npm:1.3.6"
+  dependencies:
+    follow-redirects: ^1.15.0
+    form-data: ^4.0.0
+    proxy-from-env: ^1.1.0
+  checksum: c90497ebf738723654a6e80147dc294186ad9d7b08f95f5a22fd48f826c7e06a576229b8dff3137195ca627349a4312e00fa78e4f1c499250b9860596adef44a
   languageName: node
   linkType: hard
 
@@ -4247,7 +4240,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"delayed-stream@npm:^1.0.0, delayed-stream@npm:~1.0.0":
+"delayed-stream@npm:~1.0.0":
   version: 1.0.0
   resolution: "delayed-stream@npm:1.0.0"
   checksum: 46fe6e83e2cb1d85ba50bd52803c68be9bd953282fa7096f51fc29edd5d67ff84ff753c51966061e5ba7cb5e47ef6d36a91924eddb7f3f3483b1c560f77a0020
@@ -5129,16 +5122,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.14.7, follow-redirects@npm:^1.14.8":
-  version: 1.15.0
-  resolution: "follow-redirects@npm:1.15.0"
-  peerDependenciesMeta:
-    debug:
-      optional: true
-  checksum: eaec81c3e0ae57aae2422e38ad3539d0e7279b3a63f9681eeea319bb683dea67502c4e097136b8ce9721542b4e236e092b6b49e34e326cdd7733c274f0a3f378
-  languageName: node
-  linkType: hard
-
 "follow-redirects@npm:^1.15.0":
   version: 1.15.2
   resolution: "follow-redirects@npm:1.15.2"
@@ -5625,7 +5608,7 @@ __metadata:
     "@types/node": ^18.16.0
     ajv: ^8.10.0
     ajv-formats: ^2.1.1
-    axios: ^0.25.0
+    axios: ^1.3.6
     bs58: ^4.0.1
     chai: 4.3.4
     cors: ^2.8.5
@@ -5654,8 +5637,6 @@ __metadata:
 "guardian@workspace:.":
   version: 0.0.0-use.local
   resolution: "guardian@workspace:."
-  dependencies:
-    delayed-stream: ^1.0.0
   languageName: unknown
   linkType: soft
 
@@ -8297,7 +8278,7 @@ __metadata:
     "@transmute/security-context": 0.7.0-unstable.80
     "@transmute/vc.js": 0.7.0-unstable.80
     "@types/express": ^4.17.13
-    axios: ^0.26.1
+    axios: ^1.3.6
     express: ^4.17.3
     jose: 4.3.8
     nodemon: ^2.0.12
@@ -9280,7 +9261,7 @@ __metadata:
     "@types/node": ^18.16.0
     ajv: ^8.10.0
     ajv-formats: ^2.1.1
-    axios: ^0.25.0
+    axios: ^1.3.6
     bs58: ^4.0.1
     chai: 4.3.4
     cors: ^2.8.5
@@ -11740,7 +11721,7 @@ __metadata:
     "@transmute/security-context": ^0.7.0-unstable.80
     "@transmute/vc.js": ^0.7.0-unstable.80
     "@types/node": ^18.16.0
-    axios: ^0.25.0
+    axios: ^1.3.6
     axios-retry: ^3.2.4
     chai: 4.3.4
     cross-blob: ^2.0.1
