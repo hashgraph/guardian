@@ -14,7 +14,9 @@ const fieldsValidation = {
   oppositeTokenSerials: yup.array().of(yup.number())
     .nullable().when(['baseTokenId', 'oppositeTokenId'], {
       is: false,
-      then: yup.array().of(yup.number()).required('The field oppositeTokenSerials must be provided')
+      then: () => {
+        return yup.array().of(yup.number()).required('The field oppositeTokenSerials must be provided')
+      }
     }),
   requestId: yup.string().required('The requestId field is required'),
   name: yup.string().min(1, 'The name field can not be empty').required('The name field is required'),
