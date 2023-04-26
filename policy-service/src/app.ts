@@ -5,6 +5,7 @@ import {
 } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from '@helpers/policy-container';
+import { startMetricsServer } from './utils/metrics';
 
 export const obj = {};
 
@@ -31,6 +32,8 @@ Promise.all([
     await new Logger().info('Policy service started', ['GUARDIAN_SERVICE']);
 
     await state.updateState(ApplicationStates.READY);
+
+    startMetricsServer();
 }, (reason) => {
     console.log(reason);
     process.exit(0);

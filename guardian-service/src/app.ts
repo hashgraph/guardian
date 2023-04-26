@@ -56,6 +56,7 @@ import { demoAPI } from '@api/demo.service';
 import { SecretManager } from '@guardian/common/dist/secret-manager';
 import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
 import { themeAPI } from '@api/theme.service';
+import { startMetricsServer } from './utils/metrics';
 
 export const obj = {};
 
@@ -291,6 +292,8 @@ Promise.all([
         }, 1000)
     });
     await validator.validate();
+
+    startMetricsServer();
 }, (reason) => {
     console.log(reason);
     process.exit(0);

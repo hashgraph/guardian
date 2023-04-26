@@ -18,6 +18,7 @@ import { ImportKeysFromDatabase } from '@helpers/import-keys-from-database';
 import process from 'process';
 import { SecretManager } from '@guardian/common/dist/secret-manager';
 import { OldSecretManager } from '@guardian/common/dist/secret-manager/old-style/old-secret-manager';
+import { startMetricsServer } from './utils/metrics';
 
 Promise.all([
     Migration({
@@ -74,6 +75,8 @@ Promise.all([
         console.error(error.message);
         process.exit(1);
     }
+
+    startMetricsServer();
 }, (reason) => {
     console.log(reason);
     process.exit(0);

@@ -1,7 +1,9 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "express": "^4.17.3"
+    "express": "^4.17.3",
+    "prometheus-api-metrics": "3.2.2",
+    "prom-client": "^14.1.1"
   },
   "description": "",
   "devDependencies": {

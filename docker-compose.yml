@@ -115,6 +115,8 @@ services:
     build:
       context: .
       dockerfile: ./auth-service/Dockerfile
+    ports:
+      - '5005:5005'
     depends_on:
       - mongo
       - vault
@@ -124,6 +126,7 @@ services:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
       - 6555
+      - 5005
 
   api-gateway:
     env_file:
@@ -149,6 +152,8 @@ services:
     build:
       context: .
       dockerfile: ./policy-service/Dockerfile
+    ports:
+      - "5006:5006"
     depends_on:
       - mongo
       - message-broker
@@ -158,6 +163,7 @@ services:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
       - 50000-60000
+      - 5006
 
 
   guardian-service:
@@ -166,6 +172,8 @@ services:
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
+    ports:
+      - "5007:5007"
     depends_on:
       - mongo
       - message-broker
@@ -178,6 +186,7 @@ services:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
       - 6555
+      - 5007
 
   application-events:
     build:
@@ -200,7 +209,10 @@ services:
       context: .
       dockerfile: ./mrv-sender/Dockerfile
     expose:
-      - 3005
+      - 3003
+      - 5008
+    ports:
+      - "5008:5008"
 
   topic-viewer:
     build:
@@ -208,6 +220,9 @@ services:
       dockerfile: ./topic-viewer/Dockerfile
     expose:
       - 3006
+      - 5009
+    ports:
+      - "5009:5009"
 
   web-proxy:
     build:
@@ -222,9 +237,52 @@ services:
       - api-docs
       - mrv-sender
       - mongo-express
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+    
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/grafana/dashboards
+    environment:
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_SERVER_HTTP_PORT=9080
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/dashboards/prometheus-dashboard.json
+    ports:
+      - "9080:9080"
+    networks:
+      - monitoring
+      
 volumes:
   mongo:
+  prometheus_data: {}
+  grafana_data: {}
   # volume-guardian-service:
   # volume-ui-service:
   # volume-mrv-sender:
   #  volume-message-broker:
+
+networks:
+  monitoring:
+    driver: bridge
