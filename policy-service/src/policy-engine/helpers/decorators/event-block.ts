@@ -2,7 +2,6 @@ import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-opt
 import { BasicBlock } from './basic-block';
 import { BlockActionError } from '@policy-engine/errors';
 import { IPolicyUser } from '@policy-engine/policy-user';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
 
 /**
  * Event block decorator
