@@ -1,15 +1,7 @@
 <mat-stepper class="user-onboarding-wizard" [linear]="false" #stepper>
     <mat-step [stepControl]="firstFormGroup" label="Setup fields">
         <div class="user-onboarding-wizard__content">
-            <form [formGroup]="firstFormGroup">
-                <mat-form-field appearance="fill">
-                    <mat-label>Name</mat-label>
-                    <input matInput placeholder="Last name, First name" formControlName="firstCtrl" required>
-                </mat-form-field>
-            </form>
-            <div class="user-onboarding-wizard__footer">
-                <button mat-raised-button type="button" color="primary" matStepperNext>Next</button>
-            </div>
+            <app-account-setup-step></app-account-setup-step>
         </div>
     </mat-step>
     <mat-step [stepControl]="secondFormGroup" label="Import policy">
@@ -21,7 +13,7 @@
                 </mat-form-field>
             </form>
             <div class="user-onboarding-wizard__footer">
-                <button mat-stroked-button color="primary" matStepperPrevious>Previous</button>
+                <button mat-stroked-button color="primary" matStepperPrevious>Back</button>
                 <button mat-raised-button type="button" color="primary" matStepperNext>Next</button>
             </div>
         </div>
@@ -30,8 +22,8 @@
         <div class="user-onboarding-wizard__content">
             <p>You are now done.</p>
             <div class="user-onboarding-wizard__footer">
-                <button mat-stroked-button color="primary" matStepperPrevious>Previous</button>
-                <button mat-raised-button type="button" color="primary" matStepperNext>Next</button>
+                <button mat-stroked-button color="primary" matStepperPrevious>Back</button>
+                <button mat-raised-button type="button" color="primary" matStepperNext>Import & Finish</button>
             </div>
         </div>
     </mat-step>

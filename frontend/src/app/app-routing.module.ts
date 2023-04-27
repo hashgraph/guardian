@@ -28,6 +28,7 @@ import { PolicyViewerComponent } from './modules/policy-engine/policy-viewer/pol
 import { ArtifactConfigComponent } from './modules/artifact-engine/artifact-config/artifact-config.component';
 import { CompareComponent } from './modules/analytics/compare/compare.component';
 import { ModulesListComponent } from './modules/policy-engine/modules-list/modules-list.component';
+import { StandardRegistryOnboardingWizardComponent } from './components/standard-registry-onboarding-wizard/standard-registry-onboarding-wizard.component';
 
 const USER_IS_NOT_RA = "Page is avaliable for admin only";
 
@@ -150,7 +151,7 @@ const routes: Routes = [
 
     { path: 'user-profile', component: UserProfileComponent, canActivate: [UserGuard, ServicesStatusGuard] },
 
-    { path: 'config', component: RootConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
+    { path: 'config', component: StandardRegistryOnboardingWizardComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'tokens', component: TokenConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'contracts', component: ContractConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
     { path: 'contracts/pairs', component: ContractRequestConfigComponent, canActivate: [StandardRegistryGuard, ServicesStatusGuard] },
