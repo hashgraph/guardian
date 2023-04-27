@@ -31,7 +31,7 @@ export class PolicyModule extends BaseEntity {
     /**
      * Module config
      */
-    @Property({ persist: false })
+    @Property({ persist: false, type: 'unknown' })
     config?: any;
 
     /**

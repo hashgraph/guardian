@@ -34,7 +34,7 @@ export class Theme extends BaseEntity {
     /**
      * Rules
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     rules?: any;
 
     /**

@@ -50,7 +50,7 @@ export class Policy extends BaseEntity {
     /**
      * Policy config
      */
-    @Property({ persist: false })
+    @Property({ persist: false, type: 'unknown' })
     config?: any;
 
     /**
@@ -86,19 +86,19 @@ export class Policy extends BaseEntity {
     /**
      * Policy groups
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     policyGroups?: any[];
 
     /**
      * Policy topics
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     policyTopics?: any[];
 
     /**
      * Policy tokens
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     policyTokens?: any;
 
     /**
@@ -143,7 +143,7 @@ export class Policy extends BaseEntity {
      * User roles
      * @deprecated
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     registeredUsers?: any
 
     /**
