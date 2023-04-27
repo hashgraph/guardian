@@ -67,9 +67,10 @@ import { PolicyEngineModule } from './modules/policy-engine/policy-engine.module
 import { CompareModule } from './modules/analytics/analytics.module';
 import { CommonComponentsModule } from './modules/common/common-components.module';
 import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
-import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module';
+import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
-import { UserOnboardingWizardComponent } from './components/user-onboarding-wizard/user-onboarding-wizard.component';
+import { StandardRegistryOnboardingWizardComponent } from './components/standard-registry-onboarding-wizard/standard-registry-onboarding-wizard.component';
+import { AccountSetupStepComponent } from './components/standard-registry-onboarding-wizard/steps/account-setup-step/account-setup-step.component';
 
 @NgModule({
     declarations: [
@@ -95,7 +96,8 @@ import { UserOnboardingWizardComponent } from './components/user-onboarding-wiza
         RetireTokenDialogComponent,
         DataInputDialogComponent,
         SchemaConfigComponent,
-        UserOnboardingWizardComponent,
+        StandardRegistryOnboardingWizardComponent,
+        AccountSetupStepComponent,
     ],
     imports: [
         BrowserModule,

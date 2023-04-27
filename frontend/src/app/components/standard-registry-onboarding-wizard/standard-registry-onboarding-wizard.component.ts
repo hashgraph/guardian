@@ -2,11 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 
 @Component({
-  selector: 'app-user-onboarding-wizard',
-  templateUrl: './user-onboarding-wizard.component.html',
-  styleUrls: ['./user-onboarding-wizard.component.scss']
+  selector: 'app-standard-registry-onboarding-wizard',
+  templateUrl: './standard-registry-onboarding-wizard.component.html',
+  styleUrls: ['./standard-registry-onboarding-wizard.component.scss']
 })
-export class UserOnboardingWizardComponent {
+export class StandardRegistryOnboardingWizardComponent {
   firstFormGroup = this._formBuilder.group({
     firstCtrl: ['', Validators.required],
   });
