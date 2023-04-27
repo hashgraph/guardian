@@ -18,7 +18,7 @@ Policy Configurator contains a section, it can be navigated to by clicking the c
 _**Note**: users must click ‘**Save**’ button to preserve the changes to the theme after edits as shown below:_
 {% endhint %}
 
-<figure><img src="../../../.gitbook/assets/2 (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/2 (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### **1.1 Menu actions**
 
@@ -48,7 +48,7 @@ The matching and styling algorithm is as follows:
 
 New rules can be added by clicking on **Create Rule** button.
 
-<figure><img src="../../../.gitbook/assets/5 (4).png" alt=""><figcaption><p>Adding new Rules</p></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/5 (4) (1).png" alt=""><figcaption><p>Adding new Rules</p></figcaption></figure>
 
 **1.2.2 Removing rules**
 

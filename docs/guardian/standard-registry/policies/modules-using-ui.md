@@ -20,7 +20,7 @@ Modules can be created via the Modules management page in the Guardian UI by cli
 
 Modules can also be created via the Policy editor UI in two ways: 1. By clicking on Create New Module button, 2. Converting policy to Module.
 
-![image3.png](<../../../.gitbook/assets/2 (3).png>)
+![image3.png](<../../../.gitbook/assets/2 (5).png>)
 
 ![image4.png](<../../../.gitbook/assets/3 (2).png>)
 
@@ -30,7 +30,7 @@ Modules can be imported from local file system or from IPFS via messageIds.
 
 <figure><img src="../../../.gitbook/assets/4 (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/5 (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/5 (4).png" alt=""><figcaption></figcaption></figure>
 
 #### 1.3 Module Export
 
