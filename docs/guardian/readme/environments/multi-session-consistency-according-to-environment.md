@@ -10,7 +10,7 @@ The implementation goes in the same line as Data level separation of concerns: i
 <GUARDIAN_ENV>_<HEDERA_NET>_db_name.
 ```
 
-<figure><img src="../../../.gitbook/assets/environment.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/env123.png" alt=""><figcaption></figcaption></figure>
 
 It has been introduced a new parameter PREUSED\_HEDERA\_NET, this parameter is intended to hold the target Hedera network that the system already started to notarized data to. The PREUSED\_HEDERA\_NET can assume the values mainnet, testnet, previewnet, localnode.
 
