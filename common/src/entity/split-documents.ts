@@ -46,13 +46,13 @@ export class SplitDocuments extends BaseEntity {
     /**
      * Value
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     value?: any;
 
     /**
      * Document instance
      */
-    @Property({ persist: false })
+    @Property({ persist: false, type: 'unknown' })
     document?: any;
 
     /**

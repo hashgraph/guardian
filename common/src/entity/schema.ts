@@ -75,7 +75,7 @@ export class Schema extends BaseEntity implements ISchema {
     /**
      * Context
      */
-    @Property({ persist: false })
+    @Property({ persist: false, type: 'unknown' })
     context?: any;
 
     /**

@@ -83,7 +83,7 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
     /**
      * Document option
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     option?: any;
 
     /**
@@ -95,7 +95,7 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
     /**
      * User group
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     group?: any;
 
     /**

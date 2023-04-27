@@ -128,7 +128,7 @@ export class VcDocument extends BaseEntity implements IVCDocument {
     /**
      * Document option
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     option?: any;
 
     /**
@@ -164,13 +164,13 @@ export class VcDocument extends BaseEntity implements IVCDocument {
     /**
      * Hedera Accounts
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     accounts?: any;
 
     /**
      * Tokens
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     tokens?: any;
 
     /**
@@ -179,6 +179,7 @@ export class VcDocument extends BaseEntity implements IVCDocument {
     @Property({
         nullable: true,
         index: true,
+        type: 'unknown'
     })
     group?: any;
 

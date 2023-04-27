@@ -26,19 +26,19 @@ export class DryRun extends BaseEntity {
     /**
      * Document owner
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     owner?: any;
 
     /**
      * Document hash
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     hash?: any;
 
     /**
      * Document instance
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     document?: any;
 
     /**
@@ -56,67 +56,67 @@ export class DryRun extends BaseEntity {
     /**
      * Document status
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     status?: any;
 
     /**
      * Document signature
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     signature?: any;
 
     /**
      * Document type
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     type?: any;
 
     /**
      * Policy id
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     policyId?: any;
 
     /**
      * Tag
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     tag?: any;
 
     /**
      * Message id
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     messageId?: any;
 
     /**
      * Topic id
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     topicId?: any;
 
     /**
      * Relationships
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     relationships?: any;
 
     /**
      * Option
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     option?: any;
 
     /**
      * Comment
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     comment?: any;
 
     /**
      * Assign
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     assignedTo?: any;
 
     /**
@@ -128,97 +128,97 @@ export class DryRun extends BaseEntity {
     /**
      * Document hedera status
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     hederaStatus?: any;
 
     /**
      * Document processing status
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     processingStatus?: any;
 
     /**
      * Document schema
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     schema?: any;
 
     /**
      * Hedera Accounts
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     accounts?: any
 
     /**
      * Tokens
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     tokens?: any
 
     /**
      * Topic name
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     name?: any;
 
     /**
      * Topic description
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     description?: any;
 
     /**
      * Parent
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     parent?: any;
 
     /**
      * Policy UUID
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     policyUUID?: any;
 
     /**
      * Token id
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     tokenId?: any;
 
     /**
      * Token name
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     tokenName?: any;
 
     /**
      * Token symbol
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     tokenSymbol?: any;
 
     /**
      * Token type
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     tokenType?: any;
 
     /**
      * Token decimals
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     decimals?: any;
 
     /**
      * Initial supply
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     initialSupply?: any;
 
     /**
      * Admin id
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     adminId?: any;
 
     /**
@@ -254,25 +254,25 @@ export class DryRun extends BaseEntity {
     /**
      * Setting value
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     value?: any;
 
     /**
      * Schema uuid
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     uuid?: any;
 
     /**
      * Schema entity
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     entity?: any;
 
     /**
      * Context
      */
-    @Property({ persist: false })
+    @Property({ persist: false, type: 'unknown' })
     context?: any;
 
     /**
@@ -284,73 +284,73 @@ export class DryRun extends BaseEntity {
     /**
      * Version
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     version?: any;
 
     /**
      * Creator
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     creator?: any;
 
     /**
      * Document URL
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     documentURL?: any;
 
     /**
      * Context URL
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     contextURL?: any;
 
     /**
      * IRI
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown'})
     iri?: any;
 
     /**
      * Readonly flag
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     readonly?: any;
 
     /**
      * Is system schema
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     system?: any;
 
     /**
      * Is active
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     active?: any;
 
     /**
      * Category.
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     category?: any;
 
     /**
      * Policy previous version
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     previousVersion?: any;
 
     /**
      * Policy topic description
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     topicDescription?: any;
 
     /**
      * Policy config
      */
-    @Property({ persist: false })
+    @Property({ persist: false, type: 'unknown' })
     config?: any;
 
     /**
@@ -362,79 +362,79 @@ export class DryRun extends BaseEntity {
     /**
      * Policy roles
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     policyRoles?: any;
 
     /**
      * Policy groups
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     policyGroups?: any;
 
     /**
      * Policy topics
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     policyTopics?: any;
 
     /**
      * Policy tokens
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     policyTokens?: any[];
 
     /**
      * Policy instance topic id
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     instanceTopicId?: any;
 
     /**
      * Policy tag
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     policyTag?: any;
 
     /**
      * Policy code version
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     codeVersion?: any;
 
     /**
      * Document id
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     documentId?: any;
 
     /**
      * State reason
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     reason?: any;
 
     /**
      * DID
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     did?: any;
 
     /**
      * Block id
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     blockId?: any;
 
     /**
      * block state
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     blockState?: any;
 
     /**
      * Document approver
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     approver?: any;
 
     /**
@@ -488,7 +488,7 @@ export class DryRun extends BaseEntity {
     /**
      * User group
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     group?: any;
 
     /**
@@ -500,7 +500,7 @@ export class DryRun extends BaseEntity {
     /**
      * Token Map
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     tokenMap?: any
 
     /**

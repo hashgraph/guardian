@@ -27,7 +27,7 @@ export class PolicyInvitations extends BaseEntity {
     /**
      * Is active
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     active?: any;
 
     /**

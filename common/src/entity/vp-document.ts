@@ -102,7 +102,7 @@ export class VpDocument extends BaseEntity implements IVPDocument {
     /**
      * Option
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     option?: any;
 
     /**
