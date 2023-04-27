@@ -71,7 +71,7 @@ export class VcDocument extends BaseEntity implements IVCDocument {
     /**
      * Document instance
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     document?: IVC;
 
     /**
