@@ -257,7 +257,9 @@ export class DataBaseHelper<T extends BaseEntity> {
         let entityToUpdateOrCreate: any = await repository.findOne(filter?.where || filter || entity.id || entity._id);
         if (entityToUpdateOrCreate) {
             DataBaseHelper._systemFileFields.forEach(systemFileField => {
-                entity[systemFileField] = entityToUpdateOrCreate[systemFileField];
+                if (entity[systemFileField]) {
+                    entity[systemFileField] = entityToUpdateOrCreate[systemFileField];
+                }
             });
             wrap(entityToUpdateOrCreate).assign({ ...entity, updateDate: new Date() }, { mergeObjects: false });
         } else {
@@ -301,7 +303,9 @@ export class DataBaseHelper<T extends BaseEntity> {
         const entitiesToUpdate: any = await repository.find(filter?.where || filter || entity.id || entity._id);
         for (const entityToUpdate of entitiesToUpdate) {
             DataBaseHelper._systemFileFields.forEach(systemFileField => {
-                entity[systemFileField] = entityToUpdate[systemFileField];
+                if (entity[systemFileField]) {
+                    entity[systemFileField] = entityToUpdate[systemFileField];
+                }
             });
             wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() }, { mergeObjects: false });
         }

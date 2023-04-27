@@ -31,13 +31,6 @@ Promise.all([
         await channel.publish(`guardians.transaction-log-event`, data);
     });
 
-    const secretManager = SecretManager.New();
-    let {IPFS_STORAGE_API_KEY} = await secretManager.getSecrets('apikey/ipfs');
-    if (!IPFS_STORAGE_API_KEY) {
-        IPFS_STORAGE_API_KEY= process.env.IPFS_STORAGE_API_KEY
-        await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY });
-    }
-
     await state.updateState(ApplicationStates.INITIALIZING);
     const w = new Worker();
     await w.setConnection(cn).init();
@@ -46,6 +39,13 @@ Promise.all([
 
     let timer = null;
     validator.setValidator(async () => {
+        const secretManager = SecretManager.New();
+        let {IPFS_STORAGE_API_KEY} = await secretManager.getSecrets('apikey/ipfs');
+        if (!IPFS_STORAGE_API_KEY) {
+            IPFS_STORAGE_API_KEY= process.env.IPFS_STORAGE_API_KEY
+            await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY });
+        }
+
         if (timer) {
             clearInterval(timer);
         }
@@ -84,8 +84,9 @@ Promise.all([
     validator.setInvalidAction(async () => {
         timer = setInterval(async () => {
             await state.updateState(ApplicationStates.BAD_CONFIGURATION);
-        }, 1000)
-    });
+        }, 1000);
+        logger.error('Worker not configured', [channelName]);
+    })
 
     await validator.validate();
 }, (reason) => {
