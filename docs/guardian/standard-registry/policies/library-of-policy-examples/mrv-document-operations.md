@@ -42,7 +42,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 5. Create the token
 
-![image5.png](<../../../../.gitbook/assets/4 (2).png>)
+![image5.png](<../../../../.gitbook/assets/4 (2) (2).png>)
 
 ## **Document Operations**
 
@@ -50,7 +50,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 #### 1.1 Create a project
 
-![Creating project](<../../../../.gitbook/assets/5 (3).png>)
+![Creating project](<../../../../.gitbook/assets/5 (3) (1).png>)
 
 ### 1.2 Save the project
 
@@ -60,7 +60,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 1.3.1 Since another (not current user) account is used for minted tokens ’**tokenActionBlock**’ cannot be used, instead we will use ‘**tokenConfirmationBlock**_**’**_
 
-![Adding tokenConfirmationBlock](<../../../../.gitbook/assets/7 (2) (1).png>)
+![Adding tokenConfirmationBlock](<../../../../.gitbook/assets/7 (2) (1) (2).png>)
 
 1.3.2 To configure the target account for mixed tokens select ‘_Custom_’ value for ‘_Type_’ and the filed in the document from which to take the value for the Account ID (this field must have type: ‘**Account**’)
 
@@ -68,7 +68,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 1.3.3 By default ’**tokenConfirmationBlock**’ does not have a link to the next block, thus it needs to be manually added
 
-![Manually adding tokenConfirmationBlock to next Block](<../../../../.gitbook/assets/9 (2).png>)
+![Manually adding tokenConfirmationBlock to next Block](<../../../../.gitbook/assets/9 (2) (2).png>)
 
 1.4 Add an approver as after the creation the project is not assigned to anyone
 
@@ -104,7 +104,7 @@ Record value from **assignedTo** _into_ **Field** (This field will be changing o
 
 1.4.8 Return to grid settings and add **Dropdown** into the target column.
 
-![Adding Dropdown to target column](../../../../.gitbook/assets/17.png)
+![Adding Dropdown to target column](<../../../../.gitbook/assets/17 (1).png>)
 
 1.5 Project Approval. Setting up the grid for project approvals.
 
@@ -120,7 +120,7 @@ _(Please see_ [_example 2_](data-input-via-forms-using-roles-to-partition-user-a
 
 1.5.3 Add Approve button into the grid
 
-![Adding Approve button to the grid](<../../../../.gitbook/assets/20 (1).png>)
+![Adding Approve button to the grid](<../../../../.gitbook/assets/20 (1) (2).png>)
 
 1.5.4 After the Approve, setup the KYC for the account connected to the project
 

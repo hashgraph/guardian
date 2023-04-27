@@ -18,7 +18,7 @@ For a demo example of following steps, here is the policy timestamp: **167516453
 
 3. In the root container create 4 more ’**interfaceContainerBlock**_’_ container called ‘**no\_role**_’_, ‘**owner**_’_, ‘**role\_1**_’ and ‘_**role\_2**_’_
 
-![Creating 4 interfaceContainerBlock](<../../../../.gitbook/assets/3 (2).png>)
+![Creating 4 interfaceContainerBlock](<../../../../.gitbook/assets/3 (2) (2).png>)
 
 {% hint style="info" %}
 **Note:** By default all containers would have ‘_Any Role’_ set and thus they would be visible to all users (with all roles)
@@ -44,7 +44,7 @@ This would result in the following visibility of containers:
 
 5. Add a ‘**policyRolesBlock**_’_ to the ‘_no\_role’_ container and name it ‘_choose\_role’_
 
-![Adding policyRolesBlock](<../../../../.gitbook/assets/8 (1) (1).png>)
+![Adding policyRolesBlock](<../../../../.gitbook/assets/8 (1) (1) (1).png>)
 
 Since this block is located inside the container ‘_no\_role_’ which has ‘_No role_’ permission setting it would only be visible to new users without an assigned role.
 
@@ -52,7 +52,7 @@ Since this block is located inside the container ‘_no\_role_’ which has ‘_
 
 Select ‘**Example role 1**_’ and_ ‘**Example role 2**_’_
 
-![Available Roles property](<../../../../.gitbook/assets/9 (1) (1).png>)
+![Available Roles property](<../../../../.gitbook/assets/9 (1) (1) (1).png>)
 
 7. Add ‘**informationBlock**’ to other containers just to display results
 

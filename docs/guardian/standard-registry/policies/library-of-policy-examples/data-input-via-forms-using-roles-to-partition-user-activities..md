@@ -104,7 +104,7 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.3.3 Select the schema upon which the selected documents should be based on
 
-![Selecting Schema](../../../../.gitbook/assets/15.png)
+![Selecting Schema](<../../../../.gitbook/assets/15 (5).png>)
 
 1.3.4 Select _‘_**Owned by User**_’_ checkbox which would filter in only the documents that are created by this user (this will disable the ability to view other documents)
 
@@ -122,7 +122,7 @@ Add ‘Status’ attribute and set the initial ‘New’ value for new documents
 
 1.3 Since the Approve button should be displayed only for new documents use two ‘**documentSourceAddon**’ block
 
-![Adding two documentSourceAddon Blocks](<../../../../.gitbook/assets/18 (1).png>)
+![Adding two documentSourceAddon Blocks](<../../../../.gitbook/assets/18 (1) (2).png>)
 
 Configure both ‘**documentSourceAddon**’ blocks similarly to how it was in the previous sections, except here do not select the ‘_Owned by User_’ checkbox to allow the Approvers to see all documents (created by all users)
 
@@ -130,7 +130,7 @@ Configure both ‘**documentSourceAddon**’ blocks similarly to how it was in t
 
 ![Creating Equal status filter](<../../../../.gitbook/assets/19 (1).png>)
 
-![Creating not equal status filter](../../../../.gitbook/assets/20.png)
+![Creating not equal status filter](<../../../../.gitbook/assets/20 (2).png>)
 
 2. To enable actions (in this example ‘Approve’ and ‘Reject’) the ‘**buttonBlock**’ block is used.
 

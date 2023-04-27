@@ -56,7 +56,7 @@ _(Please see_ [_examples 2_](data-input-via-forms-using-roles-to-partition-user-
 
 1.2 Configure the document field which would be used for splitting/aggregation
 
-![Configuring Source Field](<../../../../.gitbook/assets/8 (4).png>)
+![Configuring Source Field](<../../../../.gitbook/assets/8 (4) (2).png>)
 
 1.3 Set a ‘**Threshold**’ to configure the value for splitting the document.
 
