@@ -50,7 +50,7 @@ In order to mint tokens into another account (not into the account of the mintin
 
 #### 1.1 Create a project
 
-![Creating project](<../../../../.gitbook/assets/5 (3) (1).png>)
+![Creating project](<../../../../.gitbook/assets/5 (3).png>)
 
 ### 1.2 Save the project
 

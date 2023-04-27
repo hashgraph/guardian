@@ -1,13 +1,17 @@
-# Mobile operation for the Standard Registry
+# 📱 Mobile operation for the Standard Registry
 
 ### **Creation of a new account**
 
 The first adaptation relates to the redesign of the creation of new accounts. This redesign for mobile solves the overflow previously present while still maintaining the descriptions.
 
-Here the images below show the selection of account type and selection of username and password in order to create a new account.
+Here the images below to show the selection of account type and selection of username and password in order to create a new account.
 
 \
-![](<../../../.gitbook/assets/1 (1).png>)![](<../../../.gitbook/assets/2 (1).png>)
+
+
+<figure><img src="../../../.gitbook/assets/2 (1).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/1 (1).png" alt=""><figcaption></figcaption></figure>
 
 &#x20;
 
@@ -15,13 +19,13 @@ Here the images below show the selection of account type and selection of userna
 
 The header was also adapted for mobile for all types of users. The balance was maintained as one of the elements always present. The new header for mobile, these elements are always present.
 
-![](../../../.gitbook/assets/3.png)
+<figure><img src="../../../.gitbook/assets/3.png" alt=""><figcaption></figcaption></figure>
 
 The various menus and submenus (in case there are any) have been moved upon clicking on the hamburger menu, presenting the user with the following.
 
 Also some information about the user is also presented, such as the name of the user (in this case "user1234") and his respective Hedera ID and HBar balance.
 
-<img src="../../../.gitbook/assets/5.png" alt="" data-size="original">![](../../../.gitbook/assets/4.png)
+<figure><img src="../../../.gitbook/assets/5.png" alt=""><figcaption></figcaption></figure>
 
 
 
@@ -29,7 +33,7 @@ Also some information about the user is also presented, such as the name of the 
 
 Some screens for the Standard Registry were also adapted, starting with the registration into Guardian after creating a username and password and also the mobile adaptation to associate Hedera credentials and initial form upon creating an account.
 
-![](../../../.gitbook/assets/12.png)![](../../../.gitbook/assets/13.png)
+<figure><img src="../../../.gitbook/assets/12.png" alt=""><figcaption></figcaption></figure>
 
 ### Standard Registry creating / editing a token
 
@@ -41,7 +45,7 @@ Below are the images show the creation of a "New Token" form for the Standard Re
 
 
 
-Here below are the images show the creation of a "Edit Token" form for the Standard Registry. On the left for a non published and on the right for a published token.
+Here below are the images to show the creation of a "Edit Token" form for the Standard Registry. On the left for a non published and on the right for a published token.
 
 ![](../../../.gitbook/assets/16.png)![](../../../.gitbook/assets/17.png)
 
@@ -55,10 +59,12 @@ The importing of policies was also adapted from the click on the "Import" button
 
 Below you can see the preview of the imported policy&#x20;
 
-![](../../../.gitbook/assets/20.png)
+<figure><img src="../../../.gitbook/assets/20.png" alt=""><figcaption></figcaption></figure>
 
 
 
 ### Standard Registry publishing a draft of a policy
 
-Finally, the publishing of a draft policy, defining its version, was also adapted.![](../../../.gitbook/assets/21.png)
+Finally, the publishing of a draft policy, defining its version, was also adapted.
+
+<figure><img src="../../../.gitbook/assets/21.png" alt=""><figcaption></figcaption></figure>

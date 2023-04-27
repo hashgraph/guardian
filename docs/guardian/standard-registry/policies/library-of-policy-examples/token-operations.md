@@ -88,7 +88,7 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 1.4 Use ‘_**documentsSourceAddon’**_ block to retrieve data from the database.
 
-![Adding documentSourceAddon Block](<../../../../.gitbook/assets/13 (1).png>)
+![Adding documentSourceAddon Block](<../../../../.gitbook/assets/13 (1) (2).png>)
 
 ## **Result:**
 

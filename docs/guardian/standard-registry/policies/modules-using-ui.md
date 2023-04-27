@@ -20,7 +20,7 @@ Modules can be created via the Modules management page in the Guardian UI by cli
 
 Modules can also be created via the Policy editor UI in two ways: 1. By clicking on Create New Module button, 2. Converting policy to Module.
 
-![image3.png](<../../../.gitbook/assets/2 (3).png>)
+![image3.png](<../../../.gitbook/assets/2 (6).png>)
 
 ![image4.png](<../../../.gitbook/assets/3 (2).png>)
 
@@ -28,15 +28,15 @@ Modules can also be created via the Policy editor UI in two ways: 1. By clicking
 
 Modules can be imported from local file system or from IPFS via messageIds.
 
-<figure><img src="../../../.gitbook/assets/4 (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/4 (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/5 (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/5 (5).png" alt=""><figcaption></figcaption></figure>
 
 #### 1.3 Module Export
 
 Modules can be exported as files or/and ‘published’ into IPFS. For published modules users can retrieve its messageId which can serve as a reference for import elsewhere.
 
-![image7.png](<../../../.gitbook/assets/6 (5).png>)
+![image7.png](<../../../.gitbook/assets/6 (2).png>)
 
 ![image8.png](<../../../.gitbook/assets/7 (1).png>)
 
@@ -44,13 +44,13 @@ Modules can be exported as files or/and ‘published’ into IPFS. For published
 
 Modules which have not been published can be deleted.
 
-![image9.png](<../../../.gitbook/assets/8 (4).png>)
+![image9.png](<../../../.gitbook/assets/8 (1).png>)
 
 #### 1.5 Editing Modules
 
 Modules which have not been published can be edited.
 
-![image10.png](<../../../.gitbook/assets/9 (6).png>)
+![image10.png](<../../../.gitbook/assets/9 (4).png>)
 
 ### 2. Using Modules
 
@@ -58,7 +58,7 @@ Modules which have not been published can be edited.
 
 The ‘insides’ of modules are isolated from the rest of Policy it may be embedded into. The external view of a module is represented by _**Variables**_ and _**Input\Output Events**_, which serve as an interface of the Module and transmit data into and out of the module.
 
-<figure><img src="../../../.gitbook/assets/10 (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/10 (5).png" alt=""><figcaption></figcaption></figure>
 
 #### 2.1.1 Generic Structure
 
@@ -76,7 +76,7 @@ Variable are part of the external interface of Modules, they are used to represe
 
 **Using variables inside modules:**
 
-![image14.png](<../../../.gitbook/assets/13 (3).png>)
+![image14.png](<../../../.gitbook/assets/13 (1).png>)
 
 **Assigning values to the (module) variables in Policy:**
 

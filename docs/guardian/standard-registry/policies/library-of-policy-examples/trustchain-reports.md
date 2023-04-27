@@ -50,7 +50,7 @@ The ‘**reportItemBlock**’ items are executed sequentially, thus in the filte
 
 1.3.2 ’**report\_document**_’_. To find the MRV report (i.e. data document which was the basis of the decision to mint tokens) we will also use one of the **Common Variables** – _documentId_
 
-![Adding documentId value](<../../../../.gitbook/assets/9 (3) (1).png>)
+![Adding documentId value](<../../../../.gitbook/assets/9 (3) (1) (1).png>)
 
 To find further documents we will need to use values from the **Ref** variable which point to the previous document. Let’s save in a new variable:
 

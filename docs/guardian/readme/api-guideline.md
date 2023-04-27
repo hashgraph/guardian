@@ -1,50 +1,82 @@
-# API Guideline
+# ⚙ API Guideline
 
 We have changed the code avoiding the generalization of the validation status code and any error status code. Instead of 500, we added a specific status code that depends on the situation. Below we provide more information:
 
 ### **1xx Informational**
 
-**100 Continue:** The server has received the request headers and the client should proceed to send the request body.
+#### **100 Continue:**&#x20;
 
-**101 Switching Protocols:** The server understands and is willing to comply with the client's request, via the Upgrade message header field, for a change in the application protocol being used on this connection.
+The server has received the request headers and the client should proceed to send the request body.
+
+#### **101 Switching Protocols:**&#x20;
+
+The server understands and is willing to comply with the client's request, via the Upgrade message header field, for a change in the application protocol being used on this connection.
 
 ### **2xx Success**
 
-**200 OK:** The request was successful and the server has returned the requested data.
+#### **200 OK:**&#x20;
 
-**201 Created:** The request was successful and the server has created a new resource based on the request data.
+The request was successful and the server has returned the requested data.
 
-**204 No Content:** The request was successful but there is no data to return.
+#### **201 Created:**&#x20;
+
+The request was successful and the server has created a new resource based on the request data.
+
+#### **204 No Content:**&#x20;
+
+The request was successful but there is no data to return.
 
 ### **3xx Redirection**
 
-**301 Moved Permanently:** The requested resource has been moved permanently to a new location.
+#### **301 Moved Permanently:**&#x20;
 
-**302 Found:** The requested resource can be found at a different location temporarily.
+The requested resource has been moved permanently to a new location.
 
-**304 Not Modified:** The requested resource has not been modified since the last time it was accessed.
+#### **302 Found:**&#x20;
+
+The requested resource can be found at a different location temporarily.
+
+#### **304 Not Modified:**&#x20;
+
+The requested resource has not been modified since the last time it was accessed.
 
 ### **4xx Client Error**
 
-**400 Bad Request:** The request was invalid or could not be understood by the server.
+#### **400 Bad Request:**&#x20;
 
-**401 Unauthorized:** The request requires user authentication.
+The request was invalid or could not be understood by the server.
 
-**403 Forbidden:** The request is valid but the server refuses to respond due to lack of permission.
+#### **401 Unauthorized:**&#x20;
 
-**404 Not Found:** The requested resource could not be found on the server.
+The request requires user authentication.
 
-**422 Unprocessable Entity:** The request was well-formed, but the server could not process it because it contains invalid data.
+#### **403 Forbidden:**&#x20;
+
+The request is valid but the server refuses to respond due to lack of permission.
+
+#### **404 Not Found:**&#x20;
+
+The requested resource could not be found on the server.
+
+#### **422 Unprocessable Entity:**&#x20;
+
+The request was well-formed, but the server could not process it because it contains invalid data.
 
 ### **5xx Server Error**
 
-**500 Internal Server Error:** The server encountered an unexpected condition that prevented it from fulfilling the request.
+#### **500 Internal Server Error:**&#x20;
 
-**502 Bad Gateway:** The server received an invalid response from an upstream server while trying to fulfill the request.
+The server encountered an unexpected condition that prevented it from fulfilling the request.
 
-**503 Service Unavailable:** The server is currently unable to handle the request due to a temporary overload or maintenance.
+#### **502 Bad Gateway:**&#x20;
 
-The most prominent changes are described below&#x20;
+The server received an invalid response from an upstream server while trying to fulfill the request.
+
+#### **503 Service Unavailable:**&#x20;
+
+The server is currently unable to handle the request due to a temporary overload or maintenance.
+
+#### The most prominent changes are described below&#x20;
 
 For validation errors, the **422 unprocessable Entity status** code is commonly used, which indicates that the request was well-formed, but contains invalid data. This could include missing or invalid parameters, incorrect data types, or other issues with the data in the request. A JSON payload could be returned with more details about the validation error.
 
@@ -78,39 +110,36 @@ Use hyphens to separate words in resource names. For example, you might use /use
 
 Use HTTP verbs to represent actions on resources. Here are some common HTTP verbs and their actions:
 
-**GET:** Retrieve a resource or a collection of resources.
+**GET:**&#x20;
 
-**POST:** Create a new resource.
+Retrieve a resource or a collection of resources.
 
-**PUT:** Update an existing resource.
+**POST:**&#x20;
 
-**DELETE:** Delete a resource.
+Create a new resource.
+
+**PUT:**&#x20;
+
+Update an existing resource.
+
+**DELETE:**&#x20;
+
+Delete a resource.
 
 For example, you might use GET /products to retrieve a list of products, and POST /products to create a new product.
 
 #### Query Parameters
 
-Use query parameters to filter, sort, or paginate resources. Here are some guidelines for naming query parameters:
+Use query parameters to filter, sort, or paginate resources.&#x20;
 
-Use camelCase or snake\_case for query parameter names.
+Here are some guidelines for naming query parameters:
 
-Be consistent within your API in the use of query parameter names.
-
-Use standard parameter names such as sort\_by, page, or limit whenever possible.
+1. Use camelCase or snake\_case for query parameter names.
+2. Be consistent within your API in the use of query parameter names.
+3. Use standard parameter names such as sort\_by, page, or limit whenever possible.
 
 For example, you might use /products?sort\_by=name or /products?sortBy=name to sort products by name.
 
 By following these naming conventions, you can create a consistent and easy-to-use API that will be intuitive for developers to use and understand.\
 \
 For a complete documentation of name conventions you can follow the recommendations described in this website: [https://restfulapi.net/resource-naming/](https://restfulapi.net/resource-naming/)
-
-\
-
-
-
-
-
-
-
-
-\

@@ -12,7 +12,7 @@ Policy Configurator contains a section, it can be navigated to by clicking the c
 
 <figure><img src="../../../.gitbook/assets/0 (5).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/1 (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/1 (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 _**Note**: users must click ‘**Save**’ button to preserve the changes to the theme after edits as shown below:_
@@ -70,11 +70,11 @@ Multiple types of conditions can be used in rule definitions
 
 * Types – allows matching based on the type of the block
 
-![](<../../../.gitbook/assets/9 (4).png>)
+![](<../../../.gitbook/assets/9 (4) (1).png>)
 
 * Roles – allows matching based on block permissions, i.e. based on the roles to whom the blocks are accessible
 
-<figure><img src="../../../.gitbook/assets/10 (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/10 (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 **Note:**
@@ -110,7 +110,7 @@ _In the case when multiple theme rules are applied to the block (when multiple r
 
 Description – is a textual description of the rule. It is displayed next to the explainer drop down in the Policy Configurator.
 
-![](<../../../.gitbook/assets/15 (4).png>)
+![](<../../../.gitbook/assets/15 (4) (1).png>)
 
 ### **2. Using themes**
 
@@ -118,7 +118,7 @@ Description – is a textual description of the rule. It is displayed next to th
 
 Themes can be selected from the drop down button as shown below:
 
-<figure><img src="../../../.gitbook/assets/16 (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/16 (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 **2.2 Explainer drop-down :** We are able to see all the defined settings in policy configurator screen.
 

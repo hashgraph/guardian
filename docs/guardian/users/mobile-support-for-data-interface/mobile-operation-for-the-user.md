@@ -42,7 +42,7 @@ The user registration form into a policy has also been redesigned. This makes th
 
 The images below are the registration forms which have been redesigned&#x20;
 
-![](<../../../.gitbook/assets/8 (1).png>)![](<../../../.gitbook/assets/9 (1).png>)
+![](<../../../.gitbook/assets/8 (6).png>)![](<../../../.gitbook/assets/9 (1).png>)
 
 
 
