@@ -44,7 +44,7 @@ export class ApprovalDocument extends BaseEntity implements IApprovalDocument {
     /**
      * Document instance
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     document?: IVC;
 
     /**
