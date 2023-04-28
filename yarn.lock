@@ -1051,12 +1051,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@guardian/common@^2.12.0-prerelease, @guardian/common@workspace:common":
+"@guardian/common@^2.12.0, @guardian/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
     "@aws-sdk/client-secrets-manager": ^3.319.0
-    "@guardian/interfaces": ^2.12.0-prerelease
+    "@guardian/interfaces": ^2.12.0
     "@hashgraph/sdk": ^2.22.0
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
@@ -1095,7 +1095,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@guardian/interfaces@^2.12.0-prerelease, @guardian/interfaces@workspace:interfaces":
+"@guardian/interfaces@^2.12.0, @guardian/interfaces@workspace:interfaces":
   version: 0.0.0-use.local
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
@@ -2809,8 +2809,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api-gateway@workspace:api-gateway"
   dependencies:
-    "@guardian/common": ^2.12.0-prerelease
-    "@guardian/interfaces": ^2.12.0-prerelease
+    "@guardian/common": ^2.12.0
+    "@guardian/interfaces": ^2.12.0
     "@types/express": ^4.17.13
     "@types/express-fileupload": ^1.4.1
     "@types/jszip": ^3.4.1
@@ -3005,8 +3005,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "auth-service@workspace:auth-service"
   dependencies:
-    "@guardian/common": ^2.12.0-prerelease
-    "@guardian/interfaces": ^2.12.0-prerelease
+    "@guardian/common": ^2.12.0
+    "@guardian/interfaces": ^2.12.0
     "@mikro-orm/core": ~5.7.2
     "@mikro-orm/mongodb": ~5.7.2
     "@types/jsonwebtoken": ^8.5.4
@@ -5608,8 +5608,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "guardian-service@workspace:guardian-service"
   dependencies:
-    "@guardian/common": ^2.12.0-prerelease
-    "@guardian/interfaces": ^2.12.0-prerelease
+    "@guardian/common": ^2.12.0
+    "@guardian/interfaces": ^2.12.0
     "@hashgraph/sdk": ^2.22.0
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
@@ -7661,8 +7661,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "logger-service@workspace:logger-service"
   dependencies:
-    "@guardian/common": ^2.12.0-prerelease
-    "@guardian/interfaces": ^2.12.0-prerelease
+    "@guardian/common": ^2.12.0
+    "@guardian/interfaces": ^2.12.0
     "@mikro-orm/core": ~5.7.2
     "@mikro-orm/mongodb": ~5.7.2
     "@types/fs-extra": ^9.0.12
@@ -8300,7 +8300,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "mrv-sender@workspace:mrv-sender"
   dependencies:
-    "@guardian/common": ^2.12.0-prerelease
+    "@guardian/common": ^2.12.0
     "@transmute/credentials-context": 0.7.0-unstable.80
     "@transmute/did-context": 0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": 0.7.0-unstable.80
@@ -9264,8 +9264,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "policy-service@workspace:policy-service"
   dependencies:
-    "@guardian/common": ^2.12.0-prerelease
-    "@guardian/interfaces": ^2.12.0-prerelease
+    "@guardian/common": ^2.12.0
+    "@guardian/interfaces": ^2.12.0
     "@hashgraph/sdk": ^2.22.0
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
@@ -11751,8 +11751,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "worker-service@workspace:worker-service"
   dependencies:
-    "@guardian/common": ^2.12.0-prerelease
-    "@guardian/interfaces": ^2.12.0-prerelease
+    "@guardian/common": ^2.12.0
+    "@guardian/interfaces": ^2.12.0
     "@hashgraph/sdk": ^2.22.0
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
