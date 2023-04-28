@@ -27,7 +27,12 @@ iREC 1 : 1674820447.688663003
 iREC 2 : 1674821041.273277003
 iREC 3 : 1674821342.619996003
 iREC 4 : 1674821702.668883536
-iREC 5 : 1674822145.926539705
+iREC 5 : 1682691911.690728979
+IRec Policy 6 search documents : 1674822383.822752346
+IRec Policy 7 split documents : 1674822624.800179003
+IRec Policy 8.1 MBP : 1674822811.925003914
+IRec Policy 8.2 MBP : 1674823034.585480003
+IRec 9 Module : 1677851469.448047161
 ```
 
 <figure><img src="../../../.gitbook/assets/iREC_5.1.png" alt=""><figcaption></figcaption></figure>
