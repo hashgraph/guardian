@@ -1057,7 +1057,7 @@ __metadata:
   dependencies:
     "@aws-sdk/client-secrets-manager": ^3.319.0
     "@guardian/interfaces": ^2.12.0
-    "@hashgraph/sdk": ^2.22.0
+    "@hashgraph/sdk": ^2.24.1
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.7.2
@@ -1107,11 +1107,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@hashgraph/cryptography@npm:^1.4.3":
-  version: 1.4.3
-  resolution: "@hashgraph/cryptography@npm:1.4.3"
+"@hashgraph/cryptography@npm:1.4.6":
+  version: 1.4.6
+  resolution: "@hashgraph/cryptography@npm:1.4.6"
   dependencies:
     bignumber.js: ^9.1.1
+    bn.js: ^5.1.1
     crypto-js: ^4.1.1
     elliptic: ^6.5.4
     js-base64: ^3.7.4
@@ -1128,7 +1129,7 @@ __metadata:
       optional: true
     expo-random:
       optional: true
-  checksum: 4ab469b2820fae58a17430fdfbb3cb1c5168fc9df3460b698da24cfea5325cf05ec21adda8350a4d2f8a9f7db079c9e5152108ded285708fdff49851d2addf0c
+  checksum: d5ae7e03209ed5e5323f042bd8cf88ba418a59bab899c3b4b9b695603ee46b1d46e6d7a1c758f03f8cf8062a1db8e38ecd5df5d8052e8f57158c469e4ae3c694
   languageName: node
   linkType: hard
 
@@ -1143,13 +1144,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hashgraph/sdk@npm:^2.22.0":
-  version: 2.22.0
-  resolution: "@hashgraph/sdk@npm:2.22.0"
+"@hashgraph/sdk@npm:^2.24.1":
+  version: 2.24.1
+  resolution: "@hashgraph/sdk@npm:2.24.1"
   dependencies:
     "@ethersproject/rlp": ^5.7.0
     "@grpc/grpc-js": ^1.7.3
-    "@hashgraph/cryptography": ^1.4.3
+    "@hashgraph/cryptography": 1.4.6
     "@hashgraph/proto": 2.12.0
     axios: ^1.3.1
     bignumber.js: ^9.1.1
@@ -1164,7 +1165,7 @@ __metadata:
   peerDependenciesMeta:
     expo:
       optional: true
-  checksum: c4dce1470856dcb58ec65d421ec120593e0641f05530bfdd0b00b7ed2530d0a6626fb7c24514bf41607512e623f29523cc8aaec901be4d32ae6ab6d288c1c13a
+  checksum: d18e449aea9b60f37fdb97a63e563a5e12022b81ab18afd5f0113ed6daecefed5ceee87b6f3e963ea689a2a97522c7db33c44990215aa81f3b8cbca169e6f754
   languageName: node
   linkType: hard
 
@@ -3203,6 +3204,13 @@ __metadata:
   version: 4.12.0
   resolution: "bn.js@npm:4.12.0"
   checksum: 39afb4f15f4ea537b55eaf1446c896af28ac948fdcf47171961475724d1bb65118cca49fa6e3d67706e4790955ec0e74de584e45c8f1ef89f46c812bee5b5a12
+  languageName: node
+  linkType: hard
+
+"bn.js@npm:^5.1.1":
+  version: 5.2.1
+  resolution: "bn.js@npm:5.2.1"
+  checksum: 3dd8c8d38055fedfa95c1d5fc3c99f8dd547b36287b37768db0abab3c239711f88ff58d18d155dd8ad902b0b0cee973747b7ae20ea12a09473272b0201c9edd3
   languageName: node
   linkType: hard
 
@@ -5610,7 +5618,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.12.0
     "@guardian/interfaces": ^2.12.0
-    "@hashgraph/sdk": ^2.22.0
+    "@hashgraph/sdk": ^2.24.1
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.7.2
@@ -9266,7 +9274,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.12.0
     "@guardian/interfaces": ^2.12.0
-    "@hashgraph/sdk": ^2.22.0
+    "@hashgraph/sdk": ^2.24.1
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.7.2
@@ -11753,7 +11761,7 @@ __metadata:
   dependencies:
     "@guardian/common": ^2.12.0
     "@guardian/interfaces": ^2.12.0
-    "@hashgraph/sdk": ^2.22.0
+    "@hashgraph/sdk": ^2.24.1
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
     "@transmute/ed25519-signature-2018": ^0.7.0-unstable.80
