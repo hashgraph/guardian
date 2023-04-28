@@ -85,7 +85,7 @@ export class Tag extends BaseEntity {
     /**
      * VC document
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     document?: any;
 
     /**

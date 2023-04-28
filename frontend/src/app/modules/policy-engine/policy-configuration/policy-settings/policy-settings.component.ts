@@ -193,6 +193,7 @@ export class PolicySettingsComponent implements OnInit {
                 this.loading = true;
                 this.themeService.delete(theme).subscribe((result: any) => {
                     this.themeService.deleteTheme(theme);
+                    this.themeService.saveTheme();
                     this.themes = this.themeService.getThemes();
                     this.theme = this.themeService.getCurrent();
                     this.loading = false;
@@ -215,6 +216,7 @@ export class PolicySettingsComponent implements OnInit {
                 this.loading = true;
                 this.themeService.import(arrayBuffer).subscribe((result) => {
                     this.themeService.addTheme(result);
+                    this.themeService.saveTheme();
                     this.themes = this.themeService.getThemes();
                     this.theme = this.themeService.getCurrent();
                     this.loading = false;

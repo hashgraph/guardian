@@ -108,7 +108,7 @@ export class TagsManagerBlock {
                 'uuid',
                 'version',
                 'iri',
-                'document'
+                'documentFileId'
             ]
         });
         const data: any = {

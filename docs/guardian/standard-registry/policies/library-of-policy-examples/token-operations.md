@@ -78,17 +78,17 @@ Switch to the ‘**Tokens**’ tab and create a new token
 
 1.2.1 In the parent block set property ‘**Type’** to ‘Tabs’
 
-![Setting the Property Type to TABS](<../../../../.gitbook/assets/11 (1).png>)
+![Setting the Property Type to TABS](<../../../../.gitbook/assets/11 (1) (1).png>)
 
 1.2.2 Set the property ‘**Title’** to configure tab titles
 
 1.3 Add **‘interfaceDocumentsSourceBlock**_**’** into the ‘_tokens_’_ container and configure its columns
 
-![Adding interfaceDocumentsSourceBlock](<../../../../.gitbook/assets/12 (1).png>)
+![Adding interfaceDocumentsSourceBlock](<../../../../.gitbook/assets/12 (1) (1).png>)
 
 1.4 Use ‘_**documentsSourceAddon’**_ block to retrieve data from the database.
 
-![Adding documentSourceAddon Block](<../../../../.gitbook/assets/13 (1).png>)
+![Adding documentSourceAddon Block](<../../../../.gitbook/assets/13 (1) (2).png>)
 
 ## **Result:**
 

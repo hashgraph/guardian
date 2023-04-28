@@ -27,21 +27,6 @@ Promise.all([
 
     await new OldSecretManager().setConnection(cn).init();
 
-    HederaSDKHelper.setTransactionLogSender(async (data) => {
-        await channel.publish(`guardians.transaction-log-event`, data);
-    });
-
-    const secretManager = SecretManager.New();
-    let {IPFS_STORAGE_API_KEY} = await secretManager.getSecrets('apikey/ipfs');
-    if (!IPFS_STORAGE_API_KEY) {
-        IPFS_STORAGE_API_KEY= process.env.IPFS_STORAGE_API_KEY
-        await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY });
-    }
-
-    await state.updateState(ApplicationStates.INITIALIZING);
-    const w = new Worker();
-    await w.setConnection(cn).init();
-
     const validator = new ValidateConfiguration();
 
     let timer = null;
@@ -49,6 +34,21 @@ Promise.all([
         if (timer) {
             clearInterval(timer);
         }
+        const secretManager = SecretManager.New();
+        let {IPFS_STORAGE_API_KEY} = await secretManager.getSecrets('apikey/ipfs');
+        if (!IPFS_STORAGE_API_KEY) {
+            IPFS_STORAGE_API_KEY= process.env.IPFS_STORAGE_API_KEY
+            await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY });
+        }
+
+        HederaSDKHelper.setTransactionLogSender(async (data) => {
+            await channel.publish(`guardians.transaction-log-event`, data);
+        });
+
+        await state.updateState(ApplicationStates.INITIALIZING);
+        const w = new Worker();
+        await w.setConnection(cn).init();
+
         if (process.env.IPFS_PROVIDER === 'web3storage') {
             if (!IPFS_STORAGE_API_KEY) {
                 return false;
@@ -84,8 +84,9 @@ Promise.all([
     validator.setInvalidAction(async () => {
         timer = setInterval(async () => {
             await state.updateState(ApplicationStates.BAD_CONFIGURATION);
-        }, 1000)
-    });
+        }, 1000);
+        logger.error('Worker not configured', [channelName]);
+    })
 
     await validator.validate();
 }, (reason) => {

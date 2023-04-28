@@ -2,6 +2,7 @@ import { SecretManagerBase } from '../secret-manager-base';
 import { NatsService } from '../../mq';
 import { GenerateUUIDv4, IGetKeyResponse, WalletEvents } from '@guardian/interfaces';
 import { Singleton } from '../../decorators/singleton';
+import { timeout } from '../../hedera-modules';
 
 /**
  * Old secret manager implementation
@@ -23,6 +24,7 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
      * @param path
      * @param addition
      */
+    @timeout(10000)
     async getSecrets(path: string, addition: any): Promise<any> {
         switch (path) {
             case 'keys/operator':
@@ -59,6 +61,7 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
      * @async
      * @public
      */
+    @timeout(10000)
     async setSecrets(path: string, data: any, addition?: any): Promise<void> {
         switch (path) {
             case 'keys/operator':

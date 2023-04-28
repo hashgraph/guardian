@@ -748,7 +748,7 @@ export async function schemaAPI(): Promise<void> {
                     'uuid',
                     'version',
                     'iri',
-                    'document'
+                    'documentFileId'
                 ]
             });
             return new MessageResponse(schema);

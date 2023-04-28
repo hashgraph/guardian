@@ -26,7 +26,7 @@ export class DidDocument extends BaseEntity implements IDidObject {
     /**
      * Document instance
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     document?: any;
 
     /**

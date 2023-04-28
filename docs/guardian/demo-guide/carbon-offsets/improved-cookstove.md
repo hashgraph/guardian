@@ -74,7 +74,7 @@ Now, the Project Developer must go into their screen and "Submit a PDD" and fill
 
 <figure><img src="../../../.gitbook/assets/image (25).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (3).png" alt=""><figcaption></figcaption></figure>
 
 Now, the Project Developer must go into their screen and "Submit a PDD" and fill out the Project Design Document form.
 
@@ -104,7 +104,7 @@ The Standard Registry can log into their Policy screen, view the incoming Projec
 
 Once the Standard Registry approved the Project Developer's Project Registration, the Project Developer can submit the report by clicking on the "Submit MR" button and filling out the form.
 
-<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (2).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 

@@ -18,7 +18,7 @@ This folder contains a sample file that is referenced in the Demo Guide
 
 3\. You will now be prompted to configure your Standard Registry account. Press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the details of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../../../.gitbook/assets/Verra\_2.2.png)
+![](../../../.gitbook/assets/iREC\_4.2.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS by entering the Hedera Message IDs.
 
@@ -27,7 +27,12 @@ iREC 1 : 1674820447.688663003
 iREC 2 : 1674821041.273277003
 iREC 3 : 1674821342.619996003
 iREC 4 : 1674821702.668883536
-iREC 5 : 1674822145.926539705
+iREC 5 : 1682691911.690728979
+IRec Policy 6 search documents : 1674822383.822752346
+IRec Policy 7 split documents : 1674822624.800179003
+IRec Policy 8.1 MBP : 1674822811.925003914
+IRec Policy 8.2 MBP : 1674823034.585480003
+IRec 9 Module : 1677851469.448047161
 ```
 
 <figure><img src="../../../.gitbook/assets/iREC_5.1.png" alt=""><figcaption></figcaption></figure>
@@ -116,7 +121,7 @@ Once details are submitted, Registrant waits for the approval.
 
 21\. Now, we login back as Approver1 and approves the device created by Registrant. Device is approved by clicking on Sign button.
 
-<figure><img src="../../../.gitbook/assets/iREC_5.18.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/iREC_5.18 (1).png" alt=""><figcaption></figcaption></figure>
 
 22\. We logout as an Approver1 and login as Approver2 and approve the device by following step 21.
 

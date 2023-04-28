@@ -12,4 +12,4 @@ Block _**tagsManager**_ is responsible for managing tags in policies. This block
 | Stop Propagation | End processing here, don't pass control to the next block.                        | Checked or Unchecked           |        |
 | On Errors        | Called if the system error has occurs in the Block                                | <p>- No action<br> - Retry</p> |        |
 
-<figure><img src="../../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (7).png" alt=""><figcaption></figcaption></figure>

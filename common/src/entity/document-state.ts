@@ -15,6 +15,6 @@ export class DocumentState extends BaseEntity {
     /**
      * Document
      */
-    @Property({ nullable: true })
+    @Property({ nullable: true, type: 'unknown' })
     document?: any;
 }

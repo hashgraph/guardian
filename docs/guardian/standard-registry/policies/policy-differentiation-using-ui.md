@@ -6,7 +6,7 @@ We can now perform a detailed comparison between two policies.
 
 To compare the policies, we need to click on **Compare** button in the policies tab as shown below:
 
-<figure><img src="../../../.gitbook/assets/image (2) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 When Compare button is clicked, we get a pop up to select policies, which we want to perform comparison off.
 

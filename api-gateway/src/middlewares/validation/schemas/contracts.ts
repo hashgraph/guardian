@@ -11,10 +11,10 @@ export const retireSchema = () => {
 }
 
 export const importSchema = () => {
-  const { contractId, description } = fieldsValidation
+  const { contractId } = fieldsValidation
   return yup.object({
     body: yup.object({
-      contractId, description
+      contractId
     }),
   });
 }
