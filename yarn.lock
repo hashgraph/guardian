@@ -1061,7 +1061,7 @@ __metadata:
     "@mattrglobal/jsonld-signatures-bbs": ^1.1.2
     "@meeco/cryppo": ^2.0.2
     "@mikro-orm/core": ~5.7.2
-    "@mikro-orm/migrations-mongodb": ~5.7.2
+    "@mikro-orm/migrations-mongodb": ~5.7.3
     "@mikro-orm/mongodb": ~5.7.2
     "@transmute/credentials-context": ^0.7.0-unstable.80
     "@transmute/did-context": ^0.7.0-unstable.80
@@ -1404,17 +1404,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/migrations-mongodb@npm:~5.7.2":
-  version: 5.7.2
-  resolution: "@mikro-orm/migrations-mongodb@npm:5.7.2"
+"@mikro-orm/migrations-mongodb@npm:~5.7.3":
+  version: 5.7.3
+  resolution: "@mikro-orm/migrations-mongodb@npm:5.7.3"
   dependencies:
-    "@mikro-orm/mongodb": ~5.7.2
+    "@mikro-orm/mongodb": ~5.7.3
     fs-extra: 11.1.1
     mongodb: 5.3.0
     umzug: 3.2.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
-  checksum: 04283007c6070298626ff67204808a6505d1e94b89c0e171718e6a23e179fef14ba32624896eabe60128af3a05a6349dec9470cd00d5414d064da1148fdd2605
+  checksum: 1a466aabd7b8b5b287d4c35952d0a059201d04d7af91bb9d8c8da065bd46076882056e8f5481af1704dd721b75fec32d1a6651faf6bf3e118aec29ac2daee45b
   languageName: node
   linkType: hard
 
@@ -1440,6 +1440,31 @@ __metadata:
     "@mikro-orm/seeder":
       optional: true
   checksum: 9f8c5999f59abce89587bd3e70dda1fc1dc7d87340cc82c93c0ef06c5a6c8b4547c156444c3201232de49aee826e20ec3a28a29ffe589163fc55d50d72f2ad8d
+  languageName: node
+  linkType: hard
+
+"@mikro-orm/mongodb@npm:~5.7.3":
+  version: 5.7.3
+  resolution: "@mikro-orm/mongodb@npm:5.7.3"
+  dependencies:
+    bson: ^5.2.0
+    mongodb: 5.3.0
+  peerDependencies:
+    "@mikro-orm/core": ^5.0.0
+    "@mikro-orm/entity-generator": ^5.0.0
+    "@mikro-orm/migrations": ^5.0.0
+    "@mikro-orm/migrations-mongodb": ^5.0.0
+    "@mikro-orm/seeder": ^5.0.0
+  peerDependenciesMeta:
+    "@mikro-orm/entity-generator":
+      optional: true
+    "@mikro-orm/migrations":
+      optional: true
+    "@mikro-orm/migrations-mongodb":
+      optional: true
+    "@mikro-orm/seeder":
+      optional: true
+  checksum: 95f42e9680611834f1ce26690a3ab571461acd02def3602af8ef547ae01dc199b6252a6a9975d24d8a9d67d8fd67dcee1b22f8133db62acecd1f31644b7c7195
   languageName: node
   linkType: hard
 
