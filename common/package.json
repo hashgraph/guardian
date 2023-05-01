@@ -1,7 +1,7 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.319.0",
+    "@aws-sdk/client-secrets-manager": "^3.321.1",
     "@guardian/interfaces": "^2.12.0",
     "@hashgraph/sdk": "^2.22.0",
     "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
