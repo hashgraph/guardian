@@ -122,7 +122,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param entities Entities
      */
     public create(entities: any[]): T[];
-    public create(entity: any | any[]): T | T[]{
+    public create(entity: any | any[]): T | T[] {
         if (Array.isArray(entity)) {
             const arrResult = [];
             for (const item of entity) {
@@ -130,9 +130,7 @@ export class DataBaseHelper<T extends BaseEntity> {
             }
             return arrResult;
         }
-        if (!entity._id) {
-            entity._id = new ObjectId(ObjectId.generate());
-        }
+        entity._id = new ObjectId(ObjectId.generate());
         return this._em.fork().create(this.entityClass, entity);
     }
 
